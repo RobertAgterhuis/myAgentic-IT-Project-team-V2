@@ -1,0 +1,29 @@
+{
+  "name": "myagentic-it-project-team",
+  "version": "1.0.0",
+  "description": "Questionnaire & Decisions Manager — AI Agent Orchestration Webapp",
+  "private": true,
+  "license": "MIT",
+  "author": "Robert Agterhuis",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "start": "node webapp/server.js",
+    "start:mcp": "node webapp/mcp-server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint webapp/",
+    "check": "node -c webapp/server.js"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^3.0.0",
+    "eslint": "^10.0.3",
+    "jsdom": "^28.1.0",
+    "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1"
+  }
+}

@@ -1,0 +1,24 @@
+title: Agentic IT Project Team
+description: Multi-agent system for end-to-end software solution creation
+remote_theme: just-the-docs/just-the-docs@v0.10.1
+plugins:
+  - jekyll-remote-theme
+
+markdown: kramdown
+highlighter: rouge
+
+color_scheme: dark
+
+aux_links:
+  GitHub Repository:
+    - "https://github.com/RobertAgterhuis/myAgentic-IT-Project-team"
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+
+defaults:
+  - scope:
+      path: ""
+    values:
+      layout: default

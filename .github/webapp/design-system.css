@@ -10,6 +10,7 @@
    - #38: Card & Panel Components (metric cards, status badges, skeletons) ✅
    - #39: Data Tables & Lists (sorting, filtering, row actions) ✅
    - #40: Forms & Inputs (buttons, fields, validation, toggles) ✅
+   - #41: Feedback System (toasts, dialogs, progress, alerts) ✅
    
    This stylesheet extends the core design token CSS variables defined in 
    index.html <style> block with enterprise-grade component styling, layout patterns,
@@ -2028,6 +2029,569 @@ select:disabled {
 
   .form-actions .btn {
     width: 100%;
+  }
+}
+
+/* ──────────────────────────────────────────────────────────────────────────────
+   FEEDBACK SYSTEM (FEAT-02 #41)
+   ──────────────────────────────────────────────────────────────────────────────
+   Toasts, dialogs, progress indicators, alerts, and user feedback components
+────────────────────────────────────────────────────────────────────────────────── */
+
+/* Alert Component */
+.alert {
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--primary);
+  background: rgba(59, 130, 246, 0.05);
+  color: var(--primary);
+  font-size: var(--text-body);
+  line-height: 1.5;
+}
+
+.alert.success {
+  border-left-color: var(--success);
+  background: rgba(34, 197, 94, 0.05);
+  color: var(--success);
+}
+
+.alert.warning {
+  border-left-color: var(--warning);
+  background: rgba(234, 179, 8, 0.05);
+  color: var(--warning);
+}
+
+.alert.danger {
+  border-left-color: var(--danger);
+  background: rgba(239, 68, 68, 0.05);
+  color: var(--danger);
+}
+
+.alert-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.alert-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.alert-title {
+  font-weight: 700;
+}
+
+.alert-message {
+  font-size: var(--text-sm);
+  opacity: 0.9;
+}
+
+.alert-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  margin-top: 2px;
+  transition: opacity var(--motion-fast);
+}
+
+.alert-close:hover {
+  opacity: 0.7;
+}
+
+/* Toast Notification System */
+.toast-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 1000;
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 400px;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .toast-container {
+    left: var(--space-4);
+    right: var(--space-4);
+    max-width: none;
+  }
+}
+
+.toast {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  animation: toast-slide-in var(--motion-normal) ease-out;
+  max-width: 100%;
+}
+
+@keyframes toast-slide-in {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast.closing {
+  animation: toast-slide-out var(--motion-normal) ease-in;
+}
+
+@keyframes toast-slide-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+.toast-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.toast.success .toast-icon {
+  color: var(--success);
+}
+
+.toast.warning .toast-icon {
+  color: var(--warning);
+}
+
+.toast.danger .toast-icon {
+  color: var(--danger);
+}
+
+.toast.info .toast-icon {
+  color: var(--primary);
+}
+
+.toast-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.toast-title {
+  font-weight: 700;
+  font-size: var(--text-body);
+  color: var(--text);
+  margin: 0 0 var(--space-1);
+}
+
+.toast-message {
+  font-size: var(--text-sm);
+  color: var(--text-sec);
+  margin: 0;
+}
+
+.toast-close {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0;
+  margin-top: 2px;
+  transition: color var(--motion-fast);
+}
+
+.toast-close:hover {
+  color: var(--text);
+}
+
+.toast-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 0;
+}
+
+.toast.success .toast-progress {
+  background: var(--success);
+}
+
+.toast.warning .toast-progress {
+  background: var(--warning);
+}
+
+.toast.danger .toast-progress {
+  background: var(--danger);
+}
+
+/* Dialog / Modal Component */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--motion-normal);
+}
+
+.modal-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  z-index: 1001;
+  animation: modal-pop-in var(--motion-normal) ease-out;
+}
+
+@keyframes modal-pop-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 24px;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: all var(--motion-fast);
+}
+
+.modal-close:hover {
+  background: var(--bg-subtle);
+  color: var(--text);
+}
+
+.modal-content {
+  padding: var(--space-4);
+  color: var(--text-sec);
+  line-height: 1.6;
+}
+
+.modal-footer {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  padding: var(--space-4);
+  border-top: 1px solid var(--border);
+  background: var(--bg-subtle);
+  flex-wrap: wrap;
+}
+
+/* Progress Indicators */
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--bg-subtle);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary);
+  transition: width var(--motion-normal);
+  border-radius: var(--radius-full);
+}
+
+.progress-bar.success .progress-fill {
+  background: var(--success);
+}
+
+.progress-bar.warning .progress-fill {
+  background: var(--warning);
+}
+
+.progress-bar.danger .progress-fill {
+  background: var(--danger);
+}
+
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: var(--space-2) 0;
+  font-size: var(--text-sm);
+  color: var(--text-sec);
+}
+
+.progress-label {
+  font-weight: 600;
+}
+
+.progress-value {
+  font-family: var(--font-mono);
+  color: var(--primary);
+}
+
+.progress-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* Spinner / Loading Animation */
+.spinner {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--bg-subtle);
+  border-top-color: var(--primary);
+  border-radius: var(--radius-full);
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+@keyframes spinner-rotate {
+  to { transform: rotate(360deg); }
+}
+
+.spinner.sm {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+.spinner.lg {
+  width: 32px;
+  height: 32px;
+  border-width: 4px;
+}
+
+.spinner.success {
+  border-top-color: var(--success);
+}
+
+.spinner.warning {
+  border-top-color: var(--warning);
+}
+
+.spinner.danger {
+  border-top-color: var(--danger);
+}
+
+/* Skeleton Pulse Alternative (in feedback context) */
+.pulse {
+  animation: pulse-glow var(--motion-slow) ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Badge Notification (dot on icons) */
+.badge-notification {
+  position: relative;
+  display: inline-block;
+}
+
+.badge-dot {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 12px;
+  height: 12px;
+  background: var(--danger);
+  border: 2px solid var(--surface);
+  border-radius: var(--radius-full);
+  animation: badge-pulse var(--motion-slow) ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+}
+
+.badge-dot.success {
+  background: var(--success);
+}
+
+.badge-dot.warning {
+  background: var(--warning);
+}
+
+.badge-dot.info {
+  background: var(--primary);
+}
+
+/* Breadcrumb with steps (for multi-step feedback) */
+.steps {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  margin-bottom: var(--space-4);
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.step-number {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  background: var(--bg-subtle);
+  color: var(--text-sec);
+  font-weight: 700;
+  font-size: var(--text-sm);
+}
+
+.step.active .step-number {
+  background: var(--primary);
+  color: white;
+}
+
+.step.completed .step-number {
+  background: var(--success);
+  color: white;
+}
+
+.step-label {
+  font-size: var(--text-sm);
+  color: var(--text-sec);
+  min-width: 100px;
+}
+
+.step.active .step-label {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.step-connector {
+  height: 2px;
+  background: var(--border);
+  flex: 1;
+  min-width: 20px;
+}
+
+.step.completed ~ .step-connector {
+  background: var(--success);
+}
+
+/* Responsive Feedback Styling */
+@media (max-width: 768px) {
+  .modal {
+    width: 95%;
+    margin: 0 auto;
+  }
+
+  .toast-container {
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    max-width: none;
+  }
+
+  .toast {
+    animation: toast-slide-in-bottom var(--motion-normal) ease-out;
+  }
+
+  @keyframes toast-slide-in-bottom {
+    from {
+      transform: translateY(100px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .toast.closing {
+    animation: toast-slide-out-bottom var(--motion-normal) ease-in;
+  }
+
+  @keyframes toast-slide-out-bottom {
+    from {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(100px);
+      opacity: 0;
+    }
   }
 }
 

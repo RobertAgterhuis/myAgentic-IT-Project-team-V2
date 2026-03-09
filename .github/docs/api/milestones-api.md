@@ -228,32 +228,157 @@ curl -H "Accept: application/json" \
 ---
 
 ### 4. PUT /api/milestones/:id
-**Update milestone fields (SP-9.2 — Not yet implemented)**
+**Update existing milestone fields (SP-9.2 — IMPLEMENTED)**
 
-**Status**: 501 Not Implemented (scaffold provided)  
-**Expected in**: Sprint 9 Phase 2 (SP-9.2)
+**Request**:
+```http
+PUT /api/milestones/milestone-20260309-002 HTTP/1.1
+Content-Type: application/json
 
-**Planned Features**:
-- Partial updates (send only fields to change)
-- Full field validation matching POST rules
-- Immutable fields: `id`, `created_at` (cannot be changed)
+{
+  "progress": 50,
+  "status": "in progress"
+}
+```
+
+**Response — Success (200 OK)**:
+```json
+{
+  "ok": true,
+  "data": {
+    "id": "milestone-20260309-002",
+    "name": "FEAT-02 Enterprise UI Redesign",
+    "status": "in progress",
+    "progress": 50,
+    "completion": "2026-03-09",
+    "created_at": "2026-02-15T09:00:00Z",
+    "updated_at": "2026-03-09T18:00:00Z",
+    "archived": false
+  },
+  "message": "Milestone \"FEAT-02 Enterprise UI Redesign\" updated successfully",
+  "timestamp": "2026-03-09T18:00:00Z"
+}
+```
+
+**Response — Validation Error (400 Bad Request)**:
+```json
+{
+  "ok": false,
+  "error": "Validation failed",
+  "details": ["progress: must be between 0 and 100"]
+}
+```
+
+**Response — Not Found (404 Not Found)**:
+```json
+{
+  "ok": false,
+  "error": "Milestone not found",
+  "details": ["Milestone with ID \"milestone-invalid\" does not exist"]
+}
+```
+
+**Response — Duplicate Name (409 Conflict)**:
+```json
+{
+  "ok": false,
+  "error": "Milestone already exists",
+  "details": ["Milestone with name \"FEAT-03 Mobile Optimization\" already exists"]
+}
+```
+
+**Validation Rules**:
+- `name` (optional): String, 1-255 characters, unique (case-insensitive, excl. current)
+- `status` (optional): One of: `not started`, `in progress`, `complete`, `blocked`
+- `progress` (optional): Integer 0-100
+- `completion` (optional): ISO 8601 date format (YYYY-MM-DD)
+
+**Immutable Fields** (cannot be changed):
+- `id` — Auto-generated, preserved
+- `created_at` — Set at creation, preserved
+- `archived` — If set, ignored (use PATCH /api/milestones/:id/archive)
+
+**Side Effects**:
 - Auto-update: `updated_at` timestamp
 - Audit event: `milestone_updated` with before/after values
+- Entry updated in `.github/data/milestones.json`
+
+**Examples**:
+```bash
+# Update single field
+curl -X PUT http://127.0.0.1:3000/api/milestones/milestone-20260309-002 \
+  -H "Content-Type: application/json" \
+  -d '{"progress": 75}'
+
+# Update multiple fields
+curl -X PUT http://127.0.0.1:3000/api/milestones/milestone-20260309-002 \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "complete",
+    "progress": 100,
+    "completion": "2026-03-10"
+  }'
+```
 
 ---
 
 ### 5. PATCH /api/milestones/:id/archive
-**Soft-delete milestone (mark as archived)**
+**Soft-delete milestone (mark as archived — SP-9.3 — IMPLEMENTED)**
 
-**Status**: 501 Not Implemented (scaffold provided)  
-**Expected in**: Sprint 9 Phase 3 (SP-9.3)
+**Request**:
+```http
+PATCH /api/milestones/milestone-20260309-002/archive HTTP/1.1
+```
 
-**Planned Features**:
-- Mark milestone as `archived: true`
-- Excludes from standard GET list (unless `?include_archived=true`)
+**Response — Success (200 OK)**:
+```json
+{
+  "ok": true,
+  "data": {
+    "id": "milestone-20260309-002",
+    "name": "FEAT-02 Enterprise UI Redesign",
+    "status": "in progress",
+    "progress": 100,
+    "completion": "2026-03-09",
+    "created_at": "2026-02-15T09:00:00Z",
+    "updated_at": "2026-03-09T18:30:00Z",
+    "archived": true
+  },
+  "message": "Milestone \"FEAT-02 Enterprise UI Redesign\" archived successfully",
+  "timestamp": "2026-03-09T18:30:00Z"
+}
+```
+
+**Response — Not Found (404 Not Found)**:
+```json
+{
+  "ok": false,
+  "error": "Milestone not found",
+  "details": ["Milestone with ID \"milestone-invalid\" does not exist"]
+}
+```
+
+**Side Effects**:
+- Sets `archived: true`
+- Excludes from default GET /api/milestones list (unless `?include_archived=true`)
 - Preserves all data for audit/recovery
+- Auto-update: `updated_at` timestamp
 - Audit event: `milestone_archived` with timestamp
-- Recovery: Clear archived flag to restore to active list
+- Entry updated in `.github/data/milestones.json`
+
+**Recovery**:
+- Archived milestones can be retrieved via GET with `?include_archived=true`
+- To restore: Currently via direct data file update (future: add DELETE /api/milestones/:id/unarchive)
+
+**Examples**:
+```bash
+# Archive a milestone
+curl -X PATCH http://127.0.0.1:3000/api/milestones/milestone-20260309-002/archive
+
+# List including archived milestones
+curl -H "Accept: application/json" \
+  "http://127.0.0.1:3000/api/milestones?include_archived=true"
+```
 
 ---
 
@@ -386,7 +511,7 @@ curl -X PATCH http://127.0.0.1:3000/api/milestones/milestone-20260309-002/archiv
 
 ## Implementation Notes
 
-### SP-9.1 (Completed)
+### SP-9.1 (Completed ✓)
 - POST /api/milestones (create)
 - GET /api/milestones (list active)
 - GET /api/milestones/:id (read single)
@@ -395,17 +520,21 @@ curl -X PATCH http://127.0.0.1:3000/api/milestones/milestone-20260309-002/archiv
 - Audit trail logging
 - Error handling with detailed messages
 
-### SP-9.2 (Planned)
-- PUT /api/milestones/:id (update with validation)
-- Partial update support
+### SP-9.2 (Completed ✓)
+- PUT /api/milestones/:id (update with partial field support)
 - Field validation matching creation rules
 - Preserve immutable fields (id, created_at)
 - Audit trail with before/after values
+- Duplicate name prevention during update
+- 404 handling for missing milestones
+- 21 integration tests covering all scenarios
 
-### SP-9.3 (Planned)
+### SP-9.3 (Completed ✓)
 - PATCH /api/milestones/:id/archive (soft-delete)
-- Recovery via clearing archived flag
-- Exclusion from default list
+- Archived milestones excluded from default list (unless ?include_archived=true)
+- Preservation of all data for audit/recovery
+- Audit trail with archive event
+- 21 integration tests covering all scenarios
 
 ### SP-9.9 (Planned — Optional)
 - GET /api/milestone-templates
@@ -415,6 +544,6 @@ curl -X PATCH http://127.0.0.1:3000/api/milestones/milestone-20260309-002/archiv
 ---
 
 **Last Updated**: 2026-03-09  
-**Document Version**: 1.0  
+**Document Version**: 1.1  
 **API Version**: 1.0  
-**Sprint**: SP-9.1
+**Sprint**: SP-9.1, SP-9.2, SP-9.3 (IMPLEMENTED)

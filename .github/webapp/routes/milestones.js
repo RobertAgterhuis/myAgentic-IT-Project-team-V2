@@ -227,20 +227,187 @@ async function getMilestone(req, res, ctx) {
   }
 }
 
-async function updateMilestone(_req, res, _ctx) {
-  return json(res, 501, {
-    ok: false,
-    error: 'Not implemented',
-    details: 'PUT /api/milestones/:id implemented in SP-9.2',
-  });
+async function updateMilestone(req, res, ctx) {
+  const paths = getPaths(ctx);
+
+  try {
+    const milestoneId = normalizeMilestoneId(req.url, req.headers.host);
+    const data = await parseBody(req);
+
+    let updatedMilestone = null;
+    await withFileLock(paths.milestonesFile, () => {
+      const milestones = readMilestones(paths, ctx._cache);
+      const index = milestones.findIndex((m) => m.id === milestoneId);
+
+      if (index === -1) {
+        return json(res, 404, {
+          ok: false,
+          error: 'Milestone not found',
+          details: [`Milestone with ID "${milestoneId}" does not exist`],
+        });
+      }
+
+      const milestone = milestones[index];
+      const before = { ...milestone };
+
+      // Validate only fields that are being updated
+      const updatedFields = {};
+      if (data.name !== undefined) {
+        const nameErr = validateName(data.name);
+        if (nameErr) {
+          return json(res, 400, { ok: false, error: 'Validation failed', details: [nameErr] });
+        }
+        // Check for duplicate name (excluding current milestone)
+        if (milestoneNameExists(milestones, data.name, milestoneId)) {
+          return json(res, 409, {
+            ok: false,
+            error: 'Milestone already exists',
+            details: [`Milestone with name "${data.name}" already exists`],
+          });
+        }
+        updatedFields.name = data.name;
+      }
+
+      if (data.status !== undefined) {
+        const statusErr = validateStatus(data.status);
+        if (statusErr) {
+          return json(res, 400, { ok: false, error: 'Validation failed', details: [statusErr] });
+        }
+        updatedFields.status = data.status.toLowerCase();
+      }
+
+      if (data.progress !== undefined) {
+        const progressErr = validateProgress(data.progress);
+        if (progressErr) {
+          return json(res, 400, { ok: false, error: 'Validation failed', details: [progressErr] });
+        }
+        updatedFields.progress = data.progress;
+      }
+
+      if (data.completion !== undefined) {
+        const completionErr = validateCompletion(data.completion);
+        if (completionErr) {
+          return json(res, 400, { ok: false, error: 'Validation failed', details: [completionErr] });
+        }
+        updatedFields.completion = data.completion;
+      }
+
+      // Build changes object for audit trail
+      const changes = {};
+      Object.keys(updatedFields).forEach((key) => {
+        changes[key] = { before: before[key], after: updatedFields[key] };
+      });
+
+      // Merge updates into milestone (preserve id and created_at)
+      updatedMilestone = {
+        ...milestone,
+        ...updatedFields,
+        updated_at: new Date().toISOString(),
+      };
+
+      milestones[index] = updatedMilestone;
+
+      ctx.safeWriteSync(
+        paths.milestonesFile,
+        JSON.stringify(milestones, null, 2),
+        'utf8',
+        {
+          operation: 'update',
+          entityType: 'milestone',
+          entityId: milestoneId,
+          user: 'webapp',
+          summary: `Updated milestone ${milestoneId}`,
+        }
+      );
+
+      return null;
+    });
+
+    if (!updatedMilestone) return;
+
+    return json(res, 200, {
+      ok: true,
+      data: updatedMilestone,
+      message: `Milestone "${updatedMilestone.name}" updated successfully`,
+      timestamp: updatedMilestone.updated_at,
+    });
+  } catch (err) {
+    if (err && err.status) {
+      return json(res, err.status, { ok: false, error: err.message });
+    }
+    return json(res, 500, {
+      ok: false,
+      error: 'Failed to update milestone',
+      details: err.message,
+    });
+  }
 }
 
-async function archiveMilestone(_req, res, _ctx) {
-  return json(res, 501, {
-    ok: false,
-    error: 'Not implemented',
-    details: 'PATCH /api/milestones/:id/archive implemented in SP-9.3',
-  });
+async function archiveMilestone(req, res, ctx) {
+  const paths = getPaths(ctx);
+
+  try {
+    const milestoneId = normalizeMilestoneId(req.url, req.headers.host);
+
+    let archivedMilestone = null;
+    await withFileLock(paths.milestonesFile, () => {
+      const milestones = readMilestones(paths, ctx._cache);
+      const index = milestones.findIndex((m) => m.id === milestoneId);
+
+      if (index === -1) {
+        return json(res, 404, {
+          ok: false,
+          error: 'Milestone not found',
+          details: [`Milestone with ID "${milestoneId}" does not exist`],
+        });
+      }
+
+      const milestone = milestones[index];
+      const before = { ...milestone };
+
+      // Mark as archived
+      archivedMilestone = {
+        ...milestone,
+        archived: true,
+        updated_at: new Date().toISOString(),
+      };
+
+      milestones[index] = archivedMilestone;
+
+      ctx.safeWriteSync(
+        paths.milestonesFile,
+        JSON.stringify(milestones, null, 2),
+        'utf8',
+        {
+          operation: 'archive',
+          entityType: 'milestone',
+          entityId: milestoneId,
+          user: 'webapp',
+          summary: `Archived milestone ${milestoneId}`,
+        }
+      );
+
+      return null;
+    });
+
+    if (!archivedMilestone) return;
+
+    return json(res, 200, {
+      ok: true,
+      data: archivedMilestone,
+      message: `Milestone "${archivedMilestone.name}" archived successfully`,
+      timestamp: archivedMilestone.updated_at,
+    });
+  } catch (err) {
+    if (err && err.status) {
+      return json(res, err.status, { ok: false, error: err.message });
+    }
+    return json(res, 500, {
+      ok: false,
+      error: 'Failed to archive milestone',
+      details: err.message,
+    });
+  }
 }
 
 module.exports = function milestonesRoutes(ctx) {

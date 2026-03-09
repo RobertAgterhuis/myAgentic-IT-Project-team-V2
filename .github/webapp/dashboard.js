@@ -409,6 +409,7 @@
     bindMilestoneFilterHandlers();
     bindMilestonePaginationHandlers();
     bindMilestoneExportHandler();
+    bindMilestoneRowActionHandlers();
 
     applyMilestoneTableState();
   }
@@ -551,6 +552,163 @@
       URL.revokeObjectURL(url);
       showToast('Milestones exported as CSV', 'success', 2500);
     });
+  }
+
+  // Track which row's menu is currently open for single-open behavior (SP-8.3)
+  let currentMenuTrigger = null;
+
+  function bindMilestoneRowActionHandlers() {
+    const body = document.getElementById('milestone-table-body');
+    if (!body) return;
+
+    // Delegate click events on row action buttons (⋯ "More options" button)
+    body.addEventListener('click', (e) => {
+      const moreOptionsBtn = e.target.closest('.row-action-btn[title="More options"]');
+      if (!moreOptionsBtn) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const row = e.target.closest('tr');
+      if (!row) return;
+
+      const milestone = row.getAttribute('data-milestone');
+
+      // Close previous menu if open
+      if (currentMenuTrigger && currentMenuTrigger !== moreOptionsBtn) {
+        closeRowActionMenu();
+      }
+
+      // Toggle menu for this row
+      const menu = document.getElementById('row-action-menu');
+      const isOpen = menu.style.display !== 'none';
+
+      if (isOpen) {
+        closeRowActionMenu();
+        return;
+      }
+
+      // Open menu and position it near the button
+      currentMenuTrigger = moreOptionsBtn;
+      const rect = moreOptionsBtn.getBoundingClientRect();
+      menu.style.top = `${rect.bottom + 4}px`;
+      menu.style.left = `${rect.left}px`;
+      menu.setAttribute('data-milestone', milestone);
+      menu.style.display = 'block';
+      menu.setAttribute('aria-hidden', 'false');
+
+      // Focus first menu item for keyboard navigation
+      const firstItem = menu.querySelector('[role="menuitem"]');
+      if (firstItem) firstItem.focus();
+
+      // Close menu on Escape
+      const onEscape = (ev) => {
+        if (ev.key === 'Escape') {
+          closeRowActionMenu();
+          document.removeEventListener('keydown', onEscape);
+          moreOptionsBtn.focus(); // Return focus to trigger
+        }
+      };
+      document.addEventListener('keydown', onEscape);
+
+      // Close menu on outside click
+      const onOutsideClick = (ev) => {
+        if (!menu.contains(ev.target) && ev.target !== moreOptionsBtn) {
+          closeRowActionMenu();
+          document.removeEventListener('click', onOutsideClick);
+        }
+      };
+      // Delay to avoid immediate closure from current click
+      setTimeout(() => {
+        document.addEventListener('click', onOutsideClick);
+      }, 0);
+    });
+
+    // Handle menu item clicks (View, Edit, Delete)
+    const menu = document.getElementById('row-action-menu');
+    menu.addEventListener('click', (e) => {
+      const menuItem = e.target.closest('[data-action]');
+      if (!menuItem) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const action = menuItem.getAttribute('data-action');
+      const milestone = menu.getAttribute('data-milestone');
+
+      if (action === 'view') {
+        showMilestoneDetailModal(milestone);
+      } else if (action === 'edit') {
+        showToast('Edit functionality is planned for future sprint', 'info', 2500);
+      } else if (action === 'delete') {
+        if (window.confirm(`Are you sure you want to delete "${milestone}"?`)) {
+          removeMilestoneRow(milestone);
+          showToast(`Deleted: ${milestone}`, 'success', 2500);
+        }
+      }
+
+      closeRowActionMenu();
+
+      // Return focus to trigger
+      if (currentMenuTrigger) {
+        currentMenuTrigger.focus();
+      }
+    });
+  }
+
+  function closeRowActionMenu() {
+    const menu = document.getElementById('row-action-menu');
+    menu.style.display = 'none';
+    menu.setAttribute('aria-hidden', 'true');
+    currentMenuTrigger = null;
+  }
+
+  function showMilestoneDetailModal(milestone) {
+    const row = milestoneState.rows.find((r) => r.milestone === milestone);
+    if (!row) return;
+
+    document.getElementById('milestone-detail-title').textContent = `${milestone} Details`;
+    document.getElementById('detail-milestone').textContent = row.milestone;
+    document.getElementById('detail-status').textContent = row.status;
+    document.getElementById('detail-progress').textContent = `${row.progress}%`;
+    document.getElementById('detail-completion').textContent = row.completion;
+
+    const modal = document.getElementById('milestone-detail-modal');
+    modal.style.display = 'flex';
+    modal.classList.add('open');
+
+    // Focus first inner button for keyboard navigation
+    const closeBtn = modal.querySelector('.modal-close');
+    if (closeBtn) closeBtn.focus();
+
+    // Close modal on Escape
+    const onEscape = (ev) => {
+      if (ev.key === 'Escape') {
+        closeMilestoneDetailModal();
+        document.removeEventListener('keydown', onEscape);
+      }
+    };
+    document.addEventListener('keydown', onEscape);
+  }
+
+  function closeMilestoneDetailModal() {
+    const modal = document.getElementById('milestone-detail-modal');
+    modal.style.display = 'none';
+    modal.classList.remove('open');
+  }
+
+  function removeMilestoneRow(milestone) {
+    // Remove row from state
+    milestoneState.rows = milestoneState.rows.filter((row) => row.milestone !== milestone);
+
+    // Remove row from DOM
+    const body = document.getElementById('milestone-table-body');
+    const rowEl = body.querySelector(`tr[data-milestone="${CSS.escape(milestone)}"]`);
+    if (rowEl) rowEl.remove();
+
+    // Recalculate pagination and re-render
+    milestoneState.page = 1;
+    applyMilestoneTableState();
   }
 
   function getFilteredAndSortedRows() {
@@ -767,6 +925,7 @@
     renderQuickStats,
     initializeMilestoneTable,
     showToast,
+    closeMilestoneDetailModal,
     initialize
   };
 

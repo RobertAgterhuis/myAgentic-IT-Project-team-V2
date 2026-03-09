@@ -455,6 +455,54 @@
   <!-- ── Toast Container (FEAT-02 #41) ────────────────────────────── -->
   <div class="toast-container" id="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
 
+  <!-- ── Row Action Menu Template (SP-8.3) ──────────────────────────── -->
+  <div class="row-action-menu" id="row-action-menu" role="menu" aria-hidden="true" style="position: fixed; background: var(--surface); border: 1px solid var(--border); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); min-width: 180px; z-index: 950; display: none;">
+    <button class="row-action-menu-item" data-action="view" role="menuitem">
+      <span aria-hidden="true">👁</span> View Details
+    </button>
+    <button class="row-action-menu-item" data-action="edit" role="menuitem">
+      <span aria-hidden="true">✎</span> Edit
+    </button>
+    <button class="row-action-menu-item" data-action="delete" role="menuitem" style="color: var(--danger);">
+      <span aria-hidden="true">🗑</span> Delete
+    </button>
+  </div>
+
+  <!-- ── Row Detail Modal Template (SP-8.3) ────────────────────────── -->
+  <div class="modal-overlay" id="milestone-detail-modal" role="presentation" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title" id="milestone-detail-title">Milestone Details</h2>
+        <button class="modal-close" title="Close" onclick="closeMilestoneDetailModal();">×</button>
+      </div>
+      <div class="modal-content">
+        <div id="milestone-detail-content">
+          <div style="padding: var(--space-3);">
+            <div style="margin-bottom: var(--space-3);">
+              <label style="font-weight: bold; display: block; margin-bottom: var(--space-1);">Milestone</label>
+              <div id="detail-milestone" style="color: var(--text-muted);">—</div>
+            </div>
+            <div style="margin-bottom: var(--space-3);">
+              <label style="font-weight: bold; display: block; margin-bottom: var(--space-1);">Status</label>
+              <div id="detail-status" style="color: var(--text-muted);">—</div>
+            </div>
+            <div style="margin-bottom: var(--space-3);">
+              <label style="font-weight: bold; display: block; margin-bottom: var(--space-1);">Progress</label>
+              <div id="detail-progress" style="color: var(--text-muted);">—</div>
+            </div>
+            <div>
+              <label style="font-weight: bold; display: block; margin-bottom: var(--space-1);">Completion Date</label>
+              <div id="detail-completion" style="color: var(--text-muted);">—</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="closeMilestoneDetailModal();">Close</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Modal Overlay Template (FEAT-02 #41) ─────────────────────────── -->
   <div class="modal-overlay" id="modal-overlay" role="presentation">
     <div class="modal">

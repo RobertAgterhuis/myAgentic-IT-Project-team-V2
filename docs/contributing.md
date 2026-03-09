@@ -4,7 +4,7 @@ title: Contributing
 nav_order: 6
 ---
 
-# Contributing to Agentic IT Project Team
+# Contributing to myAgentic-IT-Project-team
 
 Thank you for your interest in contributing! This guide covers everything you need to get started.
 

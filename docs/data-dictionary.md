@@ -4,7 +4,7 @@ title: Data Dictionary
 nav_order: 4
 ---
 
-# Data Dictionary — Agentic IT Project Team
+# Data Dictionary — myAgentic-IT-Project-team
 
 > Version 1.0 | Last updated: 2026-03-08 | Source: SP-R2-007-004
 

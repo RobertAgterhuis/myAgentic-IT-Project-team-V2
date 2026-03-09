@@ -47,6 +47,18 @@
       "partial": 0,
       "scope_change_excluded_points": 0,
       "date": "2026-03-08"
+    },
+    {
+      "sprint_id": "SP-5",
+      "type": "SPRINT",
+      "planned_points": 11,
+      "realized_points": 11,
+      "velocity_ratio": 1.0,
+      "implemented": 4,
+      "blocked": 0,
+      "partial": 0,
+      "scope_change_excluded_points": 0,
+      "date": "2026-03-09"
     }
   ]
 }

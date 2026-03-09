@@ -87,10 +87,187 @@ function validateCommandQueue(data) {
   return { valid: errors.length === 0, errors };
 }
 
+/* ── Analytics Event ───────────────────────────────────────────── */
+
+const VALID_ANALYTICS_EVENTS = [
+  'page_view', 'tab_switch', 'command_launch', 'questionnaire_save',
+  'decision_update', 'error_displayed', 'feature_usage',
+  'session_start', 'session_end',
+];
+
+/**
+ * Validate a single analytics event.
+ * @param {object} data - Event object.
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+function validateAnalyticsEvent(data) {
+  const errors = [];
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { valid: false, errors: ['event must be an object'] };
+  }
+  if (!VALID_ANALYTICS_EVENTS.includes(data.event)) {
+    errors.push(`unknown event type: ${data.event}`);
+  }
+  if (data.properties !== undefined && (typeof data.properties !== 'object' || Array.isArray(data.properties))) {
+    errors.push('properties must be a plain object if present');
+  }
+  opt(data.timestamp, 'timestamp', 'string', errors);
+  return { valid: errors.length === 0, errors };
+}
+
+/**
+ * Validate an analytics events array.
+ * @param {Array} data - Array of event objects.
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+function validateAnalyticsEventArray(data) {
+  if (!Array.isArray(data)) {
+    return { valid: false, errors: ['events must be an array'] };
+  }
+  if (data.length === 0 || data.length > 100) {
+    return { valid: false, errors: ['events must be 1–100 items'] };
+  }
+  const errors = [];
+  for (let i = 0; i < data.length; i++) {
+    const r = validateAnalyticsEvent(data[i]);
+    if (!r.valid) {
+      for (const e of r.errors) errors.push(`[${i}]: ${e}`);
+    }
+  }
+  return { valid: errors.length === 0, errors };
+}
+
+/* ── Reevaluate Trigger ───────────────────────────────────────── */
+
+const VALID_SCOPES = ['ALL', 'BUSINESS', 'TECH', 'UX', 'MARKETING'];
+
+/**
+ * Validate a reevaluate-trigger JSON payload.
+ * @param {object} data - Trigger object.
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+function validateReevaluateTrigger(data) {
+  const errors = [];
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { valid: false, errors: ['reevaluate trigger must be an object'] };
+  }
+  str(data.requested_at, 'requested_at', errors);
+  if (!VALID_SCOPES.includes(data.scope)) {
+    errors.push('scope must be one of: ALL, BUSINESS, TECH, UX, MARKETING');
+  }
+  str(data.source, 'source', errors);
+  str(data.status, 'status', errors);
+  return { valid: errors.length === 0, errors };
+}
+
+/* ── Decision Create Input ────────────────────────────────────── */
+
+const VALID_DECISION_TYPES     = ['DECIDED', 'OPEN_QUESTION', 'question', 'operational'];
+const VALID_DECISION_PRIORITIES = ['HIGH', 'MEDIUM', 'LOW'];
+
+function hasDecisionCreateFields(data) {
+  return data.type && data.priority && data.scope && data.text;
+}
+
+/**
+ * Validate the input body for creating a decision.
+ * @param {object} data - Create body.
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+function validateDecisionCreate(data) {
+  const errors = [];
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { valid: false, errors: ['decision create body must be an object'] };
+  }
+  if (!hasDecisionCreateFields(data)) {
+    return { valid: false, errors: ['Missing type, priority, scope, or text'] };
+  }
+  if (!VALID_DECISION_TYPES.includes(data.type)) {
+    errors.push('Invalid type');
+  }
+  if (!VALID_DECISION_PRIORITIES.includes(data.priority)) {
+    errors.push('Invalid priority');
+  }
+  opt(data.notes, 'notes', 'string', errors);
+  return { valid: errors.length === 0, errors };
+}
+
+/* ── Decision Mutation Input ──────────────────────────────────── */
+
+const VALID_MUTATION_ACTIONS = ['answer', 'decide', 'defer', 'expire', 'activate', 'create', 'reopen', 'edit'];
+
+/**
+ * Validate a decision mutation body (structural check only).
+ * Action enum validation is left to the handler dispatch.
+ * @param {object} data - Mutation body.
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+function validateDecisionMutation(data) {
+  const errors = [];
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { valid: false, errors: ['decision mutation body must be an object'] };
+  }
+  str(data.action, 'action', errors);
+  opt(data.id, 'id', 'string', errors);
+  opt(data.answer, 'answer', 'string', errors);
+  opt(data.reason, 'reason', 'string', errors);
+  return { valid: errors.length === 0, errors };
+}
+
+/* ── Questionnaire Update Entry ───────────────────────────────── */
+
+/**
+ * Validate a single questionnaire answer update entry.
+ * @param {object} data - Update entry with questionId, status, answer.
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+function validateQuestionnaireUpdate(data) {
+  const errors = [];
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { valid: false, errors: ['questionnaire update must be an object'] };
+  }
+  str(data.questionId, 'questionId', errors);
+  if (data.status !== undefined && !['OPEN', 'ANSWERED', 'DEFERRED'].includes(data.status)) {
+    errors.push(`Invalid status: ${data.status}`);
+  }
+  opt(data.answer, 'answer', 'string', errors);
+  return { valid: errors.length === 0, errors };
+}
+
+/* ── Project Brief ────────────────────────────────────────────── */
+
+/**
+ * Validate project brief content before write.
+ * @param {string} content - The brief markdown content.
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+function validateProjectBrief(content) {
+  const errors = [];
+  if (typeof content !== 'string') {
+    return { valid: false, errors: ['project brief must be a string'] };
+  }
+  if (content.trim().length === 0) {
+    errors.push('project brief must not be empty');
+  }
+  if (content.length > 50000) {
+    errors.push('project brief exceeds 50 000 character limit');
+  }
+  return { valid: errors.length === 0, errors };
+}
+
 /* ── Exports ──────────────────────────────────────────────────── */
 
 module.exports = {
   validateSessionState,
   validateCommandEntry,
   validateCommandQueue,
+  validateAnalyticsEvent,
+  validateAnalyticsEventArray,
+  validateReevaluateTrigger,
+  validateDecisionCreate,
+  validateDecisionMutation,
+  validateQuestionnaireUpdate,
+  validateProjectBrief,
+  VALID_ANALYTICS_EVENTS,
+  VALID_MUTATION_ACTIONS,
 };

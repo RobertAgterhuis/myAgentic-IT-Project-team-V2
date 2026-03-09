@@ -5,7 +5,7 @@ nav_order: 1
 permalink: /
 ---
 
-# Agentic IT Project Team
+# myAgentic-IT-Project-team
 
 A multi-agent system for creating complete, production-ready software solutions through a structured process across four phases — from requirements to implementation.
 

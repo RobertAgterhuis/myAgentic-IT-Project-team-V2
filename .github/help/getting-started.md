@@ -2,7 +2,7 @@
 
 ## What is this system?
 
-The **Agentic System** is an end-to-end multi-agent platform that creates complete, production-ready software solutions through a structured four-phase process:
+The **myAgentic-IT-Project-team** system is an end-to-end multi-agent platform that creates complete, production-ready software solutions through a structured four-phase process:
 
 | Phase | Discipline | What happens |
 |-------|-----------|-------------|

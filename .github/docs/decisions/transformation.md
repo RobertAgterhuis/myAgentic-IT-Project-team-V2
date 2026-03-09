@@ -1,4 +1,4 @@
-# Decisions: Transformation (Agentic System)
+# Decisions: Transformation (myAgentic-IT-Project-team)
 > Stack: transformation | Status: ACTIVE | Applicable: YES
 
 ---

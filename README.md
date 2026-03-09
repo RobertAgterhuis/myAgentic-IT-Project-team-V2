@@ -1,4 +1,4 @@
-# Agentic IT Project Team – End-to-End Software Solution Creation & Audit
+# myAgentic-IT-Project-team – End-to-End Software Solution Creation & Audit
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js ≥ 18](https://img.shields.io/badge/Node.js-%E2%89%A518-green.svg)](https://nodejs.org/)

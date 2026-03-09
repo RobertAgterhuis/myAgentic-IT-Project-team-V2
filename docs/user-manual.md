@@ -4,11 +4,11 @@ title: User Manual
 nav_order: 2
 ---
 
-# User Manual — Agentic IT Project Team
+# User Manual — myAgentic-IT-Project-team
 
 > Version 1.0 | Last updated: 2026-03-08
 
-This guide covers everything you need to use the Agentic IT Project Team system: starting projects, managing questionnaires and decisions, using the Command Center, and troubleshooting common issues.
+This guide covers everything you need to use the myAgentic-IT-Project-team system: starting projects, managing questionnaires and decisions, using the Command Center, and troubleshooting common issues.
 
 ---
 

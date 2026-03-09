@@ -1,0 +1,127 @@
+{
+  "project": "myAgentic-IT-Project-team-V2",
+  "created_at": "2026-03-08T20:20:00Z",
+  "source": ".github/docs/synthesis/final-report-master.md — Section 6",
+  "kpis": [
+    {
+      "kpi_id": "KPI-001",
+      "discipline": "Business",
+      "name": "Vision goals completed",
+      "baseline": "0/5",
+      "baseline_numeric": 0,
+      "target": "2/5 (end of SP-6)",
+      "target_numeric": 2,
+      "unit": "goals",
+      "measurement": "Product Manager checklist",
+      "notes": "5 goals defined in BIZ-01 product roadmap (P0–P4)"
+    },
+    {
+      "kpi_id": "KPI-002",
+      "discipline": "Tech",
+      "name": "ESLint errors",
+      "baseline": 4,
+      "baseline_numeric": 4,
+      "target": "0",
+      "target_numeric": 0,
+      "unit": "errors",
+      "measurement": "npx eslint .",
+      "notes": "Lower is better. Tracked as TECH-06 in SP-3."
+    },
+    {
+      "kpi_id": "KPI-003",
+      "discipline": "Tech",
+      "name": "Schema coverage",
+      "baseline": "22% (2/9)",
+      "baseline_numeric": 22,
+      "target": "100% (9/9)",
+      "target_numeric": 100,
+      "unit": "percent",
+      "measurement": "Count validated stores",
+      "notes": "JSON stores with explicit schema validation"
+    },
+    {
+      "kpi_id": "KPI-004",
+      "discipline": "Tech",
+      "name": "Tech debt score",
+      "baseline": 72,
+      "baseline_numeric": 72,
+      "target": "85/100",
+      "target_numeric": 85,
+      "unit": "score",
+      "measurement": "Architect reassessment",
+      "notes": "Higher is better"
+    },
+    {
+      "kpi_id": "KPI-005",
+      "discipline": "Tech",
+      "name": "SOLID score",
+      "baseline": 6.4,
+      "baseline_numeric": 6.4,
+      "target": "8/10",
+      "target_numeric": 8,
+      "unit": "score",
+      "measurement": "Senior Developer review",
+      "notes": "Higher is better"
+    },
+    {
+      "kpi_id": "KPI-006",
+      "discipline": "UX",
+      "name": "WCAG 2.1 AA compliance",
+      "baseline": "~70%",
+      "baseline_numeric": 70,
+      "target": "≥95%",
+      "target_numeric": 95,
+      "unit": "percent",
+      "measurement": "Automated + manual audit",
+      "notes": null
+    },
+    {
+      "kpi_id": "KPI-007",
+      "discipline": "UX",
+      "name": "Design token coverage",
+      "baseline": "8/8 categories",
+      "baseline_numeric": 8,
+      "target": "Maintain 8/8",
+      "target_numeric": 8,
+      "unit": "categories",
+      "measurement": "Token inventory",
+      "notes": null
+    },
+    {
+      "kpi_id": "KPI-008",
+      "discipline": "Marketing",
+      "name": "Brand consistency",
+      "baseline": 90,
+      "baseline_numeric": 90,
+      "target": "Maintain ≥90",
+      "target_numeric": 90,
+      "unit": "score",
+      "measurement": "Brand Strategist review",
+      "notes": null
+    },
+    {
+      "kpi_id": "KPI-009",
+      "discipline": "Tech",
+      "name": "Test count",
+      "baseline": 576,
+      "baseline_numeric": 576,
+      "target": "monotonically increasing",
+      "target_numeric": null,
+      "unit": "tests",
+      "measurement": "npx vitest run",
+      "notes": "Added as operational KPI — not in Synthesis but critical for sprint tracking"
+    },
+    {
+      "kpi_id": "KPI-010",
+      "discipline": "Tech",
+      "name": "Statement coverage",
+      "baseline": 87.31,
+      "baseline_numeric": 87.31,
+      "target": "≥70% (guardrail G-IMPL-02), aspirational ≥90%",
+      "target_numeric": 70,
+      "unit": "percent",
+      "measurement": "npx vitest run --coverage",
+      "notes": "Added as operational KPI — tracks coverage guardrail G-IMPL-02"
+    }
+  ]
+}

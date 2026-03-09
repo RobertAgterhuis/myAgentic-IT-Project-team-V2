@@ -135,7 +135,7 @@ Reduce server.js from ~1210 LOC god file to modular route handler + middleware a
 
 ---
 
-## Sprint 5 — Accessibility
+## Sprint 5 — Accessibility ✅ COMPLETE
 
 ### Goal
 Raise WCAG 2.1 AA compliance from ~70% to ≥90% and consolidate brand naming across all user-facing references.

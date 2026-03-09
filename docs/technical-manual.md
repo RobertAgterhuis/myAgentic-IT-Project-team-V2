@@ -4,9 +4,9 @@ title: Technical Manual
 nav_order: 3
 ---
 
-# Technical Manual — Agentic IT Project Team
+# Technical Manual — myAgentic-IT-Project-team
 
-> Version 1.4 | Last updated: 2026-03-08 (SP-4)
+> Version 1.5 | Last updated: 2026-03-09 (SP-5)
 
 This manual covers the server architecture, API reference, data model, configuration, deployment, and development practices for the Questionnaire & Decisions Manager web application.
 
@@ -774,7 +774,7 @@ Configured in `.github/vitest.config.mjs`:
 - Functions: ≥ 70%
 - Lines: ≥ 70%
 
-Actual coverage (as of SP-3): **87.40% statements, 76.45% branches, 92.15% functions, 88.94% lines** (622 tests across 21 test files).
+Actual coverage (as of SP-5): **87.40% statements, 76.45% branches, 92.15% functions, 88.94% lines** (649 tests across 22 test files).
 
 ### Test Conventions
 

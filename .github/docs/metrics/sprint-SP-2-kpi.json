@@ -1,0 +1,133 @@
+{
+  "sprint_id": "SP-2",
+  "measured_on": "2026-03-08T21:00:00Z",
+  "summary": {
+    "on_track": 6,
+    "at_risk": 0,
+    "off_track": 0,
+    "insufficient_data": 4,
+    "brand_violations_count": 0
+  },
+  "kpis": [
+    {
+      "kpi_id": "KPI-001",
+      "name": "Vision goals completed",
+      "discipline": "Business",
+      "baseline": "0/5",
+      "target": "2/5 (end of SP-6)",
+      "value": "0/5",
+      "value_numeric": 0,
+      "status": "ON_TRACK",
+      "source": ".github/docs/sprints/SP-2/BIZ-03-unattended-execution-spike.md",
+      "notes": "No vision goals completed yet (expected). BIZ-03 spike advances Goal 1 understanding but does not complete it. On track for 2/5 by SP-6."
+    },
+    {
+      "kpi_id": "KPI-002",
+      "name": "ESLint errors",
+      "discipline": "Tech",
+      "baseline": 4,
+      "target": 0,
+      "value": 2,
+      "value_numeric": 2,
+      "status": "ON_TRACK",
+      "source": "npx eslint webapp/server.js webapp/mcp-server.js — server.js:505 (parseDecisions complexity 10) + server.js:671 (arrow complexity 9)",
+      "notes": "Unchanged from SP-1. mcp-server.js has 0 errors. Remaining 2 tracked as TECH-06 in SP-3."
+    },
+    {
+      "kpi_id": "KPI-003",
+      "name": "Schema coverage",
+      "discipline": "Tech",
+      "baseline": "22% (2/9)",
+      "target": "100% (9/9)",
+      "value": "22% (2/9)",
+      "value_numeric": 22,
+      "status": "INSUFFICIENT_DATA",
+      "source": "Schema validation not in scope for SP-2",
+      "notes": "Tracked as TECH-02 in SP-3. No change from baseline."
+    },
+    {
+      "kpi_id": "KPI-004",
+      "name": "Tech debt score",
+      "discipline": "Tech",
+      "baseline": 72,
+      "target": 85,
+      "value": null,
+      "value_numeric": null,
+      "status": "INSUFFICIENT_DATA",
+      "source": "Requires Architect reassessment",
+      "notes": "Write unification (TECH-04) is a positive contributor. Will be reassessed after SP-4 (server decomposition)."
+    },
+    {
+      "kpi_id": "KPI-005",
+      "name": "SOLID score",
+      "discipline": "Tech",
+      "baseline": 6.4,
+      "target": 8.0,
+      "value": null,
+      "value_numeric": null,
+      "status": "INSUFFICIENT_DATA",
+      "source": "Requires Senior Developer review",
+      "notes": "TECH-04 further improves SRP by eliminating duplicate write logic. Full scoring requires multi-module review."
+    },
+    {
+      "kpi_id": "KPI-006",
+      "name": "WCAG 2.1 AA compliance",
+      "discipline": "UX",
+      "baseline": "~70%",
+      "target": ">=95%",
+      "value": "~70%",
+      "value_numeric": 70,
+      "status": "INSUFFICIENT_DATA",
+      "source": "No UI changes in SP-2",
+      "notes": "SP-2 is backend-only (write unification + analysis). UX KPIs measured when UI stories are implemented (SP-5+)."
+    },
+    {
+      "kpi_id": "KPI-007",
+      "name": "Design token coverage",
+      "discipline": "UX",
+      "baseline": "8/8 categories",
+      "target": "Maintain 8/8",
+      "value": "8/8",
+      "value_numeric": 8,
+      "status": "ON_TRACK",
+      "source": ".github/docs/brand/design-tokens.json — no changes in SP-2",
+      "notes": "No design token changes. Maintained at baseline."
+    },
+    {
+      "kpi_id": "KPI-008",
+      "name": "Brand consistency",
+      "discipline": "Marketing",
+      "baseline": 90,
+      "target": 90,
+      "value": 90,
+      "value_numeric": 90,
+      "status": "ON_TRACK",
+      "source": "sprint-completion-report.md — BRAND-REVIEW: N/A (no CONTENT or DESIGN stories in SP-2)",
+      "notes": "No brand-affecting changes. Score maintained at baseline."
+    },
+    {
+      "kpi_id": "KPI-009",
+      "name": "Test count",
+      "discipline": "Tech",
+      "baseline": 576,
+      "target": "monotonically increasing",
+      "value": 581,
+      "value_numeric": 581,
+      "status": "ON_TRACK",
+      "source": "npx vitest run — 581 passed (581), 0 failed. test-report-SP-2.md",
+      "notes": "+1 new test this sprint (backup verification via unified FileStore). Cumulative: +5 since baseline (576 → 581)."
+    },
+    {
+      "kpi_id": "KPI-010",
+      "name": "Statement coverage",
+      "discipline": "Tech",
+      "baseline": 87.31,
+      "target": ">=70% (guardrail), aspirational >=90%",
+      "value": 87.52,
+      "value_numeric": 87.52,
+      "status": "ON_TRACK",
+      "source": "npx vitest run --coverage — 87.52% stmts, 75.15% branch, 93.53% funcs, 88.88% lines",
+      "notes": "+0.05% from SP-1 (87.47 → 87.52). Cumulative +0.21% from baseline. Well above guardrail minimum (70%)."
+    }
+  ]
+}

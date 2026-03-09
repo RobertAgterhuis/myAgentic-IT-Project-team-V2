@@ -679,4 +679,19 @@ describe('safeWrite', () => {
     safeWrite(file, 'new');
     expect(fs.readFileSync(file, 'utf8')).toBe('new');
   });
+
+  it('creates a backup of the previous version (unified FileStore)', () => {
+    const file = path.join(SESSION_DIR, 'backup-test-' + process.pid + '.txt');
+    const backupDir = path.join(SESSION_DIR, '.backups', path.basename(file));
+    createdPaths.push(file);
+    createdPaths.push(path.join(SESSION_DIR, '.backups'));
+    ensureDir(SESSION_DIR);
+    fs.writeFileSync(file, 'original');
+    safeWrite(file, 'updated');
+    expect(fs.readFileSync(file, 'utf8')).toBe('updated');
+    expect(fs.existsSync(backupDir)).toBe(true);
+    const backups = fs.readdirSync(backupDir);
+    expect(backups.length).toBe(1);
+    expect(fs.readFileSync(path.join(backupDir, backups[0]), 'utf8')).toBe('original');
+  });
 });

@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'self';">
-  <title>Agentic System — Command Center</title>
+  <title>myAgentic-IT-Project-team — Command Center</title>
   <style>
     /* ── Design Tokens (SP-R2-002-006) ────────────── */
     /* Source of truth: .github/docs/brand/design-tokens.json (8/8 categories) */
@@ -151,7 +151,7 @@
       outline: none; transition: border-color var(--motion-fast), background var(--motion-fast);
     }
     .search-input::placeholder { color: rgba(255,255,255,.5); }
-    .search-input:focus { border-color: rgba(255,255,255,.6); background: rgba(255,255,255,.15); }
+    .search-input:focus { border-color: rgba(255,255,255,.6); background: rgba(255,255,255,.15); outline: 2px solid rgba(255,255,255,.6); outline-offset: 2px; }
     .search-results {
       position: absolute; top: 100%; left: 0; right: 0; max-height: 400px; overflow-y: auto; z-index: var(--z-modal);
       background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
@@ -309,14 +309,14 @@
       width: 100%; min-height: 72px; padding: 10px 12px;
       border: 1px solid var(--border-control); border-radius: var(--radius-sm);
     }
-    .card-ans textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+    .card-ans textarea:focus { outline: 2px solid var(--primary); outline-offset: 2px; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
     .card-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; flex-wrap: wrap; gap: 8px; }
     .card-foot .status-group { display: flex; align-items: center; gap: 8px; }
     .card-foot .status-group label { font-size: var(--text-sm); font-weight: 700; color: var(--text-sec); }
     .card-foot .status-group select {
       padding: 5px 10px; border: 1px solid var(--border-control); border-radius: var(--radius-sm);
     }
-    .card-foot .status-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+    .card-foot .status-group select:focus { outline: 2px solid var(--primary); outline-offset: 2px; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
 
     /* ── Empty state ───────────────────────────────── */
     .empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; color: var(--text-sec); padding: 40px; }
@@ -356,7 +356,7 @@
     .modal .scope-pick { margin-bottom: 16px; }
     .modal .scope-pick label { display: block; font-size: var(--text-body); font-weight: 600; margin-bottom: 6px; }
     .modal .scope-pick select { width: 100%; padding: 8px 12px; border: 1px solid var(--border-control); border-radius: var(--radius-sm); font-size: var(--text-md); background: var(--input-bg); color: var(--text); }
-    .modal .scope-pick select:focus { outline: none; border-color: var(--primary); }
+    .modal .scope-pick select:focus { outline: 2px solid var(--primary); outline-offset: 2px; border-color: var(--primary); }
     .modal-actions { display: flex; justify-content: flex-end; gap: 8px; }
     .hidden { display: none !important; }
 
@@ -417,7 +417,7 @@
       width: 100%; min-height: 60px; padding: 10px 12px; margin-bottom: 8px;
       border: 1px solid var(--border-control); border-radius: var(--radius-sm);
     }
-    .dec-answer-form textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+    .dec-answer-form textarea:focus { outline: 2px solid var(--primary); outline-offset: 2px; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
     .dec-answer-actions { display: flex; gap: 8px; }
     .dec-empty { text-align: center; padding: 40px; color: var(--text-muted); font-size: var(--text-md); }
 
@@ -431,7 +431,7 @@
     }
     .form-group textarea { min-height: 72px; resize: vertical; line-height: var(--leading-relaxed); }
     .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-      outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
+      outline: 2px solid var(--primary); outline-offset: 2px; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
     }
     .form-row { display: flex; gap: 12px; }
     .form-row .form-group { flex: 1; }
@@ -455,12 +455,12 @@
       border-radius: var(--radius-sm); font-size: var(--text-body); font-family: inherit;
       background: var(--input-bg); color: var(--text); transition: all var(--motion-fast) var(--ease-default);
     }
-    .dec-filter-bar input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+    .dec-filter-bar input:focus { outline: 2px solid var(--primary); outline-offset: 2px; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
     .dec-filter-bar select {
       padding: 8px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm);
       font-size: var(--text-body); background: var(--input-bg); color: var(--text);
     }
-    .dec-filter-bar select:focus { outline: none; border-color: var(--primary); }
+    .dec-filter-bar select:focus { outline: 2px solid var(--primary); outline-offset: 2px; border-color: var(--primary); }
 
     /* ── Decision stats bar ─────────────────────── */
     .dec-stats-bar { display: flex; gap: 16px; padding: 12px 24px 0; font-size: var(--text-sm); color: var(--text-sec); flex-wrap: wrap; align-items: center; }
@@ -551,7 +551,7 @@
     .cmd-form .form-group textarea { min-height: 60px; resize: vertical; }
     .cmd-form .form-group textarea.brief-area { min-height: 200px; font-family: var(--font-mono); font-size: var(--text-sm); line-height: var(--leading-relaxed); }
     .cmd-form .form-group input:focus, .cmd-form .form-group select:focus, .cmd-form .form-group textarea:focus {
-      outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
+      outline: 2px solid var(--primary); outline-offset: 2px; border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
     }
     .cmd-submit-row { display: flex; gap: 8px; margin-top: 16px; }
 
@@ -952,15 +952,15 @@
   </style>
 </head>
 <body>
-  <a href="#main" class="skip-nav">Skip to main content</a>
+  <a href="#content" class="skip-nav">Skip to main content</a>
   <noscript><p style="padding:2em;text-align:center;">This application requires JavaScript to run.</p></noscript>
 
   <!-- ── Header ────────────────────────────── -->
-  <header class="header">
+  <header class="header" role="banner">
     <div class="header-left">
       <span class="header-logo" aria-hidden="true">&#128203;</span>
       <div>
-        <h1 class="header-title">Agentic System — Command Center</h1>
+        <h1 class="header-title">myAgentic-IT-Project-team — Command Center</h1>
         <div class="header-subtitle" id="hSub">Loading&hellip;</div>
       </div>
     </div>
@@ -997,23 +997,24 @@
   <div id="statusAnnounce" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
   <!-- ── Tabs ───────────────────────────────── -->
-  <div class="tabs" id="tabBar" role="tablist">
+  <div class="tabs" id="tabBar" role="tablist" aria-label="Main navigation">
     <div class="tab active" data-tab="commandcenter" role="tab" id="tab-cc" aria-selected="true" aria-controls="panelCommandCenter" tabindex="0"><span aria-hidden="true">&#128640;</span> Command Center</div>
     <div class="tab" data-tab="questionnaires" role="tab" id="tab-q" aria-selected="false" aria-controls="panelQuestionnaires" tabindex="-1"><span aria-hidden="true">&#128221;</span> Questionnaires <span class="tab-count" id="tabCountQ">0</span></div>
     <div class="tab" data-tab="decisions" role="tab" id="tab-d" aria-selected="false" aria-controls="panelDecisions" tabindex="-1"><span aria-hidden="true">&#9878;</span> Decisions <span class="tab-count" id="tabCountD">0</span></div>
   </div>
 
   <!-- ── Body ──────────────────────────────── -->
+  <div id="content" role="main">
   <div class="container hidden" id="panelQuestionnaires" role="tabpanel" aria-labelledby="tab-q">
     <button class="hamburger" id="btnHamburger" aria-label="Toggle sidebar"><span aria-hidden="true">&#9776;</span></button>
     <nav class="sidebar" id="sidebar" aria-label="Questionnaire navigation"></nav>
-    <main class="main" id="main">
+    <div class="main" id="main">
       <div class="loading" id="loader">Loading questionnaires&hellip;</div>
-    </main>
+    </div>
   </div>
 
   <div class="container hidden" id="panelDecisions" role="tabpanel" aria-labelledby="tab-d">
-    <main class="main" style="padding:0;overflow-y:auto;">
+    <div class="main" style="padding:0;overflow-y:auto;">
       <div class="dec-stats-bar" id="decStats"></div>
       <!-- Decision Status Lifecycle (DD-014) -->
       <details class="dec-lifecycle" id="decLifecycle">
@@ -1056,7 +1057,7 @@
       <div class="dec-cards" id="decMain">
         <div class="loading" id="decLoader">Loading decisions&hellip;</div>
       </div>
-    </main>
+    </div>
   </div>
 
   <!-- ── Command Center panel ──────────────── -->
@@ -1140,7 +1141,7 @@
       </button>
       </div>
     </nav>
-    <main class="cmd-main" id="cmdMain">
+    <div class="cmd-main" id="cmdMain">
       <div class="pipe-empty" id="cmdWelcome">
         <div class="pipe-empty-icon" aria-hidden="true">&#128640;</div>
         <div class="pipe-empty-title">Command Center</div>
@@ -1150,11 +1151,15 @@
         </div>
       </div>
       <div id="cmdPipeline"></div>
-    </main>
+    </div>
   </div>
 
   <!-- ── Toast container ───────────────────── -->
-  <div class="toast-box" id="toasts"></div>
+  </div><!-- /role=main -->
+
+  <footer role="contentinfo">
+    <div class="toast-box" id="toasts"></div>
+  </footer>
 
   <!-- ── Reevaluate modal ──────────────────── -->
   <div class="overlay hidden" id="reevalOverlay" role="dialog" aria-modal="true" aria-labelledby="reevalTitle">

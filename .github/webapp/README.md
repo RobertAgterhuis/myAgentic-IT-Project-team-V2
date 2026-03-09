@@ -1,4 +1,4 @@
-# Agentic System — Command Center
+# myAgentic-IT-Project-team — Command Center
 
 A zero-dependency local web app for managing the agentic system. Provides a unified Command Center with three tabs — **Command Center** (pipeline view + command launcher), **Questionnaires** (answer questions, set statuses), and **Decisions** (create/answer/defer decisions) — so non-technical stakeholders can interact with the system without editing markdown by hand.
 

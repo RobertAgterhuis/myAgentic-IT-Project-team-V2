@@ -35,6 +35,7 @@
 | ID | Priority | Scope | Question | Your answer | Date |
 |----|-----------|-------|-------|---------------|-------|
 
+
 | | | | *(No open questions)* | | |
 ---
 
@@ -47,7 +48,7 @@
 | Stack | File | Count | Status | Applicable |
 |-------|------|-------|--------|------------|
 | Transformation | [transformation.md](decisions/transformation.md) | 15 | ACTIVE | YES |
-| Reevaluation | [reevaluation.md](decisions/reevaluation.md) | 9 | ACTIVE | YES |
+| Reevaluation | [reevaluation.md](decisions/reevaluation.md) | 15 | ACTIVE | YES |
 | GitHub Actions | [github-actions.md](decisions/github-actions.md) | 24 | ACTIVE | PARTIAL |
 | TypeScript / ESLint | [typescript-eslint.md](decisions/typescript-eslint.md) | 24 | ACTIVE | PARTIAL |
 | Cross-cutting | [cross-cutting.md](decisions/cross-cutting.md) | 10 | ACTIVE | PARTIAL |
@@ -74,6 +75,9 @@
 
 | ID | Status | Scope | Subject | Reason | Date |
 |----|--------|-------|-----------|-------|-------|
+| DEC-112 | DEFERRED |  | test | this is not a real decission | 2026-03-08 |
+| DEC-113 | DEFERRED |  | test | this is not a real decission | 2026-03-08 |
+| DEC-114 | DEFERRED |  | test | this is not a real decission | 2026-03-08 |
 
 ---
 

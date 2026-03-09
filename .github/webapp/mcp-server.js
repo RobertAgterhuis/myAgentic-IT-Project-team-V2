@@ -2,7 +2,7 @@
 'use strict';
 
 /**
- * MCP Server for the Agentic IT Project Team.
+ * MCP Server for myAgentic-IT-Project-team.
  *
  * Exposes the Command Center functionality as MCP tools, enabling
  * integration with VS Code, Visual Studio, JetBrains, and other
@@ -30,6 +30,8 @@ const {
   detectSecrets,
   safePath,
 } = require('./server');
+const { withFileLock } = require('./file-lock');
+const schemas          = require('./schemas');
 
 /* ── Path constants ─────────────────────────────────────────────── */
 const PROJECT_ROOT   = path.resolve(__dirname, '../..');
@@ -56,11 +58,7 @@ function errorResult(message) {
 }
 
 function safeWrite(filePath, data) {
-  const dir = path.dirname(filePath);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-  const tmp = filePath + '.tmp.' + process.pid;
-  fs.writeFileSync(tmp, data, 'utf8');
-  fs.renameSync(tmp, filePath);
+  store.writeFile(filePath, data);
   cache.invalidate(filePath);
 }
 
@@ -269,7 +267,7 @@ mcp.tool(
       const abs = safePath(PROJECT_ROOT, file);
       if (!fs.existsSync(abs)) return errorResult(`File not found: ${file}`);
 
-      return applySaveAnswers(abs, file, updates);
+      return await applySaveAnswers(abs, file, updates);
     } catch (err) {
       if (err.errorCode === 'PATH_TRAVERSAL') return errorResult('Invalid file path');
       return errorResult(`Failed to save answers: ${err.message}`);
@@ -278,6 +276,11 @@ mcp.tool(
 );
 
 function applyOneUpdate(u, content, warnings) {
+  const check = schemas.validateQuestionnaireUpdate(u);
+  if (!check.valid) {
+    warnings.push(check.errors[0]);
+    return { content, applied: false };
+  }
   if (!models.Q_ID_RE.test(u.questionId)) {
     warnings.push(`Invalid Q-ID format: ${u.questionId}`);
     return { content, applied: false };
@@ -292,26 +295,28 @@ function applyOneUpdate(u, content, warnings) {
 }
 
 function applySaveAnswers(abs, file, updates) {
-  let content  = fs.readFileSync(abs, 'utf8');
-  const warnings = [];
-  let applied  = 0;
+  return withFileLock(abs, async () => {
+    let content  = fs.readFileSync(abs, 'utf8');
+    const warnings = [];
+    let applied  = 0;
 
-  for (const u of updates) {
-    const r = applyOneUpdate(u, content, warnings);
-    content = r.content;
-    if (r.applied) applied++;
-  }
+    for (const u of updates) {
+      const r = applyOneUpdate(u, content, warnings);
+      content = r.content;
+      if (r.applied) applied++;
+    }
 
-  safeWrite(abs, content);
-  audit.log({
-    operation: 'SAVE_ANSWERS', entityType: 'questionnaire',
-    entityId: file, user: 'mcp',
-    summary: `Updated ${applied} of ${updates.length} answers`,
+    safeWrite(abs, content);
+    audit.log({
+      operation: 'SAVE_ANSWERS', entityType: 'questionnaire',
+      entityId: file, user: 'mcp',
+      summary: `Updated ${applied} of ${updates.length} answers`,
+    });
+
+    const result = { saved: true, file, applied, total: updates.length };
+    if (warnings.length) result.warnings = warnings;
+    return jsonResult(result);
   });
-
-  const result = { saved: true, file, applied, total: updates.length };
-  if (warnings.length) result.warnings = warnings;
-  return jsonResult(result);
 }
 
 /* ── Decisions ──────────────────────────────────────────────────── */
@@ -348,25 +353,27 @@ mcp.tool(
       if (valErr) return valErr;
       if (!fs.existsSync(DECISIONS_PATH)) return errorResult('decisions.md not found — run a CREATE or AUDIT command first');
 
-      let content = fs.readFileSync(DECISIONS_PATH, 'utf8');
-      const id = models.nextDecisionId(content, 'DEC-');
-      const safeText  = sanitizeMarkdown(text);
-      const safeNotes = notes ? sanitizeMarkdown(notes) : '';
+      return await withFileLock(DECISIONS_PATH, async () => {
+        let content = fs.readFileSync(DECISIONS_PATH, 'utf8');
+        const id = models.nextDecisionId(content, 'DEC-');
+        const safeText  = sanitizeMarkdown(text);
+        const safeNotes = notes ? sanitizeMarkdown(notes) : '';
 
-      if (type === 'question') {
-        content = models.addOpenQuestion(content, { id, priority, scope, question: safeText, answer: '', date: models.today() });
-      } else {
-        content = models.addOperationalDecision(content, { id, priority, scope, decision: safeText, notes: safeNotes, date: models.today() });
-      }
-      content = models.appendAuditTrail(content, 'create', id);
+        if (type === 'question') {
+          content = models.addOpenQuestion(content, { id, priority, scope, question: safeText, answer: '', date: models.today() });
+        } else {
+          content = models.addOperationalDecision(content, { id, priority, scope, decision: safeText, notes: safeNotes, date: models.today() });
+        }
+        content = models.appendAuditTrail(content, 'create', id);
 
-      safeWrite(DECISIONS_PATH, content);
-      audit.log({
-        operation: 'CREATE_DECISION', entityType: 'decision',
-        entityId: id, user: 'mcp',
-        summary: `${type}: ${text.slice(0, 80)}`,
+        safeWrite(DECISIONS_PATH, content);
+        audit.log({
+          operation: 'CREATE_DECISION', entityType: 'decision',
+          entityId: id, user: 'mcp',
+          summary: `${type}: ${text.slice(0, 80)}`,
+        });
+        return jsonResult({ created: true, id, type, priority, scope });
       });
-      return jsonResult({ created: true, id, type, priority, scope });
     } catch (err) {
       return errorResult(`Failed to create decision: ${err.message}`);
     }
@@ -390,23 +397,25 @@ mcp.tool(
       if (!models.DEC_ID_RE.test(id)) return errorResult(`Invalid decision ID format: ${id}`);
       if (!fs.existsSync(DECISIONS_PATH)) return errorResult('decisions.md not found');
 
-      let content = fs.readFileSync(DECISIONS_PATH, 'utf8');
-      const secrets = detectSecrets(answer);
-      const safeAnswer = sanitizeMarkdown(answer);
+      return await withFileLock(DECISIONS_PATH, async () => {
+        let content = fs.readFileSync(DECISIONS_PATH, 'utf8');
+        const secrets = detectSecrets(answer);
+        const safeAnswer = sanitizeMarkdown(answer);
 
-      content = models.answerOpenQuestion(content, id, safeAnswer);
-      content = models.appendAuditTrail(content, 'answer', id);
+        content = models.answerOpenQuestion(content, id, safeAnswer);
+        content = models.appendAuditTrail(content, 'answer', id);
 
-      safeWrite(DECISIONS_PATH, content);
-      audit.log({
-        operation: 'ANSWER_DECISION', entityType: 'decision',
-        entityId: id, user: 'mcp',
-        summary: `Answered: ${answer.slice(0, 80)}`,
+        safeWrite(DECISIONS_PATH, content);
+        audit.log({
+          operation: 'ANSWER_DECISION', entityType: 'decision',
+          entityId: id, user: 'mcp',
+          summary: `Answered: ${answer.slice(0, 80)}`,
+        });
+
+        const result = { answered: true, id };
+        if (secrets.length) result.warnings = ['Secret pattern detected in answer — review before committing'];
+        return jsonResult(result);
       });
-
-      const result = { answered: true, id };
-      if (secrets.length) result.warnings = ['Secret pattern detected in answer — review before committing'];
-      return jsonResult(result);
     } catch (err) {
       return errorResult(`Failed to answer decision: ${err.message}`);
     }
@@ -429,17 +438,19 @@ mcp.tool(
       if (!models.DEC_ID_RE.test(id)) return errorResult(`Invalid decision ID format: ${id}`);
       if (!fs.existsSync(DECISIONS_PATH)) return errorResult('decisions.md not found');
 
-      let content = fs.readFileSync(DECISIONS_PATH, 'utf8');
-      content = models.moveToDecided(content, id);
-      content = models.appendAuditTrail(content, 'decide', id);
+      return await withFileLock(DECISIONS_PATH, async () => {
+        let content = fs.readFileSync(DECISIONS_PATH, 'utf8');
+        content = models.moveToDecided(content, id);
+        content = models.appendAuditTrail(content, 'decide', id);
 
-      safeWrite(DECISIONS_PATH, content);
-      audit.log({
-        operation: 'DECIDE_QUESTION', entityType: 'decision',
-        entityId: id, user: 'mcp',
-        summary: `Decided: ${id}`,
+        safeWrite(DECISIONS_PATH, content);
+        audit.log({
+          operation: 'DECIDE_QUESTION', entityType: 'decision',
+          entityId: id, user: 'mcp',
+          summary: `Decided: ${id}`,
+        });
+        return jsonResult({ decided: true, id });
       });
-      return jsonResult({ decided: true, id });
     } catch (err) {
       return errorResult(`Failed to decide question: ${err.message}`);
     }
@@ -449,9 +460,8 @@ mcp.tool(
 /* ── Commands ───────────────────────────────────────────────────── */
 
 function validateDecisionFields(type, priority, scope, text) {
-  if (!['question', 'operational'].includes(type)) return errorResult('type must be "question" or "operational"');
-  if (!['HIGH', 'MEDIUM', 'LOW'].includes(priority)) return errorResult('priority must be HIGH, MEDIUM, or LOW');
-  if (!scope || !text) return errorResult('scope and text are required');
+  const r = schemas.validateDecisionCreate({ type, priority, scope, text });
+  if (!r.valid) return errorResult(r.errors[0]);
   return null;
 }
 
@@ -485,8 +495,8 @@ mcp.tool(
       }
 
       const text = buildCommandText(upperCmd, project, scope, description);
-      if (brief) saveBrief(brief);
-      enqueueCommand(upperCmd, text, project, scope, description);
+      if (brief) await saveBrief(brief);
+      await enqueueCommand(upperCmd, text, project, scope, description);
 
       return jsonResult({
         queued: true,
@@ -507,23 +517,27 @@ function buildCommandText(upperCmd, project, scope, description) {
   return text;
 }
 
-function saveBrief(brief) {
-  const briefDir = path.join(PROJECT_ROOT, 'BusinessDocs');
-  if (!fs.existsSync(briefDir)) fs.mkdirSync(briefDir, { recursive: true });
-  safeWrite(path.join(briefDir, 'project-brief.md'), brief);
+async function saveBrief(brief) {
+  const check = schemas.validateProjectBrief(brief);
+  if (!check.valid) throw new Error(check.errors[0]);
+  const briefPath = path.join(PROJECT_ROOT, 'BusinessDocs', 'project-brief.md');
+  await withFileLock(briefPath, async () => {
+    safeWrite(briefPath, brief);
+  });
 }
 
-function enqueueCommand(upperCmd, text, project, scope, description) {
-  const queue = readCommandQueue();
-  const entry = { command: upperCmd, text, timestamp: models.isoNow(), status: 'QUEUED' };
-  if (project)     entry.project     = project;
-  if (scope)       entry.scope       = scope;
-  if (description) entry.description = description;
-  queue.push(entry);
-
+async function enqueueCommand(upperCmd, text, project, scope, description) {
   const queuePath = path.join(SESSION_DIR, 'command-queue.json');
-  if (!fs.existsSync(SESSION_DIR)) fs.mkdirSync(SESSION_DIR, { recursive: true });
-  safeWrite(queuePath, JSON.stringify(queue, null, 2));
+  await withFileLock(queuePath, async () => {
+    const queue = readCommandQueue();
+    const entry = { command: upperCmd, text, timestamp: models.isoNow(), status: 'QUEUED' };
+    if (project)     entry.project     = project;
+    if (scope)       entry.scope       = scope;
+    if (description) entry.description = description;
+    queue.push(entry);
+
+    safeWrite(queuePath, JSON.stringify(queue, null, 2));
+  });
 
   audit.log({
     operation: 'QUEUE_COMMAND', entityType: 'command',

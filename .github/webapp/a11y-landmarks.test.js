@@ -180,10 +180,10 @@ describe('MKT-01: Canonical product name (DEC-R4-003)', () => {
   });
 
   it('does not contain old "Agentic System" in user-facing HTML elements', () => {
-    // Extract only HTML content (skip <script> and <style>)
+    // Extract only HTML content and remove script blocks before scanning visible text.
     const bodyStart = html.indexOf('<body>');
-    const scriptStart = html.indexOf('<script>', bodyStart);
-    const htmlContent = html.slice(bodyStart, scriptStart);
+    const bodyHtml = bodyStart >= 0 ? html.slice(bodyStart) : html;
+    const htmlContent = bodyHtml.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
     // Allow in comments, don't allow in visible elements
     const lines = htmlContent.split(/\r?\n/);
     const violations = lines.filter(l =>

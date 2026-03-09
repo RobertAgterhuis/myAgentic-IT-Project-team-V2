@@ -37,6 +37,7 @@ const METRICS_FILE   = path.join(GITHUB_DOCS, 'metrics', 'runtime-metrics.json')
 const SSE_HEARTBEAT_MS = 30000;
 const ANALYTICS_MAX_EVENTS = 5000;
 const METRICS_FLUSH_INTERVAL_MS = 60000;
+const SNAPSHOT_SYNC_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 
 /* ── Shared state ─────────────────────────────────────────────── */
 
@@ -190,9 +191,10 @@ const commandRoutes       = require('./routes/commands')(ctx);
 ctx._getLatestCommand = commandRoutes._getLatestCommand;
 ctx._readCommandQueue = commandRoutes._readCommandQueue;
 
-const progressRoutes = require('./routes/progress')(ctx);
-const driftRoutes    = require('./routes/drift')(ctx);
-const miscRoutes     = require('./routes/misc')(ctx);
+const progressRoutes         = require('./routes/progress')(ctx);
+const driftRoutes            = require('./routes/drift')(ctx);
+const metricsDashboardRoutes = require('./routes/metrics-dashboard')(ctx);
+const miscRoutes             = require('./routes/misc')(ctx);
 
 const serveStatic = miscRoutes._serveStatic;
 
@@ -204,6 +206,7 @@ const ROUTES = {
   ...commandRoutes,
   ...progressRoutes,
   ...driftRoutes,
+  ...metricsDashboardRoutes,
   ...miscRoutes,
 };
 
@@ -253,9 +256,32 @@ if (require.main === module) {
   const metricsFlushTimer = setInterval(flushMetrics, METRICS_FLUSH_INTERVAL_MS);
   metricsFlushTimer.unref();
 
+  // GitHub state snapshot sync (every 10 minutes)
+  let _snapshotScript;
+  try { _snapshotScript = require('../scripts/github-state-snapshot'); } catch (_) { /* gh CLI may not be available */ }
+  let _snapshotRunning = false;
+  function syncGitHubSnapshot() {
+    if (!_snapshotScript || _snapshotRunning) return;
+    _snapshotRunning = true;
+    try {
+      _snapshotScript.createSnapshot();
+      structuredLog('info', 'github_snapshot_synced');
+      sseNotify('github_snapshot', { timestamp: new Date().toISOString() });
+    } catch (err) {
+      structuredLog('warn', 'github_snapshot_failed', { error: err.message });
+    } finally {
+      _snapshotRunning = false;
+    }
+  }
+  const snapshotTimer = setInterval(syncGitHubSnapshot, SNAPSHOT_SYNC_INTERVAL_MS);
+  snapshotTimer.unref();
+  // Run once at startup (deferred so server is listening first)
+  setTimeout(syncGitHubSnapshot, 5000).unref();
+
   function shutdown() {
     structuredLog('info', 'shutdown_initiated');
     clearInterval(metricsFlushTimer);
+    clearInterval(snapshotTimer);
     flushMetrics();
     server.close(() => { structuredLog('info', 'server_closed'); process.exit(0); });
     const forceTimer = setTimeout(() => { structuredLog('error', 'forced_shutdown'); process.exit(1); }, 5000);

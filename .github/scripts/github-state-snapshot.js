@@ -32,7 +32,7 @@ function _setDeps(deps) { _deps = { ..._deps, ...deps }; }
 // ---------- helpers ----------
 
 function gh(endpoint) {
-  const cmd = `gh api ${endpoint} --paginate`;
+  const cmd = `gh api "${endpoint}" --paginate`;
   try {
     const raw = _deps.execSync(cmd, { encoding: 'utf-8', stdio: ['pipe', 'pipe', 'pipe'] });
     return JSON.parse(raw);

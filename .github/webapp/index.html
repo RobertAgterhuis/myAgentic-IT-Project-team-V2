@@ -506,6 +506,106 @@
       border-radius: var(--radius); cursor: default; margin-left: 4px; font-weight: 600;
     }
 
+    /* ── Metrics Dashboard (FEAT-01) ────────────────── */
+    .metrics-layout { display: flex; flex: 1; overflow: hidden; }
+    .chart-container {
+      position: relative; width: 100%; min-height: 220px;
+      padding: 12px 0;
+    }
+    .chart-svg { width: 100%; height: 220px; display: block; }
+    .chart-bar { transition: opacity var(--motion-fast); }
+    .chart-bar:hover { opacity: .8; }
+    .chart-line { fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .chart-dot { transition: r var(--motion-fast); }
+    .chart-dot:hover { r: 6; }
+    .chart-axis { stroke: var(--border); stroke-width: 1; }
+    .chart-grid { stroke: var(--border-subtle); stroke-width: 0.5; stroke-dasharray: 4 4; }
+    .chart-label { font-size: 10px; fill: var(--text-muted); font-family: var(--font-mono); }
+    .chart-legend { display: flex; gap: 16px; margin-top: 8px; font-size: var(--text-sm); color: var(--text-sec); flex-wrap: wrap; }
+    .chart-legend-item { display: flex; align-items: center; gap: 6px; }
+    .chart-legend-dot { width: 10px; height: 10px; border-radius: var(--radius-full); flex-shrink: 0; }
+    .chart-tooltip {
+      position: absolute; padding: 8px 12px; background: var(--surface-raised);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-md); font-size: var(--text-sm); pointer-events: none;
+      z-index: var(--z-tooltip); white-space: nowrap; display: none;
+    }
+    .chart-empty { display: flex; align-items: center; justify-content: center; height: 200px; color: var(--text-muted); font-size: var(--text-body); }
+    .metrics-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .metric-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 16px; text-align: center;
+    }
+    .metric-card-value { font-size: var(--text-h2); font-weight: 800; color: var(--primary); font-family: var(--font-mono); }
+    .metric-card-label { font-size: var(--text-sm); color: var(--text-sec); margin-top: 4px; }
+    /* Sparkline in metric cards (FEAT-01-J) */
+    .metric-card-sparkline { margin-top: 8px; }
+    .metric-card-sparkline svg { width: 100%; height: 32px; display: block; }
+    .sparkline-line { fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; opacity: .6; }
+    .sparkline-area { opacity: .1; }
+    /* Delta indicator (FEAT-01-Q) */
+    .metric-card-delta { font-size: var(--text-caption); margin-top: 2px; font-weight: 600; }
+    .delta-positive { color: var(--success); }
+    .delta-negative { color: var(--danger); }
+    .delta-neutral { color: var(--text-muted); }
+    /* Risk trend arrow (FEAT-01-P) */
+    .risk-arrow { display: inline-block; font-size: var(--text-md); margin-left: 4px; }
+    .risk-arrow.improving { color: var(--success); }
+    .risk-arrow.worsening { color: var(--danger); }
+    .risk-arrow.stable { color: var(--text-muted); }
+    /* Health scorecard (FEAT-01-E) */
+    .health-scorecard { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+    .health-sprint { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px; text-align: center; }
+    .health-sprint-id { font-size: var(--text-label); font-weight: 700; color: var(--text-sec); margin-bottom: 4px; font-family: var(--font-mono); }
+    .health-dots { display: flex; gap: 4px; justify-content: center; margin-top: 4px; }
+    .health-dot { width: 10px; height: 10px; border-radius: var(--radius-full); }
+    .health-dot.green { background: var(--success); }
+    .health-dot.amber { background: var(--warning); }
+    .health-dot.red { background: var(--danger); }
+    .health-dot.grey { background: var(--border); }
+    .rag-badge { display: inline-block; padding: 2px 8px; border-radius: var(--radius-pill); font-size: var(--text-caption); font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
+    .rag-green { background: var(--success-light); color: var(--success); }
+    .rag-amber { background: var(--warning-light); color: var(--warning); }
+    .rag-red { background: var(--danger-light); color: var(--danger); }
+    .rag-grey { background: var(--border); color: var(--text-muted); }
+    /* Heatmap (FEAT-01-M) */
+    .heatmap-grid { overflow-x: auto; }
+    .heatmap-grid table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); font-family: var(--font-mono); }
+    .heatmap-grid th { padding: 6px 8px; font-weight: 700; color: var(--text-sec); text-align: center; font-size: var(--text-label); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    .heatmap-grid td { padding: 6px 8px; text-align: center; border-bottom: 1px solid var(--border-subtle); transition: background var(--motion-fast); }
+    .heatmap-grid td.cell-green { background: var(--success-light); color: var(--success); font-weight: 600; }
+    .heatmap-grid td.cell-amber { background: var(--warning-light); color: var(--warning); font-weight: 600; }
+    .heatmap-grid td.cell-red { background: var(--danger-light); color: var(--danger); font-weight: 600; }
+    .heatmap-grid td.cell-grey { color: var(--text-muted); }
+    .heatmap-grid tr:hover td { background: var(--primary-light); }
+    /* Stacked bar (FEAT-01-L) */
+    .stacked-bar-segment { transition: opacity var(--motion-fast); }
+    .stacked-bar-segment:hover { opacity: .8; }
+    /* Data freshness (FEAT-01-S) */
+    .freshness-bar { display: flex; align-items: center; gap: 8px; font-size: var(--text-sm); color: var(--text-sec); margin-bottom: 8px; }
+    .freshness-dot { width: 8px; height: 8px; border-radius: var(--radius-full); flex-shrink: 0; }
+    .freshness-dot.fresh { background: var(--success); }
+    .freshness-dot.stale { background: var(--warning); }
+    .freshness-dot.very-stale { background: var(--danger); }
+    /* Estimation histogram (FEAT-01-R) */
+    .histogram-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: var(--text-sm); }
+    .histogram-label { width: 80px; text-align: right; color: var(--text-sec); font-weight: 600; flex-shrink: 0; }
+    .histogram-bar { height: 20px; border-radius: var(--radius-xs); transition: width var(--motion-normal) var(--ease-default); }
+    .histogram-bar.under { background: var(--danger-light); border: 1px solid var(--danger); }
+    .histogram-bar.on-target { background: var(--success-light); border: 1px solid var(--success); }
+    .histogram-bar.over { background: var(--warning-light); border: 1px solid var(--warning); }
+    .histogram-count { font-family: var(--font-mono); font-weight: 700; color: var(--text); font-size: var(--text-sm); }
+    /* Forecast card (FEAT-01-O) */
+    .forecast-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+    .forecast-stat { text-align: center; padding: 8px; }
+    .forecast-stat-value { font-size: var(--text-h3); font-weight: 800; color: var(--primary); font-family: var(--font-mono); }
+    .forecast-stat-label { font-size: var(--text-caption); color: var(--text-sec); }
+    /* Toolbar (FEAT-01-U, FEAT-01-T) */
+    .dashboard-toolbar { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+    .dashboard-toolbar select, .dashboard-toolbar button { font-size: var(--text-sm); }
+    .toolbar-group { display: flex; align-items: center; gap: 6px; }
+    .toolbar-label { font-size: var(--text-label); color: var(--text-sec); font-weight: 600; }
+
     /* ── Command Center ─────────────────────────────── */
     .cmd-layout { display: flex; flex: 1; overflow: hidden; }
     .cmd-sidebar {
@@ -1013,6 +1113,7 @@
     <div class="tab active" data-tab="commandcenter" role="tab" id="tab-cc" aria-selected="true" aria-controls="panelCommandCenter" tabindex="0"><span aria-hidden="true">&#128640;</span> Command Center</div>
     <div class="tab" data-tab="questionnaires" role="tab" id="tab-q" aria-selected="false" aria-controls="panelQuestionnaires" tabindex="-1"><span aria-hidden="true">&#128221;</span> Questionnaires <span class="tab-count" id="tabCountQ">0</span></div>
     <div class="tab" data-tab="decisions" role="tab" id="tab-d" aria-selected="false" aria-controls="panelDecisions" tabindex="-1"><span aria-hidden="true">&#9878;</span> Decisions <span class="tab-count" id="tabCountD">0</span></div>
+    <div class="tab" data-tab="metrics" role="tab" id="tab-m" aria-selected="false" aria-controls="panelMetrics" tabindex="-1"><span aria-hidden="true">&#128200;</span> Metrics</div>
   </div>
 
   <!-- ── Body ──────────────────────────────── -->
@@ -1069,6 +1170,164 @@
       <div class="dec-cards" id="decMain">
         <div class="loading" id="decLoader">Loading decisions&hellip;</div>
       </div>
+    </div>
+  </div>
+
+  <!-- ── Metrics Dashboard panel (FEAT-01) ── -->
+  <div class="metrics-layout hidden" id="panelMetrics" role="tabpanel" aria-labelledby="tab-m">
+    <div class="main" style="overflow-y:auto;padding:24px;">
+      <div class="main-header">
+        <div>
+          <h1 class="main-title"><span aria-hidden="true">&#128200;</span> Metrics &amp; Velocity Dashboard</h1>
+          <p class="main-meta">Auto-updated via SSE. Data from velocity-log.json and sprint KPI files.</p>
+        </div>
+        <button class="btn btn-sm" id="btnRefreshMetrics" title="Refresh dashboard data"><span aria-hidden="true">&#128260;</span> Refresh</button>
+      </div>
+
+      <!-- Data freshness indicator (FEAT-01-S) -->
+      <div class="freshness-bar" id="freshnessBar">
+        <span class="freshness-dot fresh" id="freshnessDot"></span>
+        <span id="freshnessText">Checking data freshness&hellip;</span>
+      </div>
+
+      <!-- Dashboard toolbar: filter + export (FEAT-01-U, FEAT-01-T) -->
+      <div class="dashboard-toolbar" id="dashToolbar">
+        <div class="toolbar-group">
+          <label class="toolbar-label" for="sprintRangeSelect">Show:</label>
+          <select id="sprintRangeSelect" class="btn btn-sm" style="padding:4px 8px;">
+            <option value="0">All sprints</option>
+            <option value="3">Last 3</option>
+            <option value="5">Last 5</option>
+            <option value="8">Last 8</option>
+          </select>
+        </div>
+        <div class="toolbar-group">
+          <button class="btn btn-sm" id="btnExportCSV" title="Export as CSV"><span aria-hidden="true">&#128190;</span> CSV</button>
+          <button class="btn btn-sm" id="btnExportJSON" title="Export as JSON"><span aria-hidden="true">&#128190;</span> JSON</button>
+        </div>
+      </div>
+
+      <!-- Velocity chart: planned vs realized SP per sprint (FEAT-01-A) -->
+      <div class="card" id="chartVelocity">
+        <div class="card-top">
+          <span class="card-id">FEAT-01-A</span>
+          <h2 style="margin:0;font-size:var(--text-md);font-weight:700;">Velocity — Planned vs Realized SP</h2>
+        </div>
+        <div class="chart-container" id="velocityChart" role="img" aria-label="Velocity bar chart showing planned versus realized story points per sprint">
+          <div class="loading">Loading velocity data&hellip;</div>
+        </div>
+      </div>
+
+      <!-- Burnup chart: cumulative SP delivered (FEAT-01-B + FEAT-01-K deviation bands) -->
+      <div class="card" id="chartBurnup">
+        <div class="card-top">
+          <span class="card-id">FEAT-01-B/K</span>
+          <h2 style="margin:0;font-size:var(--text-md);font-weight:700;">Burnup — Cumulative SP (with Ideal Line)</h2>
+        </div>
+        <div class="chart-container" id="burnupChart" role="img" aria-label="Burnup line chart showing cumulative story points delivered with ideal deviation bands">
+          <div class="loading">Loading burnup data&hellip;</div>
+        </div>
+      </div>
+
+      <!-- Quality metrics — stacked bar (FEAT-01-C + FEAT-01-L) -->
+      <div class="card" id="chartQuality">
+        <div class="card-top">
+          <span class="card-id">FEAT-01-C/L</span>
+          <h2 style="margin:0;font-size:var(--text-md);font-weight:700;">Quality Metrics — Tests (Passed / Failed / Skipped)</h2>
+        </div>
+        <div class="chart-container" id="qualityChart" role="img" aria-label="Stacked bar chart showing test pass/fail/skip per sprint">
+          <div class="loading">Loading quality data&hellip;</div>
+        </div>
+      </div>
+
+      <!-- Estimated vs actual (FEAT-01-D) -->
+      <div class="card" id="chartEstimation">
+        <div class="card-top">
+          <span class="card-id">FEAT-01-D</span>
+          <h2 style="margin:0;font-size:var(--text-md);font-weight:700;">Estimation Accuracy — Planned vs Actual</h2>
+        </div>
+        <div class="chart-container" id="estimationChart" role="img" aria-label="Estimation accuracy chart comparing planned versus actual story points">
+          <div class="loading">Loading estimation data&hellip;</div>
+        </div>
+      </div>
+
+      <!-- Sprint health scorecard — RAG status (FEAT-01-E) -->
+      <div class="card" id="cardHealth">
+        <div class="card-top">
+          <span class="card-id">FEAT-01-E</span>
+          <h2 style="margin:0;font-size:var(--text-md);font-weight:700;">Sprint Health Scorecard</h2>
+        </div>
+        <div id="healthScorecard" class="health-scorecard">
+          <div class="loading">Loading health data&hellip;</div>
+        </div>
+      </div>
+
+      <!-- Rolling averages — 3-sprint MA on velocity (FEAT-01-F) -->
+      <div class="card" id="chartRolling">
+        <div class="card-top">
+          <span class="card-id">FEAT-01-F</span>
+          <h2 style="margin:0;font-size:var(--text-md);font-weight:700;">Rolling Average — 3-Sprint Moving Average</h2>
+        </div>
+        <div class="chart-container" id="rollingChart" role="img" aria-label="Line chart showing 3-sprint rolling average for velocity">
+          <div class="loading">Loading rolling averages&hellip;</div>
+        </div>
+      </div>
+
+      <!-- Scope creep indicator (FEAT-01-G) -->
+      <div class="card" id="chartScope">
+        <div class="card-top">
+          <span class="card-id">FEAT-01-G</span>
+          <h2 style="margin:0;font-size:var(--text-md);font-weight:700;">Scope Creep — Mid-Sprint Additions</h2>
+        </div>
+        <div class="chart-container" id="scopeChart" role="img" aria-label="Bar chart showing scope change points per sprint">
+          <div class="loading">Loading scope data&hellip;</div>
+        </div>
+      </div>
+
+      <!-- Defect density (FEAT-01-I) -->
+      <div class="card" id="chartDefects">
+        <div class="card-top">
+          <span class="card-id">FEAT-01-I</span>
+          <h2 style="margin:0;font-size:var(--text-md);font-weight:700;">Defect Density — Regressions + Findings per SP</h2>
+        </div>
+        <div class="chart-container" id="defectChart" role="img" aria-label="Line chart showing defect density per sprint">
+          <div class="loading">Loading defect data&hellip;</div>
+        </div>
+      </div>
+
+      <!-- Heatmap grid — sprint × metric matrix (FEAT-01-M) -->
+      <div class="card" id="cardHeatmap">
+        <div class="card-top">
+          <span class="card-id">FEAT-01-M</span>
+          <h2 style="margin:0;font-size:var(--text-md);font-weight:700;">Sprint × Metric Heatmap</h2>
+        </div>
+        <div id="heatmapContainer" class="heatmap-grid">
+          <div class="loading">Loading heatmap&hellip;</div>
+        </div>
+      </div>
+
+      <!-- Velocity forecast (FEAT-01-O) -->
+      <div class="card" id="cardForecast">
+        <div class="card-top">
+          <span class="card-id">FEAT-01-O</span>
+          <h2 style="margin:0;font-size:var(--text-md);font-weight:700;">Velocity Forecast — Projected Completion</h2>
+        </div>
+        <div id="forecastContainer" class="forecast-stats">
+          <div class="loading">Loading forecast&hellip;</div>
+        </div>
+      </div>
+
+      <!-- Estimation accuracy histogram (FEAT-01-R) -->
+      <div class="card" id="cardHistogram">
+        <div class="card-top">
+          <span class="card-id">FEAT-01-R</span>
+          <h2 style="margin:0;font-size:var(--text-md);font-weight:700;">Estimation Accuracy — Distribution</h2>
+        </div>
+        <div id="histogramContainer">
+          <div class="loading">Loading histogram&hellip;</div>
+        </div>
+      </div>
+
     </div>
   </div>
 
@@ -1583,9 +1842,9 @@ let questionnaires = [];
 let decisions      = { open: [], decided: [], deferred: [], categories: [] };
 let activeFile     = null;
 let activeTab      = sessionStorage.getItem('activeTab') || 'commandcenter';
-const TAB_HASH_MAP = { commandcenter: '#pipeline', questionnaires: '#questionnaires', decisions: '#decisions' };
-const HASH_TAB_MAP = { '#pipeline': 'commandcenter', '#questionnaires': 'questionnaires', '#decisions': 'decisions' };
-const TAB_TITLES   = { commandcenter: 'Command Center', questionnaires: 'Questionnaires', decisions: 'Decisions' };
+const TAB_HASH_MAP = { commandcenter: '#pipeline', questionnaires: '#questionnaires', decisions: '#decisions', metrics: '#metrics' };
+const HASH_TAB_MAP = { '#pipeline': 'commandcenter', '#questionnaires': 'questionnaires', '#decisions': 'decisions', '#metrics': 'metrics' };
+const TAB_TITLES   = { commandcenter: 'Command Center', questionnaires: 'Questionnaires', decisions: 'Decisions', metrics: 'Metrics' };
 const dirty        = new Map();   // "file::Q-ID" → { answer, status }
 let decFilter      = { text: '', priority: '', status: '', category: '' };
 let pollTimer      = null;
@@ -2191,14 +2450,16 @@ async function switchTab(tab) {
   document.getElementById('panelQuestionnaires').classList.toggle('hidden', tab !== 'questionnaires');
   document.getElementById('panelDecisions').classList.toggle('hidden', tab !== 'decisions');
   document.getElementById('panelCommandCenter').classList.toggle('hidden', tab !== 'commandcenter');
+  document.getElementById('panelMetrics').classList.toggle('hidden', tab !== 'metrics');
   /* Announce active tab to screen readers (SP-R2-005-005) */
   announceStatus(STRINGS.labels.switchedTab(tab));
   document.getElementById('btnSaveAll').classList.toggle('hidden', tab !== 'questionnaires');
   document.getElementById('btnNewDecision').classList.toggle('hidden', tab !== 'decisions' && tab !== 'questionnaires');
-  document.getElementById('btnReeval').classList.toggle('hidden', tab === 'commandcenter');
+  document.getElementById('btnReeval').classList.toggle('hidden', tab === 'commandcenter' || tab === 'metrics');
   renderStats();
   if (tab === 'decisions') renderDecisions();
   if (tab === 'commandcenter') renderPipeline();
+  if (tab === 'metrics') loadMetricsDashboard();
 }
 
 function updateTabCounts() {
@@ -3503,7 +3764,16 @@ function connectSSE() {
 
   _sseSource.addEventListener('questionnaire_save', () => load(true));
   _sseSource.addEventListener('decision_update', () => load(true));
-  _sseSource.addEventListener('file_change', () => load(true));
+  _sseSource.addEventListener('file_change', (e) => {
+    load(true);
+    /* Auto-refresh metrics dashboard when velocity/KPI files change (FEAT-01) */
+    try {
+      const d = JSON.parse(e.data);
+      if (d.file && (d.file.includes('velocity-log') || d.file.includes('-kpi.json'))) {
+        if (activeTab === 'metrics') loadMetricsDashboard();
+      }
+    } catch { /* ignore parse errors */ }
+  });
   _sseSource.addEventListener('heartbeat', () => {
     _lastRefreshTime = new Date();
     updateConnectionStatus();
@@ -3790,6 +4060,568 @@ openHelp = async function() {
     nav.appendChild(link);
   }
 };
+
+/* ── Metrics & Velocity Dashboard (FEAT-01) ──────────── */
+let _dashboardData = null;
+let _dashboardLastN = 0; /* 0 = all sprints (FEAT-01-U) */
+
+async function loadMetricsDashboard() {
+  try {
+    const url = _dashboardLastN > 0 ? `/api/metrics/dashboard?lastN=${_dashboardLastN}` : '/api/metrics/dashboard';
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    _dashboardData = await res.json();
+    renderDashboardCharts(_dashboardData);
+  } catch (err) {
+    const containers = ['velocityChart','burnupChart','qualityChart','estimationChart','healthScorecard','rollingChart','scopeChart','defectChart','heatmapContainer','forecastContainer','histogramContainer'];
+    containers.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = '<div class="chart-empty">Failed to load metrics data</div>';
+    });
+  }
+}
+
+function svgEl(tag, attrs) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const [k, v] of Object.entries(attrs || {})) el.setAttribute(k, v);
+  return el;
+}
+
+function renderDashboardCharts(data) {
+  renderFreshnessIndicator(data);                         // FEAT-01-S
+  renderDashboardSummary(data);                           // Summary cards + FEAT-01-J sparklines + FEAT-01-Q deltas + FEAT-01-P risk arrows
+  renderVelocityChart(data.velocity || []);               // FEAT-01-A
+  renderBurnupChart(data.burnup || [], data.idealBurnup || []); // FEAT-01-B + FEAT-01-K
+  renderQualityChart(data.qualityTrend || []);            // FEAT-01-C + FEAT-01-L (stacked bar)
+  renderEstimationChart(data.estimation || []);           // FEAT-01-D
+  renderHealthScorecard(data.healthScorecard || []);      // FEAT-01-E
+  renderRollingChart(data.rollingAverages || [], data.velocity || []); // FEAT-01-F
+  renderScopeCreepChart(data.scopeCreep || []);           // FEAT-01-G
+  renderDefectChart(data.defectDensity || []);            // FEAT-01-I
+  renderHeatmap(data.heatmapData || []);                  // FEAT-01-M
+  renderForecast(data.forecast || {});                    // FEAT-01-O
+  renderHistogram(data.estimationHistogram || {});        // FEAT-01-R
+}
+
+/* ── FEAT-01-S: Data freshness indicator ─────────────── */
+function renderFreshnessIndicator(data) {
+  const dot = document.getElementById('freshnessDot');
+  const text = document.getElementById('freshnessText');
+  if (!dot || !text) return;
+  const genAt = data.generated_at ? new Date(data.generated_at) : null;
+  if (!genAt) { text.textContent = 'No timestamp available'; dot.className = 'freshness-dot very-stale'; return; }
+  const ageMs = Date.now() - genAt.getTime();
+  const ageMins = Math.round(ageMs / 60000);
+  if (ageMins < 5) { dot.className = 'freshness-dot fresh'; text.textContent = 'Data is fresh (updated just now)'; }
+  else if (ageMins < 60) { dot.className = 'freshness-dot stale'; text.textContent = `Data is ${ageMins} min old — consider refreshing`; }
+  else { dot.className = 'freshness-dot very-stale'; text.textContent = `Data is ${Math.round(ageMins / 60)} hr old — stale`; }
+}
+
+/* ── Summary cards (with FEAT-01-J sparklines, FEAT-01-Q delta, FEAT-01-P risk) ── */
+function renderDashboardSummary(data) {
+  const vel = data.velocity || [];
+  const totalRealized = vel.reduce((s, v) => s + (v.realized_points || 0), 0);
+  const avgVelocity = vel.length ? (totalRealized / vel.length).toFixed(1) : '0';
+  const avgRatio = vel.length ? (vel.reduce((s, v) => s + (v.velocity_ratio || 0), 0) / vel.length * 100).toFixed(0) : '0';
+  const qt = data.qualityTrend || [];
+  const lastQ = qt.length ? qt[qt.length - 1] : null;
+  const latestTests = lastQ && lastQ.tests_total != null ? lastQ.tests_total : 'N/A';
+
+  /* FEAT-01-P: latest risk trend */
+  const riskTrend = data.riskTrend || [];
+  const lastRisk = riskTrend.length ? riskTrend[riskTrend.length - 1] : null;
+  const riskDir = lastRisk ? lastRisk.direction : 'stable';
+  const riskArrowChar = riskDir === 'improving' ? '\u2193' : riskDir === 'worsening' ? '\u2191' : '\u2192';
+
+  /* FEAT-01-Q: latest delta */
+  const deltas = data.deltas || [];
+  const lastDelta = deltas.length ? deltas[deltas.length - 1] : null;
+
+  const container = document.getElementById('panelMetrics');
+  let summary = container.querySelector('.metrics-summary');
+  if (!summary) {
+    summary = document.createElement('div');
+    summary.className = 'metrics-summary';
+    const mainEl = container.querySelector('.main');
+    const toolbar = mainEl.querySelector('.dashboard-toolbar');
+    if (toolbar && toolbar.nextSibling) mainEl.insertBefore(summary, toolbar.nextSibling);
+    else { const firstCard = mainEl.querySelector('.card'); if (firstCard) mainEl.insertBefore(summary, firstCard); }
+  }
+
+  const cards = [
+    { value: vel.length, label: 'Sprints Completed', sparkData: vel.map(v => v.realized_points || 0), color: 'var(--primary)' },
+    { value: totalRealized, label: 'Total SP Delivered', sparkData: vel.map((v, i) => vel.slice(0, i + 1).reduce((a, x) => a + (x.realized_points || 0), 0)), color: 'var(--accent)' },
+    { value: avgVelocity, label: 'Avg Velocity (SP)', sparkData: vel.map(v => v.realized_points || 0), color: 'var(--success)' },
+    { value: avgRatio + '%', label: 'Avg Accuracy', sparkData: vel.map(v => (v.velocity_ratio || 0) * 100), color: 'var(--warning)' },
+    { value: latestTests, label: 'Latest Test Count', sparkData: qt.map(q => q.tests_total || 0), color: 'var(--primary)' },
+  ];
+
+  summary.innerHTML = cards.map((m, ci) => {
+    const deltaHtml = ci === 2 && lastDelta
+      ? `<div class="metric-card-delta ${lastDelta.realized_delta > 0 ? 'delta-positive' : lastDelta.realized_delta < 0 ? 'delta-negative' : 'delta-neutral'}">${lastDelta.realized_delta >= 0 ? '+' : ''}${lastDelta.realized_delta} SP</div>`
+      : ci === 3 && lastDelta
+      ? `<div class="metric-card-delta ${lastDelta.ratio_delta > 0 ? 'delta-positive' : lastDelta.ratio_delta < 0 ? 'delta-negative' : 'delta-neutral'}">${lastDelta.ratio_delta >= 0 ? '+' : ''}${(lastDelta.ratio_delta * 100).toFixed(0)}%</div>`
+      : '';
+    const riskHtml = ci === 0
+      ? `<span class="risk-arrow ${escAttr(riskDir)}" title="Risk trend: ${escAttr(riskDir)}">${riskArrowChar}</span>`
+      : '';
+    return `<div class="metric-card">
+      <div class="metric-card-value">${escAttr(String(m.value))}${riskHtml}</div>
+      <div class="metric-card-label">${escAttr(m.label)}</div>${deltaHtml}
+      <div class="metric-card-sparkline">${renderSparklineSVG(m.sparkData, m.color)}</div>
+    </div>`;
+  }).join('');
+}
+
+/* FEAT-01-J: Sparkline SVG renderer */
+function renderSparklineSVG(data, color) {
+  if (!data || data.length < 2) return '';
+  const w = 120, h = 32, pad = 2;
+  const max = Math.max(1, ...data);
+  const min = Math.min(0, ...data);
+  const range = max - min || 1;
+  const pts = data.map((v, i) => {
+    const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+    const y = h - pad - ((v - min) / range) * (h - pad * 2);
+    return `${x},${y}`;
+  });
+  const linePath = `M${pts.join(' L')}`;
+  const areaPath = `${linePath} L${pad + ((data.length - 1) / (data.length - 1)) * (w - pad * 2)},${h - pad} L${pad},${h - pad} Z`;
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><path d="${areaPath}" fill="${color}" class="sparkline-area"/><path d="${linePath}" stroke="${color}" class="sparkline-line" fill="none"/></svg>`;
+}
+
+/* ── Chart helpers ──────────────────────────────────────── */
+const CHART_COLORS = {
+  planned: 'var(--primary)', realized: 'var(--success)', cumulative: 'var(--accent)',
+  tests: 'var(--primary)', passed: 'var(--success)', failed: 'var(--danger)',
+  skipped: 'var(--warning)', regressions: 'var(--warning)', ratio: 'var(--accent)',
+  ideal: 'var(--text-muted)', movingAvg: 'var(--accent)', scopeChange: 'var(--danger)',
+  defects: 'var(--danger)',
+};
+
+function chartDimensions(containerWidth) {
+  const W = Math.max(containerWidth || 600, 300);
+  const H = 220;
+  const pad = { top: 20, right: 20, bottom: 30, left: 50 };
+  return { W, H, pad, plotW: W - pad.left - pad.right, plotH: H - pad.top - pad.bottom };
+}
+
+/* FEAT-01-N: Interactive tooltip helper */
+function attachTooltip(svgParent, containerEl) {
+  let tip = containerEl.querySelector('.chart-tooltip');
+  if (!tip) { tip = document.createElement('div'); tip.className = 'chart-tooltip'; containerEl.appendChild(tip); }
+  svgParent.querySelectorAll('[data-tip]').forEach(el => {
+    el.addEventListener('mouseenter', e => {
+      tip.textContent = el.getAttribute('data-tip');
+      tip.style.display = 'block';
+      const rect = containerEl.getBoundingClientRect();
+      tip.style.left = (e.clientX - rect.left + 12) + 'px';
+      tip.style.top = (e.clientY - rect.top - 28) + 'px';
+    });
+    el.addEventListener('mousemove', e => {
+      const rect = containerEl.getBoundingClientRect();
+      tip.style.left = (e.clientX - rect.left + 12) + 'px';
+      tip.style.top = (e.clientY - rect.top - 28) + 'px';
+    });
+    el.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+  });
+}
+
+function buildBarChart(containerId, sprints, series, legendItems, opts) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  if (!sprints.length) { container.innerHTML = '<div class="chart-empty">No data available yet</div>'; return; }
+
+  const { W, H, pad, plotW, plotH } = chartDimensions(container.clientWidth || 600);
+  const maxVal = Math.max(1, ...series.flatMap(s => s.values));
+  const barGroupWidth = plotW / sprints.length;
+  const barWidth = Math.max(6, (barGroupWidth * 0.7) / series.length);
+  const gap = (barGroupWidth - barWidth * series.length) / 2;
+
+  const svg = svgEl('svg', { class: 'chart-svg', viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'xMidYMid meet' });
+
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (plotH / 4) * i;
+    svg.appendChild(svgEl('line', { x1: pad.left, x2: W - pad.right, y1: y, y2: y, class: 'chart-grid' }));
+    const label = svgEl('text', { x: pad.left - 6, y: y + 3, class: 'chart-label', 'text-anchor': 'end' });
+    label.textContent = Math.round(maxVal - (maxVal / 4) * i);
+    svg.appendChild(label);
+  }
+
+  sprints.forEach((sprint, i) => {
+    series.forEach((s, si) => {
+      const val = s.values[i] || 0;
+      const barH = (val / maxVal) * plotH;
+      const x = pad.left + i * barGroupWidth + gap + si * barWidth;
+      const y = pad.top + plotH - barH;
+      const rect = svgEl('rect', { x, y, width: barWidth, height: Math.max(0, barH), fill: s.color, class: 'chart-bar', rx: 2, 'data-tip': `${sprint}: ${s.label} ${val}` });
+      rect.innerHTML = `<title>${sprint}: ${s.label} ${val}</title>`;
+      svg.appendChild(rect);
+    });
+    const label = svgEl('text', { x: pad.left + i * barGroupWidth + barGroupWidth / 2, y: H - 8, class: 'chart-label', 'text-anchor': 'middle' });
+    label.textContent = sprint.replace('SP-', 'S');
+    svg.appendChild(label);
+  });
+
+  svg.appendChild(svgEl('line', { x1: pad.left, x2: W - pad.right, y1: pad.top + plotH, y2: pad.top + plotH, class: 'chart-axis' }));
+
+  container.innerHTML = '';
+  container.appendChild(svg);
+  attachTooltip(svg, container);
+
+  if (legendItems) {
+    const legend = document.createElement('div');
+    legend.className = 'chart-legend';
+    legend.innerHTML = legendItems.map(l => `<div class="chart-legend-item"><span class="chart-legend-dot" style="background:${l.color}"></span>${escAttr(l.label)}</div>`).join('');
+    container.appendChild(legend);
+  }
+}
+
+function buildLineChart(containerId, sprints, series, legendItems, extraLines) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  if (!sprints.length) { container.innerHTML = '<div class="chart-empty">No data available yet</div>'; return; }
+
+  const { W, H, pad, plotW, plotH } = chartDimensions(container.clientWidth || 600);
+  const allVals = [...series, ...(extraLines || [])].flatMap(s => s.values.filter(v => v != null));
+  const maxVal = Math.max(1, ...allVals);
+  const stepX = plotW / Math.max(1, sprints.length - 1);
+
+  const svg = svgEl('svg', { class: 'chart-svg', viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'xMidYMid meet' });
+
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (plotH / 4) * i;
+    svg.appendChild(svgEl('line', { x1: pad.left, x2: W - pad.right, y1: y, y2: y, class: 'chart-grid' }));
+    const label = svgEl('text', { x: pad.left - 6, y: y + 3, class: 'chart-label', 'text-anchor': 'end' });
+    label.textContent = Math.round(maxVal - (maxVal / 4) * i);
+    svg.appendChild(label);
+  }
+
+  /* Extra lines (e.g., ideal line for FEAT-01-K) — dashed */
+  (extraLines || []).forEach(s => {
+    const points = s.values.map((v, i) => {
+      if (v == null) return null;
+      const x = pad.left + (sprints.length === 1 ? plotW / 2 : i * stepX);
+      const y = pad.top + plotH - (v / maxVal) * plotH;
+      return { x, y };
+    }).filter(Boolean);
+    if (points.length > 1) {
+      const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+      svg.appendChild(svgEl('path', { d, class: 'chart-line', stroke: s.color, 'stroke-dasharray': '6 4', opacity: '0.5' }));
+    }
+  });
+
+  series.forEach(s => {
+    const points = s.values.map((v, i) => {
+      if (v == null) return null;
+      const x = pad.left + (sprints.length === 1 ? plotW / 2 : i * stepX);
+      const y = pad.top + plotH - (v / maxVal) * plotH;
+      return { x, y, v };
+    }).filter(Boolean);
+
+    if (points.length > 1) {
+      const d = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+      svg.appendChild(svgEl('path', { d, class: 'chart-line', stroke: s.color }));
+    }
+    points.forEach(p => {
+      const dot = svgEl('circle', { cx: p.x, cy: p.y, r: 4, fill: s.color, class: 'chart-dot', 'data-tip': `${s.label}: ${p.v}` });
+      dot.innerHTML = `<title>${s.label}: ${p.v}</title>`;
+      svg.appendChild(dot);
+    });
+  });
+
+  sprints.forEach((sprint, i) => {
+    const x = pad.left + (sprints.length === 1 ? plotW / 2 : i * stepX);
+    const label = svgEl('text', { x, y: H - 8, class: 'chart-label', 'text-anchor': 'middle' });
+    label.textContent = sprint.replace('SP-', 'S');
+    svg.appendChild(label);
+  });
+
+  svg.appendChild(svgEl('line', { x1: pad.left, x2: W - pad.right, y1: pad.top + plotH, y2: pad.top + plotH, class: 'chart-axis' }));
+
+  container.innerHTML = '';
+  container.appendChild(svg);
+  attachTooltip(svg, container);
+
+  if (legendItems) {
+    const legend = document.createElement('div');
+    legend.className = 'chart-legend';
+    legend.innerHTML = legendItems.map(l => `<div class="chart-legend-item"><span class="chart-legend-dot" style="background:${l.color}"></span>${escAttr(l.label)}</div>`).join('');
+    container.appendChild(legend);
+  }
+}
+
+/* ── FEAT-01-L: Stacked bar chart builder ────────────── */
+function buildStackedBarChart(containerId, sprints, series, legendItems) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  if (!sprints.length) { container.innerHTML = '<div class="chart-empty">No data available yet</div>'; return; }
+
+  const { W, H, pad, plotW, plotH } = chartDimensions(container.clientWidth || 600);
+  const maxVal = Math.max(1, ...sprints.map((_sp, i) => series.reduce((a, s) => a + (s.values[i] || 0), 0)));
+  const barWidth = Math.max(12, (plotW / sprints.length) * 0.6);
+  const barGap = (plotW / sprints.length - barWidth) / 2;
+
+  const svg = svgEl('svg', { class: 'chart-svg', viewBox: `0 0 ${W} ${H}`, preserveAspectRatio: 'xMidYMid meet' });
+
+  for (let i = 0; i <= 4; i++) {
+    const y = pad.top + (plotH / 4) * i;
+    svg.appendChild(svgEl('line', { x1: pad.left, x2: W - pad.right, y1: y, y2: y, class: 'chart-grid' }));
+    const label = svgEl('text', { x: pad.left - 6, y: y + 3, class: 'chart-label', 'text-anchor': 'end' });
+    label.textContent = Math.round(maxVal - (maxVal / 4) * i);
+    svg.appendChild(label);
+  }
+
+  sprints.forEach((sprint, i) => {
+    let yOffset = 0;
+    series.forEach(s => {
+      const val = s.values[i] || 0;
+      const barH = (val / maxVal) * plotH;
+      const x = pad.left + i * (plotW / sprints.length) + barGap;
+      const y = pad.top + plotH - yOffset - barH;
+      if (barH > 0) {
+        const rect = svgEl('rect', { x, y, width: barWidth, height: barH, fill: s.color, class: 'stacked-bar-segment', rx: 1, 'data-tip': `${sprint}: ${s.label} ${val}` });
+        rect.innerHTML = `<title>${sprint}: ${s.label} ${val}</title>`;
+        svg.appendChild(rect);
+      }
+      yOffset += barH;
+    });
+    const label = svgEl('text', { x: pad.left + i * (plotW / sprints.length) + (plotW / sprints.length) / 2, y: H - 8, class: 'chart-label', 'text-anchor': 'middle' });
+    label.textContent = sprint.replace('SP-', 'S');
+    svg.appendChild(label);
+  });
+
+  svg.appendChild(svgEl('line', { x1: pad.left, x2: W - pad.right, y1: pad.top + plotH, y2: pad.top + plotH, class: 'chart-axis' }));
+  container.innerHTML = '';
+  container.appendChild(svg);
+  attachTooltip(svg, container);
+
+  if (legendItems) {
+    const legend = document.createElement('div');
+    legend.className = 'chart-legend';
+    legend.innerHTML = legendItems.map(l => `<div class="chart-legend-item"><span class="chart-legend-dot" style="background:${l.color}"></span>${escAttr(l.label)}</div>`).join('');
+    container.appendChild(legend);
+  }
+}
+
+/* ── Individual chart renderers ──────────────────────── */
+
+/* FEAT-01-A: Velocity chart */
+function renderVelocityChart(velocity) {
+  const sprints = velocity.map(v => v.sprint_id);
+  buildBarChart('velocityChart', sprints, [
+    { label: 'Planned', values: velocity.map(v => v.planned_points || 0), color: CHART_COLORS.planned },
+    { label: 'Realized', values: velocity.map(v => v.realized_points || 0), color: CHART_COLORS.realized },
+  ], [
+    { label: 'Planned SP', color: CHART_COLORS.planned },
+    { label: 'Realized SP', color: CHART_COLORS.realized },
+  ]);
+}
+
+/* FEAT-01-B + FEAT-01-K: Burnup chart with ideal deviation line */
+function renderBurnupChart(burnup, idealBurnup) {
+  const sprints = burnup.map(b => b.sprint_id);
+  const extraLines = idealBurnup.length ? [
+    { label: 'Ideal', values: idealBurnup.map(ib => ib.ideal), color: CHART_COLORS.ideal },
+  ] : [];
+  buildLineChart('burnupChart', sprints, [
+    { label: 'Cumulative SP', values: burnup.map(b => b.cumulative), color: CHART_COLORS.cumulative },
+  ], [
+    { label: 'Actual Cumulative', color: CHART_COLORS.cumulative },
+    ...(extraLines.length ? [{ label: 'Ideal (linear)', color: CHART_COLORS.ideal }] : []),
+  ], extraLines);
+}
+
+/* FEAT-01-C + FEAT-01-L: Quality chart with stacked bar */
+function renderQualityChart(qualityTrend) {
+  if (!qualityTrend.length) {
+    const el = document.getElementById('qualityChart');
+    if (el) el.innerHTML = '<div class="chart-empty">No quality data available yet</div>';
+    return;
+  }
+  const sprints = qualityTrend.map(q => q.sprint_id);
+  buildStackedBarChart('qualityChart', sprints, [
+    { label: 'Passed', values: qualityTrend.map(q => q.tests_passed), color: CHART_COLORS.passed },
+    { label: 'Failed', values: qualityTrend.map(q => q.tests_failed), color: CHART_COLORS.failed },
+    { label: 'Skipped', values: qualityTrend.map(q => q.tests_skipped || 0), color: CHART_COLORS.skipped },
+  ], [
+    { label: 'Passed', color: CHART_COLORS.passed },
+    { label: 'Failed', color: CHART_COLORS.failed },
+    { label: 'Skipped', color: CHART_COLORS.skipped },
+  ]);
+}
+
+/* FEAT-01-D: Estimation accuracy */
+function renderEstimationChart(estimation) {
+  const sprints = estimation.map(e => e.sprint_id);
+  buildBarChart('estimationChart', sprints, [
+    { label: 'Planned', values: estimation.map(e => e.planned), color: CHART_COLORS.planned },
+    { label: 'Actual', values: estimation.map(e => e.realized), color: CHART_COLORS.realized },
+  ], [
+    { label: 'Planned SP', color: CHART_COLORS.planned },
+    { label: 'Actual SP', color: CHART_COLORS.realized },
+  ]);
+}
+
+/* FEAT-01-E: Sprint health scorecard */
+function renderHealthScorecard(scorecard) {
+  const container = document.getElementById('healthScorecard');
+  if (!container) return;
+  if (!scorecard.length) { container.innerHTML = '<div class="chart-empty">No health data available</div>'; return; }
+  container.innerHTML = scorecard.map(s => `<div class="health-sprint">
+    <div class="health-sprint-id">${escAttr(s.sprint_id)}</div>
+    <span class="rag-badge rag-${escAttr(s.overall)}">${escAttr(s.overall)}</span>
+    <div class="health-dots" title="Velocity / Quality / KPIs">
+      <span class="health-dot ${escAttr(s.velocity)}" title="Velocity: ${escAttr(s.velocity)}"></span>
+      <span class="health-dot ${escAttr(s.quality)}" title="Quality: ${escAttr(s.quality)}"></span>
+      <span class="health-dot ${escAttr(s.kpis)}" title="KPIs: ${escAttr(s.kpis)}"></span>
+    </div>
+  </div>`).join('');
+}
+
+/* FEAT-01-F: Rolling averages */
+function renderRollingChart(rollingAverages, velocity) {
+  const sprints = velocity.map(v => v.sprint_id);
+  buildLineChart('rollingChart', sprints, [
+    { label: 'Realized SP', values: velocity.map(v => v.realized_points || 0), color: CHART_COLORS.realized },
+    { label: '3-Sprint MA', values: rollingAverages.map(r => r.avg_realized), color: CHART_COLORS.movingAvg },
+  ], [
+    { label: 'Realized SP', color: CHART_COLORS.realized },
+    { label: '3-Sprint Moving Avg', color: CHART_COLORS.movingAvg },
+  ]);
+}
+
+/* FEAT-01-G: Scope creep */
+function renderScopeCreepChart(scopeCreep) {
+  if (!scopeCreep.length) { const el = document.getElementById('scopeChart'); if (el) el.innerHTML = '<div class="chart-empty">No scope data</div>'; return; }
+  const sprints = scopeCreep.map(s => s.sprint_id);
+  buildBarChart('scopeChart', sprints, [
+    { label: 'Scope Changes', values: scopeCreep.map(s => s.scope_change_points), color: CHART_COLORS.scopeChange },
+  ], [{ label: 'Mid-Sprint Scope Change (SP)', color: CHART_COLORS.scopeChange }]);
+}
+
+/* FEAT-01-I: Defect density */
+function renderDefectChart(defectDensity) {
+  if (!defectDensity.length) { const el = document.getElementById('defectChart'); if (el) el.innerHTML = '<div class="chart-empty">No defect data</div>'; return; }
+  const sprints = defectDensity.map(d => d.sprint_id);
+  buildLineChart('defectChart', sprints, [
+    { label: 'Defects/SP', values: defectDensity.map(d => d.defects_per_sp), color: CHART_COLORS.defects },
+  ], [{ label: 'Defect Density (per SP)', color: CHART_COLORS.defects }]);
+}
+
+/* FEAT-01-M: Heatmap grid */
+function renderHeatmap(heatmapData) {
+  const container = document.getElementById('heatmapContainer');
+  if (!container) return;
+  if (!heatmapData.length) { container.innerHTML = '<div class="chart-empty">No heatmap data</div>'; return; }
+  const metricLabels = { velocity_ratio: 'Velocity %', test_pass_rate: 'Test Pass %', regressions: 'Regressions', off_track_pct: 'Off-Track %' };
+  const metricKeys = ['velocity_ratio', 'test_pass_rate', 'regressions', 'off_track_pct'];
+  function cellClass(key, val) {
+    if (val == null) return 'cell-grey';
+    if (key === 'velocity_ratio') return val >= 0.9 ? 'cell-green' : val >= 0.7 ? 'cell-amber' : 'cell-red';
+    if (key === 'test_pass_rate') return val >= 0.99 ? 'cell-green' : val >= 0.95 ? 'cell-amber' : 'cell-red';
+    if (key === 'regressions') return val === 0 ? 'cell-green' : val <= 2 ? 'cell-amber' : 'cell-red';
+    if (key === 'off_track_pct') return val === 0 ? 'cell-green' : val <= 0.1 ? 'cell-amber' : 'cell-red';
+    return '';
+  }
+  function fmtVal(key, val) {
+    if (val == null) return '—';
+    if (key === 'velocity_ratio' || key === 'off_track_pct') return (val * 100).toFixed(0) + '%';
+    if (key === 'test_pass_rate') return (val * 100).toFixed(1) + '%';
+    return String(val);
+  }
+  let html = '<table><thead><tr><th>Sprint</th>';
+  metricKeys.forEach(k => { html += `<th>${escAttr(metricLabels[k])}</th>`; });
+  html += '</tr></thead><tbody>';
+  heatmapData.forEach(row => {
+    html += `<tr><td style="font-weight:700">${escAttr(row.sprint_id)}</td>`;
+    metricKeys.forEach(k => {
+      html += `<td class="${cellClass(k, row[k])}">${fmtVal(k, row[k])}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+/* FEAT-01-O: Velocity forecast */
+function renderForecast(forecast) {
+  const container = document.getElementById('forecastContainer');
+  if (!container) return;
+  container.innerHTML = [
+    { value: forecast.avg_velocity || 0, label: 'Avg Velocity (SP/Sprint)' },
+    { value: forecast.total_delivered || 0, label: 'Total Delivered' },
+    { value: forecast.remaining_points || 0, label: 'Remaining SP' },
+    { value: forecast.sprints_remaining != null ? forecast.sprints_remaining : 'N/A', label: 'Sprints Remaining' },
+  ].map(f => `<div class="forecast-stat"><div class="forecast-stat-value">${escAttr(String(f.value))}</div><div class="forecast-stat-label">${escAttr(f.label)}</div></div>`).join('');
+}
+
+/* FEAT-01-R: Estimation accuracy histogram */
+function renderHistogram(histogram) {
+  const container = document.getElementById('histogramContainer');
+  if (!container) return;
+  const total = (histogram.under || 0) + (histogram.on_target || 0) + (histogram.over || 0);
+  if (total === 0) { container.innerHTML = '<div class="chart-empty">No estimation data</div>'; return; }
+  const pct = v => total > 0 ? ((v / total) * 100).toFixed(0) : 0;
+  container.innerHTML = [
+    { label: 'Under (<95%)', cls: 'under', count: histogram.under || 0 },
+    { label: 'On Target', cls: 'on-target', count: histogram.on_target || 0 },
+    { label: 'Over (>105%)', cls: 'over', count: histogram.over || 0 },
+  ].map(b => `<div class="histogram-row">
+    <span class="histogram-label">${escAttr(b.label)}</span>
+    <div class="histogram-bar ${b.cls}" style="width:${pct(b.count)}%;min-width:4px;"></div>
+    <span class="histogram-count">${b.count}</span>
+  </div>`).join('');
+}
+
+/* FEAT-01-T: Export dashboard data */
+function exportDashboardCSV() {
+  if (!_dashboardData) return;
+  const vel = _dashboardData.velocity || [];
+  const lines = ['Sprint,Planned SP,Realized SP,Velocity Ratio'];
+  vel.forEach(v => lines.push(`${v.sprint_id},${v.planned_points || 0},${v.realized_points || 0},${v.velocity_ratio != null ? v.velocity_ratio : ''}`));
+  downloadFile('metrics-dashboard.csv', lines.join('\n'), 'text/csv');
+}
+function exportDashboardJSON() {
+  if (!_dashboardData) return;
+  downloadFile('metrics-dashboard.json', JSON.stringify(_dashboardData, null, 2), 'application/json');
+}
+function downloadFile(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+/* FEAT-01-V: Drill-down links */
+function drillDownSprint(sprintId) {
+  const metaEl = document.querySelector('.main-meta');
+  if (metaEl) metaEl.textContent = `Viewing: ${sprintId} — click Refresh to reset`;
+  if (_dashboardData) {
+    const singleVel = (_dashboardData.velocity || []).filter(v => v.sprint_id === sprintId);
+    const singleBurnup = (_dashboardData.burnup || []).filter(b => b.sprint_id === sprintId);
+    const singleIdeal = (_dashboardData.idealBurnup || []).filter(ib => ib.sprint_id === sprintId);
+    renderVelocityChart(singleVel);
+    renderBurnupChart(singleBurnup, singleIdeal);
+  }
+}
+
+/* ── Event listeners ─────────────────────────────────── */
+document.getElementById('btnRefreshMetrics').addEventListener('click', () => { _dashboardLastN = 0; const sel = document.getElementById('sprintRangeSelect'); if (sel) sel.value = '0'; loadMetricsDashboard(); });
+document.getElementById('sprintRangeSelect').addEventListener('change', e => { _dashboardLastN = parseInt(e.target.value, 10) || 0; loadMetricsDashboard(); });
+document.getElementById('btnExportCSV').addEventListener('click', exportDashboardCSV);
+document.getElementById('btnExportJSON').addEventListener('click', exportDashboardJSON);
+
+/* Drill-down: clicking sprint labels in health scorecard (FEAT-01-V) */
+document.getElementById('healthScorecard').addEventListener('click', e => {
+  const sprintEl = e.target.closest('.health-sprint');
+  if (!sprintEl) return;
+  const sprintId = sprintEl.querySelector('.health-sprint-id')?.textContent;
+  if (sprintId) drillDownSprint(sprintId);
+});
 
 /* ── Hash routing (SP-R2-005-010) ────────────────────── */
 window.addEventListener('hashchange', () => {

@@ -50,26 +50,45 @@ const _audit      = new AuditTrail({ logDir: AUDIT_DIR });
 
 /* ── Metrics persistence (TECH-05) ────────────────────────────── */
 
+/** Helper: Restore per-endpoint metrics from saved data. */
+function _restoreEndpointMetrics(saved) {
+  if (!saved?.perEndpoint || typeof saved.perEndpoint !== 'object') return;
+  for (const [key, val] of Object.entries(saved.perEndpoint)) {
+    if (val && typeof val.count === 'number') {
+      const times = Array.isArray(val.times) ? val.times.slice(-METRICS_MAX_SAMPLES) : [];
+      _metrics.perEndpoint[key] = { count: val.count, times };
+    }
+  }
+}
+
+/** Helper: Restore global counter metrics from saved data. */
+function _restoreCounters(saved) {
+  if (typeof saved.requestCount === 'number') _metrics.requestCount = saved.requestCount;
+  if (typeof saved.errorCount === 'number') _metrics.errorCount = saved.errorCount;
+  if (typeof saved.fileOpsCount === 'number') _metrics.fileOpsCount = saved.fileOpsCount;
+}
+
 function loadMetrics() {
   try {
     const store = getStore();
     if (!store.exists(METRICS_FILE)) return;
     const raw = store.readFile(METRICS_FILE);
     const saved = JSON.parse(raw);
-    if (typeof saved.requestCount === 'number') _metrics.requestCount = saved.requestCount;
-    if (typeof saved.errorCount === 'number')   _metrics.errorCount   = saved.errorCount;
-    if (typeof saved.fileOpsCount === 'number') _metrics.fileOpsCount = saved.fileOpsCount;
-    if (saved.perEndpoint && typeof saved.perEndpoint === 'object') {
-      for (const [key, val] of Object.entries(saved.perEndpoint)) {
-        if (val && typeof val.count === 'number') {
-          _metrics.perEndpoint[key] = { count: val.count, times: Array.isArray(val.times) ? val.times.slice(-METRICS_MAX_SAMPLES) : [] };
-        }
-      }
-    }
+    _restoreCounters(saved);
+    _restoreEndpointMetrics(saved);
     structuredLog('info', 'metrics_loaded', { file: METRICS_FILE, requestCount: _metrics.requestCount });
   } catch (err) {
     structuredLog('warn', 'metrics_load_failed', { error: err.message });
   }
+}
+
+/** Helper: Build endpoint snapshot for metrics flush. */
+function _buildEndpointSnapshot() {
+  const snapshot = {};
+  for (const [key, val] of Object.entries(_metrics.perEndpoint)) {
+    snapshot[key] = { count: val.count, times: val.times.slice(-METRICS_MAX_SAMPLES) };
+  }
+  return snapshot;
 }
 
 function flushMetrics() {
@@ -83,11 +102,8 @@ function flushMetrics() {
       errorCount: _metrics.errorCount,
       fileOpsCount: _metrics.fileOpsCount,
       responseTimes: _metrics.responseTimes.slice(-METRICS_MAX_SAMPLES),
-      perEndpoint: {},
+      perEndpoint: _buildEndpointSnapshot(),
     };
-    for (const [key, val] of Object.entries(_metrics.perEndpoint)) {
-      snapshot.perEndpoint[key] = { count: val.count, times: val.times.slice(-METRICS_MAX_SAMPLES) };
-    }
     store.writeFile(METRICS_FILE, JSON.stringify(snapshot, null, 2));
     structuredLog('debug', 'metrics_flushed', { file: METRICS_FILE });
   } catch (err) {

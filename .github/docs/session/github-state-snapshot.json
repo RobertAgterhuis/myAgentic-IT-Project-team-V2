@@ -1,11 +1,11 @@
 {
   "repo": "RobertAgterhuis/myAgentic-IT-Project-team-V2",
-  "captured_at": "2026-03-09T13:11:26.410Z",
+  "captured_at": "2026-03-09T14:39:41.043Z",
   "summary": {
-    "milestones_open": 20,
-    "milestones_closed": 2,
-    "issues_open": 76,
-    "issues_closed": 25
+    "milestones_open": 19,
+    "milestones_closed": 3,
+    "issues_open": 54,
+    "issues_closed": 47
   },
   "milestones": [
     {
@@ -16,15 +16,6 @@
       "closed_issues": 0,
       "due_on": null,
       "description": "Add PROMOTE_TO_DECISION flag to lessons-learned system. When a lesson crosses from tactical (how) into architectural (what/must), it should be promotable to a formal decision or guardrail. Includes: f"
-    },
-    {
-      "number": 3,
-      "title": "FEAT-01: Metrics & Velocity Dashboard",
-      "state": "open",
-      "open_issues": 22,
-      "closed_issues": 0,
-      "due_on": null,
-      "description": "Add a Metrics/Velocity Dashboard tab to the webapp UI. Auto-updated via SSE. Visualizes velocity trends, KPI trends, and quality metrics from existing data files (velocity-log.json, sprint-SP-N-kpi.js"
     },
     {
       "number": 4,
@@ -187,6 +178,15 @@
       "closed_issues": 0,
       "due_on": "2026-04-05T00:00:00Z",
       "description": "Final sprint — Docker deployment readiness (TECH-08, 8 SP) + Domain glossary (BIZ-02, 2 SP). Total: 10 SP. Status: DEFERRED."
+    },
+    {
+      "number": 3,
+      "title": "FEAT-01: Metrics & Velocity Dashboard",
+      "state": "closed",
+      "open_issues": 1,
+      "closed_issues": 21,
+      "due_on": null,
+      "description": "Add a Metrics/Velocity Dashboard tab to the webapp UI. Auto-updated via SSE. Visualizes velocity trends, KPI trends, and quality metrics from existing data files (velocity-log.json, sprint-SP-N-kpi.js"
     },
     {
       "number": 14,
@@ -806,294 +806,6 @@
       "closed_at": null
     },
     {
-      "number": 67,
-      "title": "FEAT-01-V: Drill-down links — click sprint to view detail",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:10:28Z",
-      "closed_at": null
-    },
-    {
-      "number": 66,
-      "title": "FEAT-01-U: Configurable date range — filter last N sprints",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:10:18Z",
-      "closed_at": null
-    },
-    {
-      "number": 65,
-      "title": "FEAT-01-T: Export dashboard data — CSV and JSON download",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P3-low"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:10:07Z",
-      "closed_at": null
-    },
-    {
-      "number": 64,
-      "title": "FEAT-01-S: Data freshness indicator — last updated & staleness warning",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:09:57Z",
-      "closed_at": null
-    },
-    {
-      "number": 63,
-      "title": "FEAT-01-R: Estimation accuracy histogram — over/under distribution",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:09:47Z",
-      "closed_at": null
-    },
-    {
-      "number": 62,
-      "title": "FEAT-01-Q: Sprint-over-sprint delta row — change indicators",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P1-high"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:09:37Z",
-      "closed_at": null
-    },
-    {
-      "number": 61,
-      "title": "FEAT-01-P: Risk trend arrows — directional indicators per metric",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:09:26Z",
-      "closed_at": null
-    },
-    {
-      "number": 60,
-      "title": "FEAT-01-O: Velocity forecast — projected completion date",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P1-high"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:09:16Z",
-      "closed_at": null
-    },
-    {
-      "number": 59,
-      "title": "FEAT-01-N: Interactive tooltips with sprint detail and deltas",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:09:05Z",
-      "closed_at": null
-    },
-    {
-      "number": 58,
-      "title": "FEAT-01-M: Heatmap grid — sprint × metric matrix",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P1-high"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:08:55Z",
-      "closed_at": null
-    },
-    {
-      "number": 57,
-      "title": "FEAT-01-L: Stacked bar chart for quality — passed/failed/skipped",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:08:45Z",
-      "closed_at": null
-    },
-    {
-      "number": 56,
-      "title": "FEAT-01-K: Deviation bands on burnup chart — ideal vs actual",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P1-high"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:08:37Z",
-      "closed_at": null
-    },
-    {
-      "number": 55,
-      "title": "FEAT-01-J: Sparkline mini-charts in summary cards",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:08:27Z",
-      "closed_at": null
-    },
-    {
-      "number": 54,
-      "title": "FEAT-01-I: Defect density — regressions + findings per SP",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:08:16Z",
-      "closed_at": null
-    },
-    {
-      "number": 53,
-      "title": "FEAT-01-H: Cycle time distribution — median in-progress to done",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P3-low"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:08:07Z",
-      "closed_at": null
-    },
-    {
-      "number": 52,
-      "title": "FEAT-01-G: Scope creep indicator — mid-sprint additions tracking",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:07:58Z",
-      "closed_at": null
-    },
-    {
-      "number": 51,
-      "title": "FEAT-01-F: Rolling averages — 3-sprint moving average on charts",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P1-high"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:07:48Z",
-      "closed_at": null
-    },
-    {
-      "number": 50,
-      "title": "FEAT-01-E: Sprint health scorecard — RAG status per sprint",
-      "state": "open",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T11:07:39Z",
-      "closed_at": null
-    },
-    {
       "number": 42,
       "title": "FEAT-02-G: Dashboard home — project health, metrics, activity feed",
       "state": "open",
@@ -1350,66 +1062,6 @@
       "closed_at": null
     },
     {
-      "number": 26,
-      "title": "FEAT-01-D: Estimated vs actual time tracking and comparison",
-      "state": "open",
-      "labels": [
-        "enhancement"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T07:06:10Z",
-      "closed_at": null
-    },
-    {
-      "number": 25,
-      "title": "FEAT-01-C: Quality metrics trend — tests, coverage, defects",
-      "state": "open",
-      "labels": [
-        "enhancement"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T07:05:59Z",
-      "closed_at": null
-    },
-    {
-      "number": 24,
-      "title": "FEAT-01-B: Burnup chart — cumulative SP delivered",
-      "state": "open",
-      "labels": [
-        "enhancement"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T07:05:51Z",
-      "closed_at": null
-    },
-    {
-      "number": 23,
-      "title": "FEAT-01-A: Velocity chart — planned vs realized SP per sprint",
-      "state": "open",
-      "labels": [
-        "enhancement"
-      ],
-      "milestone": {
-        "number": 3,
-        "title": "FEAT-01: Metrics & Velocity Dashboard"
-      },
-      "assignees": [],
-      "created_at": "2026-03-09T07:05:43Z",
-      "closed_at": null
-    },
-    {
       "number": 22,
       "title": "SYS-01: Add PROMOTE_TO_DECISION flag to lessons-learned system",
       "state": "open",
@@ -1461,6 +1113,294 @@
       ],
       "created_at": "2026-03-08T19:19:03Z",
       "closed_at": null
+    },
+    {
+      "number": 67,
+      "title": "FEAT-01-V: Drill-down links — click sprint to view detail",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P2-medium"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:10:28Z",
+      "closed_at": "2026-03-09T13:22:06Z"
+    },
+    {
+      "number": 66,
+      "title": "FEAT-01-U: Configurable date range — filter last N sprints",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P2-medium"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:10:18Z",
+      "closed_at": "2026-03-09T13:22:06Z"
+    },
+    {
+      "number": 65,
+      "title": "FEAT-01-T: Export dashboard data — CSV and JSON download",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P3-low"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:10:07Z",
+      "closed_at": "2026-03-09T13:22:06Z"
+    },
+    {
+      "number": 64,
+      "title": "FEAT-01-S: Data freshness indicator — last updated & staleness warning",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P2-medium"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:09:57Z",
+      "closed_at": "2026-03-09T13:22:06Z"
+    },
+    {
+      "number": 63,
+      "title": "FEAT-01-R: Estimation accuracy histogram — over/under distribution",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P2-medium"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:09:47Z",
+      "closed_at": "2026-03-09T13:22:06Z"
+    },
+    {
+      "number": 62,
+      "title": "FEAT-01-Q: Sprint-over-sprint delta row — change indicators",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P1-high"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:09:37Z",
+      "closed_at": "2026-03-09T13:22:06Z"
+    },
+    {
+      "number": 61,
+      "title": "FEAT-01-P: Risk trend arrows — directional indicators per metric",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P2-medium"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:09:26Z",
+      "closed_at": "2026-03-09T13:22:06Z"
+    },
+    {
+      "number": 60,
+      "title": "FEAT-01-O: Velocity forecast — projected completion date",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P1-high"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:09:16Z",
+      "closed_at": "2026-03-09T13:22:06Z"
+    },
+    {
+      "number": 59,
+      "title": "FEAT-01-N: Interactive tooltips with sprint detail and deltas",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P2-medium"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:09:05Z",
+      "closed_at": "2026-03-09T13:22:06Z"
+    },
+    {
+      "number": 58,
+      "title": "FEAT-01-M: Heatmap grid — sprint × metric matrix",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P1-high"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:08:55Z",
+      "closed_at": "2026-03-09T13:22:06Z"
+    },
+    {
+      "number": 57,
+      "title": "FEAT-01-L: Stacked bar chart for quality — passed/failed/skipped",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P2-medium"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:08:45Z",
+      "closed_at": "2026-03-09T13:22:06Z"
+    },
+    {
+      "number": 56,
+      "title": "FEAT-01-K: Deviation bands on burnup chart — ideal vs actual",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P1-high"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:08:37Z",
+      "closed_at": "2026-03-09T13:22:06Z"
+    },
+    {
+      "number": 55,
+      "title": "FEAT-01-J: Sparkline mini-charts in summary cards",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P2-medium"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:08:27Z",
+      "closed_at": "2026-03-09T13:21:48Z"
+    },
+    {
+      "number": 54,
+      "title": "FEAT-01-I: Defect density — regressions + findings per SP",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P2-medium"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:08:16Z",
+      "closed_at": "2026-03-09T13:21:48Z"
+    },
+    {
+      "number": 53,
+      "title": "FEAT-01-H: Cycle time distribution — median in-progress to done",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P3-low"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:08:07Z",
+      "closed_at": "2026-03-09T13:21:48Z"
+    },
+    {
+      "number": 52,
+      "title": "FEAT-01-G: Scope creep indicator — mid-sprint additions tracking",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P2-medium"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:07:58Z",
+      "closed_at": "2026-03-09T13:21:48Z"
+    },
+    {
+      "number": 51,
+      "title": "FEAT-01-F: Rolling averages — 3-sprint moving average on charts",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P1-high"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:07:48Z",
+      "closed_at": "2026-03-09T13:21:48Z"
+    },
+    {
+      "number": 50,
+      "title": "FEAT-01-E: Sprint health scorecard — RAG status per sprint",
+      "state": "closed",
+      "labels": [
+        "enhancement",
+        "P2-medium"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T11:07:39Z",
+      "closed_at": "2026-03-09T13:21:48Z"
     },
     {
       "number": 49,
@@ -1564,6 +1504,66 @@
       "assignees": [],
       "created_at": "2026-03-09T07:27:51Z",
       "closed_at": "2026-03-09T07:28:18Z"
+    },
+    {
+      "number": 26,
+      "title": "FEAT-01-D: Estimated vs actual time tracking and comparison",
+      "state": "closed",
+      "labels": [
+        "enhancement"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T07:06:10Z",
+      "closed_at": "2026-03-09T13:21:48Z"
+    },
+    {
+      "number": 25,
+      "title": "FEAT-01-C: Quality metrics trend — tests, coverage, defects",
+      "state": "closed",
+      "labels": [
+        "enhancement"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T07:05:59Z",
+      "closed_at": "2026-03-09T13:21:48Z"
+    },
+    {
+      "number": 24,
+      "title": "FEAT-01-B: Burnup chart — cumulative SP delivered",
+      "state": "closed",
+      "labels": [
+        "enhancement"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T07:05:51Z",
+      "closed_at": "2026-03-09T13:21:48Z"
+    },
+    {
+      "number": 23,
+      "title": "FEAT-01-A: Velocity chart — planned vs realized SP per sprint",
+      "state": "closed",
+      "labels": [
+        "enhancement"
+      ],
+      "milestone": {
+        "number": 3,
+        "title": "FEAT-01: Metrics & Velocity Dashboard"
+      },
+      "assignees": [],
+      "created_at": "2026-03-09T07:05:43Z",
+      "closed_at": "2026-03-09T13:21:48Z"
     },
     {
       "number": 20,

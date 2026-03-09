@@ -53,6 +53,7 @@
 | ORC-43 | Sprint capacity ownership |
 | ORC-44 | HOTFIX + SCOPE CHANGE concurrency |
 | ORC-46 | Immediate session-state initialization on command |
+| ORC-47 | Session-state git persistence — every write to session-state.json MUST be followed by `git add .github/docs/session/session-state.json && git commit` |
 
 ---
 
@@ -73,7 +74,7 @@ You do NOT perform software analysis yourself. You are a **process controller**,
 ## STRICT PHASE SEQUENCE (ENFORCE AND MONITOR)
 
 ```
-Orchestrator receives command → IMMEDIATELY creates .github/docs/session/session-state.json (status: ONBOARDING, current_agent: 25-onboarding-agent) per ORC-46
+Orchestrator receives command → IMMEDIATELY creates .github/docs/session/session-state.json (status: ONBOARDING, current_agent: 25-onboarding-agent) per ORC-46 → COMMITS to git per ORC-47
   ↓
 Onboarding Agent → .github/docs/onboarding/onboarding-output.md + UPDATES session-state.json (status: ONBOARDING_COMPLETE)
   ↓ [Required: ONBOARDING_COMPLETE — no open ONBOARDING_BLOCKED items]
@@ -321,13 +322,14 @@ The Orchestrator MUST complete exactly **one agent per conversation turn**. Afte
 1. Writes the agent output to disk (per phase_outputs in session-state.json)
 2. Updates `session-state.json`: adds the completed agent to `completed_agents`, sets `current_agent` to the **next** agent's filename (e.g. `"02-domain-expert"` after `01-business-analyst` completes), updates `last_updated`. This ensures the web UI immediately reflects the upcoming agent.
 3. Updates `.github/docs/session/pipeline-progress.json` for the web UI. Schema: `{ "active": boolean, "command": string, "phases": [{ "name": string, "status": string, "agents": [{ "name": string, "status": string }] }] }`. Written by Orchestrator, consumed by web UI `/api/progress` endpoint.
-4. **Yields back to the user** with a concise status message:
+4. **Commits session-state.json to git** per ORC-47: `git add .github/docs/session/session-state.json .github/docs/session/pipeline-progress.json && git commit -m "checkpoint: [Agent Name] complete"`. This prevents session-state from being lost across conversation boundaries.
+5. **Yields back to the user** with a concise status message:
    ```
    ✅ [Agent Name] complete — output saved to [path]
    Next: [Next Agent Name]
    Type CONTINUE (or press Enter) to proceed.
    ```
-5. On the next user turn (CONTINUE or Enter), the Orchestrator reads `session-state.json`, determines the next agent, and activates it. Before invoking the agent, the Orchestrator MUST verify that `current_agent` in `session-state.json` matches the agent about to run — if not (e.g. manual edit or recovery), update `current_agent` and `last_updated` first.
+6. On the next user turn (CONTINUE or Enter), the Orchestrator reads `session-state.json`, determines the next agent, and activates it. Before invoking the agent, the Orchestrator MUST verify that `current_agent` in `session-state.json` matches the agent about to run — if not (e.g. manual edit or recovery), update `current_agent` and `last_updated` first.
 
 **Why this rule exists:** Without yielding, the Orchestrator attempts to run all agents in a single LLM generation turn. For large projects with detailed briefs, this causes the response to exceed network timeout limits (typically 60–120 seconds), resulting in partial output, skipped agents, or direct file creation by the wrong agent.
 

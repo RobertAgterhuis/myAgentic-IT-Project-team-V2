@@ -639,16 +639,25 @@
 
       const action = menuItem.getAttribute('data-action');
       const milestone = menu.getAttribute('data-milestone');
+      const row = document.querySelector(`#milestone-table-body tr[data-milestone="${milestone}"]`);
+      
+      if (!row) {
+        showToast('Milestone row not found', 'error', 2500);
+        closeRowActionMenu();
+        return;
+      }
 
       if (action === 'view') {
         showMilestoneDetailModal(milestone);
       } else if (action === 'edit') {
-        showToast('Edit functionality is planned for future sprint', 'info', 2500);
+        const milestoneId = row.getAttribute('data-id') || milestone;
+        const status = row.getAttribute('data-status');
+        const progress = row.getAttribute('data-progress');
+        const completion = row.getAttribute('data-completion');
+        openMilestoneEditModal(milestoneId, milestone, status, progress, completion);
       } else if (action === 'delete') {
-        if (window.confirm(`Are you sure you want to delete "${milestone}"?`)) {
-          removeMilestoneRow(milestone);
-          showToast(`Deleted: ${milestone}`, 'success', 2500);
-        }
+        const milestoneId = row.getAttribute('data-id') || milestone;
+        deleteMilestoneWithAPI(milestoneId, milestone);
       }
 
       closeRowActionMenu();
@@ -852,6 +861,7 @@
     // Load initial data
     loadDashboardData();
     initializeMilestoneTable();
+    initializeMilestoneModals();
 
     // Attach refresh button handlers
     const btnRefreshHealth = document.getElementById('btn-refresh-health');
@@ -912,6 +922,304 @@
     console.log('[Dashboard] Initialization complete');
   }
 
+  /* ── Milestone Create Modal (SP-9.8) ──────────────────────── */
+
+  function openMilestoneCreateModal() {
+    const modal = document.getElementById('milestone-create-modal');
+    const form = document.getElementById('milestone-create-form');
+    
+    form.reset();
+    document.getElementById('create-progress-label').textContent = '0';
+    document.getElementById('create-form-errors').style.display = 'none';
+    document.getElementById('create-form-errors').textContent = '';
+    document.getElementById('create-name-error').textContent = '';
+    document.getElementById('create-completion-error').textContent = '';
+    
+    modal.style.display = 'flex';
+    modal.classList.add('open');
+    
+    const nameInput = document.getElementById('create-milestone-name');
+    if (nameInput) nameInput.focus();
+    
+    // Close modal on Escape
+    const onEscape = (ev) => {
+      if (ev.key === 'Escape') {
+        closeMilestoneCreateModal();
+        document.removeEventListener('keydown', onEscape);
+      }
+    };
+    document.addEventListener('keydown', onEscape);
+  }
+
+  function closeMilestoneCreateModal() {
+    const modal = document.getElementById('milestone-create-modal');
+    modal.style.display = 'none';
+    modal.classList.remove('open');
+    document.getElementById('milestone-create-form').reset();
+  }
+
+  function handleMilestoneCreateSubmit(e) {
+    e.preventDefault();
+    
+    const name = document.getElementById('create-milestone-name').value.trim();
+    const status = document.getElementById('create-milestone-status').value;
+    const progress = Number.parseInt(document.getElementById('create-milestone-progress').value, 10);
+    const completion = document.getElementById('create-milestone-completion').value;
+    
+    // Clear previous errors
+    document.getElementById('create-name-error').textContent = '';
+    document.getElementById('create-completion-error').textContent = '';
+    document.getElementById('create-form-errors').style.display = 'none';
+    
+    // Basic validation
+    if (!name) {
+      document.getElementById('create-name-error').textContent = 'Milestone name is required';
+      return;
+    }
+    if (!completion) {
+      document.getElementById('create-completion-error').textContent = 'Completion date is required';
+      return;
+    }
+    
+    // Call API to create milestone
+    fetch('/api/milestones', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, status, progress, completion })
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.ok) {
+          const errors = data.details || [data.error];
+          document.getElementById('create-form-errors').textContent = errors.join('; ');
+          document.getElementById('create-form-errors').style.display = 'block';
+          showToast(`Failed to create milestone: ${errors.join('; ')}`, 'error', 3000);
+          return;
+        }
+        
+        showToast(`Milestone "${data.data.name}" created successfully`, 'success', 2500);
+        closeMilestoneCreateModal();
+        reloadMilestoneTable();
+      })
+      .catch((err) => {
+        document.getElementById('create-form-errors').textContent = err.message;
+        document.getElementById('create-form-errors').style.display = 'block';
+        showToast(`Error: ${err.message}`, 'error', 3000);
+      });
+  }
+
+  /* ── Milestone Edit Modal (SP-9.4) ───────────────────────── */
+
+  function openMilestoneEditModal(milestoneId, milestoneName, status, progress, completion) {
+    const modal = document.getElementById('milestone-edit-modal');
+    const form = document.getElementById('milestone-edit-form');
+    
+    document.getElementById('edit-milestone-id').value = milestoneId;
+    document.getElementById('edit-milestone-name').value = milestoneName;
+    document.getElementById('edit-milestone-status').value = status;
+    document.getElementById('edit-milestone-progress').value = progress;
+    document.getElementById('edit-progress-label').textContent = progress;
+    document.getElementById('edit-milestone-completion').value = completion;
+    
+    document.getElementById('edit-form-errors').style.display = 'none';
+    document.getElementById('edit-form-errors').textContent = '';
+    document.getElementById('edit-name-error').textContent = '';
+    document.getElementById('edit-completion-error').textContent = '';
+    
+    modal.style.display = 'flex';
+    modal.classList.add('open');
+    
+    const nameInput = document.getElementById('edit-milestone-name');
+    if (nameInput) nameInput.focus();
+    
+    const onEscape = (ev) => {
+      if (ev.key === 'Escape') {
+        closeMilestoneEditModal();
+        document.removeEventListener('keydown', onEscape);
+      }
+    };
+    document.addEventListener('keydown', onEscape);
+  }
+
+  function closeMilestoneEditModal() {
+    const modal = document.getElementById('milestone-edit-modal');
+    modal.style.display = 'none';
+    modal.classList.remove('open');
+    document.getElementById('milestone-edit-form').reset();
+  }
+
+  function handleMilestoneEditSubmit(e) {
+    e.preventDefault();
+    
+    const milestoneId = document.getElementById('edit-milestone-id').value;
+    const name = document.getElementById('edit-milestone-name').value.trim();
+    const status = document.getElementById('edit-milestone-status').value;
+    const progress = Number.parseInt(document.getElementById('edit-milestone-progress').value, 10);
+    const completion = document.getElementById('edit-milestone-completion').value;
+    
+    // Clear previous errors
+    document.getElementById('edit-name-error').textContent = '';
+    document.getElementById('edit-completion-error').textContent = '';
+    document.getElementById('edit-form-errors').style.display = 'none';
+    
+    // Basic validation
+    if (!name) {
+      document.getElementById('edit-name-error').textContent = 'Milestone name is required';
+      return;
+    }
+    if (!completion) {
+      document.getElementById('edit-completion-error').textContent = 'Completion date is required';
+      return;
+    }
+    
+    // Call API to update milestone
+    fetch(`/api/milestones/${milestoneId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, status, progress, completion })
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.ok) {
+          const errors = data.details || [data.error];
+          document.getElementById('edit-form-errors').textContent = errors.join('; ');
+          document.getElementById('edit-form-errors').style.display = 'block';
+          showToast(`Failed to update milestone: ${errors.join('; ')}`, 'error', 3000);
+          return;
+        }
+        
+        showToast(`Milestone "${data.data.name}" updated successfully`, 'success', 2500);
+        closeMilestoneEditModal();
+        reloadMilestoneTable();
+      })
+      .catch((err) => {
+        document.getElementById('edit-form-errors').textContent = err.message;
+        document.getElementById('edit-form-errors').style.display = 'block';
+        showToast(`Error: ${err.message}`, 'error', 3000);
+      });
+  }
+
+  /* ── Milestone Delete with API (SP-9.5) ───────────────────– */
+
+  function deleteMilestoneWithAPI(milestoneId, milestoneName) {
+    if (!window.confirm(`Are you sure you want to delete "${milestoneName}"? This action cannot be undone.`)) {
+      return;
+    }
+    
+    // Call API to archive/delete milestone
+    fetch(`/api/milestones/${milestoneId}/archive`, {
+      method: 'PATCH'
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.ok) {
+          const error = data.details?.[0] || data.error || 'Unknown error';
+          showToast(`Failed to delete milestone: ${error}`, 'error', 3000);
+          return;
+        }
+        
+        showToast(`Milestone "${milestoneName}" archived successfully`, 'success', 2500);
+        reloadMilestoneTable();
+      })
+      .catch((err) => {
+        showToast(`Error: ${err.message}`, 'error', 3000);
+      });
+  }
+
+  /* ── Reload Milestone Table ──────────────────────────────── */
+
+  function reloadMilestoneTable() {
+    // Fetch milestones from API and update table
+    fetch('/api/milestones')
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data.ok) {
+          showToast('Failed to reload milestones', 'warning', 2500);
+          return;
+        }
+        
+        const body = document.getElementById('milestone-table-body');
+        if (!body) return;
+        
+        // Clear existing rows
+        body.innerHTML = '';
+        
+        // Add rows from API
+        (data.data || []).forEach((milestone) => {
+          const row = document.createElement('tr');
+          row.setAttribute('data-milestone', milestone.name);
+          row.setAttribute('data-status', milestone.status);
+          row.setAttribute('data-progress', milestone.progress);
+          row.setAttribute('data-completion', milestone.completion);
+          row.setAttribute('data-id', milestone.id);
+          
+          const statusBadge = milestone.status === 'complete' ? 'badge-success' 
+                            : milestone.status === 'in progress' ? 'badge-info'
+                            : milestone.status === 'blocked' ? 'badge-warning'
+                            : 'badge-secondary';
+          
+          const statusLabel = milestone.status.charAt(0).toUpperCase() + milestone.status.slice(1);
+          
+          row.innerHTML = `
+            <td><strong>${milestone.name.split(' ')[0]}</strong> ${milestone.name.substring(milestone.name.indexOf(' ') + 1)}</td>
+            <td><span class="badge ${statusBadge}">${statusLabel}</span></td>
+            <td>
+              <div class="progress-bar" style="height: 6px;">
+                <div class="progress-fill" style="width: ${milestone.progress}%; background: var(--success);"></div>
+              </div>
+            </td>
+            <td>${milestone.completion}</td>
+            <td>
+              <div class="row-actions">
+                <button class="row-action-btn" title="View details" onclick="showMilestoneDetailModal('${milestone.name}');">👁</button>
+                <button class="row-action-btn" title="More options">⋯</button>
+              </div>
+            </td>
+          `;
+          
+          body.appendChild(row);
+        });
+        
+        // Reinitialize table interactions
+        initializeMilestoneTable();
+      })
+      .catch((err) => {
+        showToast(`Error reloading milestones: ${err.message}`, 'error', 3000);
+      });
+  }
+
+  /* ── Milestone Modals Initialization ─────────────────────── */
+
+  function initializeMilestoneModals() {
+    // Create form submit handler
+    const createForm = document.getElementById('milestone-create-form');
+    if (createForm) {
+      createForm.addEventListener('submit', handleMilestoneCreateSubmit);
+    }
+
+    // Edit form submit handler
+    const editForm = document.getElementById('milestone-edit-form');
+    if (editForm) {
+      editForm.addEventListener('submit', handleMilestoneEditSubmit);
+    }
+
+    // Create progress slider listener
+    const createProgressSlider = document.getElementById('create-milestone-progress');
+    if (createProgressSlider) {
+      createProgressSlider.addEventListener('input', () => {
+        document.getElementById('create-progress-label').textContent = createProgressSlider.value;
+      });
+    }
+
+    // Edit progress slider listener
+    const editProgressSlider = document.getElementById('edit-milestone-progress');
+    if (editProgressSlider) {
+      editProgressSlider.addEventListener('input', () => {
+        document.getElementById('edit-progress-label').textContent = editProgressSlider.value;
+      });
+    }
+  }
+
   /* ── Helper: Capitalize First Letter ──────────────────────── */
 
   function capitalizeFirst(str) {
@@ -928,8 +1236,16 @@
     renderActivityFeed,
     renderQuickStats,
     initializeMilestoneTable,
+    initializeMilestoneModals,
     showToast,
+    showMilestoneDetailModal,
     closeMilestoneDetailModal,
+    openMilestoneCreateModal,
+    closeMilestoneCreateModal,
+    openMilestoneEditModal,
+    closeMilestoneEditModal,
+    deleteMilestoneWithAPI,
+    reloadMilestoneTable,
     initialize
   };
 

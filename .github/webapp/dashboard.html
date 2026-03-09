@@ -315,6 +315,9 @@
       <div class="dashboard-section-header">
         <h2 class="dashboard-section-title">Recent Milestones</h2>
         <div class="dashboard-section-actions">
+          <button class="btn btn-sm btn-primary" id="btn-create-milestone" onclick="window.Dashboard.openMilestoneCreateModal();">
+            <span aria-hidden="true">+</span> Create Milestone
+          </button>
           <button class="btn btn-sm btn-primary" id="btn-view-all-milestones">
             View All Milestones →
           </button>
@@ -468,12 +471,179 @@
     </button>
   </div>
 
+  <!-- ── Create Milestone Modal (SP-9.8) ───────────────────────────── -->
+  <div class="modal-overlay" id="milestone-create-modal" role="presentation" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Create New Milestone</h2>
+        <button class="modal-close" title="Close" onclick="window.Dashboard.closeMilestoneCreateModal();">×</button>
+      </div>
+      <div class="modal-content">
+        <form id="milestone-create-form" style="padding: var(--space-3);">
+          <div style="margin-bottom: var(--space-3);">
+            <label for="create-milestone-name" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Milestone Name <span style="color: var(--danger);">*</span>
+            </label>
+            <input 
+              id="create-milestone-name" 
+              type="text" 
+              class="input" 
+              placeholder="e.g., FEAT-03 Mobile Optimization" 
+              required 
+              style="width: 100%;"
+            />
+            <div id="create-name-error" style="color: var(--danger); font-size: 12px; margin-top: 4px;"></div>
+          </div>
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="create-milestone-status" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Status <span style="color: var(--danger);">*</span>
+            </label>
+            <select id="create-milestone-status" class="input" required style="width: 100%;">
+              <option value="" disabled selected>Select status...</option>
+              <option value="not started">Not Started</option>
+              <option value="in progress">In Progress</option>
+              <option value="complete">Complete</option>
+              <option value="blocked">Blocked</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="create-milestone-progress" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Progress <span style="color: var(--danger);">*</span> <span style="color: var(--text-muted); font-weight: normal;">(<span id="create-progress-label">0</span>%)</span>
+            </label>
+            <input 
+              id="create-milestone-progress" 
+              type="range" 
+              min="0" 
+              max="100" 
+              value="0" 
+              class="input" 
+              required 
+              style="width: 100%; cursor: pointer;"
+            />
+            <div style="display: flex; gap: var(--space-2); margin-top: 4px; font-size: 12px; color: var(--text-muted);">
+              <span>0%</span>
+              <span style="flex: 1;"></span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="create-milestone-completion" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Completion Date <span style="color: var(--danger);">*</span>
+            </label>
+            <input 
+              id="create-milestone-completion" 
+              type="date" 
+              class="input" 
+              required 
+              style="width: 100%;"
+            />
+            <div id="create-completion-error" style="color: var(--danger); font-size: 12px; margin-top: 4px;"></div>
+          </div>
+
+          <div id="create-form-errors" style="background: var(--danger); background-color: rgba(var(--danger-rgb), 0.1); color: var(--danger); padding: var(--space-2); border-radius: var(--radius-1); margin-bottom: var(--space-3); display: none;"></div>
+
+          <div style="display: flex; gap: var(--space-2); justify-content: flex-end;">
+            <button type="button" class="btn btn-ghost" onclick="window.Dashboard.closeMilestoneCreateModal();">Cancel</button>
+            <button type="submit" class="btn btn-primary">Create Milestone</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Edit Milestone Modal (SP-9.4) ───────────────────────────────── -->
+  <div class="modal-overlay" id="milestone-edit-modal" role="presentation" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Edit Milestone</h2>
+        <button class="modal-close" title="Close" onclick="window.Dashboard.closeMilestoneEditModal();">×</button>
+      </div>
+      <div class="modal-content">
+        <form id="milestone-edit-form" style="padding: var(--space-3);">
+          <input type="hidden" id="edit-milestone-id" value="">
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="edit-milestone-name" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Milestone Name <span style="color: var(--danger);">*</span>
+            </label>
+            <input 
+              id="edit-milestone-name" 
+              type="text" 
+              class="input" 
+              placeholder="e.g., FEAT-03 Mobile Optimization" 
+              required 
+              style="width: 100%;"
+            />
+            <div id="edit-name-error" style="color: var(--danger); font-size: 12px; margin-top: 4px;"></div>
+          </div>
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="edit-milestone-status" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Status <span style="color: var(--danger);">*</span>
+            </label>
+            <select id="edit-milestone-status" class="input" required style="width: 100%;">
+              <option value="not started">Not Started</option>
+              <option value="in progress">In Progress</option>
+              <option value="complete">Complete</option>
+              <option value="blocked">Blocked</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="edit-milestone-progress" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Progress <span style="color: var(--danger);">*</span> <span style="color: var(--text-muted); font-weight: normal;">(<span id="edit-progress-label">0</span>%)</span>
+            </label>
+            <input 
+              id="edit-milestone-progress" 
+              type="range" 
+              min="0" 
+              max="100" 
+              value="0" 
+              class="input" 
+              required 
+              style="width: 100%; cursor: pointer;"
+            />
+            <div style="display: flex; gap: var(--space-2); margin-top: 4px; font-size: 12px; color: var(--text-muted);">
+              <span>0%</span>
+              <span style="flex: 1;"></span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="edit-milestone-completion" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Completion Date <span style="color: var(--danger);">*</span>
+            </label>
+            <input 
+              id="edit-milestone-completion" 
+              type="date" 
+              class="input" 
+              required 
+              style="width: 100%;"
+            />
+            <div id="edit-completion-error" style="color: var(--danger); font-size: 12px; margin-top: 4px;"></div>
+          </div>
+
+          <div id="edit-form-errors" style="background: var(--danger); background-color: rgba(var(--danger-rgb), 0.1); color: var(--danger); padding: var(--space-2); border-radius: var(--radius-1); margin-bottom: var(--space-3); display: none;"></div>
+
+          <div style="display: flex; gap: var(--space-2); justify-content: flex-end;">
+            <button type="button" class="btn btn-ghost" onclick="window.Dashboard.closeMilestoneEditModal();">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Row Detail Modal Template (SP-8.3) ────────────────────────── -->
   <div class="modal-overlay" id="milestone-detail-modal" role="presentation" style="display: none;">
     <div class="modal">
       <div class="modal-header">
         <h2 class="modal-title" id="milestone-detail-title">Milestone Details</h2>
-        <button class="modal-close" title="Close" onclick="closeMilestoneDetailModal();">×</button>
+        <button class="modal-close" title="Close" onclick="window.Dashboard.closeMilestoneDetailModal();">×</button>
       </div>
       <div class="modal-content">
         <div id="milestone-detail-content">
@@ -498,7 +668,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeMilestoneDetailModal();">Close</button>
+        <button class="btn btn-ghost" onclick="window.Dashboard.closeMilestoneDetailModal();">Close</button>
       </div>
     </div>
   </div>

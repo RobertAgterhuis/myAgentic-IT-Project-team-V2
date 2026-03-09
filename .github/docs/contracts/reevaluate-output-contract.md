@@ -8,6 +8,17 @@ Ensures that when questionnaire answers arrive, decisions change, or scope adjus
 
 ---
 
+## INPUT SOURCES
+The Reevaluate Agent consumes the following inputs (provided by the Orchestrator):
+- Previous phase outputs (analysis findings per scope)
+- Questionnaire answers (injected as `## QUESTIONNAIRE INPUT` context block)
+- **GitHub state snapshot** (`## GITHUB STATE` context block, generated from `.github/docs/session/github-state-snapshot.json` at Sprint Gate Step 0a) — provides milestone statuses, open/closed issue counts, and label distribution
+- **GitHub sync metadata** (`session-state.json` → `github_sync`) — provides `last_synced`, counters, and `drift_findings[]`
+- Reevaluate trigger file (`.github/docs/session/reevaluate-trigger.json`, when present)
+- Decisions file (`.github/docs/decisions.md`)
+
+---
+
 ## OUTPUT FILE
 **Location:** `.github/docs/reevaluate/reevaluation-report-[N].md`
 **Format:** Markdown
@@ -37,6 +48,17 @@ For each affected item:
 - Sprint items impacted: list of Story IDs / Sprint IDs affected
 - **Sprint Impact Flag:** `IN_PROGRESS` items that require Sprint Gate hold
 - **BRAND_REFRESH_REQUIRED:** `YES` | `NO` — set to YES if design tokens, brand guidelines, or visual identity are affected
+- **GITHUB_STATE:** `CONSUMED` | `UNAVAILABLE` | `STALE` — indicates whether the GitHub state snapshot was successfully consumed, unavailable (Step 0a failed), or stale (older than 24 hours)
+
+### 3b. GitHub Board Drift (CONDITIONAL)
+Present when `## GITHUB STATE` was consumed and drift was detected between session-state and the GitHub board:
+- **Drift findings count:** Number of drift items from `github_sync.drift_findings[]` plus any detected during milestone cross-reference
+- **Milestone mismatches:** List of sprints where `session-state.json` status differs from GitHub milestone state
+- **Issue state mismatches:** List of stories where session status differs from GitHub issue state
+- **Orphaned issues:** GitHub issues not referenced in the sprint plan
+- **Missing issues:** Sprint plan stories without corresponding GitHub issues
+
+If no drift detected: `GITHUB_BOARD_DRIFT: NONE`
 
 ### 4. Recommendations
 - Items that require re-execution of a phase agent
@@ -59,6 +81,8 @@ The Orchestrator checks (per ORC-35):
 - [ ] Every delta item has original value, new value, and source reference
 - [ ] Impact Assessment covers phases, agents, and sprint items
 - [ ] BRAND_REFRESH_REQUIRED flag is present (YES or NO)
+- [ ] GITHUB_STATE flag is present (CONSUMED, UNAVAILABLE, or STALE)
+- [ ] If GITHUB_STATE is CONSUMED: Section 3b (GitHub Board Drift) is present with findings or explicit NONE
 - [ ] Sprint Impact Flags are set for any `IN_PROGRESS` items
 - [ ] Critic + Risk validation is referenced or scheduled
 

@@ -39,6 +39,12 @@ Before any re-analysis takes place, determine WHAT changed relative to the previ
 
 0. **Check reevaluate trigger (optional pre-step):** If `.github/docs/session/reevaluate-trigger.json` exists with `status: "PENDING"`, read the `scope` field and use it as the scope parameter for this re-evaluation. This trigger is written by the Questionnaire Manager web UI (`.github/webapp/`). The Orchestrator consumes and marks it as `"CONSUMED"` after completion (per RULE ORC-28).
 1. **Load questionnaire answers (MANDATORY FIRST SUB-STEP):** Before comparing state, instruct the Orchestrator to activate the Questionnaire Agent (answer loading workflow). The resulting answer map is injected as additional context for all phase agents in this re-evaluation. Any previously `INSUFFICIENT_DATA:` item that now has a questionnaire answer is flagged as `RESOLVED_BY_QUESTIONNAIRE: [Q-ID]` and treated as a **new finding** (type: `RESOLVED`) in the delta scan. Note: answers may have been entered via direct file edit or via the Questionnaire Manager web UI — both produce identical markdown; the Reevaluate Agent does not distinguish between them.
+1b. **Consume GitHub State (MANDATORY):** The Orchestrator injects a `## GITHUB STATE` context block (generated from `.github/docs/session/github-state-snapshot.json` at Sprint Gate Step 0a). The Reevaluate Agent MUST:
+   - Read the injected `## GITHUB STATE` block for milestone statuses, open/closed issue counts, and label distribution.
+   - Cross-reference `session-state.json` field `github_sync` (counters for `milestones_open`, `milestones_closed`, `issues_open`, `issues_closed`, `drift_findings[]`).
+   - If `github_sync.last_synced` is `null` or older than 24 hours, flag as `STALE_GITHUB_STATE` in the Delta-Scan Report and escalate to the Orchestrator as a WARNING (do NOT block re-evaluation).
+   - If drift findings exist in `github_sync.drift_findings[]`, incorporate them as NEW findings (type: `DRIFT`) in the delta scan — each drift finding becomes a finding entry with source `drift:[drift_type]`.
+   - If the snapshot is unavailable (Step 0a failed), document `GITHUB_STATE: UNAVAILABLE` and proceed without it.
 2. Load the existing analysis findings (most recent version)
 3. Compare with the current state:
    - **CREATE mode:** Compare design decisions, requirements, and specifications against changed stakeholder input, market conditions, or Phase 1–4 output revisions
@@ -48,6 +54,7 @@ Before any re-analysis takes place, determine WHAT changed relative to the previ
    - **Resolved findings** — something that has been fixed or become irrelevant
    - **Changed findings** — context, severity class, or impact has changed
    - **Unchanged findings** — document deliberately as UNCHANGED
+   - **GitHub board drift** — any mismatch between `session-state.json` sprint/story statuses and the GitHub board (milestones, issue states, labels). Source: `## GITHUB STATE` context block and `github_sync.drift_findings[]`. Each drift item uses finding type `DRIFT` with severity from the drift report.
    - **Deferred technology activations** — check if the codebase now contains files matching any DEFERRED decision category in `.github/docs/decisions/` (e.g., `Dockerfile` → `docker.md`, `*.bicep` → `bicep-iac.md`, `*.cs` → `dotnet.md`, `azure-pipelines.yml` → `azure-devops.md`, `vite.config.*` → `vite.md`, `next.config.*` → `nextjs.md`). For each match where the category file has `> Status: DEFERRED`: flag as `DEFERRED_ACTIVATION_REQUIRED: [category] — technology now present in codebase`. Include in the Delta-Scan Report and escalate to Orchestrator — the Orchestrator will **auto-activate** the category (RULE ORC-45) without requiring user intervention.
 4. Produce a `DELTA-SCAN REPORT`:
 
@@ -69,6 +76,9 @@ Before any re-analysis takes place, determine WHAT changed relative to the previ
 
 ### Unchanged findings
 - [N items unchanged — see previous analysis version for details]
+
+### GitHub board drift
+- [DRIFT-001] Type: [SPRINT_STATUS_MISMATCH/MISSING_ISSUE/ORPHANED_ISSUE/STORY_STATUS_MISMATCH] | Severity: [CRITICAL/WARNING/INFO] | Detail: [description] | Source: github_sync.drift_findings / ## GITHUB STATE
 ```
 
 **PROHIBITION:** Do not mark a finding as RESOLVED without demonstrable evidence that the problem is fixed (filename + line number or document reference).
@@ -114,12 +124,14 @@ Produce a `RECOMMENDATION-DELTA`:
 
 Analyze for every sprint in the current sprint plan the impact of the delta:
 
-| Sprint | Status | Impact | Recommended action |
-|--------|--------|--------|--------------------|
-| SP-N | QUEUED | None / Story X needs update / New story needed | No action / Update story / Add story |
-| SP-N | BACKLOG | ... | ... |
-| SP-N | IN_PROGRESS | **FLAG** — see Step 5 | ... |
-| SP-N | COMPLETED | Drift detected? Yes/No | Document / Create revisit ticket |
+| Sprint | Status | GitHub Milestone | Impact | Recommended action |
+|--------|--------|-----------------|--------|--------------------|
+| SP-N | QUEUED | open (3/5 issues) | None / Story X needs update / New story needed | No action / Update story / Add story |
+| SP-N | BACKLOG | open (0/2 issues) | ... | ... |
+| SP-N | IN_PROGRESS | open (4/8 issues) | **FLAG** — see Step 5 | ... |
+| SP-N | COMPLETED | closed (5/5 issues) | Drift detected? Yes/No | Document / Create revisit ticket |
+
+**GitHub milestone cross-reference (MANDATORY):** For each sprint row, look up the corresponding GitHub milestone from the `## GITHUB STATE` context block. Populate the **GitHub Milestone** column with the milestone state and issue progress (e.g., `open (3/5 issues)`). Flag any mismatch between the `session-state.json` sprint status and the GitHub milestone state (e.g., sprint marked `COMPLETED` but milestone still `open`).
 
 **Rules per sprint status:**
 
@@ -279,7 +291,10 @@ See `.github/skills/37-scope-change-agent.md` for the full workflow.
 - [ ] Mode indicator documented (CREATE or AUDIT)
 - [ ] Questionnaire Agent answer loading completed before delta scan (or NO_PRIOR_QUESTIONNAIRES documented)
 - [ ] All RESOLVED_BY_QUESTIONNAIRE items identified and marked with Q-ID source
-- [ ] Delta-Scan Report is complete (new / resolved / changed / unchanged)
+- [ ] GitHub State consumed: `## GITHUB STATE` block processed (or `GITHUB_STATE: UNAVAILABLE` documented)
+- [ ] GitHub milestone cross-reference completed in Sprint Backlog Impact table
+- [ ] Drift findings from `github_sync.drift_findings[]` incorporated as DRIFT findings (or `drift_findings` is empty)
+- [ ] Delta-Scan Report is complete (new / resolved / changed / unchanged / GitHub board drift)
 - [ ] All RESOLVED findings have demonstrable evidence
 - [ ] All IN_PROGRESS sprint flags created (or explicitly NONE)
 - [ ] COMPLETED sprints: drift documented or explicitly NO DRIFT

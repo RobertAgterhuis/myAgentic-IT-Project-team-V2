@@ -33,8 +33,10 @@ const DECISIONS_DIR  = path.join(GITHUB_DOCS, 'decisions');
 const COMMAND_QUEUE  = path.join(SESSION_DIR, 'command-queue.json');
 const HELP_DIR       = path.join(PROJECT_ROOT, '.github', 'help');
 const ANALYTICS_FILE = path.join(GITHUB_DOCS, 'analytics-events.json');
+const METRICS_FILE   = path.join(GITHUB_DOCS, 'metrics', 'runtime-metrics.json');
 const SSE_HEARTBEAT_MS = 30000;
 const ANALYTICS_MAX_EVENTS = 5000;
+const METRICS_FLUSH_INTERVAL_MS = 60000;
 
 /* ── Shared state ─────────────────────────────────────────────── */
 
@@ -44,6 +46,55 @@ const _metrics    = { requestCount: 0, errorCount: 0, responseTimes: [], fileOps
 const METRICS_MAX_SAMPLES = 1000;
 const AUDIT_DIR   = path.join(GITHUB_DOCS, 'audit');
 const _audit      = new AuditTrail({ logDir: AUDIT_DIR });
+
+/* ── Metrics persistence (TECH-05) ────────────────────────────── */
+
+function loadMetrics() {
+  try {
+    const store = getStore();
+    if (!store.exists(METRICS_FILE)) return;
+    const raw = store.readFile(METRICS_FILE);
+    const saved = JSON.parse(raw);
+    if (typeof saved.requestCount === 'number') _metrics.requestCount = saved.requestCount;
+    if (typeof saved.errorCount === 'number')   _metrics.errorCount   = saved.errorCount;
+    if (typeof saved.fileOpsCount === 'number') _metrics.fileOpsCount = saved.fileOpsCount;
+    if (saved.perEndpoint && typeof saved.perEndpoint === 'object') {
+      for (const [key, val] of Object.entries(saved.perEndpoint)) {
+        if (val && typeof val.count === 'number') {
+          _metrics.perEndpoint[key] = { count: val.count, times: Array.isArray(val.times) ? val.times.slice(-METRICS_MAX_SAMPLES) : [] };
+        }
+      }
+    }
+    structuredLog('info', 'metrics_loaded', { file: METRICS_FILE, requestCount: _metrics.requestCount });
+  } catch (err) {
+    structuredLog('warn', 'metrics_load_failed', { error: err.message });
+  }
+}
+
+function flushMetrics() {
+  try {
+    const store = getStore();
+    const dir = path.dirname(METRICS_FILE);
+    store.mkdirp(dir);
+    const snapshot = {
+      flushed_at: new Date().toISOString(),
+      requestCount: _metrics.requestCount,
+      errorCount: _metrics.errorCount,
+      fileOpsCount: _metrics.fileOpsCount,
+      responseTimes: _metrics.responseTimes.slice(-METRICS_MAX_SAMPLES),
+      perEndpoint: {},
+    };
+    for (const [key, val] of Object.entries(_metrics.perEndpoint)) {
+      snapshot.perEndpoint[key] = { count: val.count, times: val.times.slice(-METRICS_MAX_SAMPLES) };
+    }
+    store.writeFile(METRICS_FILE, JSON.stringify(snapshot, null, 2));
+    structuredLog('debug', 'metrics_flushed', { file: METRICS_FILE });
+  } catch (err) {
+    structuredLog('warn', 'metrics_flush_failed', { error: err.message });
+  }
+}
+
+loadMetrics();
 
 /* ── State-dependent utilities ────────────────────────────────── */
 
@@ -121,11 +172,11 @@ function scheduleRebuildIndex() {
 const ctx = {
   _cache, _sseClients, _metrics, _audit,
   safeWriteSync, sseNotify, computePercentiles, recordMetric,
-  scheduleRebuildIndex,
+  scheduleRebuildIndex, flushMetrics,
   PROJECT_ROOT, BUSINESS_DOCS, GITHUB_DOCS,
   SESSION_DIR, SESSION_FILE, Q_INDEX_FILE,
   DECISIONS_FILE, DECISIONS_DIR, COMMAND_QUEUE,
-  HELP_DIR, ANALYTICS_FILE, WEBAPP_DIR,
+  HELP_DIR, ANALYTICS_FILE, METRICS_FILE, WEBAPP_DIR,
   HOST, PORT, SSE_HEARTBEAT_MS, ANALYTICS_MAX_EVENTS,
 };
 
@@ -197,8 +248,13 @@ if (require.main === module) {
     structuredLog('info', 'server_started', { host: HOST, port: PORT, url: `http://${HOST}:${PORT}` });
   });
 
+  const metricsFlushTimer = setInterval(flushMetrics, METRICS_FLUSH_INTERVAL_MS);
+  metricsFlushTimer.unref();
+
   function shutdown() {
     structuredLog('info', 'shutdown_initiated');
+    clearInterval(metricsFlushTimer);
+    flushMetrics();
     server.close(() => { structuredLog('info', 'server_closed'); process.exit(0); });
     const forceTimer = setTimeout(() => { structuredLog('error', 'forced_shutdown'); process.exit(1); }, 5000);
     forceTimer.unref();
@@ -215,5 +271,5 @@ module.exports = {
   sanitizeMarkdown, sanitizeQID, detectSecrets, checkSecretsInBody,
   structuredLog, withFileLock, safePath, setSecurityHeaders, server,
   _cache, _sseClients, sseNotify, _metrics, recordMetric, computePercentiles,
-  _audit,
+  _audit, flushMetrics, loadMetrics, METRICS_FILE,
 };

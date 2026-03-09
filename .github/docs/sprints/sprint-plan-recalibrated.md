@@ -153,7 +153,7 @@ Raise WCAG 2.1 AA compliance from ~70% to ≥90% and consolidate brand naming ac
 
 ---
 
-## Sprint 6 — Observability
+## Sprint 6 — Observability ✅ COMPLETE
 
 ### Goal
 Add persistent metrics and structured logging to enable performance analysis and operational monitoring.

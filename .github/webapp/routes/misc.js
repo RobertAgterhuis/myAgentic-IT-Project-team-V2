@@ -34,11 +34,19 @@ const MAX_EXPORT_SIZE = 10 * 1024 * 1024;
 
 module.exports = function createMiscRoutes(ctx) {
   const { _cache, _sseClients, _metrics, _audit, safeWriteSync,
-          sseNotify, computePercentiles, recordMetric,
-          SESSION_DIR, SESSION_FILE, HELP_DIR, ANALYTICS_FILE,
+          sseNotify, computePercentiles, recordMetric, flushMetrics,
+          SESSION_DIR, SESSION_FILE, HELP_DIR, ANALYTICS_FILE, METRICS_FILE,
           PROJECT_ROOT, HOST, PORT, WEBAPP_DIR,
           SSE_HEARTBEAT_MS, ANALYTICS_MAX_EVENTS,
           _readCommandQueue } = ctx;
+
+  /* ── Version (read once at module load) ──────────────────────── */
+  let _version = '0.0.0';
+  try {
+    const pkgPath = path.resolve(__dirname, '..', '..', 'package.json');
+    const pkg = JSON.parse(getStore().readFile(pkgPath));
+    _version = pkg.version || '0.0.0';
+  } catch { /* package.json missing — use fallback */ }
 
   /* ── Session API ──────────────────────────────────────────────── */
 
@@ -203,8 +211,27 @@ module.exports = function createMiscRoutes(ctx) {
     json(res, 200, result);
   }
 
+  async function apiFlushMetrics(_req, res) {
+    flushMetrics();
+    json(res, 200, { ok: true, flushed_at: new Date().toISOString() });
+  }
+
   async function apiGetHealth(_req, res) {
-    json(res, 200, { status: 'ok', uptime: Math.round(process.uptime()), sse_connections: _sseClients.size, timestamp: new Date().toISOString() });
+    let store_status = 'ok';
+    try {
+      const store = getStore();
+      store.exists(SESSION_DIR);
+    } catch {
+      store_status = 'degraded';
+    }
+    json(res, 200, {
+      status: 'ok',
+      version: _version,
+      uptime: Math.round(process.uptime()),
+      store_status,
+      sse_connections: _sseClients.size,
+      timestamp: new Date().toISOString(),
+    });
   }
 
   /* ── Analytics Endpoint (SP-R2-004-008) ───────────────────────── */
@@ -286,11 +313,16 @@ module.exports = function createMiscRoutes(ctx) {
     'GET /api/help':           apiGetHelp,
     'GET /api/events':         apiGetEvents,
     'GET /api/metrics':        apiGetMetrics,
+    'POST /api/metrics/flush': apiFlushMetrics,
     'GET /api/health':         apiGetHealth,
     'POST /api/analytics':     apiPostAnalytics,
     'GET /api/analytics':      apiGetAnalytics,
     'GET /api/audit':          apiGetAudit,
-    'GET /health':             (_req, res) => json(res, 200, { status: 'ok', uptime: Math.round(process.uptime()) }),
+    'GET /health':             (_req, res) => {
+      let store_status = 'ok';
+      try { getStore().exists(SESSION_DIR); } catch { store_status = 'degraded'; }
+      json(res, 200, { status: 'ok', version: _version, uptime: Math.round(process.uptime()), store_status });
+    },
     _serveStatic:              serveStatic,
   };
 };

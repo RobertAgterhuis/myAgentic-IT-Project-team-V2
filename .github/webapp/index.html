@@ -1113,6 +1113,7 @@
   <!-- ── Tabs ───────────────────────────────── -->
   <div class="tabs" id="tabBar" role="tablist" aria-label="Main navigation">
     <div class="tab active" data-tab="commandcenter" role="tab" id="tab-cc" aria-selected="true" aria-controls="panelCommandCenter" tabindex="0"><span aria-hidden="true">&#128640;</span> Command Center</div>
+    <div class="tab" data-tab="dashboard" role="tab" id="tab-dash" aria-selected="false" aria-controls="panelDashboard" tabindex="-1"><span aria-hidden="true">&#128481;</span> Dashboard</div>
     <div class="tab" data-tab="questionnaires" role="tab" id="tab-q" aria-selected="false" aria-controls="panelQuestionnaires" tabindex="-1"><span aria-hidden="true">&#128221;</span> Questionnaires <span class="tab-count" id="tabCountQ">0</span></div>
     <div class="tab" data-tab="decisions" role="tab" id="tab-d" aria-selected="false" aria-controls="panelDecisions" tabindex="-1"><span aria-hidden="true">&#9878;</span> Decisions <span class="tab-count" id="tabCountD">0</span></div>
     <div class="tab" data-tab="metrics" role="tab" id="tab-m" aria-selected="false" aria-controls="panelMetrics" tabindex="-1"><span aria-hidden="true">&#128200;</span> Metrics</div>
@@ -1120,6 +1121,11 @@
 
   <!-- ── Body ──────────────────────────────── -->
   <div id="content" role="main">
+  <!-- ── Dashboard panel (SP-7: Dashboard Home) ──────────────── -->
+  <div class="container hidden" id="panelDashboard" role="tabpanel" aria-labelledby="tab-dash">
+    <iframe src="./dashboard.html" title="Dashboard Home" style="width: 100%; height: calc(100vh - 200px); border: none; overflow: hidden;"></iframe>
+  </div>
+
   <div class="container hidden" id="panelQuestionnaires" role="tabpanel" aria-labelledby="tab-q">
     <button class="hamburger" id="btnHamburger" aria-label="Toggle sidebar"><span aria-hidden="true">&#9776;</span></button>
     <nav class="sidebar" id="sidebar" aria-label="Questionnaire navigation"></nav>
@@ -1844,9 +1850,9 @@ let questionnaires = [];
 let decisions      = { open: [], decided: [], deferred: [], categories: [] };
 let activeFile     = null;
 let activeTab      = sessionStorage.getItem('activeTab') || 'commandcenter';
-const TAB_HASH_MAP = { commandcenter: '#pipeline', questionnaires: '#questionnaires', decisions: '#decisions', metrics: '#metrics' };
+const TAB_HASH_MAP = { commandcenter: '#pipeline', dashboard: '#dashboard', questionnaires: '#questionnaires', decisions: '#decisions', metrics: '#metrics' };
 const HASH_TAB_MAP = { '#pipeline': 'commandcenter', '#questionnaires': 'questionnaires', '#decisions': 'decisions', '#metrics': 'metrics' };
-const TAB_TITLES   = { commandcenter: 'Command Center', questionnaires: 'Questionnaires', decisions: 'Decisions', metrics: 'Metrics' };
+const TAB_TITLES   = { commandcenter: 'Command Center', dashboard: 'Dashboard', questionnaires: 'Questionnaires', decisions: 'Decisions', metrics: 'Metrics' };
 const dirty        = new Map();   // "file::Q-ID" → { answer, status }
 let decFilter      = { text: '', priority: '', status: '', category: '' };
 let pollTimer      = null;
@@ -2449,6 +2455,7 @@ async function switchTab(tab) {
     t.setAttribute('aria-selected', sel ? 'true' : 'false');
     t.setAttribute('tabindex', sel ? '0' : '-1');
   });
+  document.getElementById('panelDashboard').classList.toggle('hidden', tab !== 'dashboard');
   document.getElementById('panelQuestionnaires').classList.toggle('hidden', tab !== 'questionnaires');
   document.getElementById('panelDecisions').classList.toggle('hidden', tab !== 'decisions');
   document.getElementById('panelCommandCenter').classList.toggle('hidden', tab !== 'commandcenter');

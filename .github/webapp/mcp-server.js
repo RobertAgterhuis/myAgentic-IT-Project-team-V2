@@ -591,6 +591,44 @@ mcp.tool(
   }
 );
 
+/* ── Drift Detection (INFRA-02-C) ──────────────────────────────── */
+
+mcp.tool(
+  'check_drift',
+  'Detect drift between session-state sprint statuses and GitHub board sync reports. Returns a drift report with severity levels (CRITICAL, WARNING, INFO) and recommendations.',
+  async () => {
+    try {
+      const { detectDrift } = require('./drift-detector');
+      const session = readSessionState();
+      if (!session) return jsonResult({ generated_at: new Date().toISOString(), summary: { total_drifts: 0, critical: 0, warning: 0, info: 0 }, drifts: [], in_sync: { sprints: [], stories: 0 }, error: 'No session state found' });
+
+      const sprintStatuses = (session.sprint_backlog && session.sprint_backlog.sprint_statuses) || {};
+      const planPath = session.sprint_backlog && session.sprint_backlog.path;
+      let sprintPlanContent = null;
+      if (planPath) {
+        const abs = path.resolve(PROJECT_ROOT, planPath);
+        try { sprintPlanContent = fs.readFileSync(abs, 'utf8'); } catch { /* missing plan */ }
+      }
+
+      const sprintsDir = path.join(DOC_ROOT, 'sprints');
+      const phase5Dir  = path.join(DOC_ROOT, 'phase-5');
+      const syncReports = {};
+      for (const sprintId of Object.keys(sprintStatuses)) {
+        syncReports[sprintId] = null;
+        const p1 = path.join(sprintsDir, sprintId, 'github-sync-report.md');
+        if (fs.existsSync(p1)) { try { syncReports[sprintId] = fs.readFileSync(p1, 'utf8'); continue; } catch { /* */ } }
+        const p2 = path.join(phase5Dir, `sprint-${sprintId}`, 'github-sync-report.md');
+        if (fs.existsSync(p2)) { try { syncReports[sprintId] = fs.readFileSync(p2, 'utf8'); } catch { /* */ } }
+      }
+
+      const report = detectDrift({ sessionState: session, sprintPlanContent, syncReports });
+      return jsonResult(report);
+    } catch (err) {
+      return errorResult(`Failed to check drift: ${err.message}`);
+    }
+  }
+);
+
 /* ── Audit ──────────────────────────────────────────────────────── */
 
 mcp.tool(

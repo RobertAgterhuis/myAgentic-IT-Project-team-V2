@@ -104,11 +104,12 @@ describe('MCP server — tool registration', () => {
     'get_command_queue',
     'get_help',
     'get_audit_log',
+    'check_drift',
   ];
 
-  it('registers all 13 tools', () => {
+  it('registers all 14 tools', () => {
     const tools = Object.keys(mcp._registeredTools);
-    expect(tools).toHaveLength(13);
+    expect(tools).toHaveLength(14);
   });
 
   for (const name of expectedTools) {

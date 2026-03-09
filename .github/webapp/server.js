@@ -191,6 +191,7 @@ ctx._getLatestCommand = commandRoutes._getLatestCommand;
 ctx._readCommandQueue = commandRoutes._readCommandQueue;
 
 const progressRoutes = require('./routes/progress')(ctx);
+const driftRoutes    = require('./routes/drift')(ctx);
 const miscRoutes     = require('./routes/misc')(ctx);
 
 const serveStatic = miscRoutes._serveStatic;
@@ -202,6 +203,7 @@ const ROUTES = {
   ...decisionRoutes,
   ...commandRoutes,
   ...progressRoutes,
+  ...driftRoutes,
   ...miscRoutes,
 };
 

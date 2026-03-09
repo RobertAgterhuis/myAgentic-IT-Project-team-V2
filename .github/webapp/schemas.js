@@ -255,6 +255,56 @@ function validateProjectBrief(content) {
   return { valid: errors.length === 0, errors };
 }
 
+/* ── Drift Report (INFRA-02-C) ────────────────────────────────── */
+
+const VALID_DRIFT_TYPES = [
+  'SPRINT_STATUS_MISMATCH', 'MISSING_SYNC_REPORT',
+  'STORY_STATUS_MISMATCH', 'ORPHANED_ISSUE', 'MISSING_ISSUE',
+];
+const VALID_SEVERITIES = ['CRITICAL', 'WARNING', 'INFO'];
+
+/**
+ * Validate a drift report object.
+ * @param {object} data - Drift report to validate.
+ * @returns {{ valid: boolean, errors: string[] }}
+ */
+function validateDriftReport(data) {
+  const errors = [];
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { valid: false, errors: ['drift report must be an object'] };
+  }
+  str(data.generated_at, 'generated_at', errors);
+  if (!data.summary || typeof data.summary !== 'object') {
+    errors.push('summary must be an object');
+  } else {
+    for (const k of ['total_drifts', 'critical', 'warning', 'info']) {
+      if (typeof data.summary[k] !== 'number') errors.push(`summary.${k} must be a number`);
+    }
+  }
+  if (!Array.isArray(data.drifts)) {
+    errors.push('drifts must be an array');
+  } else {
+    for (let i = 0; i < data.drifts.length; i++) {
+      const d = data.drifts[i];
+      if (!d || typeof d !== 'object') { errors.push(`drifts[${i}] must be an object`); continue; }
+      str(d.id, `drifts[${i}].id`, errors);
+      if (!VALID_DRIFT_TYPES.includes(d.type)) errors.push(`drifts[${i}].type is invalid: ${d.type}`);
+      if (!VALID_SEVERITIES.includes(d.severity)) errors.push(`drifts[${i}].severity is invalid: ${d.severity}`);
+      str(d.sprint, `drifts[${i}].sprint`, errors);
+      str(d.expected, `drifts[${i}].expected`, errors);
+      str(d.actual, `drifts[${i}].actual`, errors);
+      str(d.recommendation, `drifts[${i}].recommendation`, errors);
+    }
+  }
+  if (!data.in_sync || typeof data.in_sync !== 'object') {
+    errors.push('in_sync must be an object');
+  } else {
+    if (!Array.isArray(data.in_sync.sprints)) errors.push('in_sync.sprints must be an array');
+    if (typeof data.in_sync.stories !== 'number') errors.push('in_sync.stories must be a number');
+  }
+  return { valid: errors.length === 0, errors };
+}
+
 /* ── Exports ──────────────────────────────────────────────────── */
 
 module.exports = {
@@ -268,6 +318,9 @@ module.exports = {
   validateDecisionMutation,
   validateQuestionnaireUpdate,
   validateProjectBrief,
+  validateDriftReport,
   VALID_ANALYTICS_EVENTS,
   VALID_MUTATION_ACTIONS,
+  VALID_DRIFT_TYPES,
+  VALID_SEVERITIES,
 };

@@ -2,6 +2,7 @@
 layout: default
 title: User Manual
 nav_order: 2
+description: End-user guide for the Questionnaire & Decisions Manager web application.
 ---
 
 # User Manual — myAgentic-IT-Project-team
@@ -239,6 +240,8 @@ The web UI is designed for WCAG 2.1 AA compliance:
 - **Dark mode** — Toggle via the moon icon in the header.
 - **High contrast** — CSS custom properties adapt to system contrast preferences.
 - **Form validation** — Inline error messages with `role="alert"` for screen readers.
+- **Loading indicators** — Buttons show a spinner during async operations and set `aria-busy="true"` so screen readers announce the busy state. Skeleton placeholders appear during initial data load.
+- **Guided empty states** — When no questionnaires or decisions exist, numbered step-by-step instructions guide you through getting started.
 
 ---
 

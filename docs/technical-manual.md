@@ -2,6 +2,7 @@
 layout: default
 title: Technical Manual
 nav_order: 3
+description: Developer reference for the MCP server, HTTP endpoints, file-based storage, and test infrastructure.
 ---
 
 # Technical Manual — myAgentic-IT-Project-team
@@ -782,6 +783,37 @@ Actual coverage (as of SP-5): **87.40% statements, 76.45% branches, 92.15% funct
 - Use `setStore(store)` in `beforeEach` to reset state between tests.
 - Call `_cache.invalidateAll()` to clear cache state.
 - Server tests use `server.listen(0)` for random port allocation.
+
+---
+
+## Frontend UX Patterns
+
+### Button Loading State (SP-7 / UX-04)
+
+All async operations in the UI show a spinner on the triggering button using the `setBtnLoading(btn, loading)` helper:
+
+```js
+setBtnLoading(btn, true);   // adds .btn-loading class, sets aria-busy, disables
+await someAsyncOp();
+setBtnLoading(btn, false);  // removes .btn-loading, clears aria-busy, re-enables
+```
+
+The `.btn-loading` CSS class hides the button text (`color: transparent`) and overlays a CSS-only spinner via `::after` pseudo-element. This prevents double-click submissions and provides visual feedback during network operations.
+
+**Covered operations:** Save single answer, Save all for file, Global Save All, Answer/Decide/Defer/Expire/Reopen Decision, Activate Category, Create Decision, Edit Decision, Reevaluate.
+
+### Skeleton Loaders
+
+On first page load, both the questionnaires panel (`#main`) and decisions panel (`#decMain`) show skeleton placeholder cards with shimmer animation while data loads. The containers are marked with `aria-busy="true"` and cleared after data arrives.
+
+### Empty States (SP-7 / UX-05)
+
+When no data exists, panels show guided numbered steps instead of generic empty messages:
+
+- **Questionnaires empty state** — `renderEmpty()` shows a 4-step guide (open Copilot Chat, type CREATE/AUDIT, follow prompts, wait for questionnaires).
+- **Decisions empty state** — `renderDecisions()` distinguishes "truly empty" (no decisions at all → shows 3-step guide) from "filter empty" (decisions exist but hidden by filters → shows "adjust filters" message).
+
+All empty state text is sourced from the `STRINGS` constant for i18n readiness.
 
 ---
 

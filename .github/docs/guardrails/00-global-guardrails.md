@@ -72,6 +72,16 @@
 | G-GLOB-57 | All security-relevant findings MUST be marked as `SECURITY_FLAG:`. The canonical handoff checklist item "All security-relevant findings marked as SECURITY_FLAG:" applies universally to every agent. Violation: `GUARDRAIL_VIOLATION: G-GLOB-57`. |
 | G-GLOB-58 | All agents involved in Phase 5 implementation (Implementation Agent, Test Agent, PR/Review Agent) MUST validate their output against active `DECIDED` items from `.github/docs/decisions.md` and ACTIVE/PARTIAL category files in `.github/docs/decisions/`. DEFERRED category files are skipped for compliance checks but MUST be scanned for activation triggers: when the implementation introduces a technology matching a DEFERRED category, the agent MUST report `DEFERRED_TECH_DETECTED` or `DEFERRED_TECH_REQUIRED` and escalate to the Orchestrator, which **auto-activates** the category (RULE ORC-45) without user intervention. Violation: `GUARDRAIL_VIOLATION: G-GLOB-58 — DEC-VIOLATION: [DEC-ID]` or `GUARDRAIL_VIOLATION: G-GLOB-58 — DEFERRED_TECH_UNDETECTED: [category]`. |
 
+## 7. GIT WORKFLOW & BRANCH PROTECTION
+
+| Rule | Required action |
+|---|---|
+| G-GLOB-60 | All code changes MUST be committed to a feature branch (naming convention: `sprint/SP-N/STORY-ID`), NEVER directly to `main`. Local enforcement: pre-commit hook in `.github/hooks/pre-commit`. Remote enforcement: GitHub branch protection. Violation: `GUARDRAIL_VIOLATION: G-GLOB-60`. |
+| G-GLOB-61 | All merges to `main` MUST go through a Pull Request with **squash merge**. Merge commits and rebase merges are disabled at repository level. Violation: `GUARDRAIL_VIOLATION: G-GLOB-61`. |
+| G-GLOB-62 | The PR/Review Agent MUST verify that branch protection is active on `main` before its first merge in any sprint. If protection is missing, halt and escalate. Violation: `GUARDRAIL_VIOLATION: G-GLOB-62`. |
+| G-GLOB-63 | GitHub repository MUST have branch protection on `main` before Phase 5 starts. The GitHub Configuration Audit (`npm run audit:github`) MUST pass at Onboarding and every 3 sprints. Violation: `GUARDRAIL_VIOLATION: G-GLOB-63`. |
+| G-GLOB-64 | Repository configuration (merge settings, branch protection, security features) MUST conform to the best-practice baseline defined in `.github/scripts/github-config-audit.js`. Deviations are auto-remediated where safe, or escalated to the user. Violation: `GUARDRAIL_VIOLATION: G-GLOB-64`. |
+
 ---
 
 ## ESCALATION PATH

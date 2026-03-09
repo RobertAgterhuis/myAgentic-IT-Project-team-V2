@@ -2,6 +2,7 @@
 layout: default
 title: Contributing
 nav_order: 6
+description: How to contribute — branching, commit conventions, PR workflow, testing, and code style guidelines.
 ---
 
 # Contributing to myAgentic-IT-Project-team

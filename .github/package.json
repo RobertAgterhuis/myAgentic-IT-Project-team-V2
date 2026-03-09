@@ -9,13 +9,15 @@
     "node": ">=18.0.0"
   },
   "scripts": {
+    "prepare": "node scripts/install-hooks.js",
     "start": "node webapp/server.js",
     "start:mcp": "node webapp/mcp-server.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint webapp/",
-    "check": "node -c webapp/server.js"
+    "check": "node -c webapp/server.js",
+    "audit:github": "node scripts/github-config-audit.js"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.0",

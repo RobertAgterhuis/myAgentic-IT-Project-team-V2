@@ -2,6 +2,7 @@
 layout: default
 title: Data Dictionary
 nav_order: 4
+description: Schema definitions for questionnaires, decisions, session state, and all persistent data structures.
 ---
 
 # Data Dictionary — myAgentic-IT-Project-team

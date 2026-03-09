@@ -2,6 +2,7 @@
 layout: default
 title: Brand Guidelines
 nav_order: 5
+description: Visual identity, color palette, typography, spacing tokens, and component design principles.
 ---
 
 # Brand Guidelines

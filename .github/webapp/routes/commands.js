@@ -31,7 +31,7 @@ const COMMAND_OPT_FIELDS = ['project', 'description', 'scope', 'brief'];
 const COMMAND_OPT_LIMITS = { project: 200, description: 2000, scope: 200, brief: 200000 };
 
 module.exports = function createCommandRoutes(ctx) {
-  const { _cache, safeWriteSync, sseNotify,
+  const { _cache, safeWriteSync,
           SESSION_DIR, COMMAND_QUEUE, BUSINESS_DOCS } = ctx;
 
   function validateCommandBody(body) {

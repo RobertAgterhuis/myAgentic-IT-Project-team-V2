@@ -2,6 +2,7 @@
 layout: default
 title: Home
 nav_order: 1
+description: Documentation hub for the multi-agent system for end-to-end software solution creation.
 permalink: /
 ---
 

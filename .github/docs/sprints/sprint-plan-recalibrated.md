@@ -33,7 +33,7 @@
 | TECH-05 | Persistent metrics + structured logging | CODE | 8 | P2 | #6 | REINFORCED by Q-01-006 (user wants speed insights) |
 | TECH-06 | Fix ESLint complexity violations | CODE | 3 | P2 | #7 | UNCHANGED |
 | TECH-07 | Add /health endpoint | CODE | 3 | P2 | #8 | ELEVATED — pre-GA requirement for Docker (DEC-R4-005) |
-| TECH-08 | Docker deployment readiness | INFRA | 8 | P1 | NEW | NEW — pre-GA (DEC-R4-005). Dockerfile, docker-compose, env config. |
+| TECH-08 | Docker deployment readiness | INFRA | 8 | P1 | #21 | NEW — pre-GA (DEC-R4-005). Dockerfile, docker-compose, env config. |
 | UX-01 | ARIA landmark roles | CODE | 3 | P1 | #9 | UNCHANGED |
 | UX-02 | Skip-to-content navigation | CODE | 2 | P1 | #10 | UNCHANGED |
 | UX-03 | Visible focus indicators | CODE | 3 | P1 | #11 | UNCHANGED |

@@ -41,11 +41,14 @@ function parseToolResult(result) {
 }
 
 /* ── Temp directory management ──────────────────────────────────── */
+/* Backup/restore: writeTemp saves pre-existing file content so that
+   cleanupTemp restores it instead of deleting real project files.   */
 
 const TMP_SESSION_DIR = SESSION_DIR;
 const TMP_DECISIONS   = DECISIONS_PATH;
 const TMP_BUSINESS    = BUSINESS_DOCS;
 const createdPaths    = [];
+const originalContent = new Map();
 
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) {
@@ -56,6 +59,10 @@ function ensureDir(dir) {
 
 function writeTemp(filePath, content) {
   ensureDir(path.dirname(filePath));
+  // Save original content if the file already exists (only on first write)
+  if (!originalContent.has(filePath) && fs.existsSync(filePath)) {
+    originalContent.set(filePath, fs.readFileSync(filePath, 'utf8'));
+  }
   fs.writeFileSync(filePath, content, 'utf8');
   createdPaths.push(filePath);
 }
@@ -64,7 +71,10 @@ function cleanupTemp() {
   // Remove files first, then directories (reverse order)
   for (const p of createdPaths.reverse()) {
     try {
-      if (fs.existsSync(p)) {
+      if (originalContent.has(p)) {
+        // Restore the original file instead of deleting it
+        fs.writeFileSync(p, originalContent.get(p), 'utf8');
+      } else if (fs.existsSync(p)) {
         const stat = fs.statSync(p);
         if (stat.isDirectory()) fs.rmSync(p, { recursive: true, force: true });
         else fs.unlinkSync(p);
@@ -72,6 +82,7 @@ function cleanupTemp() {
     } catch { /* best-effort */ }
   }
   createdPaths.length = 0;
+  originalContent.clear();
 }
 
 /* ════════════════════════════════════════════════════════════════ */

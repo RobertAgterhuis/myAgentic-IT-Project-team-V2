@@ -11,7 +11,7 @@ color_scheme: dark
 
 aux_links:
   GitHub Repository:
-    - "https://github.com/RobertAgterhuis/myAgentic-IT-Project-team"
+    - "https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2"
 
 exclude:
   - Gemfile

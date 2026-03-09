@@ -1,11 +1,11 @@
 # Lessons Learned — Cumulative
 
-_Last update: SP-6 — 2026-03-09_
+_Last update: SP-8 — 2026-03-09_
 
 ## ⚡ Top-3 for next sprint (automatically generated)
-1. LL-9: When adding persistence to in-memory data, design load/flush as a pair and test the round-trip explicitly (flush → reset → load → verify).
-2. LL-10: Health endpoints should use the lightest possible store probe (`store.exists()`) rather than full read/write to avoid latency and side effects.
-3. LL-11: Node.js periodic timers must be `.unref()`'d and paired with `clearInterval()` in the shutdown handler to avoid preventing graceful exit.
+1. LL-14: For documentation rewrites >100 lines, use backup → delete → create workflow instead of in-place replacement.
+2. LL-15: Verify session-state.json current_step matches expected state at session start before proceeding.
+3. LL-12: When writing tests that validate CSS properties in inline stylesheets, match against `var(--token-name)` rather than raw computed values.
 
 ## All active lessons
 
@@ -22,6 +22,10 @@ _Last update: SP-6 — 2026-03-09_
 | LL-9 | SP-6 | When adding persistence to an in-memory data structure, design the load/flush pair together and test the round-trip explicitly. The round-trip test (flush → reset → load → verify) is the most important single test — it validates the contract that data survives restarts. | PERSISTENCE | Always write a round-trip test when adding file-backed persistence. Load must handle missing/corrupt files gracefully. | ACTIVE |
 | LL-10 | SP-6 | Health endpoints should use the lightest possible store probe (e.g., `store.exists()` on a known directory) rather than a full read/write cycle. This ensures the health check itself doesn't create load or side effects. | OPERATIONS | Health check probes: read-only, no allocations, no file creation. Target <10ms response. | ACTIVE |
 | LL-11 | SP-6 | When adding periodic timers in a Node.js server, always `.unref()` the timer to prevent it from keeping the process alive during shutdown. Pair with `clearInterval()` in the shutdown handler. | NODE_JS | `.unref()` all timers; `clearInterval()` in shutdown; flush any pending data before exit. | ACTIVE |
+| LL-12 | SP-7 | When writing tests that validate CSS properties in inline stylesheets, match against `var(--token-name)` rather than raw computed values. The codebase uses CSS custom properties consistently, and tests must reflect this. | TESTING | Test assertions for CSS should reference design token variable names, not raw values. | ACTIVE |
+| LL-13 | SP-7 | When regex-parsing JS array content that may contain square brackets inside strings, use `],` (bracket followed by comma or end-of-array) as the terminator rather than a bare `]` to avoid premature matches. | TESTING | Use `],` or end-of-array patterns when regex-extracting array literals from source code. | ACTIVE |
+| LL-14 | SP-8 | Attempting to replace entire file content (200+ lines) in a single `replace_string_in_file` operation fails. For documentation rewrites >100 lines, use backup → delete → create workflow. | TOOLING | For large file rewrites: (1) backup original, (2) delete file, (3) create with new content. Never attempt single-operation replacement of entire files. | ACTIVE |
+| LL-15 | SP-8 | session-state.json can revert to older values between sessions (likely due to concurrent writes or cache). Always verify `current_step` matches expected state at session start before making updates. | PERSISTENCE | At session start: read session-state.json, verify current_step, correct if drifted before proceeding. | ACTIVE |
 
 ## Revised lessons
 | ID | Original lesson | Reason for revision | Revised lesson |

@@ -1,3 +1,10 @@
+---
+layout: default
+title: Decisions Architecture
+nav_order: 7
+description: Internal architecture of the decision system — file layout, data flow, agent interactions, and enforcement mechanisms.
+---
+
 # Decision System — Technical Architecture
 
 > This document describes the internal architecture of the decision system: file layout, data flow, agent interactions, category lifecycle, and enforcement mechanisms. For a user-facing guide, see `.github/help/decisions.md`.

@@ -34,8 +34,8 @@ const MAX_EXPORT_SIZE = 10 * 1024 * 1024;
 
 module.exports = function createMiscRoutes(ctx) {
   const { _cache, _sseClients, _metrics, _audit, safeWriteSync,
-          sseNotify, computePercentiles, recordMetric, flushMetrics,
-          SESSION_DIR, SESSION_FILE, HELP_DIR, ANALYTICS_FILE, METRICS_FILE,
+          computePercentiles, flushMetrics,
+          SESSION_DIR, SESSION_FILE, HELP_DIR, ANALYTICS_FILE,
           PROJECT_ROOT, HOST, PORT, WEBAPP_DIR,
           SSE_HEARTBEAT_MS, ANALYTICS_MAX_EVENTS,
           _readCommandQueue } = ctx;

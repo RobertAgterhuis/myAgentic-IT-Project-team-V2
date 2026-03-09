@@ -1,0 +1,34 @@
+{
+  "sprint": "SP-8",
+  "date": "2026-03-09",
+  "stories": {
+    "UX-06": { "title": "Component inventory document", "points": 3, "status": "DONE" },
+    "MKT-02": { "title": "Deploy docs to GitHub Pages", "points": 5, "status": "DONE" },
+    "MKT-03": { "title": "Add Open Graph meta tags", "points": 2, "status": "DONE" }
+  },
+  "planned_points": 10,
+  "realized_points": 10,
+  "velocity_ratio": 1.0,
+  "tests": {
+    "total": 720,
+    "passed": 720,
+    "failed": 0,
+    "new_tests": 0,
+    "test_files": 24,
+    "duration_seconds": 6.40
+  },
+  "quality": {
+    "regressions": 0,
+    "security_findings": 0,
+    "components_documented": 36,
+    "docs_with_frontmatter": 8,
+    "og_tags_added": 3
+  },
+  "guardrails_checked": [
+    "G-GLOB-50",
+    "G-GLOB-51",
+    "G-GLOB-55"
+  ],
+  "lessons_injected": ["LL-12"],
+  "blockers": []
+}

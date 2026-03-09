@@ -5,6 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'self';">
+  <meta property="og:title" content="myAgentic-IT-Project-team — Command Center">
+  <meta property="og:description" content="Multi-agent system for end-to-end software solution creation. Manage questionnaires, decisions, and pipeline orchestration.">
+  <meta property="og:type" content="website">
   <title>myAgentic-IT-Project-team — Command Center</title>
   <style>
     /* ── Design Tokens (SP-R2-002-006) ────────────── */
@@ -223,6 +226,10 @@
     .btn-danger:hover { background: var(--danger); filter: brightness(1.1); }
     .btn-sm { padding: 5px 12px; font-size: var(--text-sm); }
     .btn:disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+    /* ── Loading state pattern (UX-04) ───────────── */
+    .btn-loading { position: relative; color: transparent !important; pointer-events: none; }
+    .btn-loading::after { content: ''; position: absolute; width: 14px; height: 14px; top: 50%; left: 50%; margin: -7px 0 0 -7px; border: 2px solid rgba(255,255,255,.3); border-top-color: #fff; border-radius: var(--radius-full); animation: spin .6s linear infinite; }
+    .btn-loading:not(.btn-primary):not(.btn-success):not(.btn-danger)::after { border-color: rgba(0,0,0,.15); border-top-color: var(--primary); }
 
     /* ── Layout ─────────────────────────────────────── */
     .container { display: flex; flex: 1; overflow: hidden; }
@@ -324,6 +331,11 @@
     .empty-title { font-size: var(--text-h2); font-weight: 700; color: var(--text); margin-bottom: 8px; }
     .empty-desc { max-width: 440px; line-height: var(--leading-relaxed); font-size: var(--text-md); }
     .empty-desc code { background: var(--code-bg); padding: 2px 8px; border-radius: var(--radius-xs); font-size: var(--text-body); color: var(--primary); }
+    /* ── Enhanced empty states (UX-05) ──────────── */
+    .empty-action { margin-top: 20px; }
+    .empty-steps { text-align: left; max-width: 380px; margin: 16px auto 0; padding: 0; list-style: none; counter-reset: steps; }
+    .empty-steps li { counter-increment: steps; padding: 6px 0 6px 32px; position: relative; font-size: var(--text-body); color: var(--text-sec); line-height: var(--leading-relaxed); }
+    .empty-steps li::before { content: counter(steps); position: absolute; left: 0; top: 6px; width: 22px; height: 22px; border-radius: var(--radius-full); background: var(--primary); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
 
     /* ── Toast ──────────────────────────────────────── */
     .toast-box { position: fixed; bottom: 20px; right: 20px; z-index: var(--z-toast); display: flex; flex-direction: column; gap: 8px; }
@@ -1363,6 +1375,12 @@ const STRINGS = {
     noQuestionnairesYet:     'No questionnaires yet',
     noQuestionnairesDesc:    'Questionnaires are generated during the analysis phases (Phase 1\u20134) when agents encounter items they need your input on.',
     noQuestionnairesAction:  'Run CREATE [project] or AUDIT [project] in the Copilot chat to start.',
+    noQuestionnairesSteps:   [
+      'Open the GitHub Copilot Chat panel in VS Code',
+      'Type CREATE [your-project-name] or AUDIT [your-project-name]',
+      'Follow the onboarding prompts to describe your project',
+      'Questionnaires will appear here as agents complete their analysis',
+    ],
     breadcrumb:              'Questionnaires',
     saveAllChanges:          'Save All Changes',
     jumpToUnanswered:        'Jump to next unanswered',
@@ -1398,6 +1416,11 @@ const STRINGS = {
     noMatchFilters:          'No decisions match filters',
     tryAdjustFilters:        'Try adjusting the search or filter criteria.',
     noDecisionsDesc:         'Click + New Decision to create one, or agents will add open questions during analysis.',
+    noDecisionsSteps:        [
+      'Click the \u201c+ New Decision\u201d button above to create a decision manually',
+      'Or run CREATE / AUDIT in Copilot Chat \u2014 agents will create decisions automatically',
+      'Decisions track architectural choices, scope changes, and trade-offs across phases',
+    ],
     groupOpenQuestions:       'Open Questions',
     groupDecidedItems:       'Decided Items',
     groupDeferredExpired:    'Deferred & Expired',
@@ -1651,6 +1674,20 @@ function announceError(msg) {
   setTimeout(() => { region.textContent = msg; }, 50);
 }
 
+/* ── Button loading state helper (UX-04) ─────────────── */
+function setBtnLoading(btn, loading) {
+  if (!btn) return;
+  if (loading) {
+    btn.classList.add('btn-loading');
+    btn.setAttribute('aria-busy', 'true');
+    btn.disabled = true;
+  } else {
+    btn.classList.remove('btn-loading');
+    btn.setAttribute('aria-busy', 'false');
+    btn.disabled = false;
+  }
+}
+
 /* ── Load ────────────────────────────────────────────── */
 let _loadInFlight = false;
 async function load(silent) {
@@ -1664,6 +1701,14 @@ async function load(silent) {
     if (main && activeTab === 'questionnaires') {
       main.setAttribute('aria-busy', 'true');
       main.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:60%"></div><div class="skeleton-line"></div><div class="skeleton-line" style="width:80%"></div></div>'
+        .repeat(3);
+    }
+  }
+  if (!silent && !(decisions.open && decisions.open.length + decisions.decided.length + decisions.deferred.length)) {
+    const decMain = document.getElementById('decMain');
+    if (decMain && activeTab === 'decisions') {
+      decMain.setAttribute('aria-busy', 'true');
+      decMain.innerHTML = '<div class="skeleton-card"><div class="skeleton-line" style="width:50%"></div><div class="skeleton-line"></div><div class="skeleton-line" style="width:70%"></div></div>'
         .repeat(3);
     }
   }
@@ -2110,13 +2155,18 @@ function renderQ(q) {
 
 /* ── Empty state ─────────────────────────────────────── */
 function renderEmpty() {
+  const steps = STRINGS.questionnaires.noQuestionnairesSteps
+    .map(s => `<li>${esc(s)}</li>`).join('');
   document.getElementById('main').innerHTML = `
     <div class="empty">
       <div class="empty-icon" aria-hidden="true">&#128221;</div>
       <div class="empty-title">${STRINGS.questionnaires.noQuestionnairesYet}</div>
       <div class="empty-desc">
-        ${STRINGS.questionnaires.noQuestionnairesDesc}<br><br>
-        ${STRINGS.questionnaires.noQuestionnairesAction}
+        ${STRINGS.questionnaires.noQuestionnairesDesc}
+      </div>
+      <div class="empty-action">
+        <strong>${STRINGS.questionnaires.noQuestionnairesAction}</strong>
+        <ol class="empty-steps">${steps}</ol>
       </div>
     </div>`;
 }
@@ -2227,10 +2277,16 @@ function renderDecisions() {
 
   if (all.length === 0) {
     const total = decisions.open.length + decisions.decided.length + decisions.deferred.length;
+    const isFilterEmpty = total > 0;
+    let stepsHtml = '';
+    if (!isFilterEmpty && STRINGS.decisions.noDecisionsSteps) {
+      stepsHtml = '<ol class="empty-steps">' + STRINGS.decisions.noDecisionsSteps.map(s => `<li>${esc(s)}</li>`).join('') + '</ol>';
+    }
     el.innerHTML = `<div class="dec-empty">
       <div class="empty-icon" style="font-size:48px;opacity:.4;" aria-hidden="true">&#9878;</div>
-      <div class="empty-title" style="margin:12px 0 6px;font-size:16px;font-weight:600;color:var(--text);">${total ? STRINGS.decisions.noMatchFilters : STRINGS.decisions.noDecisionsYet}</div>
-      <div style="color:var(--text-sec);font-size:14px;">${total ? STRINGS.decisions.tryAdjustFilters : STRINGS.decisions.noDecisionsDesc}</div>
+      <div class="empty-title" style="margin:12px 0 6px;font-size:16px;font-weight:600;color:var(--text);">${isFilterEmpty ? STRINGS.decisions.noMatchFilters : STRINGS.decisions.noDecisionsYet}</div>
+      <div style="color:var(--text-sec);font-size:14px;">${isFilterEmpty ? STRINGS.decisions.tryAdjustFilters : STRINGS.decisions.noDecisionsDesc}</div>
+      ${stepsHtml}
     </div>`;
     return;
   }
@@ -2969,40 +3025,48 @@ document.getElementById('main').addEventListener('change', e => {
 
 document.getElementById('main').addEventListener('click', e => {
   const saveBtn = e.target.closest('button[data-save]');
-  if (saveBtn && !saveBtn.disabled) { saveBtn.disabled = true; saveOne(saveBtn.dataset.file, saveBtn.dataset.save).finally(() => saveBtn.disabled = false); }
+  if (saveBtn && !saveBtn.disabled) { setBtnLoading(saveBtn, true); saveOne(saveBtn.dataset.file, saveBtn.dataset.save).finally(() => setBtnLoading(saveBtn, false)); }
   const saveAllBtn = e.target.closest('button[data-saveall]');
-  if (saveAllBtn && !saveAllBtn.disabled) { saveAllBtn.disabled = true; saveFileAll(saveAllBtn.dataset.saveall).finally(() => saveAllBtn.disabled = false); }
+  if (saveAllBtn && !saveAllBtn.disabled) { setBtnLoading(saveAllBtn, true); saveFileAll(saveAllBtn.dataset.saveall).finally(() => setBtnLoading(saveAllBtn, false)); }
 });
 
 document.getElementById('decMain').addEventListener('click', e => {
   const ansBtn = e.target.closest('button[data-dec-answer]');
-  if (ansBtn) answerDecision(ansBtn.dataset.decAnswer);
+  if (ansBtn && !ansBtn.disabled) { setBtnLoading(ansBtn, true); answerDecision(ansBtn.dataset.decAnswer).finally(() => setBtnLoading(ansBtn, false)); }
   const decBtn = e.target.closest('button[data-dec-decide]');
-  if (decBtn) decideDecision(decBtn.dataset.decDecide);
+  if (decBtn && !decBtn.disabled) { setBtnLoading(decBtn, true); decideDecision(decBtn.dataset.decDecide).finally(() => setBtnLoading(decBtn, false)); }
   const defBtn = e.target.closest('button[data-dec-defer]');
-  if (defBtn) deferDecision(defBtn.dataset.decDefer);
+  if (defBtn && !defBtn.disabled) { setBtnLoading(defBtn, true); deferDecision(defBtn.dataset.decDefer).finally(() => setBtnLoading(defBtn, false)); }
   const expBtn = e.target.closest('button[data-dec-expire]');
-  if (expBtn) expireDecision(expBtn.dataset.decExpire);
+  if (expBtn && !expBtn.disabled) { setBtnLoading(expBtn, true); expireDecision(expBtn.dataset.decExpire).finally(() => setBtnLoading(expBtn, false)); }
   const reopBtn = e.target.closest('button[data-dec-reopen]');
-  if (reopBtn) reopenDecision(reopBtn.dataset.decReopen);
+  if (reopBtn && !reopBtn.disabled) { setBtnLoading(reopBtn, true); reopenDecision(reopBtn.dataset.decReopen).finally(() => setBtnLoading(reopBtn, false)); }
   const editBtn = e.target.closest('button[data-dec-edit]');
   if (editBtn) openEditDecision(editBtn.dataset.decEdit);
   const actCatBtn = e.target.closest('button[data-activate-cat]');
-  if (actCatBtn) activateDeferredCategory(actCatBtn.dataset.activateCat);
+  if (actCatBtn && !actCatBtn.disabled) { setBtnLoading(actCatBtn, true); activateDeferredCategory(actCatBtn.dataset.activateCat).finally(() => setBtnLoading(actCatBtn, false)); }
 });
 
 document.getElementById('btnSaveAll').addEventListener('click', function() {
   if (this.disabled) return;
-  this.disabled = true;
-  saveAll().finally(() => this.disabled = dirty.size > 0 ? false : true);
+  setBtnLoading(this, true);
+  saveAll().finally(() => { setBtnLoading(this, false); this.disabled = dirty.size === 0; });
 });
 document.getElementById('btnNewDecision').addEventListener('click', () => openModal('newDecOverlay'));
 document.getElementById('btnReeval').addEventListener('click', () => openModal('reevalOverlay'));
 document.getElementById('btnCancelReeval').addEventListener('click', () => closeModal('reevalOverlay'));
-document.getElementById('btnConfirmReeval').addEventListener('click', doReeval);
+document.getElementById('btnConfirmReeval').addEventListener('click', () => {
+  const btn = document.getElementById('btnConfirmReeval');
+  setBtnLoading(btn, true);
+  doReeval().finally(() => setBtnLoading(btn, false));
+});
 document.getElementById('reevalOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('reevalOverlay'); });
 document.getElementById('btnCancelNewDec').addEventListener('click', () => closeModal('newDecOverlay'));
-document.getElementById('btnConfirmNewDec').addEventListener('click', createDecision);
+document.getElementById('btnConfirmNewDec').addEventListener('click', () => {
+  const btn = document.getElementById('btnConfirmNewDec');
+  setBtnLoading(btn, true);
+  createDecision().finally(() => setBtnLoading(btn, false));
+});
 document.getElementById('newDecOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('newDecOverlay'); });
 
 /* ── Confirm modal listeners ─────────────────────────── */
@@ -3019,7 +3083,11 @@ document.getElementById('confirmOverlay').addEventListener('click', e => {
 });
 
 /* ── Edit decision modal listeners ───────────────────── */
-document.getElementById('btnConfirmEditDec').addEventListener('click', saveEditDecision);
+document.getElementById('btnConfirmEditDec').addEventListener('click', () => {
+  const btn = document.getElementById('btnConfirmEditDec');
+  setBtnLoading(btn, true);
+  saveEditDecision().finally(() => setBtnLoading(btn, false));
+});
 document.getElementById('btnCancelEditDec').addEventListener('click', () => closeModal('editDecOverlay'));
 document.getElementById('editDecOverlay').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal('editDecOverlay'); });
 

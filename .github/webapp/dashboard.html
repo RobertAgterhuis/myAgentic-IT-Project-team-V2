@@ -329,21 +329,41 @@
             <button class="btn btn-sm btn-ghost" id="btn-filter-milestones">
               <span aria-hidden="true">⊞</span> Filter
             </button>
+            <button class="btn btn-sm btn-ghost" id="btn-export-milestones" title="Export visible rows as CSV">
+              <span aria-hidden="true">⬇</span> Export CSV
+            </button>
           </div>
         </div>
 
-        <table class="data-table" style="margin: 0;">
+        <div class="table-filters" id="milestone-filters" style="display: none; margin-bottom: var(--space-3); gap: var(--space-2); flex-wrap: wrap; align-items: center;">
+          <label for="milestone-search" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">Search milestones</label>
+          <input id="milestone-search" type="search" placeholder="Search milestone..." class="input" style="min-width: 220px; max-width: 300px;" />
+
+          <label for="milestone-status-filter" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">Filter by status</label>
+          <select id="milestone-status-filter" class="input" style="min-width: 180px; max-width: 220px;">
+            <option value="all">All statuses</option>
+            <option value="complete">Complete</option>
+            <option value="in progress">In Progress</option>
+            <option value="blocked">Blocked</option>
+          </select>
+
+          <button class="btn btn-sm btn-ghost" id="btn-reset-milestone-filters" type="button">Reset</button>
+        </div>
+
+        <div id="milestone-results-count" aria-live="polite" style="margin-bottom: var(--space-2); color: var(--text-subtle); font-size: 14px;">3 results</div>
+
+        <table class="data-table" id="milestone-table" style="margin: 0;">
           <thead>
             <tr>
-              <th class="table-header" tabindex="0">Milestone <span aria-hidden="true" class="table-sort-icon"></span></th>
-              <th class="table-header" tabindex="0">Status <span aria-hidden="true" class="table-sort-icon"></span></th>
-              <th class="table-header" tabindex="0">Progress <span aria-hidden="true" class="table-sort-icon"></span></th>
-              <th class="table-header" tabindex="0">Completion <span aria-hidden="true" class="table-sort-icon"></span></th>
+              <th class="table-header" tabindex="0" data-sort-key="milestone" aria-sort="none">Milestone <span aria-hidden="true" class="table-sort-icon"></span></th>
+              <th class="table-header" tabindex="0" data-sort-key="status" aria-sort="none">Status <span aria-hidden="true" class="table-sort-icon"></span></th>
+              <th class="table-header" tabindex="0" data-sort-key="progress" aria-sort="none">Progress <span aria-hidden="true" class="table-sort-icon"></span></th>
+              <th class="table-header" tabindex="0" data-sort-key="completion" aria-sort="none">Completion <span aria-hidden="true" class="table-sort-icon"></span></th>
               <th style="width: 60px;">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
+          <tbody id="milestone-table-body">
+            <tr data-milestone="FEAT-01 Metrics Dashboard" data-status="complete" data-progress="100" data-completion="2026-03-05">
               <td><strong>FEAT-01</strong> Metrics Dashboard</td>
               <td>
                 <span class="badge badge-success">Complete</span>
@@ -361,7 +381,7 @@
                 </div>
               </td>
             </tr>
-            <tr>
+            <tr data-milestone="FEAT-02 Enterprise UI Redesign" data-status="complete" data-progress="100" data-completion="2026-03-09">
               <td><strong>FEAT-02</strong> Enterprise UI Redesign</td>
               <td>
                 <span class="badge badge-success">Complete</span>
@@ -379,7 +399,7 @@
                 </div>
               </td>
             </tr>
-            <tr>
+            <tr data-milestone="SPRINT-7 Dashboard Implementation" data-status="in progress" data-progress="15" data-completion="2026-03-15">
               <td><strong>SPRINT-7</strong> Dashboard Implementation</td>
               <td>
                 <span class="badge badge-info">In Progress</span>
@@ -399,6 +419,12 @@
             </tr>
           </tbody>
         </table>
+
+        <div class="pagination" id="milestone-pagination" style="margin-top: var(--space-3); display: flex; gap: var(--space-2); justify-content: flex-end; align-items: center;">
+          <button class="btn btn-sm btn-ghost" id="btn-milestone-prev" type="button">Previous</button>
+          <span id="milestone-page-indicator" aria-live="polite">Page 1 of 1</span>
+          <button class="btn btn-sm btn-ghost" id="btn-milestone-next" type="button">Next</button>
+        </div>
       </div>
     </div>
 

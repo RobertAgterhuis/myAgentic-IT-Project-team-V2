@@ -19,8 +19,19 @@
   'use strict';
 
   const API_BASE = '/api/dashboard';
-  const REFRESH_INTERVAL_MS = 60000; // 1 minute
   const REQUEST_TIMEOUT_MS = 10000; // 10 seconds
+
+  const TABLE_PAGE_SIZE = 5;
+
+  const milestoneState = {
+    rows: [],
+    sortKey: 'completion',
+    sortDir: 'desc',
+    query: '',
+    status: 'all',
+    page: 1,
+    pageSize: TABLE_PAGE_SIZE
+  };
 
   /* ── Toast Notification Helper ────────────────────────────────── */
 
@@ -312,7 +323,7 @@
       avatarHtml = `<div style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: ${bgStyle}; color: ${colorStyle}; border-radius: var(--radius-full); font-size: 24px; flex-shrink: 0;">${icon}</div>`;
     }
 
-    const metadataHtml = item.metadata ? Object.entries(item.metadata).map(([k, v]) => {
+    const metadataHtml = item.metadata ? Object.entries(item.metadata).map(([_k, v]) => {
       return `<span class="activity-action-badge">${escapeHtml(String(v))}</span>`;
     }).join('') : '';
 
@@ -386,6 +397,257 @@
     });
   }
 
+  /* ── Milestone Table Interactions (SP-8) ────────────────────── */
+
+  function initializeMilestoneTable() {
+    const body = document.getElementById('milestone-table-body');
+    if (!body) return;
+
+    milestoneState.rows = Array.from(body.querySelectorAll('tr')).map(parseMilestoneRow);
+
+    bindMilestoneSortHandlers();
+    bindMilestoneFilterHandlers();
+    bindMilestonePaginationHandlers();
+    bindMilestoneExportHandler();
+
+    applyMilestoneTableState();
+  }
+
+  function bindMilestoneSortHandlers() {
+    const headers = document.querySelectorAll('#milestone-table th[data-sort-key]');
+    headers.forEach((header) => {
+      const onSort = () => {
+        const key = header.getAttribute('data-sort-key');
+        if (!key) return;
+        if (milestoneState.sortKey === key) {
+          milestoneState.sortDir = milestoneState.sortDir === 'asc' ? 'desc' : 'asc';
+        } else {
+          milestoneState.sortKey = key;
+          milestoneState.sortDir = key === 'completion' ? 'desc' : 'asc';
+        }
+        milestoneState.page = 1;
+        applyMilestoneTableState();
+      };
+
+      header.addEventListener('click', onSort);
+      header.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSort();
+        }
+      });
+    });
+  }
+
+  function parseMilestoneRow(row, index) {
+    const milestone = row.getAttribute('data-milestone') || row.cells[0]?.textContent?.trim() || '';
+    const status = (row.getAttribute('data-status') || '').toLowerCase();
+    const progress = Number.parseInt(row.getAttribute('data-progress') || '0', 10) || 0;
+    const completion = row.getAttribute('data-completion') || row.cells[3]?.textContent?.trim() || '';
+    return { id: `row-${index + 1}`, milestone, status, progress, completion, element: row };
+  }
+
+  function bindMilestoneFilterHandlers() {
+    const filterToggle = document.getElementById('btn-filter-milestones');
+    const filterPanel = document.getElementById('milestone-filters');
+    const searchInput = document.getElementById('milestone-search');
+    const statusSelect = document.getElementById('milestone-status-filter');
+    const resetButton = document.getElementById('btn-reset-milestone-filters');
+
+    if (filterToggle && filterPanel) {
+      filterToggle.addEventListener('click', (e) => {
+        e.preventDefault();
+        const isVisible = filterPanel.style.display !== 'none';
+        filterPanel.style.display = isVisible ? 'none' : 'flex';
+      });
+    }
+
+    if (searchInput) {
+      let searchDebounce;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(searchDebounce);
+        searchDebounce = setTimeout(() => {
+          milestoneState.query = (searchInput.value || '').trim().toLowerCase();
+          milestoneState.page = 1;
+          applyMilestoneTableState();
+        }, 150);
+      });
+    }
+
+    if (statusSelect) {
+      statusSelect.addEventListener('change', () => {
+        milestoneState.status = statusSelect.value;
+        milestoneState.page = 1;
+        applyMilestoneTableState();
+      });
+    }
+
+    if (resetButton && searchInput && statusSelect) {
+      resetButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        searchInput.value = '';
+        statusSelect.value = 'all';
+        milestoneState.query = '';
+        milestoneState.status = 'all';
+        milestoneState.page = 1;
+        applyMilestoneTableState();
+      });
+    }
+  }
+
+  function bindMilestonePaginationHandlers() {
+    const prev = document.getElementById('btn-milestone-prev');
+    const next = document.getElementById('btn-milestone-next');
+
+    if (prev) {
+      prev.addEventListener('click', () => {
+        milestoneState.page = Math.max(1, milestoneState.page - 1);
+        applyMilestoneTableState();
+      });
+    }
+
+    if (next) {
+      next.addEventListener('click', () => {
+        const filtered = getFilteredAndSortedRows();
+        const maxPage = Math.max(1, Math.ceil(filtered.length / milestoneState.pageSize));
+        milestoneState.page = Math.min(maxPage, milestoneState.page + 1);
+        applyMilestoneTableState();
+      });
+    }
+  }
+
+  function bindMilestoneExportHandler() {
+    const btnExport = document.getElementById('btn-export-milestones');
+    if (!btnExport) return;
+
+    btnExport.addEventListener('click', (e) => {
+      e.preventDefault();
+      const rows = getFilteredAndSortedRows();
+      if (rows.length === 0) {
+        showToast('No visible milestones to export', 'warning', 2500);
+        return;
+      }
+
+      const header = ['Milestone', 'Status', 'Progress', 'Completion'];
+      const csvRows = [header.join(',')];
+      rows.forEach((row) => {
+        csvRows.push([
+          csvEscape(row.milestone),
+          csvEscape(row.status),
+          csvEscape(`${row.progress}%`),
+          csvEscape(row.completion)
+        ].join(','));
+      });
+
+      const csvContent = csvRows.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `milestones-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      showToast('Milestones exported as CSV', 'success', 2500);
+    });
+  }
+
+  function getFilteredAndSortedRows() {
+    const query = milestoneState.query;
+    const statusFilter = milestoneState.status;
+
+    const filtered = milestoneState.rows.filter((row) => {
+      const matchesQuery = !query || row.milestone.toLowerCase().includes(query);
+      const matchesStatus = statusFilter === 'all' || row.status === statusFilter;
+      return matchesQuery && matchesStatus;
+    });
+
+    const sorted = filtered.sort((a, b) => {
+      const dir = milestoneState.sortDir === 'asc' ? 1 : -1;
+      const key = milestoneState.sortKey;
+
+      if (key === 'progress') return (a.progress - b.progress) * dir;
+      if (key === 'completion') return (new Date(a.completion) - new Date(b.completion)) * dir;
+
+      const left = String(a[key] || '').toLowerCase();
+      const right = String(b[key] || '').toLowerCase();
+      if (left < right) return -1 * dir;
+      if (left > right) return 1 * dir;
+      return 0;
+    });
+
+    return sorted;
+  }
+
+  function applyMilestoneTableState() {
+    const body = document.getElementById('milestone-table-body');
+    if (!body) return;
+
+    const sortedRows = getFilteredAndSortedRows();
+    const total = sortedRows.length;
+    const maxPage = Math.max(1, Math.ceil(total / milestoneState.pageSize));
+    milestoneState.page = Math.min(milestoneState.page, maxPage);
+
+    const start = (milestoneState.page - 1) * milestoneState.pageSize;
+    const end = start + milestoneState.pageSize;
+    const pagedRows = sortedRows.slice(start, end);
+
+    milestoneState.rows.forEach((row) => {
+      row.element.style.display = 'none';
+    });
+    pagedRows.forEach((row) => {
+      row.element.style.display = '';
+      body.appendChild(row.element);
+    });
+
+    updateMilestoneSortIndicators();
+    updateMilestoneResultCount(total, start, end);
+    updateMilestonePagination(total, maxPage);
+  }
+
+  function updateMilestoneSortIndicators() {
+    const headers = document.querySelectorAll('#milestone-table th[data-sort-key]');
+    headers.forEach((header) => {
+      const key = header.getAttribute('data-sort-key');
+      const isActive = key === milestoneState.sortKey;
+      header.setAttribute('aria-sort', isActive ? (milestoneState.sortDir === 'asc' ? 'ascending' : 'descending') : 'none');
+      header.classList.toggle('active', isActive);
+    });
+  }
+
+  function updateMilestoneResultCount(total, start, end) {
+    const count = document.getElementById('milestone-results-count');
+    if (!count) return;
+
+    if (total === 0) {
+      count.textContent = '0 results';
+      return;
+    }
+
+    const startDisplay = start + 1;
+    const endDisplay = Math.min(end, total);
+    count.textContent = `Showing ${startDisplay}-${endDisplay} of ${total} results`;
+  }
+
+  function updateMilestonePagination(total, maxPage) {
+    const indicator = document.getElementById('milestone-page-indicator');
+    const prev = document.getElementById('btn-milestone-prev');
+    const next = document.getElementById('btn-milestone-next');
+
+    if (indicator) indicator.textContent = `Page ${milestoneState.page} of ${maxPage}`;
+    if (prev) prev.disabled = milestoneState.page <= 1 || total === 0;
+    if (next) next.disabled = milestoneState.page >= maxPage || total === 0;
+  }
+
+  function csvEscape(value) {
+    const s = String(value ?? '');
+    if (s.includes('"') || s.includes(',') || s.includes('\n')) {
+      return `"${s.replace(/"/g, '""')}"`;
+    }
+    return s;
+  }
+
   /* ── Main Loading & Orchestration ───────────────────────────── */
 
   /**
@@ -427,6 +689,7 @@
 
     // Load initial data
     loadDashboardData();
+    initializeMilestoneTable();
 
     // Attach refresh button handlers
     const btnRefreshHealth = document.getElementById('btn-refresh-health');
@@ -502,6 +765,7 @@
     renderMetricsShowcase,
     renderActivityFeed,
     renderQuickStats,
+    initializeMilestoneTable,
     showToast,
     initialize
   };

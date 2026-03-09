@@ -210,6 +210,7 @@ ctx._readCommandQueue = commandRoutes._readCommandQueue;
 const progressRoutes         = require('./routes/progress')(ctx);
 const driftRoutes            = require('./routes/drift')(ctx);
 const metricsDashboardRoutes = require('./routes/metrics-dashboard')(ctx);
+const dashboardRoutes         = require('./routes/dashboard')(ctx);
 const miscRoutes             = require('./routes/misc')(ctx);
 
 const serveStatic = miscRoutes._serveStatic;
@@ -223,6 +224,7 @@ const ROUTES = {
   ...progressRoutes,
   ...driftRoutes,
   ...metricsDashboardRoutes,
+  ...dashboardRoutes,
   ...miscRoutes,
 };
 

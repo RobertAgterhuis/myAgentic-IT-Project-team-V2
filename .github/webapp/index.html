@@ -1508,15 +1508,15 @@
   <!-- ── Confirmation modal ────────────────── -->
   <div class="overlay hidden" id="confirmOverlay" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
     <div class="modal">
-      <h2 id="confirmTitle">Confirm Action</h2>
-      <p id="confirmText">Are you sure?</p>
+      <h2 id="confirmTitle">Confirm Decision Action</h2>
+      <p id="confirmText">Review this action and confirm to continue.</p>
       <div class="form-group hidden" id="confirmReasonGroup">
         <label for="confirmReason">Reason (optional)</label>
-        <input type="text" id="confirmReason" placeholder="Why?" maxlength="500">
+        <input type="text" id="confirmReason" placeholder="Add context (optional)" maxlength="500">
       </div>
       <div class="modal-actions">
         <button class="btn" id="btnCancelConfirm">Cancel</button>
-        <button class="btn btn-primary" id="btnDoConfirm">Confirm</button>
+        <button class="btn btn-primary" id="btnDoConfirm">Confirm Action</button>
       </div>
     </div>
   </div>
@@ -1587,7 +1587,6 @@ const STRINGS = {
     checkServer:             'Check that the server is running.',
     connectionLost:          'Connection lost \u2014 server may be down. Retrying automatically.',
     serverUnreachable:       'Server unreachable \u2014 retrying automatically',
-    fieldRequired:           (name) => `${name} is required`,
     scopeTextRequired:       'Scope and text are required',
     answerRequired:          'Enter an answer first',
     answerRequiredDecide:    'Enter an answer first before deciding',
@@ -1755,6 +1754,7 @@ const STRINGS = {
     showDetails:             'Show command details',
     copiedBtn:               '\u2705 Copied!',
     copyBtn:                 '\uD83D\uDCCB Copy',
+    copyBtnTitle:            'Copy command to clipboard',
     continueBtn:             'Continue',
     continueBtnTitle:        'Copy CONTINUE to clipboard for pasting into a new Copilot Chat',
     sessionInfoSub:          (id, type) => `Session: ${id} \u00b7 ${type}`,
@@ -3168,7 +3168,7 @@ async function launchCommand() {
       </div>
       <div class="cmd-clipboard">
         <code id="clipText">${esc(r.clipboard_text)}</code>
-        <button id="btnCopyClip" title="Copy to clipboard"><span aria-hidden="true">&#128203;</span> ${STRINGS.commands.copyBtn}</button>
+        <button id="btnCopyClip" title="${STRINGS.commands.copyBtnTitle}"><span aria-hidden="true">&#128203;</span> ${STRINGS.commands.copyBtn}</button>
       </div>`;
     document.getElementById('btnCopyClip').addEventListener('click', copyClipboard);
 

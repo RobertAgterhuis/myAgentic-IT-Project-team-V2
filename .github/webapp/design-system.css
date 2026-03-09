@@ -4,8 +4,10 @@
    
    FEAT-02: Enterprise UI Redesign
    
-   Phase 1 Deliverables:
-   - #36: Design System Foundation (CSS variables, tokens, base components) ✅   - #37: Navigation & Layout (sidebar, header, CSS Grid structure) 🔄
+   Phase 2 Deliverables:
+   - #36: Design System Foundation (CSS variables, tokens, base components) ✅
+   - #37: Navigation & Layout (sidebar, header, CSS Grid structure) ✅
+   - #38: Card & Panel Components (metric cards, status badges, skeletons) ✅
    
    This stylesheet extends the core design token CSS variables defined in 
    index.html <style> block with enterprise-grade component styling, layout patterns,
@@ -805,6 +807,344 @@ select:disabled {
 .badge-outline.success {
   border-color: var(--success);
   color: var(--success);
+}
+
+/* ──────────────────────────────────────────────────────────────────────────────
+   METRIC CARDS & PANEL ENHANCEMENTS (FEAT-02 #38)
+   ──────────────────────────────────────────────────────────────────────────────
+   Enterprise metric cards, status panels, badge compositions, and skeleton loaders
+────────────────────────────────────────────────────────────────────────────────── */
+
+/* Metric Card Component */
+.metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: all var(--motion-normal);
+}
+
+.metric-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-light);
+}
+
+.metric-card.elevated {
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.metric-card.minimal {
+  background: transparent;
+  border: none;
+  padding: var(--space-2);
+}
+
+/* Metric Value Display */
+.metric-value {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.metric-number {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1;
+}
+
+.metric-label {
+  font-size: var(--text-sm);
+  color: var(--text-sec);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.metric-unit {
+  font-size: var(--text-body);
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.metric-change {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.metric-change.positive {
+  color: var(--success);
+}
+
+.metric-change.negative {
+  color: var(--danger);
+}
+
+.metric-change.neutral {
+  color: var(--text-muted);
+}
+
+/* Metric Card Metadata Footer */
+.metric-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+  font-size: var(--text-caption);
+  color: var(--text-muted);
+}
+
+/* Status Panel Cards */
+.status-card {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: var(--space-3);
+  align-items: start;
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  border-left: 4px solid var(--primary);
+}
+
+.status-card.success {
+  border-left-color: var(--success);
+  background: rgba(34, 197, 94, 0.05);
+}
+
+.status-card.warning {
+  border-left-color: var(--warning);
+  background: rgba(234, 179, 8, 0.05);
+}
+
+.status-card.danger {
+  border-left-color: var(--danger);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.status-card.info {
+  border-left-color: var(--primary);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.status-icon {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.status-card.success .status-icon {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success);
+}
+
+.status-card.warning .status-icon {
+  background: rgba(234, 179, 8, 0.1);
+  color: var(--warning);
+}
+
+.status-card.danger .status-icon {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
+.status-card.info .status-icon {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+}
+
+.status-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.status-title {
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--text);
+}
+
+.status-message {
+  font-size: var(--text-sm);
+  color: var(--text-sec);
+  line-height: 1.5;
+}
+
+.status-time {
+  font-size: var(--text-caption);
+  color: var(--text-muted);
+  margin-top: var(--space-2);
+}
+
+/* Semantic Badge Variants */
+.badge-danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.badge-warning {
+  background: rgba(234, 179, 8, 0.1);
+  color: var(--warning);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.badge-success {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.badge-info {
+  background: rgba(59, 130, 246, 0.1);
+  color: var(--primary);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.badge-muted {
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* Skeleton Loader System */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-subtle) 0%,
+    var(--bg) 50%,
+    var(--bg-subtle) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: var(--radius);
+}
+
+@keyframes skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-text {
+  height: 16px;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-2);
+}
+
+.skeleton-text.large {
+  height: 24px;
+}
+
+.skeleton-text.small {
+  height: 12px;
+  width: 60%;
+}
+
+.skeleton-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  display: inline-block;
+}
+
+.skeleton-card {
+  padding: var(--space-4);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.skeleton-card .skeleton-text {
+  margin-bottom: var(--space-3);
+}
+
+.skeleton-card .skeleton-text:last-child {
+  margin-bottom: 0;
+}
+
+/* Skeleton with reduced-motion support */
+@media (prefers-reduced-motion: reduce) {
+  .skeleton {
+    animation: none;
+    background: var(--bg-subtle);
+  }
+}
+
+/* Card + Badge Compositions */
+.card-with-badge {
+  position: relative;
+}
+
+.card-badge {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 10;
+}
+
+.card-header-badge {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.card-actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  align-items: center;
+}
+
+/* Metric Card Grid */
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-4);
+}
+
+@media (max-width: 1024px) {
+  .metric-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .metric-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card Loading State Container */
+.card-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.card.loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: var(--radius);
+  animation: pulse var(--motion-slow) infinite;
 }
 
 /* ──────────────────────────────────────────────────────────────────────────────

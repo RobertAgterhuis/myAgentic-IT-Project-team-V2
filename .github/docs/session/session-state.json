@@ -169,5 +169,14 @@
     "last_loaded_at": null
   },
 
-  "scope_change_history": []
+  "scope_change_history": [],
+
+  "github_sync": {
+    "last_synced": null,
+    "milestones_open": 0,
+    "milestones_closed": 0,
+    "issues_open": 0,
+    "issues_closed": 0,
+    "drift_findings": []
+  }
 }

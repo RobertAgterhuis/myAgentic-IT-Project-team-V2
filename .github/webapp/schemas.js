@@ -42,6 +42,29 @@ function validateSessionState(data) {
   if (data.completed_agents !== undefined && !Array.isArray(data.completed_agents)) {
     errors.push('completed_agents must be an array');
   }
+  if (data.github_sync !== undefined) {
+    if (typeof data.github_sync !== 'object' || Array.isArray(data.github_sync)) {
+      errors.push('github_sync must be an object');
+    } else {
+      const gs = data.github_sync;
+      opt(gs.last_synced, 'github_sync.last_synced', 'string', errors);
+      if (gs.milestones_open !== undefined && typeof gs.milestones_open !== 'number') {
+        errors.push('github_sync.milestones_open must be a number');
+      }
+      if (gs.milestones_closed !== undefined && typeof gs.milestones_closed !== 'number') {
+        errors.push('github_sync.milestones_closed must be a number');
+      }
+      if (gs.issues_open !== undefined && typeof gs.issues_open !== 'number') {
+        errors.push('github_sync.issues_open must be a number');
+      }
+      if (gs.issues_closed !== undefined && typeof gs.issues_closed !== 'number') {
+        errors.push('github_sync.issues_closed must be a number');
+      }
+      if (gs.drift_findings !== undefined && !Array.isArray(gs.drift_findings)) {
+        errors.push('github_sync.drift_findings must be an array');
+      }
+    }
+  }
   return { valid: errors.length === 0, errors };
 }
 
@@ -305,6 +328,27 @@ function validateDriftReport(data) {
   return { valid: errors.length === 0, errors };
 }
 
+/* ── GitHub State Snapshot ────────────────────────────────────── */
+
+function validateGithubSnapshot(data) {
+  const errors = [];
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { valid: false, errors: ['snapshot must be an object'] };
+  }
+  str(data.repo, 'repo', errors);
+  str(data.captured_at, 'captured_at', errors);
+  if (!data.summary || typeof data.summary !== 'object') {
+    errors.push('summary must be an object');
+  } else {
+    for (const k of ['milestones_open', 'milestones_closed', 'issues_open', 'issues_closed']) {
+      if (typeof data.summary[k] !== 'number') errors.push(`summary.${k} must be a number`);
+    }
+  }
+  if (!Array.isArray(data.milestones)) errors.push('milestones must be an array');
+  if (!Array.isArray(data.issues)) errors.push('issues must be an array');
+  return { valid: errors.length === 0, errors };
+}
+
 /* ── Exports ──────────────────────────────────────────────────── */
 
 module.exports = {
@@ -319,6 +363,7 @@ module.exports = {
   validateQuestionnaireUpdate,
   validateProjectBrief,
   validateDriftReport,
+  validateGithubSnapshot,
   VALID_ANALYTICS_EVENTS,
   VALID_MUTATION_ACTIONS,
   VALID_DRIFT_TYPES,

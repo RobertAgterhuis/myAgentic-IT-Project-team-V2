@@ -165,7 +165,24 @@ This contract defines:
       "tickets_requeued": [],
       "brand_assets_reactivation_status": "NOT_APPLICABLE | PENDING | BRAND_ASSETS_WAITING | BRAND_ASSETS_PARTIAL | BRAND_ASSETS_COMPLETE | STORYBOOK_WAITING | STORYBOOK_PARTIAL | STORYBOOK_COMPLETE"
     }
-  ]
+  ],
+
+  "github_sync": {
+    "last_synced": "ISO 8601 | null — timestamp of the last github-state-snapshot.js run",
+    "milestones_open": 0,
+    "milestones_closed": 0,
+    "issues_open": 0,
+    "issues_closed": 0,
+    "drift_findings": [
+      {
+        "id": "string — drift ID from drift-detector",
+        "type": "string — DRIFT_TYPE value",
+        "severity": "string — SEVERITY value",
+        "sprint": "string",
+        "summary": "string"
+      }
+    ]
+  }
 }
 ```
 

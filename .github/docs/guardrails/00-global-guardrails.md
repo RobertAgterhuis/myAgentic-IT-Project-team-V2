@@ -82,6 +82,12 @@
 | G-GLOB-63 | GitHub repository MUST have branch protection on `main` before Phase 5 starts. The GitHub Configuration Audit (`npm run audit:github`) MUST pass at Onboarding and every 3 sprints. Violation: `GUARDRAIL_VIOLATION: G-GLOB-63`. |
 | G-GLOB-64 | Repository configuration (merge settings, branch protection, security features) MUST conform to the best-practice baseline defined in `.github/scripts/github-config-audit.js`. Deviations are auto-remediated where safe, or escalated to the user. Violation: `GUARDRAIL_VIOLATION: G-GLOB-64`. |
 
+## 8. GITHUB STATE SYNCHRONIZATION
+
+| Rule | Required action |
+|---|---|
+| G-GLOB-65 | At Sprint Gate Step 0, the Orchestrator MUST run `github-state-snapshot.js` to capture the current GitHub board state before proceeding. The snapshot MUST be written to `.github/docs/session/github-state-snapshot.json` and the `github_sync` section of `session-state.json` MUST be updated with the snapshot summary (`last_synced`, `milestones_open`, `milestones_closed`, `issues_open`, `issues_closed`). If drift findings exist, they MUST be stored in `github_sync.drift_findings`. Snapshot failure (e.g., `gh` CLI unavailable) is a WARNING, not a blocker. Violation: `GUARDRAIL_VIOLATION: G-GLOB-65`. |
+
 ---
 
 ## ESCALATION PATH

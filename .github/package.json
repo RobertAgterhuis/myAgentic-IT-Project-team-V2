@@ -17,7 +17,8 @@
     "test:coverage": "vitest run --coverage",
     "lint": "eslint webapp/",
     "check": "node -c webapp/server.js",
-    "audit:github": "node scripts/github-config-audit.js"
+    "audit:github": "node scripts/github-config-audit.js",
+    "snapshot:github": "node scripts/github-state-snapshot.js"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "^4.0.18",

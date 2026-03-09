@@ -484,7 +484,15 @@ If a phase agent fails to produce a valid handoff after 3 consecutive attempts (
 
 Before every sprint, the Orchestrator performs the following checks:
 
-**Step 0: Consult decisions (MANDATORY)**
+**Step 0: GitHub State Snapshot + Consult decisions (MANDATORY)**
+
+**Step 0a: Capture GitHub State**
+1. Run `node .github/scripts/github-state-snapshot.js` to capture the current GitHub board state (milestones, issues, labels) into `.github/docs/session/github-state-snapshot.json`.
+2. Inject the snapshot summary as a `## GITHUB STATE` context block into the Reevaluate Agent context (same injection pattern as `## QUESTIONNAIRE INPUT`).
+3. Update `session-state.json` field `github_sync.last_synced` with the snapshot's `captured_at` timestamp, and populate `milestones_open`, `milestones_closed`, `issues_open`, `issues_closed` from the snapshot summary.
+4. If the snapshot script fails (e.g., `gh` CLI not authenticated), log a warning and proceed — do NOT block the Sprint Gate on snapshot failure.
+
+**Step 0b: Consult decisions**
 1. Read `.github/docs/decisions.md` — extract all items with status `OPEN` and priority `HIGH`
 2. Scan `.github/docs/decisions/` — for each `.md` file, read the category header (`> Status:` line). **Skip files with `Status: DEFERRED`** — these represent inapplicable technology stacks.
 3. From ACTIVE and PARTIAL category files, read all `DECIDED` items. From PARTIAL category files, also note individually deferred items (rows in the "Deferred Decisions" subsection) — these are informational only.

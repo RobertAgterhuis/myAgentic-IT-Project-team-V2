@@ -242,11 +242,12 @@ The Sprint Gate is the decision point between Synthesis and each sprint in Phase
 - Synthesis outputs (all 6 documents APPROVED)
 - `.github/docs/decisions.md` (decided items since last gate)
 - `.github/docs/session/reevaluate-trigger.json` (if `status: "PENDING"`)
+- `.github/docs/session/github-state-snapshot.json` (captured at Sprint Gate Step 0)
 - Sprint Completion Report from previous sprint (if not first sprint)
 - Lessons learned from previous sprint (if not first sprint)
 
 ### Sprint Gate Steps
-1. **Step 0 — Check Decisions + Reevaluate Triggers:** Load decisions.md for new DECIDED items; check reevaluate-trigger.json for PENDING triggers. If PENDING reevaluate found, execute REEVALUATE before proceeding.
+1. **Step 0 — GitHub State Snapshot + Check Decisions + Reevaluate Triggers:** Run `github-state-snapshot.js` to capture current GitHub board state (milestones, issues) into `github-state-snapshot.json`. Inject snapshot as `## GITHUB STATE` block into Reevaluate Agent context. Update `session-state.json` `github_sync` fields. Then load decisions.md for new DECIDED items; check reevaluate-trigger.json for PENDING triggers. If PENDING reevaluate found, execute REEVALUATE before proceeding.
 2. **Step 1 — Present Sprint:** Present the next sprint's stories to user for `IMPLEMENT` or `BACKLOG` decision per story. Apply Definition of Ready check. Inject lessons-learned from previous sprints.
 
 ### Outputs

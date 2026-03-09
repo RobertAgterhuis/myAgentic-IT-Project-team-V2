@@ -1,0 +1,43 @@
+{
+  "sprint_id": "SP-4",
+  "stories": [
+    {
+      "story_id": "TECH-02",
+      "status": "IMPLEMENTED",
+      "acceptance_criteria_passed": true,
+      "tests_added": 0,
+      "tests_passed": 622,
+      "tests_failed": 0,
+      "guardrail_violations": [],
+      "changed_files": [
+        ".github/webapp/server.js",
+        ".github/webapp/middleware.js",
+        ".github/webapp/routes/questionnaires.js",
+        ".github/webapp/routes/decisions.js",
+        ".github/webapp/routes/commands.js",
+        ".github/webapp/routes/progress.js",
+        ".github/webapp/routes/misc.js"
+      ]
+    }
+  ],
+  "sprint_kpi_measurement": {
+    "kpi_id": "KPI-TECH-02",
+    "baseline": {
+      "server_js_loc": 1370,
+      "module_count": 1,
+      "test_count": 622,
+      "test_pass_rate": 1.0
+    },
+    "measured_after_sprint": {
+      "server_js_loc": 189,
+      "module_count": 7,
+      "test_count": 622,
+      "test_pass_rate": 1.0
+    },
+    "target_met": true
+  },
+  "blockers_resolved": [],
+  "blockers_open": [],
+  "parallel_tracks_executed": [],
+  "new_critical_findings": []
+}

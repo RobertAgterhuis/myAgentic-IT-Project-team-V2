@@ -6,7 +6,7 @@ nav_order: 3
 
 # Technical Manual — Agentic IT Project Team
 
-> Version 1.0 | Last updated: 2026-03-08
+> Version 1.4 | Last updated: 2026-03-08 (SP-4)
 
 This manual covers the server architecture, API reference, data model, configuration, deployment, and development practices for the Questionnaire & Decisions Manager web application.
 
@@ -40,18 +40,29 @@ This manual covers the server architecture, API reference, data model, configura
 └─────────────────────────────────────────────────────┘
                         │
 ┌───────────────────────┼─────────────────────────────┐
-│               server.js (HTTP Router)                │
-│  ┌───────┐ ┌────────┐ ┌────────┐ ┌───────────────┐  │
-│  │Routes │ │ SSE    │ │Metrics │ │Security Hdrs  │  │
-│  └───┬───┘ └────────┘ └────────┘ └───────────────┘  │
+│            server.js (Coordinator, 189 LOC)          │
+│  Imports + config + shared state + ctx + routing     │
+│                                                      │
+│  ┌────────────────┐  ┌──────────────────────────┐    │
+│  │ middleware.js   │  │ routes/                   │   │
+│  │ (pure funcs)   │  │  questionnaires.js        │   │
+│  │ sanitization   │  │  decisions.js             │   │
+│  │ logging        │  │  commands.js              │   │
+│  │ security hdrs  │  │  progress.js              │   │
+│  │ error handling │  │  misc.js (SSE, metrics,   │   │
+│  └────────────────┘  │   export, help, health,   │   │
+│                       │   analytics, audit, static)│  │
+│                       └──────────────────────────┘   │
 │      │                                               │
 │  ┌───┴───┐ ┌────────┐ ┌────────┐ ┌───────────────┐  │
 │  │models │ │ cache  │ │schemas │ │  audit         │  │
 │  └───┬───┘ └───┬────┘ └────────┘ └───────────────┘  │
 │      │         │                                     │
-│  ┌───┴─────────┴───┐                                 │
-│  │   store.js      │ ← FileStore / InMemoryStore     │
-│  └─────────────────┘                                 │
+│  ┌───┴─────────┴───┐  ┌─────────────────┐           │
+│  │   store.js      │  │  file-lock.js   │           │
+│  │ FileStore /     │  │  withFileLock() │           │
+│  │ InMemoryStore   │  │  (shared lock)  │           │
+│  └─────────────────┘  └─────────────────┘           │
 │         ↕                                            │
 │  ┌─────────────────┐                                 │
 │  │ Filesystem       │ (.github/docs/, BusinessDocs/) │
@@ -64,7 +75,9 @@ This manual covers the server architecture, API reference, data model, configura
 - **Zero runtime dependencies** — Only Node.js built-in modules (`http`, `fs`, `path`, `url`, `crypto`) for the web UI.
 - **MCP integration** — MCP server uses `@modelcontextprotocol/sdk` for cross-IDE support via stdio transport.
 - **Store abstraction** — All filesystem I/O goes through the Store interface. `FileStore` for production, `InMemoryStore` for testing.
-- **Atomic writes** — `safeWriteSync()` writes to a temp file, then renames. A backup is created before overwriting existing files.
+- **Atomic writes** — `safeWriteSync()` (server.js) and `store.writeFile()` (mcp-server.js) write to a temp file, then rename. A backup is created before overwriting existing files.
+- **Unified store writes** — As of SP-2, `mcp-server.js` delegates all writes through `store.writeFile()` instead of its own `safeWrite()` implementation, ensuring identical backup, atomic-rename, and directory-creation behavior across both entry points.
+- **Shared file locking** — All JSON write paths are serialized per file via `withFileLock()` from `file-lock.js`. Uses promise-chaining (no OS-level locks) to prevent concurrent write corruption. Both `server.js` (11 call sites) and `mcp-server.js` (6 call sites) share the same lock Map through Node.js require cache.
 - **Localhost only** — Server binds to `127.0.0.1:3000`. No external network exposure.
 - **Single-page UI** — `index.html` contains all HTML, CSS, and JavaScript. No build step, no bundler.
 
@@ -72,28 +85,71 @@ This manual covers the server architecture, API reference, data model, configura
 
 ## Module Reference
 
-### server.js (~1170 lines)
-The main application module. Exports the HTTP server and key utilities.
+### file-lock.js
+Shared concurrency primitive for all JSON file writes. Prevents concurrent write corruption across both server.js and mcp-server.js.
+
+**Exports:**
+- `withFileLock(filePath, fn)` — Acquires a per-file promise-chain lock, executes `fn()`, and releases. Locks are keyed by `path.resolve(filePath)`. Errors in `fn` are propagated after lock release.
+- `_writeLocks` — `Map<string, Promise>` of active lock chains (exported for testing only).
+
+**Design:**
+- Uses promise-chaining (not OS-level file locks) — each new write `.then()`s onto the previous promise for the same resolved path.
+- Lock Map entries are cleaned up after the chain completes (both success and error).
+- Singleton: both `server.js` and `mcp-server.js` import the same instance via Node.js require cache.
+- Zero external dependencies — only `node:path`.
+
+**Added in:** SP-1 (TECH-01 — P2-R01: file corruption prevention).
+
+### server.js (~189 lines) — Coordinator
+The main application coordinator. Initializes shared state, builds the context object, wires route modules, and creates the HTTP server.
+
+**Decomposed in:** SP-4 (TECH-02 — server.js decomposition). Previously ~1370 LOC.
+
+**Key exports:** (backward-compatible with mcp-server.js and test imports)
+- `server` — Node.js `http.Server` instance
+- `withFileLock(filePath, fn)` — Re-exported from `file-lock.js`
+- `sanitizeMarkdown(text)`, `sanitizeQID(text)`, `detectSecrets(text)`, `checkSecretsInBody(body, fields)`, `safePath(base, relative)`, `setSecurityHeaders(res)` — Re-exported from `middleware.js`
+- `structuredLog(level, message, fields)` — Re-exported from `middleware.js`
+- `recordMetric(method, path, duration, status)` — Records request metric
+- `computePercentiles(arr)` — Returns `{ p50, p95, p99 }`
+- `sseNotify(channel, data)` — Broadcasts SSE event to connected clients
+- `_sseClients`, `_cache`, `_metrics`, `_audit` — Shared state instances
+
+### middleware.js (~262 lines)
+Pure middleware functions with no shared state dependencies. Extracted from server.js in SP-4.
 
 **Key exports:**
-- `server` — Node.js `http.Server` instance
-- `sanitizeMarkdown(text)` — Escapes Markdown injection characters
-- `sanitizeQID(text)` — Neutralizes Q-ID patterns in user input
-- `detectSecrets(text)` — Returns array of detected secret pattern names
-- `safePath(base, relative)` — Validates path, throws on traversal
-- `setSecurityHeaders(res)` — Sets all security response headers
-- `recordMetric(method, path, duration, status)` — Records request metric
-- `computePercentiles(arr)` — Returns `{ p50, p95, p99 }` for a sorted number array
-- `sseNotify(channel, data)` — Broadcasts SSE event to connected clients
-- `_sseClients` — Set of active SSE client connections
-- `_cache` — FileCache instance
-- `_metrics` — Metrics state object
-- `_audit` — AuditTrail instance
+- `structuredLog(level, message, fields)` — JSON log entry to stdout/stderr
+- `log(method, url, status, ms)` — HTTP request log shorthand
+- `setSecurityHeaders(res)` — CSP, X-Frame-Options, etc.
+- `safePath(base, relative)` — Blocks path traversal
+- `json(res, status, data)` — Send JSON response with security headers
+- `readBody(req)` — Read request body (1MB limit)
+- `parseBody(req)` — Parse JSON body with Content-Type validation
+- `sanitizeMarkdown(text)` — Escape Markdown injection
+- `sanitizeQID(text)` — Neutralize Q-ID patterns
+- `detectSecrets(text)` — Scan for secret patterns
+- `checkSecretsInBody(body, fields)` — Multi-field secret scan
+- `handleMethodNotAllowed(res, pathname, routes)` — 405 response
+- `handleRouteError(err, res)` — Error response handler
+
+### routes/ — Route Handler Modules
+Factory function modules receiving a shared `ctx` object. Each returns a route map (`{ 'METHOD /path': handler }`).
+
+| Module | LOC | Routes |
+|--------|-----|--------|
+| `routes/questionnaires.js` | 150 | `GET /api/questionnaires`, `POST /api/save` |
+| `routes/decisions.js` | 200 | `GET /api/decisions`, `POST /api/decisions`, `POST /api/decisions/activate-category` |
+| `routes/commands.js` | 130 | `POST /api/command`, `GET /api/command` |
+| `routes/progress.js` | 160 | `GET /api/progress` |
+| `routes/misc.js` | 297 | `GET /api/session`, `POST /api/reevaluate`, `GET /api/export`, `GET /api/help`, `GET /api/events`, `GET /api/metrics`, `GET /api/health`, `POST /api/analytics`, `GET /api/analytics`, `GET /api/audit`, `GET /health` |
 
 ### mcp-server.js
 MCP (Model Context Protocol) server for cross-IDE integration. Exposes the Command Center functionality as MCP tools and resources via stdio transport.
 
 **Dependency:** `@modelcontextprotocol/sdk` (the only runtime npm dependency).
+
+**Concurrency:** All 6 write paths use `withFileLock()` from `file-lock.js` to serialize file mutations, sharing the same lock Map as `server.js`.
 
 **Transport:** stdio — launched automatically by the IDE via `.vscode/mcp.json` or equivalent IDE configuration.
 
@@ -125,7 +181,7 @@ MCP (Model Context Protocol) server for cross-IDE integration. Exposes the Comma
 
 **Key implementation details:**
 - Reuses `models.js`, `store.js`, `cache.js`, `audit.js`, and `server.js` sanitization functions from the web UI
-- All file writes use the same `safeWrite()` atomic write pattern
+- All file writes delegate to `store.writeFile()` (unified in SP-2, TECH-04), ensuring identical backup + atomic-rename behavior as server.js
 - Input sanitization (markdown injection, Q-ID neutralization, secret detection) is applied to all tool inputs
 - Path traversal is blocked via `safePath()` on all file parameters
 - Startup gated behind `if (require.main === module)` for test-safe importing
@@ -175,12 +231,26 @@ File cache with mtime-based invalidation.
 - `stats()` → `{ hits, misses, size }` — Cache statistics
 
 ### schemas.js
-JSON schema validators.
+JSON schema validators for all data stores. All validators return `{ valid: boolean, errors: string[] }`.
 
-**Functions:**
-- `validateSessionState(obj)` → `{ valid, errors }` — Validates session state object
-- `validateCommandEntry(obj)` → `{ valid, errors }` — Validates a command queue entry
-- `validateAnalyticsEvent(obj)` → `{ valid, errors }` — Validates an analytics event
+**Pre-existing validators:**
+- `validateSessionState(obj)` — Validates session state object (schema_version, project_name, status, etc.)
+- `validateCommandEntry(obj)` — Validates a command queue entry (command, project, timestamp)
+- `validateAnalyticsEvent(obj)` — Validates a single analytics event (type, timestamp, properties)
+
+**New validators (SP-3, TECH-03):**
+- `validateAnalyticsEventArray(arr)` — Validates an array of analytics events (1–100 items)
+- `validateReevaluateTrigger(obj)` — Validates reevaluate trigger data (scope ∈ {ALL, BUSINESS, TECH, UX, MARKETING}, reason, source)
+- `validateDecisionCreate(obj)` — Validates decision creation (type, priority, scope, text required; type/priority enum checked)
+- `validateDecisionMutation(obj)` — Validates decision mutation structure (action required, optional id/answer/reason/text/notes strings)
+- `validateQuestionnaireUpdate(obj)` — Validates questionnaire answer update (questionId, answer, status ∈ {ANSWERED, OPEN, SKIPPED, DEFERRED})
+- `validateProjectBrief(obj)` — Validates project brief (non-empty string, max 50 KB)
+
+**Exported constants:**
+- `VALID_ANALYTICS_EVENTS` — Array of 9 valid analytics event types
+- `VALID_MUTATION_ACTIONS` — Array of 8 valid decision mutation actions
+
+**Coverage (SP-3):** 98.3% statements, 96.8% branches, 100% functions
 
 ### strings.js
 Externalized user-facing strings.
@@ -672,7 +742,7 @@ Detected patterns generate warnings (not rejections) — users are informed but 
     audit-trail.test.js       — AuditTrail class
     backup-strategy.test.js    — Backup-on-write behavior
     file-lock.test.js          — Concurrent write safety
-    mcp-server.test.js         — MCP server tools + resources (70 tests)
+    mcp-server.test.js         — MCP server tools + resources (71 tests)
     models-edge.test.js        — Model parsing edge cases
     sanitization.test.js       — Input sanitization
     ...
@@ -704,7 +774,7 @@ Configured in `.github/vitest.config.mjs`:
 - Functions: ≥ 70%
 - Lines: ≥ 70%
 
-Actual coverage: **95%+ statements**.
+Actual coverage (as of SP-3): **87.40% statements, 76.45% branches, 92.15% functions, 88.94% lines** (622 tests across 21 test files).
 
 ### Test Conventions
 

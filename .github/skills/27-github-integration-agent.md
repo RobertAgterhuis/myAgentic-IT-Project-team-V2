@@ -263,11 +263,13 @@ jobs:
 
 ## STEP 6 (UPDATE TRIGGER): UPDATE BOARD AFTER SPRINT
 
-After every sprint the agent updates the existing issues based on the Sprint Completion Report:
+After every sprint the agent updates the existing issues based on the Sprint Completion Report.
+
+**MANDATORY:** The agent MUST use the GitHub API (e.g., `github.rest.issues.update({ state: 'closed', state_reason: 'completed' })`) to close each IMPLEMENTED issue. Writing a Sync Report alone is NOT sufficient — the API call must be made. If unable to authenticate or reach the API, escalate via Human Escalation Protocol type `SCOPE_DECISION`. Do NOT hand off until all IMPLEMENTED issues are confirmed closed via API response.
 
 | Sprint story status | GitHub Issue action |
 |--------------------|---------------------|
-| `IMPLEMENTED` | Close issue (`state: closed`) → auto-move to Done |
+| `IMPLEMENTED` | Close issue via GitHub API (`state: closed`, `state_reason: completed`) → auto-move to Done |
 | `BLOCKED` | Add label `status: blocked`, add blocker description as comment |
 | `PARTIAL` | Add comment describing what was done and what remains open |
 | `SCOPE_CHANGE_HOLD SC-[N]` | Add label `scope-change-hold`; add comment: `Sprint on hold — Scope Change SC-[N] in progress. Awaiting Sprint Gate Reconciliation before resuming.` Move to Backlog column. |

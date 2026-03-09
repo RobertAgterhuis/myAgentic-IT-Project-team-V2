@@ -54,6 +54,7 @@
 | ORC-44 | HOTFIX + SCOPE CHANGE concurrency |
 | ORC-46 | Immediate session-state initialization on command |
 | ORC-47 | Session-state git persistence — every write to session-state.json MUST be followed by `git add .github/docs/session/session-state.json && git commit` |
+| ORC-48 | GitHub issue closure enforcement — REJECT GitHub Integration Agent handoff if any IMPLEMENTED story's issue is not confirmed closed via API |
 
 ---
 
@@ -620,10 +621,10 @@ Choose an action:
 
 ### On GitHub Integration Agent handoff (sprint update — after Documentation Agent):
 1. Receive GitHub Sync Report for the completed sprint
-2. Check: IMPLEMENTED stories closed as Issue?
+2. **VERIFY** (MANDATORY): For every IMPLEMENTED story, confirm the GitHub Sync Report lists the issue as `Closed (IMPLEMENTED)` with the issue number. If any IMPLEMENTED story is NOT listed as closed: **REJECT the handoff** and return to the GitHub Integration Agent with instruction: `CLOSE_MISSING: #[issue-number] — story [ID] is IMPLEMENTED but issue is still open. Use the GitHub API to close it.`
 3. Check: BLOCKED stories labeled and commented?
-4. On errors: return to GitHub Integration Agent with error detail
-5. With HANDOFF CHECKLIST fully checked: activate Retrospective Agent
+4. On errors or CLOSE_MISSING: return to GitHub Integration Agent with error detail — do NOT proceed to Retrospective
+5. With HANDOFF CHECKLIST fully checked AND all IMPLEMENTED issues confirmed closed: activate Retrospective Agent
 
 ### On Retrospective Agent handoff:
 1. Receive Sprint Retrospective report (`.github/docs/retrospectives/sprint-[SP-N]-retrospective.md`)

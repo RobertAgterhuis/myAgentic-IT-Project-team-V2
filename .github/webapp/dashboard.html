@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard Home — myAgentic-IT Project Team</title>
+  <style>
+    /* Fallback styles for dashboard-specific layout */
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; padding: 0; font-family: inherit; }
+  </style>
+</head>
+<body>
+  <!-- ──────────────────────────────────────────────────────────────────────
+       DASHBOARD HOME — Enterprise UI Redesign Implementation (FEAT-02)
+       
+       This page showcases all components from the design system:
+       - #36: Foundation (buttons, cards, badges, typography)
+       - #37: Navigation & Layout (sidebar, header, grid)
+       - #38: Card & Panel Components (metric cards, status badges)
+       - #39: Data Tables & Lists (sorting, filtering)
+       - #40: Forms & Inputs (validation, toggles)
+       - #41: Feedback System (toasts, alerts, progress)
+       - #42: Dashboard Home (health, metrics, activity, stats)
+       
+       All components are responsive (desktop, 1024px, 768px breakpoints)
+       and fully accessible (WCAG 2.1 AA)
+       ────────────────────────────────────────────────────────────────────── -->
+
+  <!-- ── Skip to Main Content Link ────────────────────────────────────────── -->
+  <a href="#main-content" class="skip-nav" style="position:absolute;top:-40px;left:0;background:#000;color:#fff;padding:8px;z-index:9999;">Skip to main content</a>
+
+  <!-- ── Dashboard Container ──────────────────────────────────────────────── -->
+  <div class="dashboard" style="padding: var(--space-6); background: var(--bg); min-height: 100vh;">
+
+    <!-- ── PROJECT HEALTH OVERVIEW ──────────────────────────────────────── -->
+    <div class="dashboard-section">
+      <div class="dashboard-section-header">
+        <h2 class="dashboard-section-title">Project Health Overview</h2>
+        <div class="dashboard-section-actions">
+          <button class="btn btn-sm" id="btn-refresh-health" title="Refresh health data">
+            <span aria-hidden="true">↻</span> Refresh
+          </button>
+        </div>
+      </div>
+      
+      <div class="health-overview" id="health-overview">
+        <!-- ── Health Indicator: Code Quality ──────────────────── -->
+        <div class="health-indicator">
+          <div class="health-label">Code Quality</div>
+          <div class="health-value" data-metric="quality">94</div>
+          <div class="health-status">
+            <span class="badge badge-success">Excellent</span>
+          </div>
+        </div>
+
+        <!-- ── Health Indicator: Test Coverage ────────────────── -->
+        <div class="health-indicator">
+          <div class="health-label">Test Coverage</div>
+          <div class="health-value" data-metric="coverage">87.4%</div>
+          <div class="health-status">
+            <span class="badge badge-info">High</span>
+          </div>
+        </div>
+
+        <!-- ── Health Indicator: Build Status ───────────────── -->
+        <div class="health-indicator">
+          <div class="health-label">Build Status</div>
+          <div class="health-value" data-metric="builds">✓ Passing</div>
+          <div class="health-status">
+            <span class="badge badge-success">Healthy</span>
+          </div>
+        </div>
+
+        <!-- ── Health Indicator: Deployment Status ──────────── -->
+        <div class="health-indicator">
+          <div class="health-label">Deployment</div>
+          <div class="health-value" data-metric="deployment">Live</div>
+          <div class="health-status">
+            <span class="badge badge-success">Stable</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── METRICS SHOWCASE ─────────────────────────────────────────────── -->
+    <div class="dashboard-section">
+      <div class="dashboard-section-header">
+        <h2 class="dashboard-section-title">Key Metrics</h2>
+        <div class="dashboard-section-actions">
+          <button class="btn btn-sm" id="btn-refresh-metrics" title="Refresh metrics data">
+            <span aria-hidden="true">↻</span> Refresh
+          </button>
+          <button class="btn btn-sm btn-ghost" id="btn-export-metrics" title="Export metrics as JSON">
+            <span aria-hidden="true">⬇</span> Export
+          </button>
+        </div>
+      </div>
+
+      <div class="metrics-showcase" id="metrics-showcase">
+        <!-- ── Metric Card: Requests ──────────────────────────────── -->
+        <div class="metric-card-showcase">
+          <div class="metric-card-header">
+            <div class="metric-title-small">HTTP Requests</div>
+            <div class="metric-badge-container">
+              <span class="badge badge-info">Last Hour</span>
+            </div>
+          </div>
+          <div class="metric-large-value" data-metric="requests">1,247</div>
+          <div class="metric-change-indicator up">
+            <span aria-hidden="true">↑</span> +12% from yesterday
+          </div>
+        </div>
+
+        <!-- ── Metric Card: Error Rate ──────────────────────────── -->
+        <div class="metric-card-showcase">
+          <div class="metric-card-header">
+            <div class="metric-title-small">Error Rate</div>
+            <div class="metric-badge-container">
+              <span class="badge badge-warning">Monitoring</span>
+            </div>
+          </div>
+          <div class="metric-large-value" data-metric="errors">2.1%</div>
+          <div class="metric-change-indicator down">
+            <span aria-hidden="true">↓</span> -0.3% improvement
+          </div>
+        </div>
+
+        <!-- ── Metric Card: Response Time ──────────────────────── -->
+        <div class="metric-card-showcase">
+          <div class="metric-card-header">
+            <div class="metric-title-small">Avg Response Time</div>
+            <div class="metric-badge-container">
+              <span class="badge badge-success">Good</span>
+            </div>
+          </div>
+          <div class="metric-large-value" data-metric="response-time">142<span class="metric-unit" style="font-size: 16px;">ms</span></div>
+          <div class="metric-change-indicator">
+            <span aria-hidden="true">→</span> Stable
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── QUICK STATS ROW ──────────────────────────────────────────────── -->
+    <div class="dashboard-section">
+      <div class="dashboard-section-header">
+        <h2 class="dashboard-section-title">Quick Stats</h2>
+      </div>
+
+      <div class="stats-row" id="stats-row">
+        <!-- ── Stat: Total Files ────────────────────────── -->
+        <div class="stat-card">
+          <div class="stat-icon">📄</div>
+          <div class="stat-number" data-stat="files">42</div>
+          <div class="stat-label">Active Files</div>
+        </div>
+
+        <!-- ── Stat: Team Members ───────────────────────── -->
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-number" data-stat="team">8</div>
+          <div class="stat-label">Team Members</div>
+        </div>
+
+        <!-- ── Stat: Sprint Progress ─────────────────────── -->
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-number" data-stat="sprint">72%</div>
+          <div class="stat-label">Sprint Complete</div>
+        </div>
+
+        <!-- ── Stat: GitHub Stars ────────────────────────── -->
+        <div class="stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-number" data-stat="stars">156</div>
+          <div class="stat-label">GitHub Stars</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── ACTIVITY FEED ────────────────────────────────────────────────── -->
+    <div class="dashboard-section">
+      <div class="dashboard-section-header">
+        <h2 class="dashboard-section-title">Recent Activity</h2>
+        <div class="dashboard-section-actions">
+          <button class="btn btn-sm" id="btn-refresh-activity" title="Refresh activity feed">
+            <span aria-hidden="true">↻</span> Refresh
+          </button>
+        </div>
+      </div>
+
+      <div class="activity-feed" id="activity-feed" role="feed" aria-label="Recent activity timeline">
+        <!-- ── Activity Item: Skeleton Loader (while loading) ──── -->
+        <div class="activity-item skeleton" style="min-height: 80px;">
+          <div class="skeleton-avatar"></div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: var(--space-2);">
+            <div class="skeleton-text large" style="width: 70%;"></div>
+            <div class="skeleton-text small" style="width: 40%;"></div>
+          </div>
+        </div>
+
+        <!-- ── Activity Item: Code Commit ────────────────────── -->
+        <div class="activity-item" role="article">
+          <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Ccircle cx='24' cy='24' r='24' fill='%233f51b5'/%3E%3Ctext x='24' y='32' text-anchor='middle' fill='white' font-size='24'%3ERA%3C/text%3E%3C/svg%3E" class="activity-avatar" alt="Robert Agterhuis avatar">
+          <div class="activity-content">
+            <div class="activity-message">
+              <div>
+                <div class="activity-description">
+                  <strong>Robert Agterhuis</strong> merged branch <code>feature/FEAT-02-enterprise-ui-redesign</code>
+                </div>
+                <div class="activity-description-secondary">Design system CSS with 80+ components complete</div>
+              </div>
+              <div class="activity-time">2 hours ago</div>
+            </div>
+            <div class="activity-action">
+              <span class="activity-action-badge">Merge</span>
+              <span class="activity-action-badge" style="background: var(--success-light); color: var(--success);">+2500 lines</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Activity Item: Test Completion ──────────────────── -->
+        <div class="activity-item" role="article">
+          <div style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: var(--success-light); color: var(--success); border-radius: var(--radius-full); font-size: 24px;">✓</div>
+          <div class="activity-content">
+            <div class="activity-message">
+              <div>
+                <div class="activity-description">
+                  <strong>Test Suite Passed</strong> — All 788 tests passing
+                </div>
+                <div class="activity-description-secondary">Zero regressions detected in FEAT-02 builds</div>
+              </div>
+              <div class="activity-time">4 hours ago</div>
+            </div>
+            <div class="activity-action">
+              <span class="activity-action-badge" style="background: var(--success-light); color: var(--success);">Tests</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Activity Item: New Issue ─────────────────────── -->
+        <div class="activity-item" role="article">
+          <div style="display: flex; align-items: center; justify-content: center; width: 48px; height: 48px; background: var(--primary-light); color: var(--primary); border-radius: var(--radius-full); font-size: 24px;">📋</div>
+          <div class="activity-content">
+            <div class="activity-message">
+              <div>
+                <div class="activity-description">
+                  <strong>Phase 5</strong> milestone created — Implementation phase begins
+                </div>
+                <div class="activity-description-secondary">Sprint 7: Dashboard Home HTML structure</div>
+              </div>
+              <div class="activity-time">6 hours ago</div>
+            </div>
+            <div class="activity-action">
+              <span class="activity-action-badge">Phase 5</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STATUS PANEL GRID ────────────────────────────────────────────── -->
+    <div class="dashboard-section">
+      <div class="dashboard-section-header">
+        <h2 class="dashboard-section-title">System Status</h2>
+      </div>
+
+      <div class="status-panel-grid" id="status-panels">
+        <!-- ── Status Panel: Server Health ─────────────────────── -->
+        <div class="status-summary success">
+          <div class="status-icon-large">✓</div>
+          <div class="status-summary-content">
+            <div class="status-summary-title">Server Health</div>
+            <div class="status-summary-value">100%</div>
+            <div class="status-summary-description">All endpoints responding normally</div>
+          </div>
+        </div>
+
+        <!-- ── Status Panel: Database ───────────────────────── -->
+        <div class="status-summary success">
+          <div class="status-icon-large">💾</div>
+          <div class="status-summary-content">
+            <div class="status-summary-title">Database Status</div>
+            <div class="status-summary-value">Connected</div>
+            <div class="status-summary-description">File-based storage operational</div>
+          </div>
+        </div>
+
+        <!-- ── Status Panel: Auto-Save ───────────────────────── -->
+        <div class="status-summary warning">
+          <div class="status-icon-large">⚠</div>
+          <div class="status-summary-content">
+            <div class="status-summary-title">Auto-Save Status</div>
+            <div class="status-summary-value">Monitor</div>
+            <div class="status-summary-description">All changes saved within 2 seconds</div>
+          </div>
+        </div>
+
+        <!-- ── Status Panel: Security ────────────────────────── -->
+        <div class="status-summary success">
+          <div class="status-icon-large">🔒</div>
+          <div class="status-summary-content">
+            <div class="status-summary-title">Security Scan</div>
+            <div class="status-summary-value">Passed</div>
+            <div class="status-summary-description">No secrets or vulnerabilities detected</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MAIN NAVIGATION & DATA TABLE INTEGRATION EXAMPLE ──────────── -->
+    <div class="dashboard-section">
+      <div class="dashboard-section-header">
+        <h2 class="dashboard-section-title">Recent Milestones</h2>
+        <div class="dashboard-section-actions">
+          <button class="btn btn-sm btn-primary" id="btn-view-all-milestones">
+            View All Milestones →
+          </button>
+        </div>
+      </div>
+
+      <!-- ── Milestones Table (Data Table from FEAT-02 #39) ──────────── -->
+      <div class="dashboard-table-container">
+        <div class="dashboard-table-header">
+          <h3 style="margin: 0; font-size: var(--text-body); color: var(--text);">Sprint Timeline</h3>
+          <div class="dashboard-table-actions">
+            <button class="btn btn-sm btn-ghost" id="btn-filter-milestones">
+              <span aria-hidden="true">⊞</span> Filter
+            </button>
+          </div>
+        </div>
+
+        <table class="data-table" style="margin: 0;">
+          <thead>
+            <tr>
+              <th class="table-header" tabindex="0">Milestone <span aria-hidden="true" class="table-sort-icon"></span></th>
+              <th class="table-header" tabindex="0">Status <span aria-hidden="true" class="table-sort-icon"></span></th>
+              <th class="table-header" tabindex="0">Progress <span aria-hidden="true" class="table-sort-icon"></span></th>
+              <th class="table-header" tabindex="0">Completion <span aria-hidden="true" class="table-sort-icon"></span></th>
+              <th style="width: 60px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>FEAT-01</strong> Metrics Dashboard</td>
+              <td>
+                <span class="badge badge-success">Complete</span>
+              </td>
+              <td>
+                <div class="progress-bar" style="height: 6px;">
+                  <div class="progress-fill" style="width: 100%; background: var(--success);"></div>
+                </div>
+              </td>
+              <td>2026-03-05</td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-action-btn" title="View details">👁</button>
+                  <button class="row-action-btn" title="More options">⋯</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>FEAT-02</strong> Enterprise UI Redesign</td>
+              <td>
+                <span class="badge badge-success">Complete</span>
+              </td>
+              <td>
+                <div class="progress-bar" style="height: 6px;">
+                  <div class="progress-fill" style="width: 100%;"></div>
+                </div>
+              </td>
+              <td>2026-03-09</td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-action-btn" title="View details">👁</button>
+                  <button class="row-action-btn" title="More options">⋯</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td><strong>SPRINT-7</strong> Dashboard Implementation</td>
+              <td>
+                <span class="badge badge-info">In Progress</span>
+              </td>
+              <td>
+                <div class="progress-bar" style="height: 6px;">
+                  <div class="progress-fill" style="width: 15%;"></div>
+                </div>
+              </td>
+              <td>2026-03-15</td>
+              <td>
+                <div class="row-actions">
+                  <button class="row-action-btn" title="View details">👁</button>
+                  <button class="row-action-btn" title="More options">⋯</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── EMPTY STATE EXAMPLE ──────────────────────────────────────── -->
+    <div class="dashboard-section" style="display: none;" id="empty-section">
+      <div class="empty-state">
+        <div class="empty-state-icon">🤷</div>
+        <h3 class="empty-state-title">No Data Available</h3>
+        <p class="empty-state-message">This section is waiting for data. Check back soon or refresh the page.</p>
+        <div class="empty-state-action">
+          <button class="btn btn-sm btn-primary">Refresh Now</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Alert Example (FEAT-02 #41) ────────────────────────────────── -->
+  <div role="alert" class="alert info" style="position: fixed; bottom: var(--space-4); left: var(--space-4); max-width: 400px; z-index: 900; display: none;" id="alert-demo">
+    <div class="alert-icon">ℹ</div>
+    <div class="alert-content">
+      <div class="alert-title">Dashboard Loaded</div>
+      <div class="alert-message">All components are ready. Click any metric card to see more details.</div>
+    </div>
+    <button class="alert-close" onclick="this.parentElement.style.display='none';">×</button>
+  </div>
+
+  <!-- ── Toast Container (FEAT-02 #41) ────────────────────────────── -->
+  <div class="toast-container" id="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ── Modal Overlay Template (FEAT-02 #41) ─────────────────────────── -->
+  <div class="modal-overlay" id="modal-overlay" role="presentation">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Modal Title</h2>
+        <button class="modal-close" onclick="document.getElementById('modal-overlay').classList.remove('open');">×</button>
+      </div>
+      <div class="modal-content">
+        Modal content goes here. This is a template for FEAT-02 #41 feedback system implementation.
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" onclick="document.getElementById('modal-overlay').classList.remove('open');">Cancel</button>
+        <button class="btn btn-primary">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Scripts ──────────────────────────────────────────────────────── -->
+  <script>
+    // Dashboard initialization (placeholder for SP-7.3: Data Loading)
+    console.log('Dashboard Home (SP-7.1) loaded successfully');
+    console.log('All FEAT-02 design system components present');
+    
+    // Placeholder for dashboard.js data loading (SP-7.3)
+    // window.Dashboard = { loadData, renderMetrics, startAutoRefresh }
+  </script>
+</body>
+</html>

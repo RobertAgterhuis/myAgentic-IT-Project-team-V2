@@ -4,7 +4,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'self';">
   <meta property="og:title" content="myAgentic-IT-Project-team — Command Center">
   <meta property="og:description" content="Multi-agent system for end-to-end software solution creation. Manage questionnaires, decisions, and pipeline orchestration.">
   <meta property="og:type" content="website">
@@ -1877,6 +1876,7 @@ let _lastRefreshTime  = null;     // last successful load timestamp
 let _sseSource        = null;     // EventSource instance
 let _sseConnected     = false;
 let _sseReconnectDelay = 1000;
+let _sseStopped       = false;
 
 /* ── Analytics State (SP-R2-004-008) ─────────────────── */
 let _analyticsQueue   = [];
@@ -3741,6 +3741,8 @@ window.addEventListener('beforeunload', e => {
 
 /* ── SSE Client (SP-R2-004-006) ──────────────────────── */
 function connectSSE() {
+  if (_sseStopped) return;
+  if (document.visibilityState === 'hidden') return;
   if (_sseSource) { _sseSource.close(); _sseSource = null; }
   try {
     _sseSource = new EventSource('/api/events');
@@ -3758,13 +3760,16 @@ function connectSSE() {
   };
 
   _sseSource.onerror = () => {
+    if (_sseStopped) return;
     _sseConnected = false;
     updateConnectionStatus();
     if (_sseSource) { _sseSource.close(); _sseSource = null; }
     /* Exponential backoff reconnect (max 30s) */
     const delay = _sseReconnectDelay;
     _sseReconnectDelay = Math.min(_sseReconnectDelay * 2, 30000);
-    setTimeout(connectSSE, delay);
+    setTimeout(() => {
+      if (!_sseStopped && document.visibilityState !== 'hidden') connectSSE();
+    }, delay);
     /* Restore normal polling while SSE is down */
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
     pollInterval = 10000;
@@ -3788,6 +3793,33 @@ function connectSSE() {
     updateConnectionStatus();
   });
 }
+
+function stopSSE() {
+  _sseStopped = true;
+  _sseConnected = false;
+  if (_sseSource) {
+    _sseSource.close();
+    _sseSource = null;
+  }
+  updateConnectionStatus();
+}
+
+function resumeSSE() {
+  if (!_sseStopped) return;
+  _sseStopped = false;
+  _sseReconnectDelay = 1000;
+  connectSSE();
+}
+
+window.addEventListener('beforeunload', stopSSE);
+window.addEventListener('pagehide', stopSSE);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    stopSSE();
+  } else {
+    resumeSSE();
+  }
+});
 
 /* ── Analytics Client (SP-R2-004-008) ────────────────── */
 function trackEvent(eventName, properties) {

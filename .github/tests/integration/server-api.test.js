@@ -213,7 +213,7 @@ describe('GET / (static)', () => {
     expect(r.status).toBe(200);
     expect(r.headers['content-type']).toContain('text/html');
     expect(r.headers['x-content-type-options']).toBe('nosniff');
-    expect(r.headers['x-frame-options']).toBe('DENY');
+    expect(r.headers['x-frame-options']).toBe('SAMEORIGIN');
   });
 });
 

@@ -75,9 +75,6 @@
 
 | ID | Status | Scope | Subject | Reason | Date |
 |----|--------|-------|-----------|-------|-------|
-| DEC-112 | DEFERRED |  | test | this is not a real decission | 2026-03-08 |
-| DEC-113 | DEFERRED |  | test | this is not a real decission | 2026-03-08 |
-| DEC-114 | DEFERRED |  | test | this is not a real decission | 2026-03-08 |
 
 ---
 

@@ -234,7 +234,7 @@ describe('Sprint 1 Regression: Security', () => {
   it('security headers are set on all responses', async () => {
     const res = await req('GET', '/');
     expect(res.headers['x-content-type-options']).toBe('nosniff');
-    expect(res.headers['x-frame-options']).toBe('DENY');
+    expect(res.headers['x-frame-options']).toBe('SAMEORIGIN');
     expect(res.headers['content-security-policy']).toBeTruthy();
     expect(res.headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
     expect(res.headers['permissions-policy']).toBeTruthy();

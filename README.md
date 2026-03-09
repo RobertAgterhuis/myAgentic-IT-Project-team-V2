@@ -66,6 +66,14 @@ node .github/webapp/server.js
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser.
 
+Containerized run (TECH-08):
+
+```bash
+docker compose up --build
+```
+
+Then open [http://127.0.0.1:3000](http://127.0.0.1:3000).
+
 **3. Start a project** — in the Command Center:
 - Select **CREATE** (or **AUDIT** for existing software)
 - Enter a project name

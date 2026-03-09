@@ -1,0 +1,14 @@
+# Git and editor files
+.git
+.gitignore
+.vscode
+
+# Dependencies and build artifacts
+node_modules
+.github/node_modules
+coverage
+
+# Local logs/temp
+*.log
+*.tmp
+*.swp

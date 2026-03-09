@@ -36,6 +36,8 @@
     pageSize: TABLE_PAGE_SIZE
   };
 
+  let activeLoadingToast = null;
+
   /* ── Toast Notification Helper ────────────────────────────────── */
 
   /**
@@ -79,6 +81,20 @@
     }
 
     return toast;
+  }
+
+  function showLoadingToast() {
+    if (activeLoadingToast && activeLoadingToast.parentElement) {
+      activeLoadingToast.remove();
+    }
+    activeLoadingToast = showToast('Loading dashboard data...', 'info', 0) || null;
+  }
+
+  function clearLoadingToast() {
+    if (activeLoadingToast && activeLoadingToast.parentElement) {
+      activeLoadingToast.remove();
+    }
+    activeLoadingToast = null;
   }
 
   /**
@@ -455,6 +471,29 @@
     return { id: `row-${index + 1}`, milestone, status, progress, completion, element: row };
   }
 
+  function bindIfPresent(element, eventName, handler) {
+    if (!element) return;
+    element.addEventListener(eventName, handler);
+  }
+
+  function resetMilestoneFilters(searchInput, statusSelect, completionStart, completionEnd, progressSlider) {
+    if (searchInput) searchInput.value = '';
+    if (statusSelect) statusSelect.value = 'all';
+    if (completionStart) completionStart.value = '';
+    if (completionEnd) completionEnd.value = '';
+    if (progressSlider) progressSlider.value = '0';
+
+    milestoneState.query = '';
+    milestoneState.status = 'all';
+    milestoneState.completionStart = '';
+    milestoneState.completionEnd = '';
+    milestoneState.progressMin = 0;
+    milestoneState.page = 1;
+
+    updateMilestoneProgressLabel();
+    applyMilestoneTableState();
+  }
+
   function bindMilestoneFilterHandlers() {
     const filterToggle = document.getElementById('btn-filter-milestones');
     const filterPanel = document.getElementById('milestone-filters');
@@ -485,59 +524,35 @@
       });
     }
 
-    if (statusSelect) {
-      statusSelect.addEventListener('change', () => {
-        milestoneState.status = statusSelect.value;
-        milestoneState.page = 1;
-        applyMilestoneTableState();
-      });
-    }
+    bindIfPresent(statusSelect, 'change', () => {
+      milestoneState.status = statusSelect.value;
+      milestoneState.page = 1;
+      applyMilestoneTableState();
+    });
 
-    if (completionStart) {
-      completionStart.addEventListener('change', () => {
-        milestoneState.completionStart = completionStart.value;
-        milestoneState.page = 1;
-        applyMilestoneTableState();
-      });
-    }
+    bindIfPresent(completionStart, 'change', () => {
+      milestoneState.completionStart = completionStart.value;
+      milestoneState.page = 1;
+      applyMilestoneTableState();
+    });
 
-    if (completionEnd) {
-      completionEnd.addEventListener('change', () => {
-        milestoneState.completionEnd = completionEnd.value;
-        milestoneState.page = 1;
-        applyMilestoneTableState();
-      });
-    }
+    bindIfPresent(completionEnd, 'change', () => {
+      milestoneState.completionEnd = completionEnd.value;
+      milestoneState.page = 1;
+      applyMilestoneTableState();
+    });
 
-    if (progressSlider) {
-      progressSlider.addEventListener('input', () => {
-        milestoneState.progressMin = Number.parseInt(progressSlider.value, 10);
-        updateMilestoneProgressLabel();
-        milestoneState.page = 1;
-        applyMilestoneTableState();
-      });
-    }
+    bindIfPresent(progressSlider, 'input', () => {
+      milestoneState.progressMin = Number.parseInt(progressSlider.value, 10);
+      updateMilestoneProgressLabel();
+      milestoneState.page = 1;
+      applyMilestoneTableState();
+    });
 
-    if (resetButton) {
-      resetButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        if (searchInput) searchInput.value = '';
-        if (statusSelect) statusSelect.value = 'all';
-        if (completionStart) completionStart.value = '';
-        if (completionEnd) completionEnd.value = '';
-        if (progressSlider) progressSlider.value = '0';
-        
-        milestoneState.query = '';
-        milestoneState.status = 'all';
-        milestoneState.completionStart = '';
-        milestoneState.completionEnd = '';
-        milestoneState.progressMin = 0;
-        milestoneState.page = 1;
-        
-        updateMilestoneProgressLabel();
-        applyMilestoneTableState();
-      });
-    }
+    bindIfPresent(resetButton, 'click', (e) => {
+      e.preventDefault();
+      resetMilestoneFilters(searchInput, statusSelect, completionStart, completionEnd, progressSlider);
+    });
   }
 
   function bindMilestonePaginationHandlers() {
@@ -679,34 +694,33 @@
 
       const action = menuItem.getAttribute('data-action');
       const milestone = menu.getAttribute('data-milestone');
-      const row = document.querySelector(`#milestone-table-body tr[data-milestone="${milestone}"]`);
-      
-      if (!row) {
-        showToast('Milestone row not found', 'error', 2500);
-        closeRowActionMenu();
-        return;
-      }
-
-      if (action === 'view') {
-        showMilestoneDetailModal(milestone);
-      } else if (action === 'edit') {
-        const milestoneId = row.getAttribute('data-id') || milestone;
-        const status = row.getAttribute('data-status');
-        const progress = row.getAttribute('data-progress');
-        const completion = row.getAttribute('data-completion');
-        openMilestoneEditModal(milestoneId, milestone, status, progress, completion);
-      } else if (action === 'delete') {
-        const milestoneId = row.getAttribute('data-id') || milestone;
-        deleteMilestoneWithAPI(milestoneId, milestone);
-      }
-
-      closeRowActionMenu();
-
-      // Return focus to trigger
-      if (currentMenuTrigger) {
-        currentMenuTrigger.focus();
-      }
+      handleRowAction(action, milestone);
     });
+  }
+
+  function handleRowAction(action, milestone) {
+    const row = document.querySelector(`#milestone-table-body tr[data-milestone="${milestone}"]`);
+    if (!row) {
+      showToast('Milestone row not found', 'error', 2500);
+      closeRowActionMenu();
+      return;
+    }
+
+    if (action === 'view') {
+      showMilestoneDetailModal(milestone);
+    } else if (action === 'edit') {
+      const milestoneId = row.getAttribute('data-id') || milestone;
+      const status = row.getAttribute('data-status');
+      const progress = row.getAttribute('data-progress');
+      const completion = row.getAttribute('data-completion');
+      openMilestoneEditModal(milestoneId, milestone, status, progress, completion);
+    } else if (action === 'delete') {
+      const milestoneId = row.getAttribute('data-id') || milestone;
+      deleteMilestoneWithAPI(milestoneId, milestone);
+    }
+
+    closeRowActionMenu();
+    if (currentMenuTrigger) currentMenuTrigger.focus();
   }
 
   function closeRowActionMenu() {
@@ -750,18 +764,26 @@
     modal.classList.remove('open');
   }
 
-  function removeMilestoneRow(milestone) {
-    // Remove row from state
-    milestoneState.rows = milestoneState.rows.filter((row) => row.milestone !== milestone);
+  function matchesMilestoneQuery(row, query) {
+    return !query || row.milestone.toLowerCase().includes(query);
+  }
 
-    // Remove row from DOM
-    const body = document.getElementById('milestone-table-body');
-    const rowEl = body.querySelector(`tr[data-milestone="${CSS.escape(milestone)}"]`);
-    if (rowEl) rowEl.remove();
+  function matchesMilestoneStatus(row, statusFilter) {
+    return statusFilter === 'all' || row.status === statusFilter;
+  }
 
-    // Recalculate pagination and re-render
-    milestoneState.page = 1;
-    applyMilestoneTableState();
+  function matchesMilestoneDateRange(row, completionStart, completionEnd) {
+    if (!completionStart && !completionEnd) return true;
+    if (!row.completion) return false;
+
+    const rowDate = new Date(row.completion);
+    if (completionStart && rowDate < completionStart) return false;
+    if (completionEnd && rowDate > completionEnd) return false;
+    return true;
+  }
+
+  function matchesMilestoneProgress(row, progressMin) {
+    return !progressMin || row.progress >= progressMin;
   }
 
   function getFilteredAndSortedRows() {
@@ -771,25 +793,12 @@
     const completionEnd = milestoneState.completionEnd ? new Date(milestoneState.completionEnd) : null;
     const progressMin = milestoneState.progressMin || 0;
 
-    const filtered = milestoneState.rows.filter((row) => {
-      const matchesQuery = !query || row.milestone.toLowerCase().includes(query);
-      const matchesStatus = statusFilter === 'all' || row.status === statusFilter;
-      
-      let matchesDateRange = true;
-      if (completionStart || completionEnd) {
-        const rowDate = row.completion ? new Date(row.completion) : null;
-        if (rowDate) {
-          if (completionStart && rowDate < completionStart) matchesDateRange = false;
-          if (completionEnd && rowDate > completionEnd) matchesDateRange = false;
-        } else {
-          matchesDateRange = false; // Exclude rows with no completion date if filter is active
-        }
-      }
-      
-      const matchesProgress = !progressMin || (row.progress >= progressMin);
-      
-      return matchesQuery && matchesStatus && matchesDateRange && matchesProgress;
-    });
+    const filtered = milestoneState.rows.filter((row) => (
+      matchesMilestoneQuery(row, query)
+      && matchesMilestoneStatus(row, statusFilter)
+      && matchesMilestoneDateRange(row, completionStart, completionEnd)
+      && matchesMilestoneProgress(row, progressMin)
+    ));
 
     const sorted = filtered.sort((a, b) => {
       const dir = milestoneState.sortDir === 'asc' ? 1 : -1;
@@ -894,7 +903,7 @@
   async function loadDashboardData() {
     try {
       console.log('[Dashboard] Loading data...');
-      showToast('Loading dashboard data...', 'info', 0);
+      showLoadingToast();
 
       // Fetch all 4 endpoints in parallel
       const [health, metrics, activity, stats] = await Promise.all([
@@ -915,6 +924,8 @@
     } catch (err) {
       console.error('[Dashboard] Error loading data:', err);
       showToast(`Failed to load dashboard: ${err.message}`, 'error', 5000);
+    } finally {
+      clearLoadingToast();
     }
   }
 
@@ -1079,7 +1090,6 @@
 
   function openMilestoneEditModal(milestoneId, milestoneName, status, progress, completion) {
     const modal = document.getElementById('milestone-edit-modal');
-    const form = document.getElementById('milestone-edit-form');
     
     document.getElementById('edit-milestone-id').value = milestoneId;
     document.getElementById('edit-milestone-name').value = milestoneName;

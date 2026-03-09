@@ -114,7 +114,7 @@ describe('setSecurityHeaders', () => {
     const mockRes = { setHeader: (k, v) => { headers[k] = v; } };
     setSecurityHeaders(mockRes);
     expect(headers['X-Content-Type-Options']).toBe('nosniff');
-    expect(headers['X-Frame-Options']).toBe('DENY');
+    expect(headers['X-Frame-Options']).toBe('SAMEORIGIN');
     expect(headers['Referrer-Policy']).toBe('strict-origin-when-cross-origin');
     expect(headers['Content-Security-Policy']).toContain("default-src 'self'");
     expect(headers['Permissions-Policy']).toContain('camera=()');

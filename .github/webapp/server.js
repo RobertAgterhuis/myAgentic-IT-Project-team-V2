@@ -21,7 +21,9 @@ const {
 /* ── Configuration ────────────────────────────────────────────── */
 
 const PORT          = (() => { const p = parseInt(process.env.PORT, 10); return (p >= 1 && p <= 65535) ? p : 3000; })();
-const HOST          = '127.0.0.1';
+const HOST          = (typeof process.env.HOST === 'string' && process.env.HOST.trim())
+  ? process.env.HOST.trim()
+  : '127.0.0.1';
 const WEBAPP_DIR    = __dirname;
 const PROJECT_ROOT  = path.resolve(WEBAPP_DIR, '..', '..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
@@ -267,34 +269,115 @@ delete ROUTES._getLatestCommand;
 delete ROUTES._serveStatic;
 delete ROUTES._rebuildQuestionnaireIndex;
 
+function serveDesignSystemCss(res) {
+  try {
+    const store = getStore();
+    const cssPath = safePath(WEBAPP_DIR, 'design-system.css');
+    const cssContent = store.readFile(cssPath);
+    res.setHeader('Content-Type', 'text/css; charset=utf-8');
+    res.setHeader('Content-Length', Buffer.byteLength(cssContent, 'utf-8'));
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.writeHead(200);
+    res.end(cssContent);
+  } catch (err) {
+    structuredLog('warn', 'css_serve_failed', { error: err.message });
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
+
+function serveDashboardHtml(res) {
+  try {
+    const store = getStore();
+    const dashboardPath = safePath(WEBAPP_DIR, 'dashboard.html');
+    const dashboardContent = store.readFile(dashboardPath);
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Length', Buffer.byteLength(dashboardContent, 'utf-8'));
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; form-action 'self'; frame-ancestors 'self'; base-uri 'self'");
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+
+    res.writeHead(200);
+    res.end(dashboardContent);
+  } catch (err) {
+    structuredLog('warn', 'dashboard_serve_failed', { error: err.message });
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
+
+function serveDashboardScript(pathname, res) {
+  try {
+    const store = getStore();
+    const jsPath = safePath(WEBAPP_DIR, pathname.substring(1));
+    const jsContent = store.readFile(jsPath);
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    res.setHeader('Content-Length', Buffer.byteLength(jsContent, 'utf-8'));
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.writeHead(200);
+    res.end(jsContent);
+  } catch (err) {
+    structuredLog('warn', 'js_serve_failed', { error: err.message, pathname });
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
+
+function handleExplicitStatic(req, pathname, res) {
+  if (req.method !== 'GET') return false;
+  if (pathname === '/design-system.css') {
+    serveDesignSystemCss(res);
+    return true;
+  }
+  if (pathname === '/dashboard' || pathname === '/dashboard.html') {
+    serveDashboardHtml(res);
+    return true;
+  }
+  if (pathname.endsWith('.js')) {
+    serveDashboardScript(pathname, res);
+    return true;
+  }
+  return false;
+}
+
+async function dispatchRequest(req, res, pathname) {
+  const routeHandler = resolveRoute(ROUTES, req.method, pathname);
+  if (routeHandler) {
+    try {
+      await routeHandler(req, res);
+    } catch (err) {
+      handleRouteError(err, res);
+    }
+    return;
+  }
+
+  if (req.method === 'GET' && !pathname.startsWith('/api')) {
+    serveStatic(req, res);
+    return;
+  }
+
+  if (!handleMethodNotAllowed(res, pathname, ROUTES)) {
+    json(res, 404, errorResponse('NOT_FOUND', 'Not found'));
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   const start = Date.now();
   const pathname = new URL(req.url, `http://${HOST}:${PORT}`).pathname.replace(/\/+$/, '') || '/';
-  const routeHandler = resolveRoute(ROUTES, req.method, pathname);
-  if (routeHandler) {
-    try { await routeHandler(req, res); }
-    catch (err) { handleRouteError(err, res); }
-  } else if (req.method === 'GET' && pathname === '/design-system.css') {
-    // Serve CSS file with proper Content-Type and basic security headers (no CSP for static assets)
-    try {
-      const store = getStore();
-      const cssPath = safePath(WEBAPP_DIR, 'design-system.css');
-      const cssContent = store.readFile(cssPath);
-      res.setHeader('X-Content-Type-Options', 'nosniff');
-      res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-      res.setHeader('Cache-Control', 'public, max-age=3600');
-      res.writeHead(200, { 'Content-Type': 'text/css; charset=utf-8', 'Content-Length': Buffer.byteLength(cssContent, 'utf-8') });
-      res.end(cssContent);
-    } catch (err) {
-      structuredLog('warn', 'css_serve_failed', { error: err.message });
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('Not found');
-    }
-  } else if (req.method === 'GET' && !pathname.startsWith('/api')) {
-    serveStatic(req, res);
-  } else if (!handleMethodNotAllowed(res, pathname, ROUTES)) {
-    json(res, 404, errorResponse('NOT_FOUND', 'Not found'));
+  if (handleExplicitStatic(req, pathname, res)) {
+    return;
   }
+
+  await dispatchRequest(req, res, pathname);
   const duration = Date.now() - start;
   if (pathname !== '/api/events') {
     recordMetric(req.method, pathname, duration, res.statusCode);

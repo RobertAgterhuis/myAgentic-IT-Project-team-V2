@@ -13,7 +13,7 @@
  */
 'use strict';
 
-const { execSync } = require('child_process');
+const { execFileSync } = require('child_process');
 const path         = require('path');
 const fs           = require('fs');
 
@@ -27,7 +27,7 @@ const auditOnly = process.argv.includes('--audit-only');
 // ---------- helpers ----------
 
 function gh(endpoint, method, body) {
-  const args = [`gh`, `api`, endpoint];
+  const args = ['api', endpoint];
   if (method && method !== 'GET') args.push('--method', method);
   if (body) args.push('--input', '-');
 
@@ -35,7 +35,7 @@ function gh(endpoint, method, body) {
   if (body) opts.input = JSON.stringify(body);
 
   try {
-    return JSON.parse(execSync(args.join(' '), opts));
+    return JSON.parse(execFileSync('gh', args, opts));
   } catch (e) {
     const stderr = e.stderr ? e.stderr.toString() : '';
     // 404 means the resource doesn't exist (e.g., no branch protection)
@@ -122,13 +122,17 @@ if (hasProt) {
 console.log('\n--- Security Features ---');
 let vulnAlerts = false;
 try {
-  execSync(`gh api repos/${OWNER}/${REPO}/vulnerability-alerts --method GET`, { stdio: 'pipe' });
+  execFileSync('gh', ['api', `repos/${OWNER}/${REPO}/vulnerability-alerts`, '--method', 'GET'], { stdio: 'pipe' });
   vulnAlerts = true;
 } catch (e) {
   if (e.status === 204 || (e.stderr && e.stderr.toString().includes('204'))) vulnAlerts = true;
 }
 check('vulnerability_alerts', vulnAlerts, true,
-  () => { try { execSync(`gh api repos/${OWNER}/${REPO}/vulnerability-alerts --method PUT`, { stdio: 'pipe' }); } catch {} });
+  () => {
+    try {
+      execFileSync('gh', ['api', `repos/${OWNER}/${REPO}/vulnerability-alerts`, '--method', 'PUT'], { stdio: 'pipe' });
+    } catch {}
+  });
 
 // 4. Templates
 console.log('\n--- Templates ---');

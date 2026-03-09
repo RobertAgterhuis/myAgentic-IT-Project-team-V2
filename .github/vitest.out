@@ -1,0 +1,67 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.18 [39m[90mD:/repositories/myAgentic-IT-Project-team-V2/.github[39m
+
+{"timestamp":"2026-03-09T16:27:13.644Z","level":"info","message":"metrics_loaded","file":"D:\\repositories\\myAgentic-IT-Project-team-V2\\.github\\docs\\metrics\\runtime-metrics.json","requestCount":1396}
+{"timestamp":"2026-03-09T16:27:13.675Z","level":"info","message":"http_request","method":"GET","url":"/health","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.677Z","level":"info","message":"http_request","method":"GET","url":"/","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.679Z","level":"info","message":"http_request","method":"GET","url":"/api/nonexistent","status":404,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.680Z","level":"info","message":"http_request","method":"DELETE","url":"/api/questionnaires","status":405,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.681Z","level":"info","message":"http_request","method":"POST","url":"/api/save","status":415,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.682Z","level":"info","message":"http_request","method":"POST","url":"/api/save","status":400,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.683Z","level":"info","message":"http_request","method":"GET","url":"/api/nonexistent","status":404,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.683Z","level":"info","message":"http_request","method":"DELETE","url":"/api/questionnaires","status":405,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.684Z","level":"info","message":"http_request","method":"POST","url":"/api/save","status":400,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.685Z","level":"info","message":"http_request","method":"POST","url":"/api/save","status":415,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.686Z","level":"info","message":"http_request","method":"POST","url":"/api/save","status":400,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.687Z","level":"warn","message":"markdown_corruption","file":"BusinessDocs/Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md","issues":["Malformed question header (missing [REQUIRED]/[OPTIONAL] tag): ### Q-05-00"]}
+{"timestamp":"2026-03-09T16:27:13.688Z","level":"info","message":"http_request","method":"GET","url":"/api/questionnaires","status":200,"duration_ms":2}
+{"timestamp":"2026-03-09T16:27:13.689Z","level":"info","message":"http_request","method":"GET","url":"/api/questionnaires","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.690Z","level":"info","message":"http_request","method":"GET","url":"/api/session","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.691Z","level":"info","message":"http_request","method":"GET","url":"/api/session","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.693Z","level":"info","message":"http_request","method":"POST","url":"/api/save","status":200,"duration_ms":2}
+{"timestamp":"2026-03-09T16:27:13.694Z","level":"info","message":"http_request","method":"POST","url":"/api/save","status":400,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.694Z","level":"info","message":"http_request","method":"POST","url":"/api/save","status":400,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.695Z","level":"info","message":"http_request","method":"POST","url":"/api/save","status":400,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.695Z","level":"info","message":"http_request","method":"POST","url":"/api/save","status":400,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.696Z","level":"info","message":"http_request","method":"POST","url":"/api/save","status":404,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.697Z","level":"warn","message":"secret_pattern_in_save","patterns":["AWS Access Key"]}
+{"timestamp":"2026-03-09T16:27:13.697Z","level":"info","message":"http_request","method":"POST","url":"/api/save","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.698Z","level":"info","message":"http_request","method":"POST","url":"/api/reevaluate","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.699Z","level":"info","message":"http_request","method":"POST","url":"/api/reevaluate","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.700Z","level":"info","message":"http_request","method":"GET","url":"/api/decisions","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.702Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.703Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.704Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.707Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":200,"duration_ms":2}
+{"timestamp":"2026-03-09T16:27:13.708Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.709Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.710Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.711Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.712Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":400,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.712Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":400,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.713Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":400,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.713Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":400,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.714Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":400,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.714Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":400,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.715Z","level":"warn","message":"secret_pattern_detected","field":"text","patterns":["AWS Access Key"]}
+{"timestamp":"2026-03-09T16:27:13.715Z","level":"warn","message":"secret_pattern_in_decision","patterns":["AWS Access Key"],"action":"create"}
+{"timestamp":"2026-03-09T16:27:13.715Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.716Z","level":"info","message":"http_request","method":"POST","url":"/api/decisions","status":404,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.717Z","level":"info","message":"http_request","method":"POST","url":"/api/command","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.718Z","level":"info","message":"http_request","method":"POST","url":"/api/command","status":400,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.719Z","level":"info","message":"http_request","method":"POST","url":"/api/command","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.719Z","level":"info","message":"http_request","method":"POST","url":"/api/command","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.720Z","level":"info","message":"http_request","method":"POST","url":"/api/command","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.721Z","level":"info","message":"http_request","method":"GET","url":"/api/command","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.722Z","level":"info","message":"http_request","method":"POST","url":"/api/command","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.722Z","level":"info","message":"http_request","method":"GET","url":"/api/command","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.723Z","level":"info","message":"http_request","method":"GET","url":"/api/progress","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.724Z","level":"info","message":"http_request","method":"GET","url":"/api/progress","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.725Z","level":"info","message":"http_request","method":"POST","url":"/api/command","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.726Z","level":"info","message":"http_request","method":"GET","url":"/api/export","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.726Z","level":"info","message":"http_request","method":"GET","url":"/api/export","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.727Z","level":"info","message":"http_request","method":"GET","url":"/api/help","status":200,"duration_ms":1}
+{"timestamp":"2026-03-09T16:27:13.727Z","level":"info","message":"http_request","method":"GET","url":"/api/help","status":200,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.728Z","level":"info","message":"http_request","method":"GET","url":"/api/help","status":400,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.728Z","level":"info","message":"http_request","method":"GET","url":"/api/help","status":404,"duration_ms":0}
+{"timestamp":"2026-03-09T16:27:13.729Z","level":"info","message":"sse_client_connected","clients":1}

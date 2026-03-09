@@ -147,17 +147,18 @@ function buildEmptyPhases() {
 }
 
 module.exports = function createProgressRoutes(ctx) {
-  const { _cache, SESSION_FILE, _getLatestCommand } = ctx;
+  const { _cache, SESSION_FILE, resolveSessionFile, _getLatestCommand } = ctx;
 
   async function apiGetProgress(_req, res) {
     const command = _getLatestCommand();
     const store = getStore();
+    const sessionFile = typeof resolveSessionFile === 'function' ? resolveSessionFile() : SESSION_FILE;
 
-    if (!store.exists(SESSION_FILE)) {
+    if (!sessionFile || !store.exists(sessionFile)) {
       return json(res, 200, { active: false, phases: buildEmptyPhases(), session: null, command });
     }
     let session;
-    try { session = JSON.parse(_cache.read(SESSION_FILE)); } catch { return json(res, 200, { active: false, phases: buildEmptyPhases(), session: null, command }); }
+    try { session = JSON.parse(_cache.read(sessionFile)); } catch { return json(res, 200, { active: false, phases: buildEmptyPhases(), session: null, command }); }
 
     const sprints = session.sprint_backlog
       ? { total: session.sprint_backlog.total_sprints || 0, statuses: session.sprint_backlog.sprint_statuses || {} }

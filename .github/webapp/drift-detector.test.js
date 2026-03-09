@@ -259,7 +259,6 @@ describe('detectDrift', () => {
     expect(validation.valid).toBe(true);
     if (!validation.valid) {
       // Print errors for debugging when test fails
-      // eslint-disable-next-line no-console
       console.log('Validation errors:', validation.errors);
     }
   });

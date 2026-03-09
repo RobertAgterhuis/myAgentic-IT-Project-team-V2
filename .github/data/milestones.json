@@ -1,0 +1,32 @@
+[
+  {
+    "id": "milestone-20260305-001",
+    "name": "FEAT-01 Metrics Dashboard",
+    "status": "complete",
+    "progress": 100,
+    "completion": "2026-03-05",
+    "created_at": "2026-02-01T08:00:00Z",
+    "updated_at": "2026-03-05T16:30:00Z",
+    "archived": false
+  },
+  {
+    "id": "milestone-20260309-002",
+    "name": "FEAT-02 Enterprise UI Redesign",
+    "status": "complete",
+    "progress": 100,
+    "completion": "2026-03-09",
+    "created_at": "2026-02-15T09:00:00Z",
+    "updated_at": "2026-03-09T17:00:00Z",
+    "archived": false
+  },
+  {
+    "id": "milestone-20260310-003",
+    "name": "SPRINT-7 Dashboard Implementation",
+    "status": "in progress",
+    "progress": 15,
+    "completion": "2026-03-15",
+    "created_at": "2026-03-09T12:00:00Z",
+    "updated_at": "2026-03-09T15:00:00Z",
+    "archived": false
+  }
+]

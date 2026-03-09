@@ -10,6 +10,7 @@ const { getStore }     = require('./store');
 const { FileCache }    = require('./cache');
 const { AuditTrail }   = require('./audit');
 const { withFileLock } = require('./file-lock');
+const { resolveSessionFile } = require('./session-state-resolver');
 const { errorResponse } = require('./utils/errors');
 const {
   structuredLog, log, json, setSecurityHeaders, safePath,
@@ -27,6 +28,7 @@ const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
 const GITHUB_DOCS   = path.join(PROJECT_ROOT, '.github', 'docs');
 const SESSION_DIR   = path.join(GITHUB_DOCS, 'session');
 const SESSION_FILE  = path.join(SESSION_DIR, 'session-state.json');
+const SESSION_AUDIT_FILE = path.join(SESSION_DIR, 'session-state-audit.json');
 const Q_INDEX_FILE  = path.join(BUSINESS_DOCS, 'questionnaire-index.md');
 const DECISIONS_FILE = path.join(GITHUB_DOCS, 'decisions.md');
 const DECISIONS_DIR  = path.join(GITHUB_DOCS, 'decisions');
@@ -50,26 +52,45 @@ const _audit      = new AuditTrail({ logDir: AUDIT_DIR });
 
 /* ── Metrics persistence (TECH-05) ────────────────────────────── */
 
+/** Helper: Restore per-endpoint metrics from saved data. */
+function _restoreEndpointMetrics(saved) {
+  if (!saved?.perEndpoint || typeof saved.perEndpoint !== 'object') return;
+  for (const [key, val] of Object.entries(saved.perEndpoint)) {
+    if (val && typeof val.count === 'number') {
+      const times = Array.isArray(val.times) ? val.times.slice(-METRICS_MAX_SAMPLES) : [];
+      _metrics.perEndpoint[key] = { count: val.count, times };
+    }
+  }
+}
+
+/** Helper: Restore global counter metrics from saved data. */
+function _restoreCounters(saved) {
+  if (typeof saved.requestCount === 'number') _metrics.requestCount = saved.requestCount;
+  if (typeof saved.errorCount === 'number') _metrics.errorCount = saved.errorCount;
+  if (typeof saved.fileOpsCount === 'number') _metrics.fileOpsCount = saved.fileOpsCount;
+}
+
 function loadMetrics() {
   try {
     const store = getStore();
     if (!store.exists(METRICS_FILE)) return;
     const raw = store.readFile(METRICS_FILE);
     const saved = JSON.parse(raw);
-    if (typeof saved.requestCount === 'number') _metrics.requestCount = saved.requestCount;
-    if (typeof saved.errorCount === 'number')   _metrics.errorCount   = saved.errorCount;
-    if (typeof saved.fileOpsCount === 'number') _metrics.fileOpsCount = saved.fileOpsCount;
-    if (saved.perEndpoint && typeof saved.perEndpoint === 'object') {
-      for (const [key, val] of Object.entries(saved.perEndpoint)) {
-        if (val && typeof val.count === 'number') {
-          _metrics.perEndpoint[key] = { count: val.count, times: Array.isArray(val.times) ? val.times.slice(-METRICS_MAX_SAMPLES) : [] };
-        }
-      }
-    }
+    _restoreCounters(saved);
+    _restoreEndpointMetrics(saved);
     structuredLog('info', 'metrics_loaded', { file: METRICS_FILE, requestCount: _metrics.requestCount });
   } catch (err) {
     structuredLog('warn', 'metrics_load_failed', { error: err.message });
   }
+}
+
+/** Helper: Build endpoint snapshot for metrics flush. */
+function _buildEndpointSnapshot() {
+  const snapshot = {};
+  for (const [key, val] of Object.entries(_metrics.perEndpoint)) {
+    snapshot[key] = { count: val.count, times: val.times.slice(-METRICS_MAX_SAMPLES) };
+  }
+  return snapshot;
 }
 
 function flushMetrics() {
@@ -83,11 +104,8 @@ function flushMetrics() {
       errorCount: _metrics.errorCount,
       fileOpsCount: _metrics.fileOpsCount,
       responseTimes: _metrics.responseTimes.slice(-METRICS_MAX_SAMPLES),
-      perEndpoint: {},
+      perEndpoint: _buildEndpointSnapshot(),
     };
-    for (const [key, val] of Object.entries(_metrics.perEndpoint)) {
-      snapshot.perEndpoint[key] = { count: val.count, times: val.times.slice(-METRICS_MAX_SAMPLES) };
-    }
     store.writeFile(METRICS_FILE, JSON.stringify(snapshot, null, 2));
     structuredLog('debug', 'metrics_flushed', { file: METRICS_FILE });
   } catch (err) {
@@ -176,6 +194,8 @@ const ctx = {
   scheduleRebuildIndex, flushMetrics,
   PROJECT_ROOT, BUSINESS_DOCS, GITHUB_DOCS,
   SESSION_DIR, SESSION_FILE, Q_INDEX_FILE,
+  SESSION_AUDIT_FILE,
+  resolveSessionFile: () => resolveSessionFile(getStore(), _cache, SESSION_DIR),
   DECISIONS_FILE, DECISIONS_DIR, COMMAND_QUEUE,
   HELP_DIR, ANALYTICS_FILE, METRICS_FILE, WEBAPP_DIR,
   HOST, PORT, SSE_HEARTBEAT_MS, ANALYTICS_MAX_EVENTS,
@@ -194,6 +214,8 @@ ctx._readCommandQueue = commandRoutes._readCommandQueue;
 const progressRoutes         = require('./routes/progress')(ctx);
 const driftRoutes            = require('./routes/drift')(ctx);
 const metricsDashboardRoutes = require('./routes/metrics-dashboard')(ctx);
+const dashboardRoutes         = require('./routes/dashboard')(ctx);
+const milestonesRoutes        = require('./routes/milestones')(ctx);
 const miscRoutes             = require('./routes/misc')(ctx);
 
 const serveStatic = miscRoutes._serveStatic;
@@ -207,8 +229,37 @@ const ROUTES = {
   ...progressRoutes,
   ...driftRoutes,
   ...metricsDashboardRoutes,
+  ...dashboardRoutes,
+  ...milestonesRoutes,
   ...miscRoutes,
 };
+
+function matchPathTemplate(template, pathname) {
+  if (!template.includes(':')) return template === pathname;
+  const tParts = template.split('/').filter(Boolean);
+  const pParts = pathname.split('/').filter(Boolean);
+  if (tParts.length !== pParts.length) return false;
+  for (let i = 0; i < tParts.length; i++) {
+    const t = tParts[i];
+    if (t.startsWith(':')) continue;
+    if (t !== pParts[i]) return false;
+  }
+  return true;
+}
+
+function resolveRoute(routes, method, pathname) {
+  const exactKey = `${method} ${pathname}`;
+  if (routes[exactKey]) return routes[exactKey];
+  for (const [key, handler] of Object.entries(routes)) {
+    const splitAt = key.indexOf(' ');
+    if (splitAt < 0) continue;
+    const routeMethod = key.slice(0, splitAt);
+    if (routeMethod !== method) continue;
+    const routePath = key.slice(splitAt + 1);
+    if (matchPathTemplate(routePath, pathname)) return handler;
+  }
+  return null;
+}
 
 // Remove internal-only keys from the route table
 delete ROUTES._readCommandQueue;
@@ -219,9 +270,9 @@ delete ROUTES._rebuildQuestionnaireIndex;
 const server = http.createServer(async (req, res) => {
   const start = Date.now();
   const pathname = new URL(req.url, `http://${HOST}:${PORT}`).pathname.replace(/\/+$/, '') || '/';
-  const key = `${req.method} ${pathname}`;
-  if (ROUTES[key]) {
-    try { await ROUTES[key](req, res); }
+  const routeHandler = resolveRoute(ROUTES, req.method, pathname);
+  if (routeHandler) {
+    try { await routeHandler(req, res); }
     catch (err) { handleRouteError(err, res); }
   } else if (req.method === 'GET' && !pathname.startsWith('/api')) {
     serveStatic(req, res);
@@ -258,7 +309,7 @@ if (require.main === module) {
 
   // GitHub state snapshot sync (every 10 minutes)
   let _snapshotScript;
-  try { _snapshotScript = require('../scripts/github-state-snapshot'); } catch (_) { /* gh CLI may not be available */ }
+  try { _snapshotScript = require('../scripts/github-state-snapshot'); } catch { /* gh CLI may not be available */ }
   let _snapshotRunning = false;
   function syncGitHubSnapshot() {
     if (!_snapshotScript || _snapshotRunning) return;

@@ -35,7 +35,7 @@ const MAX_EXPORT_SIZE = 10 * 1024 * 1024;
 module.exports = function createMiscRoutes(ctx) {
   const { _cache, _sseClients, _metrics, _audit, safeWriteSync,
           computePercentiles, flushMetrics,
-          SESSION_DIR, SESSION_FILE, HELP_DIR, ANALYTICS_FILE,
+          SESSION_DIR, SESSION_FILE, resolveSessionFile, HELP_DIR, ANALYTICS_FILE,
           PROJECT_ROOT, HOST, PORT, WEBAPP_DIR,
           SSE_HEARTBEAT_MS, ANALYTICS_MAX_EVENTS,
           _readCommandQueue } = ctx;
@@ -52,8 +52,9 @@ module.exports = function createMiscRoutes(ctx) {
 
   async function apiGetSession(_req, res) {
     const store = getStore();
-    if (!store.exists(SESSION_FILE)) return json(res, 200, { session: null });
-    const { data: session, errors } = _cache.readJSON(SESSION_FILE, schemas.validateSessionState);
+    const sessionFile = typeof resolveSessionFile === 'function' ? resolveSessionFile() : SESSION_FILE;
+    if (!sessionFile || !store.exists(sessionFile)) return json(res, 200, { session: null });
+    const { data: session, errors } = _cache.readJSON(sessionFile, schemas.validateSessionState);
     if (errors) { structuredLog('warn', 'session_validation', { errors }); }
     if (!session) return json(res, 200, { session: null });
     json(res, 200, { session });
@@ -121,10 +122,11 @@ module.exports = function createMiscRoutes(ctx) {
 
   async function apiGetExport(_req, res) {
     const store = getStore();
+    const sessionFile = typeof resolveSessionFile === 'function' ? resolveSessionFile() : SESSION_FILE;
     const bundle = { exported_at: models.isoNow(), session: null, command_queue: [], phase_outputs: {} };
 
-    if (store.exists(SESSION_FILE)) {
-      try { bundle.session = JSON.parse(_cache.read(SESSION_FILE)); } catch {}
+    if (sessionFile && store.exists(sessionFile)) {
+      try { bundle.session = JSON.parse(_cache.read(sessionFile)); } catch {}
     }
     bundle.command_queue = _readCommandQueue();
 

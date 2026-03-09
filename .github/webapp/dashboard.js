@@ -29,6 +29,9 @@
     sortDir: 'desc',
     query: '',
     status: 'all',
+    completionStart: '',
+    completionEnd: '',
+    progressMin: 0,
     page: 1,
     pageSize: TABLE_PAGE_SIZE
   };
@@ -457,6 +460,9 @@
     const filterPanel = document.getElementById('milestone-filters');
     const searchInput = document.getElementById('milestone-search');
     const statusSelect = document.getElementById('milestone-status-filter');
+    const completionStart = document.getElementById('milestone-completion-start');
+    const completionEnd = document.getElementById('milestone-completion-end');
+    const progressSlider = document.getElementById('milestone-progress-slider');
     const resetButton = document.getElementById('btn-reset-milestone-filters');
 
     if (filterToggle && filterPanel) {
@@ -487,14 +493,48 @@
       });
     }
 
-    if (resetButton && searchInput && statusSelect) {
+    if (completionStart) {
+      completionStart.addEventListener('change', () => {
+        milestoneState.completionStart = completionStart.value;
+        milestoneState.page = 1;
+        applyMilestoneTableState();
+      });
+    }
+
+    if (completionEnd) {
+      completionEnd.addEventListener('change', () => {
+        milestoneState.completionEnd = completionEnd.value;
+        milestoneState.page = 1;
+        applyMilestoneTableState();
+      });
+    }
+
+    if (progressSlider) {
+      progressSlider.addEventListener('input', () => {
+        milestoneState.progressMin = Number.parseInt(progressSlider.value, 10);
+        updateMilestoneProgressLabel();
+        milestoneState.page = 1;
+        applyMilestoneTableState();
+      });
+    }
+
+    if (resetButton) {
       resetButton.addEventListener('click', (e) => {
         e.preventDefault();
-        searchInput.value = '';
-        statusSelect.value = 'all';
+        if (searchInput) searchInput.value = '';
+        if (statusSelect) statusSelect.value = 'all';
+        if (completionStart) completionStart.value = '';
+        if (completionEnd) completionEnd.value = '';
+        if (progressSlider) progressSlider.value = '0';
+        
         milestoneState.query = '';
         milestoneState.status = 'all';
+        milestoneState.completionStart = '';
+        milestoneState.completionEnd = '';
+        milestoneState.progressMin = 0;
         milestoneState.page = 1;
+        
+        updateMilestoneProgressLabel();
         applyMilestoneTableState();
       });
     }
@@ -727,11 +767,28 @@
   function getFilteredAndSortedRows() {
     const query = milestoneState.query;
     const statusFilter = milestoneState.status;
+    const completionStart = milestoneState.completionStart ? new Date(milestoneState.completionStart) : null;
+    const completionEnd = milestoneState.completionEnd ? new Date(milestoneState.completionEnd) : null;
+    const progressMin = milestoneState.progressMin || 0;
 
     const filtered = milestoneState.rows.filter((row) => {
       const matchesQuery = !query || row.milestone.toLowerCase().includes(query);
       const matchesStatus = statusFilter === 'all' || row.status === statusFilter;
-      return matchesQuery && matchesStatus;
+      
+      let matchesDateRange = true;
+      if (completionStart || completionEnd) {
+        const rowDate = row.completion ? new Date(row.completion) : null;
+        if (rowDate) {
+          if (completionStart && rowDate < completionStart) matchesDateRange = false;
+          if (completionEnd && rowDate > completionEnd) matchesDateRange = false;
+        } else {
+          matchesDateRange = false; // Exclude rows with no completion date if filter is active
+        }
+      }
+      
+      const matchesProgress = !progressMin || (row.progress >= progressMin);
+      
+      return matchesQuery && matchesStatus && matchesDateRange && matchesProgress;
     });
 
     const sorted = filtered.sort((a, b) => {
@@ -775,6 +832,15 @@
     updateMilestoneSortIndicators();
     updateMilestoneResultCount(total, start, end);
     updateMilestonePagination(total, maxPage);
+  }
+
+  function updateMilestoneProgressLabel() {
+    const label = document.getElementById('milestone-progress-label');
+    const slider = document.getElementById('milestone-progress-slider');
+    if (!label || !slider) return;
+    
+    const min = Number.parseInt(slider.value, 10);
+    label.textContent = min > 0 ? `${min}%–100%` : 'All progress';
   }
 
   function updateMilestoneSortIndicators() {
@@ -862,6 +928,7 @@
     loadDashboardData();
     initializeMilestoneTable();
     initializeMilestoneModals();
+    updateMilestoneProgressLabel();
 
     // Attach refresh button handlers
     const btnRefreshHealth = document.getElementById('btn-refresh-health');

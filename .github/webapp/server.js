@@ -274,6 +274,22 @@ const server = http.createServer(async (req, res) => {
   if (routeHandler) {
     try { await routeHandler(req, res); }
     catch (err) { handleRouteError(err, res); }
+  } else if (req.method === 'GET' && pathname === '/design-system.css') {
+    // Serve CSS file with proper Content-Type and basic security headers (no CSP for static assets)
+    try {
+      const store = getStore();
+      const cssPath = safePath(WEBAPP_DIR, 'design-system.css');
+      const cssContent = store.readFile(cssPath);
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      res.writeHead(200, { 'Content-Type': 'text/css; charset=utf-8', 'Content-Length': Buffer.byteLength(cssContent, 'utf-8') });
+      res.end(cssContent);
+    } catch (err) {
+      structuredLog('warn', 'css_serve_failed', { error: err.message });
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end('Not found');
+    }
   } else if (req.method === 'GET' && !pathname.startsWith('/api')) {
     serveStatic(req, res);
   } else if (!handleMethodNotAllowed(res, pathname, ROUTES)) {

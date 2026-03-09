@@ -224,8 +224,26 @@ function checkSecretsInBody(body, fieldsToCheck) {
  * @returns {boolean} True if handled, false if path not in routes at all.
  */
 function handleMethodNotAllowed(res, pathname, routes) {
+  const matchPathTemplate = (template, pathValue) => {
+    if (template === pathValue) return true;
+    if (!template.includes(':')) return false;
+    const tParts = template.split('/').filter(Boolean);
+    const pParts = pathValue.split('/').filter(Boolean);
+    if (tParts.length !== pParts.length) return false;
+    for (let i = 0; i < tParts.length; i++) {
+      if (tParts[i].startsWith(':')) continue;
+      if (tParts[i] !== pParts[i]) return false;
+    }
+    return true;
+  };
+
   const allowed = Object.keys(routes)
-    .filter(k => k.endsWith(' ' + pathname))
+    .filter(k => {
+      const splitAt = k.indexOf(' ');
+      if (splitAt < 0) return false;
+      const routePath = k.slice(splitAt + 1);
+      return matchPathTemplate(routePath, pathname);
+    })
     .map(k => k.split(' ')[0]);
   if (allowed.length === 0) return false;
   setSecurityHeaders(res);

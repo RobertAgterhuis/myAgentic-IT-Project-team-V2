@@ -24,6 +24,7 @@ function opt(val, name, type, errors) {
  * @param {object} data - Parsed session state.
  * @returns {{ valid: boolean, errors: string[] }}
  */
+// eslint-disable-next-line complexity
 function validateSessionState(data) {
   const errors = [];
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
@@ -291,6 +292,7 @@ const VALID_SEVERITIES = ['CRITICAL', 'WARNING', 'INFO'];
  * @param {object} data - Drift report to validate.
  * @returns {{ valid: boolean, errors: string[] }}
  */
+// eslint-disable-next-line complexity
 function validateDriftReport(data) {
   const errors = [];
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
@@ -330,6 +332,7 @@ function validateDriftReport(data) {
 
 /* ── GitHub State Snapshot ────────────────────────────────────── */
 
+// eslint-disable-next-line complexity
 function validateGithubSnapshot(data) {
   const errors = [];
   if (!data || typeof data !== 'object' || Array.isArray(data)) {

@@ -17,9 +17,7 @@
  * @returns {object} Route map { 'GET /api/dashboard/...': handler }.
  */
 
-const path            = require('path');
 const { json }        = require('../middleware');
-const { AuditTrail }  = require('../audit');
 
 /* ── Health Indicator Helper ──────────────────────────────────── */
 
@@ -80,10 +78,6 @@ function computeKeyMetrics(ctx) {
     avgResponseTime = Math.round(sum / metrics.responseTimes.length);
   }
 
-  // Calculate uptime
-  const uptimeMs = Date.now() - (metrics.startedAt || Date.now());
-  const uptimeHours = Math.floor(uptimeMs / (1000 * 60 * 60));
-
   return {
     http_requests: {
       value: metrics.requestCount.toString(),
@@ -116,7 +110,7 @@ function computeKeyMetrics(ctx) {
  * Generate recent activity timeline from audit trail.
  * Returns array of activity items with timestamps, users, descriptions.
  */
-function computeActivityFeed(ctx) {
+function computeActivityFeed(_ctx) {
   // TODO: Read from ./audit/*.jsonl, git log, deployment logs
   // For MVP (SP-7.2): Return sample activity timeline
   // Phase 5 follow-up: Parse actual audit trail and git history

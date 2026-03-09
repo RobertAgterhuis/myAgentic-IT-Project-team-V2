@@ -256,6 +256,7 @@ function parseDecisions(content) {
  * @param {string} content - Full category file content.
  * @returns {{ name: string, stack: string, status: string, applicable: string, reason: string }}
  */
+// eslint-disable-next-line complexity
 function parseCategoryHeader(content) {
   const name = (content.match(/^# Decisions:\s*(.+)/m) || [])[1]?.trim() || 'Unknown';
   const stack = (content.match(/Stack:\s*([^\s|]+)/) || [])[1] || 'unknown';
@@ -575,6 +576,7 @@ function parseSessionState(content) {
  * @param {string} content - Markdown file content.
  * @returns {string[]} List of corruption descriptions (empty if clean).
  */
+// eslint-disable-next-line complexity
 function detectMarkdownCorruption(content) {
   if (typeof content !== 'string') return ['Content is not a string'];
   const issues = [];

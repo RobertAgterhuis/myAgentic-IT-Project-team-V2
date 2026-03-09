@@ -17,7 +17,7 @@ const { detectDrift } = require('../drift-detector');
 const { json }        = require('../middleware');
 
 module.exports = function createDriftRoutes(ctx) {
-  const { SESSION_FILE, PROJECT_ROOT } = ctx;
+  const { SESSION_FILE, resolveSessionFile, PROJECT_ROOT } = ctx;
 
   const GITHUB_DOCS   = path.join(PROJECT_ROOT, '.github', 'docs');
   const SPRINTS_DIR   = path.join(GITHUB_DOCS, 'sprints');
@@ -29,8 +29,9 @@ module.exports = function createDriftRoutes(ctx) {
    */
   function readSessionState() {
     try {
-      if (!fs.existsSync(SESSION_FILE)) return null;
-      return JSON.parse(fs.readFileSync(SESSION_FILE, 'utf8'));
+      const sessionFile = typeof resolveSessionFile === 'function' ? resolveSessionFile() : SESSION_FILE;
+      if (!sessionFile || !fs.existsSync(sessionFile)) return null;
+      return JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
     } catch { return null; }
   }
 

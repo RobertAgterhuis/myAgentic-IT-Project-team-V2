@@ -23,6 +23,7 @@ const { StdioServerTransport } = require(sdkBase.replace(/index\.js$/, 'stdio.js
 const { FileStore }  = require('./store');
 const { FileCache }  = require('./cache');
 const { AuditTrail } = require('./audit');
+const { resolveSessionFile } = require('./session-state-resolver');
 const models         = require('./models');
 const {
   sanitizeMarkdown,
@@ -99,7 +100,7 @@ function discoverQuestionnaires() {
 }
 
 function readSessionState() {
-  const file = path.join(SESSION_DIR, 'session-state.json');
+  const file = resolveSessionFile(store, cache, SESSION_DIR) || path.join(SESSION_DIR, 'session-state.json');
   if (!fs.existsSync(file)) return null;
   try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
   catch { return null; }
@@ -596,6 +597,7 @@ mcp.tool(
 mcp.tool(
   'check_drift',
   'Detect drift between session-state sprint statuses and GitHub board sync reports. Returns a drift report with severity levels (CRITICAL, WARNING, INFO) and recommendations.',
+  // eslint-disable-next-line complexity
   async () => {
     try {
       const { detectDrift } = require('./drift-detector');

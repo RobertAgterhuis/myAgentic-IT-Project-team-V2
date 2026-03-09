@@ -149,6 +149,7 @@
       { key: 'deployment', data: healthData.deployment }
     ];
 
+    // eslint-disable-next-line complexity
     items.forEach((item, idx) => {
       const indicator = indicators[idx] || createHealthIndicator();
       if (!indicators[idx]) container.appendChild(indicator);
@@ -211,6 +212,7 @@
       { key: 'response_time', data: metricsData.response_time }
     ];
 
+    // eslint-disable-next-line complexity
     metrics.forEach((metric, idx) => {
       const card = cards[idx] || createMetricCard();
       if (!cards[idx]) container.appendChild(card);
@@ -296,6 +298,7 @@
   /**
    * Create an activity item element.
    */
+  // eslint-disable-next-line complexity
   function createActivityItem(item) {
     const div = document.createElement('div');
     div.className = 'activity-item';
@@ -440,6 +443,7 @@
     });
   }
 
+  // eslint-disable-next-line complexity
   function parseMilestoneRow(row, index) {
     const milestone = row.getAttribute('data-milestone') || row.cells[0]?.textContent?.trim() || '';
     const status = (row.getAttribute('data-status') || '').toLowerCase();

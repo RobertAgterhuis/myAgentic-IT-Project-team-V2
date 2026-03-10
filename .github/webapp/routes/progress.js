@@ -9,12 +9,12 @@
  */
 
 const { getStore } = require('../store');
-const { json }     = require('../middleware');
+const { json } = require('../middleware');
 
 /* ── Agent / phase constants ──────────────────────────────────── */
 
 const PHASE_AGENTS = {
-  'ONBOARDING': [{ id: '25', name: 'Onboarding Agent' }],
+  ONBOARDING: [{ id: '25', name: 'Onboarding Agent' }],
   'PHASE-1': [
     { id: '01', name: 'Business Analyst' },
     { id: '02', name: 'Domain Expert' },
@@ -49,7 +49,10 @@ const PHASE_AGENTS = {
     { id: '30', name: 'Brand & Assets Agent' },
     { id: '31', name: 'Storybook Agent' },
   ],
-  'SYNTHESIS': [{ id: '17', name: 'Synthesis Agent' }, { id: '27', name: 'GitHub Integration' }],
+  SYNTHESIS: [
+    { id: '17', name: 'Synthesis Agent' },
+    { id: '27', name: 'GitHub Integration' },
+  ],
   'PHASE-5': [
     { id: '20', name: 'Implementation Agent' },
     { id: '21', name: 'Test Agent' },
@@ -61,14 +64,22 @@ const PHASE_AGENTS = {
   ],
 };
 
-const PHASE_ORDER = ['ONBOARDING', 'PHASE-1', 'PHASE-2', 'PHASE-3', 'PHASE-4', 'SYNTHESIS', 'PHASE-5'];
+const PHASE_ORDER = [
+  'ONBOARDING',
+  'PHASE-1',
+  'PHASE-2',
+  'PHASE-3',
+  'PHASE-4',
+  'SYNTHESIS',
+  'PHASE-5',
+];
 const PHASE_LABELS = {
-  'ONBOARDING': 'Onboarding',
+  ONBOARDING: 'Onboarding',
   'PHASE-1': 'Phase 1 — Requirements & Strategy',
   'PHASE-2': 'Phase 2 — Architecture & Design',
   'PHASE-3': 'Phase 3 — Experience Design',
   'PHASE-4': 'Phase 4 — Brand & Growth',
-  'SYNTHESIS': 'Synthesis',
+  SYNTHESIS: 'Synthesis',
   'PHASE-5': 'Phase 5 — Implementation',
 };
 
@@ -80,18 +91,31 @@ function isAgentCompleted(agent, completedAgents) {
 }
 
 function isAgentActive(agent, phaseKey, currentPhase, currentAgent) {
-  return currentPhase === phaseKey && currentAgent && (currentAgent.startsWith(agent.id + '-') || currentAgent === agent.id);
+  return (
+    currentPhase === phaseKey &&
+    currentAgent &&
+    (currentAgent.startsWith(agent.id + '-') || currentAgent === agent.id)
+  );
 }
 
 function hasAgentOutputAsObject(po, agentId) {
-  return po && typeof po === 'object' && po[agentId] && po[agentId] !== 'null' && po[agentId] !== null;
+  return (
+    po && typeof po === 'object' && po[agentId] && po[agentId] !== 'null' && po[agentId] !== null
+  );
 }
 
 function hasOnboardingOutput(po, phaseKey) {
   return po && typeof po === 'string' && po !== 'null' && po !== null && phaseKey === 'ONBOARDING';
 }
 
-function resolveAgentStatus(agent, phaseKey, completedAgents, currentPhase, currentAgent, phaseOutputs) {
+function resolveAgentStatus(
+  agent,
+  phaseKey,
+  completedAgents,
+  currentPhase,
+  currentAgent,
+  phaseOutputs
+) {
   if (isAgentCompleted(agent, completedAgents)) return 'done';
   if (isAgentActive(agent, phaseKey, currentPhase, currentAgent)) return 'active';
   const po = phaseOutputs[phaseKey.toLowerCase()];
@@ -102,24 +126,40 @@ function resolveAgentStatus(agent, phaseKey, completedAgents, currentPhase, curr
 function resolvePhaseStatus(phaseKey, completedPhases, currentPhase, session) {
   if (completedPhases.includes(phaseKey)) return 'done';
   if (currentPhase === phaseKey) return 'active';
-  if (phaseKey === 'PHASE-5' && session.sprint_backlog && session.sprint_backlog.total_sprints > 0) return 'active';
+  if (phaseKey === 'PHASE-5' && session.sprint_backlog && session.sprint_backlog.total_sprints > 0)
+    return 'active';
   return 'pending';
 }
 
 function buildPhaseProgress(session) {
   const completedPhases = session.completed_phases || [];
   const completedAgents = session.completed_agents || [];
-  const currentPhase    = session.current_phase || null;
-  const phaseOutputs    = session.phase_outputs || {};
+  const currentPhase = session.current_phase || null;
+  const phaseOutputs = session.phase_outputs || {};
 
-  return PHASE_ORDER.map(phaseKey => {
-    const agents = (PHASE_AGENTS[phaseKey] || []).map(a => ({
-      id: a.id, name: a.name,
-      status: resolveAgentStatus(a, phaseKey, completedAgents, currentPhase, session.current_agent || null, phaseOutputs),
+  return PHASE_ORDER.map((phaseKey) => {
+    const agents = (PHASE_AGENTS[phaseKey] || []).map((a) => ({
+      id: a.id,
+      name: a.name,
+      status: resolveAgentStatus(
+        a,
+        phaseKey,
+        completedAgents,
+        currentPhase,
+        session.current_agent || null,
+        phaseOutputs
+      ),
     }));
     const phaseStatus = resolvePhaseStatus(phaseKey, completedPhases, currentPhase, session);
-    const done = agents.filter(a => a.status === 'done').length;
-    return { key: phaseKey, label: PHASE_LABELS[phaseKey], status: phaseStatus, agents, done, total: agents.length };
+    const done = agents.filter((a) => a.status === 'done').length;
+    return {
+      key: phaseKey,
+      label: PHASE_LABELS[phaseKey],
+      status: phaseStatus,
+      agents,
+      done,
+      total: agents.length,
+    };
   });
 }
 
@@ -134,15 +174,20 @@ function buildSessionSummary(session) {
     initiated_at: session.initiated_at,
     last_updated: session.last_updated,
     blockers: session.blockers || [],
-    open_human_escalations: (session.open_human_escalations || []).filter(e => e.status === 'OPEN'),
+    open_human_escalations: (session.open_human_escalations || []).filter(
+      (e) => e.status === 'OPEN'
+    ),
   };
 }
 
 function buildEmptyPhases() {
-  return PHASE_ORDER.map(key => ({
-    key, label: PHASE_LABELS[key], status: 'pending',
-    agents: (PHASE_AGENTS[key] || []).map(a => ({ id: a.id, name: a.name, status: 'pending' })),
-    done: 0, total: (PHASE_AGENTS[key] || []).length,
+  return PHASE_ORDER.map((key) => ({
+    key,
+    label: PHASE_LABELS[key],
+    status: 'pending',
+    agents: (PHASE_AGENTS[key] || []).map((a) => ({ id: a.id, name: a.name, status: 'pending' })),
+    done: 0,
+    total: (PHASE_AGENTS[key] || []).length,
   }));
 }
 
@@ -152,16 +197,24 @@ module.exports = function createProgressRoutes(ctx) {
   async function apiGetProgress(_req, res) {
     const command = _getLatestCommand();
     const store = getStore();
-    const sessionFile = typeof resolveSessionFile === 'function' ? resolveSessionFile() : SESSION_FILE;
+    const sessionFile =
+      typeof resolveSessionFile === 'function' ? resolveSessionFile() : SESSION_FILE;
 
     if (!sessionFile || !store.exists(sessionFile)) {
       return json(res, 200, { active: false, phases: buildEmptyPhases(), session: null, command });
     }
     let session;
-    try { session = JSON.parse(_cache.read(sessionFile)); } catch { return json(res, 200, { active: false, phases: buildEmptyPhases(), session: null, command }); }
+    try {
+      session = JSON.parse(_cache.read(sessionFile));
+    } catch {
+      return json(res, 200, { active: false, phases: buildEmptyPhases(), session: null, command });
+    }
 
     const sprints = session.sprint_backlog
-      ? { total: session.sprint_backlog.total_sprints || 0, statuses: session.sprint_backlog.sprint_statuses || {} }
+      ? {
+          total: session.sprint_backlog.total_sprints || 0,
+          statuses: session.sprint_backlog.sprint_statuses || {},
+        }
       : null;
 
     json(res, 200, {
@@ -180,5 +233,5 @@ module.exports = function createProgressRoutes(ctx) {
 
 // Expose for testing
 module.exports.PHASE_AGENTS = PHASE_AGENTS;
-module.exports.PHASE_ORDER  = PHASE_ORDER;
+module.exports.PHASE_ORDER = PHASE_ORDER;
 module.exports.PHASE_LABELS = PHASE_LABELS;

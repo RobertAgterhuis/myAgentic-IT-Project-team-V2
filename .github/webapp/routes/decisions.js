@@ -10,27 +10,39 @@
 
 const path = require('path');
 const { getStore } = require('../store');
-const models       = require('../models');
-const schemas      = require('../schemas');
+const models = require('../models');
+const schemas = require('../schemas');
 const { withFileLock } = require('../file-lock');
 const { attachSecretWarnings } = require('../utils/secret-utils');
-const { errorResponse }        = require('../utils/errors');
+const { errorResponse } = require('../utils/errors');
 const { VALIDATION: V, RESPONSES: R } = require('../strings');
 const {
-  structuredLog, json, parseBody, assertString,
-  sanitizeMarkdown, sanitizeQID, checkSecretsInBody,
+  structuredLog,
+  json,
+  parseBody,
+  assertString,
+  sanitizeMarkdown,
+  sanitizeQID,
+  checkSecretsInBody,
 } = require('../middleware');
 
 module.exports = function createDecisionRoutes(ctx) {
-  const { _cache, safeWriteSync, sseNotify,
-          DECISIONS_FILE, DECISIONS_DIR } = ctx;
+  const { _cache, safeWriteSync, sseNotify, DECISIONS_FILE, DECISIONS_DIR } = ctx;
 
   /* ── Decisions parser — reads index + category files ──────── */
 
   function classifyCategoryDecisions(result, header, decisions) {
     for (const d of decisions) {
       if (header.status === 'DEFERRED' || d.status === 'CAT_DEFERRED') {
-        result.deferred.push({ id: d.id, status: 'DEFERRED', scope: d.scope, subject: d.decision, reason: header.reason || 'Category deferred', date: d.date, category: d.category });
+        result.deferred.push({
+          id: d.id,
+          status: 'DEFERRED',
+          scope: d.scope,
+          subject: d.decision,
+          reason: header.reason || 'Category deferred',
+          date: d.date,
+          category: d.category,
+        });
       } else {
         result.decided.push(d);
       }
@@ -43,9 +55,13 @@ module.exports = function createDecisionRoutes(ctx) {
     const header = models.parseCategoryHeader(content);
     const decisions = models.parseCategoryDecisions(content, header.stack);
     result.categories.push({
-      name: header.name, stack: header.stack, status: header.status,
-      applicable: header.applicable, reason: header.reason,
-      file: fname, count: decisions.length,
+      name: header.name,
+      stack: header.stack,
+      status: header.status,
+      applicable: header.applicable,
+      reason: header.reason,
+      file: fname,
+      count: decisions.length,
     });
     classifyCategoryDecisions(result, header, decisions);
   }
@@ -62,12 +78,18 @@ module.exports = function createDecisionRoutes(ctx) {
 
     if (store.exists(DECISIONS_DIR)) {
       try {
-        const files = store.readdir(DECISIONS_DIR).filter(f => typeof f === 'string' ? f.endsWith('.md') : (f.name || '').endsWith('.md'));
+        const files = store
+          .readdir(DECISIONS_DIR)
+          .filter((f) =>
+            typeof f === 'string' ? f.endsWith('.md') : (f.name || '').endsWith('.md')
+          );
         for (const entry of files) {
           const fname = typeof entry === 'string' ? entry : entry.name;
           processCategoryFile(result, fname);
         }
-      } catch { /* directory not readable — ignore */ }
+      } catch {
+        /* directory not readable — ignore */
+      }
     }
 
     return result;
@@ -87,12 +109,16 @@ module.exports = function createDecisionRoutes(ctx) {
     const r = schemas.validateDecisionMutation(body);
     if (!r.valid) return r.errors[0];
     if (body.id && !models.DEC_ID_RE.test(body.id)) return V.INVALID_DEC_ID;
-    for (const f of DECISION_TEXT_FIELDS) { if (body[f]) assertString(body[f], f, f === 'scope' ? 200 : 2000); }
+    for (const f of DECISION_TEXT_FIELDS) {
+      if (body[f]) assertString(body[f], f, f === 'scope' ? 200 : 2000);
+    }
     return null;
   }
 
   function sanitizeDecisionFields(body) {
-    for (const f of DECISION_TEXT_FIELDS) { if (body[f]) body[f] = sanitizeMarkdown(sanitizeQID(body[f])); }
+    for (const f of DECISION_TEXT_FIELDS) {
+      if (body[f]) body[f] = sanitizeMarkdown(sanitizeQID(body[f]));
+    }
   }
 
   function detectDecisionSecrets(body) {
@@ -109,12 +135,33 @@ module.exports = function createDecisionRoutes(ctx) {
     if (err) return { error: err };
     const id = models.nextDecisionId(content, 'DEC-');
     if (body.type === 'OPEN_QUESTION') {
-      content = models.addOpenQuestion(content, { id, priority: body.priority, scope: body.scope, question: body.text, answer: '', date: models.today() });
+      content = models.addOpenQuestion(content, {
+        id,
+        priority: body.priority,
+        scope: body.scope,
+        question: body.text,
+        answer: '',
+        date: models.today(),
+      });
     } else {
-      content = models.addOperationalDecision(content, { id, priority: body.priority, scope: body.scope, decision: body.text, notes: body.notes || '', date: models.today() });
+      content = models.addOperationalDecision(content, {
+        id,
+        priority: body.priority,
+        scope: body.scope,
+        decision: body.text,
+        notes: body.notes || '',
+        date: models.today(),
+      });
     }
     content = models.appendAuditTrail(content, 'create', id);
-    return { content, result: { ok: true, id, action: body.type === 'OPEN_QUESTION' ? 'created_open_question' : 'created_decision' } };
+    return {
+      content,
+      result: {
+        ok: true,
+        id,
+        action: body.type === 'OPEN_QUESTION' ? 'created_open_question' : 'created_decision',
+      },
+    };
   }
 
   function mutateAnswer(body, content) {
@@ -140,11 +187,32 @@ module.exports = function createDecisionRoutes(ctx) {
   }
   function mutateEdit(body, content) {
     if (!body.id) return { error: V.MISSING_ID };
-    return { content: models.editDecidedRow(content, body.id, { priority: body.priority, scope: body.scope, text: body.text, notes: body.notes }) };
+    return {
+      content: models.editDecidedRow(content, body.id, {
+        priority: body.priority,
+        scope: body.scope,
+        text: body.text,
+        notes: body.notes,
+      }),
+    };
   }
 
-  const DECISION_HANDLERS = { answer: mutateAnswer, decide: mutateDecide, defer: mutateDefer, expire: mutateExpire, reopen: mutateReopen, edit: mutateEdit };
-  const PAST_TENSE = { answer: 'answered', decide: 'decided', defer: 'deferred', expire: 'expired', reopen: 'reopened', edit: 'edited' };
+  const DECISION_HANDLERS = {
+    answer: mutateAnswer,
+    decide: mutateDecide,
+    defer: mutateDefer,
+    expire: mutateExpire,
+    reopen: mutateReopen,
+    edit: mutateEdit,
+  };
+  const PAST_TENSE = {
+    answer: 'answered',
+    decide: 'decided',
+    defer: 'deferred',
+    expire: 'expired',
+    reopen: 'reopened',
+    edit: 'edited',
+  };
 
   function findDecisionFile(id) {
     const store = getStore();
@@ -154,14 +222,20 @@ module.exports = function createDecisionRoutes(ctx) {
     }
     if (store.exists(DECISIONS_DIR)) {
       try {
-        const files = store.readdir(DECISIONS_DIR).filter(f => typeof f === 'string' ? f.endsWith('.md') : (f.name || '').endsWith('.md'));
+        const files = store
+          .readdir(DECISIONS_DIR)
+          .filter((f) =>
+            typeof f === 'string' ? f.endsWith('.md') : (f.name || '').endsWith('.md')
+          );
         for (const entry of files) {
           const fname = typeof entry === 'string' ? entry : entry.name;
           const filePath = path.join(DECISIONS_DIR, fname);
           const content = store.readFile(filePath);
           if (content.includes(id)) return filePath;
         }
-      } catch { /* ignore */ }
+      } catch {
+        /* ignore */
+      }
     }
     return null;
   }
@@ -174,7 +248,10 @@ module.exports = function createDecisionRoutes(ctx) {
     const outcome = handler(body, content);
     if (outcome.error) return outcome;
     content = models.appendAuditTrail(outcome.content, body.action, body.id);
-    return { content, result: { ok: true, id: body.id, action: PAST_TENSE[body.action] || body.action } };
+    return {
+      content,
+      result: { ok: true, id: body.id, action: PAST_TENSE[body.action] || body.action },
+    };
   }
 
   function syncExpireToIndex(body) {
@@ -183,11 +260,21 @@ module.exports = function createDecisionRoutes(ctx) {
       const esc = models.escRx(body.id);
       const rowRe = new RegExp(`\\|\\s*${esc}\\s*\\|`);
       if (!rowRe.test(indexContent.split('## Deferred')[1] || '')) {
-        indexContent = models.insertDeferredRow(indexContent, body.id, 'EXPIRED', body.scope || '', body.text || body.id, body.reason || 'Expired via webapp');
+        indexContent = models.insertDeferredRow(
+          indexContent,
+          body.id,
+          'EXPIRED',
+          body.scope || '',
+          body.text || body.id,
+          body.reason || 'Expired via webapp'
+        );
         indexContent = models.appendAuditTrail(indexContent, 'expire', body.id);
         safeWriteSync(DECISIONS_FILE, indexContent, undefined, {
-          operation: 'update', entityType: 'decision', entityId: body.id,
-          user: 'webapp', summary: `Decision expire cross-file: ${body.id}`,
+          operation: 'update',
+          entityType: 'decision',
+          entityId: body.id,
+          user: 'webapp',
+          summary: `Decision expire cross-file: ${body.id}`,
         });
       }
     });
@@ -214,19 +301,26 @@ module.exports = function createDecisionRoutes(ctx) {
     if (valErr) return json(res, 400, errorResponse('VALIDATION_ERROR', valErr));
     sanitizeDecisionFields(body);
     const secretWarnings = detectDecisionSecrets(body);
-    if (secretWarnings.length > 0) structuredLog('warn', 'secret_pattern_in_decision', { patterns: secretWarnings, action: body.action });
+    if (secretWarnings.length > 0)
+      structuredLog('warn', 'secret_pattern_in_decision', {
+        patterns: secretWarnings,
+        action: body.action,
+      });
 
-    if (!getStore().exists(DECISIONS_FILE)) return json(res, 404, errorResponse('DECISIONS_NOT_FOUND', 'decisions.md not found'));
+    if (!getStore().exists(DECISIONS_FILE))
+      return json(res, 404, errorResponse('DECISIONS_NOT_FOUND', 'decisions.md not found'));
 
-    const targetFile = (body.id && MULTI_FILE_ACTIONS.has(body.action))
-      ? (findDecisionFile(body.id) || DECISIONS_FILE)
-      : DECISIONS_FILE;
+    const targetFile =
+      body.id && MULTI_FILE_ACTIONS.has(body.action)
+        ? findDecisionFile(body.id) || DECISIONS_FILE
+        : DECISIONS_FILE;
 
     return withFileLock(targetFile, () => {
       const content = getStore().readFile(targetFile);
-      const outcome = body.action === 'create'
-        ? handleDecisionCreate(body, content)
-        : handleDecisionMutate(body, content);
+      const outcome =
+        body.action === 'create'
+          ? handleDecisionCreate(body, content)
+          : handleDecisionMutate(body, content);
       if (outcome.error) return json(res, 400, errorResponse('INVALID_ACTION', outcome.error));
 
       const entityId = writeDecisionOutcome(targetFile, body, outcome);
@@ -259,28 +353,42 @@ module.exports = function createDecisionRoutes(ctx) {
       content = models.activateCategoryHeader(content);
       content = models.appendAuditTrail(content, 'activate', fname);
       safeWriteSync(filePath, content, undefined, {
-        operation: 'activate', entityType: 'decision_category', entityId: fname,
-        user: 'webapp', summary: `Category activated: ${header.name}`,
+        operation: 'activate',
+        entityType: 'decision_category',
+        entityId: fname,
+        user: 'webapp',
+        summary: `Category activated: ${header.name}`,
       });
 
       withFileLock(DECISIONS_FILE, () => {
         let indexContent = st.readFile(DECISIONS_FILE);
-        const rowRe = new RegExp(`(\\|[^|]*\\[${models.escRx(fname)}\\][^|]*\\|[^|]*\\|)\\s*DEFERRED\\s*(\\|)\\s*NO\\s*\\|`);
+        const rowRe = new RegExp(
+          `(\\|[^|]*\\[${models.escRx(fname)}\\][^|]*\\|[^|]*\\|)\\s*DEFERRED\\s*(\\|)\\s*NO\\s*\\|`
+        );
         indexContent = indexContent.replace(rowRe, '$1 ACTIVE $2 YES |');
         safeWriteSync(DECISIONS_FILE, indexContent, undefined, {
-          operation: 'update', entityType: 'decision_index', entityId: fname,
-          user: 'webapp', summary: `Category registry updated: ${fname} -> ACTIVE`,
+          operation: 'update',
+          entityType: 'decision_index',
+          entityId: fname,
+          user: 'webapp',
+          summary: `Category registry updated: ${fname} -> ACTIVE`,
         });
       });
 
       sseNotify('decision_update', { action: 'activate_category', file: fname, name: header.name });
-      return json(res, 200, { ok: true, action: 'activated', file: fname, name: header.name, stack: header.stack });
+      return json(res, 200, {
+        ok: true,
+        action: 'activated',
+        file: fname,
+        name: header.name,
+        stack: header.stack,
+      });
     });
   }
 
   return {
-    'GET /api/decisions':                      apiGetDecisions,
-    'POST /api/decisions':                     apiPostDecision,
-    'POST /api/decisions/activate-category':   apiPostActivateCategory,
+    'GET /api/decisions': apiGetDecisions,
+    'POST /api/decisions': apiPostDecision,
+    'POST /api/decisions/activate-category': apiPostActivateCategory,
   };
 };

@@ -5,8 +5,12 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const {
-  FileStore, InMemoryStore, getStore, setStore,
-  BACKUPS_DIR_NAME, MAX_BACKUPS_PER_FILE,
+  FileStore,
+  InMemoryStore,
+  getStore,
+  setStore,
+  BACKUPS_DIR_NAME,
+  MAX_BACKUPS_PER_FILE,
 } = require('./store');
 
 /* ── Story #12: Store interface (SP-R2-002-001) ─────────────── */
@@ -143,7 +147,9 @@ describe('FileStore', () => {
 
 describe('InMemoryStore', () => {
   let store;
-  beforeEach(() => { store = new InMemoryStore(); });
+  beforeEach(() => {
+    store = new InMemoryStore();
+  });
 
   describe('exists / readFile / writeFile', () => {
     it('returns false for non-existent file', () => {
@@ -179,11 +185,11 @@ describe('InMemoryStore', () => {
       store.writeFile('/root/file.txt', 'data');
       store.writeFile('/root/sub/nested.txt', 'nested');
       const entries = store.readdir('/root', { withFileTypes: true });
-      const names = entries.map(e => e.name).sort();
+      const names = entries.map((e) => e.name).sort();
       expect(names).toEqual(['file.txt', 'sub']);
-      const subEntry = entries.find(e => e.name === 'sub');
+      const subEntry = entries.find((e) => e.name === 'sub');
       expect(subEntry.isDirectory()).toBe(true);
-      const fileEntry = entries.find(e => e.name === 'file.txt');
+      const fileEntry = entries.find((e) => e.name === 'file.txt');
       expect(fileEntry.isFile()).toBe(true);
     });
   });
@@ -275,7 +281,9 @@ describe('InMemoryStore', () => {
 
 describe('getStore / setStore', () => {
   let original;
-  beforeEach(() => { original = getStore(); });
+  beforeEach(() => {
+    original = getStore();
+  });
 
   it('injects a custom store and restores it', () => {
     const mem = new InMemoryStore();

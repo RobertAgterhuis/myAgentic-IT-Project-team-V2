@@ -6,26 +6,37 @@ const http = require('http');
 const path = require('path');
 const { InMemoryStore, setStore } = require('../../webapp/store');
 const {
-  server, _cache, _metrics, flushMetrics, loadMetrics, METRICS_FILE,
+  server,
+  _cache,
+  _metrics,
+  flushMetrics,
+  loadMetrics,
+  METRICS_FILE,
   recordMetric,
 } = require('../../webapp/server');
 
-const WEBAPP_DIR    = path.resolve(__dirname, '../../webapp');
-const PROJECT_ROOT  = path.resolve(WEBAPP_DIR, '..', '..');
+const WEBAPP_DIR = path.resolve(__dirname, '../../webapp');
+const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
-const GITHUB_DOCS   = path.join(PROJECT_ROOT, '.github', 'docs');
-const SESSION_DIR   = path.join(GITHUB_DOCS, 'session');
-const SESSION_FILE  = path.join(SESSION_DIR, 'session-state.json');
+const GITHUB_DOCS = path.join(PROJECT_ROOT, '.github', 'docs');
+const SESSION_DIR = path.join(GITHUB_DOCS, 'session');
+const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
 const DECISIONS_FILE = path.join(GITHUB_DOCS, 'decisions.md');
-const HELP_DIR       = path.join(PROJECT_ROOT, '.github', 'help');
-const PKG_PATH       = path.resolve(WEBAPP_DIR, '..', 'package.json');
+const HELP_DIR = path.join(PROJECT_ROOT, '.github', 'help');
+const PKG_PATH = path.resolve(WEBAPP_DIR, '..', 'package.json');
 
 let baseUrl;
 
 function req(method, urlPath, body) {
   return new Promise((resolve, reject) => {
     const url = new URL(urlPath, baseUrl);
-    const opts = { method, hostname: url.hostname, port: url.port, path: url.pathname + url.search, headers: {} };
+    const opts = {
+      method,
+      hostname: url.hostname,
+      port: url.port,
+      path: url.pathname + url.search,
+      headers: {},
+    };
     if (body !== undefined) {
       const data = JSON.stringify(body);
       opts.headers['Content-Type'] = 'application/json';
@@ -33,11 +44,15 @@ function req(method, urlPath, body) {
     }
     const r = http.request(opts, (res) => {
       const chunks = [];
-      res.on('data', c => chunks.push(c));
+      res.on('data', (c) => chunks.push(c));
       res.on('end', () => {
         const text = Buffer.concat(chunks).toString();
         let json;
-        try { json = JSON.parse(text); } catch { json = null; }
+        try {
+          json = JSON.parse(text);
+        } catch {
+          json = null;
+        }
         resolve({ status: res.statusCode, headers: res.headers, text, json });
       });
     });
@@ -48,11 +63,17 @@ function req(method, urlPath, body) {
 }
 
 const SESSION_STATE = {
-  session_id: 'test-session', cycle_type: 'FULL_CREATE', status: 'IN_PROGRESS',
-  current_phase: 'PHASE-2', current_agent: '05-software-architect',
-  initiated_at: '2025-01-01T00:00:00Z', last_updated: '2025-01-02T00:00:00Z',
-  completed_phases: ['ONBOARDING', 'PHASE-1'], completed_agents: ['25-onboarding-agent'],
-  phase_outputs: {}, sprint_backlog: { total_sprints: 3, sprint_statuses: { 'SP-1': 'DONE' } },
+  session_id: 'test-session',
+  cycle_type: 'FULL_CREATE',
+  status: 'IN_PROGRESS',
+  current_phase: 'PHASE-2',
+  current_agent: '05-software-architect',
+  initiated_at: '2025-01-01T00:00:00Z',
+  last_updated: '2025-01-02T00:00:00Z',
+  completed_phases: ['ONBOARDING', 'PHASE-1'],
+  completed_agents: ['25-onboarding-agent'],
+  phase_outputs: {},
+  sprint_backlog: { total_sprints: 3, sprint_statuses: { 'SP-1': 'DONE' } },
 };
 
 const DECISIONS_MD = `# Decisions & Open Questions\n\n---\n\n## Open Questions\n\n| ID | Priority | Scope | Question | Your answer | Date |\n|----|-----------|-------|-------|---------------|-------|\n\n---\n\n## Decided Items\n\n### Operational Decisions\n\n| ID | Priority | Scope | Decision | Notes | Date |\n|----|-----------|-------|-----------|-------------|-------|\n\n---\n\n## Deferred & Expired\n\n| ID | Status | Scope | Subject | Reason | Date |\n|----|--------|-------|---------|--------|------|\n\n---\n\n## Audit Trail\n`;
@@ -263,10 +284,13 @@ describe('TECH-05: loadMetrics()', () => {
   it('caps restored perEndpoint times at METRICS_MAX_SAMPLES', () => {
     const store = seedStore();
     const bigTimes = Array.from({ length: 2000 }, (_, i) => i);
-    store.writeFile(METRICS_FILE, JSON.stringify({
-      requestCount: 1,
-      perEndpoint: { 'GET /test': { count: 2000, times: bigTimes } },
-    }));
+    store.writeFile(
+      METRICS_FILE,
+      JSON.stringify({
+        requestCount: 1,
+        perEndpoint: { 'GET /test': { count: 2000, times: bigTimes } },
+      })
+    );
     setStore(store);
     _metrics.perEndpoint = {};
     loadMetrics();

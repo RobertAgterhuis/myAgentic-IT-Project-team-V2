@@ -2,43 +2,62 @@
 
 ## What is this system?
 
-The **myAgentic-IT-Project-team** system is an end-to-end multi-agent platform that creates complete, production-ready software solutions through a structured four-phase process:
+The **myAgentic-IT-Project-team** system is an end-to-end multi-agent platform
+that creates complete, production-ready software solutions through a structured
+four-phase process:
 
-| Phase | Discipline | What happens |
-|-------|-----------|-------------|
-| **Phase 1** | Business | Requirements analysis, business model, strategy, and financial planning |
-| **Phase 2** | Tech | System architecture, technology stack, security, and data model design |
-| **Phase 3** | UX | User experience/UI design, accessibility, content strategy, i18n |
-| **Phase 4** | Marketing | Brand identity, go-to-market strategy, and conversion design |
+| Phase       | Discipline | What happens                                                            |
+| ----------- | ---------- | ----------------------------------------------------------------------- |
+| **Phase 1** | Business   | Requirements analysis, business model, strategy, and financial planning |
+| **Phase 2** | Tech       | System architecture, technology stack, security, and data model design  |
+| **Phase 3** | UX         | User experience/UI design, accessibility, content strategy, i18n        |
+| **Phase 4** | Marketing  | Brand identity, go-to-market strategy, and conversion design            |
 
-Each phase runs multiple specialized AI agents that produce **Analysis → Recommendations → Sprint Plan → Guardrails**.
+Each phase runs multiple specialized AI agents that produce **Analysis →
+Recommendations → Sprint Plan → Guardrails**.
 
 ## Quick Start
 
 1. **Open the Command Center tab** — this is your control panel
 2. **Select a command** from the left sidebar (e.g. `CREATE`)
-3. **Fill in the project name** and optionally paste your **Project Brief** (requirements, ideas, context)
-4. Click **Queue Command** — the brief is saved as a file, and a short command is copied to your clipboard
+3. **Fill in the project name** and optionally paste your **Project Brief**
+   (requirements, ideas, context)
+4. Click **Queue Command** — the brief is saved as a file, and a short command
+   is copied to your clipboard
 5. **Paste the short command** into the Copilot Chat to start
-6. The Orchestrator begins with the Onboarding Agent, then proceeds **one agent at a time**
+6. The Orchestrator begins with the Onboarding Agent, then proceeds **one agent
+   at a time**
 7. After each agent, type **CONTINUE** to proceed to the next
-8. At **phase boundaries**, start a **fresh Copilot Chat conversation** and type **CONTINUE** — all progress is preserved
+8. At **phase boundaries**, start a **fresh Copilot Chat conversation** and type
+   **CONTINUE** — all progress is preserved
 
-> **Why one agent at a time?** Running all agents in a single conversation would exhaust the VS Code memory limit and produce network timeouts. The checkpoint-and-yield approach keeps each turn small and reliable.
+> **Why one agent at a time?** Running all agents in a single conversation would
+> exhaust the VS Code memory limit and produce network timeouts. The
+> checkpoint-and-yield approach keeps each turn small and reliable.
 
-> **Why a fresh conversation per phase?** Copilot Chat accumulates context in memory. After many agents, this can cause "JS heap out of memory" crashes. Starting a new conversation resets the memory while `session-state.json` preserves all progress.
+> **Why a fresh conversation per phase?** Copilot Chat accumulates context in
+> memory. After many agents, this can cause "JS heap out of memory" crashes.
+> Starting a new conversation resets the memory while `session-state.json`
+> preserves all progress.
 
 ## Project Brief
 
-When launching a CREATE or AUDIT command, you can paste your full project requirements into the **Project Brief** field. This is saved as `BusinessDocs/project-brief.md` — a file the Onboarding Agent reads directly.
+When launching a CREATE or AUDIT command, you can paste your full project
+requirements into the **Project Brief** field. This is saved as
+`BusinessDocs/project-brief.md` — a file the Onboarding Agent reads directly.
 
-**Why a file instead of inline text?** Large requirements pasted directly into a Copilot Chat command consume context window space and can cause network timeouts. By saving the brief as a file, the chat command stays small and the agent reads the full brief from disk.
+**Why a file instead of inline text?** Large requirements pasted directly into a
+Copilot Chat command consume context window space and can cause network
+timeouts. By saving the brief as a file, the chat command stays small and the
+agent reads the full brief from disk.
 
 ## First-time setup
 
-No installation is required beyond the webapp itself. The system creates folders as needed:
+No installation is required beyond the webapp itself. The system creates folders
+as needed:
 
-- `BusinessDocs/` — Project brief, questionnaires, and official documents generated by agents
+- `BusinessDocs/` — Project brief, questionnaires, and official documents
+  generated by agents
 - `.github/docs/session/` — Session state, command queue, reevaluation triggers
 - `.github/docs/synthesis/` — Final reports and blocker matrix
 - `.github/docs/brand/` — Design tokens and brand guidelines
@@ -53,11 +72,20 @@ Both modes follow the same four-phase structure.
 
 ## How the team manages memory
 
-The agentic team follows a strict **Memory Management Protocol** to stay within VS Code's limits:
+The agentic team follows a strict **Memory Management Protocol** to stay within
+VS Code's limits:
 
-- **File-first output**: Agents write all deliverables to disk files, not inline in chat. Chat messages contain only a brief summary + file path.
-- **Checkpoint-and-yield**: Only one agent runs per conversation turn. After each agent completes, the Orchestrator updates `session-state.json` and yields.
-- **Fresh conversations per phase**: At phase boundaries (after Critic + Risk validation), you'll be asked to start a new Copilot Chat. This resets accumulated memory. Type `CONTINUE` and the Orchestrator resumes exactly where it left off.
-- **Targeted reads**: Agents read only the specific sections they need from predecessor outputs, not entire files.
+- **File-first output**: Agents write all deliverables to disk files, not inline
+  in chat. Chat messages contain only a brief summary + file path.
+- **Checkpoint-and-yield**: Only one agent runs per conversation turn. After
+  each agent completes, the Orchestrator updates `session-state.json` and
+  yields.
+- **Fresh conversations per phase**: At phase boundaries (after Critic + Risk
+  validation), you'll be asked to start a new Copilot Chat. This resets
+  accumulated memory. Type `CONTINUE` and the Orchestrator resumes exactly where
+  it left off.
+- **Targeted reads**: Agents read only the specific sections they need from
+  predecessor outputs, not entire files.
 
-This design ensures the system can process large projects with 20+ agents without running out of memory.
+This design ensures the system can process large projects with 20+ agents
+without running out of memory.

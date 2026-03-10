@@ -11,7 +11,7 @@ const path = require('path');
 const { InMemoryStore, setStore } = require('../../webapp/store');
 const { server, _cache } = require('../../webapp/server');
 
-const WEBAPP_DIR   = path.resolve(__dirname, '../../webapp');
+const WEBAPP_DIR = path.resolve(__dirname, '../../webapp');
 const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 
 let baseUrl;
@@ -33,11 +33,15 @@ function req(method, urlPath, body) {
     }
     const r = http.request(opts, (res) => {
       const chunks = [];
-      res.on('data', c => chunks.push(c));
+      res.on('data', (c) => chunks.push(c));
       res.on('end', () => {
         const text = Buffer.concat(chunks).toString();
         let json;
-        try { json = JSON.parse(text); } catch { json = null; }
+        try {
+          json = JSON.parse(text);
+        } catch {
+          json = null;
+        }
         resolve({ status: res.statusCode, headers: res.headers, text, json });
       });
     });
@@ -55,7 +59,7 @@ describe('Milestones API (SP-9)', () => {
     const listener = server.listen(0);
     const addr = listener.address();
     baseUrl = `http://localhost:${addr.port}`;
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       if (listener.listening) resolve();
       else listener.once('listening', resolve);
     });

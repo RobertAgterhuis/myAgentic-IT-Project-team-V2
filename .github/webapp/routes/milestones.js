@@ -187,18 +187,13 @@ async function createMilestone(req, res, ctx) {
       };
 
       milestones.push(createdMilestone);
-      ctx.safeWriteSync(
-        paths.milestonesFile,
-        JSON.stringify(milestones, null, 2),
-        'utf8',
-        {
-          operation: 'create',
-          entityType: 'milestone',
-          entityId: createdMilestone.id,
-          user: 'webapp',
-          summary: `Created milestone ${createdMilestone.id}`,
-        }
-      );
+      ctx.safeWriteSync(paths.milestonesFile, JSON.stringify(milestones, null, 2), 'utf8', {
+        operation: 'create',
+        entityType: 'milestone',
+        entityId: createdMilestone.id,
+        user: 'webapp',
+        summary: `Created milestone ${createdMilestone.id}`,
+      });
       return null;
     });
 
@@ -285,7 +280,9 @@ async function updateMilestone(req, res, ctx) {
       const index = milestones.findIndex((m) => m.id === milestoneId);
 
       if (index === -1) {
-        throw createRouteError(404, 'Milestone not found', [`Milestone with ID "${milestoneId}" does not exist`]);
+        throw createRouteError(404, 'Milestone not found', [
+          `Milestone with ID "${milestoneId}" does not exist`,
+        ]);
       }
 
       const milestone = milestones[index];
@@ -300,18 +297,13 @@ async function updateMilestone(req, res, ctx) {
 
       milestones[index] = updatedMilestone;
 
-      ctx.safeWriteSync(
-        paths.milestonesFile,
-        JSON.stringify(milestones, null, 2),
-        'utf8',
-        {
-          operation: 'update',
-          entityType: 'milestone',
-          entityId: milestoneId,
-          user: 'webapp',
-          summary: `Updated milestone ${milestoneId}`,
-        }
-      );
+      ctx.safeWriteSync(paths.milestonesFile, JSON.stringify(milestones, null, 2), 'utf8', {
+        operation: 'update',
+        entityType: 'milestone',
+        entityId: milestoneId,
+        user: 'webapp',
+        summary: `Updated milestone ${milestoneId}`,
+      });
 
       return null;
     });
@@ -326,7 +318,11 @@ async function updateMilestone(req, res, ctx) {
     });
   } catch (err) {
     if (err && err.status) {
-      return json(res, err.status, { ok: false, error: err.error || err.message, details: err.details });
+      return json(res, err.status, {
+        ok: false,
+        error: err.error || err.message,
+        details: err.details,
+      });
     }
     return json(res, 500, {
       ok: false,
@@ -366,18 +362,13 @@ async function archiveMilestone(req, res, ctx) {
 
       milestones[index] = archivedMilestone;
 
-      ctx.safeWriteSync(
-        paths.milestonesFile,
-        JSON.stringify(milestones, null, 2),
-        'utf8',
-        {
-          operation: 'archive',
-          entityType: 'milestone',
-          entityId: milestoneId,
-          user: 'webapp',
-          summary: `Archived milestone ${milestoneId}`,
-        }
-      );
+      ctx.safeWriteSync(paths.milestonesFile, JSON.stringify(milestones, null, 2), 'utf8', {
+        operation: 'archive',
+        entityType: 'milestone',
+        entityId: milestoneId,
+        user: 'webapp',
+        summary: `Archived milestone ${milestoneId}`,
+      });
 
       return null;
     });
@@ -463,7 +454,9 @@ async function createTemplate(req, res, ctx) {
       const templates = readTemplates(paths, ctx._cache);
 
       // Check for duplicate template name
-      const existingTemplate = templates.find((t) => t.name.toLowerCase() === data.name.toLowerCase());
+      const existingTemplate = templates.find(
+        (t) => t.name.toLowerCase() === data.name.toLowerCase()
+      );
       if (existingTemplate) {
         return json(res, 409, {
           ok: false,
@@ -484,18 +477,13 @@ async function createTemplate(req, res, ctx) {
       };
 
       templates.push(createdTemplate);
-      ctx.safeWriteSync(
-        paths.templatesFile,
-        JSON.stringify(templates, null, 2),
-        'utf8',
-        {
-          operation: 'create',
-          entityType: 'milestone-template',
-          entityId: createdTemplate.id,
-          user: 'webapp',
-          summary: `Created milestone template ${createdTemplate.id}`,
-        }
-      );
+      ctx.safeWriteSync(paths.templatesFile, JSON.stringify(templates, null, 2), 'utf8', {
+        operation: 'create',
+        entityType: 'milestone-template',
+        entityId: createdTemplate.id,
+        user: 'webapp',
+        summary: `Created milestone template ${createdTemplate.id}`,
+      });
       return null;
     });
 
@@ -560,18 +548,13 @@ async function deleteTemplate(req, res, ctx) {
       deletedTemplate = templates[index];
       templates.splice(index, 1);
 
-      ctx.safeWriteSync(
-        paths.templatesFile,
-        JSON.stringify(templates, null, 2),
-        'utf8',
-        {
-          operation: 'delete',
-          entityType: 'milestone-template',
-          entityId: templateId,
-          user: 'webapp',
-          summary: `Deleted milestone template ${templateId}`,
-        }
-      );
+      ctx.safeWriteSync(paths.templatesFile, JSON.stringify(templates, null, 2), 'utf8', {
+        operation: 'delete',
+        entityType: 'milestone-template',
+        entityId: templateId,
+        user: 'webapp',
+        summary: `Deleted milestone template ${templateId}`,
+      });
 
       return null;
     });
@@ -661,18 +644,13 @@ async function applyTemplate(req, res, ctx) {
       };
 
       milestones.push(createdMilestone);
-      ctx.safeWriteSync(
-        paths.milestonesFile,
-        JSON.stringify(milestones, null, 2),
-        'utf8',
-        {
-          operation: 'create',
-          entityType: 'milestone',
-          entityId: createdMilestone.id,
-          user: 'webapp',
-          summary: `Created milestone ${createdMilestone.id} from template ${templateId}`,
-        }
-      );
+      ctx.safeWriteSync(paths.milestonesFile, JSON.stringify(milestones, null, 2), 'utf8', {
+        operation: 'create',
+        entityType: 'milestone',
+        entityId: createdMilestone.id,
+        user: 'webapp',
+        summary: `Created milestone ${createdMilestone.id} from template ${templateId}`,
+      });
       return null;
     });
 
@@ -686,7 +664,11 @@ async function applyTemplate(req, res, ctx) {
     });
   } catch (err) {
     if (err && err.status) {
-      return json(res, err.status, { ok: false, error: err.error || err.message, details: err.details });
+      return json(res, err.status, {
+        ok: false,
+        error: err.error || err.message,
+        details: err.details,
+      });
     }
     return json(res, 500, {
       ok: false,

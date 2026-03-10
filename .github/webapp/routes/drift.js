@@ -12,16 +12,16 @@
  */
 
 const path = require('path');
-const fs   = require('fs');
+const fs = require('fs');
 const { detectDrift } = require('../drift-detector');
-const { json }        = require('../middleware');
+const { json } = require('../middleware');
 
 module.exports = function createDriftRoutes(ctx) {
   const { SESSION_FILE, resolveSessionFile, PROJECT_ROOT } = ctx;
 
-  const GITHUB_DOCS   = path.join(PROJECT_ROOT, '.github', 'docs');
-  const SPRINTS_DIR   = path.join(GITHUB_DOCS, 'sprints');
-  const PHASE5_DIR    = path.join(GITHUB_DOCS, 'phase-5');
+  const GITHUB_DOCS = path.join(PROJECT_ROOT, '.github', 'docs');
+  const SPRINTS_DIR = path.join(GITHUB_DOCS, 'sprints');
+  const PHASE5_DIR = path.join(GITHUB_DOCS, 'phase-5');
 
   /**
    * Read session-state.json safely.
@@ -29,10 +29,13 @@ module.exports = function createDriftRoutes(ctx) {
    */
   function readSessionState() {
     try {
-      const sessionFile = typeof resolveSessionFile === 'function' ? resolveSessionFile() : SESSION_FILE;
+      const sessionFile =
+        typeof resolveSessionFile === 'function' ? resolveSessionFile() : SESSION_FILE;
       if (!sessionFile || !fs.existsSync(sessionFile)) return null;
       return JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
-    } catch { return null; }
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -41,10 +44,15 @@ module.exports = function createDriftRoutes(ctx) {
    * @returns {string|null}
    */
   function readSprintPlan(sessionState) {
-    const planPath = sessionState && sessionState.sprint_backlog && sessionState.sprint_backlog.path;
+    const planPath =
+      sessionState && sessionState.sprint_backlog && sessionState.sprint_backlog.path;
     if (!planPath) return null;
     const abs = path.resolve(PROJECT_ROOT, planPath);
-    try { return fs.readFileSync(abs, 'utf8'); } catch { return null; }
+    try {
+      return fs.readFileSync(abs, 'utf8');
+    } catch {
+      return null;
+    }
   }
 
   /**
@@ -61,13 +69,22 @@ module.exports = function createDriftRoutes(ctx) {
       // Try: .github/docs/sprints/SP-N/github-sync-report.md
       const path1 = path.join(SPRINTS_DIR, sprintId, 'github-sync-report.md');
       if (fs.existsSync(path1)) {
-        try { reports[sprintId] = fs.readFileSync(path1, 'utf8'); continue; } catch { /* fall through */ }
+        try {
+          reports[sprintId] = fs.readFileSync(path1, 'utf8');
+          continue;
+        } catch {
+          /* fall through */
+        }
       }
 
       // Try: .github/docs/phase-5/sprint-SP-N/github-sync-report.md
       const path2 = path.join(PHASE5_DIR, `sprint-${sprintId}`, 'github-sync-report.md');
       if (fs.existsSync(path2)) {
-        try { reports[sprintId] = fs.readFileSync(path2, 'utf8'); } catch { /* ignore */ }
+        try {
+          reports[sprintId] = fs.readFileSync(path2, 'utf8');
+        } catch {
+          /* ignore */
+        }
       }
     }
     return reports;
@@ -88,7 +105,8 @@ module.exports = function createDriftRoutes(ctx) {
     }
 
     const sprintPlanContent = readSprintPlan(sessionState);
-    const sprintStatuses = (sessionState.sprint_backlog && sessionState.sprint_backlog.sprint_statuses) || {};
+    const sprintStatuses =
+      (sessionState.sprint_backlog && sessionState.sprint_backlog.sprint_statuses) || {};
     const syncReports = readSyncReports(sprintStatuses);
 
     const report = detectDrift({ sessionState, sprintPlanContent, syncReports });

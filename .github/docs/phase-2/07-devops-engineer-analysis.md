@@ -1,6 +1,7 @@
 # Analysis – DevOps Engineer – 2026-03-10
 
 ## Metadata
+
 - Agent: DevOps Engineer (07)
 - Phase: 2
 - Input received from: Software Architect (05) + Senior Developer (06)
@@ -9,129 +10,176 @@
 - Mode: CREATE
 
 ## Step 0: Questionnaire Input
+
 - Status: NOT_INJECTED
 - No dedicated DevOps questionnaire block was injected in this step.
 
 ## 1. Solution Design (CREATE mode)
 
 ### 1.1 CI/CD Platform and Pipeline Baseline
-- Finding: GitHub Actions is already the operational CI/CD platform with separate jobs for syntax, tests, secret scan, SAST, and npm audit.
+
+- Finding: GitHub Actions is already the operational CI/CD platform with
+  separate jobs for syntax, tests, secret scan, SAST, and npm audit.
 - Source: `.github/workflows/ci.yml`
 - Impact: High
 
-- Finding: CI currently covers build-adjacent validation (syntax), quality (tests + coverage), and security scans (TruffleHog, Semgrep, npm audit), but no deployment stage exists in CI workflow.
+- Finding: CI currently covers build-adjacent validation (syntax), quality
+  (tests + coverage), and security scans (TruffleHog, Semgrep, npm audit), but
+  no deployment stage exists in CI workflow.
 - Source: `.github/workflows/ci.yml`
 - Impact: High
 
-- Finding: Release automation exists only on tag push and creates GitHub Releases, but does not publish artifacts or deploy runtime environments.
+- Finding: Release automation exists only on tag push and creates GitHub
+  Releases, but does not publish artifacts or deploy runtime environments.
 - Source: `.github/workflows/release.yml`
 - Impact: Medium
 
-- Finding: Branch strategy in practice is GitHub Flow (PR to `main` + CI on PR/push to main), aligned with small-team internal workflow.
+- Finding: Branch strategy in practice is GitHub Flow (PR to `main` + CI on
+  PR/push to main), aligned with small-team internal workflow.
 - Source: `.github/workflows/ci.yml`
 - Impact: Medium
 
-- Finding: Board sync automation exists for issue closure from PR keywords, supporting operational workflow but not runtime delivery.
+- Finding: Board sync automation exists for issue closure from PR keywords,
+  supporting operational workflow but not runtime delivery.
 - Source: `.github/workflows/my-agentic-team-board-sync.yml`
 - Impact: Low
 
 ### 1.2 Runtime and Deployment Baseline
-- Finding: Local and containerized runtime are both defined; container runtime binds `HOST=0.0.0.0` and exposes port `3000`.
+
+- Finding: Local and containerized runtime are both defined; container runtime
+  binds `HOST=0.0.0.0` and exposes port `3000`.
 - Source: `Dockerfile`, `docker-compose.yml`
 - Impact: High
 
-- Finding: Production container install currently runs `npm --prefix .github install --omit=dev`, which is not lockfile-strict and risks non-reproducible builds.
+- Finding: Production container install currently runs
+  `npm --prefix .github install --omit=dev`, which is not lockfile-strict and
+  risks non-reproducible builds.
 - Source: `Dockerfile`
 - Impact: High
 
-- Finding: Server startup can fail with `port_in_use` and exits with code 1 without automated port fallback.
-- Source: terminal run `node .github/webapp/server.js` output (2026-03-10 04:40 UTC)
+- Finding: Server startup can fail with `port_in_use` and exits with code 1
+  without automated port fallback.
+- Source: terminal run `node .github/webapp/server.js` output (2026-03-10 04:40
+  UTC)
 - Impact: High
 
-- Finding: `start.ps1` kills existing process on selected port before restart, but this behavior is not mirrored in cross-platform startup scripts/CI smoke startup.
+- Finding: `start.ps1` kills existing process on selected port before restart,
+  but this behavior is not mirrored in cross-platform startup scripts/CI smoke
+  startup.
 - Source: `.github/webapp/start.ps1`
 - Impact: Medium
 
-- Finding: Health and observability endpoint behavior is covered by integration tests, which supports operational confidence but not deployment gating yet.
+- Finding: Health and observability endpoint behavior is covered by integration
+  tests, which supports operational confidence but not deployment gating yet.
 - Source: `.github/tests/integration/observability.test.js`
 - Impact: Medium
 
 ### 1.3 IaC and Environment Strategy Baseline
-- Finding: Docker Compose is used as environment-as-code for local/runtime orchestration, but cloud/provider IaC (Terraform/Bicep/Pulumi) is absent.
+
+- Finding: Docker Compose is used as environment-as-code for local/runtime
+  orchestration, but cloud/provider IaC (Terraform/Bicep/Pulumi) is absent.
 - Source: `docker-compose.yml`, workspace IaC scan
 - Impact: High
 
-- Finding: Environment strategy is effectively single-runtime profile with optional container; formal Dev/Staging/Prod promotion gates are not codified.
+- Finding: Environment strategy is effectively single-runtime profile with
+  optional container; formal Dev/Staging/Prod promotion gates are not codified.
 - Source: `.github/workflows/ci.yml`, `docker-compose.yml`
 - Impact: High
 
-- Finding: Security scanning exists in CI but no explicit staging smoke-test gate before release tag creation.
+- Finding: Security scanning exists in CI but no explicit staging smoke-test
+  gate before release tag creation.
 - Source: `.github/workflows/ci.yml`, `.github/workflows/release.yml`
 - Impact: High
 
-- Finding: Secrets/config strategy in CI exists implicitly via GitHub Actions environment, but project-level secrets policy and rotation cadence are undocumented.
+- Finding: Secrets/config strategy in CI exists implicitly via GitHub Actions
+  environment, but project-level secrets policy and rotation cadence are
+  undocumented.
 - Source: workflow files + absence of policy document in `.github/docs/phase-2/`
 - Impact: Medium
 
-- Finding: No drift-detection process exists for runtime configuration (compose/env) beyond manual review.
+- Finding: No drift-detection process exists for runtime configuration
+  (compose/env) beyond manual review.
 - Source: absence in workflows/docs
 - Impact: Medium
 
 ### 1.4 Monitoring, Deployment, DR Design Baseline
-- Finding: Runtime metrics persistence and health endpoints exist, enabling baseline technical observability.
-- Source: `.github/webapp/server.js`, `.github/tests/integration/observability.test.js`
+
+- Finding: Runtime metrics persistence and health endpoints exist, enabling
+  baseline technical observability.
+- Source: `.github/webapp/server.js`,
+  `.github/tests/integration/observability.test.js`
 - Impact: High
 
-- Finding: Distributed tracing is not present; no OpenTelemetry or equivalent trace context pipeline is defined.
+- Finding: Distributed tracing is not present; no OpenTelemetry or equivalent
+  trace context pipeline is defined.
 - Source: dependency/config scan (`.github/package.json`, workflows)
 - Impact: Medium
 
-- Finding: Alerting and on-call escalation are not automated; no paging/integration rules are defined.
+- Finding: Alerting and on-call escalation are not automated; no
+  paging/integration rules are defined.
 - Source: workflow/docs scan
 - Impact: High
 
-- Finding: Deployment strategy (blue-green/canary/rolling) is not defined; current release is source/tag-centric only.
+- Finding: Deployment strategy (blue-green/canary/rolling) is not defined;
+  current release is source/tag-centric only.
 - Source: `.github/workflows/release.yml`
 - Impact: High
 
-- Finding: Backup/DR process for file-based state is partially implemented (backups in store layer) but no scripted restore drill, RTO/RPO validation, or scheduled backup verification in CI.
-- Source: `.github/webapp/store.js`, `.github/docs/phase-2/05-software-architect-analysis.md`
+- Finding: Backup/DR process for file-based state is partially implemented
+  (backups in store layer) but no scripted restore drill, RTO/RPO validation, or
+  scheduled backup verification in CI.
+- Source: `.github/webapp/store.js`,
+  `.github/docs/phase-2/05-software-architect-analysis.md`
 - Impact: High
 
 ## 2. Requirements Gaps (CREATE mode)
 
 ### 2.1 GAP-701 – Missing deployment stage in CI/CD
-- Description: CI validates quality/security but does not execute deploy-to-staging or smoke validation stages.
+
+- Description: CI validates quality/security but does not execute
+  deploy-to-staging or smoke validation stages.
 - Source: `.github/workflows/ci.yml`
-- Risk if unresolved: Regressions can pass CI but fail after manual/runtime startup.
+- Risk if unresolved: Regressions can pass CI but fail after manual/runtime
+  startup.
 - Priority: Critical
 
 ### 2.2 GAP-702 – No formal multi-environment promotion gates
+
 - Description: Dev/Staging/Prod transition criteria are not codified.
 - Source: workflow and docs scan
-- Risk if unresolved: Uncontrolled promotion to release without consistent quality gates.
+- Risk if unresolved: Uncontrolled promotion to release without consistent
+  quality gates.
 - Priority: High
 
 ### 2.3 GAP-703 – No cloud IaC baseline/tooling decision
-- Description: Runtime uses compose only; there is no cloud IaC module structure/state policy for future expansion.
+
+- Description: Runtime uses compose only; there is no cloud IaC module
+  structure/state policy for future expansion.
 - Source: `docker-compose.yml`, no Terraform/Bicep/Pulumi files found
-- Risk if unresolved: Future infrastructure rollout becomes manual and inconsistent.
+- Risk if unresolved: Future infrastructure rollout becomes manual and
+  inconsistent.
 - Priority: High
 
 ### 2.4 GAP-704 – Reproducible container build policy incomplete
-- Description: Docker build installs production dependencies without lockfile-strict `npm ci` flow.
+
+- Description: Docker build installs production dependencies without
+  lockfile-strict `npm ci` flow.
 - Source: `Dockerfile`
 - Risk if unresolved: Build drift across time and environments.
 - Priority: High
 
 ### 2.5 GAP-705 – Alerting and incident escalation not defined
-- Description: No automated alerts for health degradation, failed release checks, or recurring startup port conflicts.
+
+- Description: No automated alerts for health degradation, failed release
+  checks, or recurring startup port conflicts.
 - Source: workflow/docs scan + runtime startup evidence
 - Risk if unresolved: Longer incident detection and recovery time.
 - Priority: High
 
 ### 2.6 GAP-706 – DR restore drill process missing
-- Description: Backup files exist but no scheduled restore test and no RTO/RPO verification automation.
+
+- Description: Backup files exist but no scheduled restore test and no RTO/RPO
+  verification automation.
 - Source: `.github/webapp/store.js`, absence of DR workflow
 - Risk if unresolved: Backup confidence is unverified during real incidents.
 - Priority: High
@@ -139,39 +187,54 @@
 ## 3. Risks
 
 ### 3.1 RISK-701 – Deployment without runtime smoke gate
-- Description: Release can proceed on tag without startup/health verification in release workflow.
+
+- Description: Release can proceed on tag without startup/health verification in
+  release workflow.
 - Probability: High
 - Impact: High
 - Risk score: Critical
-- Mitigation options: add staged deploy/smoke gate; enforce `/health` check before release publish.
+- Mitigation options: add staged deploy/smoke gate; enforce `/health` check
+  before release publish.
 - Source: `.github/workflows/release.yml`, `.github/workflows/ci.yml`
 
 ### 3.2 RISK-702 – Runtime startup collision on fixed port
-- Description: Server fails when port 3000 is occupied and exits non-zero; no automated fallback in standard startup path.
+
+- Description: Server fails when port 3000 is occupied and exits non-zero; no
+  automated fallback in standard startup path.
 - Probability: Medium
 - Impact: High
 - Risk score: High
-- Mitigation options: add retry/fallback port logic; CI smoke test to catch startup conflict behavior.
-- Source: terminal execution output (port_in_use), `.github/webapp/server.js`, `.github/webapp/start.ps1`
+- Mitigation options: add retry/fallback port logic; CI smoke test to catch
+  startup conflict behavior.
+- Source: terminal execution output (port_in_use), `.github/webapp/server.js`,
+  `.github/webapp/start.ps1`
 
 ### 3.3 RISK-703 – Build reproducibility drift
-- Description: Non-lockfile production dependency install in Docker can produce inconsistent runtime artifacts.
+
+- Description: Non-lockfile production dependency install in Docker can produce
+  inconsistent runtime artifacts.
 - Probability: Medium
 - Impact: High
 - Risk score: High
-- Mitigation options: lockfile-based `npm ci --omit=dev` in container build; SBOM generation.
+- Mitigation options: lockfile-based `npm ci --omit=dev` in container build;
+  SBOM generation.
 - Source: `Dockerfile`, `.github/package-lock.json` presence
 
 ### 3.4 RISK-704 – Observability blind spots for incident response
-- Description: No distributed tracing or alerting pipeline means partial visibility under cross-component failures.
+
+- Description: No distributed tracing or alerting pipeline means partial
+  visibility under cross-component failures.
 - Probability: Medium
 - Impact: High
 - Risk score: High
-- Mitigation options: OpenTelemetry baseline; alert rules on health/error-rate/startup failures.
+- Mitigation options: OpenTelemetry baseline; alert rules on
+  health/error-rate/startup failures.
 - Source: `.github/package.json`, workflows/docs absence
 
 ### 3.5 RISK-705 – DR confidence gap
-- Description: Backup exists but restore workflow is untested in automation, risking failed recovery when needed.
+
+- Description: Backup exists but restore workflow is untested in automation,
+  risking failed recovery when needed.
 - Probability: Medium
 - Impact: High
 - Risk score: High
@@ -180,30 +243,47 @@
 
 ## 4. KPI Baseline
 
-| KPI | Current value | Source | Measurement method |
-|-----|---------------|--------|--------------------|
-| CI quality/security jobs count | 5 jobs (`syntax-check`, `test`, `secret-scan`, `sast`, `npm-audit`) | `.github/workflows/ci.yml` | Parse workflow jobs and successful run counts |
-| Release deployment jobs | 0 deployment jobs | `.github/workflows/release.yml` | Count deploy/smoke stages in release workflow |
-| Runtime startup conflict tolerance | Fails on occupied port (`exit 1`) | terminal run output + `server.js` behavior | Startup test with occupied port simulation |
-| Container reproducibility policy | `npm install --omit=dev` (non-ci) | `Dockerfile` | Verify Dockerfile command policy in CI lint |
-| Automated DR restore drills | INSUFFICIENT_DATA (none found) | workflow/docs scan | Scheduled workflow existence + drill report artifact |
+| KPI                                | Current value                                                       | Source                                     | Measurement method                                   |
+| ---------------------------------- | ------------------------------------------------------------------- | ------------------------------------------ | ---------------------------------------------------- |
+| CI quality/security jobs count     | 5 jobs (`syntax-check`, `test`, `secret-scan`, `sast`, `npm-audit`) | `.github/workflows/ci.yml`                 | Parse workflow jobs and successful run counts        |
+| Release deployment jobs            | 0 deployment jobs                                                   | `.github/workflows/release.yml`            | Count deploy/smoke stages in release workflow        |
+| Runtime startup conflict tolerance | Fails on occupied port (`exit 1`)                                   | terminal run output + `server.js` behavior | Startup test with occupied port simulation           |
+| Container reproducibility policy   | `npm install --omit=dev` (non-ci)                                   | `Dockerfile`                               | Verify Dockerfile command policy in CI lint          |
+| Automated DR restore drills        | INSUFFICIENT_DATA (none found)                                      | workflow/docs scan                         | Scheduled workflow existence + drill report artifact |
 
 ## 5. UNCERTAIN Items
-- `UNCERTAIN: exact release frequency baseline` – Reason: no historical release metrics included in current context – Escalation: extract from tags over last 90 days.
-- `UNCERTAIN: acceptable startup fallback behavior` – Reason: product requirement does not explicitly define fixed-port vs fallback-port policy – Escalation: capture decision via questionnaire.
+
+- `UNCERTAIN: exact release frequency baseline` – Reason: no historical release
+  metrics included in current context – Escalation: extract from tags over last
+  90 days.
+- `UNCERTAIN: acceptable startup fallback behavior` – Reason: product
+  requirement does not explicitly define fixed-port vs fallback-port policy –
+  Escalation: capture decision via questionnaire.
 
 ## 6. INSUFFICIENT_DATA Items
-- `INSUFFICIENT_DATA: security gate severity policy` – Missing: Security Architect-approved fail thresholds for SAST/DAST – Consequence: cannot finalize deploy promotion policy.
-- `INSUFFICIENT_DATA: operational on-call model` – Missing: incident owner/escalation roster – Consequence: alerting policy cannot be action-complete.
-- `INSUFFICIENT_DATA: RTO/RPO execution baseline` – Missing: measured restore durations – Consequence: DR targets remain theoretical.
+
+- `INSUFFICIENT_DATA: security gate severity policy` – Missing: Security
+  Architect-approved fail thresholds for SAST/DAST – Consequence: cannot
+  finalize deploy promotion policy.
+- `INSUFFICIENT_DATA: operational on-call model` – Missing: incident
+  owner/escalation roster – Consequence: alerting policy cannot be
+  action-complete.
+- `INSUFFICIENT_DATA: RTO/RPO execution baseline` – Missing: measured restore
+  durations – Consequence: DR targets remain theoretical.
 
 ## QUESTIONNAIRE_REQUEST
-- `QUESTIONNAIRE_REQUEST: DO-Q-701` – Confirm preferred deployment environments (localhost-only vs staging+production) and promotion model.
-- `QUESTIONNAIRE_REQUEST: DO-Q-702` – Confirm startup policy: strict fixed port 3000 or fallback allowed when occupied.
-- `QUESTIONNAIRE_REQUEST: DO-Q-703` – Provide incident escalation owner(s) and expected alert response window.
-- `QUESTIONNAIRE_REQUEST: DO-Q-704` – Confirm DR target values (RTO and RPO) and drill cadence preference.
+
+- `QUESTIONNAIRE_REQUEST: DO-Q-701` – Confirm preferred deployment environments
+  (localhost-only vs staging+production) and promotion model.
+- `QUESTIONNAIRE_REQUEST: DO-Q-702` – Confirm startup policy: strict fixed port
+  3000 or fallback allowed when occupied.
+- `QUESTIONNAIRE_REQUEST: DO-Q-703` – Provide incident escalation owner(s) and
+  expected alert response window.
+- `QUESTIONNAIRE_REQUEST: DO-Q-704` – Confirm DR target values (RTO and RPO) and
+  drill cadence preference.
 
 ## HANDOFF CHECKLIST
+
 - [x] All sections (1-4) are fully completed
 - [x] All findings have a source citation
 - [x] No empty sections or placeholders
@@ -336,10 +416,7 @@
       "probability": "Medium",
       "impact": "High",
       "score": "High",
-      "mitigations": [
-        "Fallback port policy",
-        "Preflight startup checks"
-      ],
+      "mitigations": ["Fallback port policy", "Preflight startup checks"],
       "source": "terminal output + server startup behavior"
     },
     {
@@ -362,10 +439,7 @@
       "probability": "Medium",
       "impact": "High",
       "score": "High",
-      "mitigations": [
-        "Introduce tracing",
-        "Define alert policies"
-      ],
+      "mitigations": ["Introduce tracing", "Define alert policies"],
       "source": "dependency/workflow scan"
     },
     {
@@ -375,10 +449,7 @@
       "probability": "Medium",
       "impact": "High",
       "score": "High",
-      "mitigations": [
-        "Schedule restore drills",
-        "Track RTO/RPO outcomes"
-      ],
+      "mitigations": ["Schedule restore drills", "Track RTO/RPO outcomes"],
       "source": "store backup implementation + missing DR workflow"
     }
   ],

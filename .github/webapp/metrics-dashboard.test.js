@@ -12,21 +12,55 @@ const GITHUB_DOCS = path.resolve('test-docs');
 
 const velocityLog = {
   sprints: [
-    { sprint_id: 'SP-1', planned_points: 20, realized_points: 18, velocity_ratio: 0.9, implemented: 5, blocked: 1, scope_change_excluded_points: 2 },
-    { sprint_id: 'SP-2', planned_points: 22, realized_points: 22, velocity_ratio: 1.0, implemented: 6, blocked: 0, scope_change_excluded_points: 0 },
-    { sprint_id: 'SP-3', planned_points: 25, realized_points: 20, velocity_ratio: 0.8, implemented: 7, blocked: 2, scope_change_excluded_points: 3 },
-    { sprint_id: 'SP-4', planned_points: 23, realized_points: 24, velocity_ratio: 1.04, implemented: 8, blocked: 0, scope_change_excluded_points: 1 },
+    {
+      sprint_id: 'SP-1',
+      planned_points: 20,
+      realized_points: 18,
+      velocity_ratio: 0.9,
+      implemented: 5,
+      blocked: 1,
+      scope_change_excluded_points: 2,
+    },
+    {
+      sprint_id: 'SP-2',
+      planned_points: 22,
+      realized_points: 22,
+      velocity_ratio: 1.0,
+      implemented: 6,
+      blocked: 0,
+      scope_change_excluded_points: 0,
+    },
+    {
+      sprint_id: 'SP-3',
+      planned_points: 25,
+      realized_points: 20,
+      velocity_ratio: 0.8,
+      implemented: 7,
+      blocked: 2,
+      scope_change_excluded_points: 3,
+    },
+    {
+      sprint_id: 'SP-4',
+      planned_points: 23,
+      realized_points: 24,
+      velocity_ratio: 1.04,
+      implemented: 8,
+      blocked: 0,
+      scope_change_excluded_points: 1,
+    },
   ],
 };
 
 const kpiSP1 = {
-  sprint_id: 'SP-1', measured_on: '2026-01-15T12:00:00Z',
+  sprint_id: 'SP-1',
+  measured_on: '2026-01-15T12:00:00Z',
   summary: { on_track: 5, at_risk: 1, off_track: 0, insufficient_data: 0 },
   kpis: [{ id: 'K1', status: 'on_track' }],
 };
 
 const kpiSP4 = {
-  sprint: 'SP-4', date: '2026-02-15',
+  sprint: 'SP-4',
+  date: '2026-02-15',
   stories: [{ id: 'S1', status: 'done' }],
   tests: { total: 100, passed: 98, failed: 2 },
   quality: { regressions: 1, security_findings: 0 },
@@ -39,7 +73,8 @@ function buildFiles() {
   // "metrics" format KPI (SP-1)
   files[path.join(GITHUB_DOCS, 'metrics', 'sprint-SP-1-kpi.json')] = JSON.stringify(kpiSP1);
   // "phase5" format KPI (SP-4)
-  files[path.join(GITHUB_DOCS, 'phase-5', 'sprint-SP-4', 'sprint-SP-4-kpi.json')] = JSON.stringify(kpiSP4);
+  files[path.join(GITHUB_DOCS, 'phase-5', 'sprint-SP-4', 'sprint-SP-4-kpi.json')] =
+    JSON.stringify(kpiSP4);
   return files;
 }
 
@@ -53,11 +88,22 @@ function fakeRes() {
   let _status, _body;
   const _headers = {};
   return {
-    setHeader(k, v) { _headers[k] = v; },
-    writeHead(s, h) { _status = s; if (h) Object.assign(_headers, h); },
-    end(data) { _body = data; },
-    get status() { return _status; },
-    get json() { return JSON.parse(_body); },
+    setHeader(k, v) {
+      _headers[k] = v;
+    },
+    writeHead(s, h) {
+      _status = s;
+      if (h) Object.assign(_headers, h);
+    },
+    end(data) {
+      _body = data;
+    },
+    get status() {
+      return _status;
+    },
+    get json() {
+      return JSON.parse(_body);
+    },
   };
 }
 
@@ -80,12 +126,24 @@ describe('metrics-dashboard route (FEAT-01)', () => {
     expect(res.status).toBe(200);
     const data = res.json;
     const expected = [
-      'velocity', 'burnup', 'idealBurnup', 'kpis', 'qualityTrend',
-      'estimation', 'rollingAverages', 'healthScorecard', 'deltas',
-      'forecast', 'defectDensity', 'scopeCreep', 'estimationHistogram',
-      'riskTrend', 'heatmapData', 'generated_at',
+      'velocity',
+      'burnup',
+      'idealBurnup',
+      'kpis',
+      'qualityTrend',
+      'estimation',
+      'rollingAverages',
+      'healthScorecard',
+      'deltas',
+      'forecast',
+      'defectDensity',
+      'scopeCreep',
+      'estimationHistogram',
+      'riskTrend',
+      'heatmapData',
+      'generated_at',
     ];
-    expected.forEach(key => expect(data).toHaveProperty(key));
+    expected.forEach((key) => expect(data).toHaveProperty(key));
   });
 
   /* FEAT-01-A: Velocity data */
@@ -127,7 +185,7 @@ describe('metrics-dashboard route (FEAT-01)', () => {
     await handler(fakeReq(), res);
     const qt = res.json.qualityTrend;
     expect(qt.length).toBeGreaterThan(0);
-    const sp4 = qt.find(q => q.sprint_id === 'SP-4');
+    const sp4 = qt.find((q) => q.sprint_id === 'SP-4');
     expect(sp4).toBeTruthy();
     expect(sp4.tests_total).toBe(100);
     expect(sp4.tests_passed).toBe(98);
@@ -152,7 +210,7 @@ describe('metrics-dashboard route (FEAT-01)', () => {
     await handler(fakeReq(), res);
     const hs = res.json.healthScorecard;
     expect(hs).toHaveLength(4);
-    const sp1 = hs.find(s => s.sprint_id === 'SP-1');
+    const sp1 = hs.find((s) => s.sprint_id === 'SP-1');
     expect(sp1).toBeTruthy();
     expect(['green', 'amber', 'red', 'grey']).toContain(sp1.velocity);
     expect(['green', 'amber', 'red', 'grey']).toContain(sp1.quality);
@@ -189,7 +247,7 @@ describe('metrics-dashboard route (FEAT-01)', () => {
     await handler(fakeReq(), res);
     const dd = res.json.defectDensity;
     expect(dd).toHaveLength(4);
-    const sp4 = dd.find(d => d.sprint_id === 'SP-4');
+    const sp4 = dd.find((d) => d.sprint_id === 'SP-4');
     expect(sp4).toBeTruthy();
     expect(sp4.regressions).toBe(1);
     // defects_per_sp = (1 + 0) / 24 = 0.04
@@ -225,7 +283,7 @@ describe('metrics-dashboard route (FEAT-01)', () => {
     await handler(fakeReq(), res);
     const rt = res.json.riskTrend;
     expect(rt.length).toBeGreaterThan(0);
-    rt.forEach(r => {
+    rt.forEach((r) => {
       expect(['improving', 'worsening', 'stable']).toContain(r.direction);
     });
   });

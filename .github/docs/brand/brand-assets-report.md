@@ -6,16 +6,17 @@ Phase: Post-Phase-4 (Brand & Assets)
 
 ## 1. Asset Inventory
 
-| Asset | Path | Status |
-|---|---|---|
-| Design tokens | `.github/docs/brand/design-tokens.json` | Created (v2.0.0) |
-| Brand guidelines | `.github/docs/brand/brand-guidelines.md` | Created (6 mandatory sections complete) |
-| Brand assets report | `.github/docs/brand/brand-assets-report.md` | Created |
-| Supporting style guide (pre-existing) | `.github/docs/brand/content-style-guide.md` | Referenced |
+| Asset                                 | Path                                        | Status                                  |
+| ------------------------------------- | ------------------------------------------- | --------------------------------------- |
+| Design tokens                         | `.github/docs/brand/design-tokens.json`     | Created (v2.0.0)                        |
+| Brand guidelines                      | `.github/docs/brand/brand-guidelines.md`    | Created (6 mandatory sections complete) |
+| Brand assets report                   | `.github/docs/brand/brand-assets-report.md` | Created                                 |
+| Supporting style guide (pre-existing) | `.github/docs/brand/content-style-guide.md` | Referenced                              |
 
 ## 2. Design Token Summary
 
 Token categories (contract-required):
+
 - `colors`: 14 semantic tokens
 - `typography`: font families, sizes, weights, line heights
 - `spacing`: base unit + 9-step scale
@@ -24,13 +25,16 @@ Token categories (contract-required):
 - `breakpoints`: mobile/tablet/desktop/wide
 
 Compatibility note:
-- This token set is normalized to the Brand & Assets contract and intended as the single source of truth for Storybook and implementation handoff.
+
+- This token set is normalized to the Brand & Assets contract and intended as
+  the single source of truth for Storybook and implementation handoff.
 
 ## 3. Accessibility Compliance
 
 WCAG AA minimum target for normal text: 4.5:1
 
 Verified contrasts:
+
 - `#102A43` on `#F7FAFC`: 13.97:1
 - `#102A43` on `#FFFFFF`: 14.64:1
 - `#FFFFFF` on `#0A3A66`: 11.60:1
@@ -39,16 +43,21 @@ Verified contrasts:
 - `#102A43` on `#E87722`: 4.95:1
 
 Result:
+
 - All tested critical text/background combinations pass WCAG AA for normal text.
 
 ## 4. Integration Notes
 
 Implementation consumption:
-- Map token keys from `.github/docs/brand/design-tokens.json` into CSS variables at build time.
+
+- Map token keys from `.github/docs/brand/design-tokens.json` into CSS variables
+  at build time.
 - Enforce token-only color usage via lint/review checks.
-- In Storybook, publish color, typography, spacing, and elevation primitives as global theme tokens.
+- In Storybook, publish color, typography, spacing, and elevation primitives as
+  global theme tokens.
 
 Recommended mapping example:
+
 - `colors.primary` -> `--color-primary`
 - `typography.fontFamilies.heading` -> `--font-heading`
 - `spacing.scale.4` -> `--space-4`
@@ -57,8 +66,10 @@ Recommended mapping example:
 - `breakpoints.desktop` -> `--bp-desktop`
 
 Downstream dependencies:
+
 - Agent 31 (Storybook) should consume these tokens directly.
-- PR/Review checks should reject hardcoded non-token visual values unless justified.
+- PR/Review checks should reject hardcoded non-token visual values unless
+  justified.
 
 ## 5. Handoff Checklist
 

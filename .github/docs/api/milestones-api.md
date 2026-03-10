@@ -3,15 +3,18 @@
 **Module**: `routes/milestones.js`  
 **Base URI**: `http://127.0.0.1:3000/api/milestones`  
 **Data Storage**: `.github/data/milestones.json` (file-based)  
-**Audit Trail**: `.github/docs/audit/*.jsonl` (event logs)  
+**Audit Trail**: `.github/docs/audit/*.jsonl` (event logs)
 
 ---
 
 ## Overview
 
-The Milestones API provides full CRUD (Create-Read-Update-Delete) operations for project milestone management. Implements soft-delete (archived flag) for audit trail preservation and supports filtering by status and date range.
+The Milestones API provides full CRUD (Create-Read-Update-Delete) operations for
+project milestone management. Implements soft-delete (archived flag) for audit
+trail preservation and supports filtering by status and date range.
 
 **Implementation Timeline**:
+
 - **SP-9.1**: POST (create), GET (list), GET (single — read-only until SP-9.2)
 - **SP-9.2**: PUT (update)
 - **SP-9.3**: PATCH (soft-delete/archive)
@@ -37,25 +40,27 @@ The Milestones API provides full CRUD (Create-Read-Update-Delete) operations for
 
 **Field Definitions**:
 
-| Field | Type | Description | Validation |
-|-------|------|-------------|-----------|
-| `id` | string | Unique milestone identifier (auto-generated) | Format: `milestone-YYYYMMDD-RANDOMHEX` |
-| `name` | string | Milestone display name | Required, 1-255 characters, unique (case-insensitive) |
-| `status` | string | Milestone state | One of: `not started`, `in progress`, `complete`, `blocked` |
-| `progress` | number | Completion percentage | Required, integer 0-100 |
-| `completion` | string | Expected completion date | ISO 8601 format: `YYYY-MM-DD` |
-| `created_at` | string | Timestamp of creation | ISO 8601 UTC datetime |
-| `updated_at` | string | Timestamp of last modification | ISO 8601 UTC datetime |
-| `archived` | boolean | Soft-delete flag | `false` (active) or `true` (archived/deleted) |
+| Field        | Type    | Description                                  | Validation                                                  |
+| ------------ | ------- | -------------------------------------------- | ----------------------------------------------------------- |
+| `id`         | string  | Unique milestone identifier (auto-generated) | Format: `milestone-YYYYMMDD-RANDOMHEX`                      |
+| `name`       | string  | Milestone display name                       | Required, 1-255 characters, unique (case-insensitive)       |
+| `status`     | string  | Milestone state                              | One of: `not started`, `in progress`, `complete`, `blocked` |
+| `progress`   | number  | Completion percentage                        | Required, integer 0-100                                     |
+| `completion` | string  | Expected completion date                     | ISO 8601 format: `YYYY-MM-DD`                               |
+| `created_at` | string  | Timestamp of creation                        | ISO 8601 UTC datetime                                       |
+| `updated_at` | string  | Timestamp of last modification               | ISO 8601 UTC datetime                                       |
+| `archived`   | boolean | Soft-delete flag                             | `false` (active) or `true` (archived/deleted)               |
 
 ---
 
 ## Endpoints
 
 ### 1. POST /api/milestones
+
 **Create a new milestone (SP-9.1)**
 
 **Request**:
+
 ```http
 POST /api/milestones HTTP/1.1
 Content-Type: application/json
@@ -69,6 +74,7 @@ Content-Type: application/json
 ```
 
 **Response — Success (201 Created)**:
+
 ```http
 HTTP/1.1 201 Created
 Content-Type: application/json
@@ -91,6 +97,7 @@ Content-Type: application/json
 ```
 
 **Response — Validation Error (400 Bad Request)**:
+
 ```json
 {
   "ok": false,
@@ -103,21 +110,27 @@ Content-Type: application/json
 ```
 
 **Response — Duplicate Name (409 Conflict)**:
+
 ```json
 {
   "ok": false,
   "error": "Milestone already exists",
-  "details": ["Milestone with name \"FEAT-03 Mobile Optimization\" already exists"]
+  "details": [
+    "Milestone with name \"FEAT-03 Mobile Optimization\" already exists"
+  ]
 }
 ```
 
 **Validation Rules**:
+
 - `name`: Required, string, 1-255 characters, unique (case-insensitive)
-- `status`: Required, one of: `not started`, `in progress`, `complete`, `blocked`
+- `status`: Required, one of: `not started`, `in progress`, `complete`,
+  `blocked`
 - `progress`: Required, integer 0-100
 - `completion`: Required, ISO 8601 date format (YYYY-MM-DD)
 
 **Side Effects**:
+
 - Milestone ID auto-generated
 - Timestamps auto-set to current UTC time
 - Audit event: `milestone_created` logged with all field changes
@@ -126,20 +139,22 @@ Content-Type: application/json
 ---
 
 ### 2. GET /api/milestones
+
 **List all active milestones (or all if archived included)**
 
 **Request**:
+
 ```http
 GET /api/milestones HTTP/1.1
 Accept: application/json
 ```
 
-**Query Parameters**:
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `include_archived` | boolean | `false` | If `true`, include archived milestones in response |
+**Query Parameters**: | Parameter | Type | Default | Description |
+|-----------|------|---------|-------------| | `include_archived` | boolean |
+`false` | If `true`, include archived milestones in response |
 
 **Response — Success (200 OK)**:
+
 ```json
 {
   "ok": true,
@@ -171,6 +186,7 @@ Accept: application/json
 ```
 
 **Examples**:
+
 ```bash
 # List active milestones only
 curl -H "Accept: application/json" \
@@ -184,15 +200,18 @@ curl -H "Accept: application/json" \
 ---
 
 ### 3. GET /api/milestones/:id
+
 **Get a single milestone by ID**
 
 **Request**:
+
 ```http
 GET /api/milestones/milestone-20260309-002 HTTP/1.1
 Accept: application/json
 ```
 
 **Response — Success (200 OK)**:
+
 ```json
 {
   "ok": true,
@@ -211,6 +230,7 @@ Accept: application/json
 ```
 
 **Response — Not Found (404 Not Found)**:
+
 ```json
 {
   "ok": false,
@@ -220,6 +240,7 @@ Accept: application/json
 ```
 
 **Example**:
+
 ```bash
 curl -H "Accept: application/json" \
   http://127.0.0.1:3000/api/milestones/milestone-20260309-002
@@ -228,9 +249,11 @@ curl -H "Accept: application/json" \
 ---
 
 ### 4. PUT /api/milestones/:id
+
 **Update existing milestone fields (SP-9.2 — IMPLEMENTED)**
 
 **Request**:
+
 ```http
 PUT /api/milestones/milestone-20260309-002 HTTP/1.1
 Content-Type: application/json
@@ -242,6 +265,7 @@ Content-Type: application/json
 ```
 
 **Response — Success (200 OK)**:
+
 ```json
 {
   "ok": true,
@@ -261,6 +285,7 @@ Content-Type: application/json
 ```
 
 **Response — Validation Error (400 Bad Request)**:
+
 ```json
 {
   "ok": false,
@@ -270,6 +295,7 @@ Content-Type: application/json
 ```
 
 **Response — Not Found (404 Not Found)**:
+
 ```json
 {
   "ok": false,
@@ -279,31 +305,40 @@ Content-Type: application/json
 ```
 
 **Response — Duplicate Name (409 Conflict)**:
+
 ```json
 {
   "ok": false,
   "error": "Milestone already exists",
-  "details": ["Milestone with name \"FEAT-03 Mobile Optimization\" already exists"]
+  "details": [
+    "Milestone with name \"FEAT-03 Mobile Optimization\" already exists"
+  ]
 }
 ```
 
 **Validation Rules**:
-- `name` (optional): String, 1-255 characters, unique (case-insensitive, excl. current)
-- `status` (optional): One of: `not started`, `in progress`, `complete`, `blocked`
+
+- `name` (optional): String, 1-255 characters, unique (case-insensitive, excl.
+  current)
+- `status` (optional): One of: `not started`, `in progress`, `complete`,
+  `blocked`
 - `progress` (optional): Integer 0-100
 - `completion` (optional): ISO 8601 date format (YYYY-MM-DD)
 
 **Immutable Fields** (cannot be changed):
+
 - `id` — Auto-generated, preserved
 - `created_at` — Set at creation, preserved
 - `archived` — If set, ignored (use PATCH /api/milestones/:id/archive)
 
 **Side Effects**:
+
 - Auto-update: `updated_at` timestamp
 - Audit event: `milestone_updated` with before/after values
 - Entry updated in `.github/data/milestones.json`
 
 **Examples**:
+
 ```bash
 # Update single field
 curl -X PUT http://127.0.0.1:3000/api/milestones/milestone-20260309-002 \
@@ -323,14 +358,17 @@ curl -X PUT http://127.0.0.1:3000/api/milestones/milestone-20260309-002 \
 ---
 
 ### 5. PATCH /api/milestones/:id/archive
+
 **Soft-delete milestone (mark as archived — SP-9.3 — IMPLEMENTED)**
 
 **Request**:
+
 ```http
 PATCH /api/milestones/milestone-20260309-002/archive HTTP/1.1
 ```
 
 **Response — Success (200 OK)**:
+
 ```json
 {
   "ok": true,
@@ -350,6 +388,7 @@ PATCH /api/milestones/milestone-20260309-002/archive HTTP/1.1
 ```
 
 **Response — Not Found (404 Not Found)**:
+
 ```json
 {
   "ok": false,
@@ -359,18 +398,23 @@ PATCH /api/milestones/milestone-20260309-002/archive HTTP/1.1
 ```
 
 **Side Effects**:
+
 - Sets `archived: true`
-- Excludes from default GET /api/milestones list (unless `?include_archived=true`)
+- Excludes from default GET /api/milestones list (unless
+  `?include_archived=true`)
 - Preserves all data for audit/recovery
 - Auto-update: `updated_at` timestamp
 - Audit event: `milestone_archived` with timestamp
 - Entry updated in `.github/data/milestones.json`
 
 **Recovery**:
+
 - Archived milestones can be retrieved via GET with `?include_archived=true`
-- To restore: Currently via direct data file update (future: add DELETE /api/milestones/:id/unarchive)
+- To restore: Currently via direct data file update (future: add DELETE
+  /api/milestones/:id/unarchive)
 
 **Examples**:
+
 ```bash
 # Archive a milestone
 curl -X PATCH http://127.0.0.1:3000/api/milestones/milestone-20260309-002/archive
@@ -397,21 +441,22 @@ All error responses follow this format:
 
 **HTTP Status Codes**:
 
-| Status | Meaning | Cause |
-|--------|---------|-------|
-| 200 | OK | Successful GET request |
-| 201 | Created | Successful POST request |
-| 400 | Bad Request | Invalid JSON, missing required field, validation error |
-| 404 | Not Found | Milestone ID does not exist |
-| 409 | Conflict | Duplicate milestone name |
-| 500 | Server Error | Unexpected error (file I/O, parsing, etc.) |
-| 501 | Not Implemented | Endpoint not yet implemented (SP-9.2, SP-9.3) |
+| Status | Meaning         | Cause                                                  |
+| ------ | --------------- | ------------------------------------------------------ |
+| 200    | OK              | Successful GET request                                 |
+| 201    | Created         | Successful POST request                                |
+| 400    | Bad Request     | Invalid JSON, missing required field, validation error |
+| 404    | Not Found       | Milestone ID does not exist                            |
+| 409    | Conflict        | Duplicate milestone name                               |
+| 500    | Server Error    | Unexpected error (file I/O, parsing, etc.)             |
+| 501    | Not Implemented | Endpoint not yet implemented (SP-9.2, SP-9.3)          |
 
 ---
 
 ## Audit Trail
 
-Every milestone change is logged to `.github/docs/audit/milestones.jsonl` for compliance and audit purposes.
+Every milestone change is logged to `.github/docs/audit/milestones.jsonl` for
+compliance and audit purposes.
 
 **Audit Entry Format**:
 
@@ -432,6 +477,7 @@ Every milestone change is logged to `.github/docs/audit/milestones.jsonl` for co
 ```
 
 **Event Types**:
+
 - `milestone_created` — New milestone created (SP-9.1)
 - `milestone_updated` — Existing milestone modified (SP-9.2)
 - `milestone_archived` — Milestone soft-deleted (SP-9.3)
@@ -441,6 +487,7 @@ Every milestone change is logged to `.github/docs/audit/milestones.jsonl` for co
 ## Usage Examples
 
 ### Create a Milestone
+
 ```bash
 curl -X POST http://127.0.0.1:3000/api/milestones \
   -H "Content-Type: application/json" \
@@ -453,24 +500,28 @@ curl -X POST http://127.0.0.1:3000/api/milestones \
 ```
 
 ### List All Active Milestones
+
 ```bash
 curl -H "Accept: application/json" \
   http://127.0.0.1:3000/api/milestones
 ```
 
 ### Get a Specific Milestone
+
 ```bash
 curl -H "Accept: application/json" \
   http://127.0.0.1:3000/api/milestones/milestone-20260309-002
 ```
 
 ### List Including Archived Milestones (Future)
+
 ```bash
 curl -H "Accept: application/json" \
   "http://127.0.0.1:3000/api/milestones?include_archived=true"
 ```
 
 ### Update a Milestone (Future — SP-9.2)
+
 ```bash
 curl -X PUT http://127.0.0.1:3000/api/milestones/milestone-20260309-002 \
   -H "Content-Type: application/json" \
@@ -478,6 +529,7 @@ curl -X PUT http://127.0.0.1:3000/api/milestones/milestone-20260309-002 \
 ```
 
 ### Archive a Milestone (Future — SP-9.3)
+
 ```bash
 curl -X PATCH http://127.0.0.1:3000/api/milestones/milestone-20260309-002/archive
 ```
@@ -487,12 +539,14 @@ curl -X PATCH http://127.0.0.1:3000/api/milestones/milestone-20260309-002/archiv
 ## Limitations & Future Work
 
 **Current (SP-9.1)**:
+
 - File-based storage (JSON)
 - No concurrency locking (last-write-wins)
 - No user authentication/authorization
 - No pagination for large milestone lists
 
 **Planned (SP-9.2+)**:
+
 - Database migration (SQLite or PostgreSQL)
 - Optimistic locking for concurrent edits
 - User authentication & audit trail user tracking
@@ -501,6 +555,7 @@ curl -X PATCH http://127.0.0.1:3000/api/milestones/milestone-20260309-002/archiv
 - Webhooks for milestone state changes
 
 **Recommended (SP-10+)**:
+
 - Full-text search across milestone names/descriptions
 - Milestone templates for faster creation
 - Integration with GitHub Issues & Projects
@@ -512,6 +567,7 @@ curl -X PATCH http://127.0.0.1:3000/api/milestones/milestone-20260309-002/archiv
 ## Implementation Notes
 
 ### SP-9.1 (Completed ✓)
+
 - POST /api/milestones (create)
 - GET /api/milestones (list active)
 - GET /api/milestones/:id (read single)
@@ -521,6 +577,7 @@ curl -X PATCH http://127.0.0.1:3000/api/milestones/milestone-20260309-002/archiv
 - Error handling with detailed messages
 
 ### SP-9.2 (Completed ✓)
+
 - PUT /api/milestones/:id (update with partial field support)
 - Field validation matching creation rules
 - Preserve immutable fields (id, created_at)
@@ -530,6 +587,7 @@ curl -X PATCH http://127.0.0.1:3000/api/milestones/milestone-20260309-002/archiv
 - 21 integration tests covering all scenarios
 
 ### SP-9.3 (Completed ✓)
+
 - PATCH /api/milestones/:id/archive (soft-delete)
 - Archived milestones excluded from default list (unless ?include_archived=true)
 - Preservation of all data for audit/recovery
@@ -537,6 +595,7 @@ curl -X PATCH http://127.0.0.1:3000/api/milestones/milestone-20260309-002/archiv
 - 21 integration tests covering all scenarios
 
 ### SP-9.9 (Planned — Optional)
+
 - GET /api/milestone-templates
 - Predefined templates for common milestones
 - Auto-fill form in create modal

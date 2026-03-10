@@ -9,15 +9,15 @@ const { InMemoryStore, setStore } = require('../../webapp/store');
 const { server, _cache } = require('../../webapp/server');
 
 // Compute the same paths the server module uses internally
-const WEBAPP_DIR    = path.resolve(__dirname, '../../webapp');
-const PROJECT_ROOT  = path.resolve(WEBAPP_DIR, '..', '..');
+const WEBAPP_DIR = path.resolve(__dirname, '../../webapp');
+const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
-const GITHUB_DOCS   = path.join(PROJECT_ROOT, '.github', 'docs');
-const SESSION_DIR   = path.join(GITHUB_DOCS, 'session');
-const SESSION_FILE  = path.join(SESSION_DIR, 'session-state.json');
+const GITHUB_DOCS = path.join(PROJECT_ROOT, '.github', 'docs');
+const SESSION_DIR = path.join(GITHUB_DOCS, 'session');
+const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
 const DECISIONS_FILE = path.join(GITHUB_DOCS, 'decisions.md');
-const COMMAND_QUEUE  = path.join(SESSION_DIR, 'command-queue.json');
-const HELP_DIR       = path.join(PROJECT_ROOT, '.github', 'help');
+const COMMAND_QUEUE = path.join(SESSION_DIR, 'command-queue.json');
+const HELP_DIR = path.join(PROJECT_ROOT, '.github', 'help');
 
 let baseUrl;
 
@@ -38,11 +38,15 @@ function req(method, urlPath, body) {
     }
     const r = http.request(opts, (res) => {
       const chunks = [];
-      res.on('data', c => chunks.push(c));
+      res.on('data', (c) => chunks.push(c));
       res.on('end', () => {
         const text = Buffer.concat(chunks).toString();
         let json;
-        try { json = JSON.parse(text); } catch { json = null; }
+        try {
+          json = JSON.parse(text);
+        } catch {
+          json = null;
+        }
         resolve({ status: res.statusCode, headers: res.headers, text, json });
       });
     });
@@ -61,15 +65,22 @@ function rawPost(urlPath, rawBody, contentType) {
       hostname: url.hostname,
       port: url.port,
       path: url.pathname,
-      headers: { 'Content-Type': contentType || 'text/plain', 'Content-Length': Buffer.byteLength(rawBody) },
+      headers: {
+        'Content-Type': contentType || 'text/plain',
+        'Content-Length': Buffer.byteLength(rawBody),
+      },
     };
     const r = http.request(opts, (res) => {
       const chunks = [];
-      res.on('data', c => chunks.push(c));
+      res.on('data', (c) => chunks.push(c));
       res.on('end', () => {
         const text = Buffer.concat(chunks).toString();
         let json;
-        try { json = JSON.parse(text); } catch { json = null; }
+        try {
+          json = JSON.parse(text);
+        } catch {
+          json = null;
+        }
         resolve({ status: res.statusCode, headers: res.headers, text, json });
       });
     });
@@ -340,7 +351,9 @@ describe('POST /api/save', () => {
   });
 
   it('rejects missing file field', async () => {
-    const r = await req('POST', '/api/save', { updates: [{ questionId: 'Q-05-001', status: 'OPEN', answer: '' }] });
+    const r = await req('POST', '/api/save', {
+      updates: [{ questionId: 'Q-05-001', status: 'OPEN', answer: '' }],
+    });
     expect(r.status).toBe(400);
   });
 
@@ -625,7 +638,10 @@ describe('POST /api/command', () => {
   it('appends to existing queue', async () => {
     // Pre-seed with an existing queue
     const store = seedStore();
-    store.writeFile(COMMAND_QUEUE, JSON.stringify([{ command: 'AUDIT', status: 'DONE', requested_at: '2025-01-01T00:00:00Z' }]));
+    store.writeFile(
+      COMMAND_QUEUE,
+      JSON.stringify([{ command: 'AUDIT', status: 'DONE', requested_at: '2025-01-01T00:00:00Z' }])
+    );
     setStore(store);
     _cache.invalidateAll();
 
@@ -663,10 +679,10 @@ describe('GET /api/progress', () => {
     expect(r.json.phases).toHaveLength(7);
     expect(r.json.sprints.total).toBe(3);
     // PHASE-1 should be done
-    const p1 = r.json.phases.find(p => p.key === 'PHASE-1');
+    const p1 = r.json.phases.find((p) => p.key === 'PHASE-1');
     expect(p1.status).toBe('done');
     // PHASE-2 should be active
-    const p2 = r.json.phases.find(p => p.key === 'PHASE-2');
+    const p2 = r.json.phases.find((p) => p.key === 'PHASE-2');
     expect(p2.status).toBe('active');
   });
 
@@ -745,7 +761,7 @@ describe('GET /api/events (SSE)', () => {
         expect(res.headers['cache-control']).toBe('no-cache');
         expect(res.headers['connection']).toBe('keep-alive');
         let data = '';
-        res.on('data', chunk => {
+        res.on('data', (chunk) => {
           data += chunk.toString();
           // Once we get the init heartbeat, we're good
           if (data.includes('event: heartbeat')) {
@@ -753,9 +769,12 @@ describe('GET /api/events (SSE)', () => {
             resolve();
           }
         });
-        setTimeout(() => { res.destroy(); resolve(); }, 2000);
+        setTimeout(() => {
+          res.destroy();
+          resolve();
+        }, 2000);
       });
-      r.on('error', e => {
+      r.on('error', (e) => {
         // Connection reset is expected after destroy
         if (e.code === 'ECONNRESET') resolve();
         else reject(e);
@@ -805,8 +824,12 @@ describe('POST /api/analytics', () => {
     const r = await req('POST', '/api/analytics', {
       events: [
         { event: 'page_view', properties: { page: 'home' }, timestamp: '2025-01-01T00:00:00Z' },
-        { event: 'tab_switch', properties: { tab: 'decisions' }, timestamp: '2025-01-01T00:01:00Z' },
-      ]
+        {
+          event: 'tab_switch',
+          properties: { tab: 'decisions' },
+          timestamp: '2025-01-01T00:01:00Z',
+        },
+      ],
     });
     expect(r.status).toBe(200);
     expect(r.json).toHaveProperty('accepted', 2);
@@ -825,7 +848,9 @@ describe('POST /api/analytics', () => {
 
   it('rejects events exceeding max batch size', async () => {
     const events = Array.from({ length: 101 }, (_, i) => ({
-      event: `evt_${i}`, properties: {}, timestamp: new Date().toISOString()
+      event: `evt_${i}`,
+      properties: {},
+      timestamp: new Date().toISOString(),
     }));
     const r = await req('POST', '/api/analytics', { events });
     expect(r.status).toBe(400);
@@ -842,12 +867,12 @@ describe('GET /api/analytics', () => {
 
   it('returns stored events after POST', async () => {
     await req('POST', '/api/analytics', {
-      events: [{ event: 'session_start', properties: {}, timestamp: '2025-01-01T00:00:00Z' }]
+      events: [{ event: 'session_start', properties: {}, timestamp: '2025-01-01T00:00:00Z' }],
     });
     const r = await req('GET', '/api/analytics');
     expect(r.status).toBe(200);
     expect(r.json.total).toBeGreaterThanOrEqual(1);
-    expect(r.json.events.some(e => e.event === 'session_start')).toBe(true);
+    expect(r.json.events.some((e) => e.event === 'session_start')).toBe(true);
   });
 });
 
@@ -914,10 +939,10 @@ describe('GET /api/progress — rich session branches', () => {
 
     const r = await req('GET', '/api/progress');
     expect(r.status).toBe(200);
-    const p2 = r.json.phases.find(p => p.key === 'PHASE-2');
+    const p2 = r.json.phases.find((p) => p.key === 'PHASE-2');
     // Agents 05 and 06 should be 'done' via phase_outputs
-    const a05 = p2.agents.find(a => a.id === '05');
-    const a06 = p2.agents.find(a => a.id === '06');
+    const a05 = p2.agents.find((a) => a.id === '05');
+    const a06 = p2.agents.find((a) => a.id === '06');
     expect(a05.status).toBe('done');
     expect(a06.status).toBe('done');
   });
@@ -937,7 +962,7 @@ describe('GET /api/progress — rich session branches', () => {
 
     const r = await req('GET', '/api/progress');
     expect(r.status).toBe(200);
-    const onb = r.json.phases.find(p => p.key === 'ONBOARDING');
+    const onb = r.json.phases.find((p) => p.key === 'ONBOARDING');
     expect(onb.agents[0].status).toBe('done');
   });
 
@@ -947,7 +972,10 @@ describe('GET /api/progress — rich session branches', () => {
       completed_phases: ['ONBOARDING', 'PHASE-1', 'PHASE-2', 'PHASE-3', 'PHASE-4', 'SYNTHESIS'],
       current_phase: 'SYNTHESIS',
       current_agent: null,
-      sprint_backlog: { total_sprints: 5, sprint_statuses: { 'SP-1': 'DONE', 'SP-2': 'IN_PROGRESS' } },
+      sprint_backlog: {
+        total_sprints: 5,
+        sprint_statuses: { 'SP-1': 'DONE', 'SP-2': 'IN_PROGRESS' },
+      },
     };
     const store = new InMemoryStore({ [SESSION_FILE]: JSON.stringify(session) });
     setStore(store);
@@ -955,7 +983,7 @@ describe('GET /api/progress — rich session branches', () => {
 
     const r = await req('GET', '/api/progress');
     expect(r.status).toBe(200);
-    const p5 = r.json.phases.find(p => p.key === 'PHASE-5');
+    const p5 = r.json.phases.find((p) => p.key === 'PHASE-5');
     expect(p5.status).toBe('active');
     expect(r.json.sprints.total).toBe(5);
     expect(r.json.sprints.statuses['SP-1']).toBe('DONE');
@@ -1021,8 +1049,8 @@ describe('GET /api/progress — rich session branches', () => {
     _cache.invalidateAll();
 
     const r = await req('GET', '/api/progress');
-    const p1 = r.json.phases.find(p => p.key === 'PHASE-1');
-    const a01 = p1.agents.find(a => a.id === '01');
+    const p1 = r.json.phases.find((p) => p.key === 'PHASE-1');
+    const a01 = p1.agents.find((a) => a.id === '01');
     expect(a01.status).toBe('active');
   });
 
@@ -1040,10 +1068,10 @@ describe('GET /api/progress — rich session branches', () => {
     _cache.invalidateAll();
 
     const r = await req('GET', '/api/progress');
-    const p2 = r.json.phases.find(p => p.key === 'PHASE-2');
-    const a05 = p2.agents.find(a => a.id === '05');
+    const p2 = r.json.phases.find((p) => p.key === 'PHASE-2');
+    const a05 = p2.agents.find((a) => a.id === '05');
     expect(a05.status).toBe('done');
-    const a06 = p2.agents.find(a => a.id === '06');
+    const a06 = p2.agents.find((a) => a.id === '06');
     expect(a06.status).toBe('active');
   });
 
@@ -1061,8 +1089,8 @@ describe('GET /api/progress — rich session branches', () => {
     _cache.invalidateAll();
 
     const r = await req('GET', '/api/progress');
-    const p2 = r.json.phases.find(p => p.key === 'PHASE-2');
-    const a05 = p2.agents.find(a => a.id === '05');
+    const p2 = r.json.phases.find((p) => p.key === 'PHASE-2');
+    const a05 = p2.agents.find((a) => a.id === '05');
     expect(a05.status).toBe('pending');
   });
 
@@ -1080,7 +1108,7 @@ describe('GET /api/progress — rich session branches', () => {
     _cache.invalidateAll();
 
     const r = await req('GET', '/api/progress');
-    const onb = r.json.phases.find(p => p.key === 'ONBOARDING');
+    const onb = r.json.phases.find((p) => p.key === 'ONBOARDING');
     expect(onb.agents[0].status).toBe('pending');
   });
 });
@@ -1381,7 +1409,10 @@ describe('Command validation edge cases', () => {
   });
 
   it('accepts SCOPE CHANGE with description', async () => {
-    const r = await req('POST', '/api/command', { command: 'SCOPE CHANGE TECH', description: 'Pivot to serverless' });
+    const r = await req('POST', '/api/command', {
+      command: 'SCOPE CHANGE TECH',
+      description: 'Pivot to serverless',
+    });
     expect(r.status).toBe(200);
     expect(r.json.ok).toBe(true);
   });

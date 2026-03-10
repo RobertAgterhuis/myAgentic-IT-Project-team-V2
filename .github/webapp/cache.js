@@ -28,7 +28,10 @@ class FileCache {
     const currentMtime = store.mtime(filePath);
     if (currentMtime > 0) {
       const cached = this._entries.get(filePath);
-      if (cached && cached.mtime === currentMtime) { this._hits++; return cached.content; }
+      if (cached && cached.mtime === currentMtime) {
+        this._hits++;
+        return cached.content;
+      }
     }
     this._misses++;
     const content = store.readFile(filePath, encoding);
@@ -47,8 +50,9 @@ class FileCache {
   readJSON(filePath, validator) {
     const raw = this.read(filePath);
     let data;
-    try { data = JSON.parse(raw); }
-    catch (e) {
+    try {
+      data = JSON.parse(raw);
+    } catch (e) {
       return { data: null, errors: [`Invalid JSON: ${e.message}`] };
     }
     if (validator) {

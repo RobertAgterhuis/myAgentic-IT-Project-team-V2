@@ -2,12 +2,15 @@
 layout: default
 title: Contributing
 nav_order: 6
-description: How to contribute — branching, commit conventions, PR workflow, testing, and code style guidelines.
+description:
+  How to contribute — branching, commit conventions, PR workflow, testing, and
+  code style guidelines.
 ---
 
 # Contributing to myAgentic-IT-Project-team
 
-Thank you for your interest in contributing! This guide covers everything you need to get started.
+Thank you for your interest in contributing! This guide covers everything you
+need to get started.
 
 ---
 
@@ -17,7 +20,9 @@ Thank you for your interest in contributing! This guide covers everything you ne
 
 - **Node.js ≥ 18** — [download](https://nodejs.org/)
 - **Git** — [download](https://git-scm.com/)
-- **VS Code** with [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) (for agent features)
+- **VS Code** with
+  [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
+  (for agent features)
 
 ### Getting Started
 
@@ -39,13 +44,13 @@ npm start
 
 ### Useful Commands
 
-| Command | Purpose |
-|---------|---------|
-| `npm start` | Start the web server on localhost:3000 |
-| `npm test` | Run all tests (Vitest) |
-| `npm run test:watch` | Watch mode — re-runs on file changes |
-| `npm run test:coverage` | Generate coverage report |
-| `npm run lint` | Run ESLint |
+| Command                 | Purpose                                |
+| ----------------------- | -------------------------------------- |
+| `npm start`             | Start the web server on localhost:3000 |
+| `npm test`              | Run all tests (Vitest)                 |
+| `npm run test:watch`    | Watch mode — re-runs on file changes   |
+| `npm run test:coverage` | Generate coverage report               |
+| `npm run lint`          | Run ESLint                             |
 
 ---
 
@@ -74,11 +79,17 @@ npm start
 
 ### Key Design Decisions
 
-- **Zero runtime dependencies** — The server uses only Node.js built-in modules (`http`, `fs`, `path`, `url`, `crypto`). Dev dependencies (Vitest, ESLint) are test/lint-only.
-- **Store abstraction** — `FileStore` for production, `InMemoryStore` for tests. All I/O goes through the store interface.
-- **Atomic writes** — `safeWriteSync()` writes to a temp file first, then renames. Backups are created before overwriting.
-- **Localhost only** — The server binds to `127.0.0.1`. No network exposure, no authentication required.
-- **Checkpoint-and-yield** — Agents run one at a time, saving state to `session-state.json` after each step.
+- **Zero runtime dependencies** — The server uses only Node.js built-in modules
+  (`http`, `fs`, `path`, `url`, `crypto`). Dev dependencies (Vitest, ESLint) are
+  test/lint-only.
+- **Store abstraction** — `FileStore` for production, `InMemoryStore` for tests.
+  All I/O goes through the store interface.
+- **Atomic writes** — `safeWriteSync()` writes to a temp file first, then
+  renames. Backups are created before overwriting.
+- **Localhost only** — The server binds to `127.0.0.1`. No network exposure, no
+  authentication required.
+- **Checkpoint-and-yield** — Agents run one at a time, saving state to
+  `session-state.json` after each step.
 
 ---
 
@@ -88,21 +99,22 @@ npm start
 
 ESLint 9 with flat config (`.github/eslint.config.mjs`) enforces:
 
-| Rule | Setting | Rationale |
-|------|---------|-----------|
-| `complexity` | max 8 | Keep functions small and testable |
-| `no-unused-vars` | error (ignore `_` prefix) | Remove dead code |
-| `no-var` | error | Use `const`/`let` only |
-| `prefer-const` | error | Immutability by default |
-| `eqeqeq` | error | Prevent type coercion bugs |
-| `no-eval` | error | Security: prevent code injection |
-| `no-implied-eval` | error | Security: prevent indirect eval |
+| Rule              | Setting                   | Rationale                         |
+| ----------------- | ------------------------- | --------------------------------- |
+| `complexity`      | max 8                     | Keep functions small and testable |
+| `no-unused-vars`  | error (ignore `_` prefix) | Remove dead code                  |
+| `no-var`          | error                     | Use `const`/`let` only            |
+| `prefer-const`    | error                     | Immutability by default           |
+| `eqeqeq`          | error                     | Prevent type coercion bugs        |
+| `no-eval`         | error                     | Security: prevent code injection  |
+| `no-implied-eval` | error                     | Security: prevent indirect eval   |
 
 ### Style Guidelines
 
 - **`const` by default**, `let` only when reassignment is needed
 - **Function complexity ≤ 8** — extract helpers if a function grows too complex
-- **No external runtime dependencies** — if you need functionality, implement it or use Node.js built-ins
+- **No external runtime dependencies** — if you need functionality, implement it
+  or use Node.js built-ins
 - **Externalize user-facing strings** to `strings.js`
 - **All errors** use the structured error catalog in `utils/errors.js`
 - **Tests use InMemoryStore** — never touch the real filesystem in tests
@@ -110,6 +122,7 @@ ESLint 9 with flat config (`.github/eslint.config.mjs`) enforces:
 ### Security Requirements
 
 All code must be free from OWASP Top 10 vulnerabilities:
+
 - Sanitize all user input (see `sanitizeMarkdown`, `sanitizeQID` in server.js)
 - Use `safePath()` to prevent path traversal
 - Detect and warn on secret patterns (`detectSecrets()`)
@@ -129,6 +142,7 @@ Use descriptive commit messages with this format:
 ```
 
 **Types:**
+
 - `feat:` — New feature or functionality
 - `fix:` — Bug fix
 - `test:` — Test additions or fixes
@@ -137,6 +151,7 @@ Use descriptive commit messages with this format:
 - `chore:` — Build, tooling, or dependency changes
 
 **Examples:**
+
 ```
 feat: add mutation audit trail with JSONL logging
 fix: reduce safeWriteSync complexity below ESLint threshold
@@ -149,6 +164,7 @@ docs: update README with badges and technology stack
 ## Pull Request Process
 
 1. **Create a feature branch** from `main`:
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
@@ -156,17 +172,20 @@ docs: update README with badges and technology stack
 2. **Make your changes** following the coding standards above.
 
 3. **Run the full test suite** and ensure all tests pass:
+
    ```bash
    cd .github
    npm test
    ```
 
 4. **Run ESLint** and fix any issues:
+
    ```bash
    npm run lint
    ```
 
 5. **Check coverage** hasn't dropped below thresholds:
+
    ```bash
    npm run test:coverage
    ```
@@ -197,6 +216,7 @@ Common recipes for extending the web UI at `.github/webapp/`.
 ### Adding a New API Endpoint
 
 1. Write your handler function in `server.js` following the existing pattern:
+
    ```js
    function apiGetMyThing(req, res) {
      // Use store.readFile() / store.writeFileSync() for I/O
@@ -206,13 +226,16 @@ Common recipes for extending the web UI at `.github/webapp/`.
    ```
 
 2. Register the route in the `ROUTES` object:
+
    ```js
    const ROUTES = {
      // ... existing routes
      'GET /api/my-thing': apiGetMyThing,
    };
    ```
-   The router matches `METHOD /path` strings. Method-not-allowed handling is automatic.
+
+   The router matches `METHOD /path` strings. Method-not-allowed handling is
+   automatic.
 
 3. Add user-facing strings to `strings.js` if the response includes messages.
 
@@ -226,29 +249,36 @@ Common recipes for extending the web UI at `.github/webapp/`.
 
 ### Adding a New Tab to the UI
 
-The UI is a single-page app in `index.html`. Tabs are `<section>` elements shown/hidden with CSS.
+The UI is a single-page app in `index.html`. Tabs are `<section>` elements
+shown/hidden with CSS.
 
 1. Add a `<button>` to the tab bar (search for `tab-bar` in index.html):
+
    ```html
    <button class="tab-btn" data-tab="my-tab">My Tab</button>
    ```
 
 2. Add the content section:
+
    ```html
    <section id="my-tab" class="tab-content" hidden>
      <!-- Your HTML here -->
    </section>
    ```
 
-3. The existing tab-switching JS handles visibility automatically based on `data-tab` matching the section `id`.
+3. The existing tab-switching JS handles visibility automatically based on
+   `data-tab` matching the section `id`.
 
-4. Fetch data from your API endpoint in a `loadMyTab()` function and call it when the tab activates.
+4. Fetch data from your API endpoint in a `loadMyTab()` function and call it
+   when the tab activates.
 
 ### Adding a New Model Parser
 
-Model parsers live in `models.js`. They transform raw file content into structured data.
+Model parsers live in `models.js`. They transform raw file content into
+structured data.
 
 1. Export a new function from `models.js`:
+
    ```js
    function parseMyFormat(content) {
      // Parse the markdown/JSON content
@@ -258,13 +288,15 @@ Model parsers live in `models.js`. They transform raw file content into structur
 
 2. Write unit tests in a test file (follow the pattern in `models.test.js`).
 
-3. Use the parser in your API handler via `store.readFile()` + `parseMyFormat()`.
+3. Use the parser in your API handler via `store.readFile()` +
+   `parseMyFormat()`.
 
 ### Adding Validation Schemas
 
 JSON schemas live in `schemas.js`. Used by endpoints that accept POST bodies.
 
 1. Add your schema to `schemas.js`:
+
    ```js
    const myThingSchema = { type: 'object', required: [...], properties: { ... } };
    ```
@@ -272,23 +304,26 @@ JSON schemas live in `schemas.js`. Used by endpoints that accept POST bodies.
 2. Validate in your handler:
    ```js
    const { valid, errors } = validateSchema(body, myThingSchema);
-   if (!valid) return json(res, 400, errorResponse('VALIDATION_FAILED', errors));
+   if (!valid)
+     return json(res, 400, errorResponse('VALIDATION_FAILED', errors));
    ```
 
 ### Key Patterns to Follow
 
-| Pattern | Where | Why |
-|---------|-------|-----|
-| Use `store` abstraction | All file I/O | Enables `InMemoryStore` in tests |
-| Use `safeWriteSync()` | All writes | Atomic writes with backup |
-| Use `safePath()` | All user-provided paths | Prevents path traversal |
-| Use `detectSecrets()` | All user input saved to disk | Prevents accidental credential storage |
-| Use `setSecurityHeaders()` | All responses | CSP, X-Frame-Options, etc. |
-| Use `strings.js` | All user-facing text | Externalized for maintainability |
-| Use `utils/errors.js` | All error responses | Consistent error codes |
+| Pattern                    | Where                        | Why                                    |
+| -------------------------- | ---------------------------- | -------------------------------------- |
+| Use `store` abstraction    | All file I/O                 | Enables `InMemoryStore` in tests       |
+| Use `safeWriteSync()`      | All writes                   | Atomic writes with backup              |
+| Use `safePath()`           | All user-provided paths      | Prevents path traversal                |
+| Use `detectSecrets()`      | All user input saved to disk | Prevents accidental credential storage |
+| Use `setSecurityHeaders()` | All responses                | CSP, X-Frame-Options, etc.             |
+| Use `strings.js`           | All user-facing text         | Externalized for maintainability       |
+| Use `utils/errors.js`      | All error responses          | Consistent error codes                 |
 
 ---
 
 ## Questions?
 
-Open a [GitHub Issue](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team/issues) for questions, bug reports, or feature requests.
+Open a
+[GitHub Issue](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team/issues)
+for questions, bug reports, or feature requests.

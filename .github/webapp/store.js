@@ -2,7 +2,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 'use strict';
 
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
 
 /* ── Store Interface (SP-R2-002-001) ──────────────────────────── *
@@ -45,12 +45,12 @@ class FileStore {
    */
   _createBackup(filePath) {
     if (!fs.existsSync(filePath)) return;
-    const dir    = path.dirname(filePath);
-    const base   = path.basename(filePath);
-    const bkDir  = path.join(dir, BACKUPS_DIR_NAME, base);
+    const dir = path.dirname(filePath);
+    const base = path.basename(filePath);
+    const bkDir = path.join(dir, BACKUPS_DIR_NAME, base);
     if (!fs.existsSync(bkDir)) fs.mkdirSync(bkDir, { recursive: true });
 
-    const stamp  = new Date().toISOString().replace(/[:.]/g, '-');
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
     const bkPath = path.join(bkDir, stamp);
     fs.copyFileSync(filePath, bkPath);
 
@@ -58,7 +58,9 @@ class FileStore {
     const files = fs.readdirSync(bkDir).sort();
     while (files.length > MAX_BACKUPS_PER_FILE) {
       const oldest = files.shift();
-      try { fs.unlinkSync(path.join(bkDir, oldest)); } catch {}
+      try {
+        fs.unlinkSync(path.join(bkDir, oldest));
+      } catch {}
     }
   }
 
@@ -74,7 +76,9 @@ class FileStore {
       fs.renameSync(tmpPath, filePath);
     } catch (err) {
       // Clean up temp file on failure
-      try { fs.unlinkSync(tmpPath); } catch {}
+      try {
+        fs.unlinkSync(tmpPath);
+      } catch {}
       throw Object.assign(
         new Error(`File write failed (${path.basename(filePath)}): ${err.message}`),
         { status: 500 }
@@ -184,8 +188,14 @@ class InMemoryStore {
     const resolved = path.resolve(dirPath);
     const entries = [];
     const seen = new Set();
-    collectDirEntries(this._files.keys(), resolved, seen, entries, options,
-      (key, res) => key.slice(res.length + 1).split(/[\\/]/).length > 1);
+    collectDirEntries(
+      this._files.keys(),
+      resolved,
+      seen,
+      entries,
+      options,
+      (key, res) => key.slice(res.length + 1).split(/[\\/]/).length > 1
+    );
     collectDirEntries(this._dirs, resolved, seen, entries, options, () => true);
     return entries;
   }

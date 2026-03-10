@@ -6,7 +6,7 @@
 
 const path = require('path');
 const { InMemoryStore, setStore } = require('../../webapp/store');
-const { FileCache }               = require('../../webapp/cache');
+const { FileCache } = require('../../webapp/cache');
 const { parseDecisions, addOpenQuestion, nextDecisionId, today } = require('../../webapp/models');
 
 const DECISIONS_PATH = path.resolve('/fake/project/.github/docs/decisions.md');
@@ -77,8 +77,12 @@ describe('decisions round-trip through Store + Cache + Models', () => {
     const original = cache.read(DECISIONS_PATH);
     const newId = nextDecisionId(original, 'DEC-R2-');
     const updated = addOpenQuestion(original, {
-      id: newId, priority: 'MEDIUM', scope: 'Phase 2',
-      question: 'Should we add caching?', answer: '', date: today(),
+      id: newId,
+      priority: 'MEDIUM',
+      scope: 'Phase 2',
+      question: 'Should we add caching?',
+      answer: '',
+      date: today(),
     });
 
     // Write updated content back through Store
@@ -90,7 +94,7 @@ describe('decisions round-trip through Store + Cache + Models', () => {
     const decisions = parseDecisions(freshContent);
 
     expect(decisions.open).toHaveLength(2);
-    const newQ = decisions.open.find(q => q.question === 'Should we add caching?');
+    const newQ = decisions.open.find((q) => q.question === 'Should we add caching?');
     expect(newQ).toBeDefined();
     expect(newQ.date).toBe(today());
   });
@@ -98,15 +102,18 @@ describe('decisions round-trip through Store + Cache + Models', () => {
   it('validates schema on cached JSON read', () => {
     const { validateSessionState } = require('../../webapp/schemas');
     const sessionPath = path.resolve('/fake/session-state.json');
-    store.writeFile(sessionPath, JSON.stringify({
-      session_id: 'test-001',
-      cycle_type: 'FULL_CREATE',
-      status: 'IN_PROGRESS',
-      current_phase: 'Phase 2',
-      current_agent: 'Software Architect',
-      completed_phases: ['Phase 1'],
-      completed_agents: [],
-    }));
+    store.writeFile(
+      sessionPath,
+      JSON.stringify({
+        session_id: 'test-001',
+        cycle_type: 'FULL_CREATE',
+        status: 'IN_PROGRESS',
+        current_phase: 'Phase 2',
+        current_agent: 'Software Architect',
+        completed_phases: ['Phase 1'],
+        completed_agents: [],
+      })
+    );
 
     const { data, errors } = cache.readJSON(sessionPath, validateSessionState);
     expect(errors).toBeNull();

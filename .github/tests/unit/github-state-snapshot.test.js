@@ -27,50 +27,67 @@ const mockFs = {
 /* ── Sample API responses ────────────────────────────────────── */
 
 const sampleMilestoneOpen = {
-  number: 1, title: 'Sprint 1', state: 'open',
-  open_issues: 3, closed_issues: 2, due_on: '2026-04-01T00:00:00Z',
-  description: 'First sprint'
+  number: 1,
+  title: 'Sprint 1',
+  state: 'open',
+  open_issues: 3,
+  closed_issues: 2,
+  due_on: '2026-04-01T00:00:00Z',
+  description: 'First sprint',
 };
 
 const sampleMilestoneClosed = {
-  number: 2, title: 'Sprint 2', state: 'closed',
-  open_issues: 0, closed_issues: 5, due_on: null,
-  description: 'Completed sprint'
+  number: 2,
+  title: 'Sprint 2',
+  state: 'closed',
+  open_issues: 0,
+  closed_issues: 5,
+  due_on: null,
+  description: 'Completed sprint',
 };
 
 const sampleIssueOpen = {
-  number: 10, title: 'Implement feature X', state: 'open',
+  number: 10,
+  title: 'Implement feature X',
+  state: 'open',
   labels: [{ name: 'enhancement' }],
   milestone: { number: 1, title: 'Sprint 1' },
   assignees: [{ login: 'dev1' }],
   created_at: '2026-03-15T10:00:00Z',
-  closed_at: null
+  closed_at: null,
 };
 
 const sampleIssueClosed = {
-  number: 11, title: 'Fix bug Y', state: 'closed',
+  number: 11,
+  title: 'Fix bug Y',
+  state: 'closed',
   labels: [{ name: 'bug' }],
   milestone: null,
   assignees: [],
   created_at: '2026-03-10T08:00:00Z',
-  closed_at: '2026-03-12T14:00:00Z'
+  closed_at: '2026-03-12T14:00:00Z',
 };
 
 const samplePR = {
-  number: 20, title: 'PR: feature', state: 'open',
+  number: 20,
+  title: 'PR: feature',
+  state: 'open',
   pull_request: { url: 'https://api.github.com/repos/o/r/pulls/20' },
-  labels: [], milestone: null, assignees: [],
-  created_at: '2026-03-16T09:00:00Z', closed_at: null
+  labels: [],
+  milestone: null,
+  assignees: [],
+  created_at: '2026-03-16T09:00:00Z',
+  closed_at: null,
 };
 
 /* ── helpers ──────────────────────────────────────────────────── */
 
 function setupGhMock(openMilestones, closedMilestones, openIssues, closedIssues) {
   mockExecSync.mockImplementation((cmd) => {
-    if (cmd.includes('milestones?state=open'))   return JSON.stringify(openMilestones);
+    if (cmd.includes('milestones?state=open')) return JSON.stringify(openMilestones);
     if (cmd.includes('milestones?state=closed')) return JSON.stringify(closedMilestones);
-    if (cmd.includes('issues?state=open'))       return JSON.stringify(openIssues);
-    if (cmd.includes('issues?state=closed'))     return JSON.stringify(closedIssues);
+    if (cmd.includes('issues?state=open')) return JSON.stringify(openIssues);
+    if (cmd.includes('issues?state=closed')) return JSON.stringify(closedIssues);
     return '[]';
   });
 }
@@ -153,7 +170,12 @@ describe('github-state-snapshot', () => {
 
   describe('createSnapshot', () => {
     it('produces a valid snapshot object', () => {
-      setupGhMock([sampleMilestoneOpen], [sampleMilestoneClosed], [sampleIssueOpen], [sampleIssueClosed]);
+      setupGhMock(
+        [sampleMilestoneOpen],
+        [sampleMilestoneClosed],
+        [sampleIssueOpen],
+        [sampleIssueClosed]
+      );
       const snap = snapshot.createSnapshot();
       expect(snap.repo).toBe('RobertAgterhuis/myAgentic-IT-Project-team-V2');
       expect(snap.captured_at).toBeTruthy();
@@ -168,10 +190,7 @@ describe('github-state-snapshot', () => {
     it('writes snapshot to disk when not --stdout', () => {
       setupGhMock([], [], [], []);
       snapshot.createSnapshot();
-      expect(mockWriteFileSync).toHaveBeenCalledWith(
-        snapshot.OUTPUT_FILE,
-        expect.any(String)
-      );
+      expect(mockWriteFileSync).toHaveBeenCalledWith(snapshot.OUTPUT_FILE, expect.any(String));
       const written = JSON.parse(mockWriteFileSync.mock.calls[0][1]);
       expect(written.repo).toBeTruthy();
     });
@@ -206,7 +225,7 @@ describe('validateGithubSnapshot', () => {
     captured_at: '2026-03-20T12:00:00Z',
     summary: { milestones_open: 1, milestones_closed: 2, issues_open: 5, issues_closed: 10 },
     milestones: [{ number: 1, title: 'M1', state: 'open' }],
-    issues: [{ number: 10, title: 'I1', state: 'open' }]
+    issues: [{ number: 10, title: 'I1', state: 'open' }],
   };
 
   it('accepts a valid snapshot', () => {
@@ -229,7 +248,10 @@ describe('validateGithubSnapshot', () => {
   });
 
   it('requires summary to be an object with numeric fields', () => {
-    const r = validateGithubSnapshot({ ...valid, summary: { milestones_open: 'x', milestones_closed: 0, issues_open: 0, issues_closed: 0 } });
+    const r = validateGithubSnapshot({
+      ...valid,
+      summary: { milestones_open: 'x', milestones_closed: 0, issues_open: 0, issues_closed: 0 },
+    });
     expect(r.valid).toBe(false);
     expect(r.errors[0]).toMatch(/milestones_open must be a number/);
   });
@@ -265,8 +287,8 @@ describe('validateSessionState — github_sync', () => {
         milestones_closed: 2,
         issues_open: 5,
         issues_closed: 10,
-        drift_findings: []
-      }
+        drift_findings: [],
+      },
     });
     expect(r.valid).toBe(true);
   });
@@ -274,7 +296,14 @@ describe('validateSessionState — github_sync', () => {
   it('accepts github_sync with null last_synced', () => {
     const r = validateSessionState({
       ...base,
-      github_sync: { last_synced: null, milestones_open: 0, milestones_closed: 0, issues_open: 0, issues_closed: 0, drift_findings: [] }
+      github_sync: {
+        last_synced: null,
+        milestones_open: 0,
+        milestones_closed: 0,
+        issues_open: 0,
+        issues_closed: 0,
+        drift_findings: [],
+      },
     });
     expect(r.valid).toBe(true);
   });
@@ -294,7 +323,7 @@ describe('validateSessionState — github_sync', () => {
   it('rejects non-number milestones_open', () => {
     const r = validateSessionState({
       ...base,
-      github_sync: { milestones_open: 'x' }
+      github_sync: { milestones_open: 'x' },
     });
     expect(r.valid).toBe(false);
     expect(r.errors).toContain('github_sync.milestones_open must be a number');
@@ -303,7 +332,7 @@ describe('validateSessionState — github_sync', () => {
   it('rejects non-number issues_closed', () => {
     const r = validateSessionState({
       ...base,
-      github_sync: { issues_closed: true }
+      github_sync: { issues_closed: true },
     });
     expect(r.valid).toBe(false);
     expect(r.errors).toContain('github_sync.issues_closed must be a number');
@@ -312,7 +341,7 @@ describe('validateSessionState — github_sync', () => {
   it('rejects non-array drift_findings', () => {
     const r = validateSessionState({
       ...base,
-      github_sync: { drift_findings: 'bad' }
+      github_sync: { drift_findings: 'bad' },
     });
     expect(r.valid).toBe(false);
     expect(r.errors).toContain('github_sync.drift_findings must be an array');

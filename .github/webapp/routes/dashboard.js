@@ -107,26 +107,26 @@ function computeHealthStatus() {
       value: 94,
       label: 'Code Quality',
       status: 'excellent',
-      details: 'ESLint complexity ≤ 8, 100% rule compliance'
+      details: 'ESLint complexity ≤ 8, 100% rule compliance',
     },
     coverage: {
       value: '87.4%',
       label: 'Test Coverage',
       status: 'high',
-      details: '788/899 statements covered'
+      details: '788/899 statements covered',
     },
     builds: {
       value: '✓ Passing',
       label: 'Build Status',
       status: 'healthy',
-      details: 'Latest 5 builds successful'
+      details: 'Latest 5 builds successful',
     },
     deployment: {
       value: 'Live',
       label: 'Deployment Status',
       status: 'stable',
-      details: 'Last deploy 2 hours ago'
-    }
+      details: 'Last deploy 2 hours ago',
+    },
   };
 }
 
@@ -137,12 +137,18 @@ function computeHealthStatus() {
  * Returns: { requests, errors, response_time, uptime }
  */
 function computeKeyMetrics(ctx) {
-  const metrics = ctx._metrics || { requestCount: 0, errorCount: 0, responseTimes: [], startedAt: Date.now() };
-  
+  const metrics = ctx._metrics || {
+    requestCount: 0,
+    errorCount: 0,
+    responseTimes: [],
+    startedAt: Date.now(),
+  };
+
   // Calculate error rate
-  const errorRate = metrics.requestCount > 0
-    ? ((metrics.errorCount / metrics.requestCount) * 100).toFixed(1)
-    : '0.0';
+  const errorRate =
+    metrics.requestCount > 0
+      ? ((metrics.errorCount / metrics.requestCount) * 100).toFixed(1)
+      : '0.0';
 
   // Calculate average response time
   let avgResponseTime = 142; // Default
@@ -157,7 +163,7 @@ function computeKeyMetrics(ctx) {
       label: 'HTTP Requests',
       period: 'Last Hour',
       trend: '+12%',
-      trend_direction: 'up'
+      trend_direction: 'up',
     },
     error_rate: {
       value: errorRate + '%',
@@ -165,15 +171,15 @@ function computeKeyMetrics(ctx) {
       period: 'Current',
       trend: '-0.3%',
       trend_direction: 'down',
-      status: errorRate < 5 ? 'good' : 'warning'
+      status: errorRate < 5 ? 'good' : 'warning',
     },
     response_time: {
       value: avgResponseTime.toString(),
       unit: 'ms',
       label: 'Avg Response Time',
       period: 'Current',
-      status: avgResponseTime < 200 ? 'good' : 'warning'
-    }
+      status: avgResponseTime < 200 ? 'good' : 'warning',
+    },
   };
 }
 
@@ -187,11 +193,7 @@ function computeActivityFeed(ctx) {
   const auditEntries = getAuditEntries(ctx, 25);
 
   if (Array.isArray(auditEntries) && auditEntries.length > 0) {
-    return auditEntries
-      .slice()
-      .reverse()
-      .slice(0, 12)
-      .map(mapAuditEntryToActivity);
+    return auditEntries.slice().reverse().slice(0, 12).map(mapAuditEntryToActivity);
   }
 
   return [
@@ -200,7 +202,7 @@ function computeActivityFeed(ctx) {
       action: 'No audit events recorded yet',
       details: 'Activity feed will populate as soon as mutations are logged.',
       timestamp: new Date().toISOString(),
-    }
+    },
   ];
 }
 
@@ -214,16 +216,20 @@ function computeQuickStats(ctx) {
   const repoRoot = getRepoRoot(ctx);
   const milestonesPath = path.join(repoRoot, '.github', 'data', 'milestones.json');
   const milestones = safeReadJson(milestonesPath, []).filter((m) => !m.archived);
-  const completeCount = milestones.filter((m) => String(m.status || '').toLowerCase() === 'complete').length;
+  const completeCount = milestones.filter(
+    (m) => String(m.status || '').toLowerCase() === 'complete'
+  ).length;
   const totalCount = milestones.length;
   const sprintPercent = totalCount > 0 ? Math.round((completeCount / totalCount) * 100) : 0;
 
   const trackedFiles = getGitTrackedFileCount(repoRoot);
   const contributors = getRecentGitContributors(repoRoot);
-  const auditContributors = new Set((ctx?._audit ? ctx._audit.read(200) : [])
-    .map((entry) => normalizeAuditUser(entry.user))
-    .filter(Boolean)
-    .map((name) => name.toLowerCase()));
+  const auditContributors = new Set(
+    (ctx?._audit ? ctx._audit.read(200) : [])
+      .map((entry) => normalizeAuditUser(entry.user))
+      .filter(Boolean)
+      .map((name) => name.toLowerCase())
+  );
   const teamCount = Math.max(contributors, auditContributors.size, 1);
 
   const starsFromEnv = Number.parseInt(process.env.GITHUB_STARS || '', 10);
@@ -234,19 +240,19 @@ function computeQuickStats(ctx) {
       value: String(trackedFiles || 0),
       label: 'Active Files',
       icon: '📄',
-      details: 'Tracked by git ls-files'
+      details: 'Tracked by git ls-files',
     },
     team_members: {
       value: String(teamCount),
       label: 'Team Members',
       icon: '👥',
-      details: 'Unique contributors (git + audit, last 180 days)'
+      details: 'Unique contributors (git + audit, last 180 days)',
     },
     sprint_progress: {
       value: `${sprintPercent}%`,
       label: 'Sprint Complete',
       icon: '🎯',
-      details: `${completeCount} of ${totalCount} active milestones complete`
+      details: `${completeCount} of ${totalCount} active milestones complete`,
     },
     github_stars: {
       value: starsValue,
@@ -254,8 +260,8 @@ function computeQuickStats(ctx) {
       icon: '⭐',
       details: Number.isFinite(starsFromEnv)
         ? 'From GITHUB_STARS environment variable'
-        : 'Set GITHUB_STARS env var to display real stars'
-    }
+        : 'Set GITHUB_STARS env var to display real stars',
+    },
   };
 }
 
@@ -271,7 +277,7 @@ async function getHealth(req, res) {
     json(res, 200, {
       ok: true,
       data: health,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     json(res, 500, { error: 'Failed to compute health status', details: err.message });
@@ -288,7 +294,7 @@ async function getMetrics(req, res, ctx) {
     json(res, 200, {
       ok: true,
       data: metrics,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     json(res, 500, { error: 'Failed to compute metrics', details: err.message });
@@ -305,7 +311,7 @@ async function getActivity(req, res, ctx) {
     json(res, 200, {
       ok: true,
       data: activity,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     json(res, 500, { error: 'Failed to fetch activity feed', details: err.message });
@@ -322,7 +328,7 @@ async function getStats(req, res, ctx) {
     json(res, 200, {
       ok: true,
       data: stats,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     json(res, 500, { error: 'Failed to compute statistics', details: err.message });
@@ -336,6 +342,6 @@ module.exports = function dashboardRoutes(ctx) {
     'GET /api/dashboard/health': (req, res) => getHealth(req, res),
     'GET /api/dashboard/metrics': (req, res) => getMetrics(req, res, ctx),
     'GET /api/dashboard/activity': (req, res) => getActivity(req, res, ctx),
-    'GET /api/dashboard/stats': (req, res) => getStats(req, res, ctx)
+    'GET /api/dashboard/stats': (req, res) => getStats(req, res, ctx),
   };
 };

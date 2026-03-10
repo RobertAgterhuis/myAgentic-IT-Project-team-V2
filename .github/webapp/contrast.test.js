@@ -43,18 +43,22 @@ const dark = tokens.color.dark;
 describe('WCAG AA text contrast (4.5:1)', () => {
   const textPairs = [
     // Light theme — text on backgrounds
-    { name: 'light text on bg',          fg: light.text.$value,      bg: light.bg.$value },
-    { name: 'light text on surface',     fg: light.text.$value,      bg: light.surface.$value },
-    { name: 'light text-sec on bg',      fg: light['text-sec'].$value, bg: light.bg.$value },
+    { name: 'light text on bg', fg: light.text.$value, bg: light.bg.$value },
+    { name: 'light text on surface', fg: light.text.$value, bg: light.surface.$value },
+    { name: 'light text-sec on bg', fg: light['text-sec'].$value, bg: light.bg.$value },
     { name: 'light text-sec on surface', fg: light['text-sec'].$value, bg: light.surface.$value },
-    { name: 'light text-muted on bg',    fg: light['text-muted'].$value, bg: light.bg.$value },
-    { name: 'light text-muted on surface', fg: light['text-muted'].$value, bg: light.surface.$value },
+    { name: 'light text-muted on bg', fg: light['text-muted'].$value, bg: light.bg.$value },
+    {
+      name: 'light text-muted on surface',
+      fg: light['text-muted'].$value,
+      bg: light.surface.$value,
+    },
     // Dark theme — text on backgrounds
-    { name: 'dark text on bg',           fg: dark.text.$value,       bg: dark.bg.$value },
-    { name: 'dark text on surface',      fg: dark.text.$value,       bg: dark.surface.$value },
-    { name: 'dark text-sec on bg',       fg: dark['text-sec'].$value, bg: dark.bg.$value },
-    { name: 'dark text-sec on surface',  fg: dark['text-sec'].$value, bg: dark.surface.$value },
-    { name: 'dark text-muted on bg',     fg: dark['text-muted'].$value, bg: dark.bg.$value },
+    { name: 'dark text on bg', fg: dark.text.$value, bg: dark.bg.$value },
+    { name: 'dark text on surface', fg: dark.text.$value, bg: dark.surface.$value },
+    { name: 'dark text-sec on bg', fg: dark['text-sec'].$value, bg: dark.bg.$value },
+    { name: 'dark text-sec on surface', fg: dark['text-sec'].$value, bg: dark.surface.$value },
+    { name: 'dark text-muted on bg', fg: dark['text-muted'].$value, bg: dark.bg.$value },
     { name: 'dark text-muted on surface', fg: dark['text-muted'].$value, bg: dark.surface.$value },
   ];
 
@@ -71,23 +75,51 @@ describe('WCAG AA text contrast (4.5:1)', () => {
 describe('WCAG AA non-text contrast (3:1)', () => {
   const uiPairs = [
     // Interactive element borders (border-control) against adjacent backgrounds
-    { name: 'light border-control on surface', fg: light['border-control'].$value, bg: light.surface.$value },
-    { name: 'light border-control on input-bg', fg: light['border-control'].$value, bg: light['input-bg'].$value },
-    { name: 'dark border-control on surface',  fg: dark['border-control'].$value,  bg: dark.surface.$value },
-    { name: 'dark border-control on input-bg', fg: dark['border-control'].$value,  bg: dark['input-bg'].$value },
+    {
+      name: 'light border-control on surface',
+      fg: light['border-control'].$value,
+      bg: light.surface.$value,
+    },
+    {
+      name: 'light border-control on input-bg',
+      fg: light['border-control'].$value,
+      bg: light['input-bg'].$value,
+    },
+    {
+      name: 'dark border-control on surface',
+      fg: dark['border-control'].$value,
+      bg: dark.surface.$value,
+    },
+    {
+      name: 'dark border-control on input-bg',
+      fg: dark['border-control'].$value,
+      bg: dark['input-bg'].$value,
+    },
     // Hover state borders
-    { name: 'dark border-hover on surface',    fg: dark['border-hover'].$value,    bg: dark.surface.$value },
+    {
+      name: 'dark border-hover on surface',
+      fg: dark['border-hover'].$value,
+      bg: dark.surface.$value,
+    },
     // Focus ring (primary) against backgrounds (WCAG 1.4.11)
-    { name: 'light focus ring (primary) on bg',      fg: light.primary.$value,     bg: light.bg.$value },
-    { name: 'light focus ring (primary) on surface',  fg: light.primary.$value,     bg: light.surface.$value },
-    { name: 'dark focus ring (primary) on bg',        fg: dark.primary.$value,      bg: dark.bg.$value },
-    { name: 'dark focus ring (primary) on surface',   fg: dark.primary.$value,      bg: dark.surface.$value },
+    { name: 'light focus ring (primary) on bg', fg: light.primary.$value, bg: light.bg.$value },
+    {
+      name: 'light focus ring (primary) on surface',
+      fg: light.primary.$value,
+      bg: light.surface.$value,
+    },
+    { name: 'dark focus ring (primary) on bg', fg: dark.primary.$value, bg: dark.bg.$value },
+    {
+      name: 'dark focus ring (primary) on surface',
+      fg: dark.primary.$value,
+      bg: dark.surface.$value,
+    },
     // Status colors against their respective backgrounds
-    { name: 'light success on surface',  fg: light.success.$value,  bg: light.surface.$value },
-    { name: 'light warning on surface',  fg: light.warning.$value,  bg: light.surface.$value },
-    { name: 'light danger on surface',   fg: light.danger.$value,   bg: light.surface.$value },
-    { name: 'dark success on surface',   fg: dark.success.$value,   bg: dark.surface.$value },
-    { name: 'dark danger on surface',    fg: dark.danger.$value,    bg: dark.surface.$value },
+    { name: 'light success on surface', fg: light.success.$value, bg: light.surface.$value },
+    { name: 'light warning on surface', fg: light.warning.$value, bg: light.surface.$value },
+    { name: 'light danger on surface', fg: light.danger.$value, bg: light.surface.$value },
+    { name: 'dark success on surface', fg: dark.success.$value, bg: dark.surface.$value },
+    { name: 'dark danger on surface', fg: dark.danger.$value, bg: dark.surface.$value },
   ];
 
   for (const { name, fg, bg } of uiPairs) {

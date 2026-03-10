@@ -5,13 +5,24 @@
 
 const http = require('http');
 const path = require('path');
-const fs   = require('fs');
+const fs = require('fs');
 const { InMemoryStore, setStore } = require('../../webapp/store');
-const { server, _cache, _metrics, _audit,
-        sanitizeMarkdown, sanitizeQID, detectSecrets, safePath,
-        setSecurityHeaders, recordMetric, computePercentiles,
-        sseNotify, _sseClients } = require('../../webapp/server');
-const models  = require('../../webapp/models');
+const {
+  server,
+  _cache,
+  _metrics,
+  _audit,
+  sanitizeMarkdown,
+  sanitizeQID,
+  detectSecrets,
+  safePath,
+  setSecurityHeaders,
+  recordMetric,
+  computePercentiles,
+  sseNotify,
+  _sseClients,
+} = require('../../webapp/server');
+const models = require('../../webapp/models');
 const schemas = require('../../webapp/schemas');
 const { FileCache } = require('../../webapp/cache');
 const { errorResponse, statusToCode } = require('../../webapp/utils/errors');
@@ -20,14 +31,14 @@ const { VALIDATION: V, RESPONSES: R, STATIC: S } = require('../../webapp/strings
 
 /* ── Test Infrastructure ──────────────────────────────────────── */
 
-const WEBAPP_DIR    = path.resolve(__dirname, '../../webapp');
-const PROJECT_ROOT  = path.resolve(WEBAPP_DIR, '..', '..');
+const WEBAPP_DIR = path.resolve(__dirname, '../../webapp');
+const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
-const GITHUB_DOCS   = path.join(PROJECT_ROOT, '.github', 'docs');
-const SESSION_DIR   = path.join(GITHUB_DOCS, 'session');
-const SESSION_FILE  = path.join(SESSION_DIR, 'session-state.json');
+const GITHUB_DOCS = path.join(PROJECT_ROOT, '.github', 'docs');
+const SESSION_DIR = path.join(GITHUB_DOCS, 'session');
+const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
 const DECISIONS_FILE = path.join(GITHUB_DOCS, 'decisions.md');
-const HELP_DIR       = path.join(PROJECT_ROOT, '.github', 'help');
+const HELP_DIR = path.join(PROJECT_ROOT, '.github', 'help');
 const ANALYTICS_FILE = path.join(GITHUB_DOCS, 'analytics-events.json');
 
 let baseUrl;
@@ -35,7 +46,13 @@ let baseUrl;
 function req(method, urlPath, body) {
   return new Promise((resolve, reject) => {
     const url = new URL(urlPath, baseUrl);
-    const opts = { method, hostname: url.hostname, port: url.port, path: url.pathname + url.search, headers: {} };
+    const opts = {
+      method,
+      hostname: url.hostname,
+      port: url.port,
+      path: url.pathname + url.search,
+      headers: {},
+    };
     if (body !== undefined) {
       const data = JSON.stringify(body);
       opts.headers['Content-Type'] = 'application/json';
@@ -43,11 +60,15 @@ function req(method, urlPath, body) {
     }
     const r = http.request(opts, (res) => {
       const chunks = [];
-      res.on('data', c => chunks.push(c));
+      res.on('data', (c) => chunks.push(c));
       res.on('end', () => {
         const text = Buffer.concat(chunks).toString();
         let json;
-        try { json = JSON.parse(text); } catch { json = null; }
+        try {
+          json = JSON.parse(text);
+        } catch {
+          json = null;
+        }
         resolve({ status: res.statusCode, headers: res.headers, text, json });
       });
     });
@@ -211,7 +232,9 @@ describe('Sprint 1 Regression: Security', () => {
   });
 
   it('detectSecrets finds GitHub tokens', () => {
-    expect(detectSecrets('token: ghp_ABCDEFghijklmnopqrstuvwxyz123456789012')).toContain('GitHub Token');
+    expect(detectSecrets('token: ghp_ABCDEFghijklmnopqrstuvwxyz123456789012')).toContain(
+      'GitHub Token'
+    );
   });
 
   it('detectSecrets finds private keys', () => {
@@ -244,7 +267,9 @@ describe('Sprint 1 Regression: Security', () => {
   it('POST /api/save warns on secret patterns in answers', async () => {
     const res = await req('POST', '/api/save', {
       file: Q_FILE_REL,
-      updates: [{ questionId: 'Q-05-001', answer: 'key: AKIAIOSFODNN7EXAMPLE', status: 'ANSWERED' }],
+      updates: [
+        { questionId: 'Q-05-001', answer: 'key: AKIAIOSFODNN7EXAMPLE', status: 'ANSWERED' },
+      ],
     });
     expect(res.status).toBe(200);
     expect(res.json.warnings).toBeDefined();
@@ -300,7 +325,9 @@ describe('Sprint 2 Regression: Architecture', () => {
 
   it('JSON schema validates command entry', () => {
     const result = schemas.validateCommandEntry({
-      command: 'CREATE', requested_at: '2026-01-01T00:00:00Z', status: 'PENDING',
+      command: 'CREATE',
+      requested_at: '2026-01-01T00:00:00Z',
+      status: 'PENDING',
     });
     expect(result.valid).toBe(true);
   });
@@ -319,7 +346,12 @@ describe('Sprint 3 Regression: Code Quality', () => {
   });
 
   it('models.updateAnswerInContent replaces placeholder', () => {
-    const updated = models.updateAnswerInContent(QUESTIONNAIRE_MD, 'Q-05-001', 'Localhost', 'ANSWERED');
+    const updated = models.updateAnswerInContent(
+      QUESTIONNAIRE_MD,
+      'Q-05-001',
+      'Localhost',
+      'ANSWERED'
+    );
     expect(updated).toContain('Localhost');
   });
 
@@ -328,7 +360,7 @@ describe('Sprint 3 Regression: Code Quality', () => {
     expect(decisions.open).toHaveLength(1);
     expect(decisions.decided.length).toBeGreaterThanOrEqual(3);
     expect(decisions.open[0].id).toBe('DEC-R2-010');
-    expect(decisions.decided.map(d => d.id)).toContain('DEC-R2-001');
+    expect(decisions.decided.map((d) => d.id)).toContain('DEC-R2-001');
   });
 
   it('models.nextDecisionId generates sequential IDs', () => {
@@ -339,10 +371,19 @@ describe('Sprint 3 Regression: Code Quality', () => {
 
   it('error catalog has all expected codes', () => {
     const expectedCodes = [
-      'VALIDATION_ERROR', 'FILE_NOT_FOUND', 'DECISIONS_NOT_FOUND',
-      'INVALID_ACTION', 'UNKNOWN_COMMAND', 'NOT_FOUND', 'PATH_TRAVERSAL',
-      'PAYLOAD_TOO_LARGE', 'INVALID_CONTENT_TYPE', 'INVALID_JSON',
-      'INVALID_INPUT', 'METHOD_NOT_ALLOWED', 'INTERNAL_ERROR',
+      'VALIDATION_ERROR',
+      'FILE_NOT_FOUND',
+      'DECISIONS_NOT_FOUND',
+      'INVALID_ACTION',
+      'UNKNOWN_COMMAND',
+      'NOT_FOUND',
+      'PATH_TRAVERSAL',
+      'PAYLOAD_TOO_LARGE',
+      'INVALID_CONTENT_TYPE',
+      'INVALID_JSON',
+      'INVALID_INPUT',
+      'METHOD_NOT_ALLOWED',
+      'INTERNAL_ERROR',
     ];
     for (const code of expectedCodes) {
       const err = errorResponse(code);
@@ -437,9 +478,10 @@ describe('Sprint 4 Regression: SSE & Metrics', () => {
 
   it('GET /api/analytics returns stored events', async () => {
     // Ensure analytics file exists
-    store.writeFile(ANALYTICS_FILE, JSON.stringify([
-      { event: 'page_view', properties: {}, timestamp: '2026-01-01T00:00:00Z' },
-    ]));
+    store.writeFile(
+      ANALYTICS_FILE,
+      JSON.stringify([{ event: 'page_view', properties: {}, timestamp: '2026-01-01T00:00:00Z' }])
+    );
     _cache.invalidateAll();
     const res = await req('GET', '/api/analytics');
     expect(res.status).toBe(200);
@@ -539,17 +581,29 @@ describe('Sprint 6 Regression: Integration & Backup', () => {
   it('decision create + answer + decide round-trip', async () => {
     // Create
     const createRes = await req('POST', '/api/decisions', {
-      action: 'create', type: 'OPEN_QUESTION', priority: 'HIGH', scope: 'TECH', text: 'Regression test Q?',
+      action: 'create',
+      type: 'OPEN_QUESTION',
+      priority: 'HIGH',
+      scope: 'TECH',
+      text: 'Regression test Q?',
     });
     expect(createRes.status).toBe(200);
     const id = createRes.json.id;
 
     // Answer
-    const ansRes = await req('POST', '/api/decisions', { action: 'answer', id, answer: 'Yes, confirmed.' });
+    const ansRes = await req('POST', '/api/decisions', {
+      action: 'answer',
+      id,
+      answer: 'Yes, confirmed.',
+    });
     expect(ansRes.status).toBe(200);
 
     // Decide
-    const decRes = await req('POST', '/api/decisions', { action: 'decide', id, answer: 'Final: yes.' });
+    const decRes = await req('POST', '/api/decisions', {
+      action: 'decide',
+      id,
+      answer: 'Final: yes.',
+    });
     expect(decRes.status).toBe(200);
   });
 
@@ -567,7 +621,7 @@ describe('Sprint 6 Regression: Integration & Backup', () => {
     expect(res.json.phases).toBeDefined();
     expect(res.json.phases.length).toBe(7); // 7 phase groups
     // Verify phase labels
-    const labels = res.json.phases.map(p => p.key);
+    const labels = res.json.phases.map((p) => p.key);
     expect(labels).toContain('ONBOARDING');
     expect(labels).toContain('PHASE-2');
     expect(labels).toContain('PHASE-5');

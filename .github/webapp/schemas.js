@@ -8,12 +8,18 @@
  * ─────────────────────────────────────────────────────────────── */
 
 function str(val, name, errors) {
-  if (typeof val !== 'string') { errors.push(`${name} must be a string`); return false; }
+  if (typeof val !== 'string') {
+    errors.push(`${name} must be a string`);
+    return false;
+  }
   return true;
 }
 function opt(val, name, type, errors) {
   if (val === undefined || val === null) return true;
-  if (typeof val !== type) { errors.push(`${name} must be a ${type} if present`); return false; }
+  if (typeof val !== type) {
+    errors.push(`${name} must be a ${type} if present`);
+    return false;
+  }
   return true;
 }
 
@@ -114,9 +120,15 @@ function validateCommandQueue(data) {
 /* ── Analytics Event ───────────────────────────────────────────── */
 
 const VALID_ANALYTICS_EVENTS = [
-  'page_view', 'tab_switch', 'command_launch', 'questionnaire_save',
-  'decision_update', 'error_displayed', 'feature_usage',
-  'session_start', 'session_end',
+  'page_view',
+  'tab_switch',
+  'command_launch',
+  'questionnaire_save',
+  'decision_update',
+  'error_displayed',
+  'feature_usage',
+  'session_start',
+  'session_end',
 ];
 
 /**
@@ -132,7 +144,10 @@ function validateAnalyticsEvent(data) {
   if (!VALID_ANALYTICS_EVENTS.includes(data.event)) {
     errors.push(`unknown event type: ${data.event}`);
   }
-  if (data.properties !== undefined && (typeof data.properties !== 'object' || Array.isArray(data.properties))) {
+  if (
+    data.properties !== undefined &&
+    (typeof data.properties !== 'object' || Array.isArray(data.properties))
+  ) {
     errors.push('properties must be a plain object if present');
   }
   opt(data.timestamp, 'timestamp', 'string', errors);
@@ -186,7 +201,7 @@ function validateReevaluateTrigger(data) {
 
 /* ── Decision Create Input ────────────────────────────────────── */
 
-const VALID_DECISION_TYPES     = ['DECIDED', 'OPEN_QUESTION', 'question', 'operational'];
+const VALID_DECISION_TYPES = ['DECIDED', 'OPEN_QUESTION', 'question', 'operational'];
 const VALID_DECISION_PRIORITIES = ['HIGH', 'MEDIUM', 'LOW'];
 
 function hasDecisionCreateFields(data) {
@@ -218,7 +233,16 @@ function validateDecisionCreate(data) {
 
 /* ── Decision Mutation Input ──────────────────────────────────── */
 
-const VALID_MUTATION_ACTIONS = ['answer', 'decide', 'defer', 'expire', 'activate', 'create', 'reopen', 'edit'];
+const VALID_MUTATION_ACTIONS = [
+  'answer',
+  'decide',
+  'defer',
+  'expire',
+  'activate',
+  'create',
+  'reopen',
+  'edit',
+];
 
 /**
  * Validate a decision mutation body (structural check only).
@@ -282,8 +306,11 @@ function validateProjectBrief(content) {
 /* ── Drift Report (INFRA-02-C) ────────────────────────────────── */
 
 const VALID_DRIFT_TYPES = [
-  'SPRINT_STATUS_MISMATCH', 'MISSING_SYNC_REPORT',
-  'STORY_STATUS_MISMATCH', 'ORPHANED_ISSUE', 'MISSING_ISSUE',
+  'SPRINT_STATUS_MISMATCH',
+  'MISSING_SYNC_REPORT',
+  'STORY_STATUS_MISMATCH',
+  'ORPHANED_ISSUE',
+  'MISSING_ISSUE',
 ];
 const VALID_SEVERITIES = ['CRITICAL', 'WARNING', 'INFO'];
 
@@ -311,10 +338,15 @@ function validateDriftReport(data) {
   } else {
     for (let i = 0; i < data.drifts.length; i++) {
       const d = data.drifts[i];
-      if (!d || typeof d !== 'object') { errors.push(`drifts[${i}] must be an object`); continue; }
+      if (!d || typeof d !== 'object') {
+        errors.push(`drifts[${i}] must be an object`);
+        continue;
+      }
       str(d.id, `drifts[${i}].id`, errors);
-      if (!VALID_DRIFT_TYPES.includes(d.type)) errors.push(`drifts[${i}].type is invalid: ${d.type}`);
-      if (!VALID_SEVERITIES.includes(d.severity)) errors.push(`drifts[${i}].severity is invalid: ${d.severity}`);
+      if (!VALID_DRIFT_TYPES.includes(d.type))
+        errors.push(`drifts[${i}].type is invalid: ${d.type}`);
+      if (!VALID_SEVERITIES.includes(d.severity))
+        errors.push(`drifts[${i}].severity is invalid: ${d.severity}`);
       str(d.sprint, `drifts[${i}].sprint`, errors);
       str(d.expected, `drifts[${i}].expected`, errors);
       str(d.actual, `drifts[${i}].actual`, errors);

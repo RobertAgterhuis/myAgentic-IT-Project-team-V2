@@ -103,7 +103,7 @@ describe('parseStoryIssueMap', () => {
   it('extracts story-to-issue mappings from sprint plan', () => {
     const result = parseStoryIssueMap(SPRINT_PLAN);
     expect(result.length).toBeGreaterThanOrEqual(4);
-    const tech01 = result.find(r => r.storyId === 'TECH-01');
+    const tech01 = result.find((r) => r.storyId === 'TECH-01');
     expect(tech01).toBeDefined();
     expect(tech01.issueNumber).toBe(2);
     expect(tech01.title).toBe('File locking');
@@ -111,7 +111,7 @@ describe('parseStoryIssueMap', () => {
 
   it('returns null issueNumber for stories without issue', () => {
     const result = parseStoryIssueMap(SPRINT_PLAN);
-    const noIssue = result.find(r => r.storyId === 'NOISSUE-01');
+    const noIssue = result.find((r) => r.storyId === 'NOISSUE-01');
     expect(noIssue).toBeDefined();
     expect(noIssue.issueNumber).toBeNull();
   });
@@ -149,19 +149,19 @@ describe('parseSyncReport', () => {
   it('extracts closed issues from story-first format', () => {
     const result = parseSyncReport(SYNC_REPORT_SP1_OK);
     expect(result.closed.length).toBeGreaterThanOrEqual(2);
-    expect(result.closed.some(c => c.issueNumber === 2)).toBe(true);
-    expect(result.closed.some(c => c.issueNumber === 15)).toBe(true);
+    expect(result.closed.some((c) => c.issueNumber === 2)).toBe(true);
+    expect(result.closed.some((c) => c.issueNumber === 15)).toBe(true);
   });
 
   it('extracts open issues from sync report', () => {
     const result = parseSyncReport(SYNC_REPORT_SP1_WITH_OPEN);
     expect(result.open.length).toBeGreaterThanOrEqual(1);
-    expect(result.open.some(o => o.issueNumber === 15)).toBe(true);
+    expect(result.open.some((o) => o.issueNumber === 15)).toBe(true);
   });
 
   it('extracts CLOSE action rows', () => {
     const result = parseSyncReport(SYNC_REPORT_SP2_CLOSE_ACTION);
-    expect(result.closed.some(c => c.issueNumber === 3)).toBe(true);
+    expect(result.closed.some((c) => c.issueNumber === 3)).toBe(true);
   });
 
   it('returns empty arrays for non-string input', () => {
@@ -191,7 +191,7 @@ describe('detectDrift', () => {
       'SP-2': SYNC_REPORT_SP2_CLOSE_ACTION,
     };
     const result = detectDrift({ sessionState, sprintPlanContent: SPRINT_PLAN, syncReports });
-    const critical = result.drifts.filter(d => d.severity === SEVERITY.CRITICAL);
+    const critical = result.drifts.filter((d) => d.severity === SEVERITY.CRITICAL);
     expect(critical.length).toBe(0);
   });
 
@@ -207,7 +207,7 @@ describe('detectDrift', () => {
       'SP-2': null,
     };
     const result = detectDrift({ sessionState, sprintPlanContent: SPRINT_PLAN, syncReports });
-    const missing = result.drifts.filter(d => d.type === DRIFT_TYPE.MISSING_SYNC_REPORT);
+    const missing = result.drifts.filter((d) => d.type === DRIFT_TYPE.MISSING_SYNC_REPORT);
     expect(missing.length).toBe(1);
     expect(missing[0].sprint).toBe('SP-2');
     expect(missing[0].severity).toBe(SEVERITY.WARNING);
@@ -224,7 +224,7 @@ describe('detectDrift', () => {
       'SP-1': SYNC_REPORT_SP1_WITH_OPEN,
     };
     const result = detectDrift({ sessionState, sprintPlanContent: SPRINT_PLAN, syncReports });
-    const mismatch = result.drifts.filter(d => d.type === DRIFT_TYPE.STORY_STATUS_MISMATCH);
+    const mismatch = result.drifts.filter((d) => d.type === DRIFT_TYPE.STORY_STATUS_MISMATCH);
     expect(mismatch.length).toBeGreaterThanOrEqual(1);
     expect(mismatch[0].severity).toBe(SEVERITY.CRITICAL);
     expect(mismatch[0].issue_number).toBe(15);
@@ -276,9 +276,15 @@ describe('detectDrift', () => {
     };
     const result = detectDrift({ sessionState, sprintPlanContent: SPRINT_PLAN, syncReports });
     expect(result.summary.total_drifts).toBe(result.drifts.length);
-    expect(result.summary.critical).toBe(result.drifts.filter(d => d.severity === SEVERITY.CRITICAL).length);
-    expect(result.summary.warning).toBe(result.drifts.filter(d => d.severity === SEVERITY.WARNING).length);
-    expect(result.summary.info).toBe(result.drifts.filter(d => d.severity === SEVERITY.INFO).length);
+    expect(result.summary.critical).toBe(
+      result.drifts.filter((d) => d.severity === SEVERITY.CRITICAL).length
+    );
+    expect(result.summary.warning).toBe(
+      result.drifts.filter((d) => d.severity === SEVERITY.WARNING).length
+    );
+    expect(result.summary.info).toBe(
+      result.drifts.filter((d) => d.severity === SEVERITY.INFO).length
+    );
   });
 
   it('tracks in-sync sprints correctly', () => {
@@ -304,17 +310,19 @@ describe('validateDriftReport', () => {
   const validReport = {
     generated_at: '2026-03-09T00:00:00Z',
     summary: { total_drifts: 1, critical: 1, warning: 0, info: 0 },
-    drifts: [{
-      id: 'DRIFT-001',
-      type: 'STORY_STATUS_MISMATCH',
-      severity: 'CRITICAL',
-      sprint: 'SP-1',
-      story_id: 'TECH-01',
-      issue_number: 2,
-      expected: 'Issue #2 closed',
-      actual: 'Issue #2 open',
-      recommendation: 'Close issue #2',
-    }],
+    drifts: [
+      {
+        id: 'DRIFT-001',
+        type: 'STORY_STATUS_MISMATCH',
+        severity: 'CRITICAL',
+        sprint: 'SP-1',
+        story_id: 'TECH-01',
+        issue_number: 2,
+        expected: 'Issue #2 closed',
+        actual: 'Issue #2 open',
+        recommendation: 'Close issue #2',
+      },
+    ],
     in_sync: { sprints: ['SP-2'], stories: 5 },
   };
 
@@ -331,21 +339,21 @@ describe('validateDriftReport', () => {
   it('rejects missing summary', () => {
     const r = validateDriftReport({ ...validReport, summary: null });
     expect(r.valid).toBe(false);
-    expect(r.errors.some(e => e.includes('summary'))).toBe(true);
+    expect(r.errors.some((e) => e.includes('summary'))).toBe(true);
   });
 
   it('rejects invalid drift type', () => {
     const bad = { ...validReport, drifts: [{ ...validReport.drifts[0], type: 'INVALID' }] };
     const r = validateDriftReport(bad);
     expect(r.valid).toBe(false);
-    expect(r.errors.some(e => e.includes('type'))).toBe(true);
+    expect(r.errors.some((e) => e.includes('type'))).toBe(true);
   });
 
   it('rejects invalid severity', () => {
     const bad = { ...validReport, drifts: [{ ...validReport.drifts[0], severity: 'LOW' }] };
     const r = validateDriftReport(bad);
     expect(r.valid).toBe(false);
-    expect(r.errors.some(e => e.includes('severity'))).toBe(true);
+    expect(r.errors.some((e) => e.includes('severity'))).toBe(true);
   });
 
   it('rejects missing in_sync', () => {
@@ -356,6 +364,6 @@ describe('validateDriftReport', () => {
   it('rejects non-array drifts', () => {
     const r = validateDriftReport({ ...validReport, drifts: 'not-array' });
     expect(r.valid).toBe(false);
-    expect(r.errors.some(e => e.includes('drifts'))).toBe(true);
+    expect(r.errors.some((e) => e.includes('drifts'))).toBe(true);
   });
 });

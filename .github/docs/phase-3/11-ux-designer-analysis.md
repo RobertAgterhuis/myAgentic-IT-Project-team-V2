@@ -1,4 +1,5 @@
 # UX Designer Analysis — CREATE Mode
+
 > **Agent:** 11-ux-designer  
 > **Phase:** 3 — Experience Design  
 > **Deliverable:** 1 of 4 (Analysis)  
@@ -10,18 +11,27 @@
 
 ## EXECUTIVE SUMMARY
 
-This UX Designer analysis translates the UX Researcher's behavioral insights into concrete interaction design patterns, information architecture, and low-fidelity wireframes for the Agentic SDLC Platform Command Center.
+This UX Designer analysis translates the UX Researcher's behavioral insights
+into concrete interaction design patterns, information architecture, and
+low-fidelity wireframes for the Agentic SDLC Platform Command Center.
 
 **Key Design Decisions:**
-1. **3-column layout** for persistent context (command menu, main canvas, insights panel)
-2. **Progressive disclosure** for complexity management (3 layers: sprint, agent, detail)
+
+1. **3-column layout** for persistent context (command menu, main canvas,
+   insights panel)
+2. **Progressive disclosure** for complexity management (3 layers: sprint,
+   agent, detail)
 3. **Real-time updates** via WebSocket for all status changes
 4. **Contextual actions** embedded in each entity card/row
-5. **Unified design language** across all 8 screens with consistent navigation patterns
+5. **Unified design language** across all 8 screens with consistent navigation
+   patterns
 
-**Primary Design Goal:** Enable solo founders and small technical teams to orchestrate complex multi-agent workflows without requiring extensive training or documentation lookup.
+**Primary Design Goal:** Enable solo founders and small technical teams to
+orchestrate complex multi-agent workflows without requiring extensive training
+or documentation lookup.
 
 **Design Artifacts Produced:**
+
 - Information Architecture (IA) hierarchy for all 8 screens
 - Wireframe specifications (ASCII + annotations) for all core workflows
 - Interaction patterns library (12 patterns)
@@ -84,13 +94,15 @@ Command Center (root)
     └── Feedback Form
 ```
 
-**Source:** UX Researcher journey mapping (sec 3.2), Software Architect UI requirements (phase-2/05)
+**Source:** UX Researcher journey mapping (sec 3.2), Software Architect UI
+requirements (phase-2/05)
 
 ### 1.2 Screen-Level IA
 
 #### Screen 1: Dashboard
 
-**Purpose:** Single-pane-of-glass overview; primary entry point after login/navigation  
+**Purpose:** Single-pane-of-glass overview; primary entry point after
+login/navigation  
 **Layout:** 3-column responsive grid  
 **Content Zones:**
 
@@ -128,15 +140,18 @@ Command Center (root)
    - Official docs completeness %
    - Link to session-state.json
 
-**Interaction Pattern:** Dashboard is READ-ONLY; all mutation actions open modals or navigate to dedicated tabs.
+**Interaction Pattern:** Dashboard is READ-ONLY; all mutation actions open
+modals or navigate to dedicated tabs.
 
-**Source:** UX Researcher Rec-01 (single pane), Software Architect screen spec (phase-2/05 sec 5.1)
+**Source:** UX Researcher Rec-01 (single pane), Software Architect screen spec
+(phase-2/05 sec 5.1)
 
 ---
 
 #### Screen 2: Questionnaires Tab
 
-**Purpose:** Answer required questions, review existing answers, track questionnaire completion  
+**Purpose:** Answer required questions, review existing answers, track
+questionnaire completion  
 **Layout:** Master-detail with collapsible sidebar  
 **Content Zones:**
 
@@ -175,19 +190,23 @@ Command Center (root)
      - "Mark as Complete" button (disabled if REQUIRED unanswered)
      - "Export Answers" button (CSV/JSON)
 
-**Interaction Pattern:** 
+**Interaction Pattern:**
+
 - Click question ID → expand/collapse answer area
 - Type in answer → auto-save after 2s debounce
 - Secret detected → red warning + auto-clear recommendation
-- Save → POST /api/questionnaires/answer → SSE event → Dashboard activity feed update
+- Save → POST /api/questionnaires/answer → SSE event → Dashboard activity feed
+  update
 
-**Source:** Questionnaire Guardrail G-QUEST-20 (no secrets), UX Researcher Rec-02 (visibility of progress)
+**Source:** Questionnaire Guardrail G-QUEST-20 (no secrets), UX Researcher
+Rec-02 (visibility of progress)
 
 ---
 
 #### Screen 3: Decisions Tab
 
-**Purpose:** Create, review, and archive architectural/strategic decisions with full context  
+**Purpose:** Create, review, and archive architectural/strategic decisions with
+full context  
 **Layout:** Timeline + modal overlay  
 **Content Zones:**
 
@@ -225,26 +244,32 @@ Command Center (root)
      - Cancel button
 
 **Interaction Pattern:**
-- Click "View Details" → open modal with pre-filled data (read-only if DECIDED, editable if PROPOSED)
+
+- Click "View Details" → open modal with pre-filled data (read-only if DECIDED,
+  editable if PROPOSED)
 - Click "Edit" → open modal in edit mode
 - Click "Create Decision" → open blank modal
-- Save → POST /api/decisions → write to decisions.md → SSE event → refresh timeline
+- Save → POST /api/decisions → write to decisions.md → SSE event → refresh
+  timeline
 - Archive → soft delete (status = ARCHIVED, not deleted from decisions.md)
 
 **Validation Rules:**
+
 - Title: 10-100 chars
 - Context: 500 char min
 - Reason: 200 char min
 - Impact: 300 char min
 - No secrets detected in any field
 
-**Source:** Legal Counsel guardrail (phase-2/33 sec 6), Orchestrator ORC-21 (breaking change doc)
+**Source:** Legal Counsel guardrail (phase-2/33 sec 6), Orchestrator ORC-21
+(breaking change doc)
 
 ---
 
 #### Screen 4: Synthesis Tab
 
-**Purpose:** View final synthesis reports, blocker matrix, and export consolidated deliverables  
+**Purpose:** View final synthesis reports, blocker matrix, and export
+consolidated deliverables  
 **Layout:** Tabbed content viewer with sidebar navigation  
 **Content Zones:**
 
@@ -267,7 +292,8 @@ Command Center (root)
      - Copy-to-clipboard button per code block
    - For blocker matrix:
      - Filterable table:
-       - Columns: Blocker ID, Owning Team, Dependent Team, Type (BLOCKING/ADVISORY), Status, Sprint Linked
+       - Columns: Blocker ID, Owning Team, Dependent Team, Type
+         (BLOCKING/ADVISORY), Status, Sprint Linked
        - Row actions: Link to Sprint, Mark Resolved
      - Group by: Owning Team / Dependent Team / Type
    - Footer:
@@ -276,24 +302,31 @@ Command Center (root)
      - Last generated timestamp
 
 **Interaction Pattern:**
+
 - Click report in sidebar → load and render in viewer
 - Click TOC anchor → scroll to section
 - Filter blocker matrix → client-side JS filter (no reload)
 - Export All → GET /api/synthesis/export → download ZIP
-- Refresh Synthesis → confirm modal → POST /api/synthesis/regenerate → SSE progress → reload on complete
+- Refresh Synthesis → confirm modal → POST /api/synthesis/regenerate → SSE
+  progress → reload on complete
 
 **Conditional Rendering:**
-- If `session-state.json.synthesis === null` → show placeholder: "Synthesis not yet available. Complete all 4 phases first."
-- If partial cycle (BUSINESS only) → show only Business Department Report
-- If blocker matrix empty → show success message: "No cross-team blockers detected."
 
-**Source:** Synthesis Agent contract (synthesis-output-contract.md), UX Researcher Rec-03 (export)
+- If `session-state.json.synthesis === null` → show placeholder: "Synthesis not
+  yet available. Complete all 4 phases first."
+- If partial cycle (BUSINESS only) → show only Business Department Report
+- If blocker matrix empty → show success message: "No cross-team blockers
+  detected."
+
+**Source:** Synthesis Agent contract (synthesis-output-contract.md), UX
+Researcher Rec-03 (export)
 
 ---
 
 #### Screen 5: Analytics Tab
 
-**Purpose:** Visualize sprint velocity, agent performance, error rates, and time-to-complete metrics  
+**Purpose:** Visualize sprint velocity, agent performance, error rates, and
+time-to-complete metrics  
 **Layout:** Dashboard grid (2x2 chart layout)  
 **Content Zones:**
 
@@ -301,12 +334,14 @@ Command Center (root)
    - Line chart: X = sprint ID, Y = stories completed
    - Data points: completed stories per sprint (from retrospectives)
    - Trend line (linear regression)
-   - Tooltip on hover: sprint ID, completed count, blocked count, duration in days
+   - Tooltip on hover: sprint ID, completed count, blocked count, duration in
+     days
    - Download CSV button
 
 2. **Agent Performance Table (top-right, 50% width):**
    - Sortable table:
-     - Columns: Agent Name, Total Runs, Avg Duration (sec), Error Count, Last Run
+     - Columns: Agent Name, Total Runs, Avg Duration (sec), Error Count, Last
+       Run
    - Data source: analytics-events.json → filter by agent_name
    - Pagination (20 rows per page)
    - Click agent name → drill-down modal with event timeline
@@ -326,21 +361,26 @@ Command Center (root)
    - Comparison to previous sprint (% change, up/down arrow)
 
 **Interaction Pattern:**
+
 - All charts auto-refresh every 60s via polling GET /api/analytics
 - Click chart element → drill-down modal
 - Download CSV → client-side export from chart data
 
 **Data Integrity Note:**
-- If analytics-events.json is missing/empty → show placeholder: "No analytics data yet. Start a sprint to collect metrics."
+
+- If analytics-events.json is missing/empty → show placeholder: "No analytics
+  data yet. Start a sprint to collect metrics."
 - If < 2 sprints completed → velocity trend line not shown (insufficient data)
 
-**Source:** KPI Agent contract (kpi-output-contract.md), UX Researcher Rec-04 (progress visibility)
+**Source:** KPI Agent contract (kpi-output-contract.md), UX Researcher Rec-04
+(progress visibility)
 
 ---
 
 #### Screen 6: Official Documents Tab
 
-**Purpose:** Track completeness of 8 core official documents, view content, export for stakeholders  
+**Purpose:** Track completeness of 8 core official documents, view content,
+export for stakeholders  
 **Layout:** Table + detail viewer side-by-side  
 **Content Zones:**
 
@@ -373,12 +413,16 @@ Command Center (root)
      - Click commit → diff view
 
 **Interaction Pattern:**
+
 - Click document name in table → load in detail viewer
-- Click source questionnaires count → navigate to Questionnaires tab with filter applied
+- Click source questionnaires count → navigate to Questionnaires tab with filter
+  applied
 - Download → GET /api/documents/{filename} → save as .md
-- If document not yet created → show placeholder: "This document will be generated after Phase N is complete."
+- If document not yet created → show placeholder: "This document will be
+  generated after Phase N is complete."
 
 **Document List (8 total):**
+
 1. `product-vision.md` (Phase 1)
 2. `financial-model-overview.md` (Phase 1)
 3. `technical-overview.md` (Phase 2)
@@ -389,17 +433,20 @@ Command Center (root)
 8. `market-positioning.md` (Phase 4)
 
 **Completeness Calculation:**
+
 - Parse markdown for `INSUFFICIENT_DATA:` markers
 - Count sections (## headers)
-- Completeness % = (sections without INSUFFICIENT_DATA / total sections) * 100
+- Completeness % = (sections without INSUFFICIENT_DATA / total sections) \* 100
 
-**Source:** Questionnaire Guardrail G-QUEST-40 (official doc gate), Questionnaire Agent contract (questionnaire-output-contract.md sec 4)
+**Source:** Questionnaire Guardrail G-QUEST-40 (official doc gate),
+Questionnaire Agent contract (questionnaire-output-contract.md sec 4)
 
 ---
 
 #### Screen 7: Session State Tab
 
-**Purpose:** Inspect, edit (power users), and recover session-state.json; visualize phase/agent progress  
+**Purpose:** Inspect, edit (power users), and recover session-state.json;
+visualize phase/agent progress  
 **Layout:** Split view (JSON editor + visual progress)  
 **Content Zones:**
 
@@ -436,31 +483,38 @@ Command Center (root)
      - Click → expand list with details
 
 **Interaction Pattern:**
+
 - Load page → GET /api/session → render JSON + visual
-- Toggle edit mode → confirm modal ("Editing session state can break the workflow. Proceed?")
+- Toggle edit mode → confirm modal ("Editing session state can break the
+  workflow. Proceed?")
 - Edit JSON → validate on blur → show errors inline
-- Save → POST /api/session/update → validate schema server-side → write to file → git commit → SSE event
+- Save → POST /api/session/update → validate schema server-side → write to file
+  → git commit → SSE event
 - If validation fails → rollback + show error modal
 
 **Power User Features:**
+
 - Manual phase override (change `current_phase`, `current_agent`)
 - Add custom `blocking_items`
 - Modify `questionnaire_answer_summary` (danger: can cause inconsistency)
 
 **Safety Rails:**
+
 - Read-only mode by default
 - Confirm modal on edit toggle
 - Server-side schema validation (session-state-contract.md)
 - Git commit on every save (audit trail)
 - SSE broadcast to all connected clients (so Dashboard updates immediately)
 
-**Source:** Session State Contract (session-state-contract.md), Orchestrator ORC-09 (session recovery)
+**Source:** Session State Contract (session-state-contract.md), Orchestrator
+ORC-09 (session recovery)
 
 ---
 
 #### Screen 8: Help Tab
 
-**Purpose:** Searchable help documentation, playbook explanations, escalation contact  
+**Purpose:** Searchable help documentation, playbook explanations, escalation
+contact  
 **Layout:** Sidebar + article viewer  
 **Content Zones:**
 
@@ -490,9 +544,11 @@ Command Center (root)
    - What went wrong? (textarea)
    - Current screen (auto-filled from context)
    - Session ID (auto-filled from session-state.json)
-   - Submit → POST /api/help/feedback → write to .github/docs/feedback/[timestamp].md
+   - Submit → POST /api/help/feedback → write to
+     .github/docs/feedback/[timestamp].md
 
 **Interaction Pattern:**
+
 - Search → client-side filter of help article metadata (title + first paragraph)
 - Click article → GET /api/help/{article-id} → render markdown
 - Click feedback Yes → log event to analytics
@@ -500,6 +556,7 @@ Command Center (root)
 - Submit feedback → write to file → SSE event → thank you confirmation
 
 **Help Article List (seed content):**
+
 1. "What is CREATE vs AUDIT mode?"
 2. "How do I answer a questionnaire?"
 3. "What does INSUFFICIENT_DATA mean?"
@@ -511,7 +568,8 @@ Command Center (root)
 9. "How to interpret the Cross-Team Blocker Matrix?"
 10. "Troubleshooting: Agent stuck in IN_PROGRESS"
 
-**Source:** UX Researcher Rec-06 (help + search), Software Architect UI spec (phase-2/05 sec 5.8)
+**Source:** UX Researcher Rec-06 (help + search), Software Architect UI spec
+(phase-2/05 sec 5.8)
 
 ---
 
@@ -561,14 +619,19 @@ Command Center (root)
 ```
 
 **Annotations:**
-- **Header:** Fixed, always visible; project name left, mode badge center, user profile right
-- **Left Sidebar:** Sticky scroll; tab icons + labels; active sprint indicator at bottom
+
+- **Header:** Fixed, always visible; project name left, mode badge center, user
+  profile right
+- **Left Sidebar:** Sticky scroll; tab icons + labels; active sprint indicator
+  at bottom
 - **Phase Cards:** Hover → show tooltip with next agent name + ETA
 - **Activity Feed:** Real-time SSE updates; click item → navigate to file/tab
-- **Quick Actions:** Buttons trigger modals (except HALT → confirm modal + immediate action)
+- **Quick Actions:** Buttons trigger modals (except HALT → confirm modal +
+  immediate action)
 - **Progress Bars:** Animated on change; click → navigate to detail view
 
 **Responsive Behavior:**
+
 - < 1024px: Right panel collapses to bottom
 - < 768px: Tabs move to hamburger menu
 
@@ -624,14 +687,18 @@ Command Center (root)
 ```
 
 **Annotations:**
+
 - **Master List:** Accordion by phase; badge shows completeness status
 - **Question Cards:** Expandable; REQUIRED badge is red, OPTIONAL is gray
-- **Answer Input:** Auto-save 2s after typing stops; validation feedback below textarea
+- **Answer Input:** Auto-save 2s after typing stops; validation feedback below
+  textarea
 - **Edit Button:** Unlocks locked answer for editing
 - **Footer:** Sticky; "Mark as Complete" enabled only when all REQUIRED answered
-- **Secret Detection:** If answer contains "password", "api_key" etc → red warning: "⚠ Secret detected. Remove before saving."
+- **Secret Detection:** If answer contains "password", "api_key" etc → red
+  warning: "⚠ Secret detected. Remove before saving."
 
-**Source:** Questionnaire Guardrail G-QUEST-20 (no secrets), UX Researcher journey step 2 (answer questions)
+**Source:** Questionnaire Guardrail G-QUEST-20 (no secrets), UX Researcher
+journey step 2 (answer questions)
 
 ---
 
@@ -707,7 +774,8 @@ Command Center (root)
 └─────────────────────────────────────────────────────────────────────┘
 ```
 
-**Source:** Orchestrator ORC-21 (breaking change doc), Legal Counsel audit trail requirement (phase-2/33)
+**Source:** Orchestrator ORC-21 (breaking change doc), Legal Counsel audit trail
+requirement (phase-2/33)
 
 ---
 
@@ -782,7 +850,8 @@ Command Center (root)
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Source:** Synthesis output contract (synthesis-output-contract.md), UX Researcher Rec-03 (export)
+**Source:** Synthesis output contract (synthesis-output-contract.md), UX
+Researcher Rec-03 (export)
 
 ---
 
@@ -869,7 +938,8 @@ Command Center (root)
 └──────────────────────┴──────────────────────────────────────────────────────┘
 ```
 
-**Source:** Questionnaire Agent contract, Guardrail G-QUEST-40 (official doc gate)
+**Source:** Questionnaire Agent contract, Guardrail G-QUEST-40 (official doc
+gate)
 
 ---
 
@@ -923,7 +993,7 @@ Command Center (root)
 
 ### 2.8 Help Article Viewer Wireframe (Screen 8)
 
-```
+````
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │ HELP & DOCUMENTATION                                                        │
 │ [Search: ____________________________________________]  🔍                  │
@@ -976,9 +1046,10 @@ Command Center (root)
 │                    │ Was this helpful?  [👍 Yes]  [👎 No]                  │
 │                    │                                                        │
 └────────────────────┴────────────────────────────────────────────────────────┘
-```
+````
 
-**Source:** UX Researcher Rec-06 (help + search), Guardrail G-GLOB-60 (escalation protocol)
+**Source:** UX Researcher Rec-06 (help + search), Guardrail G-GLOB-60
+(escalation protocol)
 
 ---
 
@@ -989,8 +1060,10 @@ Command Center (root)
 **Pattern Name:** Live Status Sync  
 **Used In:** Dashboard, Questionnaires, Analytics  
 **Behavior:**
+
 - Client establishes SSE connection to `/api/events` on page load
-- Server pushes events: `{ type: 'agent_complete', agent_id: '10', timestamp: '...' }`
+- Server pushes events:
+  `{ type: 'agent_complete', agent_id: '10', timestamp: '...' }`
 - Client updates UI without page reload
 - Heartbeat every 30s to keep connection alive
 - Reconnect with exponential backoff on disconnect
@@ -1004,10 +1077,12 @@ Command Center (root)
 **Pattern Name:** Embedded Action Buttons  
 **Used In:** All tabs with entity lists (questionnaires, decisions, documents)  
 **Behavior:**
+
 - Primary action on entity name (click to view detail)
 - Secondary actions as buttons in card/row (Edit, Delete, Archive, Download)
 - Dangerous actions (Delete, Archive) require confirmation modal
-- Action success/failure shown via toast notification (top-right, auto-dismiss 3s)
+- Action success/failure shown via toast notification (top-right, auto-dismiss
+  3s)
 
 **Source:** UX Researcher Rec-05 (reduce clicks)
 
@@ -1016,12 +1091,15 @@ Command Center (root)
 ### Pattern 3: Progressive Disclosure
 
 **Pattern Name:** Expand on Demand  
-**Used In:** Questionnaires (answer fields), Session State (JSON sections), Help (categories)  
+**Used In:** Questionnaires (answer fields), Session State (JSON sections), Help
+(categories)  
 **Behavior:**
+
 - Collapsed by default; show summary only
 - Click to expand (accordion or modal)
 - Max 3 levels deep to avoid overwhelming users
-- Persist expand state in sessionStorage (not localStorage, to reset per session)
+- Persist expand state in sessionStorage (not localStorage, to reset per
+  session)
 
 **Source:** UX Researcher journey step 3 (sprint execution)
 
@@ -1030,8 +1108,10 @@ Command Center (root)
 ### Pattern 4: Validation Feedback
 
 **Pattern Name:** Inline + Summary Validation  
-**Used In:** Questionnaires (answer input), Decisions (create/edit modal), Session State (JSON editor)  
+**Used In:** Questionnaires (answer input), Decisions (create/edit modal),
+Session State (JSON editor)  
 **Behavior:**
+
 - Validate on blur (not on every keystroke)
 - Show error inline below field (red text + icon)
 - Summary of all errors at top of form (sticky, dismissible)
@@ -1039,12 +1119,14 @@ Command Center (root)
 - Secret detection: immediate feedback (on keystroke debounced 500ms)
 
 **Validation Rules:**
+
 - Required fields: "This field is required"
 - Min length: "Minimum N characters required"
 - Secret detected: "Remove sensitive data (API keys, passwords, tokens)"
 - Invalid JSON: "Syntax error at line N"
 
-**Source:** Questionnaire Guardrail G-QUEST-20 (no secrets), Security Architect input validation (phase-2/08)
+**Source:** Questionnaire Guardrail G-QUEST-20 (no secrets), Security Architect
+input validation (phase-2/08)
 
 ---
 
@@ -1053,6 +1135,7 @@ Command Center (root)
 **Pattern Name:** Context Breadcrumbs  
 **Used In:** Help tab (article viewer), Synthesis tab (report sections)  
 **Behavior:**
+
 - Show path: Home > Category > Article
 - Each segment clickable (navigate up hierarchy)
 - Max 4 segments; collapse middle if deeper
@@ -1065,8 +1148,10 @@ Command Center (root)
 ### Pattern 6: Sticky Controls
 
 **Pattern Name:** Fixed Action Bar  
-**Used In:** Questionnaires (footer), Modal (header + footer), Session State (save/revert)  
+**Used In:** Questionnaires (footer), Modal (header + footer), Session State
+(save/revert)  
 **Behavior:**
+
 - Footer sticks to bottom on scroll
 - Header sticks to top (only for modals)
 - CTA buttons always visible
@@ -1081,10 +1166,12 @@ Command Center (root)
 **Pattern Name:** Skeleton + Spinner  
 **Used In:** All data-fetching scenarios  
 **Behavior:**
+
 - For tables/lists: show skeleton rows (gray rectangles pulsing)
 - For single items: show spinner (centered, with "Loading..." text)
 - For background operations (e.g., Export All): show progress toast with spinner
-- Timeout after 30s → show error message "Operation timed out. Please try again."
+- Timeout after 30s → show error message "Operation timed out. Please try
+  again."
 
 **Source:** UX Researcher Rec-08 (feedback on async operations)
 
@@ -1095,12 +1182,14 @@ Command Center (root)
 **Pattern Name:** Non-Blocking Alerts  
 **Used In:** All mutation actions (save, delete, create, update)  
 **Behavior:**
+
 - Position: top-right, stacked vertically
 - Types: success (green), error (red), warning (yellow), info (blue)
 - Auto-dismiss after 3s (success/info), 5s (warning), manual dismiss (error)
 - Max 3 toasts visible at once; queue older ones
 
 **Message Examples:**
+
 - Success: "✓ Answer saved successfully"
 - Error: "✗ Failed to save answer. Check network connection."
 - Warning: "⚠ Secret detected and removed from answer"
@@ -1113,13 +1202,17 @@ Command Center (root)
 ### Pattern 9: Confirmation Modals
 
 **Pattern Name:** Destructive Action Guard  
-**Used In:** Delete decision, archive decision, edit session state, HALT command  
+**Used In:** Delete decision, archive decision, edit session state, HALT
+command  
 **Behavior:**
+
 - Show modal overlay (blur background)
 - Title: "Confirm [Action]"
-- Message: Explain consequence clearly ("This will delete the decision permanently. This cannot be undone.")
+- Message: Explain consequence clearly ("This will delete the decision
+  permanently. This cannot be undone.")
 - Two buttons: "Cancel" (default focus, Escape key), "Confirm" (Enter key)
-- For very dangerous actions (HALT, edit session state): require typing "CONFIRM" in input field
+- For very dangerous actions (HALT, edit session state): require typing
+  "CONFIRM" in input field
 
 **Source:** Security Architect guardrail (phase-2/08 sec 6.3)
 
@@ -1128,8 +1221,10 @@ Command Center (root)
 ### Pattern 10: Search with Filters
 
 **Pattern Name:** Faceted Search  
-**Used In:** Decisions (timeline), Official Documents (table), Help (article list)  
+**Used In:** Decisions (timeline), Official Documents (table), Help (article
+list)  
 **Behavior:**
+
 - Search input debounced 300ms
 - Filters applied client-side (if < 100 items) or server-side (if > 100 items)
 - Show result count: "Showing N of M results"
@@ -1145,10 +1240,12 @@ Command Center (root)
 **Pattern Name:** Multi-Format Export  
 **Used In:** Questionnaires, Synthesis, Analytics, Official Documents  
 **Behavior:**
+
 - Dropdown menu: JSON, CSV, Markdown, PDF (if available)
 - For single-item export: download immediately
 - For multi-item export (e.g., Export All): show progress toast → download ZIP
-- Filename format: `[entity]-[date]-[time].ext` (e.g., `synthesis-2026-03-10-0645.zip`)
+- Filename format: `[entity]-[date]-[time].ext` (e.g.,
+  `synthesis-2026-03-10-0645.zip`)
 
 **Source:** UX Researcher Rec-03 (export)
 
@@ -1157,8 +1254,10 @@ Command Center (root)
 ### Pattern 12: Help Context Button
 
 **Pattern Name:** Inline Help Link  
-**Used In:** All screens with complex workflows (Questionnaires, Session State, Decisions)  
+**Used In:** All screens with complex workflows (Questionnaires, Session State,
+Decisions)  
 **Behavior:**
+
 - "?" icon button next to section header
 - Click → open Help tab with pre-filtered article for that section
 - Or: inline tooltip (hover for 1s → show 200 char summary + "Learn more" link)
@@ -1172,6 +1271,7 @@ Command Center (root)
 ### 4.1 Tab-Based Navigation
 
 **Primary Navigation:** 8 tabs in left sidebar (always visible)
+
 - Dashboard (home icon)
 - Questionnaires (clipboard icon)
 - Decisions (scale icon)
@@ -1190,14 +1290,17 @@ Command Center (root)
 
 ### 4.2 Cross-Tab Navigation
 
-**Scenario:** User clicks "Source Questionnaires: 4 files" in Official Documents tab  
+**Scenario:** User clicks "Source Questionnaires: 4 files" in Official Documents
+tab  
 **Behavior:**
+
 1. Navigate to Questionnaires tab
 2. Pre-filter list to show only those 4 questionnaires
 3. Show toast: "Showing questionnaires for product-vision.md"
 4. User can clear filter to see all
 
 **Implementation:**
+
 - URL query param: `?tab=questionnaires&filter=doc:product-vision.md`
 - JavaScript reads query param on mount → apply filter
 
@@ -1208,6 +1311,7 @@ Command Center (root)
 ### 4.3 Deep Linking
 
 **Supported URL Patterns:**
+
 - `/dashboard`
 - `/questionnaires?phase=1&status=incomplete`
 - `/decisions?status=DECIDED`
@@ -1218,6 +1322,7 @@ Command Center (root)
 - `/help?article=troubleshoot-agent-stuck`
 
 **Behavior:**
+
 - On app load, parse URL → navigate to tab + apply filters
 - On navigation, update URL (without page reload)
 - Copy URL button in header (for sharing state with team)
@@ -1230,13 +1335,16 @@ Command Center (root)
 
 ### 5.1 Client-Side State
 
-**Library:** React Context API (no Redux for v1; consider Redux Toolkit if complexity grows)  
+**Library:** React Context API (no Redux for v1; consider Redux Toolkit if
+complexity grows)  
 **State Slices:**
+
 1. **SessionState:** Mirrors `session-state.json`; updated via SSE
 2. **UI State:** Active tab, modals open/closed, filters, sorts
 3. **User Preferences:** (future) Theme, default filters, collapsed sections
 
 **Update Flow:**
+
 1. User action (e.g., save answer) → POST to API
 2. Server writes file → git commit → broadcasts SSE event
 3. Client receives SSE → updates SessionState context → React re-renders
@@ -1247,9 +1355,10 @@ Command Center (root)
 
 ### 5.2 Server-Side State
 
-**Canonical State:** File-system based (session-state.json, questionnaire-index.md, decisions.md)  
+**Canonical State:** File-system based (session-state.json,
+questionnaire-index.md, decisions.md)  
 **In-Memory Cache:** `FileCache` class (invalidated on file write)  
-**Concurrency:** File locks (`file-lock.js` module) prevent write conflicts  
+**Concurrency:** File locks (`file-lock.js` module) prevent write conflicts
 
 **Source:** Data Architect state management (phase-2/09 sec 3)
 
@@ -1259,15 +1368,19 @@ Command Center (root)
 
 **Pattern:** Optimistic UI updates  
 **Example:**
+
 1. User clicks "Save Answer" → UI shows "Saving..." spinner
 2. POST /api/questionnaires/answer
 3. If success (200) → spinner → "Saved ✓"
 4. If error (500) → spinner → "Failed ✗" + revert UI to previous state
 
 **Error Handling:**
-- Network errors: show "Connection lost. Retrying..." (auto-retry 3x with exponential backoff)
+
+- Network errors: show "Connection lost. Retrying..." (auto-retry 3x with
+  exponential backoff)
 - Validation errors: show inline error messages (no retry)
-- Server errors (500): show toast "Server error. Contact support if problem persists."
+- Server errors (500): show toast "Server error. Contact support if problem
+  persists."
 
 **Source:** Senior Developer error handling (phase-2/06 sec 5)
 
@@ -1276,21 +1389,25 @@ Command Center (root)
 ## 6. RESPONSIVE BEHAVIOR
 
 ### Breakpoints:
+
 - Desktop: ≥ 1024px (3-column layout)
 - Tablet: 768px - 1023px (2-column; right panel collapses to bottom)
 - Mobile: < 768px (1-column; tabs move to hamburger menu)
 
 ### Mobile-Specific Changes:
+
 - Dashboard: Phase cards stack vertically (no 2x2 grid)
 - Questionnaires: Master list hidden by default; show toggle button
 - Decisions: Timeline cards full-width; modal becomes full-screen
 - Synthesis: Report selector becomes dropdown at top
 - Analytics: Charts stack vertically (no 2x2 grid)
 - Official Documents: Table becomes card list
-- Session State: JSON editor full-width; visual progress hidden (accessible via toggle)
+- Session State: JSON editor full-width; visual progress hidden (accessible via
+  toggle)
 - Help: Sidebar hidden by default; show toggle button
 
 **Touch Interactions:**
+
 - All clickable elements min 44x44px (WCAG AAA touch target size)
 - Swipe to dismiss toasts
 - Swipe left/right on cards for secondary actions (Edit, Delete)
@@ -1301,9 +1418,11 @@ Command Center (root)
 
 ## 7. ACCESSIBILITY BASELINE
 
-(Deferred to Accessibility Specialist deliverable; UX Designer provides semantic structure)
+(Deferred to Accessibility Specialist deliverable; UX Designer provides semantic
+structure)
 
 **Semantic HTML:**
+
 - Use `<nav>`, `<main>`, `<aside>`, `<article>`, `<section>` appropriately
 - Headings in logical order (h1 → h2 → h3, no skips)
 - Form labels with `for` attribute
@@ -1311,12 +1430,15 @@ Command Center (root)
 - Links are `<a href>` (not `<span onclick>`)
 
 **ARIA Labels:**
+
 - Tab nav: `role="tablist"`, `aria-label="Main navigation"`
 - Modal: `role="dialog"`, `aria-labelledby="modal-title"`, `aria-modal="true"`
 - Toast: `role="alert"`, `aria-live="polite"`
-- Progress bar: `role="progressbar"`, `aria-valuenow`, `aria-valuemin`, `aria-valuemax`
+- Progress bar: `role="progressbar"`, `aria-valuenow`, `aria-valuemin`,
+  `aria-valuemax`
 
 **Keyboard Navigation:**
+
 - All interactive elements reachable via Tab
 - Focus visible (outline: 2px solid blue)
 - Escape closes modals
@@ -1330,52 +1452,77 @@ Command Center (root)
 ## 8. DESIGN GAPS & UNCERTAINTIES
 
 ### GAP-UXD-001: No Visual Design Tokens Yet
-**Description:** This analysis defines layout and interaction, but not colors, typography, spacing units, or icons.  
-**Impact:** UI Designer and Brand Strategist must define these before implementation.  
-**Resolution:** Deferred to Agent 12 (UI Designer) and Agent 30 (Brand & Assets Agent).  
-**Source:** This is intentional per phase sequence; UX Designer focuses on structure, not visual style.
+
+**Description:** This analysis defines layout and interaction, but not colors,
+typography, spacing units, or icons.  
+**Impact:** UI Designer and Brand Strategist must define these before
+implementation.  
+**Resolution:** Deferred to Agent 12 (UI Designer) and Agent 30 (Brand & Assets
+Agent).  
+**Source:** This is intentional per phase sequence; UX Designer focuses on
+structure, not visual style.
 
 ---
 
 ### GAP-UXD-002: No Animation Specifications
-**Description:** Transitions (modal open/close, tab switch, toast slide-in) not specified.  
+
+**Description:** Transitions (modal open/close, tab switch, toast slide-in) not
+specified.  
 **Impact:** Implementation Agent may use inconsistent animation timing/easing.  
-**Resolution:** UI Designer (Agent 12) will define motion design tokens (duration, easing curves).  
-**Recommendation:** Use CSS transitions for simple states; Framer Motion for complex animations.
+**Resolution:** UI Designer (Agent 12) will define motion design tokens
+(duration, easing curves).  
+**Recommendation:** Use CSS transitions for simple states; Framer Motion for
+complex animations.
 
 ---
 
 ### GAP-UXD-003: Mobile Gesture Library Undefined
+
 **Description:** Swipe-to-dismiss, pull-to-refresh not specified in detail.  
 **Impact:** Mobile UX may feel incomplete or unpolished.  
-**Resolution:** UI Designer (Agent 12) will specify gesture thresholds and feedback.  
-**Recommendation:** Use Hammer.js or native touch events with 50px swipe threshold.
+**Resolution:** UI Designer (Agent 12) will specify gesture thresholds and
+feedback.  
+**Recommendation:** Use Hammer.js or native touch events with 50px swipe
+threshold.
 
 ---
 
 ### GAP-UXD-004: Error Recovery Workflows Incomplete
-**Description:** What happens when SSE connection fails permanently? When file writes fail due to permissions?  
+
+**Description:** What happens when SSE connection fails permanently? When file
+writes fail due to permissions?  
 **Impact:** Users may be stuck without obvious next steps.  
-**Resolution:** Senior Developer (Agent 06) and UX Designer (this agent) must collaborate on error recovery modals.  
-**Recommendation:** Add "Retry", "Report Issue", "Continue Offline" options in error modal.
+**Resolution:** Senior Developer (Agent 06) and UX Designer (this agent) must
+collaborate on error recovery modals.  
+**Recommendation:** Add "Retry", "Report Issue", "Continue Offline" options in
+error modal.
 
 ---
 
 ### UNCERTAIN-UXD-001: Pagination vs Infinite Scroll
-**Description:** For long lists (e.g., analytics events, decision timeline), should  we use pagination or infinite scroll?  
+
+**Description:** For long lists (e.g., analytics events, decision timeline),
+should we use pagination or infinite scroll?  
 **Trade-offs:**
+
 - Pagination: Better for keyboard nav, accessibility, deep linking
-- Infinite scroll: Better for exploration, mobile UX
-**Current Decision:** Use pagination for tables (Analytics, Official Docs), infinite scroll for feeds (Dashboard activity).  
-**Source:** UX Researcher Rec-12 (findability) favors pagination for structured data.
+- Infinite scroll: Better for exploration, mobile UX **Current Decision:** Use
+  pagination for tables (Analytics, Official Docs), infinite scroll for feeds
+  (Dashboard activity).  
+  **Source:** UX Researcher Rec-12 (findability) favors pagination for
+  structured data.
 
 ---
 
 ### UNCERTAIN-UXD-002: Real-Time Collaboration
-**Description:** If two users edit the same questionnaire answer simultaneously, should we show conflict resolution UI?  
-**Assumption:** v1 assumes single-user (solo founder). Multi-user is future scope.  
+
+**Description:** If two users edit the same questionnaire answer simultaneously,
+should we show conflict resolution UI?  
+**Assumption:** v1 assumes single-user (solo founder). Multi-user is future
+scope.  
 **Current Decision:** Last-write-wins (no conflict resolution UI in v1).  
-**Future Consideration:** Add operational transform (OT) or CRDT for multi-user if user research validates need.  
+**Future Consideration:** Add operational transform (OT) or CRDT for multi-user
+if user research validates need.  
 **Source:** Onboarding output sec 2.1 (solo founder as primary ICP).
 
 ---
@@ -1383,8 +1530,10 @@ Command Center (root)
 ## 9. RECOMMENDATIONS FOR NEXT AGENTS
 
 ### For UI Designer (Agent 12):
+
 1. Define design tokens (colors, typography, spacing, shadows, borders)
-2. Create high-fidelity mockups for Dashboard, Questionnaires, Decisions (priority order)
+2. Create high-fidelity mockups for Dashboard, Questionnaires, Decisions
+   (priority order)
 3. Specify icon library (recommend: Lucide React or Heroicons)
 4. Define animation/motion tokens (durations, easing curves)
 5. Validate contrast ratios for accessibility (WCAG AA minimum, AAA target)
@@ -1392,6 +1541,7 @@ Command Center (root)
 ---
 
 ### For Accessibility Specialist (Agent 13):
+
 1. Audit wireframes for WCAG 2.1 AA compliance
 2. Define skip links, focus management for modals
 3. Specify screen reader announcements for SSE updates
@@ -1401,88 +1551,113 @@ Command Center (root)
 ---
 
 ### For Content Strategist (Agent 32):
+
 1. Write microcopy for all UI labels, buttons, error messages
 2. Create help article content (10 seed articles listed in sec 2.8)
 3. Define tone of voice (technical but friendly, not corporate)
-4. Specify empty states (e.g., "No questionnaires yet. Complete Phase 1 to generate questions.")
+4. Specify empty states (e.g., "No questionnaires yet. Complete Phase 1 to
+   generate questions.")
 5. Review and improve validation error messages
 
 ---
 
 ### For Implementation Agent (Agent 20):
-1. Build component library BEFORE implementing screens (Storybook-first approach)
+
+1. Build component library BEFORE implementing screens (Storybook-first
+   approach)
 2. Implement SSE client with reconnection logic (exponential backoff)
 3. Use semantic HTML and ARIA labels as specified in sec 7
 4. Implement file-lock retry logic for concurrent writes
-5. Add feature flags for progressive rollout (if multi-user support is added later)
+5. Add feature flags for progressive rollout (if multi-user support is added
+   later)
 
 ---
 
 ## 10. RISKS & ASSUMPTIONS
 
 ### RISK-UXD-001: Complexity Overwhelms Solo Founder
+
 **Severity:** MEDIUM  
-**Description:** 8 tabs with deep hierarchies may confuse users unfamiliar with multi-agent workflows.  
+**Description:** 8 tabs with deep hierarchies may confuse users unfamiliar with
+multi-agent workflows.  
 **Mitigation:**
+
 - Add onboarding tour (tooltips on first visit)
 - Provide "Quick Start" help article
-- Default to Dashboard (simplest view) on login
-**Owner:** UX Researcher + Content Strategist  
-**Source:** UX Researcher RISK-UX-002 (learning curve for orchestration)
+- Default to Dashboard (simplest view) on login **Owner:** UX Researcher +
+  Content Strategist  
+  **Source:** UX Researcher RISK-UX-002 (learning curve for orchestration)
 
 ---
 
 ### RISK-UXD-002: Real-Time Updates Cause UI Flicker
+
 **Severity:** LOW  
-**Description:** SSE events trigger React re-renders; if poorly optimized, may cause visual jank.  
+**Description:** SSE events trigger React re-renders; if poorly optimized, may
+cause visual jank.  
 **Mitigation:**
+
 - Use React.memo for expensive components
 - Debounce SSE event handling (batch updates every 500ms)
-- Test on low-end devices (Lighthouse performance score > 90)
-**Owner:** Senior Developer (Agent 06)  
-**Source:** Senior Developer performance requirement (phase-2/06 sec 6)
+- Test on low-end devices (Lighthouse performance score > 90) **Owner:** Senior
+  Developer (Agent 06)  
+  **Source:** Senior Developer performance requirement (phase-2/06 sec 6)
 
 ---
 
 ### RISK-UXD-003: Browser Compatibility Issues
+
 **Severity:** LOW  
-**Description:** SSE not supported in IE11; file download APIs vary across browsers.  
+**Description:** SSE not supported in IE11; file download APIs vary across
+browsers.  
 **Mitigation:**
+
 - Target modern browsers only (Chrome 90+, Firefox 88+, Safari 14+, Edge 90+)
 - Document browser requirements in README
-- Polyfill EventSource if needed (but unlikely for target audience)
-**Owner:** Senior Developer (Agent 06)  
-**Source:** Target audience is technical (Onboarding sec 2.1); assume modern browser usage.
+- Polyfill EventSource if needed (but unlikely for target audience) **Owner:**
+  Senior Developer (Agent 06)  
+  **Source:** Target audience is technical (Onboarding sec 2.1); assume modern
+  browser usage.
 
 ---
 
 ### ASSUMPTION-UXD-001: Single User Per Session
+
 **Description:** UI does not handle concurrent edits by multiple users.  
 **Validation:** Onboarding output confirms solo founder as ICP.  
-**Impact if Wrong:** Would need to add conflict resolution UI, operational transform, or lock indicators.  
+**Impact if Wrong:** Would need to add conflict resolution UI, operational
+transform, or lock indicators.  
 **Source:** Onboarding output sec 2.1
 
 ---
 
 ### ASSUMPTION-UXD-002: Desktop-First Usage
+
 **Description:** Wireframes prioritize desktop (1024px+); mobile is secondary.  
-**Validation:** UX Researcher persona analysis (sec 2) shows "works from laptop 90% of time".  
-**Impact if Wrong:** Would need to redesign for mobile-first (simplified flows, fewer columns).  
+**Validation:** UX Researcher persona analysis (sec 2) shows "works from laptop
+90% of time".  
+**Impact if Wrong:** Would need to redesign for mobile-first (simplified flows,
+fewer columns).  
 **Source:** UX Researcher persona 1 (sec 2.1)
 
 ---
 
 ### ASSUMPTION-UXD-003: English-Only for v1
-**Description:** No i18n (internationalization) in wireframes; all text in English.  
-**Validation:** Localization Specialist (Agent 35) will assess i18n requirements.  
-**Impact if Wrong:** Would need to externalize all strings, add language switcher.  
+
+**Description:** No i18n (internationalization) in wireframes; all text in
+English.  
+**Validation:** Localization Specialist (Agent 35) will assess i18n
+requirements.  
+**Impact if Wrong:** Would need to externalize all strings, add language
+switcher.  
 **Source:** Deferred to Agent 35 per phase sequence.
 
 ---
 
 ## 11. HANDOFF CHECKLIST
 
-- [x] All 8 screens have wireframe specifications with ASCII diagrams + annotations
+- [x] All 8 screens have wireframe specifications with ASCII diagrams +
+      annotations
 - [x] Information architecture defined (3-level hierarchy documented in sec 1)
 - [x] Interaction pattern library created (12 patterns documented in sec 3)
 - [x] Navigation model specified (tab-based + deep linking in sec 4)
@@ -1496,7 +1671,8 @@ Command Center (root)
 - [x] All findings sourced (Phase 1, Phase 2, UX Researcher outputs)
 - [x] No contradictory statements
 - [x] Output complies with analysis-output-contract.md
-- [x] Deliverable written to file `.github/docs/phase-3/11-ux-designer-analysis.md`
+- [x] Deliverable written to file
+      `.github/docs/phase-3/11-ux-designer-analysis.md`
 
 **Status:** READY  
 **Next Agent:** 11-ux-designer-recommendations (same agent, deliverable 2 of 4)
@@ -1504,8 +1680,14 @@ Command Center (root)
 ---
 
 **SOURCE CITATIONS:**
-- Phase 1 outputs: `.github/docs/phase-1/01-business-analyst-analysis.md` (ICP), `.github/docs/phase-1/34-product-manager-analysis.md` (MVP scope)
-- Phase 2 outputs: `.github/docs/phase-2/05-software-architect-analysis.md` (UI screen list), `.github/docs/phase-2/06-senior-developer-analysis.md` (WebSocket real-time)
-- UX Researcher: `.github/docs/phase-3/10-ux-researcher-analysis.md` (personas, journey, gaps, risks)
+
+- Phase 1 outputs: `.github/docs/phase-1/01-business-analyst-analysis.md` (ICP),
+  `.github/docs/phase-1/34-product-manager-analysis.md` (MVP scope)
+- Phase 2 outputs: `.github/docs/phase-2/05-software-architect-analysis.md` (UI
+  screen list), `.github/docs/phase-2/06-senior-developer-analysis.md`
+  (WebSocket real-time)
+- UX Researcher: `.github/docs/phase-3/10-ux-researcher-analysis.md` (personas,
+  journey, gaps, risks)
 - Contracts: `.github/docs/contracts/analysis-output-contract.md`
-- Guardrails: `.github/docs/guardrails/04-ux-guardrails.md`, `.github/docs/guardrails/00-global-guardrails.md`
+- Guardrails: `.github/docs/guardrails/04-ux-guardrails.md`,
+  `.github/docs/guardrails/00-global-guardrails.md`

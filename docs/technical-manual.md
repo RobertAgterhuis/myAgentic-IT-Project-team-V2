@@ -2,14 +2,18 @@
 layout: default
 title: Technical Manual
 nav_order: 3
-description: Developer reference for the MCP server, HTTP endpoints, file-based storage, and test infrastructure.
+description:
+  Developer reference for the MCP server, HTTP endpoints, file-based storage,
+  and test infrastructure.
 ---
 
 # Technical Manual — myAgentic-IT-Project-team
 
 > Version 1.5 | Last updated: 2026-03-09 (SP-5)
 
-This manual covers the server architecture, API reference, data model, configuration, deployment, and development practices for the Questionnaire & Decisions Manager web application.
+This manual covers the server architecture, API reference, data model,
+configuration, deployment, and development practices for the Questionnaire &
+Decisions Manager web application.
 
 ---
 
@@ -73,43 +77,73 @@ This manual covers the server architecture, API reference, data model, configura
 
 ### Design Principles
 
-- **Zero runtime dependencies** — Only Node.js built-in modules (`http`, `fs`, `path`, `url`, `crypto`) for the web UI.
-- **MCP integration** — MCP server uses `@modelcontextprotocol/sdk` for cross-IDE support via stdio transport.
-- **Store abstraction** — All filesystem I/O goes through the Store interface. `FileStore` for production, `InMemoryStore` for testing.
-- **Atomic writes** — `safeWriteSync()` (server.js) and `store.writeFile()` (mcp-server.js) write to a temp file, then rename. A backup is created before overwriting existing files.
-- **Unified store writes** — As of SP-2, `mcp-server.js` delegates all writes through `store.writeFile()` instead of its own `safeWrite()` implementation, ensuring identical backup, atomic-rename, and directory-creation behavior across both entry points.
-- **Shared file locking** — All JSON write paths are serialized per file via `withFileLock()` from `file-lock.js`. Uses promise-chaining (no OS-level locks) to prevent concurrent write corruption. Both `server.js` (11 call sites) and `mcp-server.js` (6 call sites) share the same lock Map through Node.js require cache.
-- **Localhost only** — Server binds to `127.0.0.1:3000`. No external network exposure.
-- **Single-page UI** — `index.html` contains all HTML, CSS, and JavaScript. No build step, no bundler.
+- **Zero runtime dependencies** — Only Node.js built-in modules (`http`, `fs`,
+  `path`, `url`, `crypto`) for the web UI.
+- **MCP integration** — MCP server uses `@modelcontextprotocol/sdk` for
+  cross-IDE support via stdio transport.
+- **Store abstraction** — All filesystem I/O goes through the Store interface.
+  `FileStore` for production, `InMemoryStore` for testing.
+- **Atomic writes** — `safeWriteSync()` (server.js) and `store.writeFile()`
+  (mcp-server.js) write to a temp file, then rename. A backup is created before
+  overwriting existing files.
+- **Unified store writes** — As of SP-2, `mcp-server.js` delegates all writes
+  through `store.writeFile()` instead of its own `safeWrite()` implementation,
+  ensuring identical backup, atomic-rename, and directory-creation behavior
+  across both entry points.
+- **Shared file locking** — All JSON write paths are serialized per file via
+  `withFileLock()` from `file-lock.js`. Uses promise-chaining (no OS-level
+  locks) to prevent concurrent write corruption. Both `server.js` (11 call
+  sites) and `mcp-server.js` (6 call sites) share the same lock Map through
+  Node.js require cache.
+- **Localhost only** — Server binds to `127.0.0.1:3000`. No external network
+  exposure.
+- **Single-page UI** — `index.html` contains all HTML, CSS, and JavaScript. No
+  build step, no bundler.
 
 ---
 
 ## Module Reference
 
 ### file-lock.js
-Shared concurrency primitive for all JSON file writes. Prevents concurrent write corruption across both server.js and mcp-server.js.
+
+Shared concurrency primitive for all JSON file writes. Prevents concurrent write
+corruption across both server.js and mcp-server.js.
 
 **Exports:**
-- `withFileLock(filePath, fn)` — Acquires a per-file promise-chain lock, executes `fn()`, and releases. Locks are keyed by `path.resolve(filePath)`. Errors in `fn` are propagated after lock release.
-- `_writeLocks` — `Map<string, Promise>` of active lock chains (exported for testing only).
+
+- `withFileLock(filePath, fn)` — Acquires a per-file promise-chain lock,
+  executes `fn()`, and releases. Locks are keyed by `path.resolve(filePath)`.
+  Errors in `fn` are propagated after lock release.
+- `_writeLocks` — `Map<string, Promise>` of active lock chains (exported for
+  testing only).
 
 **Design:**
-- Uses promise-chaining (not OS-level file locks) — each new write `.then()`s onto the previous promise for the same resolved path.
-- Lock Map entries are cleaned up after the chain completes (both success and error).
-- Singleton: both `server.js` and `mcp-server.js` import the same instance via Node.js require cache.
+
+- Uses promise-chaining (not OS-level file locks) — each new write `.then()`s
+  onto the previous promise for the same resolved path.
+- Lock Map entries are cleaned up after the chain completes (both success and
+  error).
+- Singleton: both `server.js` and `mcp-server.js` import the same instance via
+  Node.js require cache.
 - Zero external dependencies — only `node:path`.
 
 **Added in:** SP-1 (TECH-01 — P2-R01: file corruption prevention).
 
 ### server.js (~189 lines) — Coordinator
-The main application coordinator. Initializes shared state, builds the context object, wires route modules, and creates the HTTP server.
 
-**Decomposed in:** SP-4 (TECH-02 — server.js decomposition). Previously ~1370 LOC.
+The main application coordinator. Initializes shared state, builds the context
+object, wires route modules, and creates the HTTP server.
+
+**Decomposed in:** SP-4 (TECH-02 — server.js decomposition). Previously ~1370
+LOC.
 
 **Key exports:** (backward-compatible with mcp-server.js and test imports)
+
 - `server` — Node.js `http.Server` instance
 - `withFileLock(filePath, fn)` — Re-exported from `file-lock.js`
-- `sanitizeMarkdown(text)`, `sanitizeQID(text)`, `detectSecrets(text)`, `checkSecretsInBody(body, fields)`, `safePath(base, relative)`, `setSecurityHeaders(res)` — Re-exported from `middleware.js`
+- `sanitizeMarkdown(text)`, `sanitizeQID(text)`, `detectSecrets(text)`,
+  `checkSecretsInBody(body, fields)`, `safePath(base, relative)`,
+  `setSecurityHeaders(res)` — Re-exported from `middleware.js`
 - `structuredLog(level, message, fields)` — Re-exported from `middleware.js`
 - `recordMetric(method, path, duration, status)` — Records request metric
 - `computePercentiles(arr)` — Returns `{ p50, p95, p99 }`
@@ -117,9 +151,12 @@ The main application coordinator. Initializes shared state, builds the context o
 - `_sseClients`, `_cache`, `_metrics`, `_audit` — Shared state instances
 
 ### middleware.js (~262 lines)
-Pure middleware functions with no shared state dependencies. Extracted from server.js in SP-4.
+
+Pure middleware functions with no shared state dependencies. Extracted from
+server.js in SP-4.
 
 **Key exports:**
+
 - `structuredLog(level, message, fields)` — JSON log entry to stdout/stderr
 - `log(method, url, status, ms)` — HTTP request log shorthand
 - `setSecurityHeaders(res)` — CSP, X-Frame-Options, etc.
@@ -135,62 +172,74 @@ Pure middleware functions with no shared state dependencies. Extracted from serv
 - `handleRouteError(err, res)` — Error response handler
 
 ### routes/ — Route Handler Modules
-Factory function modules receiving a shared `ctx` object. Each returns a route map (`{ 'METHOD /path': handler }`).
 
-| Module | LOC | Routes |
-|--------|-----|--------|
-| `routes/questionnaires.js` | 150 | `GET /api/questionnaires`, `POST /api/save` |
-| `routes/decisions.js` | 200 | `GET /api/decisions`, `POST /api/decisions`, `POST /api/decisions/activate-category` |
-| `routes/commands.js` | 130 | `POST /api/command`, `GET /api/command` |
-| `routes/progress.js` | 160 | `GET /api/progress` |
-| `routes/misc.js` | 297 | `GET /api/session`, `POST /api/reevaluate`, `GET /api/export`, `GET /api/help`, `GET /api/events`, `GET /api/metrics`, `GET /api/health`, `POST /api/analytics`, `GET /api/analytics`, `GET /api/audit`, `GET /health` |
+Factory function modules receiving a shared `ctx` object. Each returns a route
+map (`{ 'METHOD /path': handler }`).
+
+| Module                     | LOC | Routes                                                                                                                                                                                                                 |
+| -------------------------- | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `routes/questionnaires.js` | 150 | `GET /api/questionnaires`, `POST /api/save`                                                                                                                                                                            |
+| `routes/decisions.js`      | 200 | `GET /api/decisions`, `POST /api/decisions`, `POST /api/decisions/activate-category`                                                                                                                                   |
+| `routes/commands.js`       | 130 | `POST /api/command`, `GET /api/command`                                                                                                                                                                                |
+| `routes/progress.js`       | 160 | `GET /api/progress`                                                                                                                                                                                                    |
+| `routes/misc.js`           | 297 | `GET /api/session`, `POST /api/reevaluate`, `GET /api/export`, `GET /api/help`, `GET /api/events`, `GET /api/metrics`, `GET /api/health`, `POST /api/analytics`, `GET /api/analytics`, `GET /api/audit`, `GET /health` |
 
 ### mcp-server.js
-MCP (Model Context Protocol) server for cross-IDE integration. Exposes the Command Center functionality as MCP tools and resources via stdio transport.
+
+MCP (Model Context Protocol) server for cross-IDE integration. Exposes the
+Command Center functionality as MCP tools and resources via stdio transport.
 
 **Dependency:** `@modelcontextprotocol/sdk` (the only runtime npm dependency).
 
-**Concurrency:** All 6 write paths use `withFileLock()` from `file-lock.js` to serialize file mutations, sharing the same lock Map as `server.js`.
+**Concurrency:** All 6 write paths use `withFileLock()` from `file-lock.js` to
+serialize file mutations, sharing the same lock Map as `server.js`.
 
-**Transport:** stdio — launched automatically by the IDE via `.vscode/mcp.json` or equivalent IDE configuration.
+**Transport:** stdio — launched automatically by the IDE via `.vscode/mcp.json`
+or equivalent IDE configuration.
 
 **Tools (13):**
 
-| Tool | Parameters | Description |
-|------|-----------|-------------|
-| `get_project_status` | — | Session state, pipeline progress, command queue summary |
-| `get_progress` | — | Phase completion status, current agent, sprint info |
-| `list_questionnaires` | — | All questionnaires with completion stats (total/answered/open) |
-| `get_questionnaire` | `file` | Full parsed questionnaire with questions, answers, statuses |
-| `save_answers` | `file`, `updates[]` | Save answers (with secret detection and sanitization) |
-| `list_decisions` | — | Decisions grouped by status (open/decided/deferred) |
-| `create_decision` | `type`, `priority`, `scope`, `text`, `notes?` | Create open question or operational decision |
-| `answer_decision` | `id`, `answer` | Answer an open question |
-| `decide_question` | `id` | Finalize an answered question → decided |
-| `queue_command` | `command`, `project?`, `scope?`, `description?`, `brief?` | Queue orchestrator command |
-| `get_command_queue` | — | Full command queue history |
-| `get_help` | `topic?` | Help topic content, or table of contents if omitted |
-| `get_audit_log` | `limit?` | Recent audit trail entries (default 50, max 1000) |
+| Tool                  | Parameters                                                | Description                                                    |
+| --------------------- | --------------------------------------------------------- | -------------------------------------------------------------- |
+| `get_project_status`  | —                                                         | Session state, pipeline progress, command queue summary        |
+| `get_progress`        | —                                                         | Phase completion status, current agent, sprint info            |
+| `list_questionnaires` | —                                                         | All questionnaires with completion stats (total/answered/open) |
+| `get_questionnaire`   | `file`                                                    | Full parsed questionnaire with questions, answers, statuses    |
+| `save_answers`        | `file`, `updates[]`                                       | Save answers (with secret detection and sanitization)          |
+| `list_decisions`      | —                                                         | Decisions grouped by status (open/decided/deferred)            |
+| `create_decision`     | `type`, `priority`, `scope`, `text`, `notes?`             | Create open question or operational decision                   |
+| `answer_decision`     | `id`, `answer`                                            | Answer an open question                                        |
+| `decide_question`     | `id`                                                      | Finalize an answered question → decided                        |
+| `queue_command`       | `command`, `project?`, `scope?`, `description?`, `brief?` | Queue orchestrator command                                     |
+| `get_command_queue`   | —                                                         | Full command queue history                                     |
+| `get_help`            | `topic?`                                                  | Help topic content, or table of contents if omitted            |
+| `get_audit_log`       | `limit?`                                                  | Recent audit trail entries (default 50, max 1000)              |
 
 **Resources (3):**
 
-| URI | MIME Type | Description |
-|-----|-----------|-------------|
+| URI                       | MIME Type          | Description           |
+| ------------------------- | ------------------ | --------------------- |
 | `agentic://session-state` | `application/json` | Current session state |
-| `agentic://decisions` | `application/json` | All decisions |
-| `agentic://command-queue` | `application/json` | Command queue |
+| `agentic://decisions`     | `application/json` | All decisions         |
+| `agentic://command-queue` | `application/json` | Command queue         |
 
 **Key implementation details:**
-- Reuses `models.js`, `store.js`, `cache.js`, `audit.js`, and `server.js` sanitization functions from the web UI
-- All file writes delegate to `store.writeFile()` (unified in SP-2, TECH-04), ensuring identical backup + atomic-rename behavior as server.js
-- Input sanitization (markdown injection, Q-ID neutralization, secret detection) is applied to all tool inputs
+
+- Reuses `models.js`, `store.js`, `cache.js`, `audit.js`, and `server.js`
+  sanitization functions from the web UI
+- All file writes delegate to `store.writeFile()` (unified in SP-2, TECH-04),
+  ensuring identical backup + atomic-rename behavior as server.js
+- Input sanitization (markdown injection, Q-ID neutralization, secret detection)
+  is applied to all tool inputs
 - Path traversal is blocked via `safePath()` on all file parameters
 - Startup gated behind `if (require.main === module)` for test-safe importing
 
 ### store.js
+
 Storage abstraction layer.
 
 **Classes:**
+
 - `FileStore` — Production store using `fs` for file I/O.
   - `readFile(path)` → string
   - `writeFile(path, content)` — Atomic write with backup
@@ -203,104 +252,149 @@ Storage abstraction layer.
   - `_backups` Map tracks overwritten versions
 
 **Functions:**
+
 - `setStore(store)` — Replace the global store instance
 - `getStore()` — Get the current global store instance
 
 ### models.js
+
 Domain parsing and mutation functions.
 
 **Key functions:**
-- `parseQuestionnaire(content, relPath, basePath)` — Parses questionnaire Markdown into structured data
-- `updateAnswerInContent(content, questionId, answer, status)` — Replaces a question's answer in Markdown
-- `parseDecisions(content)` → `{ open, decided, deferred }` — Parses decisions.md into arrays
+
+- `parseQuestionnaire(content, relPath, basePath)` — Parses questionnaire
+  Markdown into structured data
+- `updateAnswerInContent(content, questionId, answer, status)` — Replaces a
+  question's answer in Markdown
+- `parseDecisions(content)` → `{ open, decided, deferred }` — Parses
+  decisions.md into arrays
 - `nextDecisionId(content, prefix)` → string — Computes next sequential ID
 - `addOpenQuestion(content, entry)` → string — Inserts a new open question row
 - `addOperationalDecision(content, entry)` → string — Inserts a new decided item
-- `moveToDecided(content, id, answer)` → string — Moves an open question to decided
+- `moveToDecided(content, id, answer)` → string — Moves an open question to
+  decided
 - `moveToDeferred(content, id, reason)` → string — Moves an item to deferred
 - `parseSessionState(content)` → object — Parses session-state.json
 - `parseIndex(content)` → object — Parses questionnaire-index.md
 
 ### cache.js
+
 File cache with mtime-based invalidation.
 
 **Class: `FileCache`**
+
 - `read(filePath)` → string — Returns cached content; re-reads if mtime changed
-- `readJSON(filePath, validator?)` → `{ data, errors }` — Parses JSON with optional schema validation
+- `readJSON(filePath, validator?)` → `{ data, errors }` — Parses JSON with
+  optional schema validation
 - `invalidate(filePath)` — Removes a specific cache entry
 - `invalidateAll()` — Clears the entire cache
 - `stats()` → `{ hits, misses, size }` — Cache statistics
 
 ### schemas.js
-JSON schema validators for all data stores. All validators return `{ valid: boolean, errors: string[] }`.
+
+JSON schema validators for all data stores. All validators return
+`{ valid: boolean, errors: string[] }`.
 
 **Pre-existing validators:**
-- `validateSessionState(obj)` — Validates session state object (schema_version, project_name, status, etc.)
-- `validateCommandEntry(obj)` — Validates a command queue entry (command, project, timestamp)
-- `validateAnalyticsEvent(obj)` — Validates a single analytics event (type, timestamp, properties)
+
+- `validateSessionState(obj)` — Validates session state object (schema_version,
+  project_name, status, etc.)
+- `validateCommandEntry(obj)` — Validates a command queue entry (command,
+  project, timestamp)
+- `validateAnalyticsEvent(obj)` — Validates a single analytics event (type,
+  timestamp, properties)
 
 **New validators (SP-3, TECH-03):**
-- `validateAnalyticsEventArray(arr)` — Validates an array of analytics events (1–100 items)
-- `validateReevaluateTrigger(obj)` — Validates reevaluate trigger data (scope ∈ {ALL, BUSINESS, TECH, UX, MARKETING}, reason, source)
-- `validateDecisionCreate(obj)` — Validates decision creation (type, priority, scope, text required; type/priority enum checked)
-- `validateDecisionMutation(obj)` — Validates decision mutation structure (action required, optional id/answer/reason/text/notes strings)
-- `validateQuestionnaireUpdate(obj)` — Validates questionnaire answer update (questionId, answer, status ∈ {ANSWERED, OPEN, SKIPPED, DEFERRED})
-- `validateProjectBrief(obj)` — Validates project brief (non-empty string, max 50 KB)
+
+- `validateAnalyticsEventArray(arr)` — Validates an array of analytics events
+  (1–100 items)
+- `validateReevaluateTrigger(obj)` — Validates reevaluate trigger data (scope ∈
+  {ALL, BUSINESS, TECH, UX, MARKETING}, reason, source)
+- `validateDecisionCreate(obj)` — Validates decision creation (type, priority,
+  scope, text required; type/priority enum checked)
+- `validateDecisionMutation(obj)` — Validates decision mutation structure
+  (action required, optional id/answer/reason/text/notes strings)
+- `validateQuestionnaireUpdate(obj)` — Validates questionnaire answer update
+  (questionId, answer, status ∈ {ANSWERED, OPEN, SKIPPED, DEFERRED})
+- `validateProjectBrief(obj)` — Validates project brief (non-empty string, max
+  50 KB)
 
 **Exported constants:**
+
 - `VALID_ANALYTICS_EVENTS` — Array of 9 valid analytics event types
 - `VALID_MUTATION_ACTIONS` — Array of 8 valid decision mutation actions
 
 **Coverage (SP-3):** 98.3% statements, 96.8% branches, 100% functions
 
 ### strings.js
+
 Externalized user-facing strings.
 
 **Exports:**
+
 - `VALIDATION` — Validation error message templates
-- `RESPONSES` — Response message factories (e.g., `reevaluateTrigger(scope)`, `commandQueued(cmd)`)
+- `RESPONSES` — Response message factories (e.g., `reevaluateTrigger(scope)`,
+  `commandQueued(cmd)`)
 - `STATIC` — Static string constants
 
 ### audit.js
+
 Mutation audit trail.
 
 **Class: `AuditTrail`**
+
 - `constructor({ dir, maxSize?, filename? })` — Creates audit trail instance
-- `log({ operation, entity_type, entity_id?, user?, summary })` — Appends a log entry
+- `log({ operation, entity_type, entity_id?, user?, summary })` — Appends a log
+  entry
 - `read(limit)` → array — Returns the last N entries (default 50)
 - `count()` → number — Total entry count
 - `logPath` → string — Full path to the log file
 
-**Format:** Append-only JSON Lines (`.jsonl`). Each line: `{ timestamp, operation, entity_type, entity_id, user, summary }`. File rotation at configurable max size (default 10 MB).
+**Format:** Append-only JSON Lines (`.jsonl`). Each line:
+`{ timestamp, operation, entity_type, entity_id, user, summary }`. File rotation
+at configurable max size (default 10 MB).
 
 ### utils/errors.js
+
 Structured error catalog.
 
 **Functions:**
-- `errorResponse(code, details?)` → `{ code, message, recovery, details? }` — Returns structured error for a known error code
+
+- `errorResponse(code, details?)` → `{ code, message, recovery, details? }` —
+  Returns structured error for a known error code
 - `statusToCode(httpStatus)` → string — Maps HTTP status to error code
 
-**Error codes:** `VALIDATION_ERROR`, `FILE_NOT_FOUND`, `DECISIONS_NOT_FOUND`, `INVALID_ACTION`, `UNKNOWN_COMMAND`, `NOT_FOUND`, `PATH_TRAVERSAL`, `PAYLOAD_TOO_LARGE`, `INVALID_CONTENT_TYPE`, `INVALID_JSON`, `INVALID_INPUT`, `METHOD_NOT_ALLOWED`, `INTERNAL_ERROR`
+**Error codes:** `VALIDATION_ERROR`, `FILE_NOT_FOUND`, `DECISIONS_NOT_FOUND`,
+`INVALID_ACTION`, `UNKNOWN_COMMAND`, `NOT_FOUND`, `PATH_TRAVERSAL`,
+`PAYLOAD_TOO_LARGE`, `INVALID_CONTENT_TYPE`, `INVALID_JSON`, `INVALID_INPUT`,
+`METHOD_NOT_ALLOWED`, `INTERNAL_ERROR`
 
 ### utils/secret-utils.js
+
 Secret detection and warning utilities.
 
 **Functions:**
-- `formatSecretWarnings(patterns)` → string[] — Formats detected patterns into warning messages
-- `attachSecretWarnings(response, patterns)` — Adds `warnings` array to a response object if patterns found
+
+- `formatSecretWarnings(patterns)` → string[] — Formats detected patterns into
+  warning messages
+- `attachSecretWarnings(response, patterns)` — Adds `warnings` array to a
+  response object if patterns found
 
 ---
 
 ## API Reference
 
-All endpoints accept and return JSON. The server runs on `http://127.0.0.1:3000`.
+All endpoints accept and return JSON. The server runs on
+`http://127.0.0.1:3000`.
 
 ### Questionnaires
 
 #### GET /api/questionnaires
+
 Returns all questionnaires parsed from `BusinessDocs/` subdirectories.
 
 **Response:**
+
 ```json
 {
   "questionnaires": [
@@ -309,7 +403,13 @@ Returns all questionnaires parsed from `BusinessDocs/` subdirectories.
       "agent": "Software Architect",
       "phase": "Phase 2",
       "questions": [
-        { "id": "Q-05-001", "required": true, "question": "...", "answer": "", "status": "OPEN" }
+        {
+          "id": "Q-05-001",
+          "required": true,
+          "question": "...",
+          "answer": "",
+          "status": "OPEN"
+        }
       ]
     }
   ]
@@ -317,28 +417,37 @@ Returns all questionnaires parsed from `BusinessDocs/` subdirectories.
 ```
 
 #### POST /api/save
+
 Save answers to a questionnaire.
 
 **Request:**
+
 ```json
 {
   "file": "Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md",
   "updates": [
-    { "questionId": "Q-05-001", "answer": "My answer here", "status": "ANSWERED" }
+    {
+      "questionId": "Q-05-001",
+      "answer": "My answer here",
+      "status": "ANSWERED"
+    }
   ]
 }
 ```
 
 **Response:**
+
 ```json
 { "ok": true, "updated": 1, "warnings": [] }
 ```
 
-The `warnings` array contains secret detection alerts if credentials are found in answers.
+The `warnings` array contains secret detection alerts if credentials are found
+in answers.
 
 ### Session
 
 #### GET /api/session
+
 Returns the current session state from `session-state.json`.
 
 **Response:** The full session state object (see [Data Model](#data-model)).
@@ -346,9 +455,11 @@ Returns the current session state from `session-state.json`.
 ### Decisions
 
 #### GET /api/decisions
+
 Returns all decisions parsed from `decisions.md`.
 
 **Response:**
+
 ```json
 {
   "open": [...],
@@ -358,9 +469,11 @@ Returns all decisions parsed from `decisions.md`.
 ```
 
 #### POST /api/decisions
+
 Create, answer, decide, or defer a decision.
 
 **Request (create):**
+
 ```json
 {
   "action": "create",
@@ -372,16 +485,19 @@ Create, answer, decide, or defer a decision.
 ```
 
 **Request (answer):**
+
 ```json
 { "action": "answer", "id": "DEC-R2-010", "answer": "PostgreSQL" }
 ```
 
 **Request (decide):**
+
 ```json
 { "action": "decide", "id": "DEC-R2-010", "answer": "PostgreSQL — final" }
 ```
 
 **Request (defer):**
+
 ```json
 { "action": "defer", "id": "DEC-R2-010", "reason": "Need more research" }
 ```
@@ -391,24 +507,30 @@ Create, answer, decide, or defer a decision.
 ### Commands
 
 #### POST /api/command
+
 Queue a command for the agent pipeline.
 
 **Request:**
+
 ```json
 { "command": "CREATE MyProject" }
 ```
 
 **Response:**
+
 ```json
 { "ok": true, "clipboard_text": "CREATE MyProject", "entry": { ... } }
 ```
 
-Supported commands: `CREATE`, `AUDIT`, `FEATURE`, `REEVALUATE`, `SCOPE CHANGE`, `HOTFIX`, `CONTINUE`, `REFRESH ONBOARDING`, and partial/combo variants.
+Supported commands: `CREATE`, `AUDIT`, `FEATURE`, `REEVALUATE`, `SCOPE CHANGE`,
+`HOTFIX`, `CONTINUE`, `REFRESH ONBOARDING`, and partial/combo variants.
 
 #### GET /api/command
+
 Returns the command queue.
 
 **Response:**
+
 ```json
 {
   "queue": [...],
@@ -419,9 +541,11 @@ Returns the command queue.
 ### Progress
 
 #### GET /api/progress
+
 Returns pipeline progress across all 7 phase groups.
 
 **Response:**
+
 ```json
 {
   "phases": [
@@ -434,9 +558,11 @@ Returns pipeline progress across all 7 phase groups.
 ### Export
 
 #### GET /api/export
+
 Exports the full project state as a single JSON object.
 
 **Response:**
+
 ```json
 {
   "session": { ... },
@@ -450,9 +576,11 @@ Exports the full project state as a single JSON object.
 ### Analytics
 
 #### POST /api/analytics
+
 Submit UI analytics events.
 
 **Request:**
+
 ```json
 {
   "events": [
@@ -461,13 +589,17 @@ Submit UI analytics events.
 }
 ```
 
-**Valid event types:** `page_view`, `tab_switch`, `command_launch`, `questionnaire_save`, `decision_update`, `error_displayed`, `feature_usage`, `session_start`, `session_end`
+**Valid event types:** `page_view`, `tab_switch`, `command_launch`,
+`questionnaire_save`, `decision_update`, `error_displayed`, `feature_usage`,
+`session_start`, `session_end`
 
-See [Analytics Events Reference](#analytics-events-reference) for full details on each event type.
+See [Analytics Events Reference](#analytics-events-reference) for full details
+on each event type.
 
 **Response:** `{ "ok": true, "accepted": 1, "rejected": 0 }`
 
 #### GET /api/analytics
+
 Returns stored analytics events.
 
 **Response:** `{ "events": [...] }`
@@ -475,9 +607,11 @@ Returns stored analytics events.
 ### Reevaluate
 
 #### POST /api/reevaluate
+
 Triggers a reevaluation of one or more scopes.
 
 **Request:**
+
 ```json
 { "scope": "TECH" }
 ```
@@ -489,31 +623,39 @@ Writes a trigger file to `.github/docs/session/reevaluate-trigger.json`.
 ### Help
 
 #### GET /api/help
+
 Returns the help table of contents.
 
-**Response:** `{ "toc": [{ "slug": "getting-started", "title": "Getting Started" }] }`
+**Response:**
+`{ "toc": [{ "slug": "getting-started", "title": "Getting Started" }] }`
 
 #### GET /api/help?topic=getting-started
+
 Returns a specific help topic.
 
-**Response:** `{ "slug": "getting-started", "title": "Getting Started", "content": "..." }`
+**Response:**
+`{ "slug": "getting-started", "title": "Getting Started", "content": "..." }`
 
 **Validation:** slugs are validated — path traversal attempts return 400.
 
 ### Monitoring
 
 #### GET /api/health
+
 Returns server health.
 
 **Response:**
+
 ```json
 { "status": "ok", "sse_connections": 0, "timestamp": "2026-03-08T12:00:00Z" }
 ```
 
 #### GET /api/metrics
+
 Returns server metrics.
 
 **Response:**
+
 ```json
 {
   "uptime_seconds": 3600,
@@ -532,16 +674,26 @@ Returns server metrics.
 ### Audit
 
 #### GET /api/audit
+
 Returns mutation audit trail entries.
 
 **Query parameters:**
+
 - `limit` — Number of entries to return (default: 50, max: 1000)
 
 **Response:**
+
 ```json
 {
   "entries": [
-    { "timestamp": "2026-03-08T12:00:00Z", "operation": "UPDATE_ANSWER", "entity_type": "questionnaire", "entity_id": "Q-05-001", "user": "webapp", "summary": "..." }
+    {
+      "timestamp": "2026-03-08T12:00:00Z",
+      "operation": "UPDATE_ANSWER",
+      "entity_type": "questionnaire",
+      "entity_id": "Q-05-001",
+      "user": "webapp",
+      "summary": "..."
+    }
   ],
   "total": 42,
   "limit": 50
@@ -551,15 +703,18 @@ Returns mutation audit trail entries.
 ### SSE
 
 #### GET /api/events
+
 Server-Sent Events stream for real-time updates.
 
 **Event types:**
+
 - `questionnaire_update` — Questionnaire answer changed
 - `decision_update` — Decision created/modified
 - `command_queued` — New command added to queue
 - `reevaluate_trigger` — Reevaluation triggered
 
 **Example:**
+
 ```
 event: questionnaire_update
 data: {"file":"Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md"}
@@ -569,9 +724,11 @@ data: {"file":"Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md
 ### Static Files
 
 #### GET /
+
 Serves `index.html` (the single-page web UI).
 
 #### GET /health
+
 Lightweight health check (no JSON structure, fast response).
 
 ---
@@ -579,6 +736,7 @@ Lightweight health check (no JSON structure, fast response).
 ## Data Model
 
 ### session-state.json
+
 Location: `.github/docs/session/session-state.json`
 
 ```json
@@ -599,53 +757,89 @@ Location: `.github/docs/session/session-state.json`
 ```
 
 ### decisions.md
+
 Location: `.github/docs/decisions.md`
 
 Markdown file with two main sections:
-- **Open Questions table** — items waiting for user answers
-- **Category Registry table** — lookup table mapping each technology stack to its category file, decision count, status (`ACTIVE`/`PARTIAL`/`DEFERRED`), and applicability flag
 
-Per-technology decisions live in category files under `.github/docs/decisions/[stack].md`. Each category file has a header (`> Stack: … | Status: … | Applicable: …`) and a table of `DECIDED` items.
+- **Open Questions table** — items waiting for user answers
+- **Category Registry table** — lookup table mapping each technology stack to
+  its category file, decision count, status (`ACTIVE`/`PARTIAL`/`DEFERRED`), and
+  applicability flag
+
+Per-technology decisions live in category files under
+`.github/docs/decisions/[stack].md`. Each category file has a header
+(`> Stack: … | Status: … | Applicable: …`) and a table of `DECIDED` items.
 
 Each row: `| ID | Priority | Scope | Decision/Question | Notes/Answer | Date |`
 
-> **For the full file architecture, data flow, deferred activation sequence (ORC-45), and triple-check enforcement chain, see [`docs/decisions-architecture.md`](../decisions-architecture.md).**
+> **For the full file architecture, data flow, deferred activation sequence
+> (ORC-45), and triple-check enforcement chain, see
+> [`docs/decisions-architecture.md`](../decisions-architecture.md).**
 
 ### Questionnaires
+
 Location: `BusinessDocs/Phase[N]-[Discipline]/Questionnaires/*.md`
 
 Markdown files with structured questions:
+
 ```markdown
 ### Q-05-001 [REQUIRED]
-**Question:** What is the target deployment environment?
-**Why we need this:** To determine infrastructure requirements.
-**Expected format:** Text description
+
+**Question:** What is the target deployment environment? **Why we need this:**
+To determine infrastructure requirements. **Expected format:** Text description
 **Your answer:**
+
 > (user fills in here)
 ```
 
 ### Analytics Events
+
 Location: `.github/docs/analytics-events.json`
 
 JSON array of event objects:
+
 ```json
-[{ "event": "page_view", "properties": { "page": "questionnaires" }, "timestamp": "2026-03-08T12:00:00Z" }]
+[
+  {
+    "event": "page_view",
+    "properties": { "page": "questionnaires" },
+    "timestamp": "2026-03-08T12:00:00Z"
+  }
+]
 ```
 
 ### Audit Log
+
 Location: `.github/docs/audit/audit.jsonl`
 
 Append-only JSON Lines file:
+
 ```jsonl
-{"timestamp":"2026-03-08T12:00:00.000Z","operation":"UPDATE_ANSWER","entity_type":"questionnaire","entity_id":"Q-05-001","user":"webapp","summary":"Updated answer for Q-05-001"}
+{
+  "timestamp": "2026-03-08T12:00:00.000Z",
+  "operation": "UPDATE_ANSWER",
+  "entity_type": "questionnaire",
+  "entity_id": "Q-05-001",
+  "user": "webapp",
+  "summary": "Updated answer for Q-05-001"
+}
 ```
 
 ### Command Queue
+
 Location: `.github/docs/session/command-queue.json`
 
 JSON array of command entries:
+
 ```json
-[{ "command": "CREATE MyProject", "requested_at": "2026-03-08T12:00:00Z", "status": "PENDING" }]
+[
+  {
+    "command": "CREATE MyProject",
+    "requested_at": "2026-03-08T12:00:00Z",
+    "status": "PENDING"
+  }
+]
 ```
 
 ---
@@ -654,12 +848,14 @@ JSON array of command entries:
 
 The server uses environment variables and sensible defaults:
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `SERVER_PORT` | `3000` | HTTP server port |
+| Variable      | Default     | Description                     |
+| ------------- | ----------- | ------------------------------- |
+| `SERVER_PORT` | `3000`      | HTTP server port                |
 | `SERVER_HOST` | `127.0.0.1` | Bind address (always localhost) |
 
-All file paths are computed relative to the repository root. The server expects to be launched from the repository root directory or with the correct working directory.
+All file paths are computed relative to the repository root. The server expects
+to be launched from the repository root directory or with the correct working
+directory.
 
 ---
 
@@ -676,7 +872,9 @@ npm install
 node .github/webapp/server.js
 ```
 
-The server is designed for **localhost use only**. It does not implement authentication, rate limiting, or TLS — these would be needed for any network-exposed deployment.
+The server is designed for **localhost use only**. It does not implement
+authentication, rate limiting, or TLS — these would be needed for any
+network-exposed deployment.
 
 ### Process Management
 
@@ -693,7 +891,8 @@ npx pm2 status
 ### Health Checks
 
 - `GET /health` — Fast check, returns `{ status: "ok", uptime: N }`
-- `GET /api/health` — Detailed check, includes SSE connection count and timestamp
+- `GET /api/health` — Detailed check, includes SSE connection count and
+  timestamp
 
 ---
 
@@ -701,38 +900,41 @@ npx pm2 status
 
 ### HTTP Security Headers
 
-Every response includes:
-| Header | Value |
-|--------|-------|
-| `X-Content-Type-Options` | `nosniff` |
-| `X-Frame-Options` | `DENY` |
-| `Content-Security-Policy` | Strict CSP with inline script hash |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` |
-| `Permissions-Policy` | Restricts camera, microphone, geolocation |
-| `Cross-Origin-Opener-Policy` | `same-origin` |
+Every response includes: | Header | Value | |--------|-------| |
+`X-Content-Type-Options` | `nosniff` | | `X-Frame-Options` | `DENY` | |
+`Content-Security-Policy` | Strict CSP with inline script hash | |
+`Referrer-Policy` | `strict-origin-when-cross-origin` | | `Permissions-Policy` |
+Restricts camera, microphone, geolocation | | `Cross-Origin-Opener-Policy` |
+`same-origin` |
 
 ### Input Sanitization
 
-- **Markdown injection** — `sanitizeMarkdown()` escapes `#`, `---`, `|`, and other Markdown control characters.
-- **Q-ID neutralization** — `sanitizeQID()` replaces hyphens in Q-ID patterns with non-breaking hyphens to prevent ID injection.
-- **Path traversal** — `safePath()` validates all file paths, blocking `..` traversal.
+- **Markdown injection** — `sanitizeMarkdown()` escapes `#`, `---`, `|`, and
+  other Markdown control characters.
+- **Q-ID neutralization** — `sanitizeQID()` replaces hyphens in Q-ID patterns
+  with non-breaking hyphens to prevent ID injection.
+- **Path traversal** — `safePath()` validates all file paths, blocking `..`
+  traversal.
 - **Payload limits** — Request bodies are limited to prevent abuse.
 
 ### Secret Detection
 
 `detectSecrets()` scans answers for:
+
 - AWS Access Keys (`AKIA...`)
 - GitHub Tokens (`ghp_...`, `gho_...`, `ghs_...`)
 - Private Keys (`-----BEGIN ... PRIVATE KEY-----`)
 - Generic API key patterns
 
-Detected patterns generate warnings (not rejections) — users are informed but not blocked.
+Detected patterns generate warnings (not rejections) — users are informed but
+not blocked.
 
 ---
 
 ## Testing
 
 ### Framework
+
 **Vitest** with **@vitest/coverage-v8** for code coverage.
 
 ### Test Structure
@@ -770,12 +972,14 @@ npx vitest run tests/unit # Only unit tests
 ### Coverage Thresholds
 
 Configured in `.github/vitest.config.mjs`:
+
 - Statements: ≥ 70%
 - Branches: ≥ 70%
 - Functions: ≥ 70%
 - Lines: ≥ 70%
 
-Actual coverage (as of SP-5): **87.40% statements, 76.45% branches, 92.15% functions, 88.94% lines** (649 tests across 22 test files).
+Actual coverage (as of SP-5): **87.40% statements, 76.45% branches, 92.15%
+functions, 88.94% lines** (649 tests across 22 test files).
 
 ### Test Conventions
 
@@ -790,28 +994,40 @@ Actual coverage (as of SP-5): **87.40% statements, 76.45% branches, 92.15% funct
 
 ### Button Loading State (SP-7 / UX-04)
 
-All async operations in the UI show a spinner on the triggering button using the `setBtnLoading(btn, loading)` helper:
+All async operations in the UI show a spinner on the triggering button using the
+`setBtnLoading(btn, loading)` helper:
 
 ```js
-setBtnLoading(btn, true);   // adds .btn-loading class, sets aria-busy, disables
+setBtnLoading(btn, true); // adds .btn-loading class, sets aria-busy, disables
 await someAsyncOp();
-setBtnLoading(btn, false);  // removes .btn-loading, clears aria-busy, re-enables
+setBtnLoading(btn, false); // removes .btn-loading, clears aria-busy, re-enables
 ```
 
-The `.btn-loading` CSS class hides the button text (`color: transparent`) and overlays a CSS-only spinner via `::after` pseudo-element. This prevents double-click submissions and provides visual feedback during network operations.
+The `.btn-loading` CSS class hides the button text (`color: transparent`) and
+overlays a CSS-only spinner via `::after` pseudo-element. This prevents
+double-click submissions and provides visual feedback during network operations.
 
-**Covered operations:** Save single answer, Save all for file, Global Save All, Answer/Decide/Defer/Expire/Reopen Decision, Activate Category, Create Decision, Edit Decision, Reevaluate.
+**Covered operations:** Save single answer, Save all for file, Global Save All,
+Answer/Decide/Defer/Expire/Reopen Decision, Activate Category, Create Decision,
+Edit Decision, Reevaluate.
 
 ### Skeleton Loaders
 
-On first page load, both the questionnaires panel (`#main`) and decisions panel (`#decMain`) show skeleton placeholder cards with shimmer animation while data loads. The containers are marked with `aria-busy="true"` and cleared after data arrives.
+On first page load, both the questionnaires panel (`#main`) and decisions panel
+(`#decMain`) show skeleton placeholder cards with shimmer animation while data
+loads. The containers are marked with `aria-busy="true"` and cleared after data
+arrives.
 
 ### Empty States (SP-7 / UX-05)
 
-When no data exists, panels show guided numbered steps instead of generic empty messages:
+When no data exists, panels show guided numbered steps instead of generic empty
+messages:
 
-- **Questionnaires empty state** — `renderEmpty()` shows a 4-step guide (open Copilot Chat, type CREATE/AUDIT, follow prompts, wait for questionnaires).
-- **Decisions empty state** — `renderDecisions()` distinguishes "truly empty" (no decisions at all → shows 3-step guide) from "filter empty" (decisions exist but hidden by filters → shows "adjust filters" message).
+- **Questionnaires empty state** — `renderEmpty()` shows a 4-step guide (open
+  Copilot Chat, type CREATE/AUDIT, follow prompts, wait for questionnaires).
+- **Decisions empty state** — `renderDecisions()` distinguishes "truly empty"
+  (no decisions at all → shows 3-step guide) from "filter empty" (decisions
+  exist but hidden by filters → shows "adjust filters" message).
 
 All empty state text is sourced from the `STRINGS` constant for i18n readiness.
 
@@ -846,6 +1062,7 @@ See [CONTRIBUTING.md](contributing) for coding standards and PR process.
 ### Metrics Endpoint
 
 `GET /api/metrics` provides:
+
 - **Request count** and **error count** with error rate
 - **Response time percentiles** (p50, p95, p99)
 - **SSE connection count**
@@ -855,13 +1072,24 @@ See [CONTRIBUTING.md](contributing) for coding standards and PR process.
 ### Structured Logging
 
 The server emits JSON-formatted log lines to stdout:
+
 ```json
-{"timestamp":"2026-03-08T12:00:00.000Z","level":"info","message":"http_request","method":"GET","url":"/api/health","status":200,"duration_ms":1}
+{
+  "timestamp": "2026-03-08T12:00:00.000Z",
+  "level": "info",
+  "message": "http_request",
+  "method": "GET",
+  "url": "/api/health",
+  "status": 200,
+  "duration_ms": 1
+}
 ```
 
 ### Audit Trail
 
-All data mutations (questionnaire answers, decision changes) are logged to the append-only audit trail at `.github/docs/audit/audit.jsonl`. Query via `GET /api/audit?limit=100`.
+All data mutations (questionnaire answers, decision changes) are logged to the
+append-only audit trail at `.github/docs/audit/audit.jsonl`. Query via
+`GET /api/audit?limit=100`.
 
 ---
 
@@ -901,40 +1129,51 @@ The server validates events against a strict allowlist defined in `server.js`:
 
 ```js
 const VALID_ANALYTICS_EVENTS = [
-  'page_view', 'tab_switch', 'command_launch', 'questionnaire_save',
-  'decision_update', 'error_displayed', 'feature_usage',
-  'session_start', 'session_end'
+  'page_view',
+  'tab_switch',
+  'command_launch',
+  'questionnaire_save',
+  'decision_update',
+  'error_displayed',
+  'feature_usage',
+  'session_start',
+  'session_end',
 ];
 ```
 
-Events not in this list are **rejected** (counted in the `rejected` field of the response).
+Events not in this list are **rejected** (counted in the `rejected` field of the
+response).
 
 ### Event Catalog
 
-| Event | Description | Expected Properties | Source |
-|-------|-------------|---------------------|--------|
-| `page_view` | User viewed a page/section | `{ page: string }` | Client (not yet wired) |
-| `tab_switch` | User switched to a different tab | `{ tab: string }` | Client — `switchTab()` wrapper |
-| `command_launch` | User launched a command from the Command Center | `{ command: string }` | Client (not yet wired) |
-| `questionnaire_save` | User saved questionnaire answers | `{ file: string, count: number }` | Client (not yet wired) |
-| `decision_update` | User created, answered, decided, or deferred a decision | `{ action: string, id: string }` | Client (not yet wired) |
-| `error_displayed` | An error was shown to the user | `{ message: string, endpoint?: string }` | Client (not yet wired) |
-| `feature_usage` | User used a specific feature | `{ feature: string }` | Client (not yet wired) |
-| `session_start` | User session started | `{}` | Client (not yet wired) |
-| `session_end` | User session ended | `{}` | Client (not yet wired) |
+| Event                | Description                                             | Expected Properties                      | Source                         |
+| -------------------- | ------------------------------------------------------- | ---------------------------------------- | ------------------------------ |
+| `page_view`          | User viewed a page/section                              | `{ page: string }`                       | Client (not yet wired)         |
+| `tab_switch`         | User switched to a different tab                        | `{ tab: string }`                        | Client — `switchTab()` wrapper |
+| `command_launch`     | User launched a command from the Command Center         | `{ command: string }`                    | Client (not yet wired)         |
+| `questionnaire_save` | User saved questionnaire answers                        | `{ file: string, count: number }`        | Client (not yet wired)         |
+| `decision_update`    | User created, answered, decided, or deferred a decision | `{ action: string, id: string }`         | Client (not yet wired)         |
+| `error_displayed`    | An error was shown to the user                          | `{ message: string, endpoint?: string }` | Client (not yet wired)         |
+| `feature_usage`      | User used a specific feature                            | `{ feature: string }`                    | Client (not yet wired)         |
+| `session_start`      | User session started                                    | `{}`                                     | Client (not yet wired)         |
+| `session_end`        | User session ended                                      | `{}`                                     | Client (not yet wired)         |
 
 ### Client-Side Events Currently Emitted
 
 The front-end (`index.html`) fires these events via `trackEvent()`:
 
-| Call Site | Event Name | Properties | Server Accepts? |
-|-----------|-----------|------------|-----------------|
-| Page load | `app_start` | `{ tab }` | **No** — not in allowlist |
-| Tab switch | `tab_switch` | `{ tab }` | Yes |
+| Call Site         | Event Name            | Properties       | Server Accepts?           |
+| ----------------- | --------------------- | ---------------- | ------------------------- |
+| Page load         | `app_start`           | `{ tab }`        | **No** — not in allowlist |
+| Tab switch        | `tab_switch`          | `{ tab }`        | Yes                       |
 | Onboarding finish | `onboarding_complete` | `{ steps_seen }` | **No** — not in allowlist |
-| Onboarding skip | `onboarding_skip` | `{ step }` | **No** — not in allowlist |
+| Onboarding skip   | `onboarding_skip`     | `{ step }`       | **No** — not in allowlist |
 
-> **Note:** Three of the four client-side events (`app_start`, `onboarding_complete`, `onboarding_skip`) are silently rejected by the server because they are not in `VALID_ANALYTICS_EVENTS`. Only `tab_switch` events are actually persisted. This is a known gap — either the server allowlist should be expanded or the client event names should be changed to match.
+> **Note:** Three of the four client-side events (`app_start`,
+> `onboarding_complete`, `onboarding_skip`) are silently rejected by the server
+> because they are not in `VALID_ANALYTICS_EVENTS`. Only `tab_switch` events are
+> actually persisted. This is a known gap — either the server allowlist should
+> be expanded or the client event names should be changed to match.
 
 ### Client Integration
 
@@ -944,18 +1183,21 @@ The front-end (`index.html`) fires these events via `trackEvent()`:
 trackEvent('tab_switch', { tab: 'decisions' });
 ```
 
-**Batching:** Events queue in `_analyticsQueue` and flush every 5 seconds (`ANALYTICS_FLUSH_MS`) or when 50 events accumulate. Flushes are fire-and-forget — failures are silently dropped (analytics is non-critical).
+**Batching:** Events queue in `_analyticsQueue` and flush every 5 seconds
+(`ANALYTICS_FLUSH_MS`) or when 50 events accumulate. Flushes are fire-and-forget
+— failures are silently dropped (analytics is non-critical).
 
-**Opt-out:** Users can opt out by setting `localStorage.analytics_optout = '1'`. When opted out, `trackEvent()` returns immediately without queuing.
+**Opt-out:** Users can opt out by setting `localStorage.analytics_optout = '1'`.
+When opted out, `trackEvent()` returns immediately without queuing.
 
 ### Storage
 
-| Property | Value |
-|----------|-------|
-| File | `.github/docs/analytics-events.json` |
-| Format | JSON array of event objects |
-| Max events | 5 000 (`ANALYTICS_MAX_EVENTS`) |
-| Overflow | Oldest events trimmed (FIFO) |
+| Property     | Value                                |
+| ------------ | ------------------------------------ |
+| File         | `.github/docs/analytics-events.json` |
+| Format       | JSON array of event objects          |
+| Max events   | 5 000 (`ANALYTICS_MAX_EVENTS`)       |
+| Overflow     | Oldest events trimmed (FIFO)         |
 | Write safety | `withFileLock()` + `safeWriteSync()` |
 
 **Event object schema:**
@@ -968,18 +1210,22 @@ trackEvent('tab_switch', { tab: 'decisions' });
 }
 ```
 
-The `timestamp` is set server-side (not from the client payload) to prevent clock-skew issues.
+The `timestamp` is set server-side (not from the client payload) to prevent
+clock-skew issues.
 
 ### Validation
 
 Server-side validation (`validateAnalyticsEvent`):
+
 1. Event must be a non-null object
 2. `event` field must be in the `VALID_ANALYTICS_EVENTS` allowlist
 3. `properties`, if present, must be an object
 
 Request-level validation:
+
 - `events` must be a non-empty array with at most 100 items per batch
-- Invalid events are counted in `rejected` but do not fail the entire request — valid events in the same batch are still persisted
+- Invalid events are counted in `rejected` but do not fail the entire request —
+  valid events in the same batch are still persisted
 
 ### API Quick Reference
 

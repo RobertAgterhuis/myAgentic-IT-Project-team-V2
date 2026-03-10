@@ -178,7 +178,12 @@ describe('validateAnalyticsEventArray', () => {
 });
 
 describe('validateReevaluateTrigger', () => {
-  const valid = { requested_at: '2026-01-01T00:00:00Z', scope: 'ALL', source: 'questionnaire-webapp', status: 'PENDING' };
+  const valid = {
+    requested_at: '2026-01-01T00:00:00Z',
+    scope: 'ALL',
+    source: 'questionnaire-webapp',
+    status: 'PENDING',
+  };
 
   it('accepts a valid trigger', () => {
     const r = validateReevaluateTrigger(valid);
@@ -279,7 +284,16 @@ describe('validateDecisionMutation', () => {
   });
 
   it('accepts all valid actions', () => {
-    for (const action of ['answer', 'decide', 'defer', 'expire', 'activate', 'create', 'reopen', 'edit']) {
+    for (const action of [
+      'answer',
+      'decide',
+      'defer',
+      'expire',
+      'activate',
+      'create',
+      'reopen',
+      'edit',
+    ]) {
       expect(validateDecisionMutation({ action }).valid).toBe(true);
     }
   });

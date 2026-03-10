@@ -15,7 +15,9 @@ describe('FileCache', () => {
     setStore(store);
     cache = new FileCache();
   });
-  afterEach(() => { setStore(originalStore); });
+  afterEach(() => {
+    setStore(originalStore);
+  });
 
   describe('read', () => {
     it('returns file content on first read', () => {

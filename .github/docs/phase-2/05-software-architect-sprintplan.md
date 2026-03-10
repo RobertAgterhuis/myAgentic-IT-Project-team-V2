@@ -1,9 +1,11 @@
 # Sprint Plan – Software Architecture – 2026-03-09
 
 ## Metadata
+
 - Agent: Software Architect (05)
 - Phase: 2
-- Input received from: Software Architect Recommendations (05-software-architect-recommendations.md)
+- Input received from: Software Architect Recommendations
+  (05-software-architect-recommendations.md)
 - Date: 2026-03-09
 - Software under design: MYAGENTIC-IT-PROJECT-TEAM-V2
 - **Mode: CREATE**
@@ -13,18 +15,25 @@
 ## 1. Sprint Planning Assumptions
 
 ### Team Composition
-- **Total capacity:** 1 senior DevOps engineer (100% allocation per Phase 1 questionnaire answer QR-001)
-- **Story points per sprint:** 20 SP (assumed 2-week sprint, 1.0 SP = 1 ideal day)
+
+- **Total capacity:** 1 senior DevOps engineer (100% allocation per Phase 1
+  questionnaire answer QR-001)
+- **Story points per sprint:** 20 SP (assumed 2-week sprint, 1.0 SP = 1 ideal
+  day)
 - **Sprint duration:** 2 weeks
-- **Parallelization:** Limited (single developer) — prioritize sequential dependencies
+- **Parallelization:** Limited (single developer) — prioritize sequential
+  dependencies
 
 **Source:** Phase 1 questionnaire answer QR-001 (team composition).
 
 ### Sprint Velocity Assumptions
-- **Initial velocity:** Conservative 15 SP/sprint (accounting for context-switching overhead from orchestration work)
+
+- **Initial velocity:** Conservative 15 SP/sprint (accounting for
+  context-switching overhead from orchestration work)
 - **Target velocity:** Increase to 20 SP/sprint by Sprint 12 (learning curve)
 
 ### Story Point Scale
+
 - **1 SP:** Simple config change, minor documentation update
 - **2 SP:** Single-function implementation with tests
 - **3 SP:** Small feature with integration tests
@@ -36,7 +45,8 @@
 
 ## 2. Sprint Stories — Phase 2 Software Architecture
 
-All stories derived from P1/P2 recommendations in `05-software-architect-recommendations.md`.
+All stories derived from P1/P2 recommendations in
+`05-software-architect-recommendations.md`.
 
 ### STORY: SA-001 — Implement JSON Schema Validation Middleware
 
@@ -50,13 +60,17 @@ All stories derived from P1/P2 recommendations in `05-software-architect-recomme
 
 **Story Points:** 5
 
-**Description:**
-As a developer, I want API endpoint request bodies validated against JSON schemas so that malformed client requests are caught at the API boundary with clear 400 error messages.
+**Description:** As a developer, I want API endpoint request bodies validated
+against JSON schemas so that malformed client requests are caught at the API
+boundary with clear 400 error messages.
 
 **Acceptance Criteria:**
-- [ ] Ajv library added to devDependencies (MIT License verified with Legal Counsel LCHECK-001)
+
+- [ ] Ajv library added to devDependencies (MIT License verified with Legal
+      Counsel LCHECK-001)
 - [ ] JSON schemas created in `.github/webapp/schemas/` for:
-  - `questionnaire-answers-schema.json` (POST /api/questionnaires/:phase/:file/answers)
+  - `questionnaire-answers-schema.json` (POST
+    /api/questionnaires/:phase/:file/answers)
   - `decision-create-schema.json` (POST /api/decisions)
   - `decision-update-schema.json` (PUT /api/decisions/:id)
   - `command-create-schema.json` (POST /api/commands)
@@ -69,20 +83,24 @@ As a developer, I want API endpoint request bodies validated against JSON schema
 - [ ] Integration tests added:
   - Valid request returns 200
   - Missing required field returns 400 with error listing missing field
-  - Invalid field type (e.g., string instead of number) returns 400 with type error
+  - Invalid field type (e.g., string instead of number) returns 400 with type
+    error
   - Extra unknown fields return 400 (strict schema enforcement)
 - [ ] Test coverage >=95% for validation middleware module
 - [ ] README.md updated with API schema documentation link
 
 **Blockers:** Legal Counsel (LCHECK-001 — Ajv license verification)
 
-**Blocker Resolution:** Check with Legal Counsel at Phase 2 gate; if BLOCKING, substitute with manual validation wrapper (no external dependency)
+**Blocker Resolution:** Check with Legal Counsel at Phase 2 gate; if BLOCKING,
+substitute with manual validation wrapper (no external dependency)
 
 **Technical Notes:**
+
 - Use Ajv strict mode (`strictSchema: true`) to catch schema definition errors
 - Cache compiled schemas for performance (compile once per server start)
 
 **Definition of Done:**
+
 - Code merged to main
 - Tests passing in CI
 - Manual validation shows 400 errors with human-readable messages
@@ -101,33 +119,42 @@ As a developer, I want API endpoint request bodies validated against JSON schema
 
 **Story Points:** 3
 
-**Description:**
-As a developer, I want automated load tests for all API endpoints so that performance regressions (p95 > 200ms) are caught in CI before merging.
+**Description:** As a developer, I want automated load tests for all API
+endpoints so that performance regressions (p95 > 200ms) are caught in CI before
+merging.
 
 **Acceptance Criteria:**
+
 - [ ] Autocannon library added to devDependencies (MIT License verified)
 - [ ] Load test suite created in `tests/load/`:
-  - `test-progress-endpoint.js` — GET /api/progress (100 concurrent connections, 10s duration)
-  - `test-questionnaires-list.js` — GET /api/questionnaires (100 concurrent, 10s)
-  - `test-questionnaire-detail.js` — GET /api/questionnaires/:phase/:file (100 concurrent, 10s)
-  - `test-questionnaire-update.js` — POST /api/questionnaires/:phase/:file/answers (50 concurrent, 10s)
+  - `test-progress-endpoint.js` — GET /api/progress (100 concurrent connections,
+    10s duration)
+  - `test-questionnaires-list.js` — GET /api/questionnaires (100 concurrent,
+    10s)
+  - `test-questionnaire-detail.js` — GET /api/questionnaires/:phase/:file (100
+    concurrent, 10s)
+  - `test-questionnaire-update.js` — POST
+    /api/questionnaires/:phase/:file/answers (50 concurrent, 10s)
   - `test-decisions-list.js` — GET /api/decisions (100 concurrent, 10s)
 - [ ] Baseline metrics captured in `docs/performance-baseline.md`:
   - p50, p95, p99 response times for each endpoint
   - Requests per second (RPS) achieved
   - Zero errors in baseline run
-- [ ] Baseline establishment test run COMPLETED (one-time manual execution with autocannon)
+- [ ] Baseline establishment test run COMPLETED (one-time manual execution with
+      autocannon)
 - [ ] `npm run test:load` script added to package.json
 - [ ] Load tests execute successfully in local environment
 
 **Blockers:** None (prerequisite for SA-003)
 
 **Technical Notes:**
+
 - Run load tests against localhost:3000 (start server in test setup)
 - Use autocannon programmatic API (not CLI) for easier assertions
 - Warm-up period: 10 requests before measurement to prime caches
 
 **Definition of Done:**
+
 - Baseline metrics documented
 - Load tests pass locally
 - Script `npm run test:load` runs all load tests
@@ -146,31 +173,39 @@ As a developer, I want automated load tests for all API endpoints so that perfor
 
 **Story Points:** 2
 
-**Description:**
-As a developer, I want CI to fail builds if API endpoint p95 response time exceeds baseline + 10% tolerance so that performance regressions are auto-detected.
+**Description:** As a developer, I want CI to fail builds if API endpoint p95
+response time exceeds baseline + 10% tolerance so that performance regressions
+are auto-detected.
 
 **Acceptance Criteria:**
+
 - [ ] GitHub Actions workflow `.github/workflows/load-tests.yml` created:
   - Runs on: push to main, pull requests
-  - Setup: checkout code, install Node.js, npm ci, start server (background process)
+  - Setup: checkout code, install Node.js, npm ci, start server (background
+    process)
   - Execute: npm run test:load
   - Report: upload autocannon JSON results as CI artifacts
 - [ ] Performance budget check implemented in load test script:
   - Read baseline from `docs/performance-baseline.md` (parse Markdown table)
   - Compare current p95 to baseline p95
-  - If current p95 > (baseline p95 * 1.10), exit with code 1 (fail build)
+  - If current p95 > (baseline p95 \* 1.10), exit with code 1 (fail build)
 - [ ] CI workflow passes on baseline metrics (no regression)
-- [ ] CI workflow fails when p95 artificially inflated (validation test: add `await sleep(300)` in route handler)
+- [ ] CI workflow fails when p95 artificially inflated (validation test: add
+      `await sleep(300)` in route handler)
 - [ ] CI artifacts include timestamped autocannon reports (trend analysis)
 
 **Blockers:** SA-002 (baseline must exist)
 
 **Technical Notes:**
+
 - GitHub Actions cache `node_modules` to speed up CI
-- Set timeout: 5 minutes for load test job (10s per endpoint * 5 endpoints + overhead)
-- Consider non-blocking initially (allow failures, monitor trends) if risk of false positives
+- Set timeout: 5 minutes for load test job (10s per endpoint \* 5 endpoints +
+  overhead)
+- Consider non-blocking initially (allow failures, monitor trends) if risk of
+  false positives
 
 **Definition of Done:**
+
 - CI workflow exists in `.github/workflows/`
 - Build fails on performance regression
 - Build passes on clean code
@@ -189,18 +224,24 @@ As a developer, I want CI to fail builds if API endpoint p95 response time excee
 
 **Story Points:** 3
 
-**Description:**
-As a developer, I want stress tests validating file locking behavior under 10 concurrent writes so that multi-user deployment readiness is verified before Q4 2026 rollout.
+**Description:** As a developer, I want stress tests validating file locking
+behavior under 10 concurrent writes so that multi-user deployment readiness is
+verified before Q4 2026 rollout.
 
 **Acceptance Criteria:**
+
 - [ ] Stress test suite created in `tests/stress/`:
-  - `test-concurrent-session-updates.js` — 10 parallel writes to session-state.json
-  - `test-concurrent-questionnaire-answers.js` — 5 parallel writes to same questionnaire file
+  - `test-concurrent-session-updates.js` — 10 parallel writes to
+    session-state.json
+  - `test-concurrent-questionnaire-answers.js` — 5 parallel writes to same
+    questionnaire file
   - `test-concurrent-decision-adds.js` — 5 parallel writes to decisions.md
 - [ ] Metrics captured for each test:
   - Lock acquisition latency (mean, p95, p99)
-  - Lock timeout rate (count of operations failing after 3 retries / total operations)
-  - Data corruption detection: validate JSON.parse() succeeds after concurrent writes
+  - Lock timeout rate (count of operations failing after 3 retries / total
+    operations)
+  - Data corruption detection: validate JSON.parse() succeeds after concurrent
+    writes
 - [ ] Test assertions:
   - Lock timeout rate < 1%
   - p95 lock acquisition latency < 50ms
@@ -211,11 +252,14 @@ As a developer, I want stress tests validating file locking behavior under 10 co
 **Blockers:** None
 
 **Technical Notes:**
+
 - Use Promise.all() to trigger concurrent writes
 - Add timestamps to writes to verify ordering in audit trail
-- Test both optimistic (different files) and pessimistic (same file) contention scenarios
+- Test both optimistic (different files) and pessimistic (same file) contention
+  scenarios
 
 **Definition of Done:**
+
 - Stress tests pass 10 consecutive runs
 - Metrics logged to console (mean/p95/p99 lock latency, timeout rate)
 - Data integrity validated (no corrupted JSON files)
@@ -234,15 +278,18 @@ As a developer, I want stress tests validating file locking behavior under 10 co
 
 **Story Points:** 1
 
-**Description:**
-As a developer, I want stress tests to run in CI (non-blocking initially) so that file locking contention trends are visible before becoming critical.
+**Description:** As a developer, I want stress tests to run in CI (non-blocking
+initially) so that file locking contention trends are visible before becoming
+critical.
 
 **Acceptance Criteria:**
+
 - [ ] GitHub Actions workflow updated to include stress test job:
   - Separate job `stress-tests` (runs in parallel with load-tests)
   - Execute: npm run test:stress
   - Report: upload stress test metrics as CI artifacts (JSON format)
-  - Non-blocking: `continue-on-error: true` (do not fail build if stress test fails)
+  - Non-blocking: `continue-on-error: true` (do not fail build if stress test
+    fails)
 - [ ] Stress test metrics artifact includes:
   - Lock latency histogram (p50, p95, p99)
   - Timeout rate %
@@ -252,11 +299,13 @@ As a developer, I want stress tests to run in CI (non-blocking initially) so tha
 **Blockers:** SA-004 (stress tests must exist)
 
 **Technical Notes:**
+
 - Start with non-blocking to establish baseline and avoid false positives
 - Monitor for 5 sprints; if timeout rate consistently <0.1%, make blocking
 - Retain artifacts for 90 days (GitHub Actions default)
 
 **Definition of Done:**
+
 - CI stress test job exists
 - Metrics uploaded as artifacts
 - Job runs successfully (non-blocking mode)
@@ -271,14 +320,17 @@ As a developer, I want stress tests to run in CI (non-blocking initially) so tha
 
 **Priority:** P1
 
-**Sprint Assignment:** Sprint 10 (Security Architect sprint — NOT Software Architect work)
+**Sprint Assignment:** Sprint 10 (Security Architect sprint — NOT Software
+Architect work)
 
 **Story Points:** N/A (blocked on Security Architect)
 
-**Description:**
-As Security Architect, I need to define an authentication strategy (localhost origin check / HTTP Basic Auth / OAuth2) so that Software Architect can implement auth before external exposure.
+**Description:** As Security Architect, I need to define an authentication
+strategy (localhost origin check / HTTP Basic Auth / OAuth2) so that Software
+Architect can implement auth before external exposure.
 
 **Acceptance Criteria:**
+
 - [ ] Security Architect publishes ADR-007: Authentication Strategy
 - [ ] ADR-007 includes:
   - Chosen authentication mechanism
@@ -289,13 +341,16 @@ As Security Architect, I need to define an authentication strategy (localhost or
 
 **Blockers:** BLOCKING Software Architect Sprint 12 implementation (SA-007)
 
-**Blocker Resolution:** Escalate to Orchestrator if Security Architect ADR-007 not delivered by end of Phase 2
+**Blocker Resolution:** Escalate to Orchestrator if Security Architect ADR-007
+not delivered by end of Phase 2
 
 **Technical Notes:**
+
 - This is a DEPENDENCY story, not a Software Architect deliverable
 - Tracked in Software Architect sprint plan to ensure visibility
 
 **Definition of Done:**
+
 - ADR-007 exists in `.github/docs/architecture/`
 - Software Architect confirms ADR-007 has sufficient implementation detail
 
@@ -311,20 +366,26 @@ As Security Architect, I need to define an authentication strategy (localhost or
 
 **Sprint Assignment:** Sprint 12 (depends on SA-006)
 
-**Story Points:** 8 (if OAuth2) OR 3 (if HTTP Basic Auth) OR 1 (if localhost origin check)
+**Story Points:** 8 (if OAuth2) OR 3 (if HTTP Basic Auth) OR 1 (if localhost
+origin check)
 
-**Description:**
-As a developer, I want authentication enforced on Command Center UI endpoints so that unauthorized users cannot access sensitive orchestration controls.
+**Description:** As a developer, I want authentication enforced on Command
+Center UI endpoints so that unauthorized users cannot access sensitive
+orchestration controls.
 
 **Acceptance Criteria (TBD based on ADR-007):**
+
 - **IF localhost origin check:**
-  - [ ] Middleware checks `req.headers['host']` === 'localhost:3000' or '127.0.0.1:3000'
+  - [ ] Middleware checks `req.headers['host']` === 'localhost:3000' or
+        '127.0.0.1:3000'
   - [ ] Requests from other origins return 403 Forbidden
   - [ ] All non-public endpoints protected (exclude /healthz if added)
 - **IF HTTP Basic Auth:**
-  - [ ] Basic Auth middleware added (username/password from environment variable)
+  - [ ] Basic Auth middleware added (username/password from environment
+        variable)
   - [ ] Login prompt shown in browser for protected routes
-  - [ ] Credentials validated on every request (no session state per ADR-004 stateless preference)
+  - [ ] Credentials validated on every request (no session state per ADR-004
+        stateless preference)
 - **IF OAuth2 (GitHub):**
   - [ ] OAuth2 flow implemented with GitHub Apps
   - [ ] Callback route `/auth/callback` handles token exchange
@@ -340,10 +401,14 @@ As a developer, I want authentication enforced on Command Center UI endpoints so
 **Blockers:** SA-006 (Security Architect ADR-007)
 
 **Technical Notes:**
-- Story points adjusted based on chosen auth mechanism (update during Sprint 11 planning)
-- Prefer simplest solution (localhost origin check or Basic Auth) for v1 internal use
+
+- Story points adjusted based on chosen auth mechanism (update during Sprint 11
+  planning)
+- Prefer simplest solution (localhost origin check or Basic Auth) for v1
+  internal use
 
 **Definition of Done:**
+
 - Authentication enforced on all protected endpoints
 - Penetration test passes (no unauthorized access)
 - Tests passing in CI
@@ -362,10 +427,11 @@ As a developer, I want authentication enforced on Command Center UI endpoints so
 
 **Story Points:** 2
 
-**Description:**
-As a developer, I want all architecture decision records in `.github/docs/architecture/` so that decisions are discoverable and searchable.
+**Description:** As a developer, I want all architecture decision records in
+`.github/docs/architecture/` so that decisions are discoverable and searchable.
 
 **Acceptance Criteria:**
+
 - [ ] Directory `.github/docs/architecture/` created
 - [ ] Individual ADR files extracted from `05-software-architect-analysis.md`:
   - `adr-001-modular-monolith.md`
@@ -380,15 +446,19 @@ As a developer, I want all architecture decision records in `.github/docs/archit
   - Table listing all ADRs (ID, Title, Status, Date)
   - Instructions for proposing new ADRs
 - [ ] Cross-references in analysis document updated to point to new ADR files
-- [ ] Synthesis Agent instruction updated to read ADRs from `.github/docs/architecture/`
+- [ ] Synthesis Agent instruction updated to read ADRs from
+      `.github/docs/architecture/`
 
 **Blockers:** None
 
 **Technical Notes:**
-- Use consistent frontmatter format (YAML or Markdown tables) for machine-readability
+
+- Use consistent frontmatter format (YAML or Markdown tables) for
+  machine-readability
 - Link ADRs bidirectionally (e.g., ADR-006 references ADR-005)
 
 **Definition of Done:**
+
 - All 6 ADRs exist as individual files
 - README index table accurate
 - Template usable for future ADRs
@@ -407,10 +477,12 @@ As a developer, I want all architecture decision records in `.github/docs/archit
 
 **Story Points:** 2
 
-**Description:**
-As a new developer, I want visual C4 architecture diagrams in the codebase so that I can quickly understand system structure during onboarding.
+**Description:** As a new developer, I want visual C4 architecture diagrams in
+the codebase so that I can quickly understand system structure during
+onboarding.
 
 **Acceptance Criteria:**
+
 - [ ] File `docs/architecture.md` created with:
   - Introduction to system architecture
   - C4 Level 1 (Context) diagram in Mermaid format
@@ -418,17 +490,20 @@ As a new developer, I want visual C4 architecture diagrams in the codebase so th
   - C4 Level 3 (Component — HTTP Server) diagram in Mermaid format
   - Link to `.github/docs/architecture/` ADRs
 - [ ] Diagrams render correctly in GitHub Markdown preview (validated manually)
-- [ ] README.md updated with link to `docs/architecture.md` (new "Architecture" section)
+- [ ] README.md updated with link to `docs/architecture.md` (new "Architecture"
+      section)
 - [ ] Diagrams match analysis sections 3.1, 3.2, 3.3 content
 
 **Blockers:** None (can be done in parallel with SA-008)
 
 **Technical Notes:**
+
 - Use Mermaid `graph` or `flowchart` syntax for C4 diagrams
 - Add labels to clarify component responsibilities
 - Keep diagrams simple (≤10 boxes per diagram for readability)
 
 **Definition of Done:**
+
 - `docs/architecture.md` exists
 - Diagrams render in GitHub
 - README links to architecture docs
@@ -438,37 +513,47 @@ As a new developer, I want visual C4 architecture diagrams in the codebase so th
 ## 3. Sprint Sequencing and Dependencies
 
 ### Sprint 10 (Phase 2 Software Architecture — Week 1-2)
+
 **Stories:** SA-001, SA-002, SA-003, SA-006 (handoff to Security Architect)
 
-**Total Story Points:** 5 + 3 + 2 = **10 SP** (Software Architect work only; SA-006 is Security Arch)
+**Total Story Points:** 5 + 3 + 2 = **10 SP** (Software Architect work only;
+SA-006 is Security Arch)
 
 **Parallel Tracks:**
+
 - Track A: SA-001 (JSON schema validation) — independent
-- Track B: SA-002 → SA-003 (load testing baseline then CI integration) — sequential
+- Track B: SA-002 → SA-003 (load testing baseline then CI integration) —
+  sequential
 
 **Critical Path:** SA-002 → SA-003 (load tests must exist before CI integration)
 
-**Sprint Goal:** Harden API boundary validation and establish performance quality gate
+**Sprint Goal:** Harden API boundary validation and establish performance
+quality gate
 
 ---
 
 ### Sprint 11 (Phase 2 Software Architecture — Week 3-4)
+
 **Stories:** SA-004, SA-005, SA-008, SA-009
 
 **Total Story Points:** 3 + 1 + 2 + 2 = **8 SP**
 
 **Parallel Tracks:**
+
 - Track A: SA-004 → SA-005 (stress tests then CI integration) — sequential
 - Track B: SA-008 (ADR consolidation) — independent
 - Track C: SA-009 (C4 diagrams) — independent
 
-**Critical Path:** SA-004 → SA-005 (stress tests must exist before CI integration)
+**Critical Path:** SA-004 → SA-005 (stress tests must exist before CI
+integration)
 
-**Sprint Goal:** Validate multi-user readiness and improve architecture documentation
+**Sprint Goal:** Validate multi-user readiness and improve architecture
+documentation
 
 ---
 
 ### Sprint 12 (Phase 2 Software Architecture — Week 5-6)
+
 **Stories:** SA-007 (authentication implementation)
 
 **Total Story Points:** 1–8 SP (depends on Security Architect ADR-007 choice)
@@ -477,7 +562,8 @@ As a new developer, I want visual C4 architecture diagrams in the codebase so th
 
 **Critical Path:** SA-006 (Security Architect ADR-007) → SA-007 (implementation)
 
-**Sprint Goal:** Implement authentication strategy (BLOCKING for external exposure)
+**Sprint Goal:** Implement authentication strategy (BLOCKING for external
+exposure)
 
 ---
 
@@ -485,15 +571,15 @@ As a new developer, I want visual C4 architecture diagrams in the codebase so th
 
 Validation: Every P1 and P2 recommendation must have ≥1 sprint story.
 
-| Recommendation | Priority | Sprint Stories | Traceability Status |
-|----------------|----------|----------------|---------------------|
-| **REC-501** (JSON schema validation) | P1 | SA-001 | ✓ Complete |
-| **REC-503** (Load testing) | P1 | SA-002, SA-003 | ✓ Complete |
-| **REC-504** (Stress testing) | P2 | SA-004, SA-005 | ✓ Complete |
-| **REC-505** (Authentication) | P1 | SA-006 (dependency), SA-007 (implementation) | ✓ Complete |
-| **REC-506** (ADR consolidation) | P2 | SA-008 | ✓ Complete |
-| **REC-507** (C4 diagrams) | P2 | SA-009 | ✓ Complete |
-| **REC-502** (Defer domain events) | P3 | N/A — deferred to future milestone | ✓ Explicitly deferred |
+| Recommendation                       | Priority | Sprint Stories                               | Traceability Status   |
+| ------------------------------------ | -------- | -------------------------------------------- | --------------------- |
+| **REC-501** (JSON schema validation) | P1       | SA-001                                       | ✓ Complete            |
+| **REC-503** (Load testing)           | P1       | SA-002, SA-003                               | ✓ Complete            |
+| **REC-504** (Stress testing)         | P2       | SA-004, SA-005                               | ✓ Complete            |
+| **REC-505** (Authentication)         | P1       | SA-006 (dependency), SA-007 (implementation) | ✓ Complete            |
+| **REC-506** (ADR consolidation)      | P2       | SA-008                                       | ✓ Complete            |
+| **REC-507** (C4 diagrams)            | P2       | SA-009                                       | ✓ Complete            |
+| **REC-502** (Defer domain events)    | P3       | N/A — deferred to future milestone           | ✓ Explicitly deferred |
 
 **All P1/P2 recommendations mapped:** Yes ✓
 
@@ -501,36 +587,41 @@ Validation: Every P1 and P2 recommendation must have ≥1 sprint story.
 
 ## 5. Blocker Register
 
-| Blocker ID | Story | Blocker Description | Blocker Owner | Resolution Plan | Status |
-|------------|-------|---------------------|---------------|-----------------|--------|
-| **BLK-SA-001** | SA-001 | Ajv license verification (LCHECK-001) | Legal Counsel | Verify MIT License compatibility; if BLOCKING, use manual validation wrapper | OPEN |
-| **BLK-SA-002** | SA-003 | Baseline metrics must exist before CI integration | SA-002 (self) | Sequential execution: SA-002 in Sprint 10 → SA-003 same sprint | PLANNED |
-| **BLK-SA-003** | SA-005 | Stress tests must exist before CI integration | SA-004 (self) | Sequential execution: SA-004 in Sprint 11 → SA-005 same sprint | PLANNED |
-| **BLK-SA-004** | SA-007 | Security Architect ADR-007 (authentication strategy) | Security Architect | Monitor Phase 2 progress; escalate if ADR-007 delayed beyond Sprint 11 | CRITICAL |
+| Blocker ID     | Story  | Blocker Description                                  | Blocker Owner      | Resolution Plan                                                              | Status   |
+| -------------- | ------ | ---------------------------------------------------- | ------------------ | ---------------------------------------------------------------------------- | -------- |
+| **BLK-SA-001** | SA-001 | Ajv license verification (LCHECK-001)                | Legal Counsel      | Verify MIT License compatibility; if BLOCKING, use manual validation wrapper | OPEN     |
+| **BLK-SA-002** | SA-003 | Baseline metrics must exist before CI integration    | SA-002 (self)      | Sequential execution: SA-002 in Sprint 10 → SA-003 same sprint               | PLANNED  |
+| **BLK-SA-003** | SA-005 | Stress tests must exist before CI integration        | SA-004 (self)      | Sequential execution: SA-004 in Sprint 11 → SA-005 same sprint               | PLANNED  |
+| **BLK-SA-004** | SA-007 | Security Architect ADR-007 (authentication strategy) | Security Architect | Monitor Phase 2 progress; escalate if ADR-007 delayed beyond Sprint 11       | CRITICAL |
 
-**Critical blockers:** 1 (BLK-SA-004 — authentication strategy from Security Architect)
+**Critical blockers:** 1 (BLK-SA-004 — authentication strategy from Security
+Architect)
 
 **Blocker mitigation:**
-- **BLK-SA-001:** Low risk (Ajv is MIT Licensed per npmjs.com); proactive Legal Counsel check in Sprint 10 planning
-- **BLK-SA-004:** High risk if Security Architect delayed; recommend parallel exploration of localhost origin check (1 SP) as fallback
+
+- **BLK-SA-001:** Low risk (Ajv is MIT Licensed per npmjs.com); proactive Legal
+  Counsel check in Sprint 10 planning
+- **BLK-SA-004:** High risk if Security Architect delayed; recommend parallel
+  exploration of localhost origin check (1 SP) as fallback
 
 ---
 
 ## 6. Sprint KPIs
 
-| KPI | Target | Measurement Method |
-|-----|--------|-------------------|
-| **P1 Story Completion Rate** | 100% (all P1 stories delivered by Sprint 12) | Count of P1 stories DONE / total P1 stories |
-| **Sprint Velocity** | 15 SP (Sprint 10), 20 SP (Sprint 11/12) | Actual SP delivered per sprint |
-| **Blocker Resolution Time** | <1 sprint (escalate if blocker open >2 weeks) | Days from blocker identified to resolution |
-| **Test Coverage** | >=95% (per REC-501 target) | coverage/ report after each sprint |
-| **CI Green Rate** | >=95% (builds pass on first attempt) | GitHub Actions success rate |
+| KPI                          | Target                                        | Measurement Method                          |
+| ---------------------------- | --------------------------------------------- | ------------------------------------------- |
+| **P1 Story Completion Rate** | 100% (all P1 stories delivered by Sprint 12)  | Count of P1 stories DONE / total P1 stories |
+| **Sprint Velocity**          | 15 SP (Sprint 10), 20 SP (Sprint 11/12)       | Actual SP delivered per sprint              |
+| **Blocker Resolution Time**  | <1 sprint (escalate if blocker open >2 weeks) | Days from blocker identified to resolution  |
+| **Test Coverage**            | >=95% (per REC-501 target)                    | coverage/ report after each sprint          |
+| **CI Green Rate**            | >=95% (builds pass on first attempt)          | GitHub Actions success rate                 |
 
 ---
 
 ## 7. Definition of Done (Sprint Level)
 
 A sprint is DONE when:
+
 - [ ] All planned stories moved to DONE status (acceptance criteria met)
 - [ ] All code merged to main branch
 - [ ] All tests passing in CI (unit, integration, load, stress)
@@ -545,7 +636,8 @@ A sprint is DONE when:
 
 - [x] Team assumptions documented (capacity, velocity, sprint duration) ✓
 - [x] All P1/P2 recommendations mapped to ≥1 story ✓
-- [x] Every story has: type (CODE/INFRA/CONTENT/ANALYSIS), acceptance criteria, story points, blocker field ✓
+- [x] Every story has: type (CODE/INFRA/CONTENT/ANALYSIS), acceptance criteria,
+      story points, blocker field ✓
 - [x] Sprint sequencing defined (Sprint 10, 11, 12) with parallel tracks ✓
 - [x] P1/P2 traceability matrix validated (all recommendations covered) ✓
 - [x] Blocker register present with resolution plans ✓

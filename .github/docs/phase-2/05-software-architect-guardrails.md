@@ -1,9 +1,11 @@
 # Guardrails – Software Architecture – 2026-03-09
 
 ## Metadata
+
 - Agent: Software Architect (05)
 - Phase: 2
-- Input received from: Software Architect Analysis + Recommendations + Sprint Plan
+- Input received from: Software Architect Analysis + Recommendations + Sprint
+  Plan
 - Date: 2026-03-09
 - Software under design: MYAGENTIC-IT-PROJECT-TEAM-V2
 - **Mode: CREATE**
@@ -12,12 +14,16 @@
 
 ## Purpose of Guardrails
 
-These guardrails enforce architectural principles and prevent common violations during Phase 5 implementation. Each guardrail is:
-- **Testable:** Automated verification possible (CI check, linter rule, test assertion)
+These guardrails enforce architectural principles and prevent common violations
+during Phase 5 implementation. Each guardrail is:
+
+- **Testable:** Automated verification possible (CI check, linter rule, test
+  assertion)
 - **Specific:** Clear pass/fail criteria
 - **Actionable:** Violation triggers defined remediation action
 
 **Enforcement timing:**
+
 - **Pre-merge:** CI checks before PR approval
 - **Post-merge:** Monitoring + alerts for runtime violations
 - **Sprint gate:** Manual review during sprint retrospective
@@ -28,17 +34,19 @@ These guardrails enforce architectural principles and prevent common violations 
 
 **Category:** Dependency Management
 
-**Rule:**
-`package.json` MUST have zero entries in `dependencies` object. All external packages MUST be in `devDependencies` only.
+**Rule:** `package.json` MUST have zero entries in `dependencies` object. All
+external packages MUST be in `devDependencies` only.
 
-**Rationale:**
-Preserves operational simplicity, minimizes attack surface, enables license audit simplification (Phase 1 REC-005).
+**Rationale:** Preserves operational simplicity, minimizes attack surface,
+enables license audit simplification (Phase 1 REC-005).
 
 **Source:**
+
 - Analysis ADR-003 (zero-framework HTTP server)
 - Existing implementation: `package.json:10` (dependencies object empty)
 
 **Verification Method:**
+
 ```bash
 # CI check script
 if [ -n "$(jq -r '.dependencies | keys[]' package.json 2>/dev/null)" ]; then
@@ -48,15 +56,20 @@ if [ -n "$(jq -r '.dependencies | keys[]' package.json 2>/dev/null)" ]; then
 fi
 ```
 
-**Automated enforcement:** CI workflow `.github/workflows/guardrails.yml` (runs on PR, push to main)
+**Automated enforcement:** CI workflow `.github/workflows/guardrails.yml` (runs
+on PR, push to main)
 
 **Violation Action:**
+
 1. CI build fails with error message referencing ARCH-G-001
-2. Developer must refactor to remove dependency OR escalate to Software Architect if legitimate need (triggers ADR review)
+2. Developer must refactor to remove dependency OR escalate to Software
+   Architect if legitimate need (triggers ADR review)
 3. If approved: update ADR-003 with exception and rationale
 
 **Exception Process:**
-- Propose ADR amendment with business justification (e.g., "cryptographic library required per Security Architect mandate")
+
+- Propose ADR amendment with business justification (e.g., "cryptographic
+  library required per Security Architect mandate")
 - Software Architect + Security Architect review
 - If approved: update guardrail with explicit exception list
 
@@ -68,17 +81,20 @@ fi
 
 **Category:** Data Persistence
 
-**Rule:**
-No database client libraries (e.g., `pg`, `mysql2`, `mongodb`, `redis`) SHALL be added to codebase. All data persistence MUST use FileStore abstraction (`store.js`).
+**Rule:** No database client libraries (e.g., `pg`, `mysql2`, `mongodb`,
+`redis`) SHALL be added to codebase. All data persistence MUST use FileStore
+abstraction (`store.js`).
 
-**Rationale:**
-Maintains zero-infrastructure deployment per ADR-004, ensures Git-based audit trail.
+**Rationale:** Maintains zero-infrastructure deployment per ADR-004, ensures
+Git-based audit trail.
 
 **Source:**
+
 - Analysis ADR-004 (file-based JSON/Markdown storage)
 - Analysis section 2.5 (database selection)
 
 **Verification Method:**
+
 ```bash
 # CI check script
 FORBIDDEN_DEPS="pg mysql2 mysql mongodb redis ioredis sqlite3 better-sqlite3"
@@ -93,15 +109,20 @@ done
 **Automated enforcement:** Same CI workflow as ARCH-G-001
 
 **Violation Action:**
+
 1. CI build fails
-2. Developer must refactor to use FileStore OR escalate if file-based storage insufficient (triggers architecture re-evaluation per REEVALUATE command)
-3. If scope change required (e.g., performance demands real database): trigger SCOPE CHANGE TECH procedure
+2. Developer must refactor to use FileStore OR escalate if file-based storage
+   insufficient (triggers architecture re-evaluation per REEVALUATE command)
+3. If scope change required (e.g., performance demands real database): trigger
+   SCOPE CHANGE TECH procedure
 
 **Exception Process:**
+
 - Escalate to Reevaluate Agent with performance data justifying database need
 - If approved: ADR-004 superseded by new ADR, guardrail archived
 
-**Test Coverage Requirement:** FileStore integration tests cover all data access patterns (existing coverage in `tests/store.test.js`)
+**Test Coverage Requirement:** FileStore integration tests cover all data access
+patterns (existing coverage in `tests/store.test.js`)
 
 ---
 
@@ -109,17 +130,20 @@ done
 
 **Category:** Data Integrity
 
-**Rule:**
-All file write operations MUST use the atomic write pattern (temp-file-then-rename) implemented in `FileStore.write()`. Direct `fs.writeFile()` calls to data files FORBIDDEN.
+**Rule:** All file write operations MUST use the atomic write pattern
+(temp-file-then-rename) implemented in `FileStore.write()`. Direct
+`fs.writeFile()` calls to data files FORBIDDEN.
 
-**Rationale:**
-Prevents partial writes and data corruption, especially critical for multi-user scenarios (RISK-501 mitigation).
+**Rationale:** Prevents partial writes and data corruption, especially critical
+for multi-user scenarios (RISK-501 mitigation).
 
 **Source:**
+
 - Analysis section 2.6 (ADR-004 atomic writes)
 - Existing implementation: `store.js:68-78`
 
 **Verification Method:**
+
 ```bash
 # Static analysis with grep
 FILES=$(grep -r "fs\.writeFile\|fs\.writeFileSync" .github/webapp --include="*.js" --exclude="store.js" | grep -v "test" | wc -l)
@@ -133,13 +157,17 @@ fi
 **Automated enforcement:** CI workflow (runs on every PR)
 
 **Violation Action:**
+
 1. CI build fails with file paths showing violations
-2. Developer refactors to use `FileStore.write(path, content)` instead of direct `fs` calls
+2. Developer refactors to use `FileStore.write(path, content)` instead of direct
+   `fs` calls
 3. No exceptions permitted (architectural invariant)
 
-**Exception Process:** None (atomic writes are non-negotiable for data integrity)
+**Exception Process:** None (atomic writes are non-negotiable for data
+integrity)
 
-**Test Coverage Requirement:** Integration tests verify FileStore.write() uses temp-file-then-rename (existing test in `tests/store.test.js:45`)
+**Test Coverage Requirement:** Integration tests verify FileStore.write() uses
+temp-file-then-rename (existing test in `tests/store.test.js:45`)
 
 ---
 
@@ -147,19 +175,21 @@ fi
 
 **Category:** API Quality
 
-**Rule:**
-Every POST/PUT endpoint MUST have:
+**Rule:** Every POST/PUT endpoint MUST have:
+
 1. JSON schema file in `.github/webapp/schemas/[endpoint-name]-schema.json`
 2. `validateBody(schemaId)` middleware applied in route handler
 
-**Rationale:**
-Enforces REC-501 (API schema validation), prevents malformed requests from reaching business logic.
+**Rationale:** Enforces REC-501 (API schema validation), prevents malformed
+requests from reaching business logic.
 
 **Source:**
+
 - Recommendations REC-501
 - Sprint plan story SA-001
 
 **Verification Method:**
+
 ```javascript
 // CI test script (tests/ci/verify-api-schemas.test.js)
 const routes = require('../.github/webapp/server.js'); // Import route definitions
@@ -169,24 +199,34 @@ test('All POST/PUT endpoints have schema validation', () => {
   const endpoints = extractPostPutEndpoints(routes); // Helper function
   for (const endpoint of endpoints) {
     const schemaPath = `.github/webapp/schemas/${endpoint.schemaId}.json`;
-    expect(fs.existsSync(schemaPath), `Missing schema for ${endpoint.path}`).toBe(true);
-    expect(endpoint.middleware.includes('validateBody'), `Missing validateBody for ${endpoint.path}`).toBe(true);
+    expect(
+      fs.existsSync(schemaPath),
+      `Missing schema for ${endpoint.path}`
+    ).toBe(true);
+    expect(
+      endpoint.middleware.includes('validateBody'),
+      `Missing validateBody for ${endpoint.path}`
+    ).toBe(true);
   }
 });
 ```
 
-**Automated enforcement:** Test suite runs in CI (fails if any endpoint missing schema)
+**Automated enforcement:** Test suite runs in CI (fails if any endpoint missing
+schema)
 
 **Violation Action:**
+
 1. CI test fails with endpoint name
 2. Developer creates missing schema OR adds `validateBody()` middleware
 3. No merge until guardrail passes
 
 **Exception Process:**
+
 - Public endpoints (e.g., `/healthz`, static assets) exempt
 - Explicit exemption list in `tests/ci/schema-exemptions.json` with rationale
 
-**Test Coverage Requirement:** Schema validation middleware itself tested at >=95% coverage (per SA-001 acceptance criteria)
+**Test Coverage Requirement:** Schema validation middleware itself tested
+at >=95% coverage (per SA-001 acceptance criteria)
 
 ---
 
@@ -194,37 +234,45 @@ test('All POST/PUT endpoints have schema validation', () => {
 
 **Category:** Performance
 
-**Rule:**
-API endpoint p95 response time MUST NOT exceed baseline + 10% tolerance. CI load tests fail if performance budget violated.
+**Rule:** API endpoint p95 response time MUST NOT exceed baseline + 10%
+tolerance. CI load tests fail if performance budget violated.
 
-**Rationale:**
-Enforces NFR performance targets (p95 < 200ms per analysis section 5.1), prevents performance regressions from shipping.
+**Rationale:** Enforces NFR performance targets (p95 < 200ms per analysis
+section 5.1), prevents performance regressions from shipping.
 
 **Source:**
+
 - Analysis section 5.1 (performance NFRs)
 - Recommendations REC-503
 - Sprint plan story SA-003
 
 **Verification Method:**
+
 ```bash
 # CI load test script (integrated in SA-003)
 npm run test:load
 # Script internally compares p95 to baseline, exits 1 if exceeded
 ```
 
-**Automated enforcement:** GitHub Actions workflow `load-tests.yml` (runs on PR to main)
+**Automated enforcement:** GitHub Actions workflow `load-tests.yml` (runs on PR
+to main)
 
 **Violation Action:**
+
 1. CI job fails with p95 comparison table (baseline vs current)
 2. Developer profiles endpoint to identify regression cause
-3. Fix performance issue OR justify with trade-off analysis (e.g., "added encryption, 5% slowdown acceptable per Security Architect")
-4. If justified: update baseline in `docs/performance-baseline.md` with ADR documenting trade-off
+3. Fix performance issue OR justify with trade-off analysis (e.g., "added
+   encryption, 5% slowdown acceptable per Security Architect")
+4. If justified: update baseline in `docs/performance-baseline.md` with ADR
+   documenting trade-off
 
 **Exception Process:**
+
 - Requires Software Architect + Product Manager approval if p95 > baseline + 10%
 - Document in ADR with user impact analysis
 
-**Test Coverage Requirement:** Load test suite covers all API endpoints (SA-002 acceptance criteria)
+**Test Coverage Requirement:** Load test suite covers all API endpoints (SA-002
+acceptance criteria)
 
 ---
 
@@ -232,17 +280,20 @@ npm run test:load
 
 **Category:** Documentation
 
-**Rule:**
-When architectural changes occur (new container/component, technology stack change), `docs/architecture.md` Mermaid diagrams MUST be updated within same PR.
+**Rule:** When architectural changes occur (new container/component, technology
+stack change), `docs/architecture.md` Mermaid diagrams MUST be updated within
+same PR.
 
-**Rationale:**
-Prevents documentation drift, ensures diagrams remain valuable for onboarding (REC-507).
+**Rationale:** Prevents documentation drift, ensures diagrams remain valuable
+for onboarding (REC-507).
 
 **Source:**
+
 - Recommendations REC-507
 - Sprint plan story SA-009
 
 **Verification Method:**
+
 ```bash
 # Manual checklist in PR template
 ## Architecture Changes Checklist
@@ -251,14 +302,18 @@ Prevents documentation drift, ensures diagrams remain valuable for onboarding (R
 - [ ] Diagrams render correctly in GitHub preview (verified manually)
 ```
 
-**Automated enforcement:** Partial (PR template enforces checklist; human reviewer verifies)
+**Automated enforcement:** Partial (PR template enforces checklist; human
+reviewer verifies)
 
 **Violation Action:**
+
 1. Reviewer flags missing diagram update in PR review
-2. Developer updates Mermaid diagrams OR confirms no architecture change occurred
+2. Developer updates Mermaid diagrams OR confirms no architecture change
+   occurred
 3. No merge until checklist complete
 
-**Exception Process:** None (documentation updates are low-cost, always feasible)
+**Exception Process:** None (documentation updates are low-cost, always
+feasible)
 
 **Test Coverage Requirement:** N/A (documentation guardrail, not code)
 
@@ -268,24 +323,27 @@ Prevents documentation drift, ensures diagrams remain valuable for onboarding (R
 
 **Category:** Governance
 
-**Rule:**
-Any change affecting:
+**Rule:** Any change affecting:
+
 - Technology stack (new language, framework, library with runtime dependency)
 - Data persistence strategy
 - API contract (versioning change, breaking change)
 - Authentication/authorization model
 
-MUST have a corresponding ADR in `.github/docs/architecture/` before implementation.
+MUST have a corresponding ADR in `.github/docs/architecture/` before
+implementation.
 
-**Rationale:**
-Maintains decision traceability, prevents ad-hoc architecture drift (REC-506).
+**Rationale:** Maintains decision traceability, prevents ad-hoc architecture
+drift (REC-506).
 
 **Source:**
+
 - Recommendations REC-506
 - Sprint plan story SA-008
 - Analysis section 6 (ADR consolidation)
 
 **Verification Method:**
+
 ```bash
 # PR checklist (manual verification)
 ## Architecture Decision Checklist
@@ -297,11 +355,14 @@ Maintains decision traceability, prevents ad-hoc architecture drift (REC-506).
 **Automated enforcement:** PR template + human review
 
 **Violation Action:**
+
 1. Reviewer identifies missing ADR during PR review
-2. Developer creates ADR before merge OR demonstrates no architecture decision occurred
+2. Developer creates ADR before merge OR demonstrates no architecture decision
+   occurred
 3. If uncertainty: escalate to Software Architect for classification
 
 **Exception Process:**
+
 - Trivial changes (bug fixes, refactoring without architecture impact) exempt
 - Burden of proof on developer to justify exemption in PR description
 
@@ -313,18 +374,21 @@ Maintains decision traceability, prevents ad-hoc architecture drift (REC-506).
 
 **Category:** Security
 
-**Rule:**
-Server MUST NOT be configured to bind to non-localhost interface (e.g., `0.0.0.0`, public IP) unless authentication middleware is enabled per Security Architect ADR-007.
+**Rule:** Server MUST NOT be configured to bind to non-localhost interface
+(e.g., `0.0.0.0`, public IP) unless authentication middleware is enabled per
+Security Architect ADR-007.
 
-**Rationale:**
-Prevents accidental exposure of unauthenticated orchestration controls (RISK-503 mitigation, REC-505).
+**Rationale:** Prevents accidental exposure of unauthenticated orchestration
+controls (RISK-503 mitigation, REC-505).
 
 **Source:**
+
 - Recommendations REC-505
 - Sprint plan story SA-007
 - Analysis SECURITY_FLAG: AUTH-001, AUTH-002, AUTH-003
 
 **Verification Method:**
+
 ```javascript
 // CI test script (tests/ci/verify-localhost-only.test.js)
 const serverConfig = require('../.github/webapp/server.js');
@@ -332,9 +396,11 @@ const serverConfig = require('../.github/webapp/server.js');
 test('Server binds to localhost only OR authentication enabled', () => {
   const host = serverConfig.HOST || '127.0.0.1';
   const authEnabled = serverConfig.AUTH_MIDDLEWARE_ENABLED || false;
-  
+
   if (host !== '127.0.0.1' && host !== 'localhost' && !authEnabled) {
-    throw new Error('VIOLATION ARCH-G-008: Non-localhost binding without authentication');
+    throw new Error(
+      'VIOLATION ARCH-G-008: Non-localhost binding without authentication'
+    );
   }
 });
 ```
@@ -342,15 +408,18 @@ test('Server binds to localhost only OR authentication enabled', () => {
 **Automated enforcement:** CI test suite
 
 **Violation Action:**
+
 1. CI test fails if `HOST !== localhost` AND `AUTH_MIDDLEWARE_ENABLED === false`
 2. Developer either:
    - Reverts HOST to localhost (for internal use)
-   - OR enables authentication per Security Architect ADR-007 (for external exposure)
+   - OR enables authentication per Security Architect ADR-007 (for external
+     exposure)
 3. No merge until guardrail passes
 
 **Exception Process:** None (security invariant, no exceptions)
 
-**Test Coverage Requirement:** Authentication middleware tested for 100% endpoint coverage (per SA-007 acceptance criteria)
+**Test Coverage Requirement:** Authentication middleware tested for 100%
+endpoint coverage (per SA-007 acceptance criteria)
 
 ---
 
@@ -358,20 +427,23 @@ test('Server binds to localhost only OR authentication enabled', () => {
 
 **Category:** Reliability
 
-**Rule:**
-Production metrics MUST track file lock acquisition latency (p95, p99) and timeout rate. Alert if:
+**Rule:** Production metrics MUST track file lock acquisition latency (p95, p99)
+and timeout rate. Alert if:
+
 - p95 lock latency > 50ms
 - Lock timeout rate > 1%
 
-**Rationale:**
-Early warning system for multi-user contention issues (RISK-501 mitigation, REC-504).
+**Rationale:** Early warning system for multi-user contention issues (RISK-501
+mitigation, REC-504).
 
 **Source:**
+
 - Recommendations REC-504
 - Sprint plan story SA-004
 - Analysis RISK-501 (file locking contention)
 
 **Verification Method:**
+
 ```javascript
 // Runtime monitoring (integrated in store.js)
 const { recordMetric } = require('./metrics.js');
@@ -380,7 +452,7 @@ function acquireLock(filePath) {
   const startTime = Date.now();
   const lock = fileLock.lock(filePath, { retries: 3, timeout: 5000 });
   const latency = Date.now() - startTime;
-  
+
   recordMetric('file_lock_latency', latency, { filePath });
   if (!lock) {
     recordMetric('file_lock_timeout', 1, { filePath });
@@ -389,17 +461,22 @@ function acquireLock(filePath) {
 }
 ```
 
-**Automated enforcement:** Metrics-based alerting (CI monitors `metrics.json` for anomalies)
+**Automated enforcement:** Metrics-based alerting (CI monitors `metrics.json`
+for anomalies)
 
 **Violation Action:**
-1. If p95 lock latency > 50ms for 10 consecutive measurements: alert in CI artifacts
+
+1. If p95 lock latency > 50ms for 10 consecutive measurements: alert in CI
+   artifacts
 2. Developer investigates contention source (log file paths with high latency)
 3. Mitigations: increase retry count, add backoff, optimize file access patterns
-4. If persistent: escalate to REEVALUATE TECH (may require database per ADR-004 revision)
+4. If persistent: escalate to REEVALUATE TECH (may require database per ADR-004
+   revision)
 
 **Exception Process:** None (monitoring requirement, not a fail/pass gate)
 
-**Test Coverage Requirement:** Stress tests validate lock behavior under contention (SA-004 acceptance criteria)
+**Test Coverage Requirement:** Stress tests validate lock behavior under
+contention (SA-004 acceptance criteria)
 
 ---
 
@@ -407,33 +484,38 @@ function acquireLock(filePath) {
 
 **Category:** Legal Compliance
 
-**Rule:**
-All dependencies (runtime and dev) MUST have MIT-compatible licenses. Forbidden licenses: GPL, AGPL, proprietary.
+**Rule:** All dependencies (runtime and dev) MUST have MIT-compatible licenses.
+Forbidden licenses: GPL, AGPL, proprietary.
 
-**Rationale:**
-Ensures project MIT License integrity, simplifies legal audit, aligns with Phase 1 REC-005.
+**Rationale:** Ensures project MIT License integrity, simplifies legal audit,
+aligns with Phase 1 REC-005.
 
 **Source:**
+
 - Analysis section 2 (technology stack licensing)
 - Phase 1 REC-005 (license governance)
 - Existing README.md license declaration
 
 **Verification Method:**
+
 ```bash
 # CI license check script (using license-checker or similar)
 npm install -g license-checker
 license-checker --production --onlyAllow "MIT;ISC;BSD;Apache-2.0;CC0-1.0" --failOn "GPL;AGPL;Proprietary"
 ```
 
-**Automated enforcement:** CI workflow `license-audit.yml` (runs on dependency updates)
+**Automated enforcement:** CI workflow `license-audit.yml` (runs on dependency
+updates)
 
 **Violation Action:**
+
 1. CI fails with list of non-compliant dependencies
 2. Developer removes dependency OR finds MIT-compatible alternative
 3. If no alternative exists: escalate to Legal Counsel for review
 4. Legal Counsel decision: approve with exemption OR mandate replacement
 
 **Exception Process:**
+
 - Requires Legal Counsel approval (LCHECK-XXX item created)
 - Document in `.github/docs/legal/license-exemptions.md` with rationale
 
@@ -443,18 +525,18 @@ license-checker --production --onlyAllow "MIT;ISC;BSD;Apache-2.0;CC0-1.0" --fail
 
 ## Guardrail Compliance Summary
 
-| Guardrail ID | Category | Enforcement | Exceptions Allowed? |
-|--------------|----------|-------------|---------------------|
-| **ARCH-G-001** | Dependency Management | Automated (CI) | Yes (with ADR amendment) |
-| **ARCH-G-002** | Data Persistence | Automated (CI) | Yes (via SCOPE CHANGE) |
-| **ARCH-G-003** | Data Integrity | Automated (CI) | No |
-| **ARCH-G-004** | API Quality | Automated (CI test) | Yes (explicit exemption list) |
-| **ARCH-G-005** | Performance | Automated (CI load test) | Yes (with ADR + approval) |
-| **ARCH-G-006** | Documentation | Manual (PR checklist) | No |
-| **ARCH-G-007** | Governance | Manual (PR checklist) | Yes (trivial changes exempt) |
-| **ARCH-G-008** | Security | Automated (CI test) | No |
-| **ARCH-G-009** | Reliability | Automated (metrics alert) | N/A (monitoring only) |
-| **ARCH-G-010** | Legal Compliance | Automated (CI license check) | Yes (Legal Counsel review) |
+| Guardrail ID   | Category              | Enforcement                  | Exceptions Allowed?           |
+| -------------- | --------------------- | ---------------------------- | ----------------------------- |
+| **ARCH-G-001** | Dependency Management | Automated (CI)               | Yes (with ADR amendment)      |
+| **ARCH-G-002** | Data Persistence      | Automated (CI)               | Yes (via SCOPE CHANGE)        |
+| **ARCH-G-003** | Data Integrity        | Automated (CI)               | No                            |
+| **ARCH-G-004** | API Quality           | Automated (CI test)          | Yes (explicit exemption list) |
+| **ARCH-G-005** | Performance           | Automated (CI load test)     | Yes (with ADR + approval)     |
+| **ARCH-G-006** | Documentation         | Manual (PR checklist)        | No                            |
+| **ARCH-G-007** | Governance            | Manual (PR checklist)        | Yes (trivial changes exempt)  |
+| **ARCH-G-008** | Security              | Automated (CI test)          | No                            |
+| **ARCH-G-009** | Reliability           | Automated (metrics alert)    | N/A (monitoring only)         |
+| **ARCH-G-010** | Legal Compliance      | Automated (CI license check) | Yes (Legal Counsel review)    |
 
 **Total guardrails:** 10
 
@@ -471,17 +553,21 @@ license-checker --production --onlyAllow "MIT;ISC;BSD;Apache-2.0;CC0-1.0" --fail
 ### Phase 5 Implementation Agent Instructions
 
 When Implementation Agent begins sprint work:
+
 1. Read this guardrails document before any code changes
 2. For each story, identify applicable guardrails (cross-reference by category)
 3. Before creating PR: run local guardrail checks (`npm run guardrails:check`)
 4. Verify PR checklist items (ARCH-G-006, ARCH-G-007) manually
-5. If CI guardrail fails: fix violation before requesting review (do NOT override)
+5. If CI guardrail fails: fix violation before requesting review (do NOT
+   override)
 
 ### Sprint Gate Integration
 
 At each Sprint Gate (end of sprint):
+
 1. Retrospective Agent reviews guardrail violation log from CI
-2. If >3 violations per sprint: escalate to Software Architect (indicates training gap or guardrail clarity issue)
+2. If >3 violations per sprint: escalate to Software Architect (indicates
+   training gap or guardrail clarity issue)
 3. Update guardrails document if violations reveal ambiguity
 
 ### CI/CD Pipeline Structure
@@ -495,51 +581,57 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: .github/scripts/check-zero-runtime-deps.sh  # ARCH-G-001
-      - run: .github/scripts/check-no-database-deps.sh   # ARCH-G-002
+      - run: .github/scripts/check-zero-runtime-deps.sh # ARCH-G-001
+      - run: .github/scripts/check-no-database-deps.sh # ARCH-G-002
       - run: .github/scripts/check-license-compliance.sh # ARCH-G-010
-  
+
   code-guardrails:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: .github/scripts/check-atomic-writes.sh      # ARCH-G-003
+      - run: .github/scripts/check-atomic-writes.sh # ARCH-G-003
       - run: npm ci
-      - run: npm run test:ci:schemas                     # ARCH-G-004
-      - run: npm run test:ci:localhost-binding           # ARCH-G-008
-  
+      - run: npm run test:ci:schemas # ARCH-G-004
+      - run: npm run test:ci:localhost-binding # ARCH-G-008
+
   performance-guardrails:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - run: npm ci
-      - run: npm run test:load                           # ARCH-G-005
+      - run: npm run test:load # ARCH-G-005
 ```
 
 ---
 
 ## Guardrail Violation Log Template
 
-When violations occur, log in `.github/docs/violations/YYYY-MM-DD-[guardrail-id].md`:
+When violations occur, log in
+`.github/docs/violations/YYYY-MM-DD-[guardrail-id].md`:
 
 ```markdown
 # Violation Report: [GUARDRAIL-ID] — [Date]
 
 ## Summary
+
 - **Guardrail violated:** [ID + Title]
 - **PR/Commit:** [SHA or PR number]
 - **Detected by:** [CI job name or human reviewer]
 
 ## Root Cause
+
 [Brief description of what caused violation]
 
 ## Resolution
+
 [What action was taken to fix]
 
 ## Prevention
+
 [How to prevent similar violations in future — update docs? add test?]
 
 ## Lesson Learned
+
 [For retrospective review]
 ```
 
@@ -693,7 +785,11 @@ When violations occur, log in `.github/docs/violations/YYYY-MM-DD-[guardrail-id]
   },
   "ci_integration": {
     "workflow_file": ".github/workflows/guardrails.yml",
-    "jobs": ["dependency-guardrails", "code-guardrails", "performance-guardrails"],
+    "jobs": [
+      "dependency-guardrails",
+      "code-guardrails",
+      "performance-guardrails"
+    ],
     "enforcement_timing": "Pre-merge (all PRs)"
   },
   "handoff_checklist": {

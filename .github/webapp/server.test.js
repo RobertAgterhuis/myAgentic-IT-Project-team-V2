@@ -2,8 +2,13 @@
 'use strict';
 /* global describe, it, expect */
 const {
-  sanitizeMarkdown, sanitizeQID, detectSecrets, checkSecretsInBody,
-  safePath, setSecurityHeaders, withFileLock,
+  sanitizeMarkdown,
+  sanitizeQID,
+  detectSecrets,
+  checkSecretsInBody,
+  safePath,
+  setSecurityHeaders,
+  withFileLock,
 } = require('./server');
 
 /* ── Story #1: Content Sanitization (IMPL-CONSTRAINT-002) ─────── */
@@ -68,7 +73,9 @@ describe('detectSecrets', () => {
   });
 
   it('detects bearer tokens', () => {
-    expect(detectSecrets('Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test=')).toContain('Bearer Token');
+    expect(detectSecrets('Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.test=')).toContain(
+      'Bearer Token'
+    );
   });
 
   it('returns empty array for clean text', () => {
@@ -111,7 +118,11 @@ describe('checkSecretsInBody', () => {
 describe('setSecurityHeaders', () => {
   it('sets all 7 recommended security headers', () => {
     const headers = {};
-    const mockRes = { setHeader: (k, v) => { headers[k] = v; } };
+    const mockRes = {
+      setHeader: (k, v) => {
+        headers[k] = v;
+      },
+    };
     setSecurityHeaders(mockRes);
     expect(headers['X-Content-Type-Options']).toBe('nosniff');
     expect(headers['X-Frame-Options']).toBe('SAMEORIGIN');
@@ -142,7 +153,7 @@ describe('withFileLock', () => {
   it('serializes concurrent calls on the same file', async () => {
     const order = [];
     const p1 = withFileLock('/test/a.md', async () => {
-      await new Promise(r => setTimeout(r, 50));
+      await new Promise((r) => setTimeout(r, 50));
       order.push(1);
       return 'first';
     });
@@ -159,7 +170,7 @@ describe('withFileLock', () => {
   it('allows parallel calls on different files', async () => {
     const order = [];
     const p1 = withFileLock('/test/a.md', async () => {
-      await new Promise(r => setTimeout(r, 30));
+      await new Promise((r) => setTimeout(r, 30));
       order.push('a');
     });
     const p2 = withFileLock('/test/b.md', async () => {

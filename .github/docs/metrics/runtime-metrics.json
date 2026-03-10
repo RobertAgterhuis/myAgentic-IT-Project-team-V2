@@ -1,6 +1,6 @@
 {
-  "flushed_at": "2026-03-10T05:08:39.056Z",
-  "requestCount": 713,
+  "flushed_at": "2026-03-10T05:13:39.079Z",
+  "requestCount": 728,
   "errorCount": 0,
   "fileOpsCount": 3,
   "responseTimes": [
@@ -716,11 +716,26 @@
     0,
     0,
     1,
+    0,
+    0,
+    1,
+    0,
+    0,
+    1,
+    0,
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1,
     0
   ],
   "perEndpoint": {
     "GET /api/questionnaires": {
-      "count": 232,
+      "count": 237,
       "times": [
         0,
         0,
@@ -953,11 +968,16 @@
         0,
         0,
         1,
-        0
+        0,
+        0,
+        0,
+        1,
+        0,
+        1
       ]
     },
     "GET /api/decisions": {
-      "count": 232,
+      "count": 237,
       "times": [
         3,
         2,
@@ -1190,11 +1210,16 @@
         1,
         1,
         1,
+        1,
+        1,
+        1,
+        0,
+        1,
         1
       ]
     },
     "GET /api/progress": {
-      "count": 232,
+      "count": 237,
       "times": [
         0,
         5,
@@ -1427,6 +1452,11 @@
         1,
         0,
         0,
+        0,
+        0,
+        0,
+        0,
+        1,
         0
       ]
     },

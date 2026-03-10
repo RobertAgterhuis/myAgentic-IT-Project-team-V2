@@ -86,11 +86,17 @@
     },
     "github_integration": {
       "sync_report": ".github/docs/github/sync-report-2026-03-10T19-00-00Z.md",
+      "project_board_setup_guide": ".github/docs/github/project-board-setup.md",
       "issues_created": 17,
       "issues_updated": 0,
       "issues_closed": 0,
+      "labels_created": 8,
+      "milestones_created": 2,
+      "sprint_1_milestone": 23,
+      "sprint_2_milestone": 24,
+      "project_board_status": "MANUAL_SETUP_REQUIRED",
       "sync_mode": "INITIAL_PUBLICATION",
-      "timestamp": "2026-03-10T19:00:00Z"
+      "timestamp": "2026-03-10T19:15:00Z"
     },
     "sprintplan": null,
     "phase_5": {}

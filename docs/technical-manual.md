@@ -9,7 +9,7 @@ description:
 
 # Technical Manual — myAgentic-IT-Project-team
 
-> Version 1.5 | Last updated: 2026-03-09 (SP-5)
+> Version 1.7 | Last updated: 2026-03-25 (Sprint 2 Day 1)
 
 This manual covers the server architecture, API reference, data model,
 configuration, deployment, and development practices for the Questionnaire &
@@ -978,7 +978,65 @@ Configured in `.github/vitest.config.mjs`:
 - Functions: ≥ 70%
 - Lines: ≥ 70%
 
-Actual coverage (as of SP-5): **87.40% statements, 76.45% branches, 92.15%
+### Webapp Test Suite (Root)
+
+The root project uses **Jest 29** with an 80% coverage gate for the webapp
+server and middleware.
+
+#### Test Structure
+
+```
+__tests__/
+  example.test.js                        — Baseline validation (15 tests)
+  unit/
+    middleware.test.js                   — Pure middleware functions (27 tests)
+  integration/
+    server.integration.test.js           — API endpoint integration (~22 tests)
+    health.integration.test.js           — Health endpoint contracts (9 tests)
+  smoke/
+    landing.smoke.test.js               — HTTP-based smoke tests (23 tests)
+```
+
+**Total: 99 tests across 5 suites.**
+
+#### Running Webapp Tests
+
+```bash
+# From repository root:
+npm test                  # All tests (unit + integration + smoke)
+npm run test:coverage     # With coverage report (80% gate)
+npm run test:integration  # Integration tests only
+npm run test:smoke        # Smoke tests only
+```
+
+#### Smoke Test Architecture (SP-11-613)
+
+HTTP-based tests using Node `http` module + Jest. No Playwright dependency — the
+smoke suite validates critical user journeys at the HTTP level using the same
+server-import pattern proven in integration tests.
+
+**7 smoke test groups (23 tests):**
+
+| Group | Journey | Tests |
+|-------|---------|-------|
+| SMOKE-001 | Landing page loads | 3 |
+| SMOKE-002 | Dashboard accessible | 3 |
+| SMOKE-003 | Health endpoint | 4 |
+| SMOKE-004 | API session reachable | 3 |
+| SMOKE-005 | Questionnaire list loads | 3 |
+| SMOKE-006 | Security headers baseline | 5 |
+| SMOKE-007 | Decisions endpoint | 2 |
+
+**CI Integration:** Job 7 (smoke-test) in `.github/workflows/ci-pipeline.yml`
+runs on `main` branch pushes after staging deployment. Test artifacts are
+uploaded with 30-day retention.
+
+**Accessibility Gate (Sprint 2):** Job 8 (accessibility-gate) is specified in
+`.github/docs/phase-5/sp-1-203-accessibility-gate.md`. Uses axe-core +
+Lighthouse with a 90% score threshold. Implementation scheduled for Sprint 2
+Week 1.
+
+Actual coverage (as of Sprint 1 Close): **87.40% statements, 76.45% branches, 92.15%
 functions, 88.94% lines** (649 tests across 22 test files).
 
 ### Test Conventions
@@ -987,6 +1045,96 @@ functions, 88.94% lines** (649 tests across 22 test files).
 - Use `setStore(store)` in `beforeEach` to reset state between tests.
 - Call `_cache.invalidateAll()` to clear cache state.
 - Server tests use `server.listen(0)` for random port allocation.
+
+---
+
+## CI/CD Pipeline
+
+### Overview
+
+The CI/CD pipeline (`.github/workflows/ci-pipeline.yml`) automates build, test,
+security scanning, and deployment for all PRs and pushes to `main`.
+
+**Trigger Events:**
+- `push` to `main`, `feature/**`, `hotfix/**`
+- `pull_request` to `main`
+
+### Job Architecture
+
+```
+[lint] ──┐
+[test] ──┼──→ [build] ──→ [deploy-staging] ──→ [integration-test]
+[security]┘                                 ──→ [smoke-test]
+                                                    ↓
+                                              [status-badge]
+```
+
+| Job | Name | Trigger | Purpose |
+|-----|------|---------|---------|
+| 1 | `lint` | All pushes + PRs | ESLint + Prettier code quality |
+| 2 | `test` | All pushes + PRs | Jest unit tests + 80% coverage gate |
+| 3 | `security` | All pushes + PRs | Gitleaks secret scan + Trivy vulnerability scan |
+| 4 | `build` | After Jobs 1-3 | `npm run build` + Docker image (GHCR) |
+| 5 | `deploy-staging` | `main` push only | Docker Compose health-checked deployment |
+| 6 | `integration-test` | After staging | `npm run test:integration` in CI |
+| 7 | `smoke-test` | After staging | `npm run test:smoke` (23 tests, 7 journeys) |
+| 8 | `status` | Always | Build status badge generation |
+
+### Job Details
+
+#### Job 1: Lint & Code Quality
+- Runs `npm run lint` (ESLint) and `npm run format:check` (Prettier)
+- Fails on any lint or formatting error
+
+#### Job 2: Unit Tests & Coverage
+- Runs `npm run test:coverage`
+- Coverage uploaded to Codecov
+- Enforces 80% line coverage minimum via threshold check
+
+#### Job 3: Security Scan
+- **Gitleaks**: Scans for committed secrets and API keys
+- **Trivy**: Filesystem vulnerability scan (CRITICAL + HIGH severity)
+- SARIF results uploaded to GitHub Security tab
+
+#### Job 4: Build & Docker Image
+- Requires Jobs 1-3 to pass
+- Builds application and Docker image (multi-platform: amd64 + arm64)
+- Pushes to GHCR on non-PR events
+
+#### Job 5: Deploy to Staging
+- `main` push only — Docker Compose deployment with health check loop
+- 30 retries × 2s intervals, fails if service doesn't respond
+- Tears down staging environment after downstream jobs complete
+
+#### Job 6: Integration Tests
+- Runs after staging deployment succeeds
+- Executes `npm run test:integration` against live service
+
+#### Job 7: Smoke Tests
+- Runs after staging deployment succeeds
+- Executes `npm run test:smoke` — 23 HTTP-based journey tests
+- Artifacts uploaded with 30-day retention
+
+#### Job 8: Accessibility Gate (Sprint 2)
+- **Status:** Specified in Sprint 1, implementation in Sprint 2 (SP-2-CI8 #124)
+- Runs axe-core WCAG 2.1 A/AA scan + Lighthouse accessibility audit
+- Threshold: Lighthouse score > 90, zero critical/serious axe violations
+- Specification: `.github/docs/phase-5/sp-1-203-accessibility-gate.md`
+
+### Environment
+
+| Variable | Value | Purpose |
+|----------|-------|---------|
+| `NODE_VERSION` | `20.x` | Node.js runtime version |
+| `DOCKER_BUILDKIT` | `1` | Docker BuildKit for caching |
+
+### Required Secrets
+
+| Secret | Purpose |
+|--------|---------|
+| `GITHUB_TOKEN` | Automatic — Gitleaks + Docker push |
+| `CODECOV_TOKEN` | Coverage upload (optional) |
+| `GITLEAKS_LICENSE` | Gitleaks enterprise (optional) |
 
 ---
 

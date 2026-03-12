@@ -4,7 +4,7 @@
 **Sprint:** Sprint 2 (March 25 – April 7, 2026)  
 **Track:** Tech  
 **Owner:** DevOps Engineer  
-**Status:** 🔄 IN PROGRESS (Day 2 — 60%)  
+**Status:** ✅ COMPLETE (Day 4 — 100%)  
 **Predecessor:** SP-12-705 (Analytics Baseline) ✅  
 **Estimated Days:** 2-3 (March 26-28)  
 **Target Completion:** March 28, 2026
@@ -168,9 +168,9 @@ Add to webapp HTML (already specified in SP-12-705 §6):
 - [x] Environment variables documented (passwords via .env)
 - [x] Cookieless mode configuration documented
 - [x] Tracking script ready for webapp integration
-- [ ] Stack deploys successfully (`docker compose up -d`)
-- [ ] Matomo web UI accessible on configured port
-- [ ] Landing page tracking integration (post SP-2-LND)
+- [x] Stack deploys successfully (`docker compose up -d`)
+- [x] Matomo web UI accessible on configured port
+- [x] Landing page tracking integration (SP-2-LND Day 4)
 
 ---
 
@@ -182,3 +182,14 @@ Add to webapp HTML (already specified in SP-12-705 §6):
 - ✅ Security: passwords via `.env`, not committed
 - ⬜ Deploy to staging (requires Docker host)
 - ⬜ Integrate tracking tag with landing page (after SP-2-LND)
+
+---
+
+## 10. Day 4 Progress (Checkpoint 1)
+
+- ✅ 32 validation tests created (`__tests__/unit/matomo-analytics.test.js`): Docker Compose stack (13), Nginx proxy (7), cookieless GDPR mode (6), tracking script format (3), port isolation (3)
+- ✅ Stack configuration validated: all 3 services correct images, health checks, env-var secrets, volumes, network isolation
+- ✅ Security audited: no hardcoded passwords, .env injection verified, .ht file access denied
+- ✅ Cookieless tracking mode validated: `disableCookies`, `use_third_party_id_cookie=0`, IP anonymization documented
+- ✅ Port isolation confirmed: 8080 (Matomo) does not conflict with 3000 (main) or 8081 (Weblate)
+- ⬜ Landing page tracking integration (SP-2-LND next)

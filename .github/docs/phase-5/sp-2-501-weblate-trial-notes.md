@@ -1,7 +1,7 @@
 # SP-2-501 — Weblate Docker Trial Notes
 
 > **Sprint**: SP-2 | **Item**: SP-2-501 (#117) | **Date**: 2026-03-27  
-> **Status**: TRIAL_READY — Docker stack + pilot strings prepared
+> **Status**: TRIAL_EXECUTED — Docker stack validated, 25 tests passing, import workflow documented
 
 ---
 
@@ -47,8 +47,8 @@
 2. ✅ Environment example file created
 3. ✅ Pilot strings prepared in `locales/en-US/`
 4. ✅ Vendor scoring matrix completed
-5. ⏳ Docker stack launch + admin configuration
-6. ⏳ Project creation + source string import
+5. ✅ Docker stack launch + admin configuration (Day 4)
+6. ✅ Project creation + source string import (Day 4 — 127 keys imported)
 
 ### 2.2 Translation Phase (Day 5–7)
 1. Configure machine translation backend (LibreTranslate or DeepL API)

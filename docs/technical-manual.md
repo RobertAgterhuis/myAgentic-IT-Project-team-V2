@@ -1072,19 +1072,21 @@ __tests__/
   example.test.js                        — Baseline validation (15 tests)
   unit/
     middleware.test.js                   — Pure middleware functions (27 tests)
+    matomo-analytics.test.js             — Matomo Docker stack validation (32 tests)
+    landing-matomo.test.js               — Landing page Matomo integration (12 tests)
+    weblate-docker.test.js               — Weblate Docker stack validation (25 tests)
+    email-templates.test.js              — Email template validation (10 tests)
+    weblate-trial.test.js                — Locale strings + Docker config (16 tests)
+    social-cards.test.js                 — Social card SVG validation (12 tests)
   integration/
     server.integration.test.js           — API endpoint integration (~22 tests)
     health.integration.test.js           — Health endpoint contracts (9 tests)
     subscribe.integration.test.js        — Newsletter subscribe endpoint (8 tests)
-  unit/
-    email-templates.test.js              — Email template validation (10 tests)
-    weblate-trial.test.js                — Locale strings + Docker config (16 tests)
-    social-cards.test.js                 — Social card SVG validation (12 tests)
   smoke/
     landing.smoke.test.js               — HTTP-based smoke tests (29 tests)
 ```
 
-**Total: 151 tests across 9 suites.**
+**Total: 220 tests across 12 suites.**
 
 #### Running Webapp Tests
 

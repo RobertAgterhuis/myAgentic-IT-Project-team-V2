@@ -11,6 +11,22 @@
   <meta property="og:type" content="website">
   <title>Agentic SDLC Platform — Design it right. Build it fast.</title>
   <link rel="stylesheet" href="/design-system.css">
+  <!-- Matomo Cookieless Analytics — SP-2-MAT (GDPR: no cookies, no consent banner) -->
+  <script>
+    var _paq = window._paq = window._paq || [];
+    _paq.push(['disableCookies']);
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+      var u = '//' + location.hostname + ':8080/';
+      _paq.push(['setTrackerUrl', u + 'matomo.php']);
+      _paq.push(['setSiteId', '1']);
+      var d = document, g = d.createElement('script'),
+          s = d.getElementsByTagName('script')[0];
+      g.async = true; g.src = u + 'matomo.js';
+      s.parentNode.insertBefore(g, s);
+    })();
+  </script>
   <style>
     /* Landing page layout */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -382,5 +398,7 @@
       });
     })();
   </script>
+  <!-- Matomo noscript fallback — SP-2-MAT -->
+  <noscript><img referrerpolicy="no-referrer-when-downgrade" src="//localhost:8080/matomo.php?idsite=1&amp;rec=1" style="border:0" alt="" /></noscript>
 </body>
 </html>

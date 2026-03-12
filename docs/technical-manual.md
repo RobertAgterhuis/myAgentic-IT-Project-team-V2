@@ -9,7 +9,7 @@ description:
 
 # Technical Manual — myAgentic-IT-Project-team
 
-> Version 1.9 | Last updated: 2026-03-27 (Sprint 2 Day 3)
+> Version 2.0 | Last updated: 2026-03-30 (Sprint 2 Day 6)
 
 This manual covers the server architecture, API reference, data model,
 configuration, deployment, and development practices for the Questionnaire &
@@ -746,9 +746,12 @@ Subscribe an email address to the newsletter via Buttondown ESP.
 - `201` — `{ "status": "pending_confirmation", "message": "..." }`
 - `400` — Invalid email or segment
 - `409` — Email already subscribed
-- `503` — `BUTTONDOWN_API_KEY` not configured
+- `201` (local fallback) — `{ "status": "stored_locally" }` when `BUTTONDOWN_API_KEY`
+  not set; subscriptions saved to `BusinessDocs/local-subscriptions.json`
 
-**Security:** API key is server-side only, never exposed to clients.
+**Security:** API key is server-side only, never exposed to clients. Local
+fallback ensures subscriptions are captured during development without requiring
+an ESP account.
 
 ---
 
@@ -760,7 +763,20 @@ Serves `index.html` (the single-page web UI).
 
 #### GET /landing
 
-Serves `landing.html` (the marketing landing page with subscribe form).
+Serves `landing.html` (the marketing landing page with subscribe form). Includes
+`og:image` and `twitter:card` meta tags for social media previews.
+
+#### GET /social-cards/:file.svg
+
+Serves SVG social cards from `.github/webapp/social-cards/`. Files:
+`card-architecture.svg`, `card-launch.svg`, `card-risk-matrix.svg`,
+`card-sprint-results.svg`. Content-Type: `image/svg+xml`, cached 24h.
+
+#### GET /locales/:locale/:file.json
+
+Serves locale translation files from `locales/` at repository root. Path
+traversal prevented by `safePath()`. Example:
+`GET /locales/fr-FR/ui-labels.json`. Content-Type: `application/json`, cached 1h.
 
 #### GET /health
 
@@ -903,13 +919,42 @@ directory.
 cd .github
 npm install
 
-# Start the server (from repo root)
+# Start the server (from repo root — also works via root package.json)
 node .github/webapp/server.js
+# or:
+npm start
 ```
 
 The server is designed for **localhost use only**. It does not implement
 authentication, rate limiting, or TLS — these would be needed for any
 network-exposed deployment.
+
+### Docker Compose (Full Stack)
+
+The platform runs as a 7-container Docker stack (app + analytics + i18n):
+
+```bash
+# Create .env with local credentials (see .env.example)
+# MATOMO_DB_PASSWORD, MATOMO_DB_ROOT_PASSWORD, WEBLATE_ADMIN_PASSWORD, WEBLATE_DB_PASSWORD
+
+# Start all services
+docker compose -f docker-compose.yml \
+  -f docker-compose.analytics.yml \
+  -f docker-compose.weblate.yml \
+  up --build -d
+
+# Verify all containers are healthy
+docker compose -f docker-compose.yml \
+  -f docker-compose.analytics.yml \
+  -f docker-compose.weblate.yml \
+  ps
+```
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| command-center | 3000 | Main web UI + API |
+| matomo + matomo-db + matomo-web | 8080 | Privacy-first analytics |
+| weblate + weblate-db + weblate-cache | 8081 | Translation management |
 
 ### Process Management
 

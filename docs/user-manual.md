@@ -8,7 +8,7 @@ description:
 
 # User Manual — myAgentic-IT-Project-team
 
-> Version 1.1 | Last updated: 2026-03-27 (Sprint 2)
+> Version 1.2 | Last updated: 2026-03-30 (Sprint 2 Day 6)
 
 This guide covers everything you need to use the myAgentic-IT-Project-team
 system: starting projects, managing questionnaires and decisions, using the
@@ -405,13 +405,22 @@ newsletter subscription form.
 The subscribe form posts to `POST /api/subscribe` with:
 
 ```json
-{ "email": "user@example.com", "segment": "developer" }
+{
+  "email": "user@example.com",
+  "metadata": { "segment": "developers", "source": "landing-page" }
+}
 ```
 
-Valid segments: `developer`, `manager`, `executive`, `general`.
+Valid segments: `engineering-leaders`, `product-managers`, `developers`,
+`evaluators`.
 
-Subscriptions are forwarded to Buttondown ESP. A 5-email welcome sequence
-(Days 0, 2, 4, 7, 10) introduces new subscribers to the platform.
+When the `BUTTONDOWN_API_KEY` environment variable is set, subscriptions are
+forwarded to Buttondown ESP. When the key is not configured (local development),
+subscriptions are stored locally in `BusinessDocs/local-subscriptions.json` so
+no data is lost.
+
+A 5-email welcome sequence (Days 0, 2, 4, 7, 10) introduces new subscribers to
+the platform.
 
 ### Email Templates
 
@@ -440,12 +449,15 @@ setup instructions.
 
 ## Internationalization (i18n)
 
-The platform supports translation via self-hosted Weblate TMS. Pilot
-translation strings are in `locales/en-US/` across three namespaces:
+The platform supports translation via self-hosted Weblate TMS. Translation
+strings are served at `/locales/:locale/:file.json` and stored in `locales/`
+across three namespaces:
 
-- `ui-labels.json` — Navigation, buttons, form labels (50 keys)
+- `ui-labels.json` — Navigation, buttons, form labels (49 keys)
 - `validation-messages.json` — Error/success messages (30 keys)
-- `doc-snippets.json` — Documentation, onboarding, ICU plurals (40 keys)
+- `doc-snippets.json` — Documentation, onboarding, ICU plurals (48 keys)
 
-Target languages: de-DE (German), fr-FR (French), with ja-JP and zh-CN
-planned. See `docker-compose.weblate.yml` for the translation management setup.
+Available locales: **en-US** (source), **fr-FR** (French), **de-DE** (German).
+Planned: ja-JP, zh-CN. Total: 127 keys × 3 locales = 381 translated strings.
+
+See `docker-compose.weblate.yml` for the translation management setup.

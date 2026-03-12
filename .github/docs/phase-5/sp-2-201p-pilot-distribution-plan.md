@@ -1,7 +1,7 @@
 # SP-2-201-P — Pilot Distribution Plan (Day 4)
 
-> **Sprint**: SP-2 | **Item**: SP-2-201-P (#107) | **Date**: 2026-03-28
-> **Status**: 🔄 IN PROGRESS (Day 4 — 85%)
+> **Sprint**: SP-2 | **Item**: SP-2-201-P (#107) | **Date**: 2026-03-30
+> **Status**: 🔄 IN PROGRESS (Day 6 — 85% → ESCALATION TRIGGERED)
 
 ---
 
@@ -89,7 +89,7 @@ output quality, and usability.
 | Sample project | `sp-2-201p-sample-project-brief.md` ("Task Management API") | ✅ Created (Day 3) |
 | Feedback rubric | `sp-2-202-pilot-feedback-rubric.md` (6 sections, Likert scales) | ✅ Created (Day 3) |
 | CI/CD pipeline | 9-job pipeline (lint, test, security, build, a11y gate) | ✅ Passing |
-| Test suite | 183+ tests, 11+ suites, 0 failures | ✅ Green |
+| Test suite | 323 tests, 15 suites, 0 failures | ✅ Green |
 
 ---
 
@@ -111,10 +111,33 @@ output quality, and usability.
 
 | Risk | Mitigation | Status |
 |------|-----------|--------|
-| No participants confirmed by Day 6 | Escalate to Orchestrator; extend to Sprint 3 if needed | MONITORING |
+| No participants confirmed by Day 6 | Escalate to Orchestrator; extend to Sprint 3 if needed | ⚠️ ESCALATED (Day 6) |
 | Participant lacks context for evaluation | Pilot brief + user manual provide all needed context | ✅ Mitigated |
 | Feedback rubric too complex | 6 sections kept focused; Likert scales for speed | ✅ Mitigated |
 | Mini-cycle takes longer than 2 hours | Steps 4-5 are read-only review; can be shortened | ✅ Mitigated |
+
+---
+
+## 7. Day 6 Escalation Note (2026-03-30)
+
+**Trigger:** No participant confirmation received by Day 6 (risk mitigation
+threshold from Section 6).
+
+**Escalation Actions:**
+1. Product Manager to send **follow-up communication** to all 3 candidate
+   participants by end of Day 7 (March 31)
+2. If no confirmation by Day 8 (April 1), the pilot window is too narrow for
+   Sprint 2 — **defer pilot execution to Sprint 3**
+3. SP-2-202 rubric + findings log template + sample project remain ready;
+   no rework needed when participants confirm
+4. SP-2-201-P acceptance criterion "Participant confirmation received" will be
+   marked DEFERRED if no response by Day 8
+
+**Impact on Sprint 2 Velocity:**
+- SP-2-201-P stays at 85% (confirmation = only remaining item)
+- SP-2-202 stays at 90% (findings log ready; pilot execution deferred)
+- Sprint velocity remains 7/10 (70%) if both items defer — still meets
+  Checkpoint 2 target of 70-80%
 
 ---
 

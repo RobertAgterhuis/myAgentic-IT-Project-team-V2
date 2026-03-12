@@ -13,28 +13,29 @@
 
 ### Active Experiment: `headline-v1`
 
-| Parameter | Value |
-|-----------|-------|
-| **Experiment ID** | `headline-v1` |
-| **Type** | Client-side A/B test (headline swap) |
-| **Split Ratio** | 50/50 |
-| **Assignment** | `localStorage`-based (persistent per browser) |
-| **Tracking** | Matomo Custom Dimension 1 + Event tracking |
-| **Fallback** | Private browsing: random assignment per visit (no persistence) |
+| Parameter         | Value                                                          |
+| ----------------- | -------------------------------------------------------------- |
+| **Experiment ID** | `headline-v1`                                                  |
+| **Type**          | Client-side A/B test (headline swap)                           |
+| **Split Ratio**   | 50/50                                                          |
+| **Assignment**    | `localStorage`-based (persistent per browser)                  |
+| **Tracking**      | Matomo Custom Dimension 1 + Event tracking                     |
+| **Fallback**      | Private browsing: random assignment per visit (no persistence) |
 
 ### Variants
 
-| Variant | Headline Text | Matomo Dimension Value | Source |
-|---------|--------------|----------------------|--------|
-| `control` | "Design it right. Build it fast." | `control_original` | Original (SP-2-LND) |
-| `variant_a` | "AI-Powered Phase-Based SDLC for Product Teams" | `variant_ai_powered` | CRO Sprint Plan SP-1-203 |
+| Variant     | Headline Text                                   | Matomo Dimension Value | Source                   |
+| ----------- | ----------------------------------------------- | ---------------------- | ------------------------ |
+| `control`   | "Design it right. Build it fast."               | `control_original`     | Original (SP-2-LND)      |
+| `variant_a` | "AI-Powered Phase-Based SDLC for Product Teams" | `variant_ai_powered`   | CRO Sprint Plan SP-1-203 |
 
 ### Implementation Location
 
 - File: `.github/webapp/landing.html`
 - Script: Inline `<script>` after `<h1 id="hero-heading">` (prevents FOUC)
 - Matomo init: `<head>` (tracker URL + cookie disable only)
-- Page view tracking: Deferred to experiment script (ensures custom dimension is set before `trackPageView`)
+- Page view tracking: Deferred to experiment script (ensures custom dimension is
+  set before `trackPageView`)
 
 ---
 
@@ -109,18 +110,19 @@ appeal.
 
 ### 4.1 Sample Size Discipline
 
-| Parameter | Value | Rationale |
-|-----------|-------|-----------|
-| **Minimum sample per variant** | 100 visitors | Minimum for directional signal |
-| **Target sample per variant** | 385 visitors | 95% confidence, 80% power, 5% MDE |
-| **Maximum run duration** | 30 days | Prevent indefinite experiments |
-| **Minimum run duration** | 7 days | Capture day-of-week variation |
+| Parameter                      | Value        | Rationale                         |
+| ------------------------------ | ------------ | --------------------------------- |
+| **Minimum sample per variant** | 100 visitors | Minimum for directional signal    |
+| **Target sample per variant**  | 385 visitors | 95% confidence, 80% power, 5% MDE |
+| **Maximum run duration**       | 30 days      | Prevent indefinite experiments    |
+| **Minimum run duration**       | 7 days       | Capture day-of-week variation     |
 
 **Sample Size Formula (two-proportion z-test):**
 
 $$n = \frac{(Z_{\alpha/2} + Z_\beta)^2 \cdot [p_1(1-p_1) + p_2(1-p_2)]}{(p_1 - p_2)^2}$$
 
 Where:
+
 - $Z_{\alpha/2} = 1.96$ (95% confidence)
 - $Z_\beta = 0.84$ (80% power)
 - $p_1$ = baseline conversion rate (estimated from Matomo baseline)
@@ -128,12 +130,12 @@ Where:
 
 ### 4.2 Significance Thresholds
 
-| Metric | Threshold | Method |
-|--------|-----------|--------|
-| **p-value** | < 0.05 (two-tailed) | Two-proportion z-test |
-| **Confidence interval** | 95% | Wilson score interval |
-| **Minimum Detectable Effect** | 5 percentage points | Absolute difference |
-| **Power** | 80% | Pre-experiment calculation |
+| Metric                        | Threshold           | Method                     |
+| ----------------------------- | ------------------- | -------------------------- |
+| **p-value**                   | < 0.05 (two-tailed) | Two-proportion z-test      |
+| **Confidence interval**       | 95%                 | Wilson score interval      |
+| **Minimum Detectable Effect** | 5 percentage points | Absolute difference        |
+| **Power**                     | 80%                 | Pre-experiment calculation |
 
 ### 4.3 Evaluation Protocol
 
@@ -169,12 +171,12 @@ above enforces this: `TOO_EARLY` status blocks action.
 
 ### 5.1 Current State (Pre-Experiment)
 
-| Metric | Value | Source | Date |
-|--------|-------|--------|------|
-| **Matomo tracking** | Operational | SP-3-MAT-FIX verified | 2026-04-09 |
-| **Total visits** | 1 | Matomo DB query (Sprint 3 Day 2) | 2026-04-09 |
-| **Subscribe conversions** | 0 | No subscriptions yet | 2026-04-10 |
-| **Baseline conversion rate** | INSUFFICIENT_DATA | Need ≥ 100 visits for baseline | — |
+| Metric                       | Value             | Source                           | Date       |
+| ---------------------------- | ----------------- | -------------------------------- | ---------- |
+| **Matomo tracking**          | Operational       | SP-3-MAT-FIX verified            | 2026-04-09 |
+| **Total visits**             | 1                 | Matomo DB query (Sprint 3 Day 2) | 2026-04-09 |
+| **Subscribe conversions**    | 0                 | No subscriptions yet             | 2026-04-10 |
+| **Baseline conversion rate** | INSUFFICIENT_DATA | Need ≥ 100 visits for baseline   | —          |
 
 ### 5.2 Baseline Collection Plan
 
@@ -193,24 +195,24 @@ Since the platform is pre-launch with minimal traffic:
 
 ## 6. Experiment Log
 
-| Date | Event | Details |
-|------|-------|---------|
+| Date       | Event              | Details                                                            |
+| ---------- | ------------------ | ------------------------------------------------------------------ |
 | 2026-04-10 | Framework deployed | `headline-v1` experiment live on `feature/sprint-3-implementation` |
-| — | Baseline capture | TBD — awaiting traffic |
-| — | Evaluation | TBD — awaiting minimum sample |
+| —          | Baseline capture   | TBD — awaiting traffic                                             |
+| —          | Evaluation         | TBD — awaiting minimum sample                                      |
 
 ---
 
 ## 7. Acceptance Criteria Status
 
-| AC | Description | Status | Evidence |
-|----|-------------|--------|----------|
-| 1 | Experiment framework configured | ✅ DONE | Inline script in `landing.html` with variant config, localStorage persistence, FOUC prevention |
-| 2 | A/B testing infrastructure deployed | ✅ DONE | Client-side 50/50 split, Matomo Custom Dimension 1, event tracking, 25 tests passing |
-| 3 | Baseline landing page performance measured | ✅ DONE | Matomo operational, baseline metrics documented (Section 5), collection plan defined |
-| 4 | Experiment workflow documented | ✅ DONE | Full workflow in Section 2 (pre-launch checklist, live cycle, new experiment guide) |
-| 5 | Statistical rigor guardrails implemented | ✅ DONE | Sample size formula, significance thresholds, anti-peeking rule, evaluation protocol (Section 4) |
+| AC  | Description                                | Status  | Evidence                                                                                         |
+| --- | ------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------ |
+| 1   | Experiment framework configured            | ✅ DONE | Inline script in `landing.html` with variant config, localStorage persistence, FOUC prevention   |
+| 2   | A/B testing infrastructure deployed        | ✅ DONE | Client-side 50/50 split, Matomo Custom Dimension 1, event tracking, 25 tests passing             |
+| 3   | Baseline landing page performance measured | ✅ DONE | Matomo operational, baseline metrics documented (Section 5), collection plan defined             |
+| 4   | Experiment workflow documented             | ✅ DONE | Full workflow in Section 2 (pre-launch checklist, live cycle, new experiment guide)              |
+| 5   | Statistical rigor guardrails implemented   | ✅ DONE | Sample size formula, significance thresholds, anti-peeking rule, evaluation protocol (Section 4) |
 
 ---
 
-*Created: 2026-04-10 Day 3 | Implementation Agent*
+_Created: 2026-04-10 Day 3 | Implementation Agent_

@@ -1,6 +1,6 @@
 ---
-subject: "Welcome to the Agentic SDLC Platform"
-preheader: "Design it right. Build it fast. 30+ AI agents, one coherent process."
+subject: 'Welcome to the Agentic SDLC Platform'
+preheader: 'Design it right. Build it fast. 30+ AI agents, one coherent process.'
 sequence: 1
 send_delay_days: 0
 ---

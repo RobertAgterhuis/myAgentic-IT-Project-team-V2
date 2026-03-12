@@ -39,18 +39,18 @@ fall outside implementation scope.
 
 ## Sprint 2 Final Status Board
 
-| Item | Issue | Status | Completed |
-|------|-------|--------|-----------|
-| SP-2-CI7 | #112 | ✅ COMPLETE | Day 1 |
-| SP-2-CI8 | #113 | ✅ COMPLETE | Day 2 |
-| SP-2-BTN | #114 | ✅ COMPLETE | Day 3 |
-| SP-2-MAT | #115 | ✅ COMPLETE | Day 4 |
-| SP-2-LND | #116 | ✅ COMPLETE | Day 5 |
-| SP-2-501 | #117 | ✅ COMPLETE | Day 5 |
-| SP-2-DOC | #129 | ✅ COMPLETE | Day 6 |
-| SP-2-SOC | #127 | ✅ COMPLETE | Day 8 |
-| SP-2-201-P | #107 | ⏸️ DEFERRED → Sprint 3 | — |
-| SP-2-202 | #110 | ⏸️ DEFERRED → Sprint 3 | — |
+| Item       | Issue | Status                 | Completed |
+| ---------- | ----- | ---------------------- | --------- |
+| SP-2-CI7   | #112  | ✅ COMPLETE            | Day 1     |
+| SP-2-CI8   | #113  | ✅ COMPLETE            | Day 2     |
+| SP-2-BTN   | #114  | ✅ COMPLETE            | Day 3     |
+| SP-2-MAT   | #115  | ✅ COMPLETE            | Day 4     |
+| SP-2-LND   | #116  | ✅ COMPLETE            | Day 5     |
+| SP-2-501   | #117  | ✅ COMPLETE            | Day 5     |
+| SP-2-DOC   | #129  | ✅ COMPLETE            | Day 6     |
+| SP-2-SOC   | #127  | ✅ COMPLETE            | Day 8     |
+| SP-2-201-P | #107  | ⏸️ DEFERRED → Sprint 3 | —         |
+| SP-2-202   | #110  | ⏸️ DEFERRED → Sprint 3 | —         |
 
 **Final Velocity: 80% (8/10)** — meets Sprint Close target of 80%+.
 
@@ -77,4 +77,4 @@ fall outside implementation scope.
 
 ---
 
-*Generated: 2026-04-01T18:00:00Z | Sprint 2 Day 8 | Implementation Agent*
+_Generated: 2026-04-01T18:00:00Z | Sprint 2 Day 8 | Implementation Agent_

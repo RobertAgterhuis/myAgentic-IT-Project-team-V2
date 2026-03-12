@@ -93,13 +93,13 @@ describe('SP-3-201-M: A/B Experiment Framework', () => {
 
     it('should call trackPageView after setting custom dimension', () => {
       const dimPos = html.indexOf('setCustomDimension');
-      const pageViewPos = html.indexOf("trackPageView");
+      const pageViewPos = html.indexOf('trackPageView');
       expect(dimPos).toBeLessThan(pageViewPos);
     });
 
     it('should enable link tracking after page view', () => {
-      const pageViewPos = html.indexOf("trackPageView");
-      const linkPos = html.indexOf("enableLinkTracking");
+      const pageViewPos = html.indexOf('trackPageView');
+      const linkPos = html.indexOf('enableLinkTracking');
       expect(pageViewPos).toBeLessThan(linkPos);
     });
 
@@ -151,7 +151,7 @@ describe('SP-3-201-M: A/B Experiment Framework', () => {
 
     it('should still disable cookies in head (GDPR)', () => {
       const headEnd = html.indexOf('</head>');
-      const disablePos = html.indexOf("disableCookies");
+      const disablePos = html.indexOf('disableCookies');
       expect(disablePos).toBeLessThan(headEnd);
     });
 

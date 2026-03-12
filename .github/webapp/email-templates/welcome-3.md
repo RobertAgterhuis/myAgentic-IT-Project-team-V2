@@ -1,6 +1,6 @@
 ---
-subject: "How 4 phases replace chaos with clarity"
-preheader: "Requirements → Architecture → Experience Design → Brand & Growth. Every time."
+subject: 'How 4 phases replace chaos with clarity'
+preheader: 'Requirements → Architecture → Experience Design → Brand & Growth. Every time.'
 sequence: 3
 send_delay_days: 4
 ---
@@ -14,14 +14,17 @@ implementation moves faster with fewer surprises.
 ## The Four Phases
 
 ### Phase 1 — Requirements & Strategy
+
 **Agents:** Business Analyst, Domain Expert, Sales Strategist, Financial
 Analyst, Product Manager
 
 The business model, target market, competitive positioning, and financial
 viability are analyzed before a single architecture decision is made. Output: a
-validated requirements set with explicit acceptance criteria and priority scores.
+validated requirements set with explicit acceptance criteria and priority
+scores.
 
 ### Phase 2 — Architecture & Design
+
 **Agents:** Software Architect, Senior Developer, DevOps Engineer, Security
 Architect, Data Architect, Legal Counsel
 
@@ -30,6 +33,7 @@ posture, and legal compliance are designed as an integrated whole. The Security
 Architect catches vulnerabilities in the design, not in the code review.
 
 ### Phase 3 — Experience Design
+
 **Agents:** UX Researcher, UX Designer, UI Designer, Accessibility Specialist,
 Content Strategist, Localization Specialist
 
@@ -38,6 +42,7 @@ and i18n readiness are crafted with deep context from Phases 1 and 2. No
 designing in a vacuum.
 
 ### Phase 4 — Brand & Growth
+
 **Agents:** Brand Strategist, Growth Marketer, CRO Specialist
 
 Brand identity, go-to-market messaging, conversion funnels, and growth channels

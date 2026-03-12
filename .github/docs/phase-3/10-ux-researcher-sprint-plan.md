@@ -487,6 +487,7 @@ confusion.
 2. **README update:**
    - [ ] Quick Start section added at top of README (visible without scrolling)
    - [ ] Example:
+
      ```markdown
      ## Quick Start
 
@@ -494,6 +495,7 @@ confusion.
      2. `node server.js`
      3. Open **http://127.0.0.1:3000** in your browser
      ```
+
 3. **MCP tool (optional for SP-1, can defer to SP-2):**
    - [ ] `open_command_center` MCP tool created (opens http://127.0.0.1:3000 in
          default browser)

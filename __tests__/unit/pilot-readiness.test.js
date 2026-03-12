@@ -11,7 +11,6 @@ const PHASE5 = path.join(__dirname, '..', '..', '.github', 'docs', 'phase-5');
 const DOCS = path.join(__dirname, '..', '..', 'docs');
 
 describe('SP-2-202 — Pilot Materials Readiness', () => {
-
   describe('Pilot package — all 5 documents exist', () => {
     test('pilot distribution plan exists', () => {
       expect(fs.existsSync(path.join(PHASE5, 'sp-2-201p-pilot-distribution-plan.md'))).toBe(true);
@@ -35,9 +34,7 @@ describe('SP-2-202 — Pilot Materials Readiness', () => {
   });
 
   describe('Feedback rubric structure', () => {
-    const rubric = fs.readFileSync(
-      path.join(PHASE5, 'sp-2-202-pilot-feedback-rubric.md'), 'utf8'
-    );
+    const rubric = fs.readFileSync(path.join(PHASE5, 'sp-2-202-pilot-feedback-rubric.md'), 'utf8');
 
     test('has Section 1: Participant Information', () => {
       expect(rubric).toContain('Section 1: Participant Information');
@@ -90,9 +87,7 @@ describe('SP-2-202 — Pilot Materials Readiness', () => {
   });
 
   describe('Sample project brief', () => {
-    const brief = fs.readFileSync(
-      path.join(PHASE5, 'sp-2-201p-sample-project-brief.md'), 'utf8'
-    );
+    const brief = fs.readFileSync(path.join(PHASE5, 'sp-2-201p-sample-project-brief.md'), 'utf8');
 
     test('contains "Task Management API" project name', () => {
       expect(brief).toContain('Task Management API');
@@ -104,9 +99,7 @@ describe('SP-2-202 — Pilot Materials Readiness', () => {
   });
 
   describe('Distribution plan completeness', () => {
-    const plan = fs.readFileSync(
-      path.join(PHASE5, 'sp-2-201p-pilot-distribution-plan.md'), 'utf8'
-    );
+    const plan = fs.readFileSync(path.join(PHASE5, 'sp-2-201p-pilot-distribution-plan.md'), 'utf8');
 
     test('contains pilot package table with 5 documents', () => {
       expect(plan).toContain('Pilot Brief');
@@ -134,9 +127,7 @@ describe('SP-2-202 — Pilot Materials Readiness', () => {
   });
 
   describe('Pilot scope alignment', () => {
-    const scope = fs.readFileSync(
-      path.join(PHASE5, 'sp-2-201p-internal-pilot-scope.md'), 'utf8'
-    );
+    const scope = fs.readFileSync(path.join(PHASE5, 'sp-2-201p-internal-pilot-scope.md'), 'utf8');
 
     test('defines 6-step mini-cycle', () => {
       expect(scope).toContain('Step');

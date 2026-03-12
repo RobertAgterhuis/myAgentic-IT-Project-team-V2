@@ -35,8 +35,16 @@ function getRepoRoot(ctx) {
   return ctx?.PROJECT_ROOT || path.resolve(__dirname, '..', '..', '..');
 }
 
-function getGitLines(command, cwd) {
+const ALLOWED_GIT_COMMANDS = {
+  'ls-files': 'git ls-files',
+  'recent-contributors': 'git log --since="180 days ago" --format=%aN',
+};
+
+function getGitLines(commandKey, cwd) {
+  const command = ALLOWED_GIT_COMMANDS[commandKey];
+  if (!command) return [];
   try {
+    // nosemgrep: javascript.lang.security.detect-child-process.detect-child-process
     return execSync(command, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
       .split(/\r?\n/)
       .map((line) => line.trim())
@@ -47,12 +55,12 @@ function getGitLines(command, cwd) {
 }
 
 function getGitTrackedFileCount(repoRoot) {
-  const lines = getGitLines('git ls-files', repoRoot);
+  const lines = getGitLines('ls-files', repoRoot);
   return lines.length;
 }
 
 function getRecentGitContributors(repoRoot) {
-  const lines = getGitLines('git log --since="180 days ago" --format=%aN', repoRoot);
+  const lines = getGitLines('recent-contributors', repoRoot);
   return new Set(lines.map((name) => name.toLowerCase())).size;
 }
 

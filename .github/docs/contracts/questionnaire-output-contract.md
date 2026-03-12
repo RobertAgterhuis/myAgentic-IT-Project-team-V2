@@ -315,9 +315,10 @@ Answer loading output is INVALID if:
 ```markdown
 # [Document Title]
 
-> Version: v[N] | Last updated: [ISO 8601] | Status: [DRAFT / REVIEWED /
-> APPROVED] Source phases: [Phase N, Phase M, ...] Completeness: [%] — sections
-> with INSUFFICIENT_DATA not included in percentage
+> Version: v[N] | Last updated: [ISO 8601] | Status: [DRAFT / REVIEWED / > > > >
+>
+> > APPROVED] Source phases: [Phase N, Phase M, ...] Completeness: [%] —
+> > sections with INSUFFICIENT_DATA not included in percentage
 ```
 
 ### Mandatory section presence per document

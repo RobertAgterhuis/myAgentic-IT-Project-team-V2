@@ -50,8 +50,8 @@ describe('SP-2-MAT: Docker Compose analytics stack', () => {
   it('should NOT contain hardcoded passwords', () => {
     // Passwords must come from .env, not be hardcoded
     const lines = composeContent.split('\n');
-    const passwordLines = lines.filter(l =>
-      /password/i.test(l) && !/\$\{/.test(l) && !/^\s*#/.test(l) && !/healthcheck/i.test(l)
+    const passwordLines = lines.filter(
+      (l) => /password/i.test(l) && !/\$\{/.test(l) && !/^\s*#/.test(l) && !/healthcheck/i.test(l)
     );
     expect(passwordLines).toHaveLength(0);
   });
@@ -210,7 +210,6 @@ describe('SP-2-MAT: Tracking script format', () => {
 /* ── Port allocation validation ──────────────────────────────── */
 describe('SP-2-MAT: Port allocation isolation', () => {
   const analyticsCompose = path.join(ROOT, 'docker-compose.analytics.yml');
-  const mainCompose = path.join(ROOT, 'docker-compose.yml');
 
   it('should allocate Matomo on port 8080 (non-conflicting)', () => {
     const content = fs.readFileSync(analyticsCompose, 'utf-8');
@@ -221,7 +220,7 @@ describe('SP-2-MAT: Port allocation isolation', () => {
     const analyticsContent = fs.readFileSync(analyticsCompose, 'utf-8');
     // Extract port mappings (host:container format)
     const portMatches = analyticsContent.match(/"\d+:\d+"/g) || [];
-    const hostPorts = portMatches.map(p => p.replace(/"/g, '').split(':')[0]);
+    const hostPorts = portMatches.map((p) => p.replace(/"/g, '').split(':')[0]);
     expect(hostPorts).not.toContain('3000');
   });
 

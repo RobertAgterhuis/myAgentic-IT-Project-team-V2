@@ -35,13 +35,14 @@ npm start
 
 ### Useful Commands
 
-| Command                 | Purpose                                |
-| ----------------------- | -------------------------------------- |
-| `npm start`             | Start the web server on localhost:3000 |
-| `npm test`              | Run all tests (Vitest)                 |
-| `npm run test:watch`    | Watch mode — re-runs on file changes   |
-| `npm run test:coverage` | Generate coverage report               |
-| `npm run lint`          | Run ESLint                             |
+| Command                               | Purpose                                        |
+| ------------------------------------- | ---------------------------------------------- |
+| `npm start`                           | Start the web server on localhost:3000         |
+| `npm test`                            | Run root tests (Jest, 363 tests)               |
+| `cd .github && npm test`              | Run .github/ tests (Vitest, 809 tests)         |
+| `cd .github && npm run test:watch`    | Watch mode — re-runs on file changes           |
+| `cd .github && npm run test:coverage` | Generate coverage report                       |
+| `cd .github && npm run lint`          | Run ESLint (.github/ — ESLint 10, flat config) |
 
 ---
 
@@ -88,7 +89,12 @@ npm start
 
 ### ESLint Configuration
 
-ESLint 9 with flat config (`.github/eslint.config.mjs`) enforces:
+Two ESLint configurations are used:
+
+- **Root** — ESLint 8.57.1 (legacy `.eslintrc` format)
+- **`.github/`** — ESLint 10.0.3 (flat config, `.github/eslint.config.mjs`)
+
+The `.github/` flat config enforces:
 
 | Rule              | Setting                   | Rationale                         |
 | ----------------- | ------------------------- | --------------------------------- |
@@ -162,9 +168,13 @@ docs: update README with badges and technology stack
 
 2. **Make your changes** following the coding standards above.
 
-3. **Run the full test suite** and ensure all tests pass:
+3. **Run both test suites** and ensure all tests pass:
 
    ```bash
+   # Root suite (Jest)
+   npm test
+
+   # .github/ suite (Vitest)
    cd .github
    npm test
    ```
@@ -172,12 +182,14 @@ docs: update README with badges and technology stack
 4. **Run ESLint** and fix any issues:
 
    ```bash
+   cd .github
    npm run lint
    ```
 
 5. **Check coverage** hasn't dropped below thresholds:
 
    ```bash
+   cd .github
    npm run test:coverage
    ```
 

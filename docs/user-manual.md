@@ -2,8 +2,7 @@
 layout: default
 title: User Manual
 nav_order: 2
-description:
-  End-user guide for the Questionnaire & Decisions Manager web application.
+description: End-user guide for the Questionnaire & Decisions Manager web application.
 ---
 
 # User Manual — myAgentic-IT-Project-team
@@ -425,6 +424,7 @@ the platform.
 ### Email Templates
 
 Welcome sequence templates are in `.github/webapp/email-templates/`:
+
 - `welcome-1.md` — Value proposition (Day 0)
 - `welcome-2.md` — Problem awareness (Day 2)
 - `welcome-3.md` — Product education (Day 4)
@@ -438,12 +438,12 @@ support and Outlook compatibility.
 
 ## Analytics (Matomo)
 
-Self-hosted privacy-first analytics via Matomo. Runs as a separate Docker
-stack (`docker-compose.analytics.yml`). Cookieless tracking mode preserves
-user privacy while providing actionable metrics.
+Self-hosted privacy-first analytics via Matomo. Runs as a separate Docker stack
+(`docker-compose.analytics.yml`). Cookieless tracking mode preserves user
+privacy while providing actionable metrics.
 
-See the [Technical Manual](technical-manual.md#analytics-stack-matomo) for
-setup instructions.
+See the [Technical Manual](technical-manual.md#analytics-stack-matomo) for setup
+instructions.
 
 ---
 

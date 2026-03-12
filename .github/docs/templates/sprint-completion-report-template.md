@@ -1,11 +1,9 @@
 # Sprint [N] Completion Report
 
-**Sprint:** Sprint [N]
-**Milestone:** #[M]
-**Period:** [START_DATE] – [END_DATE] ([CALENDAR_DAYS] calendar days)
-**Status:** [STATUS_EMOJI] **[STATUS — e.g. SPRINT COMPLETE — X% VELOCITY (Y/Z ITEMS)]**
-**Report Date:** [REPORT_DATE] (Day [D])
-**Agent:** Implementation Agent → Test Agent → KPI Agent
+**Sprint:** Sprint [N] **Milestone:** #[M] **Period:** [START_DATE] – [END_DATE]
+([CALENDAR_DAYS] calendar days) **Status:** [STATUS_EMOJI] **[STATUS — e.g.
+SPRINT COMPLETE — X% VELOCITY (Y/Z ITEMS)]** **Report Date:** [REPORT_DATE] (Day
+[D]) **Agent:** Implementation Agent → Test Agent → KPI Agent
 
 ---
 
@@ -20,17 +18,17 @@ blockers. Include both item velocity and AC velocity.]
 
 ### 1.1 [Track Name] ([X/Y] = [Z]%)
 
-| Sprint ID | Issue | Title | Status | Day | ACs Done/Total | Acceptance |
-|-----------|-------|-------|--------|-----|----------------|------------|
-| [ID] | #[N] | [Title] | [STATUS] | [D] | [X/Y] | [Summary] |
+| Sprint ID | Issue | Title   | Status   | Day | ACs Done/Total | Acceptance |
+| --------- | ----- | ------- | -------- | --- | -------------- | ---------- |
+| [ID]      | #[N]  | [Title] | [STATUS] | [D] | [X/Y]          | [Summary]  |
 
 <!-- Repeat section 1.1 per discipline track -->
 
 ### 1.N Deferred Items ([D] → Sprint [N+1])
 
-| Sprint ID | Issue | Title | Status | Reason | Next Sprint Start Condition |
-|-----------|-------|-------|--------|--------|----------------------------|
-| [ID] | #[N] | [Title] | ⏸️ DEFERRED | [Reason] | [Condition] |
+| Sprint ID | Issue | Title   | Status      | Reason   | Next Sprint Start Condition |
+| --------- | ----- | ------- | ----------- | -------- | --------------------------- |
+| [ID]      | #[N]  | [Title] | ⏸️ DEFERRED | [Reason] | [Condition]                 |
 
 ---
 
@@ -47,17 +45,17 @@ Time:        ~[T]s
 
 ### 2.2 Test Growth Summary
 
-| Metric | Prior Sprint End | This Sprint End | Delta |
-|--------|-----------------|-----------------|-------|
-| Test suites | [X] | [Y] | [+Z] |
-| Total tests | [X] | [Y] | [+Z] ([P]%) |
-| Failures | [X] | [Y] | [+/-Z] |
+| Metric      | Prior Sprint End | This Sprint End | Delta       |
+| ----------- | ---------------- | --------------- | ----------- |
+| Test suites | [X]              | [Y]             | [+Z]        |
+| Total tests | [X]              | [Y]             | [+Z] ([P]%) |
+| Failures    | [X]              | [Y]             | [+/-Z]      |
 
 ### 2.3 New Test Suites Added
 
-| Suite | Tests | Type | Added |
-|-------|-------|------|-------|
-| [file.test.js] | [~N] | [Unit/Integration/Smoke] | Day [D] |
+| Suite          | Tests | Type                     | Added   |
+| -------------- | ----- | ------------------------ | ------- |
+| [file.test.js] | [~N]  | [Unit/Integration/Smoke] | Day [D] |
 
 ### 2.4 Secret Scan
 
@@ -70,15 +68,15 @@ Time:        ~[T]s
 
 ### 3.1 Active Jobs ([X] of [Y])
 
-| Job | Name | Status | Trigger |
-|-----|------|--------|---------|
+| Job | Name   | Status   | Trigger   |
+| --- | ------ | -------- | --------- |
 | [N] | [name] | [STATUS] | [trigger] |
 
 ### 3.2 Docker Stack
 
-| Container | Port | Status |
-|-----------|------|--------|
-| [name] | [port] | [STATUS] |
+| Container | Port   | Status   |
+| --------- | ------ | -------- |
+| [name]    | [port] | [STATUS] |
 
 ---
 
@@ -86,9 +84,10 @@ Time:        ~[T]s
 
 ### 4.1 Daily Velocity Progression
 
-| Day | Date | Items Done | Items % | ACs Done | ACs Total | ACs % | Delta Items | Delta ACs | Phase |
-|-----|------|-----------|---------|----------|-----------|-------|-------------|-----------|-------|
-| 1 | [DATE] | [X]/[T] | [P]% | [A]/[AT] | [AT] | [AP]% | [+N] | [+N] | [Notes] |
+| Day | Date   | Items Done | Items % | ACs Done | ACs Total | ACs % | Delta Items | Delta ACs | Phase   |
+| --- | ------ | ---------- | ------- | -------- | --------- | ----- | ----------- | --------- | ------- |
+| 1   | [DATE] | [X]/[T]    | [P]%    | [A]/[AT] | [AT]      | [AP]% | [+N]        | [+N]      | [Notes] |
+
 <!-- Repeat for each day -->
 
 ### 4.2 Velocity Chart — Dual Metric (Items vs ACs)
@@ -116,45 +115,45 @@ indicating substantial work-in-progress on multi-day items."]
 
 ### 4.3 Velocity vs Targets
 
-| Checkpoint | Day | Item Target | Item Actual | AC Target | AC Actual | Status |
-|------------|-----|-------------|-------------|-----------|-----------|--------|
-| Checkpoint 1 | [D] | [X-Y]% | [Z]% | [X-Y]% | [Z]% | [STATUS] |
-| Checkpoint 2 | [D] | [X-Y]% | [Z]% | [X-Y]% | [Z]% | [STATUS] |
-| Sprint Close | [D] | ≥[X]% | [Y]% | ≥[X]% | [Y]% | [STATUS] |
+| Checkpoint   | Day | Item Target | Item Actual | AC Target | AC Actual | Status   |
+| ------------ | --- | ----------- | ----------- | --------- | --------- | -------- |
+| Checkpoint 1 | [D] | [X-Y]%      | [Z]%        | [X-Y]%    | [Z]%      | [STATUS] |
+| Checkpoint 2 | [D] | [X-Y]%      | [Z]%        | [X-Y]%    | [Z]%      | [STATUS] |
+| Sprint Close | [D] | ≥[X]%       | [Y]%        | ≥[X]%     | [Y]%      | [STATUS] |
 
 ### 4.4 AC Velocity Analysis
 
 **Zero-item-velocity days with AC progress:**
 
-| Day | Items Δ | ACs Δ | Work Performed |
-|-----|---------|-------|----------------|
-| [D] | +0 | +[N] | [Description of WIP progress] |
+| Day | Items Δ | ACs Δ | Work Performed                |
+| --- | ------- | ----- | ----------------------------- |
+| [D] | +0      | +[N]  | [Description of WIP progress] |
 
-[INSIGHT: Identify days where AC velocity revealed hidden progress that
-item velocity missed. This addresses Sprint 2 L7 / Retro Action #4 —
-"zero-velocity days with significant work."]
+[INSIGHT: Identify days where AC velocity revealed hidden progress that item
+velocity missed. This addresses Sprint 2 L7 / Retro Action #4 — "zero-velocity
+days with significant work."]
 
 **AC completion rate per item:**
 
-| Sprint ID | ACs Total | ACs/Day (avg) | Days Active | Complexity |
-|-----------|-----------|---------------|-------------|------------|
-| [ID] | [N] | [X.X] | [D] | [Low/Medium/High] |
+| Sprint ID | ACs Total | ACs/Day (avg) | Days Active | Complexity        |
+| --------- | --------- | ------------- | ----------- | ----------------- |
+| [ID]      | [N]       | [X.X]         | [D]         | [Low/Medium/High] |
 
 ### 4.5 Cross-Sprint Velocity Comparison
 
-| Metric | Sprint [N-2] | Sprint [N-1] | Sprint [N] | Trend |
-|--------|-------------|-------------|-------------|-------|
-| Items planned | [X] | [X] | [X] | [Trend note] |
-| Items completed | [X] | [X] | [X] | — |
-| Items deferred | [X] | [X] | [X] | [Trend note] |
-| Item velocity | [X]% | [X]% | [X]% | [Trend note] |
-| **ACs planned** | **—** | **—** | **[X]** | **New metric** |
-| **ACs completed** | **—** | **—** | **[X]** | **New metric** |
-| **AC velocity** | **—** | **—** | **[X]%** | **New metric** |
-| **ACs/day (avg)** | **—** | **—** | **[X.X]** | **New metric** |
-| Tests added | [X] | [X] | [X] | [Trend note] |
-| Blockers | [X] | [X] | [X] | [Trend note] |
-| Escalations | [X] | [X] | [X] | [Trend note] |
+| Metric            | Sprint [N-2] | Sprint [N-1] | Sprint [N] | Trend          |
+| ----------------- | ------------ | ------------ | ---------- | -------------- |
+| Items planned     | [X]          | [X]          | [X]        | [Trend note]   |
+| Items completed   | [X]          | [X]          | [X]        | —              |
+| Items deferred    | [X]          | [X]          | [X]        | [Trend note]   |
+| Item velocity     | [X]%         | [X]%         | [X]%       | [Trend note]   |
+| **ACs planned**   | **—**        | **—**        | **[X]**    | **New metric** |
+| **ACs completed** | **—**        | **—**        | **[X]**    | **New metric** |
+| **AC velocity**   | **—**        | **—**        | **[X]%**   | **New metric** |
+| **ACs/day (avg)** | **—**        | **—**        | **[X.X]**  | **New metric** |
+| Tests added       | [X]          | [X]          | [X]        | [Trend note]   |
+| Blockers          | [X]          | [X]          | [X]        | [Trend note]   |
+| Escalations       | [X]          | [X]          | [X]        | [Trend note]   |
 
 ---
 
@@ -162,15 +161,15 @@ item velocity missed. This addresses Sprint 2 L7 / Retro Action #4 —
 
 ### 5.1 Implementation
 
-| Deliverable | Description |
-|-------------|-------------|
-| [Name] | [Description] |
+| Deliverable | Description   |
+| ----------- | ------------- |
+| [Name]      | [Description] |
 
 ### 5.2 Documentation
 
-| Document | Version | Changes |
-|----------|---------|---------|
-| [Name] | [vX.X] | [Summary] |
+| Document | Version | Changes   |
+| -------- | ------- | --------- |
+| [Name]   | [vX.X]  | [Summary] |
 
 ---
 
@@ -178,29 +177,29 @@ item velocity missed. This addresses Sprint 2 L7 / Retro Action #4 —
 
 ### 6.1 Active Risks
 
-| Risk | Severity | Mitigation | Status |
-|------|----------|------------|--------|
+| Risk          | Severity          | Mitigation   | Status   |
+| ------------- | ----------------- | ------------ | -------- |
 | [Description] | [HIGH/MEDIUM/LOW] | [Mitigation] | [STATUS] |
 
 ### 6.2 Escalations
 
-| Trigger | Day | Item | Action Taken | Outcome |
-|---------|-----|------|-------------|---------|
-| [Trigger] | [D] | [ID] | [Action] | [Resolved/Deferred/Escalated] |
+| Trigger   | Day | Item | Action Taken | Outcome                       |
+| --------- | --- | ---- | ------------ | ----------------------------- |
+| [Trigger] | [D] | [ID] | [Action]     | [Resolved/Deferred/Escalated] |
 
 ---
 
 ## 7. Sprint Health Summary
 
-| Indicator | Status | Notes |
-|-----------|--------|-------|
-| Item velocity | [X]% ([STATUS]) | [Note] |
-| AC velocity | [X]% ([STATUS]) | [Note] |
+| Indicator     | Status                | Notes  |
+| ------------- | --------------------- | ------ |
+| Item velocity | [X]% ([STATUS])       | [Note] |
+| AC velocity   | [X]% ([STATUS])       | [Note] |
 | Test coverage | [+N] tests ([STATUS]) | [Note] |
-| CI pipeline | [X/Y] jobs green | [Note] |
-| Secret scan | [PASS/FAIL] | [Note] |
-| Blockers | [N] open | [Note] |
+| CI pipeline   | [X/Y] jobs green      | [Note] |
+| Secret scan   | [PASS/FAIL]           | [Note] |
+| Blockers      | [N] open              | [Note] |
 
 ---
 
-*Generated by KPI Agent | [DATE]*
+_Generated by KPI Agent | [DATE]_

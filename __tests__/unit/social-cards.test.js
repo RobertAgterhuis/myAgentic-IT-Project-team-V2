@@ -38,7 +38,7 @@ describe('SP-2-SOC: Social media card SVGs', () => {
   });
 
   test('all cards have correct LinkedIn dimensions (1200x627)', () => {
-    for (const [file, content] of Object.entries(cardContents)) {
+    for (const [, content] of Object.entries(cardContents)) {
       expect(content).toMatch(/viewBox="0 0 1200 627"/);
       expect(content).toMatch(/width="1200"/);
       expect(content).toMatch(/height="627"/);
@@ -46,32 +46,32 @@ describe('SP-2-SOC: Social media card SVGs', () => {
   });
 
   test('all cards are valid SVG (have svg root element)', () => {
-    for (const [file, content] of Object.entries(cardContents)) {
+    for (const [, content] of Object.entries(cardContents)) {
       expect(content).toMatch(/<svg\s+xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
       expect(content).toMatch(/<\/svg>\s*$/);
     }
   });
 
   test('all cards use brand primary color', () => {
-    for (const [file, content] of Object.entries(cardContents)) {
+    for (const [, content] of Object.entries(cardContents)) {
       expect(content.toLowerCase()).toContain(BRAND_COLORS.primary.toLowerCase());
     }
   });
 
   test('all cards use brand accent color', () => {
-    for (const [file, content] of Object.entries(cardContents)) {
+    for (const [, content] of Object.entries(cardContents)) {
       expect(content.toLowerCase()).toContain(BRAND_COLORS.accent.toLowerCase());
     }
   });
 
   test('all cards reference Sora heading font', () => {
-    for (const [file, content] of Object.entries(cardContents)) {
+    for (const [, content] of Object.entries(cardContents)) {
       expect(content).toContain('Sora');
     }
   });
 
   test('all cards reference Manrope body font', () => {
-    for (const [file, content] of Object.entries(cardContents)) {
+    for (const [, content] of Object.entries(cardContents)) {
       expect(content).toContain('Manrope');
     }
   });

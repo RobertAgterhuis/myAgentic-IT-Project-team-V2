@@ -3,7 +3,8 @@
 **Sprint:** Sprint 2 (March 25 – April 7, 2026)  
 **Day:** Day 2 (March 26, 2026)  
 **Time:** 09:00 UTC – 18:00 UTC  
-**Status:** ✅ **HIGHLY PRODUCTIVE** — 1 item completed (SP-2-CI8), 4 items advanced significantly
+**Status:** ✅ **HIGHLY PRODUCTIVE** — 1 item completed (SP-2-CI8), 4 items
+advanced significantly
 
 ---
 
@@ -62,11 +63,11 @@ Checkpoint 1 target (25-35% by Day 4)
 **Status:** DONE  
 **Acceptance Criteria Met:** 3/3
 
-| Criterion | Status |
-|-----------|--------|
-| Job 8 added to ci-pipeline.yml | ✅ |
-| axe-core WCAG 2.1 A+AA scan + Lighthouse ≥90% | ✅ |
-| Triggers on main push + all PRs | ✅ |
+| Criterion                                     | Status |
+| --------------------------------------------- | ------ |
+| Job 8 added to ci-pipeline.yml                | ✅     |
+| axe-core WCAG 2.1 A+AA scan + Lighthouse ≥90% | ✅     |
+| Triggers on main push + all PRs               | ✅     |
 
 **Implementation:** Added Job 8 (`accessibility-gate`) to CI pipeline with
 `needs: [build]` (comment indicates switch to `[smoke-test]` when Job 6 is
@@ -82,6 +83,7 @@ upload.
 templates still pending)
 
 **Delivered:**
+
 - `routes/subscribe.js` — POST /api/subscribe with full validation (email
   format, segment allowlist, content-type enforcement)
 - Buttondown ESP integration (server-side, API key via `BUTTONDOWN_API_KEY` env)
@@ -96,6 +98,7 @@ templates still pending)
 pending)
 
 **Delivered:**
+
 - `docker-compose.analytics.yml` — 3-service stack (matomo:5-fpm-alpine,
   mariadb:11, nginx:alpine)
 - `matomo-nginx.conf` — Reverse proxy with PHP-FPM pass-through
@@ -110,6 +113,7 @@ integration
 pending)
 
 **Delivered:**
+
 - `landing.html` — Full marketing landing page with hero, value pillars, 5-phase
   flow, social proof stats, subscribe form
 - 6 smoke tests (SMOKE-008) — all passing
@@ -123,6 +127,7 @@ pending)
 **Status:** IN_PROGRESS (v1.8 update complete; final review pending)
 
 **Delivered:**
+
 - Version bumped to 1.8 (Sprint 2 Day 2)
 - CI/CD Pipeline section: 9 jobs, Job 8 IMPLEMENTED
 - Newsletter API: POST /api/subscribe documented
@@ -137,58 +142,60 @@ pending)
 
 ## Test Report
 
-| Metric | Start of Day | End of Day | Delta |
-|--------|-------------|------------|-------|
-| Total Tests | 99 | 113 | +14 |
-| Test Suites | 5 | 6 | +1 |
-| Failures | 0 | 0 | 0 |
+| Metric      | Start of Day | End of Day | Delta |
+| ----------- | ------------ | ---------- | ----- |
+| Total Tests | 99           | 113        | +14   |
+| Test Suites | 5            | 6          | +1    |
+| Failures    | 0            | 0          | 0     |
 
 ### New Tests Added
 
-| Suite | Tests | Description |
-|-------|-------|-------------|
-| subscribe.integration.test.js | 8 | POST /api/subscribe validation, segment handling, API key checks |
-| landing.smoke.test.js (SMOKE-008) | 6 | Marketing landing page: status, heading, pillars, form, headers, a11y |
+| Suite                             | Tests | Description                                                           |
+| --------------------------------- | ----- | --------------------------------------------------------------------- |
+| subscribe.integration.test.js     | 8     | POST /api/subscribe validation, segment handling, API key checks      |
+| landing.smoke.test.js (SMOKE-008) | 6     | Marketing landing page: status, heading, pillars, form, headers, a11y |
 
 ---
 
 ## Files Created / Modified
 
 ### Created (6 files)
-| File | Purpose |
-|------|---------|
-| `.github/webapp/routes/subscribe.js` | Newsletter subscribe endpoint |
-| `.github/webapp/landing.html` | Marketing landing page |
-| `__tests__/integration/subscribe.integration.test.js` | Subscribe endpoint tests |
-| `docker-compose.analytics.yml` | Matomo Docker stack |
-| `matomo-nginx.conf` | Nginx reverse proxy for Matomo |
-| `.github/docs/phase-5/sp-2-mat-matomo-deployment.md` | Matomo deployment spec |
+
+| File                                                  | Purpose                        |
+| ----------------------------------------------------- | ------------------------------ |
+| `.github/webapp/routes/subscribe.js`                  | Newsletter subscribe endpoint  |
+| `.github/webapp/landing.html`                         | Marketing landing page         |
+| `__tests__/integration/subscribe.integration.test.js` | Subscribe endpoint tests       |
+| `docker-compose.analytics.yml`                        | Matomo Docker stack            |
+| `matomo-nginx.conf`                                   | Nginx reverse proxy for Matomo |
+| `.github/docs/phase-5/sp-2-mat-matomo-deployment.md`  | Matomo deployment spec         |
 
 ### Modified (4 files)
-| File | Changes |
-|------|---------|
-| `.github/workflows/ci-pipeline.yml` | Added Job 8 accessibility gate |
-| `.github/webapp/server.js` | Subscribe route + landing page serving |
-| `__tests__/smoke/landing.smoke.test.js` | Added SMOKE-008 (6 tests) |
-| `docs/technical-manual.md` | Updated to v1.8 |
+
+| File                                    | Changes                                |
+| --------------------------------------- | -------------------------------------- |
+| `.github/workflows/ci-pipeline.yml`     | Added Job 8 accessibility gate         |
+| `.github/webapp/server.js`              | Subscribe route + landing page serving |
+| `__tests__/smoke/landing.smoke.test.js` | Added SMOKE-008 (6 tests)              |
+| `docs/technical-manual.md`              | Updated to v1.8                        |
 
 ---
 
 ## Sprint 2 Item Status Board
 
-| # | ID | Issue | Title | Status | Progress | Notes |
-|---|------|-------|-------|--------|----------|-------|
-| 1 | SP-2-CI7 | #123 | CI Job 7 verification | ✅ DONE | 100% | PR #130 merged Day 1 |
-| 2 | SP-2-CI8 | #124 | CI Job 8 accessibility gate | ✅ DONE | 100% | Completed Day 2 |
-| 3 | SP-2-MAT | #125 | Matomo deployment | 🔄 | 60% | Docker stack + spec done |
-| 4 | SP-2-BTN | #126 | Buttondown setup | 🔄 | 85% | Endpoint + tests done |
-| 5 | SP-2-SOC | #127 | Social content | 🔄 | 35% | Publication plan done |
-| 6 | SP-2-LND | #128 | Landing page | 🔄 | 80% | Page + smoke tests done |
-| 7 | SP-2-DOC | #129 | Technical manual | 🔄 | 95% | v1.8 update complete |
-| 8 | SP-2-201-P | #107 | Internal pilot | 🔄 | 40% | Pilot scope done |
-| 9 | SP-2-202 | #110 | Pilot rubric | ⏳ | 0% | Blocked by SP-2-201-P |
-| 10 | SP-2-501 | #117 | TMS setup | 🔄 | 25% | Weblate eval in progress |
-| 11 | SP-2-201 | #115 | Landing experiment | ⏳ | 0% | Blocked by SP-2-MAT |
+| #   | ID         | Issue | Title                       | Status  | Progress | Notes                    |
+| --- | ---------- | ----- | --------------------------- | ------- | -------- | ------------------------ |
+| 1   | SP-2-CI7   | #123  | CI Job 7 verification       | ✅ DONE | 100%     | PR #130 merged Day 1     |
+| 2   | SP-2-CI8   | #124  | CI Job 8 accessibility gate | ✅ DONE | 100%     | Completed Day 2          |
+| 3   | SP-2-MAT   | #125  | Matomo deployment           | 🔄      | 60%      | Docker stack + spec done |
+| 4   | SP-2-BTN   | #126  | Buttondown setup            | 🔄      | 85%      | Endpoint + tests done    |
+| 5   | SP-2-SOC   | #127  | Social content              | 🔄      | 35%      | Publication plan done    |
+| 6   | SP-2-LND   | #128  | Landing page                | 🔄      | 80%      | Page + smoke tests done  |
+| 7   | SP-2-DOC   | #129  | Technical manual            | 🔄      | 95%      | v1.8 update complete     |
+| 8   | SP-2-201-P | #107  | Internal pilot              | 🔄      | 40%      | Pilot scope done         |
+| 9   | SP-2-202   | #110  | Pilot rubric                | ⏳      | 0%       | Blocked by SP-2-201-P    |
+| 10  | SP-2-501   | #117  | TMS setup                   | 🔄      | 25%      | Weblate eval in progress |
+| 11  | SP-2-201   | #115  | Landing experiment          | ⏳      | 0%       | Blocked by SP-2-MAT      |
 
 **Sprint Velocity:** 2/11 (18%)  
 **On Track:** Yes — Checkpoint 1 (Day 4) target is 25-35%

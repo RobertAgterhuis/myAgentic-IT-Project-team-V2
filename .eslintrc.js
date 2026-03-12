@@ -33,4 +33,12 @@ module.exports = {
     'docs/',
     'BusinessDocs/',
   ],
+  overrides: [
+    {
+      files: ['**/*.js'],
+      rules: {
+        '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+  ],
 };

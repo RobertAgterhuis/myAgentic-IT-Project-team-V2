@@ -740,14 +740,17 @@ Subscribe an email address to the newsletter via Buttondown ESP.
 }
 ```
 
-**Segments:** `engineering-leaders`, `product-managers`, `developers`, `evaluators`
+**Segments:** `engineering-leaders`, `product-managers`, `developers`,
+`evaluators`
 
 **Responses:**
+
 - `201` — `{ "status": "pending_confirmation", "message": "..." }`
 - `400` — Invalid email or segment
 - `409` — Email already subscribed
-- `201` (local fallback) — `{ "status": "stored_locally" }` when `BUTTONDOWN_API_KEY`
-  not set; subscriptions saved to `BusinessDocs/local-subscriptions.json`
+- `201` (local fallback) — `{ "status": "stored_locally" }` when
+  `BUTTONDOWN_API_KEY` not set; subscriptions saved to
+  `BusinessDocs/local-subscriptions.json`
 
 **Security:** API key is server-side only, never exposed to clients. Local
 fallback ensures subscriptions are captured during development without requiring
@@ -776,7 +779,8 @@ Serves SVG social cards from `.github/webapp/social-cards/`. Files:
 
 Serves locale translation files from `locales/` at repository root. Path
 traversal prevented by `safePath()`. Example:
-`GET /locales/fr-FR/ui-labels.json`. Content-Type: `application/json`, cached 1h.
+`GET /locales/fr-FR/ui-labels.json`. Content-Type: `application/json`, cached
+1h.
 
 #### GET /health
 
@@ -950,11 +954,11 @@ docker compose -f docker-compose.yml \
   ps
 ```
 
-| Service | Port | Purpose |
-|---------|------|---------|
-| command-center | 3000 | Main web UI + API |
-| matomo + matomo-db + matomo-web | 8080 | Privacy-first analytics |
-| weblate + weblate-db + weblate-cache | 8081 | Translation management |
+| Service                              | Port | Purpose                 |
+| ------------------------------------ | ---- | ----------------------- |
+| command-center                       | 3000 | Main web UI + API       |
+| matomo + matomo-db + matomo-web      | 8080 | Privacy-first analytics |
+| weblate + weblate-db + weblate-cache | 8081 | Translation management  |
 
 ### Process Management
 
@@ -979,11 +983,11 @@ npx pm2 status
 Privacy-first analytics via self-hosted Matomo, defined in
 `docker-compose.analytics.yml` (3-service stack):
 
-| Service | Image | Purpose |
-|---------|-------|---------|
-| matomo | matomo:5-fpm-alpine | Matomo PHP-FPM application |
-| matomo-db | mariadb:11 | Persistent analytics database |
-| matomo-web | nginx:alpine | Reverse proxy (config: `matomo-nginx.conf`) |
+| Service    | Image               | Purpose                                     |
+| ---------- | ------------------- | ------------------------------------------- |
+| matomo     | matomo:5-fpm-alpine | Matomo PHP-FPM application                  |
+| matomo-db  | mariadb:11          | Persistent analytics database               |
+| matomo-web | nginx:alpine        | Reverse proxy (config: `matomo-nginx.conf`) |
 
 ```bash
 # Start analytics stack (requires .env with MATOMO_DB_PASSWORD + MATOMO_DB_ROOT_PASSWORD)
@@ -1001,11 +1005,11 @@ mode configured post-install per `sp-2-mat-matomo-deployment.md`.
 Self-hosted Weblate TMS for i18n, defined in `docker-compose.weblate.yml`
 (3-service stack):
 
-| Service | Image | Purpose |
-|---------|-------|---------|
-| weblate | weblate/weblate:5.4 | Translation UI + REST/GraphQL API |
-| weblate-db | postgres:16-alpine | Persistent translation database |
-| weblate-cache | redis:7-alpine | Cache + async task broker |
+| Service       | Image               | Purpose                           |
+| ------------- | ------------------- | --------------------------------- |
+| weblate       | weblate/weblate:5.4 | Translation UI + REST/GraphQL API |
+| weblate-db    | postgres:16-alpine  | Persistent translation database   |
+| weblate-cache | redis:7-alpine      | Cache + async task broker         |
 
 ```bash
 # Copy env template and set passwords
@@ -1154,28 +1158,29 @@ server-import pattern proven in integration tests.
 
 **8 smoke test groups (29 tests):**
 
-| Group | Journey | Tests |
-|-------|---------|-------|
-| SMOKE-001 | Landing page loads | 3 |
-| SMOKE-002 | Dashboard accessible | 3 |
-| SMOKE-003 | Health endpoint | 4 |
-| SMOKE-004 | API session reachable | 3 |
-| SMOKE-005 | Questionnaire list loads | 3 |
-| SMOKE-006 | Security headers baseline | 5 |
-| SMOKE-007 | Decisions endpoint | 2 |
-| SMOKE-008 | Marketing landing page | 6 |
+| Group     | Journey                   | Tests |
+| --------- | ------------------------- | ----- |
+| SMOKE-001 | Landing page loads        | 3     |
+| SMOKE-002 | Dashboard accessible      | 3     |
+| SMOKE-003 | Health endpoint           | 4     |
+| SMOKE-004 | API session reachable     | 3     |
+| SMOKE-005 | Questionnaire list loads  | 3     |
+| SMOKE-006 | Security headers baseline | 5     |
+| SMOKE-007 | Decisions endpoint        | 2     |
+| SMOKE-008 | Marketing landing page    | 6     |
 
 **CI Integration:** Job 7 (smoke-test) in `.github/workflows/ci-pipeline.yml`
 runs on `main` branch pushes after staging deployment. Test artifacts are
 uploaded with 30-day retention.
 
 **Accessibility Gate (Sprint 2):** Job 8 (accessibility-gate) is IMPLEMENTED in
-`.github/workflows/ci-pipeline.yml` per spec `.github/docs/phase-5/sp-1-203-accessibility-gate.md`.
-Runs axe-core WCAG 2.1 A+AA scan + Lighthouse accessibility audit with a 90%
-score threshold. Triggers on `main` push and all PRs.
+`.github/workflows/ci-pipeline.yml` per spec
+`.github/docs/phase-5/sp-1-203-accessibility-gate.md`. Runs axe-core WCAG 2.1
+A+AA scan + Lighthouse accessibility audit with a 90% score threshold. Triggers
+on `main` push and all PRs.
 
-Actual coverage (as of Sprint 1 Close): **87.40% statements, 76.45% branches, 92.15%
-functions, 88.94% lines** (649 tests across 22 test files).
+Actual coverage (as of Sprint 1 Close): **87.40% statements, 76.45% branches,
+92.15% functions, 88.94% lines** (649 tests across 22 test files).
 
 ### Test Conventions
 
@@ -1194,6 +1199,7 @@ The CI/CD pipeline (`.github/workflows/ci-pipeline.yml`) automates build, test,
 security scanning, and deployment for all PRs and pushes to `main`.
 
 **Trigger Events:**
+
 - `push` to `main`, `feature/**`, `hotfix/**`
 - `pull_request` to `main`
 
@@ -1207,54 +1213,62 @@ security scanning, and deployment for all PRs and pushes to `main`.
                                               [status-badge]
 ```
 
-| Job | Name | Trigger | Purpose |
-|-----|------|---------|---------|
-| 1 | `lint` | All pushes + PRs | ESLint + Prettier code quality |
-| 2 | `test` | All pushes + PRs | Jest unit tests + 80% coverage gate |
-| 3 | `security` | All pushes + PRs | Gitleaks secret scan + Trivy vulnerability scan |
-| 4 | `build` | After Jobs 1-3 | `npm run build` + Docker image (GHCR) |
-| 5 | `deploy-staging` | `main` push only | Docker Compose health-checked deployment |
-| 6 | `integration-test` | After staging | `npm run test:integration` in CI |
-| 7 | `smoke-test` | After staging | `npm run test:smoke` (29 tests, 8 journeys) |
-| 8 | `accessibility-gate` | `main` push + PRs | axe-core WCAG 2.1 A/AA + Lighthouse > 90 |
-| 9 | `status` | Always | Build status badge generation |
+| Job | Name                 | Trigger           | Purpose                                         |
+| --- | -------------------- | ----------------- | ----------------------------------------------- |
+| 1   | `lint`               | All pushes + PRs  | ESLint + Prettier code quality                  |
+| 2   | `test`               | All pushes + PRs  | Jest unit tests + 80% coverage gate             |
+| 3   | `security`           | All pushes + PRs  | Gitleaks secret scan + Trivy vulnerability scan |
+| 4   | `build`              | After Jobs 1-3    | `npm run build` + Docker image (GHCR)           |
+| 5   | `deploy-staging`     | `main` push only  | Docker Compose health-checked deployment        |
+| 6   | `integration-test`   | After staging     | `npm run test:integration` in CI                |
+| 7   | `smoke-test`         | After staging     | `npm run test:smoke` (29 tests, 8 journeys)     |
+| 8   | `accessibility-gate` | `main` push + PRs | axe-core WCAG 2.1 A/AA + Lighthouse > 90        |
+| 9   | `status`             | Always            | Build status badge generation                   |
 
 ### Job Details
 
 #### Job 1: Lint & Code Quality
+
 - Runs `npm run lint` (ESLint) and `npm run format:check` (Prettier)
 - Fails on any lint or formatting error
 
 #### Job 2: Unit Tests & Coverage
+
 - Runs `npm run test:coverage`
 - Coverage uploaded to Codecov
 - Enforces 80% line coverage minimum via threshold check
 
 #### Job 3: Security Scan
+
 - **Gitleaks**: Scans for committed secrets and API keys
 - **Trivy**: Filesystem vulnerability scan (CRITICAL + HIGH severity)
 - SARIF results uploaded to GitHub Security tab
 
 #### Job 4: Build & Docker Image
+
 - Requires Jobs 1-3 to pass
 - Builds application and Docker image (multi-platform: amd64 + arm64)
 - Pushes to GHCR on non-PR events
 
 #### Job 5: Deploy to Staging
+
 - `main` push only — Docker Compose deployment with health check loop
 - 30 retries × 2s intervals, fails if service doesn't respond
 - Tears down staging environment after downstream jobs complete
 
 #### Job 6: Integration Tests
+
 - Runs after staging deployment succeeds
 - Executes `npm run test:integration` against live service
 
 #### Job 7: Smoke Tests
+
 - Runs after staging deployment succeeds
 - Executes `npm run test:smoke` — 23 HTTP-based journey tests
 - Artifacts uploaded with 30-day retention
 
 #### Job 8: Accessibility Gate (Sprint 2)
+
 - **Status:** ✅ IMPLEMENTED (SP-2-CI8 #124, Sprint 2 Day 2)
 - Runs after build, on `main` pushes and PRs to `main`
 - Starts the application, waits for readiness, then runs:
@@ -1266,18 +1280,18 @@ security scanning, and deployment for all PRs and pushes to `main`.
 
 ### Environment
 
-| Variable | Value | Purpose |
-|----------|-------|---------|
-| `NODE_VERSION` | `20.x` | Node.js runtime version |
-| `DOCKER_BUILDKIT` | `1` | Docker BuildKit for caching |
+| Variable          | Value  | Purpose                     |
+| ----------------- | ------ | --------------------------- |
+| `NODE_VERSION`    | `20.x` | Node.js runtime version     |
+| `DOCKER_BUILDKIT` | `1`    | Docker BuildKit for caching |
 
 ### Required Secrets
 
-| Secret | Purpose |
-|--------|---------|
-| `GITHUB_TOKEN` | Automatic — Gitleaks + Docker push |
-| `CODECOV_TOKEN` | Coverage upload (optional) |
-| `GITLEAKS_LICENSE` | Gitleaks enterprise (optional) |
+| Secret               | Purpose                                     |
+| -------------------- | ------------------------------------------- |
+| `GITHUB_TOKEN`       | Automatic — Gitleaks + Docker push          |
+| `CODECOV_TOKEN`      | Coverage upload (optional)                  |
+| `GITLEAKS_LICENSE`   | Gitleaks enterprise (optional)              |
 | `BUTTONDOWN_API_KEY` | Newsletter subscribe endpoint (server-side) |
 
 ---

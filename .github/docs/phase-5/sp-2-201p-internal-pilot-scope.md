@@ -15,8 +15,8 @@
 ## 1. Pilot Objective
 
 Validate the Agentic SDLC platform's end-to-end process with 2-3 internal
-participants to identify adoption blockers before broader release. Source:
-Phase 1 Domain Expert recommendation (REC-203).
+participants to identify adoption blockers before broader release. Source: Phase
+1 Domain Expert recommendation (REC-203).
 
 ### Success Criteria (from Sprint Plan)
 
@@ -29,20 +29,20 @@ Phase 1 Domain Expert recommendation (REC-203).
 
 ### Selection Criteria
 
-| Criterion | Rationale |
-|-----------|-----------|
-| Familiarity with software delivery | Can evaluate process completeness |
-| Not involved in platform development | Avoids confirmation bias |
-| Diverse role perspective | CTO/PM/Developer coverage |
-| Available within sprint window | Can complete mini-cycle by April 4 |
+| Criterion                            | Rationale                          |
+| ------------------------------------ | ---------------------------------- |
+| Familiarity with software delivery   | Can evaluate process completeness  |
+| Not involved in platform development | Avoids confirmation bias           |
+| Diverse role perspective             | CTO/PM/Developer coverage          |
+| Available within sprint window       | Can complete mini-cycle by April 4 |
 
 ### Participant Roster
 
-| # | Role | Profile | Selection Rationale | Status |
-|---|------|---------|---------------------|--------|
-| 1 | Engineering Lead | Internal team member with delivery experience | Validates tech workflow (Phase 2 outputs, CI pipeline) | ⬜ To be confirmed |
-| 2 | Product Manager | Cross-functional stakeholder | Validates business workflow (Phase 1 outputs, sprint planning) | ⬜ To be confirmed |
-| 3 | UX/Design Practitioner | Design-oriented evaluator | Validates experience design workflow (Phase 3 outputs, accessibility) | ⬜ Optional, if available |
+| #   | Role                   | Profile                                       | Selection Rationale                                                   | Status                    |
+| --- | ---------------------- | --------------------------------------------- | --------------------------------------------------------------------- | ------------------------- |
+| 1   | Engineering Lead       | Internal team member with delivery experience | Validates tech workflow (Phase 2 outputs, CI pipeline)                | ⬜ To be confirmed        |
+| 2   | Product Manager        | Cross-functional stakeholder                  | Validates business workflow (Phase 1 outputs, sprint planning)        | ⬜ To be confirmed        |
+| 3   | UX/Design Practitioner | Design-oriented evaluator                     | Validates experience design workflow (Phase 3 outputs, accessibility) | ⬜ Optional, if available |
 
 **Source:** Phase 1 Domain Expert (line 126): "Identify two additional internal
 pilot users." Product Manager (line 267): "Name 2 internal pilot participants."
@@ -59,22 +59,24 @@ internal pilot participants by name and role."
 
 A compressed mini-cycle covering one discipline end-to-end:
 
-| Step | Activity | Duration | Output |
-|------|----------|----------|--------|
-| 1 | Review onboarding output | 15 min | Onboarding comprehension rating |
-| 2 | Execute Phase 1 (Business only) for a sample project | 45 min | Phase 1 deliverables |
-| 3 | Review Critic + Risk validation output | 15 min | Quality gate comprehension rating |
-| 4 | Review Synthesis Report structure | 15 min | Cross-team dependency understanding |
-| 5 | Review Sprint Plan + Sprint Gate | 15 min | Sprint readiness assessment |
-| 6 | Complete feedback rubric (SP-2-202) | 15 min | Structured feedback data |
+| Step | Activity                                             | Duration | Output                              |
+| ---- | ---------------------------------------------------- | -------- | ----------------------------------- |
+| 1    | Review onboarding output                             | 15 min   | Onboarding comprehension rating     |
+| 2    | Execute Phase 1 (Business only) for a sample project | 45 min   | Phase 1 deliverables                |
+| 3    | Review Critic + Risk validation output               | 15 min   | Quality gate comprehension rating   |
+| 4    | Review Synthesis Report structure                    | 15 min   | Cross-team dependency understanding |
+| 5    | Review Sprint Plan + Sprint Gate                     | 15 min   | Sprint readiness assessment         |
+| 6    | Complete feedback rubric (SP-2-202)                  | 15 min   | Structured feedback data            |
 
 **Total estimated time:** 2 hours per participant
 
 ### Sample Project Brief
 
 A simplified project brief will be provided to participants:
+
 - **Project:** "Task Management API" (small scope, well-understood domain)
-- **Constraint:** Single-discipline (Business only) to keep mini-cycle manageable
+- **Constraint:** Single-discipline (Business only) to keep mini-cycle
+  manageable
 - **Goal:** Evaluate process clarity, output quality, and usability — not output
   correctness
 
@@ -82,12 +84,12 @@ A simplified project brief will be provided to participants:
 
 ## 4. Pilot Environment
 
-| Component | Configuration | Status |
-|-----------|---------------|--------|
-| Platform version | Current `main` branch (post SP-2-CI7 merge) | ⬜ Pending CI7 |
-| Documentation | docs/user-manual.md + docs/technical-manual.md (v1.7) | ✅ Available |
-| Sample data | Pre-populated onboarding output for "Task Management API" | ⬜ To create |
-| Feedback mechanism | SP-2-202 rubric (structured Google Form or Markdown) | ⬜ Depends on SP-2-202 |
+| Component          | Configuration                                             | Status                 |
+| ------------------ | --------------------------------------------------------- | ---------------------- |
+| Platform version   | Current `main` branch (post SP-2-CI7 merge)               | ⬜ Pending CI7         |
+| Documentation      | docs/user-manual.md + docs/technical-manual.md (v1.7)     | ✅ Available           |
+| Sample data        | Pre-populated onboarding output for "Task Management API" | ⬜ To create           |
+| Feedback mechanism | SP-2-202 rubric (structured Google Form or Markdown)      | ⬜ Depends on SP-2-202 |
 
 ---
 
@@ -95,35 +97,35 @@ A simplified project brief will be provided to participants:
 
 ### Dimensions (from Phase 1 Domain Expert Rec)
 
-| Dimension | What to Measure | Scale |
-|-----------|-----------------|-------|
-| **Friction Points** | Steps where participant got stuck or confused | Free text + severity (Low/Med/High) |
-| **Clarity** | How well each phase output communicates its intent | 1-5 Likert scale per phase |
-| **Confidence** | Participant's confidence that the output is correct/complete | 1-5 Likert scale per phase |
-| **Completeness** | Whether the process covered all expected aspects | Yes/No per section + gaps identified |
-| **Time-to-complete** | How long each step actually takes vs estimate | Minutes (measured) |
+| Dimension            | What to Measure                                              | Scale                                |
+| -------------------- | ------------------------------------------------------------ | ------------------------------------ |
+| **Friction Points**  | Steps where participant got stuck or confused                | Free text + severity (Low/Med/High)  |
+| **Clarity**          | How well each phase output communicates its intent           | 1-5 Likert scale per phase           |
+| **Confidence**       | Participant's confidence that the output is correct/complete | 1-5 Likert scale per phase           |
+| **Completeness**     | Whether the process covered all expected aspects             | Yes/No per section + gaps identified |
+| **Time-to-complete** | How long each step actually takes vs estimate                | Minutes (measured)                   |
 
 ### Severity Classification for Findings
 
-| Severity | Definition | Example | SLA |
-|----------|------------|---------|-----|
-| **Critical** | Prevents completion of mini-cycle | Process step produces no output | Fix before Sprint 3 |
-| **High** | Significant friction, workaround needed | Output missing key section | Fix in Sprint 3 |
-| **Medium** | Noticeable friction, still completable | Unclear terminology | Backlog, next sprint |
-| **Low** | Minor suggestion | Formatting improvement | Backlog |
+| Severity     | Definition                              | Example                         | SLA                  |
+| ------------ | --------------------------------------- | ------------------------------- | -------------------- |
+| **Critical** | Prevents completion of mini-cycle       | Process step produces no output | Fix before Sprint 3  |
+| **High**     | Significant friction, workaround needed | Output missing key section      | Fix in Sprint 3      |
+| **Medium**   | Noticeable friction, still completable  | Unclear terminology             | Backlog, next sprint |
+| **Low**      | Minor suggestion                        | Formatting improvement          | Backlog              |
 
 ---
 
 ## 6. Timeline
 
-| Date | Activity | Owner |
-|------|----------|-------|
+| Date           | Activity                                            | Owner           |
+| -------------- | --------------------------------------------------- | --------------- |
 | Mar 25 (Day 1) | Pilot scoping complete, participant outreach begins | Product Manager |
 | Mar 26 (Day 2) | Sample project brief created, environment validated | Product Manager |
-| Mar 27 (Day 3) | SP-2-202 feedback rubric ready, pilot can begin | Product Manager |
-| Mar 28-Apr 2 | Participants execute mini-cycle (async, self-paced) | Participants |
-| Apr 3 (Day 8) | Feedback collected, findings logged with severity | Product Manager |
-| Apr 4 (Day 9) | Pilot report compiled, adoption blockers classified | Product Manager |
+| Mar 27 (Day 3) | SP-2-202 feedback rubric ready, pilot can begin     | Product Manager |
+| Mar 28-Apr 2   | Participants execute mini-cycle (async, self-paced) | Participants    |
+| Apr 3 (Day 8)  | Feedback collected, findings logged with severity   | Product Manager |
+| Apr 4 (Day 9)  | Pilot report compiled, adoption blockers classified | Product Manager |
 
 ---
 

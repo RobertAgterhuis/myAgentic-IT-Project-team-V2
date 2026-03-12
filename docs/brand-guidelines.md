@@ -190,25 +190,26 @@ category.
 ### Icon System
 
 > **Decision DEC-112:** All icons are sourced from a publicly available icon
-> library (e.g. Lucide, Heroicons, Phosphor). No custom icon creation —
-> this speeds up development and ensures visual consistency.
+> library (e.g. Lucide, Heroicons, Phosphor). No custom icon creation — this
+> speeds up development and ensures visual consistency.
 
-The application uses an inline SVG icon system. Icons are selected from
-a public icon library (Lucide recommended — MIT license, 24px grid, 2px stroke)
-and rendered via the `iconFor()` function in `index.html`.
+The application uses an inline SVG icon system. Icons are selected from a public
+icon library (Lucide recommended — MIT license, 24px grid, 2px stroke) and
+rendered via the `iconFor()` function in `index.html`.
 
-| Icon      | Library Icon      | Usage                    |
-| --------- | ----------------- | ------------------------ |
-| Clipboard | `clipboard`       | Phase 1 (Business)       |
-| Code      | `code`            | Phase 2 (Tech)           |
-| Palette   | `palette`         | Phase 3 (UX)             |
-| Megaphone | `megaphone`       | Phase 4 (Marketing)      |
-| Rocket    | `rocket`          | Phase 5 (Implementation) |
-| Chat      | `message-circle`  | Synthesis                |
+| Icon      | Library Icon     | Usage                    |
+| --------- | ---------------- | ------------------------ |
+| Clipboard | `clipboard`      | Phase 1 (Business)       |
+| Code      | `code`           | Phase 2 (Tech)           |
+| Palette   | `palette`        | Phase 3 (UX)             |
+| Megaphone | `megaphone`      | Phase 4 (Marketing)      |
+| Rocket    | `rocket`         | Phase 5 (Implementation) |
+| Chat      | `message-circle` | Synthesis                |
 
 **Icon Rules:**
 
-- **Source from public icon library only** — do NOT custom-create icons (DEC-112)
+- **Source from public icon library only** — do NOT custom-create icons
+  (DEC-112)
 - All icons are rendered as inline SVG with `aria-hidden="true"` — adjacent text
   provides the accessible name
 - Icon size follows the context: 16px in badges, 18px in sidebar, 24px in

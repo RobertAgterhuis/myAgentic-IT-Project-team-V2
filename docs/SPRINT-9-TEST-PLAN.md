@@ -627,6 +627,6 @@ This document outlines comprehensive test coverage for all features.
 
 ## Sign-Off
 
-- **QA Lead**: ********\_******** Date: **\_\_\_**
-- **Product Owner**: ********\_******** Date: **\_\_\_**
+- **QA Lead**: **\*\*\*\***\_**\*\*\*\*** Date: **\_\_\_**
+- **Product Owner**: **\*\*\*\***\_**\*\*\*\*** Date: **\_\_\_**
 - **Sprint Retrospective**: Ready for review

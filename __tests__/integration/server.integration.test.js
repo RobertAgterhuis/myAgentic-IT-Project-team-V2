@@ -32,7 +32,9 @@ function request(urlPath, options = {}) {
 
     const req = http.request(reqOptions, (res) => {
       let body = '';
-      res.on('data', (chunk) => { body += chunk; });
+      res.on('data', (chunk) => {
+        body += chunk;
+      });
       res.on('end', () => {
         resolve({
           statusCode: res.statusCode,

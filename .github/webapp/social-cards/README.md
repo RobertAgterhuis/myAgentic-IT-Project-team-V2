@@ -4,16 +4,17 @@ Branded SVG cards for LinkedIn social media posts. Part of SP-2-SOC (#127).
 
 ## Cards
 
-| Card | File | Post | Dimensions |
-|------|------|------|------------|
-| Launch Announcement | `card-launch.svg` | Week 1, Mon | 1200×627px |
-| Risk Matrix | `card-risk-matrix.svg` | Week 1, Wed | 1200×627px |
-| CI/CD Architecture | `card-architecture.svg` | Week 1, Fri | 1200×627px |
-| Sprint Results | `card-sprint-results.svg` | Week 2, Thu | 1200×627px |
+| Card                | File                      | Post        | Dimensions |
+| ------------------- | ------------------------- | ----------- | ---------- |
+| Launch Announcement | `card-launch.svg`         | Week 1, Mon | 1200×627px |
+| Risk Matrix         | `card-risk-matrix.svg`    | Week 1, Wed | 1200×627px |
+| CI/CD Architecture  | `card-architecture.svg`   | Week 1, Fri | 1200×627px |
+| Sprint Results      | `card-sprint-results.svg` | Week 2, Thu | 1200×627px |
 
 ## Brand Tokens
 
-All cards use the official design token palette from `.github/docs/brand/design-tokens.json`:
+All cards use the official design token palette from
+`.github/docs/brand/design-tokens.json`:
 
 - **Primary**: `#0A3A66` (backgrounds, borders)
 - **Secondary**: `#1B6B5E` (phase boxes, accents)

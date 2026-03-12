@@ -30,7 +30,9 @@ function request(urlPath, options = {}) {
     };
     const req = http.request(reqOptions, (res) => {
       let body = '';
-      res.on('data', (chunk) => { body += chunk; });
+      res.on('data', (chunk) => {
+        body += chunk;
+      });
       res.on('end', () => {
         resolve({ statusCode: res.statusCode, headers: res.headers, body });
       });
@@ -246,13 +248,53 @@ describe('SMOKE-008: Marketing landing page', () => {
 /* ── Critical journey export (backward compat) ──────────────────── */
 module.exports = {
   criticalJourneys: [
-    { id: 'SMOKE-001', name: 'Landing page loads', path: '/', assertions: ['200 OK', 'HTML content', 'security headers'] },
-    { id: 'SMOKE-002', name: 'Dashboard accessible', path: '/dashboard', assertions: ['200 OK', 'HTML content', 'security headers'] },
-    { id: 'SMOKE-003', name: 'Health endpoint healthy', path: '/health', assertions: ['200 OK', 'status: ok', 'response < 500ms'] },
-    { id: 'SMOKE-004', name: 'API session reachable', path: '/api/session', assertions: ['200 or 404', 'JSON response', 'no 5xx'] },
-    { id: 'SMOKE-005', name: 'Questionnaire list loads', path: '/api/questionnaires', assertions: ['200 or 404', 'JSON response', 'no 5xx'] },
-    { id: 'SMOKE-006', name: 'Security headers baseline', path: '*', assertions: ['X-Content-Type-Options', 'method rejection'] },
-    { id: 'SMOKE-007', name: 'Decisions endpoint', path: '/api/decisions', assertions: ['200 or 404', 'JSON', 'no 5xx'] },
-    { id: 'SMOKE-008', name: 'Marketing landing page', path: '/landing', assertions: ['200 OK', 'hero', 'pillars', 'subscribe', 'security', 'a11y'] },
+    {
+      id: 'SMOKE-001',
+      name: 'Landing page loads',
+      path: '/',
+      assertions: ['200 OK', 'HTML content', 'security headers'],
+    },
+    {
+      id: 'SMOKE-002',
+      name: 'Dashboard accessible',
+      path: '/dashboard',
+      assertions: ['200 OK', 'HTML content', 'security headers'],
+    },
+    {
+      id: 'SMOKE-003',
+      name: 'Health endpoint healthy',
+      path: '/health',
+      assertions: ['200 OK', 'status: ok', 'response < 500ms'],
+    },
+    {
+      id: 'SMOKE-004',
+      name: 'API session reachable',
+      path: '/api/session',
+      assertions: ['200 or 404', 'JSON response', 'no 5xx'],
+    },
+    {
+      id: 'SMOKE-005',
+      name: 'Questionnaire list loads',
+      path: '/api/questionnaires',
+      assertions: ['200 or 404', 'JSON response', 'no 5xx'],
+    },
+    {
+      id: 'SMOKE-006',
+      name: 'Security headers baseline',
+      path: '*',
+      assertions: ['X-Content-Type-Options', 'method rejection'],
+    },
+    {
+      id: 'SMOKE-007',
+      name: 'Decisions endpoint',
+      path: '/api/decisions',
+      assertions: ['200 or 404', 'JSON', 'no 5xx'],
+    },
+    {
+      id: 'SMOKE-008',
+      name: 'Marketing landing page',
+      path: '/landing',
+      assertions: ['200 OK', 'hero', 'pillars', 'subscribe', 'security', 'a11y'],
+    },
   ],
 };

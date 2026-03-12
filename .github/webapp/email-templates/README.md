@@ -13,13 +13,13 @@ Platform newsletter, implemented per SP-12-704 (Email Marketing Framework).
 
 ## Welcome Sequence Schedule
 
-| # | Send Trigger | Subject | Goal |
-|---|-------------|---------|------|
-| 1 | Immediate (confirmation) | Welcome to the Agentic SDLC Platform | Value proposition |
-| 2 | Day 2 | Why 68% of software projects fail | Problem awareness |
-| 3 | Day 4 | How 4 phases replace chaos with clarity | Product education |
-| 4 | Day 7 | Sprint 1: 15 items, 113 tests, 0 blockers | Social proof |
-| 5 | Day 10 | Ready to build your first project? | Conversion |
+| #   | Send Trigger             | Subject                                   | Goal              |
+| --- | ------------------------ | ----------------------------------------- | ----------------- |
+| 1   | Immediate (confirmation) | Welcome to the Agentic SDLC Platform      | Value proposition |
+| 2   | Day 2                    | Why 68% of software projects fail         | Problem awareness |
+| 3   | Day 4                    | How 4 phases replace chaos with clarity   | Product education |
+| 4   | Day 7                    | Sprint 1: 15 items, 113 tests, 0 blockers | Social proof      |
+| 5   | Day 10                   | Ready to build your first project?        | Conversion        |
 
 ## Buttondown Configuration
 
@@ -58,6 +58,7 @@ Action: Send welcome-5
 ## UTM Convention
 
 All links in emails use:
+
 ```
 ?utm_source=email&utm_medium=welcome-sequence&utm_campaign=welcome-seq-[N]&utm_content=[link-id]
 ```

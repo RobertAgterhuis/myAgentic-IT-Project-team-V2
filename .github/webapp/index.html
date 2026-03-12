@@ -3735,6 +3735,12 @@ document.getElementById('btnExport').addEventListener('click', async () => {
   } catch (e) { toast(STRINGS.errors.exportFailed(e.message), 't-err'); }
 });
 document.getElementById('helpClose').addEventListener('click', closeHelp);
+
+/* ── Pipeline command buttons (FEAT-05-F) ────────── */
+document.getElementById('smBtnCreate').addEventListener('click', () => sendPipelineCommand('CREATE'));
+document.getElementById('smBtnResume').addEventListener('click', () => sendPipelineCommand('CREATE', { resume: true }));
+document.getElementById('smBtnReeval').addEventListener('click', () => sendPipelineCommand('REEVALUATE'));
+
 document.getElementById('helpOverlay').addEventListener('click', e => {
   if (e.target === e.currentTarget) closeHelp();
 });
@@ -3978,6 +3984,34 @@ function connectSSE() {
   _sseSource.addEventListener('heartbeat', () => {
     _lastRefreshTime = new Date();
     updateConnectionStatus();
+  });
+
+  /* ── Orchestrator SSE events (FEAT-05-F) ────────── */
+  _sseSource.addEventListener('orchestrator:transition', (e) => {
+    try { const d = JSON.parse(e.data); addPipelineActivity('➡️', `${d.from} → ${d.to}`); if (activeTab === 'pipeline') loadPipelinePanel(); } catch {}
+  });
+  _sseSource.addEventListener('orchestrator:error', (e) => {
+    try { const d = JSON.parse(e.data); addPipelineActivity('❌', `Error in ${d.state}: ${d.error}`); if (activeTab === 'pipeline') loadPipelinePanel(); } catch {}
+  });
+  _sseSource.addEventListener('orchestrator:reset', () => {
+    _smLastGate = null; _smActivity = []; _smStartTime = null;
+    addPipelineActivity('🔄', 'Pipeline reset');
+    if (activeTab === 'pipeline') loadPipelinePanel();
+  });
+  _sseSource.addEventListener('orchestrator:gate_passed', (e) => {
+    try { const d = JSON.parse(e.data); _smLastGate = { verdict: 'APPROVED', criticState: d.state }; addPipelineActivity('✅', `Gate passed: ${d.state}`); if (activeTab === 'pipeline') loadPipelinePanel(); } catch {}
+  });
+  _sseSource.addEventListener('orchestrator:gate_failed', (e) => {
+    try { const d = JSON.parse(e.data); _smLastGate = { verdict: 'REJECTED', criticState: d.state, violations: d.violations || [] }; addPipelineActivity('❌', `Gate failed: ${d.state}`); if (activeTab === 'pipeline') loadPipelinePanel(); } catch {}
+  });
+  _sseSource.addEventListener('orchestrator:sprint_gate_ready', (e) => {
+    try { const d = JSON.parse(e.data); addPipelineActivity('🚧', `Sprint gate ready: ${d.sprintId || ''}`); if (activeTab === 'pipeline') loadPipelinePanel(); } catch {}
+  });
+  _sseSource.addEventListener('orchestrator:sprint_gate_blocked', (e) => {
+    try { const d = JSON.parse(e.data); addPipelineActivity('🚫', `Sprint gate blocked: ${d.reason || ''}`); if (activeTab === 'pipeline') loadPipelinePanel(); } catch {}
+  });
+  _sseSource.addEventListener('orchestrator:state_saved', () => {
+    addPipelineActivity('💾', 'State persisted');
   });
 }
 

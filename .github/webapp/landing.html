@@ -17,11 +17,10 @@
   <title>Agentic SDLC Platform — Design it right. Build it fast.</title>
   <link rel="stylesheet" href="/design-system.css">
   <!-- Matomo Cookieless Analytics — SP-2-MAT (GDPR: no cookies, no consent banner) -->
+  <!-- Page view tracking deferred to A/B experiment script (SP-3-201-M) -->
   <script>
     var _paq = window._paq = window._paq || [];
     _paq.push(['disableCookies']);
-    _paq.push(['trackPageView']);
-    _paq.push(['enableLinkTracking']);
     (function() {
       var u = '//' + location.hostname + ':8080/';
       _paq.push(['setTrackerUrl', u + 'matomo.php']);
@@ -248,6 +247,33 @@
     <!-- Hero -->
     <section class="hero" aria-labelledby="hero-heading">
       <h1 id="hero-heading">Design it right. Build it fast.</h1>
+      <!-- A/B Experiment Framework — SP-3-201-M: inline to prevent FOUC -->
+      <script>
+        (function() {
+          var EXP_ID = 'headline-v1';
+          var SPLIT = 0.5;
+          var VARIANTS = {
+            control: { headline: 'Design it right. Build it fast.', dim: 'control_original' },
+            variant_a: { headline: 'AI-Powered Phase-Based SDLC for Product Teams', dim: 'variant_ai_powered' }
+          };
+          var key = 'exp_' + EXP_ID;
+          var assign;
+          try { assign = localStorage.getItem(key); } catch(e) { /* private browsing */ }
+          if (!assign || !VARIANTS[assign]) {
+            assign = Math.random() < SPLIT ? 'control' : 'variant_a';
+            try { localStorage.setItem(key, assign); } catch(e) { /* private browsing */ }
+          }
+          var v = VARIANTS[assign];
+          var h = document.getElementById('hero-heading');
+          if (h) { h.textContent = v.headline; }
+          var _paq = window._paq = window._paq || [];
+          _paq.push(['setCustomDimension', 1, v.dim]);
+          _paq.push(['trackPageView']);
+          _paq.push(['enableLinkTracking']);
+          _paq.push(['trackEvent', 'Experiment', 'Assignment', EXP_ID + ':' + assign]);
+          window.__experiment = { id: EXP_ID, assignment: assign, variant: v };
+        })();
+      </script>
       <p class="subtitle">The first end-to-end platform that combines multi-discipline strategic analysis with iterative implementation.</p>
       <div class="hero-ctas">
         <a href="/docs" class="btn btn-primary" role="button">Explore the Documentation &rarr;</a>

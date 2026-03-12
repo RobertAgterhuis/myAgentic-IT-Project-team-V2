@@ -4,7 +4,7 @@
 **Sprint:** Sprint 3 (April 8 – April 21, 2026)
 **Track:** Marketing
 **Owner:** Growth Marketer
-**Status:** 🔄 IN PROGRESS (Day 2 — Strategy defined)
+**Status:** ⏸️ BACKLOG — non-blocking (AC1 account creation deferred)
 **Source:** Sprint 2 Retrospective Action Item #8
 **Lesson Injection:** L13 (content items 3-5 day estimates), L7 (retro → backlog)
 **Estimate:** 3 days (per L13)
@@ -186,7 +186,7 @@ Matomo (now verified working per SP-3-MAT-FIX) will track these inbound visits.
 
 | AC | Description | Status | Notes |
 |----|-------------|--------|-------|
-| 1 | Dev.to account created/configured | ⬜ PENDING | Scheduled Day 3 |
+| 1 | Dev.to account created/configured | ⏸️ BACKLOG | Non-blocking — execute when convenient |
 | 2 | Canonical URL strategy defined | ✅ DONE | Section 2 |
 | 3 | At least 2 articles cross-posted | ⬜ PENDING | 2 articles identified, Days 5+7 |
 | 4 | Dev.to profile linked from landing + social | ⬜ PENDING | Scheduled Day 8 |

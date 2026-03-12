@@ -69,9 +69,20 @@ describe('SP-2-LND: Matomo tracking integration on landing page', () => {
   });
 
   it('should NOT set any cookies or use consent mode', () => {
-    // disableCookies must appear BEFORE trackPageView
-    const disablePos = html.indexOf("disableCookies");
-    const trackPos = html.indexOf("trackPageView");
+    // disableCookies must appear BEFORE trackPageView push call
+    const disablePos = html.indexOf("_paq.push(['disableCookies'])");
+    const trackPos = html.indexOf("_paq.push(['trackPageView'])");
     expect(disablePos).toBeLessThan(trackPos);
+  });
+
+  it('should defer trackPageView to A/B experiment framework (SP-3-201-M)', () => {
+    // trackPageView is now in the experiment script, not the head Matomo init
+    const headEnd = html.indexOf('</head>');
+    const expComment = html.indexOf('SP-3-201-M');
+    // The head comment references the deferral
+    expect(html).toContain('Page view tracking deferred to A/B experiment script');
+    // trackPageView push call is after experiment assignment in body
+    const trackPos = html.indexOf("_paq.push(['trackPageView'])");
+    expect(trackPos).toBeGreaterThan(headEnd);
   });
 });

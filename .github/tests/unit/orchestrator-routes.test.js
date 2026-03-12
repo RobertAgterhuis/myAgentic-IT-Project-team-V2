@@ -18,11 +18,11 @@
 
 const path = require('path');
 const fs = require('fs');
-const { createEngine } = require('../../webapp/orchestrator/engine');
+const { createEngine } = require('../../../src/webapp/orchestrator/engine');
 
 // ─── Test Helpers ────────────────────────────────────────────
 
-const FLOWS_PATH = path.join(__dirname, '..', '..', 'webapp', 'orchestrator', 'flows.yaml');
+const FLOWS_PATH = path.join(__dirname, '..', '..', '..', 'src', 'webapp', 'orchestrator', 'flows.yaml');
 const FLOWS_CONTENT = fs.readFileSync(FLOWS_PATH, 'utf-8');
 
 function createMockStore(files = {}) {

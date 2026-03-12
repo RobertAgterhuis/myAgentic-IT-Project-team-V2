@@ -55,7 +55,7 @@ previous analysis version:
    `.github/docs/session/reevaluate-trigger.json` exists with
    `status: "PENDING"`, read the `scope` field and use it as the scope parameter
    for this re-evaluation. This trigger is written by the Questionnaire Manager
-   web UI (`.github/webapp/`). The Orchestrator consumes and marks it as
+   web UI (`src/webapp/`). The Orchestrator consumes and marks it as
    `"CONSUMED"` after completion (per RULE ORC-28).
 1. **Load questionnaire answers (MANDATORY FIRST SUB-STEP):** Before comparing
    state, instruct the Orchestrator to activate the Questionnaire Agent (answer

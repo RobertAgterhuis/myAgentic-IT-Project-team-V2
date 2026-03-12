@@ -771,7 +771,7 @@ Serves `landing.html` (the marketing landing page with subscribe form). Includes
 
 #### GET /social-cards/:file.svg
 
-Serves SVG social cards from `.github/webapp/social-cards/`. Files:
+Serves SVG social cards from `src/webapp/social-cards/`. Files:
 `card-architecture.svg`, `card-launch.svg`, `card-risk-matrix.svg`,
 `card-sprint-results.svg`. Content-Type: `image/svg+xml`, cached 24h.
 
@@ -924,7 +924,7 @@ cd .github
 npm install
 
 # Start the server (from repo root — also works via root package.json)
-node .github/webapp/server.js
+node src/webapp/server.js
 # or:
 npm start
 ```
@@ -966,7 +966,7 @@ For persistent operation, use a process manager:
 
 ```bash
 # Using PM2
-npx pm2 start .github/webapp/server.js --name agentic-team
+npx pm2 start src/webapp/server.js --name agentic-team
 
 # Check status
 npx pm2 status

@@ -68,7 +68,7 @@ boundary with clear 400 error messages.
 
 - [ ] Ajv library added to devDependencies (MIT License verified with Legal
       Counsel LCHECK-001)
-- [ ] JSON schemas created in `.github/webapp/schemas/` for:
+- [ ] JSON schemas created in `src/webapp/schemas/` for:
   - `questionnaire-answers-schema.json` (POST
     /api/questionnaires/:phase/:file/answers)
   - `decision-create-schema.json` (POST /api/decisions)

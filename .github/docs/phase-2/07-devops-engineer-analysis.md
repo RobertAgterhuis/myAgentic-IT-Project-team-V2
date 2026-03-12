@@ -59,14 +59,14 @@
 
 - Finding: Server startup can fail with `port_in_use` and exits with code 1
   without automated port fallback.
-- Source: terminal run `node .github/webapp/server.js` output (2026-03-10 04:40
+- Source: terminal run `node src/webapp/server.js` output (2026-03-10 04:40
   UTC)
 - Impact: High
 
 - Finding: `start.ps1` kills existing process on selected port before restart,
   but this behavior is not mirrored in cross-platform startup scripts/CI smoke
   startup.
-- Source: `.github/webapp/start.ps1`
+- Source: `src/webapp/start.ps1`
 - Impact: Medium
 
 - Finding: Health and observability endpoint behavior is covered by integration
@@ -106,7 +106,7 @@
 
 - Finding: Runtime metrics persistence and health endpoints exist, enabling
   baseline technical observability.
-- Source: `.github/webapp/server.js`,
+- Source: `src/webapp/server.js`,
   `.github/tests/integration/observability.test.js`
 - Impact: High
 
@@ -128,7 +128,7 @@
 - Finding: Backup/DR process for file-based state is partially implemented
   (backups in store layer) but no scripted restore drill, RTO/RPO validation, or
   scheduled backup verification in CI.
-- Source: `.github/webapp/store.js`,
+- Source: `src/webapp/store.js`,
   `.github/docs/phase-2/05-software-architect-analysis.md`
 - Impact: High
 
@@ -180,7 +180,7 @@
 
 - Description: Backup files exist but no scheduled restore test and no RTO/RPO
   verification automation.
-- Source: `.github/webapp/store.js`, absence of DR workflow
+- Source: `src/webapp/store.js`, absence of DR workflow
 - Risk if unresolved: Backup confidence is unverified during real incidents.
 - Priority: High
 
@@ -206,8 +206,8 @@
 - Risk score: High
 - Mitigation options: add retry/fallback port logic; CI smoke test to catch
   startup conflict behavior.
-- Source: terminal execution output (port_in_use), `.github/webapp/server.js`,
-  `.github/webapp/start.ps1`
+- Source: terminal execution output (port_in_use), `src/webapp/server.js`,
+  `src/webapp/start.ps1`
 
 ### 3.3 RISK-703 – Build reproducibility drift
 
@@ -239,7 +239,7 @@
 - Impact: High
 - Risk score: High
 - Mitigation options: scheduled restore drill and RTO/RPO validation report.
-- Source: `.github/webapp/store.js`, lack of DR CI workflow
+- Source: `src/webapp/store.js`, lack of DR CI workflow
 
 ## 4. KPI Baseline
 

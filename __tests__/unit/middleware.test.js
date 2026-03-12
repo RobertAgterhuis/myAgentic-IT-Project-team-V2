@@ -14,11 +14,11 @@ const {
   detectSecrets,
   safePath,
   assertString,
-} = require('../../.github/webapp/middleware');
+} = require('../../src/webapp/middleware');
 
 describe('SP-11-612: Middleware Utility Tests', () => {
   describe('safePath — Path traversal prevention (RISK-801)', () => {
-    const base = path.resolve(__dirname, '../../.github/webapp');
+    const base = path.resolve(__dirname, '../../src/webapp');
 
     it('should resolve valid relative paths', () => {
       const result = safePath(base, 'index.html');

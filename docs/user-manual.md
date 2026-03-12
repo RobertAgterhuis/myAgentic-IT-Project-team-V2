@@ -45,7 +45,7 @@ Command Center, and troubleshooting common issues.
 ### 2. Launch the Web UI
 
 ```bash
-node .github/webapp/server.js
+node src/webapp/server.js
 ```
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser. The server
@@ -259,9 +259,9 @@ switching to the web UI.
 
 - **VS Code** — Works out of the box (`.vscode/mcp.json` is pre-configured)
 - **Visual Studio** — Add an MCP stdio server:
-  `node .github/webapp/mcp-server.js`
+  `node src/webapp/mcp-server.js`
 - **JetBrains IDEs** — Add an MCP stdio server:
-  `node .github/webapp/mcp-server.js`
+  `node src/webapp/mcp-server.js`
 
 ### What You Can Do via MCP
 
@@ -279,7 +279,7 @@ when needed. It reads and writes the same files as the web UI, so both
 interfaces stay in sync.
 
 No additional setup is needed for VS Code. For other IDEs, configure an MCP
-server with command `node` and argument `.github/webapp/mcp-server.js`.
+server with command `node` and argument `src/webapp/mcp-server.js`.
 
 ---
 
@@ -423,7 +423,7 @@ the platform.
 
 ### Email Templates
 
-Welcome sequence templates are in `.github/webapp/email-templates/`:
+Welcome sequence templates are in `src/webapp/email-templates/`:
 
 - `welcome-1.md` — Value proposition (Day 0)
 - `welcome-2.md` — Problem awareness (Day 2)

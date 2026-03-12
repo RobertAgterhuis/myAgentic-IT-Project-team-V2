@@ -40,7 +40,7 @@ implementation.
 ### Launch
 
 ```bash
-node .github/webapp/server.js
+node src/webapp/server.js
 ```
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000) — the server runs locally,

@@ -58,14 +58,14 @@ Sprint 4. F-06, F-09, F-11 closed in Sprint 5. F-10 closed in Sprint 3.
 
 ### 1. Orchestrator State Machine (SP-5-ORCH-A, #80)
 
-- `.github/webapp/orchestrator/state-machine.js` — executable state machine
+- `src/webapp/orchestrator/state-machine.js` — executable state machine
   with phase transitions, validation, recovery, and audit trail
 - `.github/tests/unit/state-machine.test.js` — full test coverage
 - Complexity refactored to meet ESLint thresholds
 
 ### 2. Agent Invocation Dispatcher (SP-5-ORCH-B, #81)
 
-- `.github/webapp/orchestrator/dispatcher.js` — multi-platform routing with
+- `src/webapp/orchestrator/dispatcher.js` — multi-platform routing with
   retries, timeouts, structured logging, and context management
 - `.github/tests/unit/dispatcher.test.js` — full test coverage
 - Error classification extracted for maintainability
@@ -74,12 +74,12 @@ Sprint 4. F-06, F-09, F-11 closed in Sprint 5. F-10 closed in Sprint 3.
 
 - `.github/platform/schema/agent-canonical.schema.json` — JSON Schema definition
 - `.github/platform/schema/agents.json` — 38 agents mapped with tool catalog
-- `.github/webapp/orchestrator/agent-schema.js` — Ajv-based validator
+- `src/webapp/orchestrator/agent-schema.js` — Ajv-based validator
 - `.github/tests/unit/agent-schema.test.js` — schema + mapping validation
 
 ### 4. Design System Foundation (SP-5-DESIGN, #36)
 
-- `.github/webapp/design-system.css` — semantic CSS custom properties with
+- `src/webapp/design-system.css` — semantic CSS custom properties with
   typography, spacing, palette, elevation, radius, motion + dark mode
 - `.github/docs/brand/design-tokens.json` — aligned token definitions
 - `.github/tests/unit/design-system-tokens.test.js` — regression coverage

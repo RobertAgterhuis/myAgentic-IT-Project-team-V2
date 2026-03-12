@@ -53,7 +53,7 @@ All data stored by the Agentic SDLC Platform in the v1 GA
 | ---------------------- | ------- | --------------------------------- | ------------------------------ | -------------------------------- |
 | Matomo analytics DB    | MariaDB | Docker volume (`matomo-db`)       | Potentially (IP if configured) | Container lifetime               |
 | Matomo configuration   | PHP/env | Docker volume                     | No                             | Container lifetime               |
-| Local analytics events | JSON    | `.github/webapp/` (runtime)       | No                             | In-memory only; reset on restart |
+| Local analytics events | JSON    | `src/webapp/` (runtime)       | No                             | In-memory only; reset on restart |
 | Metrics snapshot       | JSON    | `.github/docs/session/` (runtime) | No                             | Overwritten per collection cycle |
 
 ### 1.5 Operational Data

@@ -51,14 +51,14 @@ reaching route handlers.
 
 1. Add Ajv as dev dependency (MIT License, validate with Legal Counsel per
    LCHECK-001)
-2. Define JSON schemas in `.github/webapp/schemas/` for each endpoint:
+2. Define JSON schemas in `src/webapp/schemas/` for each endpoint:
    - `POST /api/questionnaires/:phase/:file/answers` →
      `questionnaire-answers-schema.json`
    - `POST /api/decisions` → `decision-create-schema.json`
    - `PUT /api/decisions/:id` → `decision-update-schema.json`
    - `POST /api/commands` → `command-create-schema.json`
 3. Create middleware function `validateBody(schemaId)` that:
-   - Compiles schema from `.github/webapp/schemas/[schemaId].json`
+   - Compiles schema from `src/webapp/schemas/[schemaId].json`
    - Validates `req.body` against schema
    - Returns 400 with validation errors if invalid
 4. Wrap all POST/PUT route handlers with `validateBody()` middleware
@@ -69,7 +69,7 @@ reaching route handlers.
 
 - ✓ All POST/PUT endpoints return 400 for malformed requests within 1 sprint
   (measurable)
-- ✓ 100% of API endpoints have schema definitions in `.github/webapp/schemas/`
+- ✓ 100% of API endpoints have schema definitions in `src/webapp/schemas/`
   (specific)
 - ✓ Validation layer tested with >=95% branch coverage (achievable per existing
   test coverage target)
@@ -241,7 +241,7 @@ implementation uses retry logic (3 attempts), but contention behavior under
 realistic concurrent writes is untested.
 
 **Source:** Analysis section 7.2 (RISK-501), existing file-lock.js at
-`.github/webapp/file-lock.js`.
+`src/webapp/file-lock.js`.
 
 **Recommended Solution:** Create stress test suite simulating concurrent writes
 to session-state.json, questionnaire files, and decisions.md to validate file

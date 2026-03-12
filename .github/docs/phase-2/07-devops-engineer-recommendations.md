@@ -103,8 +103,8 @@ analysis:
 - Dependencies: Policy decision on fixed vs fallback ports
   (`QUESTIONNAIRE_REQUEST: DO-Q-702`)
 - Owner: Senior Developer + DevOps Engineer
-- Evidence source: runtime terminal output; `.github/webapp/server.js`;
-  `.github/webapp/start.ps1`
+- Evidence source: runtime terminal output; `src/webapp/server.js`;
+  `src/webapp/start.ps1`
 - SMART success criteria:
   - Port-collision startup scenario covered by automated test in CI.
   - Startup-related incidents from port collision reduced by at least 80% over
@@ -141,7 +141,7 @@ analysis:
   recoverability.
 - Dependencies: RTO/RPO targets (`QUESTIONNAIRE_REQUEST: DO-Q-704`)
 - Owner: DevOps Engineer + Data Architect
-- Evidence source: `.github/webapp/store.js` + absence of restore-drill
+- Evidence source: `src/webapp/store.js` + absence of restore-drill
   automation
 - SMART success criteria:
   - Monthly restore drill success rate >= 95%.

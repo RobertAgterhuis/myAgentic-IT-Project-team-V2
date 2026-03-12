@@ -81,9 +81,9 @@ complete working solution first
 
 | File                                                           | Purpose                       |
 | -------------------------------------------------------------- | ----------------------------- |
-| `.github/webapp/email-templates/base-layout.html`              | Responsive HTML email wrapper |
-| `.github/webapp/email-templates/README.md`                     | Template system docs          |
-| `.github/webapp/email-templates/welcome-1.md` – `welcome-5.md` | 5 welcome emails              |
+| `src/webapp/email-templates/base-layout.html`              | Responsive HTML email wrapper |
+| `src/webapp/email-templates/README.md`                     | Template system docs          |
+| `src/webapp/email-templates/welcome-1.md` – `welcome-5.md` | 5 welcome emails              |
 | `.github/docs/phase-5/sp-2-202-pilot-feedback-rubric.md`       | Pilot feedback instrument     |
 | `.github/docs/phase-5/sp-2-201p-sample-project-brief.md`       | Sample pilot project          |
 | `docker-compose.weblate.yml`                                   | Weblate TMS Docker stack      |
@@ -93,11 +93,11 @@ complete working solution first
 | `locales/en-US/doc-snippets.json`                              | 40 doc/onboarding strings     |
 | `.github/docs/phase-5/sp-2-501-tms-vendor-scoring.md`          | TMS vendor evaluation         |
 | `.github/docs/phase-5/sp-2-501-weblate-trial-notes.md`         | Weblate trial notes           |
-| `.github/webapp/social-cards/card-launch.svg`                  | Launch social card            |
-| `.github/webapp/social-cards/card-risk-matrix.svg`             | Risk matrix social card       |
-| `.github/webapp/social-cards/card-architecture.svg`            | CI/CD architecture card       |
-| `.github/webapp/social-cards/card-sprint-results.svg`          | Sprint results card           |
-| `.github/webapp/social-cards/README.md`                        | Social card docs              |
+| `src/webapp/social-cards/card-launch.svg`                  | Launch social card            |
+| `src/webapp/social-cards/card-risk-matrix.svg`             | Risk matrix social card       |
+| `src/webapp/social-cards/card-architecture.svg`            | CI/CD architecture card       |
+| `src/webapp/social-cards/card-sprint-results.svg`          | Sprint results card           |
+| `src/webapp/social-cards/README.md`                        | Social card docs              |
 | `__tests__/unit/email-templates.test.js`                       | Email template tests (10)     |
 | `__tests__/unit/weblate-trial.test.js`                         | Weblate trial tests (16)      |
 | `__tests__/unit/social-cards.test.js`                          | Social card tests (12)        |

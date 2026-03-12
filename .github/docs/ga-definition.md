@@ -130,7 +130,7 @@ This is the reproducible sequence from code-complete to published release.
 
 - [ ] Fresh clone test: `git clone` → `npm install` → `npm start` → health check
       at `http://127.0.0.1:3000`
-- [ ] Verify `.github/webapp/server.js` starts without errors
+- [ ] Verify `src/webapp/server.js` starts without errors
 - [ ] Verify `CREATE` command produces expected output in a fresh session
 - [ ] Release is visible on GitHub Releases page with correct tag and notes
 

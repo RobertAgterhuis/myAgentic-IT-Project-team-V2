@@ -28,7 +28,7 @@ cd .github && npm install && cd ..
 ## Step 2: Start the Command Center
 
 ```bash
-node .github/webapp/server.js
+node src/webapp/server.js
 ```
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser.

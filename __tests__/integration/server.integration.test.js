@@ -10,7 +10,7 @@ const http = require('http');
 const path = require('path');
 
 // Resolve the server module relative to project root
-const SERVER_PATH = path.resolve(__dirname, '../../.github/webapp/server.js');
+const SERVER_PATH = path.resolve(__dirname, '../../src/webapp/server.js');
 
 let server;
 let baseUrl;

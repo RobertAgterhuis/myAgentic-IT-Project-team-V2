@@ -106,7 +106,7 @@ Standard test patterns for the Agentic SDLC codebase:
 
 ### 4.1 Server Endpoint Tests
 
-The webapp server (`/.github/webapp/server.js`) exposes HTTP endpoints.
+The webapp server (`/src/webapp/server.js`) exposes HTTP endpoints.
 Integration tests validate:
 
 | Endpoint           | Test            | Expected                       |

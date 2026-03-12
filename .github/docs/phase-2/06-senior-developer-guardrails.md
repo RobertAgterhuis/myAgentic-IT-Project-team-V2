@@ -17,7 +17,7 @@ Route Layer Must Stay Adapter-Only
 ### Scope
 
 - Applies to: Implementation Agent, Test Agent, PR/Review Agent for all Phase 5
-  CODE stories touching `.github/webapp/routes/`
+  CODE stories touching `src/webapp/routes/`
 - Time horizon: Permanent
 
 ### Rule
@@ -175,7 +175,7 @@ Maintainability Limits Must Be Enforced in CI
 
 ### Scope
 
-- Applies to: All production JS files in `.github/webapp/`
+- Applies to: All production JS files in `src/webapp/`
 - Time horizon: Permanent
 
 ### Rule

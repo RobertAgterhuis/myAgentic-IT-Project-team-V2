@@ -9,11 +9,13 @@ const SCHEMA_PATH = path.resolve(
   __dirname,
   '..',
   '..',
+  '..',
+  '.github',
   'platform',
   'schema',
   'agent-canonical.schema.json'
 );
-const AGENTS_PATH = path.resolve(__dirname, '..', '..', 'platform', 'schema', 'agents.json');
+const AGENTS_PATH = path.resolve(__dirname, '..', '..', '..', '.github', 'platform', 'schema', 'agents.json');
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));

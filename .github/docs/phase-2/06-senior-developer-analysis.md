@@ -18,30 +18,30 @@
   modules, shared middleware, models, and infrastructure helpers, which aligns
   with ADR-001 and supports component-level patterns.
 - Source: `.github/docs/phase-2/05-software-architect-analysis.md`,
-  `.github/webapp/server.js`, `.github/webapp/routes/progress.js`
+  `src/webapp/server.js`, `src/webapp/routes/progress.js`
 - Impact: High
 
 - Finding: The `Store` abstraction (`FileStore` + `InMemoryStore`) is a clean
   Repository pattern anchor for persistence concerns and testability.
-- Source: `.github/webapp/store.js`
+- Source: `src/webapp/store.js`
 - Impact: High
 
 - Finding: Route factory functions
   (`module.exports = function createXRoutes(ctx)`) already represent an adapter
   boundary and can be formalized as Hexagonal Adapter Layer for HTTP concerns.
-- Source: `.github/webapp/routes/questionnaires.js`,
-  `.github/webapp/routes/progress.js`
+- Source: `src/webapp/routes/questionnaires.js`,
+  `src/webapp/routes/progress.js`
 - Impact: Medium
 
 - Finding: Cross-cutting concerns are centralized in middleware (security
   headers, body parsing, sanitization, structured logging), enabling consistent
   policy enforcement.
-- Source: `.github/webapp/middleware.js`
+- Source: `src/webapp/middleware.js`
 - Impact: High
 
 - Finding: MCP transport is currently coupled to core modules and should adopt
   explicit service ports to avoid transport-driven business logic leakage.
-- Source: `.github/webapp/mcp-server.js`,
+- Source: `src/webapp/mcp-server.js`,
   `.github/docs/phase-2/05-software-architect-analysis.md`
 - Impact: Medium
 
@@ -56,20 +56,20 @@
 - Finding: Structured logging utility exists and already avoids uncontrolled
   text logs, but there is no documented event-name taxonomy or mandatory field
   set per log event.
-- Source: `.github/webapp/middleware.js`
+- Source: `src/webapp/middleware.js`
 - Impact: Medium
 
 - Finding: Error handling currently mixes thrown errors and response helpers, so
   a single normalized application error contract should be defined for all
   routes and services.
-- Source: `.github/webapp/middleware.js`, `.github/webapp/server.js`,
-  `.github/webapp/utils/errors.js`
+- Source: `src/webapp/middleware.js`, `src/webapp/server.js`,
+  `src/webapp/utils/errors.js`
 - Impact: High
 
 - Finding: Naming style is mostly consistent (`camelCase` functions, upper snake
   constants), but standards are not yet published in a dedicated engineering
   style guide.
-- Source: `.github/webapp/server.js`, `.github/webapp/store.js`
+- Source: `src/webapp/server.js`, `src/webapp/store.js`
 - Impact: Medium
 
 - Finding: No mandatory code review checklist file was found for code-level
@@ -88,7 +88,7 @@
 
 - Finding: MCP SDK is used by `mcp-server.js` and requires explicit license +
   update governance because it is non-core but operationally critical.
-- Source: `.github/webapp/mcp-server.js`
+- Source: `src/webapp/mcp-server.js`
 - Impact: Medium
 
 - Finding: No lock-file strategy document is present in Phase 2 outputs;
@@ -120,8 +120,8 @@
 - Finding: Test files indicate broad route/security utility coverage, but there
   is no explicit test taxonomy document (unit/integration/e2e/perf/security
   ownership).
-- Source: `.github/webapp/server.test.js`, `.github/webapp/store.test.js`,
-  `.github/webapp/schemas.test.js`
+- Source: `src/webapp/server.test.js`, `src/webapp/store.test.js`,
+  `src/webapp/schemas.test.js`
 - Impact: Medium
 
 - Finding: E2E testing strategy for browser-level Command Center flows is not
@@ -150,12 +150,12 @@
 
 - Finding: Current architecture can drift into route-heavy monolithic handlers
   without explicit service/use-case boundaries and file-level constraints.
-- Source: `.github/webapp/server.js`, `.github/webapp/routes/questionnaires.js`
+- Source: `src/webapp/server.js`, `src/webapp/routes/questionnaires.js`
 - Impact: High
 
 - Finding: Documentation comments are present in key files but no minimum doc
   coverage requirements exist for exported modules.
-- Source: `.github/webapp/store.js`, `.github/webapp/middleware.js`
+- Source: `src/webapp/store.js`, `src/webapp/middleware.js`
 - Impact: Medium
 
 - Finding: Duplication prevention is informal; no automated duplicate-code
@@ -187,7 +187,7 @@
 - Description: Component-level pattern selections (Repository, Service/Use-case,
   Adapter boundaries) are not codified as implementation rules.
 - Source: `.github/docs/phase-2/05-software-architect-analysis.md`,
-  `.github/webapp/routes/*.js`, `.github/webapp/store.js`
+  `src/webapp/routes/*.js`, `src/webapp/store.js`
 - Risk if unresolved: Architecture drift and tight coupling over successive
   sprints.
 - Priority: High
@@ -240,7 +240,7 @@
 - Risk score: Critical
 - Mitigation options: enforce service layer pattern; file/function size limits;
   PR checklist blocking mixed concerns.
-- Source: `.github/webapp/routes/questionnaires.js`, `.github/webapp/server.js`,
+- Source: `src/webapp/routes/questionnaires.js`, `src/webapp/server.js`,
   GAP-602
 
 ### 3.2 RISK-602 – Test blind spot on end-to-end user flows
@@ -275,7 +275,7 @@
 - Risk score: High
 - Mitigation options: monthly update cadence, lockfile policy, automated audit,
   mandatory Legal Counsel path for non-permissive licenses.
-- Source: GAP-604, `package.json`, `.github/webapp/mcp-server.js`
+- Source: GAP-604, `package.json`, `src/webapp/mcp-server.js`
 
 ### 3.5 RISK-605 – Technical debt compounding from incomplete maintainability guardrails
 
@@ -363,7 +363,7 @@
       "id": "CS-601",
       "topic": "Component code patterns",
       "finding": "Modular-monolith structure with route modules and shared infrastructure is in place and alignable with formal pattern rules.",
-      "source": ".github/webapp/server.js; .github/webapp/routes/progress.js",
+      "source": "src/webapp/server.js; src/webapp/routes/progress.js",
       "impact": "High",
       "design_decision_id": "ADR-001"
     },
@@ -371,7 +371,7 @@
       "id": "CS-602",
       "topic": "Persistence abstraction",
       "finding": "Store abstraction already supports repository-style boundaries and test doubles.",
-      "source": ".github/webapp/store.js",
+      "source": "src/webapp/store.js",
       "impact": "High",
       "design_decision_id": "ADR-004"
     },
@@ -395,7 +395,7 @@
       "id": "CS-605",
       "topic": "Cross-cutting middleware",
       "finding": "Security headers, JSON body handling, sanitization, and structured logging are centralized in middleware.",
-      "source": ".github/webapp/middleware.js",
+      "source": "src/webapp/middleware.js",
       "impact": "Medium",
       "design_decision_id": "ADR-003"
     }
@@ -455,7 +455,7 @@
         "Set file/function limits",
         "Block mixed-concern PRs in review checklist"
       ],
-      "source": ".github/webapp/routes/questionnaires.js; GAP-602"
+      "source": "src/webapp/routes/questionnaires.js; GAP-602"
     },
     {
       "id": "RISK-602",

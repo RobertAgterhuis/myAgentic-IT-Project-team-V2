@@ -1,20 +1,25 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
+  server: {
+    fs: {
+      allow: ['..'],
+    },
+  },
   test: {
     globals: true,
     fileParallelism: false,
     include: [
-      'webapp/**/*.test.js',
+      '../src/webapp/**/*.test.js',
       'tests/**/*.test.js',
     ],
     coverage: {
       provider: 'v8',
-      include: ['webapp/**/*.js'],
+      include: ['../src/webapp/**/*.js'],
       exclude: [
-        'webapp/**/*.test.js',
-        'webapp/node_modules/**',
-        'webapp/start.ps1',
+        '../src/webapp/**/*.test.js',
+        '../src/webapp/node_modules/**',
+        '../src/webapp/start.ps1',
       ],
       reporter: ['text', 'text-summary', 'json-summary', 'json'],
       reportsDirectory: '../coverage',

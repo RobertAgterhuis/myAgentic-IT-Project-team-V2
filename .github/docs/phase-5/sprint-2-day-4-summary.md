@@ -90,7 +90,7 @@
 
 | File                                                     | Changes                                                  |
 | -------------------------------------------------------- | -------------------------------------------------------- |
-| `.github/webapp/landing.html`                            | Matomo cookieless tracking script + noscript fallback    |
+| `src/webapp/landing.html`                            | Matomo cookieless tracking script + noscript fallback    |
 | `.github/docs/phase-5/sp-2-mat-matomo-deployment.md`     | Status → COMPLETE (100%), Day 4 progress, all AC checked |
 | `.github/docs/phase-5/sp-2-lnd-landing-page-scope.md`    | Status → 95%                                             |
 | `.github/docs/phase-5/sp-2-501-weblate-trial-notes.md`   | Status → TRIAL_EXECUTED, setup steps checked             |

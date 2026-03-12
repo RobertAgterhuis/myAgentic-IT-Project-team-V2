@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const TEMPLATE_DIR = path.join(__dirname, '..', '..', '.github', 'webapp', 'email-templates');
+const TEMPLATE_DIR = path.join(__dirname, '..', '..', 'src', 'webapp', 'email-templates');
 
 describe('SP-2-BTN Email Templates', () => {
   test('base-layout.html exists and contains required placeholders', () => {

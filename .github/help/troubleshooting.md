@@ -161,7 +161,7 @@ the agent. Type `CONTINUE` and the Orchestrator will detect the gap.
 - Ensure Node.js ≥ 18 is installed: `node --version`
 - Check port 3000 is available: `netstat -ano | findstr :3000` (Windows) or
   `lsof -i :3000` (macOS/Linux)
-- Set a different port: `$env:SERVER_PORT = 3001; node .github/webapp/server.js`
+- Set a different port: `$env:SERVER_PORT = 3001; node src/webapp/server.js`
 
 ### Web UI shows "Server unreachable"
 

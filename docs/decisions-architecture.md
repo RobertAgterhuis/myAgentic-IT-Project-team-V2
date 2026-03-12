@@ -254,7 +254,7 @@ auto-activation.
 
 ## 7. Web UI ↔ file synchronization
 
-The web UI (`node .github/webapp/server.js`, port 3000) reads and writes the
+The web UI (`node src/webapp/server.js`, port 3000) reads and writes the
 same markdown files:
 
 | API endpoint                            | File affected                          | Operation                                     |

@@ -4,7 +4,7 @@
 
 const http = require('http');
 const path = require('path');
-const { InMemoryStore, setStore } = require('../../webapp/store');
+const { InMemoryStore, setStore } = require('../../../src/webapp/store');
 const {
   server,
   _cache,
@@ -13,9 +13,9 @@ const {
   loadMetrics,
   METRICS_FILE,
   recordMetric,
-} = require('../../webapp/server');
+} = require('../../../src/webapp/server');
 
-const WEBAPP_DIR = path.resolve(__dirname, '../../webapp');
+const WEBAPP_DIR = path.resolve(__dirname, '../../../src/webapp');
 const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
 const GITHUB_DOCS = path.join(PROJECT_ROOT, '.github', 'docs');
@@ -23,7 +23,7 @@ const SESSION_DIR = path.join(GITHUB_DOCS, 'session');
 const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
 const DECISIONS_FILE = path.join(GITHUB_DOCS, 'decisions.md');
 const HELP_DIR = path.join(PROJECT_ROOT, '.github', 'help');
-const PKG_PATH = path.resolve(WEBAPP_DIR, '..', 'package.json');
+const PKG_PATH = path.join(PROJECT_ROOT, 'package.json');
 
 let baseUrl;
 
@@ -349,7 +349,7 @@ describe('TECH-05: Metrics survive restart (round-trip)', () => {
 
 describe('TECH-05: Structured logging format', () => {
   it('structuredLog exists and is callable', () => {
-    const { structuredLog } = require('../../webapp/server');
+    const { structuredLog } = require('../../../src/webapp/server');
     expect(typeof structuredLog).toBe('function');
   });
 

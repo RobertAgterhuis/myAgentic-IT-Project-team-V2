@@ -19,7 +19,7 @@ application:
 | **Social cards og:image** | Added `og:image` + `twitter:card` meta tags to `landing.html`; new `serveSocialCard()` route for `/social-cards/*.svg`             |
 | **Locale API**            | New `serveLocaleFile()` route for `/locales/:locale/:file.json` with `safePath` traversal protection                               |
 | **Subscribe fallback**    | Local fallback in `subscribe.js` stores subscriptions to `BusinessDocs/local-subscriptions.json` when `BUTTONDOWN_API_KEY` not set |
-| **Root package.json**     | `main` → `.github/webapp/server.js`, `start` → `node .github/webapp/server.js`                                                     |
+| **Root package.json**     | `main` → `src/webapp/server.js`, `start` → `node src/webapp/server.js`                                                     |
 
 Subscribe integration tests updated (201 local fallback vs 503). All 323 tests
 passing.

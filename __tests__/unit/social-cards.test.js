@@ -5,7 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const CARDS_DIR = path.join(__dirname, '..', '..', '.github', 'webapp', 'social-cards');
+const CARDS_DIR = path.join(__dirname, '..', '..', 'src', 'webapp', 'social-cards');
 
 const CARD_FILES = [
   'card-launch.svg',

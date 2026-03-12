@@ -49,7 +49,7 @@ the **single source of truth**.
 | Channel                      | Description                                                                   | File modified directly?                                        |
 | ---------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | Direct file edit             | User edits the `*-questionnaire.md` file in their editor                      | Yes                                                            |
-| Questionnaire Manager web UI | User fills in answers via `http://127.0.0.1:3000` (source: `.github/webapp/`) | Yes — the server writes to the same `*-questionnaire.md` files |
+| Questionnaire Manager web UI | User fills in answers via `http://127.0.0.1:3000` (source: `src/webapp/`) | Yes — the server writes to the same `*-questionnaire.md` files |
 | Future integrations          | Any tool or API that writes answers to the standardized markdown format       | Yes                                                            |
 
 The Questionnaire Agent's Answer Loading workflow does NOT distinguish between
@@ -112,7 +112,7 @@ contain:
 > improve analysis quality but are not blocking. When done, save this file — the
 > system will pick up your answers automatically. **Tip:** You can also use the
 > Questionnaire Manager web UI for a guided experience: run
-> `node .github/webapp/server.js` and open http://127.0.0.1:3000
+> `node src/webapp/server.js` and open http://127.0.0.1:3000
 
 ---
 

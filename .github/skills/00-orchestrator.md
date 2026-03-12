@@ -451,13 +451,13 @@ Do NOT block the session.
    set `status` to `"CONSUMED"` and add `consumed_at: [ISO 8601]`
 2. Questionnaire answers may arrive via two channels: (a) direct file edits by
    the user, (b) the Questionnaire & Decisions Manager web UI at
-   `.github/webapp/`. Both write to the same `BusinessDocs/` markdown files and
+   `src/webapp/`. Both write to the same `BusinessDocs/` markdown files and
    produce identical output. The Orchestrator does NOT distinguish between
    channels — the markdown file is the single source of truth.
 3. When informing the user about open questionnaires (after phase completion per
    RULE ORC-25), include:
    `ℹ️ You can answer questionnaires and manage decisions by editing the files directly or by using the web UI: run \`node
-   .github/webapp/server.js\` and open http://127.0.0.1:3000`
+   src/webapp/server.js\` and open http://127.0.0.1:3000`
 4. **Decisions via web UI:** The user may create new decisions (`DECIDED` or
    `OPEN_QUESTION`) and answer open questions through the web UI. The web UI
    writes to `.github/docs/decisions.md` (index + uncategorized decisions) and
@@ -478,13 +478,13 @@ Do NOT block the session.
    to the user having typed it in Copilot Chat — execute the full workflow for
    that command d. After acknowledging the command, update the file: set
    `status` to `"CONSUMED"` and add `consumed_at: [ISO 8601]`
-2. The Command Center web UI at `.github/webapp/` (Command Center tab) writes
+2. The Command Center web UI at `src/webapp/` (Command Center tab) writes
    `command-queue.json` via `POST /api/command`. The user must still paste one
    command in Copilot Chat to trigger the Orchestrator to read the queue. The
    clipboard-ready text is provided by the UI.
 3. When informing the user about available commands, include:
    `ℹ️ You can also launch commands from the Command Center tab in the web UI: run \`node
-   .github/webapp/server.js\` and open http://127.0.0.1:3000`
+   src/webapp/server.js\` and open http://127.0.0.1:3000`
 
 **RULE ORC-30: Checkpoint-and-Yield Protocol (MANDATORY — prevents network
 timeouts)** The Orchestrator MUST complete exactly **one agent per conversation
@@ -774,7 +774,7 @@ and the status is reset.
    - Update questionnaire-index.md entry
    - Inform user:
      `ℹ️ Questionnaire(s) generated in BusinessDocs/[PHASE]/Questionnaires/ — fill in answers and run REEVALUATE or a new cycle to incorporate them. Alternatively, use the Questionnaire Manager web UI: run \`node
-     .github/webapp/server.js\` and open http://127.0.0.1:3000` c. **Activate
+     src/webapp/server.js\` and open http://127.0.0.1:3000` c. **Activate
      Questionnaire Agent — document generation workflow** for official documents
      updated by this phase (see RULE ORC-25) d. Activate next phase
 
@@ -839,7 +839,7 @@ Before every sprint, the Orchestrator performs the following checks:
    Question: [question]
    Scope: [scope]
    → Enter your answer in .github/docs/decisions.md and set status to DECIDED.
-   → Or use the web UI: run `node .github/webapp/server.js` → http://127.0.0.1:3000 → Decisions tab.
+   → Or use the web UI: run `node src/webapp/server.js` → http://127.0.0.1:3000 → Decisions tab.
    → Type RESUME to restart the Sprint Gate.
    ```
 6. Read all items with status `OPEN` and priority `MEDIUM` or `LOW` that affect

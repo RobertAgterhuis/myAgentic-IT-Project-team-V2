@@ -15,7 +15,7 @@
 ### Start the Command Center
 
 ```bash
-node .github/webapp/server.js
+node src/webapp/server.js
 ```
 
 The server binds to `127.0.0.1:3000` (localhost only). Open
@@ -59,7 +59,7 @@ The server logs all requests as structured JSON to stdout:
 Logs are not persisted to disk — pipe to a file if you need a log history:
 
 ```bash
-node .github/webapp/server.js 2>&1 | tee server.log
+node src/webapp/server.js 2>&1 | tee server.log
 ```
 
 ### Session State
@@ -96,7 +96,7 @@ netstat -ano | findstr :3000
 lsof -i :3000
 
 # Kill it or use a different port:
-PORT=3001 node .github/webapp/server.js
+PORT=3001 node src/webapp/server.js
 ```
 
 ### Command Center shows stale data

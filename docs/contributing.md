@@ -57,7 +57,7 @@ npm start
 ## Architecture Overview
 
 ```
-.github/webapp/           ← Web application (the code you'll work with most)
+src/webapp/           ← Web application (the code you'll work with most)
   server.js               ← HTTP server, route handlers, SSE, metrics
   store.js                ← Storage abstraction (FileStore + InMemoryStore)
   models.js               ← Domain parsing (questionnaires, decisions, session state)
@@ -211,7 +211,7 @@ docs: update README with badges and technology stack
 
 ## Webapp Development Cookbook
 
-Common recipes for extending the web UI at `.github/webapp/`.
+Common recipes for extending the web UI at `src/webapp/`.
 
 ### Adding a New API Endpoint
 

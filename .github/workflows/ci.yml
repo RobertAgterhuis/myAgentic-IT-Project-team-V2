@@ -26,12 +26,12 @@ jobs:
 
       - name: Check source file syntax
         run: |
-          node -c webapp/server.js
-          node -c webapp/models.js
-          node -c webapp/store.js
-          node -c webapp/cache.js
-          node -c webapp/schemas.js
-          node -c webapp/mcp-server.js
+          node -c ../src/webapp/server.js
+          node -c ../src/webapp/models.js
+          node -c ../src/webapp/store.js
+          node -c ../src/webapp/cache.js
+          node -c ../src/webapp/schemas.js
+          node -c ../src/webapp/mcp-server.js
 
   test:
     name: Tests

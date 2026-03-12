@@ -199,7 +199,7 @@ HANDOFF CHECKLIST.
 ## REEVALUATE TRIGGER FILE (WEB UI)
 
 **Location:** `.github/docs/session/reevaluate-trigger.json` **Written by:**
-Questionnaire & Decisions Manager web UI (`.github/webapp/server.js`) **Read
+Questionnaire & Decisions Manager web UI (`src/webapp/server.js`) **Read
 by:** Orchestrator (per RULE ORC-28 in `.github/skills/00-orchestrator.md`)
 
 > **ORC-28 summary:** At every session start and before every Sprint Gate, check
@@ -234,7 +234,7 @@ every Sprint Gate.
 ## COMMAND QUEUE FILE (WEB UI COMMAND CENTER)
 
 **Location:** `.github/docs/session/command-queue.json` **Written by:**
-Questionnaire & Decisions Manager web UI (`.github/webapp/server.js` — Command
+Questionnaire & Decisions Manager web UI (`src/webapp/server.js` — Command
 Center tab) **Read by:** Orchestrator (per RULE ORC-29 in
 `.github/skills/00-orchestrator.md`)
 

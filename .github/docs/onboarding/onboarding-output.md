@@ -153,7 +153,7 @@ to study and potentially rebuild/enhance.
 **Package analysis:**
 
 - `package.json` (root): Contains only dev dependencies (`jsdom: ^28.1.0`)
-- `.github/webapp/` uses zero external runtime dependencies (pure Node.js)
+- `src/webapp/` uses zero external runtime dependencies (pure Node.js)
 - `.github/package.json` includes ESLint, Vitest, and testing utilities
 
 ### Directory Structure (Top-2 Levels)
@@ -202,7 +202,7 @@ myAgentic-IT-Project-team-V2/
 **Framework:** Vitest + @vitest/coverage-v8  
 **Test files identified:**
 
-- `.github/webapp/*test.js` (37+ test files in webapp directory)
+- `src/webapp/*test.js` (37+ test files in webapp directory)
 - Test categories: accessibility, models, store, drift detection, schemas,
   errors, UX polish, server, cache
 
@@ -221,7 +221,7 @@ myAgentic-IT-Project-team-V2/
 **Analysis:**
 
 - Most TODOs are in documentation/guardrails explaining rules (not code debt)
-- One actual code TODO: `.github/webapp/routes/dashboard.js` line 102 (reading
+- One actual code TODO: `src/webapp/routes/dashboard.js` line 102 (reading
   metrics)
 - Overall debt level: **LOW** — well-maintained codebase
 

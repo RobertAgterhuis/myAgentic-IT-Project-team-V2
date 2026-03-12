@@ -136,7 +136,7 @@ Mandatory file structure:
 > improve analysis quality but are not blocking. When done, save this file — the
 > system will pick up your answers automatically. **Tip:** You can also use the
 > Questionnaire & Decisions Manager web UI for a guided experience: run
-> `node .github/webapp/server.js` and open http://127.0.0.1:3000
+> `node src/webapp/server.js` and open http://127.0.0.1:3000
 
 ---
 
@@ -201,7 +201,7 @@ Return to Orchestrator:
 QUESTIONNAIRE_GENERATED
 Files: [list of file paths created/updated]
 Required questions: [count] REQUIRED, [count] OPTIONAL
-Next step: Customer fills in questionnaires (via file edit or the Questionnaire & Decisions Manager web UI at .github/webapp/) → REEVALUATE or new cycle to consume answers
+Next step: Customer fills in questionnaires (via file edit or the Questionnaire & Decisions Manager web UI at src/webapp/) → REEVALUATE or new cycle to consume answers
 ```
 
 ---

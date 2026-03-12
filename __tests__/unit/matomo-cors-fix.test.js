@@ -11,7 +11,7 @@ const path = require('path');
 
 const ROOT = path.resolve(__dirname, '../..');
 const NGINX_PATH = path.join(ROOT, 'matomo-nginx.conf');
-const LANDING_PATH = path.join(ROOT, '.github/webapp/landing.html');
+const LANDING_PATH = path.join(ROOT, 'src/webapp/landing.html');
 
 /* ── CORS headers in Nginx config ────────────────────────────── */
 describe('SP-3-MAT-FIX: Nginx CORS headers for cross-origin tracking', () => {

@@ -469,7 +469,7 @@ for the user:
 ℹ️ QUESTIONNAIRE MANAGER WEB UI
 When questionnaires are generated during this cycle, you can answer them in two ways:
   1. Edit the markdown files directly in BusinessDocs/
-  2. Use the Questionnaire Manager web UI: run `node .github/webapp/server.js` and open http://127.0.0.1:3000
+  2. Use the Questionnaire Manager web UI: run `node src/webapp/server.js` and open http://127.0.0.1:3000
 Both methods write to the same files. After answering, type REEVALUATE to incorporate your answers.
 ```
 

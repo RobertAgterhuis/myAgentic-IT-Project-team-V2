@@ -163,8 +163,8 @@ pending)
 
 | File                                                  | Purpose                        |
 | ----------------------------------------------------- | ------------------------------ |
-| `.github/webapp/routes/subscribe.js`                  | Newsletter subscribe endpoint  |
-| `.github/webapp/landing.html`                         | Marketing landing page         |
+| `src/webapp/routes/subscribe.js`                  | Newsletter subscribe endpoint  |
+| `src/webapp/landing.html`                         | Marketing landing page         |
 | `__tests__/integration/subscribe.integration.test.js` | Subscribe endpoint tests       |
 | `docker-compose.analytics.yml`                        | Matomo Docker stack            |
 | `matomo-nginx.conf`                                   | Nginx reverse proxy for Matomo |
@@ -175,7 +175,7 @@ pending)
 | File                                    | Changes                                |
 | --------------------------------------- | -------------------------------------- |
 | `.github/workflows/ci-pipeline.yml`     | Added Job 8 accessibility gate         |
-| `.github/webapp/server.js`              | Subscribe route + landing page serving |
+| `src/webapp/server.js`              | Subscribe route + landing page serving |
 | `__tests__/smoke/landing.smoke.test.js` | Added SMOKE-008 (6 tests)              |
 | `docs/technical-manual.md`              | Updated to v1.8                        |
 

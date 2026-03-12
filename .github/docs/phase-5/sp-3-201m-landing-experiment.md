@@ -31,7 +31,7 @@
 
 ### Implementation Location
 
-- File: `.github/webapp/landing.html`
+- File: `src/webapp/landing.html`
 - Script: Inline `<script>` after `<h1 id="hero-heading">` (prevents FOUC)
 - Matomo init: `<head>` (tracker URL + cookie disable only)
 - Page view tracking: Deferred to experiment script (ensures custom dimension is

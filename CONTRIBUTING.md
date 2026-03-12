@@ -49,7 +49,7 @@ npm start
 ## Architecture Overview
 
 ```
-.github/webapp/           ← Web application (the code you'll work with most)
+src/webapp/           ← Web application (the code you'll work with most)
   server.js               ← HTTP server, route handlers, SSE, metrics
   store.js                ← Storage abstraction (FileStore + InMemoryStore)
   models.js               ← Domain parsing (questionnaires, decisions, session state)

@@ -81,7 +81,7 @@ After Critic + Risk PASSED:
 
 Questionnaire generation NEVER blocks Phase 2. Answers fed back via REEVALUATE
 or new CREATE cycle. Non-technical stakeholders can use the Questionnaire &
-Decisions Manager web UI: `node .github/webapp/server.js` →
+Decisions Manager web UI: `node src/webapp/server.js` →
 http://127.0.0.1:3000 Decisions can also be created and answered from the
 **Decisions** tab in the web UI — changes are written directly to
 `.github/docs/decisions.md`.
@@ -145,7 +145,7 @@ After Critic + Risk PASSED:
    `legal-compliance-overview.md`
 
 Answers fed back via REEVALUATE or new cycle. Web UI available:
-`node .github/webapp/server.js` → http://127.0.0.1:3000 (questionnaires +
+`node src/webapp/server.js` → http://127.0.0.1:3000 (questionnaires +
 decisions management)
 
 ---
@@ -206,7 +206,7 @@ After Critic + Risk PASSED:
    `content-strategy-brief.md`
 
 Answers fed back via REEVALUATE or new cycle. Web UI available:
-`node .github/webapp/server.js` → http://127.0.0.1:3000 (questionnaires +
+`node src/webapp/server.js` → http://127.0.0.1:3000 (questionnaires +
 decisions management)
 
 ---
@@ -260,7 +260,7 @@ After Critic + Risk PASSED:
    `BusinessDocs/OfficialDocuments/brand-brief.md` and `market-positioning.md`
 
 Answers fed back via REEVALUATE or new cycle. Web UI available:
-`node .github/webapp/server.js` → http://127.0.0.1:3000 (questionnaires +
+`node src/webapp/server.js` → http://127.0.0.1:3000 (questionnaires +
 decisions management)
 
 ### Post-Phase 4: Brand & Storybook

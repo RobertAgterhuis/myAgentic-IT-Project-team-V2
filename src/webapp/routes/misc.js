@@ -56,7 +56,7 @@ module.exports = function createMiscRoutes(ctx) {
   /* ── Version (read once at module load) ──────────────────────── */
   let _version = '0.0.0';
   try {
-    const pkgPath = path.resolve(__dirname, '..', '..', 'package.json');
+    const pkgPath = path.resolve(__dirname, '..', '..', '..', 'package.json');
     const pkg = JSON.parse(getStore().readFile(pkgPath));
     _version = pkg.version || '0.0.0';
   } catch {

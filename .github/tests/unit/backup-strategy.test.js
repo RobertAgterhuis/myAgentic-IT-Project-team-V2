@@ -4,7 +4,7 @@
  * timestamped backups before every write, retains max 10, and prunes oldest. */
 
 const path = require('path');
-const { InMemoryStore, MAX_BACKUPS_PER_FILE } = require('../../webapp/store');
+const { InMemoryStore, MAX_BACKUPS_PER_FILE } = require('../../../src/webapp/store');
 
 describe('Snapshot-on-write backup (InMemoryStore)', () => {
   const FILE = path.resolve('/test/data.md');

@@ -371,7 +371,7 @@ All icons follow the same base template for consistency:
 
 **Note:** No custom icon production or design tool required. Select icons
 directly from the library. The webapp already uses this pattern (see
-`.github/webapp/index.html` inline SVGs).
+`src/webapp/index.html` inline SVGs).
 
 ---
 

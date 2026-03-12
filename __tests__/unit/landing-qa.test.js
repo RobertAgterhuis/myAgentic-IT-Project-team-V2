@@ -8,7 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const HTML_PATH = path.join(__dirname, '..', '..', '.github', 'webapp', 'landing.html');
+const HTML_PATH = path.join(__dirname, '..', '..', 'src', 'webapp', 'landing.html');
 const html = fs.readFileSync(HTML_PATH, 'utf8');
 
 describe('SP-2-LND — Landing Page Final QA', () => {

@@ -4,7 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { AuditTrail } = require('../../webapp/audit');
+const { AuditTrail } = require('../../../src/webapp/audit');
 
 let tempDir;
 let trail;

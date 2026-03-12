@@ -26,7 +26,7 @@ Document is considered INVALID.
 answer is IMMUTABLE. The Questionnaire Agent MUST NOT modify, reformat,
 summarize, or delete answered questions under any circumstances. This rule
 applies regardless of whether the answer was entered via direct file edit or the
-Questionnaire & Decisions Manager web UI (`.github/webapp/`).  
+Questionnaire & Decisions Manager web UI (`src/webapp/`).  
 **Prohibition:** Do not rewrite or paraphrase client answers. Do not remove
 answered questions when appending new questions to a versioned file.  
 **Violation:** `GUARDRAIL_VIOLATION: G-QST-02 — answered question Q-[ID] was modified or deleted`.

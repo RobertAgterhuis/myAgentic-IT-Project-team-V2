@@ -146,10 +146,10 @@ for multi-user scenarios (RISK-501 mitigation).
 
 ```bash
 # Static analysis with grep
-FILES=$(grep -r "fs\.writeFile\|fs\.writeFileSync" .github/webapp --include="*.js" --exclude="store.js" | grep -v "test" | wc -l)
+FILES=$(grep -r "fs\.writeFile\|fs\.writeFileSync" src/webapp --include="*.js" --exclude="store.js" | grep -v "test" | wc -l)
 if [ "$FILES" -gt 0 ]; then
   echo "VIOLATION: Direct fs.writeFile() detected outside store.js (ARCH-G-003)"
-  grep -r "fs\.writeFile\|fs\.writeFileSync" .github/webapp --include="*.js" --exclude="store.js" | grep -v "test"
+  grep -r "fs\.writeFile\|fs\.writeFileSync" src/webapp --include="*.js" --exclude="store.js" | grep -v "test"
   exit 1
 fi
 ```
@@ -177,7 +177,7 @@ temp-file-then-rename (existing test in `tests/store.test.js:45`)
 
 **Rule:** Every POST/PUT endpoint MUST have:
 
-1. JSON schema file in `.github/webapp/schemas/[endpoint-name]-schema.json`
+1. JSON schema file in `src/webapp/schemas/[endpoint-name]-schema.json`
 2. `validateBody(schemaId)` middleware applied in route handler
 
 **Rationale:** Enforces REC-501 (API schema validation), prevents malformed
@@ -192,13 +192,13 @@ requests from reaching business logic.
 
 ```javascript
 // CI test script (tests/ci/verify-api-schemas.test.js)
-const routes = require('../.github/webapp/server.js'); // Import route definitions
+const routes = require('../src/webapp/server.js'); // Import route definitions
 const fs = require('fs');
 
 test('All POST/PUT endpoints have schema validation', () => {
   const endpoints = extractPostPutEndpoints(routes); // Helper function
   for (const endpoint of endpoints) {
-    const schemaPath = `.github/webapp/schemas/${endpoint.schemaId}.json`;
+    const schemaPath = `src/webapp/schemas/${endpoint.schemaId}.json`;
     expect(
       fs.existsSync(schemaPath),
       `Missing schema for ${endpoint.path}`
@@ -391,7 +391,7 @@ controls (RISK-503 mitigation, REC-505).
 
 ```javascript
 // CI test script (tests/ci/verify-localhost-only.test.js)
-const serverConfig = require('../.github/webapp/server.js');
+const serverConfig = require('../src/webapp/server.js');
 
 test('Server binds to localhost only OR authentication enabled', () => {
   const host = serverConfig.HOST || '127.0.0.1';

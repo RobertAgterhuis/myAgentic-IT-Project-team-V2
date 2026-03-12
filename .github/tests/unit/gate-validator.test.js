@@ -29,7 +29,7 @@ const {
   PHASE_GUARDRAILS,
   PHASE_CONTRACTS,
   HANDOFF_CHECKLIST_COUNT,
-} = require('../../webapp/orchestrator/gate-validator');
+} = require('../../../src/webapp/orchestrator/gate-validator');
 
 // ─── Test Helpers ────────────────────────────────────────────
 
@@ -559,9 +559,9 @@ describe('runGate', () => {
 // Engine integration — validateGate with SSE (AC-7)
 // ─────────────────────────────────────────────────────────────
 describe('engine validateGate integration', () => {
-  const { createEngine } = require('../../webapp/orchestrator/engine');
+  const { createEngine } = require('../../../src/webapp/orchestrator/engine');
 
-  const FLOWS_PATH = path.join(__dirname, '..', '..', 'webapp', 'orchestrator', 'flows.yaml');
+  const FLOWS_PATH = path.join(__dirname, '..', '..', '..', 'src', 'webapp', 'orchestrator', 'flows.yaml');
   const FLOWS_CONTENT = fs.readFileSync(FLOWS_PATH, 'utf-8');
 
   function engineStore(extraFiles = {}) {

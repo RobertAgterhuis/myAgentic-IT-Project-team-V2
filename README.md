@@ -76,7 +76,7 @@ implementation (human-in-the-loop, CONTINUE-to-proceed).
 **2. (Recommended) Launch the Command Center web UI:**
 
 ```bash
-node .github/webapp/server.js
+node src/webapp/server.js
 ```
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser.
@@ -134,7 +134,7 @@ appears automatically in the Copilot tools panel.
 ```json
 {
   "command": "node",
-  "args": [".github/webapp/mcp-server.js"]
+  "args": ["src/webapp/mcp-server.js"]
 }
 ```
 

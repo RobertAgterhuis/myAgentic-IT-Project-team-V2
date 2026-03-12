@@ -312,7 +312,7 @@ as part of SP-11-611 completion
 
 **Compliance Target:** ≥95% pass rate across all UI components (critical
 failures = 0)  
-**Scope:** Command Center web UI (`.github/webapp/`), Storybook component
+**Scope:** Command Center web UI (`src/webapp/`), Storybook component
 library
 
 | WCAG Principle             | Level AA Requirements                             | Current Status       | Evidence                     | Action Required                                       |
@@ -448,7 +448,7 @@ coordination)
 
 - [ ] OSS license (GPL, MIT, Apache-2.0)
 - [ ] Support for JSON i18n format (compatible with existing
-      `.github/webapp/locales/` structure)
+      `src/webapp/locales/` structure)
 - [ ] Workflow for translators (upload, translate, download)
 - [ ] Version control integration (Git-based workflow preferred)
 - [ ] Cost: $0 (self-hosted) or <$100/month (cloud SaaS)
@@ -466,7 +466,7 @@ commercial TMS budget approval (Crowdin, Phrase, Lokalise)
 
 **Required for Launch:**
 
-- [ ] All UI strings externalized to `.github/webapp/locales/[LOCALE].json`
+- [ ] All UI strings externalized to `src/webapp/locales/[LOCALE].json`
 - [ ] No hardcoded English strings in UI components
 - [ ] Date/time formatting locale-aware (via `Intl.DateTimeFormat`)
 - [ ] Number formatting locale-aware (via `Intl.NumberFormat`)

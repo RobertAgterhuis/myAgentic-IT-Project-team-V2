@@ -30,45 +30,45 @@
 - Finding: Canonical entities are file-backed and explicitly documented with
   validators/parsers (`session-state`, `command-queue`, `questionnaire`,
   `decisions`, `analytics-event`, `audit-entry`).
-- Source: `docs/data-dictionary.md`, `.github/webapp/schemas.js`,
-  `.github/webapp/models.js`
+- Source: `docs/data-dictionary.md`, `src/webapp/schemas.js`,
+  `src/webapp/models.js`
 - Impact: High
 
 - Finding: Logical constraints exist for key entities (status enums, required
   fields, ID format checks), but constraints are split across multiple modules
   and partly implicit.
-- Source: `.github/webapp/schemas.js`, `.github/webapp/models.js`
+- Source: `src/webapp/schemas.js`, `src/webapp/models.js`
 - Impact: Medium
 
 - Finding: Current storage model is denormalized file-level aggregates by design
   (JSON/Markdown/JSONL), justified by single-user localhost scope.
 - Source: `.github/docs/phase-2/05-software-architect-analysis.md:176`,
-  `.github/webapp/store.js`
+  `src/webapp/store.js`
 - Impact: Medium
 
 - Finding: Indexing strategy is limited to path and in-memory cache/mtime
   checks; no secondary query indexes exist for decisions/audit analytics.
-- Source: `.github/webapp/cache.js`, `.github/webapp/models.js`,
-  `.github/webapp/store.js`
+- Source: `src/webapp/cache.js`, `src/webapp/models.js`,
+  `src/webapp/store.js`
 - Impact: Medium
 
 ### 1.2 Physical model and storage sizing baseline
 
 - Finding: Physical persistence uses filesystem-backed JSON, Markdown, and JSONL
   with atomic write and backup snapshot behavior.
-- Source: `.github/webapp/store.js`,
+- Source: `src/webapp/store.js`,
   `.github/docs/phase-2/05-software-architect-analysis.md:181`
 - Impact: High
 
 - Finding: Backup retention is capped per file via `.backups` snapshots
   (`MAX_BACKUPS_PER_FILE=10`), but backup sizing policy is not linked to project
   growth horizon.
-- Source: `.github/webapp/store.js`
+- Source: `src/webapp/store.js`
 - Impact: Medium
 
 - Finding: Runtime metrics persistence is append/overwrite style snapshot data
   (`runtime-metrics.json`), not time-series partitioned.
-- Source: `.github/webapp/server.js`,
+- Source: `src/webapp/server.js`,
   `.github/docs/metrics/runtime-metrics.json`
 - Impact: Medium
 
@@ -81,7 +81,7 @@
 
 - Finding: No migration/versioning framework exists for schema evolution across
   JSON and Markdown entities.
-- Source: `.github/webapp/schemas.js`, `.github/webapp/models.js`, docs scan
+- Source: `src/webapp/schemas.js`, `src/webapp/models.js`, docs scan
 - Impact: High
 
 ### 1.3 Data flow and lineage baseline
@@ -89,22 +89,22 @@
 - Finding: Primary ingest flows are API-driven (`/api/save`, `/api/decisions`,
   `/api/analytics`, `/api/command`) and persist to file entities through route
   handlers and store abstraction.
-- Source: `.github/webapp/routes/questionnaires.js`,
-  `.github/webapp/routes/decisions.js`, `.github/webapp/routes/misc.js`,
-  `.github/webapp/routes/commands.js`
+- Source: `src/webapp/routes/questionnaires.js`,
+  `src/webapp/routes/decisions.js`, `src/webapp/routes/misc.js`,
+  `src/webapp/routes/commands.js`
 - Impact: High
 
 - Finding: Transformation steps include JSON schema validation, markdown
   sanitization, ID checks, and secret-pattern warnings before persistence.
-- Source: `.github/webapp/schemas.js`, `.github/webapp/middleware.js`,
-  `.github/webapp/models.js`
+- Source: `src/webapp/schemas.js`, `src/webapp/middleware.js`,
+  `src/webapp/models.js`
 - Impact: High
 
 - Finding: Serving flows use read + parse patterns from cache/store into API
   responses and dashboard endpoints.
-- Source: `.github/webapp/routes/progress.js`,
-  `.github/webapp/routes/dashboard.js`,
-  `.github/webapp/routes/metrics-dashboard.js`
+- Source: `src/webapp/routes/progress.js`,
+  `src/webapp/routes/dashboard.js`,
+  `src/webapp/routes/metrics-dashboard.js`
 - Impact: Medium
 
 - Finding: Data lineage ownership is implicit in modules and not documented as
@@ -114,7 +114,7 @@
 
 - Finding: No formal ETL/ELT pipeline exists; analytics/reporting is direct
   file-read based and local runtime oriented.
-- Source: `.github/webapp/routes/metrics-dashboard.js`,
+- Source: `src/webapp/routes/metrics-dashboard.js`,
   `docs/data-dictionary.md`
 - Impact: Medium
 
@@ -134,14 +134,14 @@
 - Finding: Data quality checks are strong at request validation level but lack a
   scheduled integrity check job across persisted files (schema drift, malformed
   markdown, orphan references).
-- Source: `.github/webapp/schemas.js`, `.github/webapp/models.js`,
+- Source: `src/webapp/schemas.js`, `src/webapp/models.js`,
   `.github/workflows/ci.yml`
 - Impact: High
 
 - Finding: Analytics architecture is dashboard-oriented with operational KPIs,
   but historical trend model and archival strategy are not formally defined.
-- Source: `.github/webapp/routes/dashboard.js`,
-  `.github/webapp/routes/metrics-dashboard.js`
+- Source: `src/webapp/routes/dashboard.js`,
+  `src/webapp/routes/metrics-dashboard.js`
 - Impact: Medium
 
 - Finding: Security Architect requested data classification matrix; current
@@ -173,7 +173,7 @@
 ### 2.3 GAP-903 – Schema evolution/versioning policy missing
 
 - Description: No migration/version metadata for JSON/Markdown schema changes.
-- Source: `.github/webapp/schemas.js`, `.github/webapp/models.js`
+- Source: `src/webapp/schemas.js`, `src/webapp/models.js`
 - Risk if unresolved: Backward compatibility breaks and data corruption risk
   during evolution.
 - Priority: High
@@ -182,7 +182,7 @@
 
 - Description: No scheduled integrity checks for malformed entities, orphan
   references, or contract drift.
-- Source: `.github/workflows/ci.yml`, `.github/webapp/models.js`
+- Source: `.github/workflows/ci.yml`, `src/webapp/models.js`
 - Risk if unresolved: Silent data degradation over time.
 - Priority: High
 
@@ -190,7 +190,7 @@
 
 - Description: No model for audit/analytics/questionnaire growth against backup
   and storage constraints.
-- Source: `.github/webapp/store.js`, business baseline (`QR-009`)
+- Source: `src/webapp/store.js`, business baseline (`QR-009`)
 - Risk if unresolved: Capacity and performance issues discovered reactively.
 - Priority: Medium
 
@@ -198,8 +198,8 @@
 
 - Description: KPI computations exist in route code but definitions and lineage
   are not centralized as governed metric catalog.
-- Source: `.github/webapp/routes/dashboard.js`,
-  `.github/webapp/routes/metrics-dashboard.js`
+- Source: `src/webapp/routes/dashboard.js`,
+  `src/webapp/routes/metrics-dashboard.js`
 - Risk if unresolved: Inconsistent reporting and metric interpretation drift.
 - Priority: High
 
@@ -225,7 +225,7 @@
 - Risk score: High
 - Mitigation options: introduce schema version field + migration handlers +
   compatibility tests.
-- Source: `.github/webapp/schemas.js`, `.github/webapp/models.js`
+- Source: `src/webapp/schemas.js`, `src/webapp/models.js`
 
 ### 3.3 RISK-903 – Silent data corruption accumulation
 
@@ -235,7 +235,7 @@
 - Impact: High
 - Risk score: High
 - Mitigation options: scheduled integrity validation workflow with alerting.
-- Source: `.github/workflows/ci.yml`, `.github/webapp/models.js`
+- Source: `.github/workflows/ci.yml`, `src/webapp/models.js`
 
 ### 3.4 RISK-904 – Governance accountability gaps
 
@@ -255,14 +255,14 @@
 - Impact: Medium
 - Risk score: Medium
 - Mitigation options: publish governed metric dictionary and lineage references.
-- Source: `.github/webapp/routes/dashboard.js`,
-  `.github/webapp/routes/metrics-dashboard.js`
+- Source: `src/webapp/routes/dashboard.js`,
+  `src/webapp/routes/metrics-dashboard.js`
 
 ## 4. KPI Baseline
 
 | KPI                                                       | Current value               | Source                                                                             | Measurement method                           |
 | --------------------------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------- |
-| Governed entities with documented schema parser/validator | 8+ core entities documented | `docs/data-dictionary.md`, `.github/webapp/schemas.js`, `.github/webapp/models.js` | Entity inventory coverage audit              |
+| Governed entities with documented schema parser/validator | 8+ core entities documented | `docs/data-dictionary.md`, `src/webapp/schemas.js`, `src/webapp/models.js` | Entity inventory coverage audit              |
 | Domains with explicit data owner assignment               | 0                           | docs scan                                                                          | Count domains with assigned owner role       |
 | Integrity automation cadence                              | 0 scheduled checks          | `.github/workflows/ci.yml`                                                         | Count scheduled integrity jobs/month         |
 | Classification coverage across entities                   | INSUFFICIENT_DATA           | pending matrix from Data + Security + Legal                                        | % entities with approved class               |

@@ -15,7 +15,7 @@ const {
   loadSessionState,
   saveSessionState,
   createAutoPersist,
-} = require('../../webapp/orchestrator/state-persistence');
+} = require('../../../src/webapp/orchestrator/state-persistence');
 
 // ─── Test Helpers ────────────────────────────────────────────
 

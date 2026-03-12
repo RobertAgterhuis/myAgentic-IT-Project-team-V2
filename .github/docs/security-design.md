@@ -230,15 +230,15 @@ networking but creates a potential exposure if the host machine is on a network.
 
 | Control                   | Implementation                                                                                 | File                               |
 | ------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------- |
-| Security response headers | `setSecurityHeaders()` — CSP, X-Frame-Options, COOP, COEP, Referrer-Policy, Permissions-Policy | `.github/webapp/middleware.js:48`  |
-| Path traversal prevention | `safePath()` — resolves and validates paths stay within base directory                         | `.github/webapp/middleware.js:70`  |
-| Input sanitization        | `sanitizeMarkdown()`, `sanitizeQID()`, `assertString()`                                        | `.github/webapp/middleware.js`     |
-| Secret detection          | `detectSecrets()` — regex-based scan for API keys, tokens, passwords in user input             | `.github/webapp/middleware.js:222` |
-| File locking              | `withFileLock()` — prevents concurrent write corruption                                        | `.github/webapp/file-lock.js`      |
-| Audit trail               | `AuditTrail` class — logs all state mutations with timestamp                                   | `.github/webapp/audit.js`          |
-| Structured logging        | `structuredLog()` — JSON format with level, event, details                                     | `.github/webapp/middleware.js`     |
-| Method validation         | `handleMethodNotAllowed()` — rejects unexpected HTTP methods per route                         | `.github/webapp/middleware.js`     |
-| Error boundary            | `handleRouteError()` — catches and sanitizes all route errors                                  | `.github/webapp/middleware.js`     |
+| Security response headers | `setSecurityHeaders()` — CSP, X-Frame-Options, COOP, COEP, Referrer-Policy, Permissions-Policy | `src/webapp/middleware.js:48`  |
+| Path traversal prevention | `safePath()` — resolves and validates paths stay within base directory                         | `src/webapp/middleware.js:70`  |
+| Input sanitization        | `sanitizeMarkdown()`, `sanitizeQID()`, `assertString()`                                        | `src/webapp/middleware.js`     |
+| Secret detection          | `detectSecrets()` — regex-based scan for API keys, tokens, passwords in user input             | `src/webapp/middleware.js:222` |
+| File locking              | `withFileLock()` — prevents concurrent write corruption                                        | `src/webapp/file-lock.js`      |
+| Audit trail               | `AuditTrail` class — logs all state mutations with timestamp                                   | `src/webapp/audit.js`          |
+| Structured logging        | `structuredLog()` — JSON format with level, event, details                                     | `src/webapp/middleware.js`     |
+| Method validation         | `handleMethodNotAllowed()` — rejects unexpected HTTP methods per route                         | `src/webapp/middleware.js`     |
+| Error boundary            | `handleRouteError()` — catches and sanitizes all route errors                                  | `src/webapp/middleware.js`     |
 | Security policy           | `SECURITY.md` — vulnerability disclosure process                                               | `SECURITY.md`                      |
 
 ---

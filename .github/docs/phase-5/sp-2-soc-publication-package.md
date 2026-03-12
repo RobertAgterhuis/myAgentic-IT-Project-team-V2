@@ -72,10 +72,10 @@
 
 | Asset               | File                      | Location                       | Dimensions | Brand Compliant          | Served via                              |
 | ------------------- | ------------------------- | ------------------------------ | ---------- | ------------------------ | --------------------------------------- |
-| Launch Card         | `card-launch.svg`         | `.github/webapp/social-cards/` | 1200×627   | ✅ Design tokens palette | `/social-cards/card-launch.svg`         |
-| Risk Matrix Card    | `card-risk-matrix.svg`    | `.github/webapp/social-cards/` | 1200×627   | ✅ Design tokens palette | `/social-cards/card-risk-matrix.svg`    |
-| Architecture Card   | `card-architecture.svg`   | `.github/webapp/social-cards/` | 1200×627   | ✅ Design tokens palette | `/social-cards/card-architecture.svg`   |
-| Sprint Results Card | `card-sprint-results.svg` | `.github/webapp/social-cards/` | 1200×627   | ✅ Design tokens palette | `/social-cards/card-sprint-results.svg` |
+| Launch Card         | `card-launch.svg`         | `src/webapp/social-cards/` | 1200×627   | ✅ Design tokens palette | `/social-cards/card-launch.svg`         |
+| Risk Matrix Card    | `card-risk-matrix.svg`    | `src/webapp/social-cards/` | 1200×627   | ✅ Design tokens palette | `/social-cards/card-risk-matrix.svg`    |
+| Architecture Card   | `card-architecture.svg`   | `src/webapp/social-cards/` | 1200×627   | ✅ Design tokens palette | `/social-cards/card-architecture.svg`   |
+| Sprint Results Card | `card-sprint-results.svg` | `src/webapp/social-cards/` | 1200×627   | ✅ Design tokens palette | `/social-cards/card-sprint-results.svg` |
 
 **4/4 visual cards created** as SVGs with correct dimensions (1200×627).
 

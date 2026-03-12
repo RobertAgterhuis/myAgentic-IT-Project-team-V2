@@ -24,7 +24,7 @@ const {
   BUSINESS_DOCS,
   SESSION_DIR,
   DECISIONS_PATH,
-} = require('../../webapp/mcp-server');
+} = require('../../../src/webapp/mcp-server');
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 
@@ -625,7 +625,7 @@ describe('tool: get_command_queue', () => {
 describe('tool: get_help', () => {
   it('returns error when help directory does not exist', async () => {
     const helpDir = path.resolve(
-      path.dirname(require.resolve('../../webapp/mcp-server')),
+      path.dirname(require.resolve('../../../src/webapp/mcp-server')),
       '../help'
     );
     if (fs.existsSync(helpDir)) return; // skip if help dir exists
@@ -635,7 +635,7 @@ describe('tool: get_help', () => {
 
   it('returns error for unknown topic', async () => {
     const helpDir = path.resolve(
-      path.dirname(require.resolve('../../webapp/mcp-server')),
+      path.dirname(require.resolve('../../../src/webapp/mcp-server')),
       '../help'
     );
     if (!fs.existsSync(helpDir)) return; // skip if no help dir

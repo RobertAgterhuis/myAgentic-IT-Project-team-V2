@@ -60,7 +60,7 @@
 | File                                                  | Change                                          |
 | ----------------------------------------------------- | ----------------------------------------------- |
 | `matomo-nginx.conf`                                   | CORS headers + OPTIONS preflight (SP-3-MAT-FIX) |
-| `.github/webapp/landing.html`                         | Noscript fallback fix + Discussions footer link |
+| `src/webapp/landing.html`                         | Noscript fallback fix + Discussions footer link |
 | `README.md`                                           | Community section with Discussions link         |
 | `__tests__/unit/matomo-cors-fix.test.js`              | 15 new tests (SP-3-MAT-FIX)                     |
 | `.github/docs/phase-5/sprint-3-plan.md`               | Sprint 3 plan (NEW)                             |

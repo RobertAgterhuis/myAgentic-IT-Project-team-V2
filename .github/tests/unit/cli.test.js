@@ -23,12 +23,12 @@ const {
   COMMAND_ALIASES,
   VALID_PLATFORMS,
   HELP_TEXT,
-} = require('../../webapp/orchestrator/cli');
-const { createEngine } = require('../../webapp/orchestrator/engine');
+} = require('../../../src/webapp/orchestrator/cli');
+const { createEngine } = require('../../../src/webapp/orchestrator/engine');
 
 // ─── Test Helpers ────────────────────────────────────────────
 
-const FLOWS_PATH = path.join(__dirname, '..', '..', 'webapp', 'orchestrator', 'flows.yaml');
+const FLOWS_PATH = path.join(__dirname, '..', '..', '..', 'src', 'webapp', 'orchestrator', 'flows.yaml');
 const FLOWS_CONTENT = fs.readFileSync(FLOWS_PATH, 'utf-8');
 
 function createMockStore(files = {}) {

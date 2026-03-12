@@ -217,7 +217,7 @@ describe('github-state-snapshot', () => {
 
 /* ── validateGithubSnapshot tests (INFRA-02-D) ───────────────── */
 
-const { validateGithubSnapshot, validateSessionState } = require('../../webapp/schemas');
+const { validateGithubSnapshot, validateSessionState } = require('../../../src/webapp/schemas');
 
 describe('validateGithubSnapshot', () => {
   const valid = {

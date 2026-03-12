@@ -8,10 +8,10 @@
 
 const http = require('http');
 const path = require('path');
-const { InMemoryStore, setStore } = require('../../webapp/store');
-const { server, _cache } = require('../../webapp/server');
+const { InMemoryStore, setStore } = require('../../../src/webapp/store');
+const { server, _cache } = require('../../../src/webapp/server');
 
-const WEBAPP_DIR = path.resolve(__dirname, '../../webapp');
+const WEBAPP_DIR = path.resolve(__dirname, '../../../src/webapp');
 const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 
 let baseUrl;

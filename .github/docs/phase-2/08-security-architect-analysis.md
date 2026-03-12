@@ -64,35 +64,35 @@
 - Finding: Route dispatch executes handlers without auth gate/middleware, so
   spoofing and broken access control become primary threats if host scope
   broadens.
-- Source: `.github/webapp/server.js:351`
+- Source: `src/webapp/server.js:351`
 - Impact: High
 
 - Finding: Input handling includes JSON content-type enforcement and markdown
   sanitization, reducing injection risk but not replacing endpoint-level
   authorization.
-- Source: `.github/webapp/middleware.js:134`, `.github/webapp/middleware.js:156`
+- Source: `src/webapp/middleware.js:134`, `src/webapp/middleware.js:156`
 - Impact: Medium
 
 - Finding: Secret pattern detection exists for request bodies and logs warnings,
   but no pre-commit secret scan exists for developer workstation path.
-- Source: `.github/webapp/middleware.js:203`, `.github/workflows/ci.yml`
+- Source: `src/webapp/middleware.js:203`, `.github/workflows/ci.yml`
 - Impact: High
 
 - Finding: Security headers and CSP are present for HTML responses, reducing
   client-side exploit surface.
-- Source: `.github/webapp/middleware.js:48`, `.github/webapp/server.js:291`
+- Source: `src/webapp/middleware.js:48`, `src/webapp/server.js:291`
 - Impact: Medium
 
 - Finding: No explicit rate-limiting control is implemented in server request
   pipeline.
-- Source: `.github/webapp/server.js:370`
+- Source: `src/webapp/server.js:370`
 - Impact: High
 
 ### 1.4 AuthN/AuthZ and secrets architecture baseline
 
 - Finding: No explicit user authentication mechanism (OIDC/API keys/mTLS) is
   implemented in the current runtime.
-- Source: `.github/webapp/server.js`, `.github/webapp/routes/*.js`
+- Source: `src/webapp/server.js`, `src/webapp/routes/*.js`
 - Impact: High
 
 - Finding: Authorization matrix (RBAC/ABAC) is not defined; current behavior is
@@ -103,12 +103,12 @@
 
 - Finding: Session/token lifecycle policies are absent (lifetime, refresh,
   revocation).
-- Source: `.github/webapp/server.js`, `.github/webapp/middleware.js`
+- Source: `src/webapp/server.js`, `src/webapp/middleware.js`
 - Impact: Medium
 
 - Finding: Secret scanning in CI exists (TruffleHog), plus runtime pattern
   detection for user inputs.
-- Source: `.github/workflows/ci.yml`, `.github/webapp/middleware.js:173`
+- Source: `.github/workflows/ci.yml`, `src/webapp/middleware.js:173`
 - Impact: High
 
 - Finding: Central secrets manager integration (Vault/Key Vault) is not
@@ -130,7 +130,7 @@
 
 - Finding: Encryption in transit for localhost HTTPS is not configured; HTTP is
   used for local loopback operations.
-- Source: `.github/webapp/server.js` (`http.createServer`)
+- Source: `src/webapp/server.js` (`http.createServer`)
 - Impact: Medium
 
 - Finding: Data classification and retention policy remain undefined pending
@@ -150,7 +150,7 @@
 
 - Description: No explicit authentication control for API/UI access.
 - Source: `.github/docs/phase-2/05-software-architect-analysis.md:507`,
-  `.github/webapp/server.js`
+  `src/webapp/server.js`
 - Risk if unresolved: Unauthorized access risk if host/network scope changes or
   local host is shared.
 - Priority: Critical
@@ -176,7 +176,7 @@
 ### 2.4 GAP-804 – No rate-limiting and abuse-prevention controls
 
 - Description: Request pipeline does not enforce request throttling.
-- Source: `.github/webapp/server.js:370`
+- Source: `src/webapp/server.js:370`
 - Risk if unresolved: Local abuse/DoS scenarios can degrade reliability.
 - Priority: High
 
@@ -211,7 +211,7 @@
 - Risk score: High
 - Mitigation options: implement authentication gate + RBAC baseline before any
   non-loopback exposure.
-- Source: `.github/webapp/server.js:351`, `Dockerfile` (`HOST=0.0.0.0`)
+- Source: `src/webapp/server.js:351`, `Dockerfile` (`HOST=0.0.0.0`)
 
 ### 3.2 RISK-802 – Privilege escalation through missing role contract
 
@@ -240,7 +240,7 @@
 - Impact: Medium
 - Risk score: Medium
 - Mitigation options: implement endpoint and IP/user scoped rate limits.
-- Source: `.github/webapp/server.js:370`
+- Source: `src/webapp/server.js:370`
 
 ### 3.5 RISK-805 – Privacy/compliance drift due to undefined data classes
 
@@ -262,7 +262,7 @@
 - Risk score: High
 - Mitigation options: define secrets policy document with rotation cadence and
   no-hardcoded-secret checks.
-- Source: `.github/webapp/middleware.js:173`, `.github/workflows/ci.yml`
+- Source: `src/webapp/middleware.js:173`, `.github/workflows/ci.yml`
 
 ## 4. KPI Baseline
 
@@ -271,8 +271,8 @@
 | CI security scan families enabled | 3 (`secret-scan`, `sast`, `npm-audit`) | `.github/workflows/ci.yml`               | Count security jobs in CI             |
 | DAST coverage                     | 0 configured                           | `.github/workflows/ci.yml`               | Presence of DAST stage and target run |
 | Container scan coverage           | 0 configured                           | `.github/workflows/ci.yml`, `Dockerfile` | Presence of image scan stage          |
-| Auth-protected API routes         | 0 explicit route-level auth checks     | `.github/webapp/server.js`               | Route policy audit                    |
-| Rate limiting coverage            | 0 endpoints with throttling            | `.github/webapp/server.js`               | Runtime middleware verification       |
+| Auth-protected API routes         | 0 explicit route-level auth checks     | `src/webapp/server.js`               | Route policy audit                    |
+| Rate limiting coverage            | 0 endpoints with throttling            | `src/webapp/server.js`               | Runtime middleware verification       |
 
 ## 5. UNCERTAIN Items
 
@@ -356,7 +356,7 @@
       "id": "CS-803",
       "topic": "Auth baseline",
       "finding": "No explicit authentication/authorization gate in route dispatch.",
-      "source": ".github/webapp/server.js:351",
+      "source": "src/webapp/server.js:351",
       "impact": "High",
       "design_decision_id": "AUTH-001"
     },
@@ -364,7 +364,7 @@
       "id": "CS-804",
       "topic": "Input hardening",
       "finding": "JSON content-type enforcement and sanitization utilities exist.",
-      "source": ".github/webapp/middleware.js:134",
+      "source": "src/webapp/middleware.js:134",
       "impact": "Medium",
       "design_decision_id": null
     },
@@ -372,7 +372,7 @@
       "id": "CS-805",
       "topic": "Client hardening",
       "finding": "Security headers and CSP are set for UI responses.",
-      "source": ".github/webapp/middleware.js:48",
+      "source": "src/webapp/middleware.js:48",
       "impact": "Medium",
       "design_decision_id": null
     }
@@ -406,7 +406,7 @@
       "id": "GAP-804",
       "title": "No rate limiting",
       "description": "No throttling in request pipeline.",
-      "source": ".github/webapp/server.js:370",
+      "source": "src/webapp/server.js:370",
       "risk_if_unresolved": "DoS/abuse availability issues.",
       "priority": "High"
     },

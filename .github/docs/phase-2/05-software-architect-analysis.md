@@ -120,7 +120,7 @@ bounded contexts (modules):
 
 **License:** Node.js — MIT License ✓
 
-**Source:** Existing codebase at `package.json`, `.github/webapp/server.js`,
+**Source:** Existing codebase at `package.json`, `src/webapp/server.js`,
 Phase 1 requirement `.github/docs/phase-1/01-business-analyst-analysis.md:174`
 (MIT License).
 
@@ -174,7 +174,7 @@ localhost-only constraint.
 
 **License:** N/A (native Node.js module)
 
-**Source:** Existing implementation at `.github/webapp/server.js:1-150`, Phase 1
+**Source:** Existing implementation at `src/webapp/server.js:1-150`, Phase 1
 REC-005 (license governance).
 
 ### 2.4 ADR-003: Native Node.js HTTP Module (Zero Framework)
@@ -225,7 +225,7 @@ REC-005.
 
 **License:** N/A (native filesystem)
 
-**Source:** Existing storage layer at `.github/webapp/store.js`, Phase 1
+**Source:** Existing storage layer at `src/webapp/store.js`, Phase 1
 internal-use constraint (no need for RDBMS complexity).
 
 ### 2.6 ADR-004: File-Based Storage (No Database)
@@ -291,7 +291,7 @@ Redis).
 - Consistency: mtime validation ensures file-system changes immediately visible
   to cache
 
-**Implementation:** Existing `FileCache` class at `.github/webapp/cache.js`
+**Implementation:** Existing `FileCache` class at `src/webapp/cache.js`
 
 **License:** N/A (in-process implementation)
 
@@ -427,7 +427,7 @@ questionnaire corpus, evaluate lightweight indexing (Lunr.js or similar).
     (audit)
   - Location: `.github/docs/`, `BusinessDocs/`
 
-**Source:** Codebase structure scan `.github/webapp/`, existing architecture at
+**Source:** Codebase structure scan `src/webapp/`, existing architecture at
 README.md.
 
 ### 3.3 C4 Level 3: Component Diagram — HTTP Server Container
@@ -504,7 +504,7 @@ README.md.
   questionnaire/decision parsers)
 - **Audit Context** — Mutation trail, analytics events (audit.js, analytics)
 
-**Source:** Codebase components at `.github/webapp/`, route files in `routes/`,
+**Source:** Codebase components at `src/webapp/`, route files in `routes/`,
 models in `models.js`.
 
 ### 3.4 Domain-Driven Design Assessment
@@ -576,8 +576,8 @@ conventions:
 - **Negative:** No automatic schema validation (mitigated by manual validation
   in route handlers)
 
-**Source:** Existing API implementation at `.github/webapp/server.js`,
-`.github/webapp/routes/`.
+**Source:** Existing API implementation at `src/webapp/server.js`,
+`src/webapp/routes/`.
 
 ### 4.3 Versioning Strategy
 
@@ -659,8 +659,8 @@ outside Software Architect scope.
 }
 ```
 
-**Source:** Route implementations `.github/webapp/routes/*.js`, API schema at
-`.github/webapp/schemas.js`.
+**Source:** Route implementations `src/webapp/routes/*.js`, API schema at
+`src/webapp/schemas.js`.
 
 ### 4.7 API Contract Testability
 

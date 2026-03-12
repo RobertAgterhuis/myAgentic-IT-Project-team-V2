@@ -16,4 +16,4 @@ ENV HOST=0.0.0.0
 
 EXPOSE 3000
 
-CMD ["node", ".github/webapp/server.js"]
+CMD ["node", "src/webapp/server.js"]

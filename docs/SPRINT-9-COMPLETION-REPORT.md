@@ -71,7 +71,7 @@ features:
 
 ## Technical Deliverables
 
-### Backend API (`.github/webapp/routes/milestones.js`)
+### Backend API (`src/webapp/routes/milestones.js`)
 
 **Endpoints Implemented**:
 
@@ -114,7 +114,7 @@ features:
 
 ---
 
-### Frontend UI (`.github/webapp/dashboard.html` & `dashboard.js`)
+### Frontend UI (`src/webapp/dashboard.html` & `dashboard.js`)
 
 **Modal Components Implemented**:
 
@@ -434,9 +434,9 @@ features:
 
 ### Modified Files
 
-- `.github/webapp/routes/milestones.js` - Backend API implementation
-- `.github/webapp/dashboard.html` - Modal and filter UI
-- `.github/webapp/dashboard.js` - Filter handlers and modal lifecycle
+- `src/webapp/routes/milestones.js` - Backend API implementation
+- `src/webapp/dashboard.html` - Modal and filter UI
+- `src/webapp/dashboard.js` - Filter handlers and modal lifecycle
 - `.github/docs/api/milestones-api.md` - API documentation
 
 ### Created Files

@@ -2,7 +2,7 @@
 /* Unit tests for the shared file-lock module.
  * Tests concurrency primitives and cross-module lock coordination. */
 
-const { withFileLock, _writeLocks } = require('../../webapp/file-lock');
+const { withFileLock, _writeLocks } = require('../../../src/webapp/file-lock');
 
 describe('withFileLock — concurrency', () => {
   it('serializes concurrent writes to the same path', async () => {
@@ -85,8 +85,8 @@ describe('withFileLock — concurrency', () => {
 
   it('shares the same lock instance across server.js and file-lock.js imports', () => {
     // Both modules must resolve to the same singleton lock map
-    const serverLock = require('../../webapp/server').withFileLock;
-    const fileLockModule = require('../../webapp/file-lock').withFileLock;
+    const serverLock = require('../../../src/webapp/server').withFileLock;
+    const fileLockModule = require('../../../src/webapp/file-lock').withFileLock;
     expect(serverLock).toBe(fileLockModule);
   });
 

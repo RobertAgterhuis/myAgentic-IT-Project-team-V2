@@ -6,7 +6,7 @@
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
-const { InMemoryStore, setStore } = require('../../webapp/store');
+const { InMemoryStore, setStore } = require('../../../src/webapp/store');
 const {
   server,
   _cache,
@@ -21,17 +21,17 @@ const {
   computePercentiles,
   sseNotify,
   _sseClients,
-} = require('../../webapp/server');
-const models = require('../../webapp/models');
-const schemas = require('../../webapp/schemas');
-const { FileCache } = require('../../webapp/cache');
-const { errorResponse, statusToCode } = require('../../webapp/utils/errors');
-const { formatSecretWarnings, attachSecretWarnings } = require('../../webapp/utils/secret-utils');
-const { VALIDATION: V, RESPONSES: R, STATIC: S } = require('../../webapp/strings');
+} = require('../../../src/webapp/server');
+const models = require('../../../src/webapp/models');
+const schemas = require('../../../src/webapp/schemas');
+const { FileCache } = require('../../../src/webapp/cache');
+const { errorResponse, statusToCode } = require('../../../src/webapp/utils/errors');
+const { formatSecretWarnings, attachSecretWarnings } = require('../../../src/webapp/utils/secret-utils');
+const { VALIDATION: V, RESPONSES: R, STATIC: S } = require('../../../src/webapp/strings');
 
 /* ── Test Infrastructure ──────────────────────────────────────── */
 
-const WEBAPP_DIR = path.resolve(__dirname, '../../webapp');
+const WEBAPP_DIR = path.resolve(__dirname, '../../../src/webapp');
 const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
 const GITHUB_DOCS = path.join(PROJECT_ROOT, '.github', 'docs');

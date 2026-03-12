@@ -15,7 +15,7 @@ can interact with the system without editing markdown by hand.
 From the project root:
 
 ```bash
-node .github/webapp/server.js
+node src/webapp/server.js
 ```
 
 Then open **http://127.0.0.1:3000** in your browser.
@@ -23,7 +23,7 @@ Then open **http://127.0.0.1:3000** in your browser.
 ### Custom port
 
 ```bash
-PORT=8080 node .github/webapp/server.js
+PORT=8080 node src/webapp/server.js
 ```
 
 ## What It Does
@@ -44,7 +44,7 @@ PORT=8080 node .github/webapp/server.js
 ## Architecture
 
 ```
-.github/webapp/
+src/webapp/
   server.js     Node.js server (built-in http module only)
   index.html    SPA — inline CSS + JS, no build step
   README.md     This file

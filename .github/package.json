@@ -10,13 +10,13 @@
   },
   "scripts": {
     "prepare": "node scripts/install-hooks.js",
-    "start": "node webapp/server.js",
-    "start:mcp": "node webapp/mcp-server.js",
+    "start": "node ../src/webapp/server.js",
+    "start:mcp": "node ../src/webapp/mcp-server.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "lint": "eslint webapp/",
-    "check": "node -c webapp/server.js",
+    "lint": "eslint ../src/webapp/",
+    "check": "node -c ../src/webapp/server.js",
     "audit:github": "node scripts/github-config-audit.js",
     "snapshot:github": "node scripts/github-state-snapshot.js"
   },

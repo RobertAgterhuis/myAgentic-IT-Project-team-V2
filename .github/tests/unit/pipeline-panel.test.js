@@ -17,13 +17,13 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { createEngine } = require('../../webapp/orchestrator/engine');
-const { STATES } = require('../../webapp/orchestrator/state-machine');
+const { createEngine } = require('../../../src/webapp/orchestrator/engine');
+const { STATES } = require('../../../src/webapp/orchestrator/state-machine');
 
 // ─── Test Helpers ────────────────────────────────────────────
 
-const INDEX_PATH = path.resolve(__dirname, '..', '..', 'webapp', 'index.html');
-const FLOWS_PATH = path.resolve(__dirname, '..', '..', 'webapp', 'orchestrator', 'flows.yaml');
+const INDEX_PATH = path.resolve(__dirname, '..', '..', '..', 'src', 'webapp', 'index.html');
+const FLOWS_PATH = path.resolve(__dirname, '..', '..', '..', 'src', 'webapp', 'orchestrator', 'flows.yaml');
 const indexHtml = fs.readFileSync(INDEX_PATH, 'utf8');
 const flowsContent = fs.readFileSync(FLOWS_PATH, 'utf8');
 

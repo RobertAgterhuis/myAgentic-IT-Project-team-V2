@@ -2,7 +2,7 @@
 * @RobertAgterhuis
 
 # Webapp
-.github/webapp/ @RobertAgterhuis
+src/webapp/ @RobertAgterhuis
 
 # CI/CD
 .github/workflows/ @RobertAgterhuis

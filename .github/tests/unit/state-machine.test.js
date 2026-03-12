@@ -23,7 +23,7 @@ const {
   createStateMachine,
   createCombinationMachine,
   createHotfixMachine,
-} = require('../../webapp/orchestrator/state-machine');
+} = require('../../../src/webapp/orchestrator/state-machine');
 
 // ─────────────────────────────────────────────────────────────
 // AC-2: State definitions

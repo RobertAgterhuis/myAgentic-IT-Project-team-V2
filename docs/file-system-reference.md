@@ -248,7 +248,7 @@ main project cycle.
 
 ---
 
-## `.github/webapp/` — Web UI application
+## `src/webapp/` — Web UI application
 
 | File                | Purpose                                                                      |
 | ------------------- | ---------------------------------------------------------------------------- |
@@ -265,7 +265,7 @@ main project cycle.
 | `start.ps1`         | PowerShell startup script                                                    |
 | `utils/`            | Utility modules                                                              |
 
-### Tests: `.github/tests/` + `.github/webapp/*.test.js`
+### Tests: `.github/tests/` + `src/webapp/*.test.js`
 
 | Path                 | Purpose               |
 | -------------------- | --------------------- |

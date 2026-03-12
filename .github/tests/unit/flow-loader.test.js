@@ -14,7 +14,7 @@ const {
   parseFlowYaml,
   parseInlineValue,
   loadFlows,
-} = require('../../webapp/orchestrator/flow-loader');
+} = require('../../../src/webapp/orchestrator/flow-loader');
 
 // ─── Test Helpers ────────────────────────────────────────────
 
@@ -119,7 +119,7 @@ describe('parseFlowYaml', () => {
   it('parses the full flows.yaml file', () => {
     const fs = require('fs');
     const content = fs.readFileSync(
-      path.join(__dirname, '..', '..', 'webapp', 'orchestrator', 'flows.yaml'),
+      path.join(__dirname, '..', '..', '..', 'src', 'webapp', 'orchestrator', 'flows.yaml'),
       'utf-8'
     );
     const result = parseFlowYaml(content);

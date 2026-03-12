@@ -9,7 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const LANDING_PATH = path.resolve(__dirname, '../../.github/webapp/landing.html');
+const LANDING_PATH = path.resolve(__dirname, '../../src/webapp/landing.html');
 
 describe('SP-2-LND: Matomo tracking integration on landing page', () => {
   let html;

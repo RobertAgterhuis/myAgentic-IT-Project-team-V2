@@ -22,7 +22,7 @@ This contract defines:
 **Location:** `.github/docs/session/session-state.json` **Owner:** Only the
 Orchestrator writes to this file. The Orchestrator **creates** this file
 immediately upon receiving a command (per ORC-46 in
-`.github/skills/00-orchestrator.md`) with `status: "ONBOARDING"`. The Onboarding
+`agents/00-orchestrator.md`) with `status: "ONBOARDING"`. The Onboarding
 Agent **updates** it to `status: "ONBOARDING_COMPLETE"` at the end of
 onboarding. Other agents submit state updates **to** the Orchestrator via their
 HANDOFF CHECKLIST.
@@ -200,7 +200,7 @@ HANDOFF CHECKLIST.
 
 **Location:** `.github/docs/session/reevaluate-trigger.json` **Written by:**
 Questionnaire & Decisions Manager web UI (`src/webapp/server.js`) **Read
-by:** Orchestrator (per RULE ORC-28 in `.github/skills/00-orchestrator.md`)
+by:** Orchestrator (per RULE ORC-28 in `agents/00-orchestrator.md`)
 
 > **ORC-28 summary:** At every session start and before every Sprint Gate, check
 > for this file with `status: "PENDING"`. If found, treat as equivalent to
@@ -236,7 +236,7 @@ every Sprint Gate.
 **Location:** `.github/docs/session/command-queue.json` **Written by:**
 Questionnaire & Decisions Manager web UI (`src/webapp/server.js` — Command
 Center tab) **Read by:** Orchestrator (per RULE ORC-29 in
-`.github/skills/00-orchestrator.md`)
+`agents/00-orchestrator.md`)
 
 > **ORC-29 summary:** At every session start and before every Sprint Gate, check
 > for this file with `status: "PENDING"`. Read the `command` field and execute

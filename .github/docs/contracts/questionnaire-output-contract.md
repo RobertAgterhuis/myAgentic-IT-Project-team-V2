@@ -18,7 +18,7 @@ the Questionnaire Agent:
    `BusinessDocs/OfficialDocuments/`
 
 The Orchestrator validates against this contract via RULE ORC-25 and RULE ORC-26
-(defined in `.github/skills/00-orchestrator.md`).  
+(defined in `agents/00-orchestrator.md`).  
 The Questionnaire Agent validates its own output against this contract before
 every handoff.
 

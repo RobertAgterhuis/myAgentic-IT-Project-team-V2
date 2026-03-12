@@ -124,7 +124,7 @@ SEVERITY: HIGH. GitHub reserves .github/ for repository configuration (workflows
 | --- | --- | --- | --- |
 | **Current** | **Files** | **Recommended** | **Reason** |
 | src/webapp/ | 62 | src/webapp/ | Application source belongs in src/ |
-| .github/skills/ | 38 | agents/ | Core project content, not GitHub config |
+| agents/ | 38 | agents/ | Core project content, not GitHub config |
 | .github/docs/ | 269 | docs/ (merge) | Two docs/ directories causes confusion |
 | .github/tests/ | 19 | tests/ (unify) | Tests split across 3 locations |
 | .github/package.json | 1 | Root (merge) | Two package.json = two npm installs |
@@ -201,7 +201,7 @@ Milestones merge audit findings with existing GitHub milestones. Issue counts in
 | --- | --- | --- | --- | --- | --- |
 | **ID** | **Story** | **Acceptance Criteria** | **Issue** | **Pts** | **Pri** |
 | **S0-1** | Move src/webapp/ to src/webapp/ | All imports resolve; all tests pass | — | 8 | **P0** |
-| **S0-2** | Move .github/skills/ to agents/ | Agent loading works; refs updated | — | 3 | **P0** |
+| **S0-2** | Move agents/ to agents/ | Agent loading works; refs updated | — | 3 | **P0** |
 | **S0-3** | Merge .github/docs/ into root docs/ | Single docs/; Pages works | — | 5 | **P0** |
 | **S0-4** | Unify tests into tests/ | One config; 1,172 tests pass | — | 3 | **P0** |
 | **S0-5** | Single package.json + ESLint | One npm install; CI passes | — | 3 | **P0** |

@@ -35,7 +35,7 @@ come from an automated or verifiable source:
 | Coverage threshold        | vitest.config.mjs / jest.config        | Read coverage thresholds from config   |
 | ESLint version (root)     | `npx eslint --version`                 | Check root package.json                |
 | ESLint version (.github/) | `npx eslint --version`                 | Check .github/package.json             |
-| Agent count               | Count skill files in `.github/skills/` | `ls .github/skills/*.md \| wc -l`      |
+| Agent count               | Count skill files in `agents/` | `ls agents/*.md \| wc -l`      |
 | Build status              | CI pipeline badge                      | Linked to GitHub Actions               |
 
 ### 2.2 Capability Claims Must Match Implementation Status

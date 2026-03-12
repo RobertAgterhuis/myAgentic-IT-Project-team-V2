@@ -92,7 +92,7 @@
             "minItems": 1,
             "items": {
               "type": "string",
-              "pattern": "^\\.github\\/skills\\/.+\\.md$"
+              "pattern": "^agents\\/.+\\.md$"
             }
           },
           "tools": {

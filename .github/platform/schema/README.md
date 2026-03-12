@@ -50,7 +50,7 @@ npm test -- tests/unit/agent-schema.test.js
   "name": "Business Analyst",
   "role": "Business Analyst specialist role",
   "phase": "PHASE_1",
-  "skillFiles": [".github/skills/01-business-analyst.md"],
+  "skillFiles": ["agents/01-business-analyst.md"],
   "tools": [
     "tool.files.read",
     "tool.files.write",

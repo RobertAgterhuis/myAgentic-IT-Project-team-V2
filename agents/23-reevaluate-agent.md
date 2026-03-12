@@ -419,7 +419,7 @@ The Reevaluate Agent is recommended when:
 
 REEVALUATE assumes the direction is the same and finds deltas. SCOPE CHANGE
 changes the direction itself — it invalidates affected sections and rebuilds
-them from a new premise. See `.github/skills/37-scope-change-agent.md` for the
+them from a new premise. See `agents/37-scope-change-agent.md` for the
 full workflow.
 
 ---

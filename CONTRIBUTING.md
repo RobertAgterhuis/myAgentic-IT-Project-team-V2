@@ -61,7 +61,7 @@ src/webapp/           ← Web application (the code you'll work with most)
   utils/secret-utils.js   ← Secret pattern detection + warning formatting
   index.html              ← Single-page web UI (HTML/CSS/JS, no build step)
 
-.github/skills/           ← Agent skill files (38 agents)
+agents/           ← Agent skill files (38 agents)
 .github/docs/             ← Contracts, guardrails, playbooks, templates
 
 .github/tests/

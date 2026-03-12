@@ -339,7 +339,7 @@ architecture)
   status "ONBOARDING_COMPLETE"
 
 **Source:** `BusinessDocs/project-brief.md` (Command Center UX requirement),
-`.github/skills/25-onboarding-agent.md` (onboarding workflow)
+`agents/25-onboarding-agent.md` (onboarding workflow)
 
 **Dependency on Phase 2:**
 
@@ -433,7 +433,7 @@ actionable)
 - Alex approves synthesis (marks as APPROVED in session state)
 
 **Source:** `.github/docs/playbooks/software-creation-playbook.md` (Synthesis
-Agent workflow), `.github/skills/17-synthesis-agent.md`
+Agent workflow), `agents/17-synthesis-agent.md`
 
 ---
 
@@ -470,7 +470,7 @@ successfully)
 - Lessons learned applied in subsequent sprints
 
 **Source:** `.github/docs/playbooks/software-creation-playbook.md` (Phase 5
-workflow), `.github/skills/28-retrospective-agent.md`
+workflow), `agents/28-retrospective-agent.md`
 
 ---
 

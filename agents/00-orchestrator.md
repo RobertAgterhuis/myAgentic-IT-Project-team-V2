@@ -235,7 +235,7 @@ activating the Synthesis Agent, the Orchestrator MUST verify against
    `status: IN_PROGRESS`
 2. Set `cycle_type: SCOPE_CHANGE` in session state for the duration of the scope
    change cycle
-3. Activate Scope Change Agent per `.github/skills/37-scope-change-agent.md`
+3. Activate Scope Change Agent per `agents/37-scope-change-agent.md`
 4. PAUSE Sprint Gate for all IN_PROGRESS and QUEUED sprints in the affected
    dimension — set status to `SCOPE_CHANGE_HOLD SC-[N]`
 5. After Scope Change Agent Backlog Hold Report: activate GitHub Integration

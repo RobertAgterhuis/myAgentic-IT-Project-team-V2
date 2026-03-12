@@ -423,7 +423,7 @@ take similar effort to analysis phases. For AUDIT mode with a large monorepo
 
 ## Agents overview
 
-All skill files are in `.github/skills/`. The numbering follows the execution
+All skill files are in `agents/`. The numbering follows the execution
 order:
 
 | No   | Agent                        | Category                            |

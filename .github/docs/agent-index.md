@@ -12,44 +12,44 @@ Each agent has a dedicated skill file:
 
 | #   | Agent                          | Skill file                                      |
 | --- | ------------------------------ | ----------------------------------------------- |
-| 00  | Orchestrator                   | `.github/skills/00-orchestrator.md`             |
-| 01  | Business Analyst               | `.github/skills/01-business-analyst.md`         |
-| 02  | Domain Expert                  | `.github/skills/02-domain-expert.md`            |
-| 03  | Sales Strategist               | `.github/skills/03-sales-strategist.md`         |
-| 04  | Financial Analyst              | `.github/skills/04-financial-analyst.md`        |
-| 05  | Software Architect             | `.github/skills/05-software-architect.md`       |
-| 06  | Senior Developer               | `.github/skills/06-senior-developer.md`         |
-| 07  | DevOps Engineer                | `.github/skills/07-devops-engineer.md`          |
-| 08  | Security Architect             | `.github/skills/08-security-architect.md`       |
-| 09  | Data Architect                 | `.github/skills/09-data-architect.md`           |
-| 10  | UX Researcher                  | `.github/skills/10-ux-researcher.md`            |
-| 11  | UX Designer                    | `.github/skills/11-ux-designer.md`              |
-| 12  | UI Designer                    | `.github/skills/12-ui-designer.md`              |
-| 13  | Accessibility Specialist       | `.github/skills/13-accessibility-specialist.md` |
-| 14  | Brand Strategist               | `.github/skills/14-brand-strategist.md`         |
-| 15  | Growth Marketer                | `.github/skills/15-growth-marketer.md`          |
-| 16  | CRO Specialist                 | `.github/skills/16-cro-specialist.md`           |
-| 17  | Synthesis Agent                | `.github/skills/17-synthesis-agent.md`          |
-| 18  | Critic Agent                   | `.github/skills/18-critic-agent.md`             |
-| 19  | Risk Agent                     | `.github/skills/19-risk-agent.md`               |
-| 20  | Implementation Agent           | `.github/skills/20-implementation-agent.md`     |
-| 21  | Test Agent                     | `.github/skills/21-test-agent.md`               |
-| 22  | PR/Review Agent                | `.github/skills/22-pr-review-agent.md`          |
-| 23  | Reevaluate Agent               | `.github/skills/23-reevaluate-agent.md`         |
-| 24  | Feature Agent                  | `.github/skills/24-feature-agent.md`            |
-| 25  | Onboarding Agent               | `.github/skills/25-onboarding-agent.md`         |
-| 26  | Documentation Agent            | `.github/skills/26-documentation-agent.md`      |
-| 27  | GitHub Integration Agent       | `.github/skills/27-github-integration-agent.md` |
-| 28  | Sprint Retrospective Agent     | `.github/skills/28-retrospective-agent.md`      |
-| 29  | KPI/Metrics Agent              | `.github/skills/29-kpi-agent.md`                |
-| 30  | Brand & Assets Agent (Canva)   | `.github/skills/30-brand-assets-agent.md`       |
-| 31  | Storybook Agent                | `.github/skills/31-storybook-agent.md`          |
-| 32  | Content Strategist / UX Writer | `.github/skills/32-content-strategist.md`       |
-| 33  | Legal / Privacy Counsel        | `.github/skills/33-legal-counsel.md`            |
-| 34  | Product Manager                | `.github/skills/34-product-manager.md`          |
-| 35  | Localization Specialist        | `.github/skills/35-localization-specialist.md`  |
-| 36  | Questionnaire Agent            | `.github/skills/36-questionnaire-agent.md`      |
-| 37  | Scope Change Agent             | `.github/skills/37-scope-change-agent.md`       |
+| 00  | Orchestrator                   | `agents/00-orchestrator.md`             |
+| 01  | Business Analyst               | `agents/01-business-analyst.md`         |
+| 02  | Domain Expert                  | `agents/02-domain-expert.md`            |
+| 03  | Sales Strategist               | `agents/03-sales-strategist.md`         |
+| 04  | Financial Analyst              | `agents/04-financial-analyst.md`        |
+| 05  | Software Architect             | `agents/05-software-architect.md`       |
+| 06  | Senior Developer               | `agents/06-senior-developer.md`         |
+| 07  | DevOps Engineer                | `agents/07-devops-engineer.md`          |
+| 08  | Security Architect             | `agents/08-security-architect.md`       |
+| 09  | Data Architect                 | `agents/09-data-architect.md`           |
+| 10  | UX Researcher                  | `agents/10-ux-researcher.md`            |
+| 11  | UX Designer                    | `agents/11-ux-designer.md`              |
+| 12  | UI Designer                    | `agents/12-ui-designer.md`              |
+| 13  | Accessibility Specialist       | `agents/13-accessibility-specialist.md` |
+| 14  | Brand Strategist               | `agents/14-brand-strategist.md`         |
+| 15  | Growth Marketer                | `agents/15-growth-marketer.md`          |
+| 16  | CRO Specialist                 | `agents/16-cro-specialist.md`           |
+| 17  | Synthesis Agent                | `agents/17-synthesis-agent.md`          |
+| 18  | Critic Agent                   | `agents/18-critic-agent.md`             |
+| 19  | Risk Agent                     | `agents/19-risk-agent.md`               |
+| 20  | Implementation Agent           | `agents/20-implementation-agent.md`     |
+| 21  | Test Agent                     | `agents/21-test-agent.md`               |
+| 22  | PR/Review Agent                | `agents/22-pr-review-agent.md`          |
+| 23  | Reevaluate Agent               | `agents/23-reevaluate-agent.md`         |
+| 24  | Feature Agent                  | `agents/24-feature-agent.md`            |
+| 25  | Onboarding Agent               | `agents/25-onboarding-agent.md`         |
+| 26  | Documentation Agent            | `agents/26-documentation-agent.md`      |
+| 27  | GitHub Integration Agent       | `agents/27-github-integration-agent.md` |
+| 28  | Sprint Retrospective Agent     | `agents/28-retrospective-agent.md`      |
+| 29  | KPI/Metrics Agent              | `agents/29-kpi-agent.md`                |
+| 30  | Brand & Assets Agent (Canva)   | `agents/30-brand-assets-agent.md`       |
+| 31  | Storybook Agent                | `agents/31-storybook-agent.md`          |
+| 32  | Content Strategist / UX Writer | `agents/32-content-strategist.md`       |
+| 33  | Legal / Privacy Counsel        | `agents/33-legal-counsel.md`            |
+| 34  | Product Manager                | `agents/34-product-manager.md`          |
+| 35  | Localization Specialist        | `agents/35-localization-specialist.md`  |
+| 36  | Questionnaire Agent            | `agents/36-questionnaire-agent.md`      |
+| 37  | Scope Change Agent             | `agents/37-scope-change-agent.md`       |
 
 ---
 

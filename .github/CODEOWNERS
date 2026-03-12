@@ -8,5 +8,5 @@ src/webapp/ @RobertAgterhuis
 .github/workflows/ @RobertAgterhuis
 
 # Agent system
-.github/skills/ @RobertAgterhuis
+agents/ @RobertAgterhuis
 .github/docs/ @RobertAgterhuis

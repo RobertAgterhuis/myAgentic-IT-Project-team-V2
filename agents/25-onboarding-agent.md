@@ -360,7 +360,7 @@ Onboarding Output so the Synthesis Agent can include it.
 ### Step 5: Finalize Session State
 
 Update the session state file that was created by the Orchestrator (per ORC-46
-in `.github/skills/00-orchestrator.md`). The Orchestrator creates
+in `agents/00-orchestrator.md`). The Orchestrator creates
 `session-state.json` immediately on command receipt with `status: "ONBOARDING"`.
 The Onboarding Agent now **updates** it to reflect completion:
 

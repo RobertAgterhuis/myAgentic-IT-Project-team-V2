@@ -32,7 +32,7 @@ myAgentic-IT-Project-team/
 
 ## `.github/` — System internals
 
-### Agent skill files — `.github/skills/`
+### Agent skill files — `agents/`
 
 | File pattern                                                | Purpose                             | Modified by             |
 | ----------------------------------------------------------- | ----------------------------------- | ----------------------- |
@@ -296,5 +296,5 @@ Run with: `cd .github && npm test`
 | `reevaluate-trigger.json`                                  | Yes             | Cancels pending reevaluation                      |
 | `BusinessDocs/` contents                                   | With caution    | Loses all phase outputs and questionnaire answers |
 | `.github/docs/synthesis/` contents                         | With caution    | Must re-run Synthesis Agent                       |
-| Anything in `.github/skills/`, `contracts/`, `guardrails/` | **No**          | Breaks agent behavior                             |
+| Anything in `agents/`, `contracts/`, `guardrails/` | **No**          | Breaks agent behavior                             |
 | `session-state-*-archived.json`                            | Yes             | Old session archives, safe to clean up            |

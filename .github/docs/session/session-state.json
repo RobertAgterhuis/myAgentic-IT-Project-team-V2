@@ -15,7 +15,7 @@
 
   "current_phase": "PHASE_5",
   "current_agent": "implementation-agent",
-  "current_step": "Sprint 2 Day 3 COMPLETE. 3/11 items complete (SP-2-CI7, SP-2-CI8, SP-2-BTN). 151 tests, 9 suites. Email templates + welcome sequence (SP-2-BTN COMPLETE). Pilot rubric + sample brief (SP-2-202 80%). Weblate Docker trial ready + vendor scored (SP-2-501 60%). 4 social cards created (SP-2-SOC 65%). Tech manual v1.9 + user manual v1.1 (SP-2-DOC 95%). Day 4: Matomo staging, Weblate trial execution, LinkedIn scheduling, pilot confirmation.",
+  "current_step": "Sprint 2 Day 3 COMPLETE. 3/10 items complete (SP-2-CI7, SP-2-CI8, SP-2-BTN). SP-2-SOC moved to BACKLOG (non-blocking — requires complete working solution before social publication). 151 tests, 9 suites. Email templates + welcome sequence (SP-2-BTN COMPLETE). Pilot rubric + sample brief (SP-2-202 80%). Weblate Docker trial ready + vendor scored (SP-2-501 60%). Tech manual v1.9 + user manual v1.1 (SP-2-DOC 95%). Day 4: Matomo staging, Weblate trial execution, pilot confirmation.",
 
   "completed_phases": [
     "ONBOARDING",
@@ -161,19 +161,20 @@
       "sprint_2": {
         "milestone_id": 24,
         "due_date": "2026-04-07",
-        "total_issues": 11,
+        "total_issues": 10,
         "pending_sprint_1_deps": 0,
         "blocked_issues": 0,
         "sprint_gate_verdict": "APPROVED",
-        "ready_items": 10,
+        "ready_items": 9,
         "conditional_items": 1,
-        "new_issues_created": [123, 124, 125, 126, 127, 128, 129],
+        "new_issues_created": [123, 124, 125, 126, 128, 129],
         "existing_issues": [107, 110, 115, 117],
+        "backlog_items": ["SP-2-SOC (#127) — non-blocking; requires complete working solution before social publication"],
         "tracks": {
           "tech": ["SP-2-CI7 (#123)", "SP-2-CI8 (#124)", "SP-2-MAT (#125)"],
           "business": ["SP-2-201-P (#107)", "SP-2-202 (#110)"],
           "ux": ["SP-2-501 (#117)"],
-          "marketing": ["SP-2-201 (#115)", "SP-2-BTN (#126)", "SP-2-SOC (#127)", "SP-2-LND (#128)"],
+          "marketing": ["SP-2-201 (#115)", "SP-2-BTN (#126)", "SP-2-LND (#128)"],
           "docs": ["SP-2-DOC (#129)"]
         },
         "execution_start": "2026-03-25",

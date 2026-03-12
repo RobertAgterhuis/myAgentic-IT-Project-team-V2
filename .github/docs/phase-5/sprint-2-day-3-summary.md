@@ -2,8 +2,9 @@
 
 **Sprint**: Sprint 2 (March 25 – April 7, 2026)  
 **Day**: 3 of 14  
-**Velocity**: 27% (3/11 items COMPLETE)  
-**Tests**: 151 passing / 9 suites / 0 failures (+28 from Day 2)
+**Velocity**: 30% (3/10 items COMPLETE)  
+**Tests**: 151 passing / 9 suites / 0 failures (+28 from Day 2)  
+**Note**: SP-2-SOC moved to backlog (non-blocking) — social content requires a complete working solution first
 
 ---
 
@@ -96,14 +97,14 @@
 | SP-2-BTN | #126 | ✅ COMPLETE | Subscribe + emails + tests (Day 2-3) |
 | SP-2-DOC | #129 | 🔄 95% | Tech v1.9 + User v1.1 |
 | SP-2-202 | #110 | 🔄 80% | Rubric + sample brief; await pilot |
-| SP-2-SOC | #127 | 🔄 65% | 4 cards + tests; scheduling pending |
+| SP-2-SOC | #127 | � BACKLOG | Moved to backlog (non-blocking); requires complete working solution |
 | SP-2-501 | #117 | 🔄 60% | Vendor scored, Docker ready; trial pending |
 | SP-2-MAT | #125 | 🔄 60% | Docker stack + specs; staging pending |
 | SP-2-LND | #128 | 🔄 80% | Landing page + smoke tests; Matomo pending |
 | SP-2-201-P | #107 | 🔄 70% | Pilot scope + rubric + brief; participants pending |
 | SP-2-201 | #115 | ⏳ 0% | Blocked by SP-2-MAT |
 
-**Checkpoint 1 (Day 4, March 28)**: Target 25-35% → Current 27% (3/11) ✅ ON TRACK
+**Checkpoint 1 (Day 4, March 28)**: Target 25-35% → Current 30% (3/10) ✅ ON TRACK
 
 ---
 
@@ -111,9 +112,8 @@
 
 1. **SP-2-MAT**: Deploy Matomo staging + cookieless configuration
 2. **SP-2-LND**: Matomo tracking integration on landing page
-3. **SP-2-SOC**: Schedule LinkedIn posts + create GitHub Discussions
-4. **SP-2-201-P**: Confirm pilot participants + distribute rubric
-5. **SP-2-501**: Execute Weblate Docker trial (launch + import + translate)
+3. **SP-2-201-P**: Confirm pilot participants + distribute rubric
+4. **SP-2-501**: Execute Weblate Docker trial (launch + import + translate)
 
 ---
 

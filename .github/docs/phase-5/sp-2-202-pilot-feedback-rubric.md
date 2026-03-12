@@ -2,7 +2,7 @@
 
 **Sprint:** Sprint 2 (March 25 – April 7, 2026)  
 **Issue:** #110  
-**Status:** READY_FOR_PARTICIPANTS (90%) — Findings log template created Day 6  
+**Status:** READY_FOR_PARTICIPANTS (90%) — Findings log template created Day 6 | Day 7: awaiting Day 8 defer decision (see SP-2-201-P §8)  
 **Predecessor:** SP-2-201-P (Internal Pilot Scope) — ✅ Scope Defined  
 **Purpose:** Structured feedback instrument for pilot participants executing the
 6-step mini-cycle defined in SP-2-201-P.

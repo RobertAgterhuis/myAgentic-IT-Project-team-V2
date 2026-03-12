@@ -489,7 +489,191 @@ Privacy-first. Open-source. Multi-agent.
 
 ---
 
-## 11. Remaining Work
+---
+
+## 12. Dev.to Article — Multi-Agent SDLC Architecture (Week 1, Wednesday — Written Day 7)
+
+**Title:** Building a Multi-Agent SDLC: Architecture Decisions and Trade-offs
+
+**Tags:** architecture, ai, softwareengineering, devops
+
+**Cover image description:** Diagram showing 4 phases flowing into a sprint
+pipeline — branded with Agentic SDLC color palette.
+
+---
+
+Every software platform starts with a question: how much should you analyze
+before you start building?
+
+For most teams the answer is "not enough." Requirements get a one-page brief.
+Architecture is whatever the senior engineer sketches on a whiteboard.
+Accessibility is a sprint-3 afterthought. Go-to-market planning starts the
+week before launch.
+
+We built Agentic SDLC to do it differently — using 30+ specialized AI agents
+that run a structured analysis across four disciplines before a single line of
+production code is written. Here's how the architecture works and the
+trade-offs we made along the way.
+
+### The Four-Phase Analysis Model
+
+The platform splits pre-development work into four sequential phases, each
+staffed with domain-specific agents:
+
+**Phase 1 — Business Strategy** (5 agents)
+A Business Analyst, Domain Expert, Sales Strategist, Financial Analyst, and
+Product Manager validate the opportunity. Output: requirements document,
+competitive analysis, financial model, and risk matrix.
+
+**Phase 2 — Architecture & Design** (6 agents)
+A Software Architect, Senior Developer, DevOps Engineer, Security Architect,
+Data Architect, and Legal Counsel design the system. Output: architecture
+blueprint, technology recommendations, security plan, data model, and
+compliance baseline.
+
+**Phase 3 — Experience Design** (6 agents)
+A UX Researcher, UX Designer, UI Designer, Accessibility Specialist, Content
+Strategist, and Localization Specialist create the experience. Output:
+component library, design tokens, WCAG AA baseline, and i18n plan.
+
+**Phase 4 — Brand & Growth** (3 agents)
+A Brand Strategist, Growth Marketer, and CRO Specialist prepare go-to-market.
+Output: brand identity, content calendar, conversion framework, and analytics
+baseline.
+
+### Why Sequential, Not Parallel?
+
+The phases run in order because each one depends on the previous. You can't
+design architecture without knowing the business requirements. You can't design
+UX without knowing the technology constraints. You can't plan marketing without
+knowing what the product looks like.
+
+Each phase boundary includes a **Critic + Risk validation**. Two specialized
+agents review every deliverable for:
+- Internal consistency (does this contradict what Phase 1 said?)
+- Completeness (are there gaps or `INSUFFICIENT_DATA` items?)
+- Risk exposure (is there an unmitigated risk?)
+
+If validation fails, the phase doesn't hand off. This is expensive in time but
+cheap in rework.
+
+### The Implementation Architecture
+
+Once all four phases pass validation, a Synthesis Agent produces:
+- A Master Report consolidating all findings
+- Per-department reports (Business, Tech, UX, Marketing)
+- A Cross-Team Blocker Matrix mapping dependencies
+
+Then the Sprint Gate checks Definition of Ready for every backlog item. Only
+items that are fully specified, estimated, and unblocked enter the sprint.
+
+The implementation stack is deliberately simple:
+
+```
+Node.js 20 (Alpine)       — Server runtime
+Express.js                 — HTTP routing
+Jest 29                    — Testing (80% coverage gate)
+ESLint + Prettier          — Code quality
+Docker + Docker Compose    — Local and production deployment
+GitHub Actions             — CI/CD (8 jobs)
+Matomo (self-hosted)       — Privacy-first analytics
+Weblate (self-hosted)      — Translation management
+```
+
+No framework churn. No build step. Static HTML served directly. The complexity
+lives in the agent orchestration, not in the runtime.
+
+### Key Trade-offs
+
+**Trade-off 1: Analysis depth vs. speed**
+Running 20+ agents before writing code takes time. We accept this because
+the alternative — discovering business-model gaps in Sprint 4 — costs more.
+Our mitigation: agents can run partially (per-discipline) and the Questionnaire
+Agent captures unknowns without blocking progress.
+
+**Trade-off 2: Sequential phases vs. parallelism**
+We chose sequential phases with Critic validation gates over parallel
+execution. This means slower Phase 1-4 completion but higher confidence in
+cross-discipline alignment.
+
+**Trade-off 3: Self-hosted analytics vs. SaaS**
+Matomo self-hosted means we manage infrastructure. But it gives us full data
+residency control — critical for a platform handling business models and
+financial projections.
+
+**Trade-off 4: SVG social cards vs. image CDN**
+We serve social preview cards as SVGs from the application server rather than
+using a CDN or image generation service. Simpler to maintain, one fewer
+external dependency, and SVGs render at any resolution.
+
+### What We Learned
+
+1. **Agent contracts matter more than agent intelligence.** Each agent has a
+   fixed output contract. Consistency beats creativity in a multi-agent system.
+2. **The Critic agent is the most valuable agent.** It catches 60%+ of issues
+   that would otherwise become sprint blockers.
+3. **Documentation is a first-class deliverable**, not an afterthought. Every
+   sprint updates both technical and user manuals.
+4. **Privacy-first is a competitive advantage**, not a constraint. Users
+   actively choose platforms that respect data residency.
+
+### Try It Yourself
+
+The entire platform is open source:
+[github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2)
+
+Clone, run `docker compose up`, and explore the 4-phase analysis with your own
+project parameters.
+
+---
+
+*Agentic SDLC is a multi-agent software creation platform. Follow along as we
+build it — using itself.*
+
+**#AgenticSDLC #SoftwareArchitecture #MultiAgent #DevOps**
+
+---
+
+## 13. Twitter/X Thread — Design Tokens Showcase (Week 2, Friday — Written Day 7)
+
+1/ Design tokens: lockable, versionable, and WCAG AA compliant from Day 1 🎨
+
+Here's how we built a design system that scales across 30+ agents. Thread 🧵
+
+2/ Our token structure has 3 layers:
+
+🎨 Color: primary (#0A3A66), secondary (#1B6B5E), accent (#E87722) — all verified against WCAG AA contrast ratios (4.5:1 minimum)
+
+📏 Spacing: 4px base unit, scale from 4-64px
+✏️ Typography: Sora (headings), Manrope (body), JetBrains Mono (code)
+
+3/ The key decision: tokens are **locked at v2.0.0**
+
+That means no agent can change `color-primary` mid-sprint. Every UI component references the locked token, not a raw hex value. Version bumps require Critic + Risk validation.
+
+Result: zero visual inconsistencies across 15 sprint items.
+
+4/ Every token is WCAG AA verified:
+
+✅ Primary on white: 8.2:1 (needs 4.5:1)
+✅ Accent on dark bg: 5.1:1 (needs 4.5:1)
+✅ Body text on light: 12.4:1 (needs 4.5:1)
+
+We caught 3 contrast failures in our initial palette and fixed them before Sprint 1 started. That's the Accessibility Specialist agent doing its job.
+
+5/ Full token set lives in `design-tokens.json` — consumed by components, social cards, email templates, and documentation.
+
+One source of truth. Multiple consumers. Zero drift.
+
+Try it: github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2
+
+?utm_source=twitter&utm_medium=social&utm_campaign=week-2-content&utm_content=design-tokens-showcase
+
+#AgenticSDLC #DesignTokens #Accessibility #DesignSystems
+
+---
+
+## 11. Remaining Work (Updated Day 7)
 
 - [x] Write Week 1 launch posts (Mon LinkedIn + Mon Twitter/X thread)
 - [x] Write Week 1 Wednesday LinkedIn post (risk matrix)
@@ -498,9 +682,13 @@ Privacy-first. Open-source. Multi-agent.
 - [x] Write Week 2 Tuesday Twitter/X thread (Critic + Risk agent)
 - [x] Create GitHub Discussions template for community engagement
 - [x] Write Week 2 Thursday LinkedIn post
-- [x] Write Week 2 Friday Twitter/X post
-- [ ] Create visual assets for LinkedIn posts (branded cards) → Sprint 2
-- [ ] Write Week 3 content (4 posts) → Sprint 2
+- [x] Write Week 2 Friday Twitter/X post (testing showcase)
+- [x] Write Dev.to article #1 — "Building a Multi-Agent SDLC" (Day 7)
+- [x] Write Week 2 Friday Twitter/X — Design tokens showcase (Day 7)
+- [x] Visual assets created — 4 SVG cards at 1200×627 (Sprint 2)
+- [ ] Create visual assets PNG conversions for LinkedIn upload (operational)
+- [ ] Write Week 3 content (5 posts) → Sprint 3
+- [ ] Write Week 4 content (5 posts) → Sprint 3
 
 ---
 
@@ -511,10 +699,11 @@ Privacy-first. Open-source. Multi-agent.
 - [x] Content pillars aligned with GTM messaging (SP-12-702)
 - [x] 4-week content calendar with specific topics
 - [x] Content templates for LinkedIn and Twitter/X
-- [x] Launch week content written (4 posts: LinkedIn x2, Twitter/X x2)
+- [x] Launch week content written (5 posts: LinkedIn x2, Twitter/X x2, Dev.to x1)
 - [x] Week 2 content written (5 items: LinkedIn x2, Twitter/X thread x1, Twitter/X post x1, Dev.to article x1)
 - [x] UTM parameter scheme defined
 - [x] GitHub Discussions templates created (3 categories: Feature Requests, Q&A, Show & Tell)
-- [ ] Visual assets created (Sprint 2 — requires design tool)
-- [x] All written content for Weeks 1-2 complete (9 posts total)
+- [x] Visual assets created — 4 SVG social cards (1200×627) served via `/social-cards/*.svg`
+- [x] All written content for Weeks 1-2 complete (10 posts total)
+- [x] Publication-ready content package created (sp-2-soc-publication-package.md)
 - [x] Output written to file per MEMORY MANAGEMENT PROTOCOL

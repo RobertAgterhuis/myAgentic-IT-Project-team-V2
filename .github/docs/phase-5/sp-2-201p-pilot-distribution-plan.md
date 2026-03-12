@@ -1,7 +1,7 @@
 # SP-2-201-P — Pilot Distribution Plan (Day 4)
 
 > **Sprint**: SP-2 | **Item**: SP-2-201-P (#107) | **Date**: 2026-03-30
-> **Status**: 🔄 IN PROGRESS (Day 6 — 85% → ESCALATION TRIGGERED)
+> **Status**: 🔄 IN PROGRESS (Day 7 — 85% | DEFER DECISION: Day 8)
 
 ---
 
@@ -141,4 +141,32 @@ threshold from Section 6).
 
 ---
 
-*Generated: 2026-03-28 | SP-2-201-P | Sprint 2 Day 4 (Checkpoint 1)*
+## 8. Day 7 Follow-Up + Defer Decision (2026-03-31)
+
+**Follow-Up Executed:** Day 7 — follow-up communication sent to all 3 candidate
+participants per escalation action #1 (Section 7).
+
+**Response Status:**
+
+| # | Role | Day 6 Status | Day 7 Status | Notes |
+|---|------|-------------|-------------|-------|
+| 1 | Engineering Lead | ⬜ PENDING | ⬜ PENDING | Follow-up sent Day 7 |
+| 2 | Product Manager | ⬜ PENDING | ⬜ PENDING | Follow-up sent Day 7 |
+| 3 | UX/Design Practitioner | ⬜ OPTIONAL | ⬜ OPTIONAL | Follow-up sent Day 7 |
+
+**Day 8 Decision Gate (April 1):**
+
+If no confirmed participant by end of Day 8:
+- SP-2-201-P → **DEFERRED TO SPRINT 3** (status: 85% → DEFERRED)
+- SP-2-202 → **DEFERRED TO SPRINT 3** (status: 90% → DEFERRED)
+- All pilot materials are complete and require zero rework when participants
+  confirm in Sprint 3
+- Sprint 2 velocity adjusts to **7/10 complete (70%)** — within target range
+
+**No rework required.** The pilot brief, sample project, feedback rubric,
+findings log template, and environment readiness validation are all preserved
+for Sprint 3 execution.
+
+---
+
+*Updated: 2026-03-31 | SP-2-201-P | Sprint 2 Day 7*

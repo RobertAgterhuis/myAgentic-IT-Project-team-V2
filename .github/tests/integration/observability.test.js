@@ -168,7 +168,8 @@ describe('TECH-07: GET /api/health', () => {
 
   it('version matches package.json', async () => {
     const r = await req('GET', '/api/health');
-    expect(r.json.version).toBe('1.0.0');
+    const actualPkg = JSON.parse(require('fs').readFileSync(PKG_PATH, 'utf8'));
+    expect(r.json.version).toBe(actualPkg.version);
   });
 
   it('timestamp is valid ISO string', async () => {

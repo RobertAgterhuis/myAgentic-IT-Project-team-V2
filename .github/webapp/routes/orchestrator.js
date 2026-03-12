@@ -149,6 +149,87 @@ module.exports = function createOrchestratorRoutes(ctx) {
     }
   }
 
+  // ── POST /api/orchestrator/command ─────────────────────────
+
+  async function handleCommand(req, res) {
+    try {
+      const body = await parseBody(req);
+      if (!body || !body.command) {
+        return json(res, 400, errorResponse('INVALID_INPUT', 'command is required'));
+      }
+
+      const VALID_COMMANDS = [
+        'CREATE',
+        'CREATE_BUSINESS',
+        'CREATE_TECH',
+        'CREATE_UX',
+        'CREATE_MARKETING',
+        'AUDIT',
+        'FEATURE',
+        'SCOPE_CHANGE',
+        'HOTFIX',
+        'REEVALUATE',
+      ];
+      const command = String(body.command)
+        .toUpperCase()
+        .replace(/[\s-]+/g, '_');
+      if (!VALID_COMMANDS.includes(command)) {
+        return json(
+          res,
+          400,
+          errorResponse(
+            'INVALID_COMMAND',
+            `Unknown command "${body.command}". Valid: ${VALID_COMMANDS.join(', ')}`
+          )
+        );
+      }
+
+      const platform = body.platform ? String(body.platform).toLowerCase() : 'copilot';
+      const validPlatforms = ['copilot', 'claude', 'codex'];
+      if (!validPlatforms.includes(platform)) {
+        return json(
+          res,
+          400,
+          errorResponse(
+            'INVALID_PLATFORM',
+            `Unknown platform "${body.platform}". Valid: ${validPlatforms.join(', ')}`
+          )
+        );
+      }
+
+      const resume = Boolean(body.resume);
+      const project = body.project ? String(body.project).slice(0, 200) : null;
+
+      const engine = getEngine();
+
+      if (!resume) {
+        engine.reset(command);
+      }
+
+      const st = engine.status();
+      structuredLog('info', 'orchestrator_command', {
+        command,
+        platform,
+        project,
+        resume,
+        state: st.state,
+        mode: st.mode,
+      });
+
+      return json(res, 200, {
+        ok: true,
+        command,
+        project,
+        platform,
+        resume,
+        status: st,
+      });
+    } catch (err) {
+      structuredLog('error', 'orchestrator_command_error', { error: err.message });
+      return json(res, 500, errorResponse('COMMAND_ERROR', err.message));
+    }
+  }
+
   // ── POST /api/orchestrator/sprint-gate ────────────────────
 
   async function handleSprintGate(req, res) {
@@ -183,6 +264,7 @@ module.exports = function createOrchestratorRoutes(ctx) {
     'POST /api/orchestrator/recover': handleRecover,
     'POST /api/orchestrator/reset': handleReset,
     'POST /api/orchestrator/validate-gate': handleValidateGate,
+    'POST /api/orchestrator/command': handleCommand,
     'POST /api/orchestrator/sprint-gate': handleSprintGate,
   };
 };

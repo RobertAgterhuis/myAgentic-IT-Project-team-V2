@@ -270,6 +270,7 @@ const metricsDashboardRoutes = require('./routes/metrics-dashboard')(ctx);
 const dashboardRoutes = require('./routes/dashboard')(ctx);
 const milestonesRoutes = require('./routes/milestones')(ctx);
 const subscribeRoutes = require('./routes/subscribe')(ctx);
+const orchestratorRoutes = require('./routes/orchestrator')(ctx);
 const miscRoutes = require('./routes/misc')(ctx);
 
 const serveStatic = miscRoutes._serveStatic;
@@ -286,6 +287,7 @@ const ROUTES = {
   ...dashboardRoutes,
   ...milestonesRoutes,
   ...subscribeRoutes,
+  ...orchestratorRoutes,
   ...miscRoutes,
 };
 

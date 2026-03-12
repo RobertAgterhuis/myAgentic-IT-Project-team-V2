@@ -9,12 +9,15 @@
  * @returns {object} Route map { 'METHOD /path': handler }.
  */
 
+const path = require('path');
+const fs = require('fs');
 const { errorResponse } = require('../utils/errors');
 const { structuredLog, json, parseBody } = require('../middleware');
 
 const BUTTONDOWN_API = 'https://api.buttondown.email/v1/subscribers';
 const VALID_SEGMENTS = ['engineering-leaders', 'product-managers', 'developers', 'evaluators'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const LOCAL_SUBS_FILE = path.resolve(__dirname, '..', '..', '..', 'BusinessDocs', 'local-subscriptions.json');
 
 module.exports = function createSubscribeRoutes(ctx) {
   async function handleSubscribe(req, res) {
@@ -45,9 +48,27 @@ module.exports = function createSubscribeRoutes(ctx) {
 
     const apiKey = process.env.BUTTONDOWN_API_KEY;
     if (!apiKey) {
-      structuredLog('error', 'subscribe_error', { reason: 'BUTTONDOWN_API_KEY not configured' });
-      return json(res, 503, errorResponse('INTERNAL_ERROR',
-        'Newsletter service is not configured. Please try again later.'));
+      structuredLog('info', 'subscribe_local_fallback', { email: '[redacted]', segment, source });
+      try {
+        let subs = [];
+        if (fs.existsSync(LOCAL_SUBS_FILE)) {
+          subs = JSON.parse(fs.readFileSync(LOCAL_SUBS_FILE, 'utf-8'));
+        }
+        if (subs.some(s => s.email === email)) {
+          return json(res, 409, {
+            error: 'already_subscribed',
+            message: 'This email is already subscribed (local).',
+          });
+        }
+        subs.push({ email, segment, source, subscribedAt: new Date().toISOString() });
+        fs.writeFileSync(LOCAL_SUBS_FILE, JSON.stringify(subs, null, 2));
+      } catch (writeErr) {
+        structuredLog('error', 'subscribe_local_write_error', { message: writeErr.message });
+      }
+      return json(res, 201, {
+        status: 'stored_locally',
+        message: 'Newsletter service not configured. Subscription recorded locally.',
+      });
     }
 
     try {

@@ -416,6 +416,43 @@ function serveDashboardScript(pathname, res) {
   }
 }
 
+function serveSocialCard(pathname, res) {
+  try {
+    const store = getStore();
+    const cardPath = safePath(WEBAPP_DIR, pathname.substring(1));
+    const cardContent = store.readFile(cardPath);
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.setHeader('Content-Length', Buffer.byteLength(cardContent, 'utf-8'));
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.writeHead(200);
+    res.end(cardContent);
+  } catch (err) {
+    structuredLog('warn', 'social_card_serve_failed', { error: err.message, pathname });
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
+
+function serveLocaleFile(pathname, res) {
+  try {
+    const store = getStore();
+    const localePath = safePath(path.join(PROJECT_ROOT, 'locales'), pathname.replace(/^\/locales\//, ''));
+    const localeContent = store.readFile(localePath);
+    JSON.parse(localeContent); // validate JSON
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Length', Buffer.byteLength(localeContent, 'utf-8'));
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.writeHead(200);
+    res.end(localeContent);
+  } catch (err) {
+    structuredLog('warn', 'locale_serve_failed', { error: err.message, pathname });
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
+
 function handleExplicitStatic(req, pathname, res) {
   if (req.method !== 'GET') return false;
   if (pathname === '/design-system.css') {
@@ -432,6 +469,14 @@ function handleExplicitStatic(req, pathname, res) {
   }
   if (pathname.endsWith('.js')) {
     serveDashboardScript(pathname, res);
+    return true;
+  }
+  if (pathname.startsWith('/social-cards/') && pathname.endsWith('.svg')) {
+    serveSocialCard(pathname, res);
+    return true;
+  }
+  if (pathname.startsWith('/locales/') && pathname.endsWith('.json')) {
+    serveLocaleFile(pathname, res);
     return true;
   }
   return false;

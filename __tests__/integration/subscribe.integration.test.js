@@ -1,13 +1,16 @@
 /**
  * Integration Test: Subscribe Endpoint (SP-2-BTN)
- * Tests the /api/subscribe endpoint validation and error handling.
+ * Tests the /api/subscribe endpoint validation and local fallback.
  * Buttondown API is not called in tests (no BUTTONDOWN_API_KEY set).
+ * Without the key, subscriptions are stored locally.
  */
 
 const http = require('http');
 const path = require('path');
+const fs = require('fs');
 
 const SERVER_PATH = path.resolve(__dirname, '../../.github/webapp/server.js');
+const LOCAL_SUBS_FILE = path.resolve(__dirname, '../../BusinessDocs/local-subscriptions.json');
 
 let server;
 let baseUrl;
@@ -59,6 +62,8 @@ beforeAll((done) => {
 });
 
 afterAll((done) => {
+  // Clean up local subscriptions file created during tests
+  try { fs.unlinkSync(LOCAL_SUBS_FILE); } catch (_) { /* ignore */ }
   if (server && server.listening) {
     server.close(done);
   } else {
@@ -134,25 +139,26 @@ describe('SP-2-BTN: POST /api/subscribe', () => {
           method: 'POST',
           headers: jsonHeaders,
           body: JSON.stringify({
-            email: 'test@example.com',
+            email: `segment-test-${segment}@example.com`,
             metadata: { segment },
           }),
         });
-        // Without BUTTONDOWN_API_KEY, should get 503 (not 400)
-        expect(res.statusCode).toBe(503);
+        // Without BUTTONDOWN_API_KEY, local fallback stores and returns 201
+        expect(res.statusCode).toBe(201);
       }
     });
   });
 
   describe('Service Availability', () => {
-    it('should return 503 when BUTTONDOWN_API_KEY is not configured', async () => {
+    it('should store locally when BUTTONDOWN_API_KEY is not configured', async () => {
       const res = await request('/api/subscribe', {
         method: 'POST',
         headers: jsonHeaders,
-        body: validPayload,
+        body: JSON.stringify({ email: 'local-test@example.com', metadata: { segment: 'developers', source: 'test' } }),
       });
-      expect(res.statusCode).toBe(503);
+      expect(res.statusCode).toBe(201);
       const data = JSON.parse(res.body);
+      expect(data.status).toBe('stored_locally');
       expect(data.message).toMatch(/not configured/i);
     });
   });
@@ -162,10 +168,12 @@ describe('SP-2-BTN: POST /api/subscribe', () => {
       const res = await request('/api/subscribe', {
         method: 'POST',
         headers: jsonHeaders,
-        body: JSON.stringify({ email: 'test@example.com' }),
+        body: JSON.stringify({ email: 'defaults-test@example.com' }),
       });
-      // Should reach the API key check (503), meaning defaults worked
-      expect(res.statusCode).toBe(503);
+      // Should reach local fallback (201), meaning defaults worked
+      expect(res.statusCode).toBe(201);
+      const data = JSON.parse(res.body);
+      expect(data.status).toBe('stored_locally');
     });
   });
 });

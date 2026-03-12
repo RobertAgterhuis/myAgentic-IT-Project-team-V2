@@ -1,0 +1,195 @@
+[
+  {
+    "sid": "/table-of-contents",
+    "title": "Table of Contents",
+    "level": 1,
+    "children": []
+  },
+  {
+    "sid": "/1-executive-summary",
+    "title": "1. Executive Summary",
+    "level": 1,
+    "children": [
+      {
+        "sid": "/11-dimension-scores",
+        "title": "1.1 Dimension Scores",
+        "level": 2,
+        "parent": "/1-executive-summary",
+        "children": []
+      },
+      {
+        "sid": "/12-issue-tracker-summary",
+        "title": "1.2 Issue Tracker Summary",
+        "level": 2,
+        "parent": "/1-executive-summary",
+        "children": []
+      }
+    ]
+  },
+  {
+    "sid": "/2-swot-analysis",
+    "title": "2. SWOT Analysis",
+    "level": 1,
+    "children": []
+  },
+  {
+    "sid": "/3-critical-finding-github-folder-structure",
+    "title": "3. Critical Finding: .github/ Folder Structure",
+    "level": 1,
+    "children": [
+      {
+        "sid": "/31-what-must-move",
+        "title": "3.1 What Must Move",
+        "level": 2,
+        "parent": "/3-critical-finding-github-folder-structure",
+        "children": []
+      },
+      {
+        "sid": "/32-runtime-files-to-gitignore",
+        "title": "3.2 Runtime Files to Gitignore",
+        "level": 2,
+        "parent": "/3-critical-finding-github-folder-structure",
+        "children": []
+      },
+      {
+        "sid": "/33-naming-inconsistencies",
+        "title": "3.3 Naming Inconsistencies",
+        "level": 2,
+        "parent": "/3-critical-finding-github-folder-structure",
+        "children": []
+      }
+    ]
+  },
+  {
+    "sid": "/4-github-issues-deep-dive",
+    "title": "4. GitHub Issues Deep Dive",
+    "level": 1,
+    "children": [
+      {
+        "sid": "/41-priority-breakdown",
+        "title": "4.1 Priority Breakdown",
+        "level": 2,
+        "parent": "/4-github-issues-deep-dive",
+        "children": []
+      },
+      {
+        "sid": "/42-dependency-chain",
+        "title": "4.2 Dependency Chain",
+        "level": 2,
+        "parent": "/4-github-issues-deep-dive",
+        "children": []
+      },
+      {
+        "sid": "/43-feat-05-p0-items-already-partially-implemented",
+        "title": "4.3 FEAT-05: P0 Items Already Partially Implemented",
+        "level": 2,
+        "parent": "/4-github-issues-deep-dive",
+        "children": []
+      },
+      {
+        "sid": "/44-cat-01-through-cat-09-dormant-by-design",
+        "title": "4.4 CAT-01 through CAT-09: Dormant by Design",
+        "level": 2,
+        "parent": "/4-github-issues-deep-dive",
+        "children": []
+      }
+    ]
+  },
+  {
+    "sid": "/5-integrated-milestone-plan",
+    "title": "5. Integrated Milestone Plan",
+    "level": 1,
+    "children": []
+  },
+  {
+    "sid": "/6-sprint-plan",
+    "title": "6. Sprint Plan",
+    "level": 1,
+    "children": [
+      {
+        "sid": "/sprint-0-repo-restructuring-audit--m0",
+        "title": "Sprint 0: Repo Restructuring (AUDIT) — M0",
+        "level": 2,
+        "parent": "/6-sprint-plan",
+        "children": []
+      },
+      {
+        "sid": "/sprint-1-sprint-2-completion--m1",
+        "title": "Sprint 1: Sprint 2 Completion — M1",
+        "level": 2,
+        "parent": "/6-sprint-plan",
+        "children": []
+      },
+      {
+        "sid": "/sprint-2-pipeline-hardening-audit--m2",
+        "title": "Sprint 2: Pipeline Hardening (AUDIT) — M2",
+        "level": 2,
+        "parent": "/6-sprint-plan",
+        "children": []
+      },
+      {
+        "sid": "/sprint-3-code-orchestrator-feat-05--m3",
+        "title": "Sprint 3: Code Orchestrator (FEAT-05) — M3",
+        "level": 2,
+        "parent": "/6-sprint-plan",
+        "children": []
+      },
+      {
+        "sid": "/sprint-4-canonical-schema-feat-03--m4",
+        "title": "Sprint 4: Canonical Schema (FEAT-03) — M4",
+        "level": 2,
+        "parent": "/6-sprint-plan",
+        "children": []
+      },
+      {
+        "sid": "/sprint-5-security--typescript-audit--m5",
+        "title": "Sprint 5: Security + TypeScript (AUDIT) — M5",
+        "level": 2,
+        "parent": "/6-sprint-plan",
+        "children": []
+      },
+      {
+        "sid": "/sprint-6-v10-ga--m6",
+        "title": "Sprint 6: v1.0 GA — M6",
+        "level": 2,
+        "parent": "/6-sprint-plan",
+        "children": []
+      },
+      {
+        "sid": "/sprints-710-feature-roadmap",
+        "title": "Sprints 7–10: Feature Roadmap",
+        "level": 2,
+        "parent": "/6-sprint-plan",
+        "children": []
+      }
+    ]
+  },
+  {
+    "sid": "/7-top-recommendations",
+    "title": "7. Top Recommendations",
+    "level": 1,
+    "children": [
+      {
+        "sid": "/71-this-week",
+        "title": "7.1 This Week",
+        "level": 2,
+        "parent": "/7-top-recommendations",
+        "children": []
+      },
+      {
+        "sid": "/72-next-30-days",
+        "title": "7.2 Next 30 Days",
+        "level": 2,
+        "parent": "/7-top-recommendations",
+        "children": []
+      },
+      {
+        "sid": "/73-strategic",
+        "title": "7.3 Strategic",
+        "level": 2,
+        "parent": "/7-top-recommendations",
+        "children": []
+      }
+    ]
+  }
+]

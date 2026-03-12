@@ -2,7 +2,7 @@
   "name": "myagentic-it-project-team-v2",
   "version": "1.0.0",
   "description": "Agentic SDLC Platform - Multi-agent software development system",
-  "main": "index.js",
+  "main": ".github/webapp/server.js",
   "scripts": {
     "test": "jest --passWithNoTests",
     "test:coverage": "jest --coverage --passWithNoTests",
@@ -12,8 +12,8 @@
     "lint:fix": "eslint . --ext .js,.ts,.jsx,.tsx --fix",
     "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
-    "build": "echo 'Build step - placeholder for Sprint 1' && exit 0",
-    "start": "echo 'Start step - placeholder for Sprint 1' && exit 0"
+    "build": "echo 'No build step required — server runs native Node.js'",
+    "start": "node .github/webapp/server.js"
   },
   "repository": {
     "type": "git",

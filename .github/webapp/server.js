@@ -269,6 +269,7 @@ const driftRoutes = require('./routes/drift')(ctx);
 const metricsDashboardRoutes = require('./routes/metrics-dashboard')(ctx);
 const dashboardRoutes = require('./routes/dashboard')(ctx);
 const milestonesRoutes = require('./routes/milestones')(ctx);
+const subscribeRoutes = require('./routes/subscribe')(ctx);
 const miscRoutes = require('./routes/misc')(ctx);
 
 const serveStatic = miscRoutes._serveStatic;
@@ -284,6 +285,7 @@ const ROUTES = {
   ...metricsDashboardRoutes,
   ...dashboardRoutes,
   ...milestonesRoutes,
+  ...subscribeRoutes,
   ...miscRoutes,
 };
 
@@ -367,6 +369,34 @@ function serveDashboardHtml(res) {
   }
 }
 
+function serveLandingHtml(res) {
+  try {
+    const store = getStore();
+    const landingPath = safePath(WEBAPP_DIR, 'landing.html');
+    const landingContent = store.readFile(landingPath);
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Length', Buffer.byteLength(landingContent, 'utf-8'));
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; form-action 'self'; frame-ancestors 'self'; base-uri 'self'"
+    );
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+
+    res.writeHead(200);
+    res.end(landingContent);
+  } catch (err) {
+    structuredLog('warn', 'landing_serve_failed', { error: err.message });
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
+
 function serveDashboardScript(pathname, res) {
   try {
     const store = getStore();
@@ -386,6 +416,43 @@ function serveDashboardScript(pathname, res) {
   }
 }
 
+function serveSocialCard(pathname, res) {
+  try {
+    const store = getStore();
+    const cardPath = safePath(WEBAPP_DIR, pathname.substring(1));
+    const cardContent = store.readFile(cardPath);
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.setHeader('Content-Length', Buffer.byteLength(cardContent, 'utf-8'));
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.writeHead(200);
+    res.end(cardContent);
+  } catch (err) {
+    structuredLog('warn', 'social_card_serve_failed', { error: err.message, pathname });
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
+
+function serveLocaleFile(pathname, res) {
+  try {
+    const store = getStore();
+    const localePath = safePath(path.join(PROJECT_ROOT, 'locales'), pathname.replace(/^\/locales\//, ''));
+    const localeContent = store.readFile(localePath);
+    JSON.parse(localeContent); // validate JSON
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Content-Length', Buffer.byteLength(localeContent, 'utf-8'));
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.writeHead(200);
+    res.end(localeContent);
+  } catch (err) {
+    structuredLog('warn', 'locale_serve_failed', { error: err.message, pathname });
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
+
 function handleExplicitStatic(req, pathname, res) {
   if (req.method !== 'GET') return false;
   if (pathname === '/design-system.css') {
@@ -396,8 +463,20 @@ function handleExplicitStatic(req, pathname, res) {
     serveDashboardHtml(res);
     return true;
   }
+  if (pathname === '/landing' || pathname === '/landing.html') {
+    serveLandingHtml(res);
+    return true;
+  }
   if (pathname.endsWith('.js')) {
     serveDashboardScript(pathname, res);
+    return true;
+  }
+  if (pathname.startsWith('/social-cards/') && pathname.endsWith('.svg')) {
+    serveSocialCard(pathname, res);
+    return true;
+  }
+  if (pathname.startsWith('/locales/') && pathname.endsWith('.json')) {
+    serveLocaleFile(pathname, res);
     return true;
   }
   return false;

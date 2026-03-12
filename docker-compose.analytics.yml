@@ -1,0 +1,60 @@
+# Matomo Docker analytics stack — Privacy-first, cookieless mode
+# SP-2-MAT (#125) — Self-hosted analytics deployment
+# Source: SP-12-705 §6 (Analytics Baseline Implementation Guide)
+# IMPORTANT: All passwords injected via .env file (never committed)
+
+services:
+  matomo:
+    image: matomo:5-fpm-alpine
+    restart: unless-stopped
+    volumes:
+      - matomo-data:/var/www/html
+    environment:
+      - MATOMO_DATABASE_HOST=matomo-db
+      - MATOMO_DATABASE_DBNAME=matomo
+      - MATOMO_DATABASE_USERNAME=matomo
+      - MATOMO_DATABASE_PASSWORD=${MATOMO_DB_PASSWORD}
+    depends_on:
+      matomo-db:
+        condition: service_healthy
+    networks:
+      - analytics
+
+  matomo-db:
+    image: mariadb:11
+    restart: unless-stopped
+    volumes:
+      - matomo-db-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MATOMO_DB_ROOT_PASSWORD}
+      - MYSQL_DATABASE=matomo
+      - MYSQL_USER=matomo
+      - MYSQL_PASSWORD=${MATOMO_DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - analytics
+
+  matomo-web:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "${MATOMO_PORT:-8080}:80"
+    volumes:
+      - matomo-data:/var/www/html:ro
+      - ./matomo-nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - matomo
+    networks:
+      - analytics
+
+volumes:
+  matomo-data:
+  matomo-db-data:
+
+networks:
+  analytics:
+    driver: bridge

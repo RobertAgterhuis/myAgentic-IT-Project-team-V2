@@ -1,0 +1,80 @@
+<!-- LinkedIn Social Card 1: Launch Announcement
+     Dimensions: 1200×627px | Brand: Agentic SDLC Platform
+     Usage: LinkedIn launch post (Week 1, Mon March 25) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 627" width="1200" height="627">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600&amp;display=swap');
+      .heading { font-family: 'Sora', 'Segoe UI', Arial, sans-serif; }
+      .body { font-family: 'Manrope', 'Segoe UI', Arial, sans-serif; }
+      .mono { font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="627" fill="#0A3A66"/>
+
+  <!-- Subtle grid pattern -->
+  <g opacity="0.06">
+    <line x1="0" y1="0" x2="1200" y2="627" stroke="#FFFFFF" stroke-width="0.5"/>
+    <line x1="200" y1="0" x2="1200" y2="500" stroke="#FFFFFF" stroke-width="0.5"/>
+    <line x1="400" y1="0" x2="1200" y2="400" stroke="#FFFFFF" stroke-width="0.5"/>
+    <line x1="600" y1="0" x2="1200" y2="300" stroke="#FFFFFF" stroke-width="0.5"/>
+    <line x1="0" y1="200" x2="1000" y2="627" stroke="#FFFFFF" stroke-width="0.5"/>
+    <line x1="0" y1="400" x2="800" y2="627" stroke="#FFFFFF" stroke-width="0.5"/>
+  </g>
+
+  <!-- Accent bar top -->
+  <rect x="0" y="0" width="1200" height="4" fill="#E87722"/>
+
+  <!-- Logo area -->
+  <text x="80" y="80" class="heading" fill="#FFFFFF" font-size="20" font-weight="600" letter-spacing="3">AGENTIC SDLC</text>
+  <text x="80" y="102" class="body" fill="#D9E2EC" font-size="12" font-weight="400" letter-spacing="1.5">END-TO-END SOLUTION DESIGN AND DELIVERY</text>
+
+  <!-- Main title -->
+  <text x="80" y="200" class="heading" fill="#FFFFFF" font-size="42" font-weight="700">30+ AI Agents.</text>
+  <text x="80" y="255" class="heading" fill="#FFFFFF" font-size="42" font-weight="700">4 Disciplines.</text>
+  <text x="80" y="310" class="heading" fill="#E87722" font-size="42" font-weight="700">One Orchestrated Process.</text>
+
+  <!-- Phase flow -->
+  <g transform="translate(80, 370)">
+    <!-- Phase boxes -->
+    <rect x="0" y="0" width="220" height="60" rx="6" fill="#1B6B5E"/>
+    <text x="110" y="25" class="body" fill="#FFFFFF" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1">PHASE 1</text>
+    <text x="110" y="44" class="body" fill="#FFFFFF" font-size="13" font-weight="500" text-anchor="middle">Requirements &amp; Strategy</text>
+
+    <text x="240" y="35" class="body" fill="#D9E2EC" font-size="20">→</text>
+
+    <rect x="265" y="0" width="220" height="60" rx="6" fill="#1B6B5E"/>
+    <text x="375" y="25" class="body" fill="#FFFFFF" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1">PHASE 2</text>
+    <text x="375" y="44" class="body" fill="#FFFFFF" font-size="13" font-weight="500" text-anchor="middle">Architecture &amp; Design</text>
+
+    <text x="505" y="35" class="body" fill="#D9E2EC" font-size="20">→</text>
+
+    <rect x="530" y="0" width="220" height="60" rx="6" fill="#1B6B5E"/>
+    <text x="640" y="25" class="body" fill="#FFFFFF" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1">PHASE 3</text>
+    <text x="640" y="44" class="body" fill="#FFFFFF" font-size="13" font-weight="500" text-anchor="middle">Experience Design</text>
+
+    <text x="770" y="35" class="body" fill="#D9E2EC" font-size="20">→</text>
+
+    <rect x="795" y="0" width="220" height="60" rx="6" fill="#1B6B5E"/>
+    <text x="905" y="25" class="body" fill="#FFFFFF" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1">PHASE 4</text>
+    <text x="905" y="44" class="body" fill="#FFFFFF" font-size="13" font-weight="500" text-anchor="middle">Brand &amp; Growth</text>
+  </g>
+
+  <!-- Implementation arrow -->
+  <g transform="translate(80, 455)">
+    <rect x="0" y="0" width="1035" height="50" rx="6" fill="#E87722" opacity="0.15"/>
+    <rect x="0" y="0" width="1035" height="50" rx="6" fill="none" stroke="#E87722" stroke-width="1.5"/>
+    <text x="517" y="21" class="body" fill="#E87722" font-size="11" font-weight="600" text-anchor="middle" letter-spacing="1">PHASE 5</text>
+    <text x="517" y="39" class="body" fill="#FFFFFF" font-size="14" font-weight="500" text-anchor="middle">Sprint Execution · Critic + Risk Validation · Continuous Delivery</text>
+  </g>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="540" width="1200" height="87" fill="#102A43"/>
+  <text x="80" y="575" class="mono" fill="#D9E2EC" font-size="14">github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2</text>
+  <text x="80" y="600" class="body" fill="#334E68" font-size="12">Open Source · AI-Powered SDLC · Production Ready</text>
+
+  <!-- Accent bar bottom -->
+  <rect x="0" y="623" width="1200" height="4" fill="#E87722"/>
+</svg>

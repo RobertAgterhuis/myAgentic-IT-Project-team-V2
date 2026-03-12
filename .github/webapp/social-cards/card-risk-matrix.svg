@@ -1,0 +1,126 @@
+<!-- LinkedIn Social Card 2: Risk Matrix
+     Dimensions: 1200×627px | Brand: Agentic SDLC Platform
+     Usage: LinkedIn risk management post (Week 1, Wed March 26) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 627" width="1200" height="627">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Sora:wght@600;700&amp;family=Manrope:wght@400;500;600&amp;display=swap');
+      .heading { font-family: 'Sora', 'Segoe UI', Arial, sans-serif; }
+      .body { font-family: 'Manrope', 'Segoe UI', Arial, sans-serif; }
+      .mono { font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="627" fill="#F7FAFC"/>
+
+  <!-- Accent bar top -->
+  <rect x="0" y="0" width="1200" height="4" fill="#0A3A66"/>
+
+  <!-- Header area -->
+  <rect x="0" y="4" width="1200" height="100" fill="#0A3A66"/>
+  <text x="80" y="45" class="heading" fill="#FFFFFF" font-size="16" font-weight="600" letter-spacing="2">AGENTIC SDLC PLATFORM</text>
+  <text x="80" y="78" class="heading" fill="#FFFFFF" font-size="30" font-weight="700">27 Risks Identified Across 6 Categories</text>
+
+  <!-- Risk category cards - Row 1 -->
+  <g transform="translate(60, 130)">
+    <!-- Security -->
+    <rect x="0" y="0" width="340" height="140" rx="8" fill="#FFFFFF" stroke="#D9E2EC" stroke-width="1"/>
+    <rect x="0" y="0" width="340" height="6" rx="3" fill="#B42318"/>
+    <circle cx="30" cy="40" r="14" fill="#B42318" opacity="0.12"/>
+    <text x="30" y="45" class="body" font-size="16" text-anchor="middle" fill="#B42318">🛡</text>
+    <text x="55" y="44" class="heading" fill="#102A43" font-size="16" font-weight="700">Security</text>
+    <text x="300" y="44" class="mono" fill="#B42318" font-size="24" font-weight="700" text-anchor="end">7</text>
+    <text x="20" y="72" class="body" fill="#334E68" font-size="12">Auth bypass · Secret exposure</text>
+    <text x="20" y="90" class="body" fill="#334E68" font-size="12">SSRF · XSS · Injection vectors</text>
+    <rect x="20" y="105" width="80" height="22" rx="4" fill="#B42318" opacity="0.1"/>
+    <text x="60" y="120" class="mono" fill="#B42318" font-size="11" font-weight="600" text-anchor="middle">3 HIGH</text>
+    <rect x="110" y="105" width="90" height="22" rx="4" fill="#B54708" opacity="0.1"/>
+    <text x="155" y="120" class="mono" fill="#B54708" font-size="11" font-weight="600" text-anchor="middle">4 MEDIUM</text>
+
+    <!-- Performance -->
+    <rect x="370" y="0" width="340" height="140" rx="8" fill="#FFFFFF" stroke="#D9E2EC" stroke-width="1"/>
+    <rect x="370" y="0" width="340" height="6" rx="3" fill="#B54708"/>
+    <circle cx="400" cy="40" r="14" fill="#B54708" opacity="0.12"/>
+    <text x="400" y="45" class="body" font-size="16" text-anchor="middle" fill="#B54708">⚡</text>
+    <text x="425" y="44" class="heading" fill="#102A43" font-size="16" font-weight="700">Performance</text>
+    <text x="670" y="44" class="mono" fill="#B54708" font-size="24" font-weight="700" text-anchor="end">5</text>
+    <text x="390" y="72" class="body" fill="#334E68" font-size="12">Response latency · Memory leaks</text>
+    <text x="390" y="90" class="body" fill="#334E68" font-size="12">Connection pool · Cache invalidation</text>
+    <rect x="390" y="105" width="80" height="22" rx="4" fill="#B54708" opacity="0.1"/>
+    <text x="430" y="120" class="mono" fill="#B54708" font-size="11" font-weight="600" text-anchor="middle">2 HIGH</text>
+    <rect x="480" y="105" width="90" height="22" rx="4" fill="#027A48" opacity="0.1"/>
+    <text x="525" y="120" class="mono" fill="#027A48" font-size="11" font-weight="600" text-anchor="middle">3 MEDIUM</text>
+
+    <!-- Compliance -->
+    <rect x="740" y="0" width="340" height="140" rx="8" fill="#FFFFFF" stroke="#D9E2EC" stroke-width="1"/>
+    <rect x="740" y="0" width="340" height="6" rx="3" fill="#0A3A66"/>
+    <circle cx="770" cy="40" r="14" fill="#0A3A66" opacity="0.12"/>
+    <text x="770" y="45" class="body" font-size="16" text-anchor="middle" fill="#0A3A66">📋</text>
+    <text x="795" y="44" class="heading" fill="#102A43" font-size="16" font-weight="700">Compliance</text>
+    <text x="1040" y="44" class="mono" fill="#0A3A66" font-size="24" font-weight="700" text-anchor="end">4</text>
+    <text x="760" y="72" class="body" fill="#334E68" font-size="12">GDPR data handling · License audit</text>
+    <text x="760" y="90" class="body" fill="#334E68" font-size="12">Accessibility WCAG 2.1 · Cookie consent</text>
+    <rect x="760" y="105" width="80" height="22" rx="4" fill="#B54708" opacity="0.1"/>
+    <text x="800" y="120" class="mono" fill="#B54708" font-size="11" font-weight="600" text-anchor="middle">1 HIGH</text>
+    <rect x="850" y="105" width="90" height="22" rx="4" fill="#027A48" opacity="0.1"/>
+    <text x="895" y="120" class="mono" fill="#027A48" font-size="11" font-weight="600" text-anchor="middle">3 MEDIUM</text>
+  </g>
+
+  <!-- Risk category cards - Row 2 -->
+  <g transform="translate(60, 300)">
+    <!-- Architecture -->
+    <rect x="0" y="0" width="340" height="140" rx="8" fill="#FFFFFF" stroke="#D9E2EC" stroke-width="1"/>
+    <rect x="0" y="0" width="340" height="6" rx="3" fill="#1B6B5E"/>
+    <circle cx="30" cy="40" r="14" fill="#1B6B5E" opacity="0.12"/>
+    <text x="30" y="45" class="body" font-size="16" text-anchor="middle" fill="#1B6B5E">🏗</text>
+    <text x="55" y="44" class="heading" fill="#102A43" font-size="16" font-weight="700">Architecture</text>
+    <text x="300" y="44" class="mono" fill="#1B6B5E" font-size="24" font-weight="700" text-anchor="end">5</text>
+    <text x="20" y="72" class="body" fill="#334E68" font-size="12">Coupling · Single points of failure</text>
+    <text x="20" y="90" class="body" fill="#334E68" font-size="12">Schema migration · API versioning</text>
+    <rect x="20" y="105" width="80" height="22" rx="4" fill="#B54708" opacity="0.1"/>
+    <text x="60" y="120" class="mono" fill="#B54708" font-size="11" font-weight="600" text-anchor="middle">2 HIGH</text>
+    <rect x="110" y="105" width="90" height="22" rx="4" fill="#027A48" opacity="0.1"/>
+    <text x="155" y="120" class="mono" fill="#027A48" font-size="11" font-weight="600" text-anchor="middle">3 MEDIUM</text>
+
+    <!-- Business -->
+    <rect x="370" y="0" width="340" height="140" rx="8" fill="#FFFFFF" stroke="#D9E2EC" stroke-width="1"/>
+    <rect x="370" y="0" width="340" height="6" rx="3" fill="#E87722"/>
+    <circle cx="400" cy="40" r="14" fill="#E87722" opacity="0.12"/>
+    <text x="400" y="45" class="body" font-size="16" text-anchor="middle" fill="#E87722">📊</text>
+    <text x="425" y="44" class="heading" fill="#102A43" font-size="16" font-weight="700">Business</text>
+    <text x="670" y="44" class="mono" fill="#E87722" font-size="24" font-weight="700" text-anchor="end">3</text>
+    <text x="390" y="72" class="body" fill="#334E68" font-size="12">Market timing · Adoption friction</text>
+    <text x="390" y="90" class="body" fill="#334E68" font-size="12">Competitor response · Revenue model</text>
+    <rect x="390" y="105" width="90" height="22" rx="4" fill="#B54708" opacity="0.1"/>
+    <text x="435" y="120" class="mono" fill="#B54708" font-size="11" font-weight="600" text-anchor="middle">1 MEDIUM</text>
+    <rect x="490" y="105" width="70" height="22" rx="4" fill="#027A48" opacity="0.1"/>
+    <text x="525" y="120" class="mono" fill="#027A48" font-size="11" font-weight="600" text-anchor="middle">2 LOW</text>
+
+    <!-- Operations -->
+    <rect x="740" y="0" width="340" height="140" rx="8" fill="#FFFFFF" stroke="#D9E2EC" stroke-width="1"/>
+    <rect x="740" y="0" width="340" height="6" rx="3" fill="#2F80ED"/>
+    <circle cx="770" cy="40" r="14" fill="#2F80ED" opacity="0.12"/>
+    <text x="770" y="45" class="body" font-size="16" text-anchor="middle" fill="#2F80ED">⚙</text>
+    <text x="795" y="44" class="heading" fill="#102A43" font-size="16" font-weight="700">Operations</text>
+    <text x="1040" y="44" class="mono" fill="#2F80ED" font-size="24" font-weight="700" text-anchor="end">3</text>
+    <text x="760" y="72" class="body" fill="#334E68" font-size="12">CI/CD pipeline reliability</text>
+    <text x="760" y="90" class="body" fill="#334E68" font-size="12">Monitoring gaps · Incident response</text>
+    <rect x="760" y="105" width="90" height="22" rx="4" fill="#B54708" opacity="0.1"/>
+    <text x="805" y="120" class="mono" fill="#B54708" font-size="11" font-weight="600" text-anchor="middle">1 MEDIUM</text>
+    <rect x="860" y="105" width="70" height="22" rx="4" fill="#027A48" opacity="0.1"/>
+    <text x="895" y="120" class="mono" fill="#027A48" font-size="11" font-weight="600" text-anchor="middle">2 LOW</text>
+  </g>
+
+  <!-- Summary bar -->
+  <rect x="0" y="475" width="1200" height="60" fill="#0A3A66"/>
+  <text x="80" y="512" class="heading" fill="#FFFFFF" font-size="18" font-weight="700">Every risk tracked. Every mitigation planned. Before a single line of code.</text>
+
+  <!-- Bottom bar -->
+  <rect x="0" y="540" width="1200" height="87" fill="#102A43"/>
+  <text x="80" y="575" class="body" fill="#D9E2EC" font-size="14">Critic + Risk Validation agents review every phase output</text>
+  <text x="80" y="600" class="mono" fill="#334E68" font-size="12">agentic-sdlc.dev | Open Source</text>
+
+  <!-- Accent bar bottom -->
+  <rect x="0" y="623" width="1200" height="4" fill="#E87722"/>
+</svg>

@@ -9,13 +9,13 @@
   "feature_name": null,
   "github_project_name": "Agentic SDLC Platform Task",
   "initiated_at": "2026-03-09T00:00:00Z",
-  "last_updated": "2026-03-25T18:00:00Z",
+  "last_updated": "2026-04-01T20:00:00Z",
 
   "status": "PHASE_5_EXECUTING",
 
   "current_phase": "PHASE_5",
-  "current_agent": "implementation-agent",
-  "current_step": "Sprint 2 Day 1 COMPLETE. 8/11 items started, 0/11 complete. PR #130 open (SP-2-CI7). Tech manual v1.7 with CI Pipeline section. 5 new deliverables: BTN setup, SOC publication plan, pilot scope, TMS eval kickoff, LND scope. 122 tests passing. 0 blockers. Day 2: merge CI7 → start CI8, LND implementation, Weblate trial.",
+  "current_agent": "retrospective-agent",
+  "current_step": "Sprint 2 COMPLETE. 80% velocity (8/10 items). Completion Report written. Retrospective written (7 lessons, 8 action items). Velocity log + lessons-learned.md created in .github/docs/retrospectives/. SP-2-201-P + SP-2-202 DEFERRED to Sprint 3 (pilot participant non-response). SP-2-SOC COMPLETE. 323 tests, 15 suites, 0 failures. Next: Sprint 2 PR (squash merge to main), Sprint 3 planning.",
 
   "completed_phases": [
     "ONBOARDING",
@@ -161,19 +161,20 @@
       "sprint_2": {
         "milestone_id": 24,
         "due_date": "2026-04-07",
-        "total_issues": 11,
+        "total_issues": 10,
         "pending_sprint_1_deps": 0,
         "blocked_issues": 0,
         "sprint_gate_verdict": "APPROVED",
-        "ready_items": 10,
+        "ready_items": 9,
         "conditional_items": 1,
-        "new_issues_created": [123, 124, 125, 126, 127, 128, 129],
+        "new_issues_created": [123, 124, 125, 126, 128, 129],
         "existing_issues": [107, 110, 115, 117],
+        "backlog_items": ["SP-2-SOC (#127) — non-blocking; requires complete working solution before social publication"],
         "tracks": {
           "tech": ["SP-2-CI7 (#123)", "SP-2-CI8 (#124)", "SP-2-MAT (#125)"],
           "business": ["SP-2-201-P (#107)", "SP-2-202 (#110)"],
           "ux": ["SP-2-501 (#117)"],
-          "marketing": ["SP-2-201 (#115)", "SP-2-BTN (#126)", "SP-2-SOC (#127)", "SP-2-LND (#128)"],
+          "marketing": ["SP-2-201 (#115)", "SP-2-BTN (#126)", "SP-2-LND (#128)"],
           "docs": ["SP-2-DOC (#129)"]
         },
         "execution_start": "2026-03-25",
@@ -261,7 +262,11 @@
       "week_2_checkpoint_date": "2026-03-21",
       "sprint_1_formally_closed": true,
       "sprint_1_close_date": "2026-03-23",
-      "sprint_1_milestone_github_state": "closed"
+      "sprint_1_milestone_github_state": "closed",
+      "sprint_2_day_2_summary": ".github/docs/phase-5/sprint-2-day-2-summary.md",
+      "sprint_2_day_3_summary": ".github/docs/phase-5/sprint-2-day-3-summary.md",
+      "sprint_2_day_5_summary": ".github/docs/phase-5/sprint-2-day-5-summary.md",
+      "sprint_2_day_6_summary": ".github/docs/phase-5/sprint-2-day-6-summary.md"
     }
   },
 

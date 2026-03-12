@@ -8,7 +8,7 @@ description:
 
 # User Manual — myAgentic-IT-Project-team
 
-> Version 1.0 | Last updated: 2026-03-08
+> Version 1.2 | Last updated: 2026-03-30 (Sprint 2 Day 6)
 
 This guide covers everything you need to use the myAgentic-IT-Project-team
 system: starting projects, managing questionnaires and decisions, using the
@@ -26,8 +26,11 @@ Command Center, and troubleshooting common issues.
 6. [Pipeline Progress](#pipeline-progress)
 7. [Real-Time Updates (SSE)](#real-time-updates-sse)
 8. [Accessibility Features](#accessibility-features)
-9. [FAQ](#faq)
-10. [Troubleshooting](#troubleshooting)
+9. [Newsletter & Landing Page](#newsletter--landing-page)
+10. [Analytics (Matomo)](#analytics-matomo)
+11. [Internationalization (i18n)](#internationalization-i18n)
+12. [FAQ](#faq)
+13. [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -386,3 +389,75 @@ session state.
 - Look for error messages in the browser console (F12 → Console tab).
 - The server creates backups before writing — check for `.bak` files if data
   seems lost.
+
+---
+
+## Newsletter & Landing Page
+
+### Landing Page
+
+The marketing landing page is served at `/landing` (or `/landing.html`). It
+presents the platform's value proposition, 5-phase process flow, and a
+newsletter subscription form.
+
+### Newsletter Subscribe
+
+The subscribe form posts to `POST /api/subscribe` with:
+
+```json
+{
+  "email": "user@example.com",
+  "metadata": { "segment": "developers", "source": "landing-page" }
+}
+```
+
+Valid segments: `engineering-leaders`, `product-managers`, `developers`,
+`evaluators`.
+
+When the `BUTTONDOWN_API_KEY` environment variable is set, subscriptions are
+forwarded to Buttondown ESP. When the key is not configured (local development),
+subscriptions are stored locally in `BusinessDocs/local-subscriptions.json` so
+no data is lost.
+
+A 5-email welcome sequence (Days 0, 2, 4, 7, 10) introduces new subscribers to
+the platform.
+
+### Email Templates
+
+Welcome sequence templates are in `.github/webapp/email-templates/`:
+- `welcome-1.md` — Value proposition (Day 0)
+- `welcome-2.md` — Problem awareness (Day 2)
+- `welcome-3.md` — Product education (Day 4)
+- `welcome-4.md` — Social proof (Day 7)
+- `welcome-5.md` — Conversion (Day 10)
+
+All emails use the responsive HTML layout in `base-layout.html` with dark mode
+support and Outlook compatibility.
+
+---
+
+## Analytics (Matomo)
+
+Self-hosted privacy-first analytics via Matomo. Runs as a separate Docker
+stack (`docker-compose.analytics.yml`). Cookieless tracking mode preserves
+user privacy while providing actionable metrics.
+
+See the [Technical Manual](technical-manual.md#analytics-stack-matomo) for
+setup instructions.
+
+---
+
+## Internationalization (i18n)
+
+The platform supports translation via self-hosted Weblate TMS. Translation
+strings are served at `/locales/:locale/:file.json` and stored in `locales/`
+across three namespaces:
+
+- `ui-labels.json` — Navigation, buttons, form labels (49 keys)
+- `validation-messages.json` — Error/success messages (30 keys)
+- `doc-snippets.json` — Documentation, onboarding, ICU plurals (48 keys)
+
+Available locales: **en-US** (source), **fr-FR** (French), **de-DE** (German).
+Planned: ja-JP, zh-CN. Total: 127 keys × 3 locales = 381 translated strings.
+
+See `docker-compose.weblate.yml` for the translation management setup.

@@ -66,9 +66,18 @@
 | Docker              | [docker.md](decisions/docker.md)                       | 20    | DEFERRED | NO         |
 | Vite                | [vite.md](decisions/vite.md)                           | 11    | DEFERRED | NO         |
 | NextJS              | [nextjs.md](decisions/nextjs.md)                       | 13    | DEFERRED | NO         |
+| Microsoft Graph     | [microsoft-graph.md](decisions/microsoft-graph.md)     | 7     | DEFERRED | NO         |
+| Entra ID            | [entra-id.md](decisions/entra-id.md)                   | 7     | DEFERRED | NO         |
+| Exchange            | [exchange.md](decisions/exchange.md)                   | 5     | DEFERRED | NO         |
+| Purview             | [purview.md](decisions/purview.md)                     | 5     | DEFERRED | NO         |
+| Teams               | [teams.md](decisions/teams.md)                         | 6     | DEFERRED | NO         |
+| SharePoint          | [sharepoint.md](decisions/sharepoint.md)               | 5     | DEFERRED | NO         |
+| Lighthouse          | [lighthouse.md](decisions/lighthouse.md)               | 5     | DEFERRED | NO         |
+| Playwright          | [playwright.md](decisions/playwright.md)               | 6     | DEFERRED | NO         |
+| PowerShell          | [powershell.md](decisions/powershell.md)               | 6     | DEFERRED | NO         |
 
-**Total:** 193 decisions (50 active, 32 individually deferred in partial
-categories, 111 category-deferred)
+**Total:** 245 decisions (50 active, 32 individually deferred in partial
+categories, 163 category-deferred)
 
 ### Uncategorized Decisions
 

@@ -31,7 +31,8 @@
       "input-bg": { "$value": "#F0F4F8" },
       "success": { "$value": "#027A48" },
       "warning": { "$value": "#B54708" },
-      "danger": { "$value": "#B42318" }
+      "danger": { "$value": "#B42318" },
+      "info": { "$value": "#0A3A66" }
     },
     "dark": {
       "text": { "$value": "#F0F4F8" },
@@ -45,13 +46,14 @@
       "input-bg": { "$value": "#243B53" },
       "success": { "$value": "#57D9A3" },
       "warning": { "$value": "#F7B955" },
-      "danger": { "$value": "#F97066" }
+      "danger": { "$value": "#F97066" },
+      "info": { "$value": "#74B0E8" }
     }
   },
   "typography": {
     "fontFamilies": {
-      "heading": "Sora, 'Segoe UI', Arial, sans-serif",
-      "body": "Manrope, 'Segoe UI', Arial, sans-serif",
+      "heading": "'Segoe UI', Inter, Arial, sans-serif",
+      "body": "'Segoe UI', Inter, Arial, sans-serif",
       "mono": "JetBrains Mono, Consolas, 'Courier New', monospace"
     },
     "fontSizes": {
@@ -59,7 +61,8 @@
       "sm": "14px",
       "md": "16px",
       "lg": "20px",
-      "xl": "28px"
+      "xl": "24px",
+      "xxl": "32px"
     },
     "fontWeights": {
       "regular": 400,
@@ -80,11 +83,10 @@
       "2": "8px",
       "3": "12px",
       "4": "16px",
-      "5": "20px",
       "6": "24px",
       "8": "32px",
-      "10": "40px",
-      "12": "48px"
+      "12": "48px",
+      "16": "64px"
     }
   },
   "borders": {
@@ -95,17 +97,21 @@
     },
     "radius": {
       "none": "0px",
+      "xs": "2px",
       "sm": "4px",
       "md": "8px",
-      "lg": "12px",
-      "xl": "16px",
       "pill": "9999px"
     }
   },
   "shadows": {
-    "sm": "0 1px 2px rgba(16, 42, 67, 0.10)",
-    "md": "0 6px 16px rgba(16, 42, 67, 0.14)",
-    "lg": "0 16px 40px rgba(16, 42, 67, 0.18)"
+    "sm": "0 1px 2px rgba(16, 42, 67, 0.12)",
+    "md": "0 4px 12px rgba(16, 42, 67, 0.14)",
+    "lg": "0 12px 24px rgba(16, 42, 67, 0.16)",
+    "xl": "0 24px 48px rgba(16, 42, 67, 0.20)"
+  },
+  "motion": {
+    "fast": "150ms ease",
+    "normal": "250ms ease-in-out"
   },
   "breakpoints": {
     "mobile": "320px",

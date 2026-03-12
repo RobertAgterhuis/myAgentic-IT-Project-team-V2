@@ -46,3 +46,9 @@ chrome --headless --screenshot --window-size=1200,627 card-launch.svg
 - Minimum: 1200×627px for high quality display
 - Max file size: 10 MB (PNG) or 5 MB (JPEG)
 - Format: PNG preferred for text-heavy graphics
+
+## Community
+
+- [GitHub Discussions](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/discussions)
+- [Dev.to Blog](https://dev.to/agentic-sdlc)
+- [Issues](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/issues)

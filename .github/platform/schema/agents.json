@@ -1,0 +1,1390 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": ".github/docs/agent-index.md",
+  "generatedAt": "2026-03-12T18:07:33.447Z",
+  "toolCatalog": [
+    {
+      "id": "tool.files.read",
+      "description": "Read repository files"
+    },
+    {
+      "id": "tool.files.write",
+      "description": "Write/update repository files"
+    },
+    {
+      "id": "tool.context.search",
+      "description": "Search repository context and symbols"
+    },
+    {
+      "id": "tool.validation.contract",
+      "description": "Validate outputs against output contracts"
+    },
+    {
+      "id": "tool.session.state",
+      "description": "Read and update session-state.json"
+    },
+    {
+      "id": "tool.github.issue",
+      "description": "Create/update/close GitHub issues"
+    },
+    {
+      "id": "tool.queue.command",
+      "description": "Manage command queue and project status"
+    },
+    {
+      "id": "tool.risk.assess",
+      "description": "Execute structured risk assessment workflow"
+    },
+    {
+      "id": "tool.questionnaire.manage",
+      "description": "Generate and update questionnaires and answers"
+    },
+    {
+      "id": "tool.synthesis.compose",
+      "description": "Aggregate phase outputs into synthesis reports"
+    },
+    {
+      "id": "tool.git.commit",
+      "description": "Commit source changes and docs updates"
+    },
+    {
+      "id": "tool.test.run",
+      "description": "Run automated tests and collect results"
+    }
+  ],
+  "agents": [
+    {
+      "id": "00",
+      "name": "Orchestrator",
+      "role": "Orchestrator specialist role",
+      "phase": "ORCHESTRATION",
+      "skillFiles": [".github/skills/00-orchestrator.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.session.state",
+        "tool.github.issue",
+        "tool.queue.command"
+      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
+      "contracts": [
+        ".github/docs/contracts/session-state-contract.md",
+        ".github/docs/contracts/tooling-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": [],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "01",
+      "name": "Business Analyst",
+      "role": "Business Analyst specialist role",
+      "phase": "PHASE_1",
+      "skillFiles": [".github/skills/01-business-analyst.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/01-business-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["25"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "02",
+      "name": "Domain Expert",
+      "role": "Domain Expert specialist role",
+      "phase": "PHASE_1",
+      "skillFiles": [".github/skills/02-domain-expert.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/01-business-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["01"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "03",
+      "name": "Sales Strategist",
+      "role": "Sales Strategist specialist role",
+      "phase": "PHASE_1",
+      "skillFiles": [".github/skills/03-sales-strategist.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/01-business-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["02"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "04",
+      "name": "Financial Analyst",
+      "role": "Financial Analyst specialist role",
+      "phase": "PHASE_1",
+      "skillFiles": [".github/skills/04-financial-analyst.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/01-business-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["03"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "05",
+      "name": "Software Architect",
+      "role": "Software Architect specialist role",
+      "phase": "PHASE_2",
+      "skillFiles": [".github/skills/05-software-architect.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/02-architecture-guardrails.md",
+        ".github/docs/guardrails/03-security-guardrails.md",
+        ".github/docs/guardrails/07-legal-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["19"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "06",
+      "name": "Senior Developer",
+      "role": "Senior Developer specialist role",
+      "phase": "PHASE_2",
+      "skillFiles": [".github/skills/06-senior-developer.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/02-architecture-guardrails.md",
+        ".github/docs/guardrails/03-security-guardrails.md",
+        ".github/docs/guardrails/07-legal-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["05"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "07",
+      "name": "DevOps Engineer",
+      "role": "DevOps Engineer specialist role",
+      "phase": "PHASE_2",
+      "skillFiles": [".github/skills/07-devops-engineer.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/02-architecture-guardrails.md",
+        ".github/docs/guardrails/03-security-guardrails.md",
+        ".github/docs/guardrails/07-legal-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["06"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "08",
+      "name": "Security Architect",
+      "role": "Security Architect specialist role",
+      "phase": "PHASE_2",
+      "skillFiles": [".github/skills/08-security-architect.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/02-architecture-guardrails.md",
+        ".github/docs/guardrails/03-security-guardrails.md",
+        ".github/docs/guardrails/07-legal-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["07"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "09",
+      "name": "Data Architect",
+      "role": "Data Architect specialist role",
+      "phase": "PHASE_2",
+      "skillFiles": [".github/skills/09-data-architect.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/02-architecture-guardrails.md",
+        ".github/docs/guardrails/03-security-guardrails.md",
+        ".github/docs/guardrails/07-legal-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["08"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "10",
+      "name": "UX Researcher",
+      "role": "UX Researcher specialist role",
+      "phase": "PHASE_3",
+      "skillFiles": [".github/skills/10-ux-researcher.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/04-ux-guardrails.md",
+        ".github/docs/guardrails/08-content-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["19"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "11",
+      "name": "UX Designer",
+      "role": "UX Designer specialist role",
+      "phase": "PHASE_3",
+      "skillFiles": [".github/skills/11-ux-designer.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/04-ux-guardrails.md",
+        ".github/docs/guardrails/08-content-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["10"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "12",
+      "name": "UI Designer",
+      "role": "UI Designer specialist role",
+      "phase": "PHASE_3",
+      "skillFiles": [".github/skills/12-ui-designer.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/04-ux-guardrails.md",
+        ".github/docs/guardrails/08-content-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["11"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "13",
+      "name": "Accessibility Specialist",
+      "role": "Accessibility Specialist specialist role",
+      "phase": "PHASE_3",
+      "skillFiles": [".github/skills/13-accessibility-specialist.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/04-ux-guardrails.md",
+        ".github/docs/guardrails/08-content-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["12"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "14",
+      "name": "Brand Strategist",
+      "role": "Brand Strategist specialist role",
+      "phase": "PHASE_4",
+      "skillFiles": [".github/skills/14-brand-strategist.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/05-marketing-guardrails.md",
+        ".github/docs/guardrails/08-content-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["19"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "15",
+      "name": "Growth Marketer",
+      "role": "Growth Marketer specialist role",
+      "phase": "PHASE_4",
+      "skillFiles": [".github/skills/15-growth-marketer.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/05-marketing-guardrails.md",
+        ".github/docs/guardrails/08-content-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["14"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "16",
+      "name": "CRO Specialist",
+      "role": "CRO Specialist specialist role",
+      "phase": "PHASE_4",
+      "skillFiles": [".github/skills/16-cro-specialist.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/05-marketing-guardrails.md",
+        ".github/docs/guardrails/08-content-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["15"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "17",
+      "name": "Synthesis Agent",
+      "role": "Synthesis Agent specialist role",
+      "phase": "SYNTHESIS",
+      "skillFiles": [".github/skills/17-synthesis-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.synthesis.compose"
+      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
+      "contracts": [
+        ".github/docs/contracts/synthesis-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["31"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "18",
+      "name": "Critic Agent",
+      "role": "Critic Agent specialist role",
+      "phase": "CRITIC_RISK",
+      "skillFiles": [".github/skills/18-critic-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract",
+        "tool.risk.assess"
+      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
+      "contracts": [
+        ".github/docs/contracts/critic-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["34"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "19",
+      "name": "Risk Agent",
+      "role": "Risk Agent specialist role",
+      "phase": "CRITIC_RISK",
+      "skillFiles": [".github/skills/19-risk-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract",
+        "tool.risk.assess"
+      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
+      "contracts": [
+        ".github/docs/contracts/risk-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["18"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "20",
+      "name": "Implementation Agent",
+      "role": "Implementation Agent specialist role",
+      "phase": "PHASE_5",
+      "skillFiles": [".github/skills/20-implementation-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.git.commit",
+        "tool.test.run",
+        "tool.github.issue"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/06-implementation-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/implementation-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["27"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "21",
+      "name": "Test Agent",
+      "role": "Test Agent specialist role",
+      "phase": "PHASE_5",
+      "skillFiles": [".github/skills/21-test-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.git.commit",
+        "tool.test.run",
+        "tool.github.issue"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/06-implementation-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/test-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["20"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "22",
+      "name": "PR/Review Agent",
+      "role": "PR/Review Agent specialist role",
+      "phase": "PHASE_5",
+      "skillFiles": [".github/skills/22-pr-review-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.git.commit",
+        "tool.test.run",
+        "tool.github.issue"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/06-implementation-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/pr-review-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["21"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "23",
+      "name": "Reevaluate Agent",
+      "role": "Reevaluate Agent specialist role",
+      "phase": "REEVALUATE",
+      "skillFiles": [".github/skills/23-reevaluate-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
+      "contracts": [
+        ".github/docs/contracts/reevaluate-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": [],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "24",
+      "name": "Feature Agent",
+      "role": "Feature Agent specialist role",
+      "phase": "FEATURE",
+      "skillFiles": [".github/skills/24-feature-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
+      "contracts": [
+        ".github/docs/contracts/feature-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": [],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "25",
+      "name": "Onboarding Agent",
+      "role": "Onboarding Agent specialist role",
+      "phase": "ONBOARDING",
+      "skillFiles": [".github/skills/25-onboarding-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
+      "contracts": [
+        ".github/docs/contracts/onboarding-output-contract.md",
+        ".github/docs/contracts/session-state-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": [],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "26",
+      "name": "Documentation Agent",
+      "role": "Documentation Agent specialist role",
+      "phase": "PHASE_5",
+      "skillFiles": [".github/skills/26-documentation-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.git.commit",
+        "tool.test.run",
+        "tool.github.issue"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/06-implementation-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/documentation-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["29"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "27",
+      "name": "GitHub Integration Agent",
+      "role": "GitHub Integration Agent specialist role",
+      "phase": "PHASE_5",
+      "skillFiles": [".github/skills/27-github-integration-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.git.commit",
+        "tool.test.run",
+        "tool.github.issue"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/06-implementation-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/github-integration-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["17"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "28",
+      "name": "Sprint Retrospective Agent",
+      "role": "Sprint Retrospective Agent specialist role",
+      "phase": "PHASE_5",
+      "skillFiles": [".github/skills/28-retrospective-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.git.commit",
+        "tool.test.run",
+        "tool.github.issue"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/06-implementation-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/retrospective-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["27"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "29",
+      "name": "KPI/Metrics Agent",
+      "role": "KPI/Metrics Agent specialist role",
+      "phase": "PHASE_5",
+      "skillFiles": [".github/skills/29-kpi-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.git.commit",
+        "tool.test.run",
+        "tool.github.issue"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/06-implementation-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/kpi-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["22"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "30",
+      "name": "Brand & Assets Agent (Canva)",
+      "role": "Brand & Assets Agent (Canva) specialist role",
+      "phase": "PHASE_4",
+      "skillFiles": [".github/skills/30-brand-assets-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/05-marketing-guardrails.md",
+        ".github/docs/guardrails/08-content-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/brand-assets-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["19"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "31",
+      "name": "Storybook Agent",
+      "role": "Storybook Agent specialist role",
+      "phase": "PHASE_4",
+      "skillFiles": [".github/skills/31-storybook-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/05-marketing-guardrails.md",
+        ".github/docs/guardrails/08-content-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/storybook-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["30"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "32",
+      "name": "Content Strategist / UX Writer",
+      "role": "Content Strategist / UX Writer specialist role",
+      "phase": "PHASE_3",
+      "skillFiles": [".github/skills/32-content-strategist.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/04-ux-guardrails.md",
+        ".github/docs/guardrails/08-content-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["13"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "33",
+      "name": "Legal / Privacy Counsel",
+      "role": "Legal / Privacy Counsel specialist role",
+      "phase": "PHASE_2",
+      "skillFiles": [".github/skills/33-legal-counsel.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/02-architecture-guardrails.md",
+        ".github/docs/guardrails/03-security-guardrails.md",
+        ".github/docs/guardrails/07-legal-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["09"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "34",
+      "name": "Product Manager",
+      "role": "Product Manager specialist role",
+      "phase": "PHASE_1",
+      "skillFiles": [".github/skills/34-product-manager.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/01-business-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["04"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "35",
+      "name": "Localization Specialist",
+      "role": "Localization Specialist specialist role",
+      "phase": "PHASE_3",
+      "skillFiles": [".github/skills/35-localization-specialist.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/04-ux-guardrails.md",
+        ".github/docs/guardrails/08-content-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/analysis-output-contract.md",
+        ".github/docs/contracts/recommendations-output-contract.md",
+        ".github/docs/contracts/sprintplan-output-contract.md",
+        ".github/docs/contracts/guardrails-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["32"],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "36",
+      "name": "Questionnaire Agent",
+      "role": "Questionnaire Agent specialist role",
+      "phase": "QUESTIONNAIRE",
+      "skillFiles": [".github/skills/36-questionnaire-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.questionnaire.manage"
+      ],
+      "guardrails": [
+        ".github/docs/guardrails/00-global-guardrails.md",
+        ".github/docs/guardrails/09-questionnaire-guardrails.md"
+      ],
+      "contracts": [
+        ".github/docs/contracts/questionnaire-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": [],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "37",
+      "name": "Scope Change Agent",
+      "role": "Scope Change Agent specialist role",
+      "phase": "SCOPE_CHANGE",
+      "skillFiles": [".github/skills/37-scope-change-agent.md"],
+      "tools": [
+        "tool.files.read",
+        "tool.files.write",
+        "tool.context.search",
+        "tool.validation.contract"
+      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
+      "contracts": [
+        ".github/docs/contracts/scope-change-output-contract.md",
+        ".github/docs/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": [],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    }
+  ]
+}

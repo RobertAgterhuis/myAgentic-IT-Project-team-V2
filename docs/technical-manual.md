@@ -1078,6 +1078,9 @@ __tests__/
     email-templates.test.js              — Email template validation (10 tests)
     weblate-trial.test.js                — Locale strings + Docker config (16 tests)
     social-cards.test.js                 — Social card SVG validation (12 tests)
+    translation-validation.test.js       — i18n key parity, placeholders, ICU, brand (37 tests)
+    landing-qa.test.js                   — Landing page 8 AC + Matomo integration (43 tests)
+    pilot-readiness.test.js              — Pilot materials completeness validation (23 tests)
   integration/
     server.integration.test.js           — API endpoint integration (~22 tests)
     health.integration.test.js           — Health endpoint contracts (9 tests)
@@ -1086,7 +1089,7 @@ __tests__/
     landing.smoke.test.js               — HTTP-based smoke tests (29 tests)
 ```
 
-**Total: 220 tests across 12 suites.**
+**Total: 323 tests across 15 suites.**
 
 #### Running Webapp Tests
 

@@ -1,7 +1,7 @@
 # SP-2-501 — Weblate Docker Trial Notes
 
 > **Sprint**: SP-2 | **Item**: SP-2-501 (#117) | **Date**: 2026-03-27  
-> **Status**: TRIAL_EXECUTED — Docker stack validated, 25 tests passing, import workflow documented
+> **Status**: TRANSLATION_COMPLETE — FR + DE translations exported, 62 tests passing (25 Docker + 37 translation validation)
 
 ---
 
@@ -22,11 +22,11 @@
 
 | File                   | Namespace             | Count | Category                                |
 |------------------------|-----------------------|-------|-----------------------------------------|
-| `ui-labels.json`       | UI Labels             | 50    | Navigation, buttons, form labels        |
+| `ui-labels.json`       | UI Labels             | 49    | Navigation, buttons, form labels        |
 | `validation-messages.json` | Validation/Errors | 30    | Form validation, error states, success  |
-| `doc-snippets.json`    | Documentation         | 40    | Onboarding, dashboard, phases, sprints  |
+| `doc-snippets.json`    | Documentation         | 48    | Onboarding, dashboard, phases, sprints  |
 
-**Total**: 120 keys  
+**Total**: 127 keys  
 **Note**: doc-snippets.json includes 10 ICU MessageFormat plurals + 7 format strings = 17 advanced patterns  
 **Target languages**: FR (fr-FR), DE (de-DE)
 
@@ -51,11 +51,11 @@
 6. ✅ Project creation + source string import (Day 4 — 127 keys imported)
 
 ### 2.2 Translation Phase (Day 5–7)
-1. Configure machine translation backend (LibreTranslate or DeepL API)
-2. Run auto-translation for FR + DE
-3. Manual review pass (10% sample for quality assessment)
-4. QA checks execution (placeholders, length, terminology)
-5. Export translated files to `locales/fr-FR/` and `locales/de-DE/`
+1. ✅ Configure machine translation backend (LibreTranslate or DeepL API)
+2. ✅ Run auto-translation for FR + DE (Day 5 — 127 keys × 2 locales = 254 translations)
+3. ✅ Manual review pass (10% sample for quality assessment) — brand terms preserved, ICU patterns intact
+4. ✅ QA checks execution (placeholders, length, terminology) — 37 validation tests passing
+5. ✅ Export translated files to `locales/fr-FR/` and `locales/de-DE/` (Day 5)
 
 ### 2.3 Integration Phase (Day 7–8)
 1. Test Git push workflow (Weblate → repo)

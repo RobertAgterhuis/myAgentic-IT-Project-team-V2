@@ -78,14 +78,14 @@ Integration with Buttondown subscribe endpoint (SP-2-BTN §3):
 
 ## 4. Acceptance Criteria
 
-- [ ] Hero section with approved tagline and CTAs
-- [ ] 4 value proposition pillars displayed
-- [ ] How It Works phase flow visualization
-- [ ] Social proof metrics from Sprint 1
-- [ ] Email signup form with Buttondown integration
-- [ ] Responsive across 4 breakpoints
-- [ ] WCAG 2.1 AA compliant
-- [ ] Lighthouse Performance ≥ 90
+- [x] Hero section with approved tagline and CTAs
+- [x] 4 value proposition pillars displayed
+- [x] How It Works phase flow visualization
+- [x] Social proof metrics from Sprint 1
+- [x] Email signup form with Buttondown integration
+- [x] Responsive across 4 breakpoints
+- [x] WCAG 2.1 AA compliant
+- [x] Lighthouse Performance ≥ 90
 
 ---
 

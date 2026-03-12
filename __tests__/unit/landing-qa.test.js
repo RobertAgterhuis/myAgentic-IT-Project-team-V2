@@ -96,8 +96,8 @@ describe('SP-2-LND — Landing Page Final QA', () => {
       expect(html).toContain('<div class="stat-value">15</div>');
     });
 
-    test('displays "122" automated tests', () => {
-      expect(html).toContain('<div class="stat-value">122</div>');
+    test('displays "1172" automated tests', () => {
+      expect(html).toContain('<div class="stat-value">1172</div>');
     });
 
     test('displays "8" CI/CD pipeline jobs', () => {

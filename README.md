@@ -4,14 +4,14 @@
 [![codecov](https://codecov.io/gh/RobertAgterhuis/myAgentic-IT-Project-team-V2/branch/main/graph/badge.svg)](https://codecov.io/gh/RobertAgterhuis/myAgentic-IT-Project-team-V2)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js ≥ 18](https://img.shields.io/badge/Node.js-%E2%89%A518-green.svg)](https://nodejs.org/)
-[![Tests: 576 passing](https://img.shields.io/badge/Tests-576%20passing-brightgreen.svg)](#testing)
-[![Coverage: 95%+](https://img.shields.io/badge/Coverage-95%25%2B-brightgreen.svg)](#testing)
+[![Tests: 1172 passing](https://img.shields.io/badge/Tests-1172%20passing-brightgreen.svg)](#testing)
+[![Coverage: 70%+ enforced](https://img.shields.io/badge/Coverage-70%25%2B%20enforced-brightgreen.svg)](#testing)
 [![ESLint: 0 errors](https://img.shields.io/badge/ESLint-0%20errors-brightgreen.svg)](#code-quality)
 
 A **multi-agent system** of 38 specialized AI agents that creates complete,
 production-ready software solutions — or audits existing ones — through a
-structured four-phase analysis followed by autonomous sprint-by-sprint
-implementation.
+structured four-phase analysis followed by supervised sprint-by-sprint
+implementation (human-in-the-loop, CONTINUE-to-proceed).
 
 > **Quick result:** A full Phase 1–4 cycle that takes 7–10 weeks manually
 > completes in **5–10 working days** with this agentic team, requiring only
@@ -26,8 +26,8 @@ implementation.
 - **Dual-mode operation** — CREATE new solutions or AUDIT existing software
 - **4-phase analysis pipeline** — Requirements → Architecture → UX/UI → Brand &
   Growth
-- **Autonomous sprint execution** — Phase 5 implements story-by-story with
-  testing, review, and KPI tracking
+- **Supervised sprint execution** — Phase 5 implements story-by-story with
+  human approval gates, testing, review, and KPI tracking
 - **Command Center web UI** — Visual pipeline view, questionnaire management,
   and decision tracking
 - **Built-in quality gates** — Critic + Risk agents validate every phase and
@@ -50,8 +50,8 @@ implementation.
 | Server     | Native `http` module, localhost only (127.0.0.1:3000)                                             |
 | MCP Server | [Model Context Protocol](https://modelcontextprotocol.io/) via stdio transport                    |
 | Data       | File-based JSON/Markdown storage with atomic writes                                               |
-| Testing    | [Vitest](https://vitest.dev/) + [@vitest/coverage-v8](https://vitest.dev/guide/coverage)          |
-| Linting    | [ESLint 9](https://eslint.org/) (flat config, 7 rules)                                            |
+| Testing    | [Jest 29](https://jestjs.io/) (root, 363 tests) + [Vitest 4](https://vitest.dev/) (.github/, 809 tests) |
+| Linting    | [ESLint 8](https://eslint.org/) (root, legacy config) + [ESLint 10](https://eslint.org/) (.github/, flat config) |
 | AI Agents  | [GitHub Copilot](https://github.com/features/copilot) agents in VS Code, Visual Studio, JetBrains |
 | License    | MIT                                                                                               |
 
@@ -276,9 +276,13 @@ see:
 
 ## Testing
 
-All dev tooling lives inside `.github/`. Run commands from that directory:
+The project has **two separate test suites** (root and `.github/`):
 
 ```bash
+# Root test suite (Jest 29 — 363 tests)
+npm test
+
+# .github/ test suite (Vitest 4 — 809 tests)
 cd .github
 npm install   # first time only
 npm test
@@ -290,13 +294,14 @@ npm run test:coverage
 npm run test:watch
 ```
 
-The test suite includes **576 tests** across 21 files with **95%+ statement
-coverage**:
+The test suite includes **1172 tests** across 45 files (17 Jest + 28 Vitest) with
+statement coverage enforced at 70%:
 
-- **Unit tests** — models, sanitization, cache, schemas, audit trail, file
-  locking, backup strategy, MCP server
-- **Integration tests** — API endpoints, SSE, store caching, decisions
-  round-trip, regression suite
+- **Root (`__tests__/`)** — 363 Jest tests: API endpoints, SSE, store caching,
+  decisions round-trip, path traversal, concurrent requests
+- **`.github/tests/`** — 809 Vitest tests: unit (models, sanitization, cache,
+  schemas, audit trail, file locking, MCP server) + integration (API, store,
+  regression suite, WCAG contrast)
 - Coverage thresholds enforced at 70% (statements, branches, functions, lines)
 
 ## Code Quality
@@ -306,9 +311,14 @@ cd .github
 npm run lint
 ```
 
-ESLint 9 flat config enforces 7 rules: `complexity` (max 8), `no-unused-vars`,
-`no-var`, `prefer-const`, `eqeqeq`, `no-eval`, `no-implied-eval`. Current
-status: **0 errors, 0 warnings**.
+Two ESLint configurations:
+
+- **Root** — ESLint 8 (legacy `.eslintrc` format)
+- **`.github/`** — ESLint 10 (flat config, 7 rules: `complexity` max 8,
+  `no-unused-vars`, `no-var`, `prefer-const`, `eqeqeq`, `no-eval`,
+  `no-implied-eval`)
+
+Current status: **0 errors, 0 warnings** in both configs.
 
 ---
 

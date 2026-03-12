@@ -19,6 +19,35 @@
     "border": "#D9E2EC",
     "focusRing": "#2F80ED"
   },
+  "color": {
+    "light": {
+      "text":           { "$value": "#102A43" },
+      "text-sec":       { "$value": "#334E68" },
+      "text-muted":     { "$value": "#546A7B" },
+      "bg":             { "$value": "#F7FAFC" },
+      "surface":        { "$value": "#FFFFFF" },
+      "primary":        { "$value": "#0A3A66" },
+      "border-control": { "$value": "#627D98" },
+      "input-bg":       { "$value": "#F0F4F8" },
+      "success":        { "$value": "#027A48" },
+      "warning":        { "$value": "#B54708" },
+      "danger":         { "$value": "#B42318" }
+    },
+    "dark": {
+      "text":           { "$value": "#F0F4F8" },
+      "text-sec":       { "$value": "#BCCCDC" },
+      "text-muted":     { "$value": "#9FB3C8" },
+      "bg":             { "$value": "#102A43" },
+      "surface":        { "$value": "#1A3A54" },
+      "primary":        { "$value": "#74B0E8" },
+      "border-control": { "$value": "#9FB3C8" },
+      "border-hover":   { "$value": "#BCCCDC" },
+      "input-bg":       { "$value": "#243B53" },
+      "success":        { "$value": "#57D9A3" },
+      "warning":        { "$value": "#F7B955" },
+      "danger":         { "$value": "#F97066" }
+    }
+  },
   "typography": {
     "fontFamilies": {
       "heading": "Sora, 'Segoe UI', Arial, sans-serif",

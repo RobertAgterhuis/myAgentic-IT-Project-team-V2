@@ -26,6 +26,7 @@ const {
 } = require('./state-machine');
 const { loadSessionState, saveSessionState, createAutoPersist } = require('./state-persistence');
 const { runGate } = require('./gate-validator');
+const { runSprintGate } = require('./sprint-gate');
 
 /**
  * @typedef {object} EngineOptions
@@ -210,6 +211,41 @@ function createEngine(options) {
     return result;
   }
 
+  /**
+   * Run the Sprint Gate readiness check (FEAT-05-D).
+   * Validates Definition of Ready, loads decisions, injects lessons-learned,
+   * checks velocity capacity, and scans for open blockers.
+   *
+   * @param {object} opts
+   * @param {string} opts.sprintId - e.g. 'SP-5'
+   * @param {Array<object>} opts.stories - Sprint backlog items
+   * @param {number} [opts.plannedItems] - Override planned item count
+   * @param {object} [opts.paths] - Override file paths
+   * @returns {{verdict: string, blockers: Array, steps: object, summary: object}}
+   */
+  function sprintGate(opts = {}) {
+    const result = runSprintGate(store, opts);
+
+    if (result.verdict === 'READY') {
+      sseForward('orchestrator:sprint_gate_ready', {
+        sprintId: result.summary.sprintId,
+        storyCount: result.summary.storyCount,
+        lessonsInjected: result.summary.lessonsInjected,
+        velocityRatio: result.summary.velocityRatio,
+        timestamp: result.summary.timestamp,
+      });
+    } else {
+      sseForward('orchestrator:sprint_gate_blocked', {
+        sprintId: result.summary.sprintId,
+        blockerCount: result.summary.totalBlockers,
+        openBlockerCount: result.summary.openBlockerCount,
+        timestamp: result.summary.timestamp,
+      });
+    }
+
+    return result;
+  }
+
   return {
     machine,
     flows,
@@ -219,6 +255,7 @@ function createEngine(options) {
     status,
     reset,
     validateGate,
+    sprintGate,
   };
 }
 

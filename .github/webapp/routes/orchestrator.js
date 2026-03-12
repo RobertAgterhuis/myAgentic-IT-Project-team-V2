@@ -149,6 +149,33 @@ module.exports = function createOrchestratorRoutes(ctx) {
     }
   }
 
+  // ── POST /api/orchestrator/sprint-gate ────────────────────
+
+  async function handleSprintGate(req, res) {
+    try {
+      const body = await parseBody(req);
+      if (!body || !body.sprintId) {
+        return json(res, 400, errorResponse('INVALID_INPUT', 'sprintId is required'));
+      }
+      const engine = getEngine();
+      const result = engine.sprintGate({
+        sprintId: String(body.sprintId).slice(0, 50),
+        stories: Array.isArray(body.stories) ? body.stories : [],
+        plannedItems: body.plannedItems != null ? Number(body.plannedItems) : undefined,
+        paths: body.paths || {},
+      });
+      structuredLog(result.verdict === 'READY' ? 'info' : 'warn', 'orchestrator_sprint_gate', {
+        verdict: result.verdict,
+        sprintId: result.summary.sprintId,
+        blockers: result.summary.totalBlockers,
+      });
+      return json(res, 200, { ok: true, ...result });
+    } catch (err) {
+      structuredLog('error', 'orchestrator_sprint_gate_error', { error: err.message });
+      return json(res, 500, errorResponse('SPRINT_GATE_ERROR', err.message));
+    }
+  }
+
   return {
     'GET /api/orchestrator/status': handleStatus,
     'POST /api/orchestrator/advance': handleAdvance,
@@ -156,5 +183,6 @@ module.exports = function createOrchestratorRoutes(ctx) {
     'POST /api/orchestrator/recover': handleRecover,
     'POST /api/orchestrator/reset': handleReset,
     'POST /api/orchestrator/validate-gate': handleValidateGate,
+    'POST /api/orchestrator/sprint-gate': handleSprintGate,
   };
 };

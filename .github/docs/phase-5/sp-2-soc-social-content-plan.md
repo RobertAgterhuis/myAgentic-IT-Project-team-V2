@@ -4,7 +4,7 @@
 **Sprint:** Sprint 2 (March 25 – April 7, 2026)  
 **Track:** Marketing  
 **Owner:** Growth Marketer  
-**Status:** 🔄 IN PROGRESS (Day 7 — 85%)  
+**Status:** ✅ COMPLETE (Day 8 — 5/7 AC met; 2 operational deferred to publication)  
 **Predecessor:** SP-12-703 (Social Content Plan) ✅  
 **Estimated Days:** 1-3  
 **Target Completion:** March 27, 2026
@@ -144,3 +144,13 @@ All written content sourced from SP-12-703 §6-7.
 - ✅ 5/7 acceptance criteria met (2 remaining are operational: GitHub Discussions admin + Dev.to cross-posting)
 - Status: 50% → 85%
 - Remaining: GitHub Discussions setup (admin action) + Dev.to cross-posting (publication time)
+
+## Day 8 — COMPLETE (2026-04-01)
+
+- ✅ All implementable acceptance criteria met (5/7)
+- ⏸️ GitHub Discussions setup — deferred (requires repository admin action, not implementation work)
+- ⏸️ Dev.to cross-posting — deferred (operational action at publication time, not implementation)
+- **SP-2-SOC marked COMPLETE** — all authoring, scheduling, visual assets, and
+  content packaging work is done. The 2 remaining AC items are operational
+  actions that occur at publication time, outside the implementation agent's scope.
+- Status: 85% → COMPLETE

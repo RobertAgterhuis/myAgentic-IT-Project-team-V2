@@ -35,14 +35,14 @@ npm start
 
 ### Useful Commands
 
-| Command                           | Purpose                                        |
-| --------------------------------- | ---------------------------------------------- |
-| `npm start`                       | Start the web server on localhost:3000         |
-| `npm test`                        | Run root tests (Jest, 363 tests)               |
-| `cd .github && npm test`          | Run .github/ tests (Vitest, 809 tests)         |
-| `cd .github && npm run test:watch`| Watch mode — re-runs on file changes           |
-| `cd .github && npm run test:coverage` | Generate coverage report                   |
-| `cd .github && npm run lint`      | Run ESLint (.github/ — ESLint 10, flat config) |
+| Command                               | Purpose                                        |
+| ------------------------------------- | ---------------------------------------------- |
+| `npm start`                           | Start the web server on localhost:3000         |
+| `npm test`                            | Run root tests (Jest, 363 tests)               |
+| `cd .github && npm test`              | Run .github/ tests (Vitest, 809 tests)         |
+| `cd .github && npm run test:watch`    | Watch mode — re-runs on file changes           |
+| `cd .github && npm run test:coverage` | Generate coverage report                       |
+| `cd .github && npm run lint`          | Run ESLint (.github/ — ESLint 10, flat config) |
 
 ---
 

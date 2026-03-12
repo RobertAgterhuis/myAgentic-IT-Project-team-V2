@@ -39,11 +39,9 @@ describe('SP-2-501: Locale pilot strings', () => {
   });
 
   test('all string keys use dot-notation namespace', () => {
-    for (const [file, data] of Object.entries(localeData)) {
+    for (const [, data] of Object.entries(localeData)) {
       for (const key of Object.keys(data)) {
-        expect(key).toMatch(
-          /^[a-z][a-z0-9]*(\.[a-z][a-z0-9_]*)+$/
-        );
+        expect(key).toMatch(/^[a-z][a-z0-9]*(\.[a-z][a-z0-9_]*)+$/);
       }
     }
   });
@@ -55,8 +53,8 @@ describe('SP-2-501: Locale pilot strings', () => {
   });
 
   test('all values are non-empty strings', () => {
-    for (const [file, data] of Object.entries(localeData)) {
-      for (const [key, value] of Object.entries(data)) {
+    for (const [, data] of Object.entries(localeData)) {
+      for (const [, value] of Object.entries(data)) {
         expect(typeof value).toBe('string');
         expect(value.trim().length).toBeGreaterThan(0);
       }
@@ -79,9 +77,7 @@ describe('SP-2-501: Locale pilot strings', () => {
 
   test('doc-snippets.json contains ICU plural forms', () => {
     const data = localeData['doc-snippets.json'];
-    const pluralValues = Object.values(data).filter((v) =>
-      v.includes('{count, plural,')
-    );
+    const pluralValues = Object.values(data).filter((v) => v.includes('{count, plural,'));
     expect(pluralValues.length).toBeGreaterThanOrEqual(3);
   });
 

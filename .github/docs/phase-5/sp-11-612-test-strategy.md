@@ -31,21 +31,21 @@ Node.js application with a Docker-based deployment model.
 
 ### 1.2 Tier Definitions
 
-| Tier | Tool | Scope | Run Location | Speed Target |
-|------|------|-------|-------------|-------------|
-| **Unit** | Jest | Pure functions, utilities, data transforms, validators | CI (every push) | <30s |
-| **Integration** | Jest + Supertest | HTTP endpoints, server routes, middleware, Docker service | CI (every push, after build) | <60s |
-| **E2E** | Playwright | Critical user journeys through browser (landing, onboarding, dashboard) | CI (main only, after staging deploy) | <120s |
+| Tier            | Tool             | Scope                                                                   | Run Location                         | Speed Target |
+| --------------- | ---------------- | ----------------------------------------------------------------------- | ------------------------------------ | ------------ |
+| **Unit**        | Jest             | Pure functions, utilities, data transforms, validators                  | CI (every push)                      | <30s         |
+| **Integration** | Jest + Supertest | HTTP endpoints, server routes, middleware, Docker service               | CI (every push, after build)         | <60s         |
+| **E2E**         | Playwright       | Critical user journeys through browser (landing, onboarding, dashboard) | CI (main only, after staging deploy) | <120s        |
 
 ### 1.3 Coverage Targets
 
-| Metric | Target | Gate | Notes |
-|--------|--------|------|-------|
-| Line coverage | ≥80% | CI FAIL below 80% | Existing gate in ci-pipeline.yml Job 2 |
-| Branch coverage | ≥75% | WARN below 75% | Advisory; becomes gate Sprint 2 |
-| Function coverage | ≥80% | CI FAIL below 80% | Tracks untested exported functions |
-| Integration pass rate | 100% | CI FAIL on any failure | All integration tests must pass |
-| E2E pass rate | 100% | CI FAIL on any failure | All smoke/E2E tests must pass |
+| Metric                | Target | Gate                   | Notes                                  |
+| --------------------- | ------ | ---------------------- | -------------------------------------- |
+| Line coverage         | ≥80%   | CI FAIL below 80%      | Existing gate in ci-pipeline.yml Job 2 |
+| Branch coverage       | ≥75%   | WARN below 75%         | Advisory; becomes gate Sprint 2        |
+| Function coverage     | ≥80%   | CI FAIL below 80%      | Tracks untested exported functions     |
+| Integration pass rate | 100%   | CI FAIL on any failure | All integration tests must pass        |
+| E2E pass rate         | 100%   | CI FAIL on any failure | All smoke/E2E tests must pass          |
 
 ---
 
@@ -73,6 +73,7 @@ __tests__/
 - Smoke/E2E tests: `*.smoke.test.js`
 
 These patterns match the npm scripts already defined in `package.json`:
+
 - `npm test` → all `__tests__/**/*.{js,ts}` files
 - `npm run test:integration` → `**/*.integration.test.js`
 - `npm run test:smoke` → `**/*.smoke.test.js`
@@ -105,26 +106,26 @@ Standard test patterns for the Agentic SDLC codebase:
 
 ### 4.1 Server Endpoint Tests
 
-The webapp server (`/.github/webapp/server.js`) exposes HTTP endpoints. Integration
-tests validate:
+The webapp server (`/.github/webapp/server.js`) exposes HTTP endpoints.
+Integration tests validate:
 
-| Endpoint | Test | Expected |
-|----------|------|----------|
-| `GET /` | Response status | 200 OK |
-| `GET /` | Response body | Contains expected HTML/content |
-| `GET /health` | Health check | 200 OK with status: "healthy" |
-| `GET /nonexistent` | 404 handling | 404 Not Found |
+| Endpoint           | Test            | Expected                       |
+| ------------------ | --------------- | ------------------------------ |
+| `GET /`            | Response status | 200 OK                         |
+| `GET /`            | Response body   | Contains expected HTML/content |
+| `GET /health`      | Health check    | 200 OK with status: "healthy"  |
+| `GET /nonexistent` | 404 handling    | 404 Not Found                  |
 
 ### 4.2 Docker Service Tests
 
 When Docker Compose is available (CI staging environment):
 
-| Test | Method | Expected |
-|------|--------|----------|
-| Container starts | `docker compose up` exit code | 0 |
-| Port binding | HTTP request to localhost:3000 | Response received |
-| Health endpoint | HTTP GET /health | 200 OK |
-| Graceful shutdown | `docker compose down` exit code | 0 |
+| Test              | Method                          | Expected          |
+| ----------------- | ------------------------------- | ----------------- |
+| Container starts  | `docker compose up` exit code   | 0                 |
+| Port binding      | HTTP request to localhost:3000  | Response received |
+| Health endpoint   | HTTP GET /health                | 200 OK            |
+| Graceful shutdown | `docker compose down` exit code | 0                 |
 
 ---
 
@@ -133,47 +134,51 @@ When Docker Compose is available (CI staging environment):
 Per Tech Lead recommendation (SP-10-603 sign-off), the test strategy explicitly
 addresses these risks from the risk matrix:
 
-| Risk | Test Coverage | Priority |
-|------|--------------|----------|
-| RISK-801 (Access Control) | Authorization header validation tests | P1 |
-| RISK-804 (Rate Limiting) | Concurrent request behavior tests | P2 |
-| RISK-602 (Low Test Coverage) | Coverage gate at 80% with branch tracking | P1 |
-| RISK-803 (Dependency Vulns) | Trivy in CI (already configured) | P1 |
-| RISK-806 (Secret Exposure) | Gitleaks in CI (already configured) | P1 |
+| Risk                         | Test Coverage                             | Priority |
+| ---------------------------- | ----------------------------------------- | -------- |
+| RISK-801 (Access Control)    | Authorization header validation tests     | P1       |
+| RISK-804 (Rate Limiting)     | Concurrent request behavior tests         | P2       |
+| RISK-602 (Low Test Coverage) | Coverage gate at 80% with branch tracking | P1       |
+| RISK-803 (Dependency Vulns)  | Trivy in CI (already configured)          | P1       |
+| RISK-806 (Secret Exposure)   | Gitleaks in CI (already configured)       | P1       |
 
 ---
 
 ## 6. CI Pipeline Integration Plan
 
 ### Current State (SP-11-611):
+
 - Job 2 (Unit Tests) ✅ active — runs `npm run test:coverage`
 - Job 6 (Integration Tests) ⏳ disabled — `if: false`
 - Job 7 (Smoke Tests) ⏳ disabled — `if: false`
 
 ### Target State (SP-11-612 completion):
+
 - Job 2 (Unit Tests) ✅ remains active — covers unit tier
 - Job 6 (Integration Tests) ✅ **ENABLED** — runs `npm run test:integration`
 - Job 7 (Smoke Tests) ⏳ remains disabled — awaits SP-11-613
 
 ### Enabling Integration Tests in CI:
+
 1. Remove `if: false` from Job 6
-2. Update Job 6 dependency to `needs: build` (doesn't require staging for HTTP-level tests)
+2. Update Job 6 dependency to `needs: build` (doesn't require staging for
+   HTTP-level tests)
 3. Add integration test results as CI artifact
 
 ---
 
 ## 7. Deliverable Checklist (SP-11-612 Acceptance Criteria)
 
-| # | Criterion | Status | Evidence |
-|---|-----------|--------|----------|
-| 1 | Test pyramid documented (unit/integration/E2E) | ✅ COMPLETE | This document, Section 1 |
-| 2 | Jest configuration supports multi-tier testing | ✅ COMPLETE | package.json scripts, Section 3 |
-| 3 | Integration test suite created (≥10 test cases) | ✅ COMPLETE | 34 integration tests (25 server + 9 health) |
-| 4 | Coverage reporting with ≥80% gate | ✅ COMPLETE | CI pipeline Job 2 (existing) |
-| 5 | CI integration-test job enabled | ✅ COMPLETE | ci-pipeline.yml Job 6 enabled (Day 4) |
-| 6 | Risk-aligned test cases (RISK-801, 804) | ✅ COMPLETE | RISK-801 path traversal + error leak; RISK-804 concurrency |
-| 7 | E2E test scaffold for SP-11-613 | ✅ COMPLETE | `__tests__/smoke/landing.smoke.test.js` with 5 journey defs |
-| 8 | Test strategy document approved | ✅ COMPLETE | Approved at March 17 Week 2 standup — 77 tests all green, CI validated |
+| #   | Criterion                                       | Status      | Evidence                                                               |
+| --- | ----------------------------------------------- | ----------- | ---------------------------------------------------------------------- |
+| 1   | Test pyramid documented (unit/integration/E2E)  | ✅ COMPLETE | This document, Section 1                                               |
+| 2   | Jest configuration supports multi-tier testing  | ✅ COMPLETE | package.json scripts, Section 3                                        |
+| 3   | Integration test suite created (≥10 test cases) | ✅ COMPLETE | 34 integration tests (25 server + 9 health)                            |
+| 4   | Coverage reporting with ≥80% gate               | ✅ COMPLETE | CI pipeline Job 2 (existing)                                           |
+| 5   | CI integration-test job enabled                 | ✅ COMPLETE | ci-pipeline.yml Job 6 enabled (Day 4)                                  |
+| 6   | Risk-aligned test cases (RISK-801, 804)         | ✅ COMPLETE | RISK-801 path traversal + error leak; RISK-804 concurrency             |
+| 7   | E2E test scaffold for SP-11-613                 | ✅ COMPLETE | `__tests__/smoke/landing.smoke.test.js` with 5 journey defs            |
+| 8   | Test strategy document approved                 | ✅ COMPLETE | Approved at March 17 Week 2 standup — 77 tests all green, CI validated |
 
 **Progress:** 8/8 complete = **100%** ✅ DONE
 
@@ -182,13 +187,17 @@ addresses these risks from the risk matrix:
 ## 8. Remaining Work (March 15-17)
 
 - [x] Complete integration test suite (target: 10+ test cases) — 34 tests
-- [x] Create health check integration test — 9 tests in health.integration.test.js
+- [x] Create health check integration test — 9 tests in
+      health.integration.test.js
 - [x] Create server route integration tests — 25 tests covering 12+ endpoints
-- [x] Add access control validation tests (RISK-801) — path traversal, error leak, oversized body
+- [x] Add access control validation tests (RISK-801) — path traversal, error
+      leak, oversized body
 - [x] Enable CI Job 6 (integration-test) by removing `if: false` — enabled Day 4
 - [x] E2E test scaffold for SP-11-613 handoff (5 critical journey definitions)
-- [x] Run full CI pipeline locally — 77 tests, 5 suites, all green (validated March 17)
-- [x] Verify ≥80% coverage gate holds with new test files — gate passes (confirmed March 17)
+- [x] Run full CI pipeline locally — 77 tests, 5 suites, all green (validated
+      March 17)
+- [x] Verify ≥80% coverage gate holds with new test files — gate passes
+      (confirmed March 17)
 - [x] Document test strategy approval at March 17 checkpoint — APPROVED
 
 ---

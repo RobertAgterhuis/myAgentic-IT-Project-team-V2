@@ -13,7 +13,8 @@ management tool. This privacy policy describes how data is handled when you use
 the platform.
 
 **Key principle:** In the default configuration (v1 GA), all data stays on your
-local machine. No data is transmitted to external servers by the platform itself.
+local machine. No data is transmitted to external servers by the platform
+itself.
 
 ---
 
@@ -21,8 +22,8 @@ local machine. No data is transmitted to external servers by the platform itself
 
 ### 2.1 Data You Provide
 
-- **Questionnaire answers** — Business context and project requirements you enter
-  through the web interface
+- **Questionnaire answers** — Business context and project requirements you
+  enter through the web interface
 - **Decision records** — Choices and rationale you document during the project
   lifecycle
 - **Configuration** — Environment variables and settings in `.env` files
@@ -50,13 +51,13 @@ MariaDB database and is not transmitted externally.
 
 ## 3. Where Data Is Stored
 
-| Data Type | Storage Location |
-|-----------|-----------------|
-| Project files | Your local file system (project directory) |
-| Session state | `.github/docs/session/` (JSON files) |
-| Business data | `BusinessDocs/` (Markdown files) |
-| Analytics | Docker volume on your machine (if Matomo enabled) |
-| Git history | `.git/` directory |
+| Data Type     | Storage Location                                  |
+| ------------- | ------------------------------------------------- |
+| Project files | Your local file system (project directory)        |
+| Session state | `.github/docs/session/` (JSON files)              |
+| Business data | `BusinessDocs/` (Markdown files)                  |
+| Analytics     | Docker volume on your machine (if Matomo enabled) |
+| Git history   | `.git/` directory                                 |
 
 **No cloud storage, no external databases, no remote APIs** are used by the
 platform in its default configuration.
@@ -121,8 +122,8 @@ measures include:
 
 ## 7. Children's Privacy
 
-The platform is a software development tool not directed at children under 13. We
-do not knowingly process data from minors.
+The platform is a software development tool not directed at children under 13.
+We do not knowingly process data from minors.
 
 ---
 
@@ -140,6 +141,6 @@ or contact the repository owner.
 
 ---
 
-*This privacy policy applies to the Agentic SDLC Platform v1 GA
+_This privacy policy applies to the Agentic SDLC Platform v1 GA
 (localhost/single-operator configuration). Future deployment profiles (team or
-internet-exposed) will require an updated policy.*
+internet-exposed) will require an updated policy._

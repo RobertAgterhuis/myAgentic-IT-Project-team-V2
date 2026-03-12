@@ -35,9 +35,9 @@ describe('SP-11-612: Middleware Utility Tests', () => {
     });
 
     it('should throw with status 403 on traversal', () => {
+      expect(() => safePath(base, '../../secret')).toThrow();
       try {
         safePath(base, '../../secret');
-        fail('Expected error');
       } catch (err) {
         expect(err.status).toBe(403);
         expect(err.errorCode).toBe('PATH_TRAVERSAL');
@@ -160,9 +160,9 @@ describe('SP-11-612: Middleware Utility Tests', () => {
     });
 
     it('should throw with status 400', () => {
+      expect(() => assertString(42, 'field')).toThrow();
       try {
         assertString(42, 'field');
-        fail('Expected error');
       } catch (err) {
         expect(err.status).toBe(400);
         expect(err.errorCode).toBe('INVALID_INPUT');

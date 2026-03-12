@@ -440,6 +440,7 @@ Implement **three-tier discoverability** strategy:
    - Add "Quick Start" section at top of README with highlighted Command Center
      URL
    - Example:
+
      ```markdown
      ## Quick Start
 
@@ -447,6 +448,7 @@ Implement **three-tier discoverability** strategy:
      2. `node server.js`
      3. Open **http://127.0.0.1:3000** in your browser
      ```
+
    - Owner: Documentation Agent (Phase 5)
 
 3. **MCP Tool (Priority 2):**
@@ -625,6 +627,7 @@ design:
 
 1. **Documentation (Priority 1):**
    - Add "Known Limitations" section to README:
+
      ```markdown
      ## Known Limitations
 
@@ -634,6 +637,7 @@ design:
        experience.
      - **Future:** Mobile support deferred to V2 (out of scope for Q4 2026 MVP).
      ```
+
    - Owner: Documentation Agent (Phase 5)
 
 2. **Responsive Design Anyway (Priority 2):**

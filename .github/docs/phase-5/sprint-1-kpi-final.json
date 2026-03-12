@@ -55,8 +55,18 @@
   },
   "team_morale": "HIGH",
   "checkpoints": {
-    "week_1": { "date": "2026-03-14", "target_pct": "25-35", "actual_pct": 33, "status": "ON_TARGET" },
-    "week_2": { "date": "2026-03-21", "target_pct": "70-80", "actual_pct": 87, "status": "EXCEEDED" }
+    "week_1": {
+      "date": "2026-03-14",
+      "target_pct": "25-35",
+      "actual_pct": 33,
+      "status": "ON_TARGET"
+    },
+    "week_2": {
+      "date": "2026-03-21",
+      "target_pct": "70-80",
+      "actual_pct": 87,
+      "status": "EXCEEDED"
+    }
   },
   "deferred_items": [
     { "sprint_id": "SP-2-201", "issue": 115, "reason": "Matomo deployment target April 7" },

@@ -1,7 +1,7 @@
 # Quick Start Guide
 
-Get the Agentic SDLC Platform running and create your first project in under
-5 minutes.
+Get the Agentic SDLC Platform running and create your first project in under 5
+minutes.
 
 ---
 
@@ -9,7 +9,9 @@ Get the Agentic SDLC Platform running and create your first project in under
 
 - **Node.js 18+** — [download](https://nodejs.org/)
 - **Git** — [download](https://git-scm.com/)
-- **VS Code** with [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) enabled
+- **VS Code** with
+  [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
+  enabled
 - **GitHub account** with repository access
 
 ---
@@ -98,5 +100,7 @@ Both suites should report **0 failures**.
 
 - **[User Manual](user-manual.md)** — Comprehensive guide to all features
 - **[Technical Manual](technical-manual.md)** — Architecture and API reference
-- **[Operating Handbook](../.github/docs/operating-handbook.md)** — Monitoring, troubleshooting, recovery
-- **[Available Commands](../README.md#available-commands)** — All CREATE, AUDIT, FEATURE, and utility commands
+- **[Operating Handbook](../.github/docs/operating-handbook.md)** — Monitoring,
+  troubleshooting, recovery
+- **[Available Commands](../README.md#available-commands)** — All CREATE, AUDIT,
+  FEATURE, and utility commands

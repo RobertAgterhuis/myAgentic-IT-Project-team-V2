@@ -13,11 +13,11 @@
 
 ## 1. Scope (from SP-12-704 Carryover)
 
-| Deliverable | Source | Status |
-|-------------|--------|--------|
-| Buttondown account configuration | SP-12-704 §4 | 🔄 Day 1 |
-| Server-side subscribe endpoint | SP-12-704 §4 | ⬜ Day 2 |
-| Cross-client email template testing | SP-12-704 §4 | ⬜ Day 2 |
+| Deliverable                            | Source       | Status   |
+| -------------------------------------- | ------------ | -------- |
+| Buttondown account configuration       | SP-12-704 §4 | 🔄 Day 1 |
+| Server-side subscribe endpoint         | SP-12-704 §4 | ⬜ Day 2 |
+| Cross-client email template testing    | SP-12-704 §4 | ⬜ Day 2 |
 | Welcome sequence deployment (5 emails) | SP-12-704 §6 | ⬜ Day 2 |
 
 ---
@@ -26,25 +26,25 @@
 
 ### Buttondown Settings
 
-| Setting | Value | Rationale |
-|---------|-------|-----------|
-| **Newsletter Name** | Agentic SDLC — The Sprint Report | Aligns with SP-12-704 §3 newsletter name |
-| **From Name** | Agentic SDLC Team | Professional, team-oriented |
-| **Reply-To** | team@agentic-sdlc.dev | Enables direct engagement (Email 1 P.S.) |
-| **Double Opt-In** | Enabled | GDPR compliance (SP-12-704 §5) |
-| **Tracking Pixels** | Disabled | Privacy-first policy (aligns with Matomo, SP-12-705) |
-| **RSS Feed** | Disabled | Manual newsletter only for Sprint 2 |
-| **Custom Domain** | newsletter.agentic-sdlc.dev | Brand consistency |
-| **Unsubscribe Footer** | Enabled (mandatory) | CAN-SPAM compliance |
+| Setting                | Value                            | Rationale                                            |
+| ---------------------- | -------------------------------- | ---------------------------------------------------- |
+| **Newsletter Name**    | Agentic SDLC — The Sprint Report | Aligns with SP-12-704 §3 newsletter name             |
+| **From Name**          | Agentic SDLC Team                | Professional, team-oriented                          |
+| **Reply-To**           | team@agentic-sdlc.dev            | Enables direct engagement (Email 1 P.S.)             |
+| **Double Opt-In**      | Enabled                          | GDPR compliance (SP-12-704 §5)                       |
+| **Tracking Pixels**    | Disabled                         | Privacy-first policy (aligns with Matomo, SP-12-705) |
+| **RSS Feed**           | Disabled                         | Manual newsletter only for Sprint 2                  |
+| **Custom Domain**      | newsletter.agentic-sdlc.dev      | Brand consistency                                    |
+| **Unsubscribe Footer** | Enabled (mandatory)              | CAN-SPAM compliance                                  |
 
 ### Subscriber Tags (from SP-12-704 Segmentation)
 
-| Tag | Maps To | Content Focus |
-|-----|---------|---------------|
+| Tag                   | Maps To                  | Content Focus                          |
+| --------------------- | ------------------------ | -------------------------------------- |
 | `engineering-leaders` | CTO, VP Eng, Eng Manager | Architecture, governance, productivity |
-| `product-managers` | PM, Product Lead | Sprint velocity, requirements, tooling |
-| `developers` | Software Eng, DevOps | Technical deep dives, CI/CD, testing |
-| `evaluators` | Trial/signup < 7 days | Quick wins, onboarding, support |
+| `product-managers`    | PM, Product Lead         | Sprint velocity, requirements, tooling |
+| `developers`          | Software Eng, DevOps     | Technical deep dives, CI/CD, testing   |
+| `evaluators`          | Trial/signup < 7 days    | Quick wins, onboarding, support        |
 
 ---
 
@@ -96,15 +96,15 @@ async function subscribeUser(email, metadata) {
   const response = await fetch(BUTTONDOWN_API, {
     method: 'POST',
     headers: {
-      'Authorization': `Token ${process.env.BUTTONDOWN_API_KEY}`,
-      'Content-Type': 'application/json'
+      Authorization: `Token ${process.env.BUTTONDOWN_API_KEY}`,
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       email,
       tags: [metadata.segment],
       metadata: { source: metadata.source },
-      referrer_url: metadata.source
-    })
+      referrer_url: metadata.source,
+    }),
   });
 
   if (response.status === 201) {
@@ -119,8 +119,8 @@ async function subscribeUser(email, metadata) {
 
 ### Required Secrets
 
-| Secret | Where | Purpose |
-|--------|-------|---------|
+| Secret               | Where                                | Purpose               |
+| -------------------- | ------------------------------------ | --------------------- |
 | `BUTTONDOWN_API_KEY` | `.env` (local) / GitHub Secrets (CI) | Server-side API calls |
 
 **Security:** API key is never exposed to the client. All subscribe requests go
@@ -132,27 +132,27 @@ through the server-side endpoint.
 
 ### Brand-Aligned Template (from SP-12-704 §4)
 
-| Element | Value | Source |
-|---------|-------|--------|
-| Logo | SP-12-701 brand assets | `.github/docs/brand/` |
-| Background | `#FAFAFA` (`--color-background`) | Design tokens |
-| Primary accent | `#2563EB` (`--color-primary`) | Design tokens |
-| Font family | Inter (`--font-family-primary`) | Design tokens |
-| Body font size | 16px (`--font-size-body`) | Design tokens |
-| Link color | `#2563EB` (`--color-primary`) | Design tokens |
-| Max width | 600px | Email best practice |
+| Element        | Value                            | Source                |
+| -------------- | -------------------------------- | --------------------- |
+| Logo           | SP-12-701 brand assets           | `.github/docs/brand/` |
+| Background     | `#FAFAFA` (`--color-background`) | Design tokens         |
+| Primary accent | `#2563EB` (`--color-primary`)    | Design tokens         |
+| Font family    | Inter (`--font-family-primary`)  | Design tokens         |
+| Body font size | 16px (`--font-size-body`)        | Design tokens         |
+| Link color     | `#2563EB` (`--color-primary`)    | Design tokens         |
+| Max width      | 600px                            | Email best practice   |
 
 ### Cross-Client Testing Matrix
 
-| Client | Platform | Priority | Status |
-|--------|----------|----------|--------|
-| Gmail (Web) | Desktop | P1 | ⬜ |
-| Apple Mail | macOS/iOS | P1 | ⬜ |
-| Outlook 365 | Desktop | P1 | ⬜ |
-| Outlook (Web) | Desktop | P2 | ⬜ |
-| Yahoo Mail | Desktop | P2 | ⬜ |
-| Gmail (App) | Mobile | P1 | ⬜ |
-| Samsung Mail | Mobile | P3 | ⬜ |
+| Client        | Platform  | Priority | Status |
+| ------------- | --------- | -------- | ------ |
+| Gmail (Web)   | Desktop   | P1       | ⬜     |
+| Apple Mail    | macOS/iOS | P1       | ⬜     |
+| Outlook 365   | Desktop   | P1       | ⬜     |
+| Outlook (Web) | Desktop   | P2       | ⬜     |
+| Yahoo Mail    | Desktop   | P2       | ⬜     |
+| Gmail (App)   | Mobile    | P1       | ⬜     |
+| Samsung Mail  | Mobile    | P3       | ⬜     |
 
 **Testing Tool:** Buttondown built-in preview + manual cross-client (Day 2)
 
@@ -162,13 +162,13 @@ through the server-side endpoint.
 
 All email copy is COMPLETE in SP-12-704 §6. Deployment to Buttondown:
 
-| Email | Subject | Trigger | Delay |
-|-------|---------|---------|-------|
-| 1 | Welcome + Value Proposition | On subscribe confirmation | Immediate |
-| 2 | The Problem We Solve | Timed | Day 2 |
-| 3 | How It Works | Timed | Day 4 |
-| 4 | Social Proof / Case Study | Timed | Day 7 |
-| 5 | Activation CTA | Timed | Day 10 |
+| Email | Subject                     | Trigger                   | Delay     |
+| ----- | --------------------------- | ------------------------- | --------- |
+| 1     | Welcome + Value Proposition | On subscribe confirmation | Immediate |
+| 2     | The Problem We Solve        | Timed                     | Day 2     |
+| 3     | How It Works                | Timed                     | Day 4     |
+| 4     | Social Proof / Case Study   | Timed                     | Day 7     |
+| 5     | Activation CTA              | Timed                     | Day 10    |
 
 ---
 

@@ -17,7 +17,14 @@ const { structuredLog, json, parseBody } = require('../middleware');
 const BUTTONDOWN_API = 'https://api.buttondown.email/v1/subscribers';
 const VALID_SEGMENTS = ['engineering-leaders', 'product-managers', 'developers', 'evaluators'];
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const LOCAL_SUBS_FILE = path.resolve(__dirname, '..', '..', '..', 'BusinessDocs', 'local-subscriptions.json');
+const LOCAL_SUBS_FILE = path.resolve(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  'BusinessDocs',
+  'local-subscriptions.json'
+);
 
 module.exports = function createSubscribeRoutes(ctx) {
   async function handleSubscribe(req, res) {
@@ -33,18 +40,25 @@ module.exports = function createSubscribeRoutes(ctx) {
     const { email, metadata } = parsed;
 
     if (!email || typeof email !== 'string' || !EMAIL_RE.test(email)) {
-      return json(res, 400, errorResponse('INVALID_INPUT', 'Please provide a valid email address.'));
+      return json(
+        res,
+        400,
+        errorResponse('INVALID_INPUT', 'Please provide a valid email address.')
+      );
     }
 
-    const segment = metadata && typeof metadata.segment === 'string'
-      ? metadata.segment : 'evaluators';
+    const segment =
+      metadata && typeof metadata.segment === 'string' ? metadata.segment : 'evaluators';
     if (!VALID_SEGMENTS.includes(segment)) {
-      return json(res, 400, errorResponse('INVALID_INPUT',
-        `Segment must be one of: ${VALID_SEGMENTS.join(', ')}`));
+      return json(
+        res,
+        400,
+        errorResponse('INVALID_INPUT', `Segment must be one of: ${VALID_SEGMENTS.join(', ')}`)
+      );
     }
 
-    const source = metadata && typeof metadata.source === 'string'
-      ? metadata.source.slice(0, 100) : 'direct';
+    const source =
+      metadata && typeof metadata.source === 'string' ? metadata.source.slice(0, 100) : 'direct';
 
     const apiKey = process.env.BUTTONDOWN_API_KEY;
     if (!apiKey) {
@@ -54,7 +68,7 @@ module.exports = function createSubscribeRoutes(ctx) {
         if (fs.existsSync(LOCAL_SUBS_FILE)) {
           subs = JSON.parse(fs.readFileSync(LOCAL_SUBS_FILE, 'utf-8'));
         }
-        if (subs.some(s => s.email === email)) {
+        if (subs.some((s) => s.email === email)) {
           return json(res, 409, {
             error: 'already_subscribed',
             message: 'This email is already subscribed (local).',
@@ -75,7 +89,7 @@ module.exports = function createSubscribeRoutes(ctx) {
       const upstream = await fetch(BUTTONDOWN_API, {
         method: 'POST',
         headers: {
-          'Authorization': `Token ${apiKey}`,
+          Authorization: `Token ${apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -106,12 +120,24 @@ module.exports = function createSubscribeRoutes(ctx) {
         status: upstream.status,
         body: text.slice(0, 200),
       });
-      return json(res, 502, errorResponse('INTERNAL_ERROR',
-        'Newsletter service returned an error. Please try again later.'));
+      return json(
+        res,
+        502,
+        errorResponse(
+          'INTERNAL_ERROR',
+          'Newsletter service returned an error. Please try again later.'
+        )
+      );
     } catch (err) {
       structuredLog('error', 'subscribe_network_error', { message: err.message });
-      return json(res, 502, errorResponse('INTERNAL_ERROR',
-        'Could not reach newsletter service. Please try again later.'));
+      return json(
+        res,
+        502,
+        errorResponse(
+          'INTERNAL_ERROR',
+          'Could not reach newsletter service. Please try again later.'
+        )
+      );
     }
   }
 

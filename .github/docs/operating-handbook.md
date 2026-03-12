@@ -1,12 +1,12 @@
 # Operating Handbook — Agentic SDLC Platform
 
-| Field | Value |
-|-------|-------|
-| **Document** | GA Operating Handbook |
-| **Version** | 1.0 |
-| **Created** | 2026-03-12 |
+| Field             | Value                                       |
+| ----------------- | ------------------------------------------- |
+| **Document**      | GA Operating Handbook                       |
+| **Version**       | 1.0                                         |
+| **Created**       | 2026-03-12                                  |
 | **Audit Finding** | F-12 (MEDIUM) — Operator documentation gaps |
-| **Issue** | #144 |
+| **Issue**         | #144                                        |
 
 ---
 
@@ -28,6 +28,7 @@ docker compose up --build
 ```
 
 Services:
+
 - Command Center: [http://127.0.0.1:3000](http://127.0.0.1:3000)
 - Matomo analytics: [http://127.0.0.1:8080](http://127.0.0.1:8080)
 
@@ -45,7 +46,14 @@ Services:
 The server logs all requests as structured JSON to stdout:
 
 ```json
-{"level":"info","event":"request","method":"GET","url":"/","status":200,"ms":12}
+{
+  "level": "info",
+  "event": "request",
+  "method": "GET",
+  "url": "/",
+  "status": 200,
+  "ms": 12
+}
 ```
 
 Logs are not persisted to disk — pipe to a file if you need a log history:
@@ -68,6 +76,7 @@ Or via the Command Center dashboard (Pipeline tab).
 
 All data mutations are logged to the terminal as structured events. The
 `AuditTrail` module records:
+
 - Timestamp
 - Operation (create, update, delete)
 - Target file
@@ -230,17 +239,17 @@ npm test
 
 ## 7. File Locations Reference
 
-| File | Purpose |
-|------|---------|
-| `.github/docs/session/session-state.json` | Current session state |
-| `.github/docs/session/session-state-audit.json` | Session audit trail |
-| `.github/docs/decisions.md` | Decisions and open questions |
-| `BusinessDocs/` | Questionnaire answers and official documents |
-| `.github/docs/synthesis/` | Final reports and blocker matrix |
-| `docs/` | User-facing documentation (GitHub Pages) |
-| `.env` | Environment variables (gitignored) |
+| File                                            | Purpose                                      |
+| ----------------------------------------------- | -------------------------------------------- |
+| `.github/docs/session/session-state.json`       | Current session state                        |
+| `.github/docs/session/session-state-audit.json` | Session audit trail                          |
+| `.github/docs/decisions.md`                     | Decisions and open questions                 |
+| `BusinessDocs/`                                 | Questionnaire answers and official documents |
+| `.github/docs/synthesis/`                       | Final reports and blocker matrix             |
+| `docs/`                                         | User-facing documentation (GitHub Pages)     |
+| `.env`                                          | Environment variables (gitignored)           |
 
 ---
 
-*For more details, see the [User Manual](../docs/user-manual.md) and
-[Technical Manual](../docs/technical-manual.md).*
+_For more details, see the [User Manual](../docs/user-manual.md) and
+[Technical Manual](../docs/technical-manual.md)._

@@ -36,31 +36,31 @@ DEC-BLOCKER-1-502 mandates no GA4.
 
 ### Components
 
-| Component | Image | Purpose |
-|-----------|-------|---------|
-| matomo | `matomo:5-fpm-alpine` | Analytics PHP application |
-| matomo-db | `mariadb:11` | Persistent analytics database |
-| matomo-web | `nginx:alpine` | Reverse proxy + static assets |
+| Component  | Image                 | Purpose                       |
+| ---------- | --------------------- | ----------------------------- |
+| matomo     | `matomo:5-fpm-alpine` | Analytics PHP application     |
+| matomo-db  | `mariadb:11`          | Persistent analytics database |
+| matomo-web | `nginx:alpine`        | Reverse proxy + static assets |
 
 ---
 
 ## 3. Deployment Files
 
-| File | Purpose | Status |
-|------|---------|--------|
-| `docker-compose.analytics.yml` | Docker Compose stack definition | ✅ Created |
-| `matomo-nginx.conf` | Nginx reverse proxy configuration | ✅ Created |
-| `.env` (local only, never committed) | Database passwords, port config | ⬜ Setup guide below |
+| File                                 | Purpose                           | Status               |
+| ------------------------------------ | --------------------------------- | -------------------- |
+| `docker-compose.analytics.yml`       | Docker Compose stack definition   | ✅ Created           |
+| `matomo-nginx.conf`                  | Nginx reverse proxy configuration | ✅ Created           |
+| `.env` (local only, never committed) | Database passwords, port config   | ⬜ Setup guide below |
 
 ---
 
 ## 4. Environment Variables
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `MATOMO_DB_PASSWORD` | Yes | — | MariaDB matomo user password |
-| `MATOMO_DB_ROOT_PASSWORD` | Yes | — | MariaDB root password |
-| `MATOMO_PORT` | No | 8080 | External port for Matomo web UI |
+| Variable                  | Required | Default | Description                     |
+| ------------------------- | -------- | ------- | ------------------------------- |
+| `MATOMO_DB_PASSWORD`      | Yes      | —       | MariaDB matomo user password    |
+| `MATOMO_DB_ROOT_PASSWORD` | Yes      | —       | MariaDB root password           |
+| `MATOMO_PORT`             | No       | 8080    | External port for Matomo web UI |
 
 ### Setup
 
@@ -107,6 +107,7 @@ docker compose -f docker-compose.analytics.yml down -v
 ### 6.2 Enable Cookieless Mode (CRITICAL — GDPR)
 
 In Matomo Admin → Privacy → Anonymize data:
+
 - Enable "Use Matomo without consent"
 - Disable all cookies
 - Set IP anonymization to 2 bytes (e.g., 192.168.xxx.xxx → 192.168.0.0)
@@ -131,17 +132,19 @@ Add to webapp HTML (already specified in SP-12-705 §6):
 
 ```html
 <script>
-  var _paq = window._paq = window._paq || [];
+  var _paq = (window._paq = window._paq || []);
   _paq.push(['disableCookies']);
   _paq.push(['trackPageView']);
   _paq.push(['enableLinkTracking']);
-  (function() {
+  (function () {
     var u = '//' + location.hostname + ':8080/';
     _paq.push(['setTrackerUrl', u + 'matomo.php']);
     _paq.push(['setSiteId', '1']);
-    var d = document, g = d.createElement('script'),
-        s = d.getElementsByTagName('script')[0];
-    g.async = true; g.src = u + 'matomo.js';
+    var d = document,
+      g = d.createElement('script'),
+      s = d.getElementsByTagName('script')[0];
+    g.async = true;
+    g.src = u + 'matomo.js';
     s.parentNode.insertBefore(g, s);
   })();
 </script>
@@ -151,13 +154,13 @@ Add to webapp HTML (already specified in SP-12-705 §6):
 
 ## 7. Security Considerations
 
-| Item | Mitigation |
-|------|-----------|
-| Database passwords | Via `.env` file, never committed (in .gitignore) |
-| Matomo admin access | Protected by Matomo auth, change default credentials |
-| Network isolation | Analytics stack on dedicated Docker network |
-| Data residency | Self-hosted — all data stays on own infrastructure |
-| PII exposure | Cookieless mode + IP anonymization — no PII collected |
+| Item                | Mitigation                                            |
+| ------------------- | ----------------------------------------------------- |
+| Database passwords  | Via `.env` file, never committed (in .gitignore)      |
+| Matomo admin access | Protected by Matomo auth, change default credentials  |
+| Network isolation   | Analytics stack on dedicated Docker network           |
+| Data residency      | Self-hosted — all data stays on own infrastructure    |
+| PII exposure        | Cookieless mode + IP anonymization — no PII collected |
 
 ---
 
@@ -176,7 +179,8 @@ Add to webapp HTML (already specified in SP-12-705 §6):
 
 ## 9. Day 2 Progress
 
-- ✅ `docker-compose.analytics.yml` created — 3-service stack (Matomo + MariaDB + Nginx)
+- ✅ `docker-compose.analytics.yml` created — 3-service stack (Matomo +
+  MariaDB + Nginx)
 - ✅ `matomo-nginx.conf` created — reverse proxy with PHP-FPM pass-through
 - ✅ Deployment specification complete
 - ✅ Security: passwords via `.env`, not committed
@@ -187,9 +191,15 @@ Add to webapp HTML (already specified in SP-12-705 §6):
 
 ## 10. Day 4 Progress (Checkpoint 1)
 
-- ✅ 32 validation tests created (`__tests__/unit/matomo-analytics.test.js`): Docker Compose stack (13), Nginx proxy (7), cookieless GDPR mode (6), tracking script format (3), port isolation (3)
-- ✅ Stack configuration validated: all 3 services correct images, health checks, env-var secrets, volumes, network isolation
-- ✅ Security audited: no hardcoded passwords, .env injection verified, .ht file access denied
-- ✅ Cookieless tracking mode validated: `disableCookies`, `use_third_party_id_cookie=0`, IP anonymization documented
-- ✅ Port isolation confirmed: 8080 (Matomo) does not conflict with 3000 (main) or 8081 (Weblate)
+- ✅ 32 validation tests created (`__tests__/unit/matomo-analytics.test.js`):
+  Docker Compose stack (13), Nginx proxy (7), cookieless GDPR mode (6), tracking
+  script format (3), port isolation (3)
+- ✅ Stack configuration validated: all 3 services correct images, health
+  checks, env-var secrets, volumes, network isolation
+- ✅ Security audited: no hardcoded passwords, .env injection verified, .ht file
+  access denied
+- ✅ Cookieless tracking mode validated: `disableCookies`,
+  `use_third_party_id_cookie=0`, IP anonymization documented
+- ✅ Port isolation confirmed: 8080 (Matomo) does not conflict with 3000 (main)
+  or 8081 (Weblate)
 - ⬜ Landing page tracking integration (SP-2-LND next)

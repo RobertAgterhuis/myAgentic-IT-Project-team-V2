@@ -1,6 +1,6 @@
 ---
-subject: "Ready to build your first project?"
-preheader: "Three ways to get started with the Agentic SDLC Platform — right now."
+subject: 'Ready to build your first project?'
+preheader: 'Three ways to get started with the Agentic SDLC Platform — right now.'
 sequence: 5
 send_delay_days: 10
 ---
@@ -13,8 +13,7 @@ Over the past 10 days, you've seen:
    delivery
 2. **The problem** — 68% project failure rate from process breakdowns
 3. **The solution** — 4 structured phases with Critic + Risk validation
-4. **The proof** — Sprint 1 delivered 87% velocity with 113 tests and 0
-   blockers
+4. **The proof** — Sprint 1 delivered 87% velocity with 113 tests and 0 blockers
 
 Now it's your turn.
 

@@ -12,7 +12,6 @@ const HTML_PATH = path.join(__dirname, '..', '..', '.github', 'webapp', 'landing
 const html = fs.readFileSync(HTML_PATH, 'utf8');
 
 describe('SP-2-LND — Landing Page Final QA', () => {
-
   /* ── AC-1: Hero section with approved tagline and CTAs ───────── */
   describe('AC-1: Hero section', () => {
     test('contains approved tagline "Design it right. Build it fast."', () => {
@@ -20,7 +19,9 @@ describe('SP-2-LND — Landing Page Final QA', () => {
     });
 
     test('contains primary value proposition subtitle', () => {
-      expect(html).toContain('end-to-end platform that combines multi-discipline strategic analysis');
+      expect(html).toContain(
+        'end-to-end platform that combines multi-discipline strategic analysis'
+      );
     });
 
     test('has primary CTA "Explore the Documentation"', () => {
@@ -125,7 +126,7 @@ describe('SP-2-LND — Landing Page Final QA', () => {
     });
 
     test('sends JSON with email and metadata', () => {
-      expect(html).toContain("JSON.stringify({ email: email, metadata:");
+      expect(html).toContain('JSON.stringify({ email: email, metadata:');
     });
 
     test('has subscribe message area with aria-live', () => {
@@ -186,7 +187,7 @@ describe('SP-2-LND — Landing Page Final QA', () => {
     test('images have alt attributes', () => {
       // noscript Matomo img
       const imgs = html.match(/<img[^>]*>/g) || [];
-      imgs.forEach(img => {
+      imgs.forEach((img) => {
         expect(img).toMatch(/alt="/);
       });
     });
@@ -230,7 +231,7 @@ describe('SP-2-LND — Landing Page Final QA', () => {
   /* ── Matomo integration (cross-ref SP-2-MAT) ────────────────── */
   describe('SP-2-MAT integration', () => {
     test('Matomo script present in head', () => {
-      expect(html).toContain("var _paq = window._paq");
+      expect(html).toContain('var _paq = window._paq');
     });
 
     test('cookieless mode enabled', () => {

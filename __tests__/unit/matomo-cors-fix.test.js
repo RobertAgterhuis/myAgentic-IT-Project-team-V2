@@ -53,9 +53,7 @@ describe('SP-3-MAT-FIX: Nginx CORS headers for cross-origin tracking', () => {
 
   it('should include CORS headers on static assets (matomo.js)', () => {
     // The static assets block should also have CORS
-    const staticBlock = nginxContent.match(
-      /location\s+~\*\s+\\\.\(js\|css[\s\S]*?\{([\s\S]*?)\}/
-    );
+    const staticBlock = nginxContent.match(/location\s+~\*\s+\\\.\(js\|css[\s\S]*?\{([\s\S]*?)\}/);
     expect(staticBlock).not.toBeNull();
     expect(staticBlock[1]).toContain('Access-Control-Allow-Origin');
   });

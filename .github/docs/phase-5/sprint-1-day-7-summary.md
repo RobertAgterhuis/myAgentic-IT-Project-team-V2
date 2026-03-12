@@ -28,22 +28,25 @@ key gate. Marketing items all targeting 90%+ by EOD.
 
 ### Completed Since Last Standup (March 18 → 19):
 
-- **Tech:** SP-11-613 at 40% (23 smoke tests, 7 journeys, `npm run test:smoke` working)
-- **Marketing:** SP-12-702 COMPLETE ✅, SP-12-703 80%, SP-12-704 80%, SP-12-705 80%
+- **Tech:** SP-11-613 at 40% (23 smoke tests, 7 journeys, `npm run test:smoke`
+  working)
+- **Marketing:** SP-12-702 COMPLETE ✅, SP-12-703 80%, SP-12-704 80%, SP-12-705
+  80%
 
 ### Building Today (March 19):
 
-| Item | Current | Target | Key Tasks |
-|------|---------|--------|-----------|
-| SP-11-613 | 40% | **70%** | Enable CI Job 7 (local server start), add test artifact upload, document in technical manual |
-| SP-12-701 | 75% | **90%** | Complete brand one-pager, finalize typography guide, icon production specs |
-| SP-12-703 | 80% | **90%** | Write Week 2 Thursday LinkedIn post, create GitHub Discussions template |
-| SP-12-704 | 80% | **90%** | Create HTML email template structure, configure double opt-in spec |
-| SP-12-705 | 80% | **90%** | Capture current GitHub repo traffic baseline, finalize Matomo config spec |
+| Item      | Current | Target  | Key Tasks                                                                                    |
+| --------- | ------- | ------- | -------------------------------------------------------------------------------------------- |
+| SP-11-613 | 40%     | **70%** | Enable CI Job 7 (local server start), add test artifact upload, document in technical manual |
+| SP-12-701 | 75%     | **90%** | Complete brand one-pager, finalize typography guide, icon production specs                   |
+| SP-12-703 | 80%     | **90%** | Write Week 2 Thursday LinkedIn post, create GitHub Discussions template                      |
+| SP-12-704 | 80%     | **90%** | Create HTML email template structure, configure double opt-in spec                           |
+| SP-12-705 | 80%     | **90%** | Capture current GitHub repo traffic baseline, finalize Matomo config spec                    |
 
 ### Blockers: **None** ✅
 
 ### Risks:
+
 - CI Job 7: `needs: deploy-staging` dependency — decision to use local server
   start instead (mitigated, same pattern as integration tests)
 
@@ -62,16 +65,16 @@ key gate. Marketing items all targeting 90%+ by EOD.
 4. **Updated technical manual** — Added "Webapp Test Suite (Root)" section to
    `docs/technical-manual.md`: test structure table (5 files, 99 tests), smoke
    test architecture table (7 groups SMOKE-001–007), CI integration note.
-5. **Updated tracker** — `sp-11-613-smoke-suite.md` 40% → 70%. Criterion 2
-   (CI fail-fast gate) marked DONE. Pending: verify CI Job 7 on next main push.
+5. **Updated tracker** — `sp-11-613-smoke-suite.md` 40% → 70%. Criterion 2 (CI
+   fail-fast gate) marked DONE. Pending: verify CI Job 7 on next main push.
 
 ### 10:30 — SP-12-701 Brand Assets (75% → 90%)
 
 1. **Added Section 9: Typography Application Guide** — Heading hierarchy table
    (H1–H4 + body/small/code), Google Fonts preconnect for Inter 400/600/700 +
    JetBrains Mono, CSS custom properties block (6 variables).
-2. **Added Section 10: Icon Production Specifications** — SVG template
-   (24×24, 2px stroke, currentColor), production rules table, 10-icon visual
+2. **Added Section 10: Icon Production Specifications** — SVG template (24×24,
+   2px stroke, currentColor), production rules table, 10-icon visual
    descriptions table (Dashboard, Settings, Analytics, Users, Deploy, etc.).
 3. **Deferred** logo/icon/social asset production to Sprint 2 (requires design
    tool — Figma or Illustrator). Complete spec handoff provided.
@@ -89,8 +92,9 @@ key gate. Marketing items all targeting 90%+ by EOD.
 ### 13:00 — SP-12-704 Email Framework (80% → 90%)
 
 1. **Added Section 9: HTML Email Template Specification** — Full responsive
-   template (600px max-width, table layout, inline CSS, Outlook MSO conditional),
-   template variables table (8 vars), email client testing checklist (7 clients).
+   template (600px max-width, table layout, inline CSS, Outlook MSO
+   conditional), template variables table (8 vars), email client testing
+   checklist (7 clients).
 2. **Added Section 10: Double Opt-In Flow Specification** — 7-step flow diagram,
    landing page signup form HTML with ARIA, server-side handler (Node.js /
    Buttondown API proxy), GDPR compliance notes (5 points).
@@ -114,17 +118,17 @@ key gate. Marketing items all targeting 90%+ by EOD.
 
 ## Day 7 Metrics
 
-| Metric | Day 6 (EOD) | Day 7 (EOD) | Delta |
-|--------|-------------|-------------|-------|
-| Sprint velocity | 47% (7/15) | 47% (7/15) | — |
-| Items complete | 7 | 7 | +0 |
-| Items ≥70% | 7 | 12 | +5 |
-| Items ≥90% | 7 | 11 | +4 |
-| Test count | 99 | 99 | — |
-| CI jobs enabled | 6 | 7 | +1 |
-| INSUFFICIENT_DATA items | 3 | 0 | −3 |
-| GitHub traffic views (14d) | — | 46 | baseline |
-| GitHub traffic clones (14d) | — | 533 | baseline |
+| Metric                      | Day 6 (EOD) | Day 7 (EOD) | Delta    |
+| --------------------------- | ----------- | ----------- | -------- |
+| Sprint velocity             | 47% (7/15)  | 47% (7/15)  | —        |
+| Items complete              | 7           | 7           | +0       |
+| Items ≥70%                  | 7           | 12          | +5       |
+| Items ≥90%                  | 7           | 11          | +4       |
+| Test count                  | 99          | 99          | —        |
+| CI jobs enabled             | 6           | 7           | +1       |
+| INSUFFICIENT_DATA items     | 3           | 0           | −3       |
+| GitHub traffic views (14d)  | —           | 46          | baseline |
+| GitHub traffic clones (14d) | —           | 533         | baseline |
 
 **Day 7 Outcome:** 5 items advanced (SP-11-613 70%, SP-12-701/703/704/705 all
 90%). All INSUFFICIENT_DATA fields in analytics baseline resolved with real
@@ -132,7 +136,7 @@ GitHub API data. CI Job 7 (smoke tests) enabled. Zero items were completed today
 (still 7/15) but all 5 active items are at ≥70%, positioning Day 8 for closures.
 
 **Day 8 Targets:**
+
 - SP-11-613 → 90%+ (verify CI Job 7 green on main push)
 - SP-12-701/703/704/705 → close remaining items or mark Sprint 2 carryover
 - Target velocity: 53%+ (8/15 items complete)
-

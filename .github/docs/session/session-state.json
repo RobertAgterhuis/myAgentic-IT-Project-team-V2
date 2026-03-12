@@ -169,7 +169,9 @@
         "conditional_items": 1,
         "new_issues_created": [123, 124, 125, 126, 128, 129],
         "existing_issues": [107, 110, 115, 117],
-        "backlog_items": ["SP-2-SOC (#127) — non-blocking; requires complete working solution before social publication"],
+        "backlog_items": [
+          "SP-2-SOC (#127) — non-blocking; requires complete working solution before social publication"
+        ],
         "tracks": {
           "tech": ["SP-2-CI7 (#123)", "SP-2-CI8 (#124)", "SP-2-MAT (#125)"],
           "business": ["SP-2-201-P (#107)", "SP-2-202 (#110)"],
@@ -294,7 +296,21 @@
       "sprint_kpi_final": ".github/docs/phase-5/sprint-1-kpi-final.json",
       "velocity_log": ".github/docs/retrospectives/velocity-log.json",
       "lessons_learned": ".github/docs/retrospectives/lessons-learned.md",
-      "completed_items": ["SP-10-602", "SP-11-611", "SP-1-501", "SP-10-603", "SP-1-003", "SP-11-612", "SP-12-702", "SP-12-701", "SP-12-703", "SP-12-704", "SP-12-705", "SP-11-613", "SP-1-203"],
+      "completed_items": [
+        "SP-10-602",
+        "SP-11-611",
+        "SP-1-501",
+        "SP-10-603",
+        "SP-1-003",
+        "SP-11-612",
+        "SP-12-702",
+        "SP-12-701",
+        "SP-12-703",
+        "SP-12-704",
+        "SP-12-705",
+        "SP-11-613",
+        "SP-1-203"
+      ],
       "deferred_items": ["SP-2-201", "SP-2-501"],
       "in_progress_items": [],
       "sprint_velocity_pct": 87,

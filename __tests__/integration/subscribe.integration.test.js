@@ -28,7 +28,9 @@ function request(urlPath, options = {}) {
 
     const req = http.request(reqOptions, (res) => {
       let body = '';
-      res.on('data', (chunk) => { body += chunk; });
+      res.on('data', (chunk) => {
+        body += chunk;
+      });
       res.on('end', () => {
         resolve({ statusCode: res.statusCode, headers: res.headers, body });
       });
@@ -63,7 +65,11 @@ beforeAll((done) => {
 
 afterAll((done) => {
   // Clean up local subscriptions file created during tests
-  try { fs.unlinkSync(LOCAL_SUBS_FILE); } catch (_) { /* ignore */ }
+  try {
+    fs.unlinkSync(LOCAL_SUBS_FILE);
+  } catch (_) {
+    /* ignore */
+  }
   if (server && server.listening) {
     server.close(done);
   } else {
@@ -154,7 +160,10 @@ describe('SP-2-BTN: POST /api/subscribe', () => {
       const res = await request('/api/subscribe', {
         method: 'POST',
         headers: jsonHeaders,
-        body: JSON.stringify({ email: 'local-test@example.com', metadata: { segment: 'developers', source: 'test' } }),
+        body: JSON.stringify({
+          email: 'local-test@example.com',
+          metadata: { segment: 'developers', source: 'test' },
+        }),
       });
       expect(res.statusCode).toBe(201);
       const data = JSON.parse(res.body);

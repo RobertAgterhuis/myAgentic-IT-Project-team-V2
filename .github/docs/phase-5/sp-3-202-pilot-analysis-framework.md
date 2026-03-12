@@ -5,7 +5,8 @@
 **Owner:** Product Manager  
 **Status:** ✅ COMPLETE  
 **Input:** `sp-2-202-pilot-feedback-rubric.md` (rubric instrument)  
-**First Dataset:** `sp-3-201p-internal-self-test-rubric.md` (internal self-test, 0.7× weight)
+**First Dataset:** `sp-3-201p-internal-self-test-rubric.md` (internal self-test,
+0.7× weight)
 
 ---
 
@@ -22,22 +23,22 @@ both internal self-tests (0.7× confidence weight) and external pilot responses
 
 ### 2.1 Source Documents
 
-| Source Type | Document Pattern | Weight |
-|-------------|-----------------|--------|
-| External pilot rubric | `sp-N-201p-pilot-rubric-[PARTICIPANT].md` | 1.0× |
-| Internal self-test rubric | `sp-N-201p-internal-self-test-rubric.md` | 0.7× |
+| Source Type               | Document Pattern                          | Weight |
+| ------------------------- | ----------------------------------------- | ------ |
+| External pilot rubric     | `sp-N-201p-pilot-rubric-[PARTICIPANT].md` | 1.0×   |
+| Internal self-test rubric | `sp-N-201p-internal-self-test-rubric.md`  | 0.7×   |
 
 ### 2.2 Required Fields Per Response
 
-| Field | Type | Required | Validation |
-|-------|------|----------|------------|
-| Participant Role | Enum (Eng Lead / PM / UX / Dev / QA / Writer) | Yes | Must match candidate roster |
-| Date of Mini-Cycle | Date (YYYY-MM-DD) | Yes | Within sprint window |
-| Clarity score (per step) | Integer 1–5 | Yes | 6 steps × 1 score each |
-| Confidence score (per step) | Integer 1–5 | Yes | 6 steps × 1 score each |
-| Completeness (per step) | Boolean (Yes/No) | Yes | 6 steps |
-| Friction points | Structured table | Yes | At least severity + description |
-| Gaps identified | Structured table | Optional | Phase/document + expected content |
+| Field                       | Type                                          | Required | Validation                        |
+| --------------------------- | --------------------------------------------- | -------- | --------------------------------- |
+| Participant Role            | Enum (Eng Lead / PM / UX / Dev / QA / Writer) | Yes      | Must match candidate roster       |
+| Date of Mini-Cycle          | Date (YYYY-MM-DD)                             | Yes      | Within sprint window              |
+| Clarity score (per step)    | Integer 1–5                                   | Yes      | 6 steps × 1 score each            |
+| Confidence score (per step) | Integer 1–5                                   | Yes      | 6 steps × 1 score each            |
+| Completeness (per step)     | Boolean (Yes/No)                              | Yes      | 6 steps                           |
+| Friction points             | Structured table                              | Yes      | At least severity + description   |
+| Gaps identified             | Structured table                              | Optional | Phase/document + expected content |
 
 ---
 
@@ -64,15 +65,15 @@ Friction Union       = DEDUPLICATED union of all friction points
 
 ### 3.3 KPI Evaluation (vs REC-203 Targets)
 
-| KPI | Target | Formula | Pass Condition |
-|-----|--------|---------|----------------|
-| Actionable findings | ≥ 10 | Friction Count + Gap Count | ≥ 10 |
-| Critical/High blockers | 0 | Critical Count | = 0 (WARNING if > 0) |
-| Average clarity | ≥ 4.0 | Weighted Clarity | ≥ 4.0 |
-| Average confidence | ≥ 3.5 | Weighted Confidence | ≥ 3.5 |
-| Completeness rate | ≥ 90% | Weighted Completeness | ≥ 90% |
-| NPS | ≥ 7 | External only (N/A for self-test) | ≥ 7 |
-| Closure rate | ≥ 80% | Closed findings / Total findings (by next sprint) | ≥ 80% |
+| KPI                    | Target | Formula                                           | Pass Condition       |
+| ---------------------- | ------ | ------------------------------------------------- | -------------------- |
+| Actionable findings    | ≥ 10   | Friction Count + Gap Count                        | ≥ 10                 |
+| Critical/High blockers | 0      | Critical Count                                    | = 0 (WARNING if > 0) |
+| Average clarity        | ≥ 4.0  | Weighted Clarity                                  | ≥ 4.0                |
+| Average confidence     | ≥ 3.5  | Weighted Confidence                               | ≥ 3.5                |
+| Completeness rate      | ≥ 90%  | Weighted Completeness                             | ≥ 90%                |
+| NPS                    | ≥ 7    | External only (N/A for self-test)                 | ≥ 7                  |
+| Closure rate           | ≥ 80%  | Closed findings / Total findings (by next sprint) | ≥ 80%                |
 
 ---
 
@@ -82,16 +83,17 @@ Friction Union       = DEDUPLICATED union of all friction points
 
 Findings are classified using the rubric's severity levels:
 
-| Severity | Definition | SLA |
-|----------|-----------|-----|
-| **CRITICAL** | Prevents completing the step — no workaround | Must address in next sprint |
-| **HIGH** | Significant friction, workaround possible | Should address in next sprint |
-| **MEDIUM** | Noticeable friction, still completable | Plan for next 2 sprints |
-| **LOW** | Minor improvement suggestion | Backlog — prioritize opportunistically |
+| Severity     | Definition                                   | SLA                                    |
+| ------------ | -------------------------------------------- | -------------------------------------- |
+| **CRITICAL** | Prevents completing the step — no workaround | Must address in next sprint            |
+| **HIGH**     | Significant friction, workaround possible    | Should address in next sprint          |
+| **MEDIUM**   | Noticeable friction, still completable       | Plan for next 2 sprints                |
+| **LOW**      | Minor improvement suggestion                 | Backlog — prioritize opportunistically |
 
 ### 4.2 Deduplication Rules
 
 When multiple respondents report the same friction point:
+
 1. Merge into single finding with highest severity reported
 2. Record count of occurrences (consensus weight)
 3. Preserve all unique suggested fixes
@@ -107,8 +109,8 @@ Source Weight: External=1.0, Internal=0.7
 ```
 
 Findings with Priority Score ≥ 3.0 are **mandatory Sprint N+1 backlog items**.
-Findings with Priority Score 1.5–2.9 are **recommended backlog items**.
-Findings with Priority Score < 1.5 are **optional improvements**.
+Findings with Priority Score 1.5–2.9 are **recommended backlog items**. Findings
+with Priority Score < 1.5 are **optional improvements**.
 
 ---
 
@@ -119,9 +121,9 @@ Findings with Priority Score < 1.5 are **optional improvements**.
 Each finding with Priority Score ≥ 1.5 produces a GitHub issue:
 
 ```markdown
-**Title:** [PILOT-F-{ID}] {Finding title}
-**Labels:** pilot-finding, {severity}, sprint-{N+1}
-**Body:**
+**Title:** [PILOT-F-{ID}] {Finding title} **Labels:** pilot-finding, {severity},
+sprint-{N+1} **Body:**
+
 - **Source:** {self-test | external pilot} (weight: {0.7 | 1.0})
 - **Severity:** {CRITICAL | HIGH | MEDIUM | LOW}
 - **Occurrences:** {count}
@@ -135,13 +137,13 @@ Each finding with Priority Score ≥ 1.5 produces a GitHub issue:
 
 ### 5.2 Closure Tracking
 
-| Status | Definition |
-|--------|-----------|
-| OPEN | Finding identified, not yet addressed |
-| IN_PROGRESS | Work started in current sprint |
-| CLOSED | Fix implemented and verified |
-| DEFERRED | Explicitly deprioritized with justification |
-| WONT_FIX | Finding rejected with documented rationale |
+| Status      | Definition                                  |
+| ----------- | ------------------------------------------- |
+| OPEN        | Finding identified, not yet addressed       |
+| IN_PROGRESS | Work started in current sprint              |
+| CLOSED      | Fix implemented and verified                |
+| DEFERRED    | Explicitly deprioritized with justification |
+| WONT_FIX    | Finding rejected with documented rationale  |
 
 **Closure Rate** = (CLOSED + WONT_FIX) / Total findings × 100  
 **Target:** ≥ 80% by end of Sprint N+1
@@ -193,11 +195,11 @@ Applying this framework to the Sprint 3 self-test data:
 
 ### 7.1 Aggregate Scores
 
-| Metric | Raw Score | Weight | Weighted Score |
-|--------|-----------|--------|----------------|
-| Average Clarity | 4.7/5 | 0.7× | 3.29 (effective) |
-| Average Confidence | 4.2/5 | 0.7× | 2.94 (effective) |
-| Completeness Rate | 100% | 0.7× | 70% (effective) |
+| Metric             | Raw Score | Weight | Weighted Score   |
+| ------------------ | --------- | ------ | ---------------- |
+| Average Clarity    | 4.7/5     | 0.7×   | 3.29 (effective) |
+| Average Confidence | 4.2/5     | 0.7×   | 2.94 (effective) |
+| Completeness Rate  | 100%      | 0.7×   | 70% (effective)  |
 
 > **Note:** Effective scores reflect confidence-weighted values. For KPI
 > evaluation, raw scores are used (internal self-test still meets thresholds
@@ -205,35 +207,36 @@ Applying this framework to the Sprint 3 self-test data:
 
 ### 7.2 KPI Dashboard — Sprint 3
 
-| KPI | Target | Actual | Status |
-|-----|--------|--------|--------|
-| Actionable findings | ≥ 10 | 17 | ✅ PASS |
-| Critical/High blockers | 0 | 4 | ⚠️ WARNING — backlog items created |
-| Average clarity | ≥ 4.0 | 4.7 | ✅ PASS |
-| Average confidence | ≥ 3.5 | 4.2 | ✅ PASS |
-| Completeness rate | ≥ 90% | 100% | ✅ PASS |
-| NPS | ≥ 7 | N/A (self-test) | — SKIPPED |
-| Closure rate | ≥ 80% | TBD Sprint 4 | — PENDING |
+| KPI                    | Target | Actual          | Status                             |
+| ---------------------- | ------ | --------------- | ---------------------------------- |
+| Actionable findings    | ≥ 10   | 17              | ✅ PASS                            |
+| Critical/High blockers | 0      | 4               | ⚠️ WARNING — backlog items created |
+| Average clarity        | ≥ 4.0  | 4.7             | ✅ PASS                            |
+| Average confidence     | ≥ 3.5  | 4.2             | ✅ PASS                            |
+| Completeness rate      | ≥ 90%  | 100%            | ✅ PASS                            |
+| NPS                    | ≥ 7    | N/A (self-test) | — SKIPPED                          |
+| Closure rate           | ≥ 80%  | TBD Sprint 4    | — PENDING                          |
 
 ### 7.3 Finding Registry (Top Priority)
 
-| ID | Finding | Severity | Score | Sprint 4 Action |
-|----|---------|----------|-------|-----------------|
-| F-03-01 | No "start here" guide | CRITICAL | 2.8 | Create pilot-participant-guide.md |
-| F-03-02 | Phase output volume overwhelming | HIGH | 2.1 | Per-phase summary documents |
-| F-03-03 | Synthesis report stale | HIGH | 2.1 | Synthesis refresh mechanism |
-| F-03-04 | Critic validates format not substance | HIGH | 2.1 | Technical substance review |
-| F-03-05 | Sprint Gate artifact inconsistency | MEDIUM | 1.4 | Standardize per-sprint gate files |
-| F-03-06 | Session-state.json growing unbounded | MEDIUM | 1.4 | Session archival mechanism |
-| F-03-07 | Thin output for non-commercial agents | MEDIUM | 1.4 | Scope gate at Onboarding |
-| F-03-08 | Pilot recruitment recurring failure | MEDIUM | 1.4 | Self-test first, recruit with proven materials |
-| F-03-09 | Docker runtime listed as UNKNOWN | LOW | 0.7 | Add Docker check to Onboarding |
-| F-03-10 | Ambiguous roadmap sprint labels | LOW | 0.7 | Use actual Sprint IDs |
+| ID      | Finding                               | Severity | Score | Sprint 4 Action                                |
+| ------- | ------------------------------------- | -------- | ----- | ---------------------------------------------- |
+| F-03-01 | No "start here" guide                 | CRITICAL | 2.8   | Create pilot-participant-guide.md              |
+| F-03-02 | Phase output volume overwhelming      | HIGH     | 2.1   | Per-phase summary documents                    |
+| F-03-03 | Synthesis report stale                | HIGH     | 2.1   | Synthesis refresh mechanism                    |
+| F-03-04 | Critic validates format not substance | HIGH     | 2.1   | Technical substance review                     |
+| F-03-05 | Sprint Gate artifact inconsistency    | MEDIUM   | 1.4   | Standardize per-sprint gate files              |
+| F-03-06 | Session-state.json growing unbounded  | MEDIUM   | 1.4   | Session archival mechanism                     |
+| F-03-07 | Thin output for non-commercial agents | MEDIUM   | 1.4   | Scope gate at Onboarding                       |
+| F-03-08 | Pilot recruitment recurring failure   | MEDIUM   | 1.4   | Self-test first, recruit with proven materials |
+| F-03-09 | Docker runtime listed as UNKNOWN      | LOW      | 0.7   | Add Docker check to Onboarding                 |
+| F-03-10 | Ambiguous roadmap sprint labels       | LOW      | 0.7   | Use actual Sprint IDs                          |
 
-**Mandatory backlog (Score ≥ 3.0):** None (highest is 2.8 — CRITICAL at 0.7× weight)  
+**Mandatory backlog (Score ≥ 3.0):** None (highest is 2.8 — CRITICAL at 0.7×
+weight)  
 **Recommended backlog (Score 1.5–2.9):** F-03-01 through F-03-04  
 **Optional (Score < 1.5):** F-03-05 through F-03-10
 
 ---
 
-*Created: 2026-04-10 Day 3 | Implementation Agent*
+_Created: 2026-04-10 Day 3 | Implementation Agent_

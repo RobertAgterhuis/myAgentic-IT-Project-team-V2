@@ -11,13 +11,13 @@
 
 ## Acceptance Criteria
 
-| # | Criterion | Status |
-|---|-----------|--------|
-| 1 | WCAG AA compliance checklist created | ✅ DONE — compliance-checklist.md Section 4 |
-| 2 | Accessibility testing tools integrated | ✅ DONE — axe-core + Lighthouse defined; smoke tests validate semantic HTML |
-| 3 | Audit gate defined in CI/CD pipeline | ✅ DONE — CI Job 8 spec defined below; enforced via PR review gate |
-| 4 | Remediation process documented | ✅ DONE — Section 4 below |
-| 5 | Release blocker criteria established | ✅ DONE — Section 5 below |
+| #   | Criterion                              | Status                                                                      |
+| --- | -------------------------------------- | --------------------------------------------------------------------------- |
+| 1   | WCAG AA compliance checklist created   | ✅ DONE — compliance-checklist.md Section 4                                 |
+| 2   | Accessibility testing tools integrated | ✅ DONE — axe-core + Lighthouse defined; smoke tests validate semantic HTML |
+| 3   | Audit gate defined in CI/CD pipeline   | ✅ DONE — CI Job 8 spec defined below; enforced via PR review gate          |
+| 4   | Remediation process documented         | ✅ DONE — Section 4 below                                                   |
+| 5   | Release blocker criteria established   | ✅ DONE — Section 5 below                                                   |
 
 ---
 
@@ -27,6 +27,7 @@
 **Status:** ✅ Created (Sprint 1, Day 1)
 
 The checklist covers all WCAG 2.1 AA requirements across 4 principles:
+
 - **Perceivable:** Contrast ratios (1.4.3, 1.4.11), text alternatives
 - **Operable:** Keyboard access (2.1.1), focus visible (2.4.7)
 - **Understandable:** Language of page (3.1.1), error identification (3.3.1)
@@ -41,12 +42,12 @@ The checklist covers all WCAG 2.1 AA requirements across 4 principles:
 
 ### 2.1 Automated Testing Stack
 
-| Tool | Purpose | Integration Point | Status |
-|------|---------|-------------------|--------|
-| **axe-core** | WCAG 2.1 A/AA violation detection | CI pipeline (Job 8) | Defined — Sprint 2 implementation |
-| **Lighthouse** | Accessibility scoring (0-100) | CI pipeline (Job 8) | Defined — Sprint 2 implementation |
-| **Smoke tests (SMOKE-006)** | Security headers + semantic HTML validation | CI Job 7 ✅ | Active — 5 tests running |
-| **Manual audit** | Complex ARIA, screen reader testing | Pre-release review | Active — per sprint |
+| Tool                        | Purpose                                     | Integration Point   | Status                            |
+| --------------------------- | ------------------------------------------- | ------------------- | --------------------------------- |
+| **axe-core**                | WCAG 2.1 A/AA violation detection           | CI pipeline (Job 8) | Defined — Sprint 2 implementation |
+| **Lighthouse**              | Accessibility scoring (0-100)               | CI pipeline (Job 8) | Defined — Sprint 2 implementation |
+| **Smoke tests (SMOKE-006)** | Security headers + semantic HTML validation | CI Job 7 ✅         | Active — 5 tests running          |
+| **Manual audit**            | Complex ARIA, screen reader testing         | Pre-release review  | Active — per sprint               |
 
 ### 2.2 CLI Commands (Sprint 2 Implementation)
 
@@ -65,6 +66,7 @@ npx lighthouse http://127.0.0.1:3000 --only-categories=accessibility \
 
 The smoke test suite (`__tests__/smoke/landing.smoke.test.js`) provides baseline
 accessibility validation through:
+
 - **SMOKE-006:** Security headers on all endpoints (X-Content-Type-Options)
 - **SMOKE-001/002:** HTML content validation (semantic structure)
 - **SMOKE-003:** Health endpoint response format (JSON accessibility)
@@ -120,6 +122,7 @@ accessibility-gate:
 ### 3.2 Current Sprint 1 Gate (Active)
 
 Until Job 8 is implemented, the accessibility gate is enforced through:
+
 1. **PR review checklist** — reviewer must confirm no accessibility regressions
 2. **SMOKE-006 tests** — security headers (subset of accessibility requirements)
 3. **Manual WCAG audit** — per sprint pre-release review
@@ -131,12 +134,12 @@ Until Job 8 is implemented, the accessibility gate is enforced through:
 
 ### 4.1 Severity Classification
 
-| Severity | WCAG Level | Impact | SLA | Action |
-|----------|-----------|--------|-----|--------|
-| **CRITICAL** | Level A violation | Blocks access entirely | FIX IMMEDIATELY | Block PR merge; developer fixes before re-review |
-| **SERIOUS** | Level AA violation (key) | Significant barrier | Fix within 24 hours | Block merge if in critical path; escalate to a11y specialist |
-| **MODERATE** | Level AA violation (minor) | Inconvenience | Fix within sprint | Track in sprint backlog; do not block merge |
-| **MINOR** | Best practice | Enhancement | Next sprint | Log as improvement item |
+| Severity     | WCAG Level                 | Impact                 | SLA                 | Action                                                       |
+| ------------ | -------------------------- | ---------------------- | ------------------- | ------------------------------------------------------------ |
+| **CRITICAL** | Level A violation          | Blocks access entirely | FIX IMMEDIATELY     | Block PR merge; developer fixes before re-review             |
+| **SERIOUS**  | Level AA violation (key)   | Significant barrier    | Fix within 24 hours | Block merge if in critical path; escalate to a11y specialist |
+| **MODERATE** | Level AA violation (minor) | Inconvenience          | Fix within sprint   | Track in sprint backlog; do not block merge                  |
+| **MINOR**    | Best practice              | Enhancement            | Next sprint         | Log as improvement item                                      |
 
 ### 4.2 Remediation Workflow
 
@@ -165,15 +168,15 @@ Until Job 8 is implemented, the accessibility gate is enforced through:
 
 ### 4.3 Common Fix Patterns
 
-| Violation | Fix |
-|-----------|-----|
-| Missing alt text | Add descriptive `alt` attribute (or `alt=""` for decorative) |
-| Low contrast | Adjust color tokens to meet 4.5:1 (normal) / 3:1 (large) ratios |
-| Missing form labels | Add `<label>` elements or `aria-label` attributes |
-| No keyboard access | Add `tabindex`, keyboard event handlers |
-| Missing ARIA roles | Add appropriate `role`, `aria-expanded`, `aria-controls` |
-| Focus not visible | Add `:focus-visible` CSS styles |
-| Missing lang attribute | Add `lang="en"` to `<html>` element |
+| Violation              | Fix                                                             |
+| ---------------------- | --------------------------------------------------------------- |
+| Missing alt text       | Add descriptive `alt` attribute (or `alt=""` for decorative)    |
+| Low contrast           | Adjust color tokens to meet 4.5:1 (normal) / 3:1 (large) ratios |
+| Missing form labels    | Add `<label>` elements or `aria-label` attributes               |
+| No keyboard access     | Add `tabindex`, keyboard event handlers                         |
+| Missing ARIA roles     | Add appropriate `role`, `aria-expanded`, `aria-controls`        |
+| Focus not visible      | Add `:focus-visible` CSS styles                                 |
+| Missing lang attribute | Add `lang="en"` to `<html>` element                             |
 
 ---
 
@@ -183,14 +186,14 @@ Until Job 8 is implemented, the accessibility gate is enforced through:
 
 A sprint release is **BLOCKED** if any of the following are true:
 
-| # | Blocker Condition | Threshold | Source |
-|---|-------------------|-----------|--------|
-| 1 | Lighthouse accessibility score | ≤ 90 | GR-UX-004 |
-| 2 | axe-core critical violations | > 0 | GR-UX-004 |
-| 3 | axe-core serious (AA) violations | > 0 | GR-UX-004 |
-| 4 | WCAG Level A criterion unmet | Any | WCAG 2.1 spec |
-| 5 | Keyboard navigation broken | Any path | WCAG 2.1.1 |
-| 6 | Screen reader incompatible | Critical flow | Compliance checklist 4.2 |
+| #   | Blocker Condition                | Threshold     | Source                   |
+| --- | -------------------------------- | ------------- | ------------------------ |
+| 1   | Lighthouse accessibility score   | ≤ 90          | GR-UX-004                |
+| 2   | axe-core critical violations     | > 0           | GR-UX-004                |
+| 3   | axe-core serious (AA) violations | > 0           | GR-UX-004                |
+| 4   | WCAG Level A criterion unmet     | Any           | WCAG 2.1 spec            |
+| 5   | Keyboard navigation broken       | Any path      | WCAG 2.1.1               |
+| 6   | Screen reader incompatible       | Critical flow | Compliance checklist 4.2 |
 
 ### 5.2 Acceptable Exceptions
 
@@ -203,11 +206,11 @@ A sprint release is **BLOCKED** if any of the following are true:
 
 ### 5.3 Current Sprint 1 Status
 
-| Criterion | Status | Evidence |
-|-----------|--------|----------|
-| WCAG AA score | 91% ✅ | KPI log Days 2-9 |
-| Critical violations | 0 ✅ | Manual audit |
-| Keyboard navigation | Functional ✅ | Smoke tests (HTTP-level) |
+| Criterion            | Status             | Evidence                             |
+| -------------------- | ------------------ | ------------------------------------ |
+| WCAG AA score        | 91% ✅             | KPI log Days 2-9                     |
+| Critical violations  | 0 ✅               | Manual audit                         |
+| Keyboard navigation  | Functional ✅      | Smoke tests (HTTP-level)             |
 | Screen reader compat | Pending full audit | Sprint 2 (Storybook + UI components) |
 
 ---
@@ -223,6 +226,7 @@ A sprint release is **BLOCKED** if any of the following are true:
 ---
 
 ## HANDOFF CHECKLIST
+
 - [x] All required sections are filled (not empty, not placeholder)
 - [x] All UNCERTAIN: items are documented and escalated
 - [x] All INSUFFICIENT_DATA: items are documented and escalated

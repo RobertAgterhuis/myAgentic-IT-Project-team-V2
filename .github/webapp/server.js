@@ -437,7 +437,10 @@ function serveSocialCard(pathname, res) {
 function serveLocaleFile(pathname, res) {
   try {
     const store = getStore();
-    const localePath = safePath(path.join(PROJECT_ROOT, 'locales'), pathname.replace(/^\/locales\//, ''));
+    const localePath = safePath(
+      path.join(PROJECT_ROOT, 'locales'),
+      pathname.replace(/^\/locales\//, '')
+    );
     const localeContent = store.readFile(localePath);
     JSON.parse(localeContent); // validate JSON
     res.setHeader('Content-Type', 'application/json; charset=utf-8');

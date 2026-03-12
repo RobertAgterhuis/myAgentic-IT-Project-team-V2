@@ -26,8 +26,8 @@ implementation (human-in-the-loop, CONTINUE-to-proceed).
 - **Dual-mode operation** — CREATE new solutions or AUDIT existing software
 - **4-phase analysis pipeline** — Requirements → Architecture → UX/UI → Brand &
   Growth
-- **Supervised sprint execution** — Phase 5 implements story-by-story with
-  human approval gates, testing, review, and KPI tracking
+- **Supervised sprint execution** — Phase 5 implements story-by-story with human
+  approval gates, testing, review, and KPI tracking
 - **Command Center web UI** — Visual pipeline view, questionnaire management,
   and decision tracking
 - **Built-in quality gates** — Critic + Risk agents validate every phase and
@@ -44,16 +44,16 @@ implementation (human-in-the-loop, CONTINUE-to-proceed).
 
 ## Technology Stack
 
-| Layer      | Technology                                                                                        |
-| ---------- | ------------------------------------------------------------------------------------------------- |
-| Runtime    | Node.js ≥ 18 (zero external dependencies for web UI)                                              |
-| Server     | Native `http` module, localhost only (127.0.0.1:3000)                                             |
-| MCP Server | [Model Context Protocol](https://modelcontextprotocol.io/) via stdio transport                    |
-| Data       | File-based JSON/Markdown storage with atomic writes                                               |
-| Testing    | [Jest 29](https://jestjs.io/) (root, 363 tests) + [Vitest 4](https://vitest.dev/) (.github/, 809 tests) |
+| Layer      | Technology                                                                                                       |
+| ---------- | ---------------------------------------------------------------------------------------------------------------- |
+| Runtime    | Node.js ≥ 18 (zero external dependencies for web UI)                                                             |
+| Server     | Native `http` module, localhost only (127.0.0.1:3000)                                                            |
+| MCP Server | [Model Context Protocol](https://modelcontextprotocol.io/) via stdio transport                                   |
+| Data       | File-based JSON/Markdown storage with atomic writes                                                              |
+| Testing    | [Jest 29](https://jestjs.io/) (root, 363 tests) + [Vitest 4](https://vitest.dev/) (.github/, 809 tests)          |
 | Linting    | [ESLint 8](https://eslint.org/) (root, legacy config) + [ESLint 10](https://eslint.org/) (.github/, flat config) |
-| AI Agents  | [GitHub Copilot](https://github.com/features/copilot) agents in VS Code, Visual Studio, JetBrains |
-| License    | MIT                                                                                               |
+| AI Agents  | [GitHub Copilot](https://github.com/features/copilot) agents in VS Code, Visual Studio, JetBrains                |
+| License    | MIT                                                                                                              |
 
 ---
 
@@ -294,8 +294,8 @@ npm run test:coverage
 npm run test:watch
 ```
 
-The test suite includes **1172 tests** across 45 files (17 Jest + 28 Vitest) with
-statement coverage enforced at 70%:
+The test suite includes **1172 tests** across 45 files (17 Jest + 28 Vitest)
+with statement coverage enforced at 70%:
 
 - **Root (`__tests__/`)** — 363 Jest tests: API endpoints, SSE, store caching,
   decisions round-trip, path traversal, concurrent requests
@@ -324,8 +324,10 @@ Current status: **0 errors, 0 warnings** in both configs.
 
 ## Community
 
-- **[GitHub Discussions](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/discussions)** — Ask questions, share ideas, and show what you've built
-- **[Issues](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/issues)** — Bug reports and feature requests
+- **[GitHub Discussions](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/discussions)**
+  — Ask questions, share ideas, and show what you've built
+- **[Issues](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/issues)**
+  — Bug reports and feature requests
 
 ---
 

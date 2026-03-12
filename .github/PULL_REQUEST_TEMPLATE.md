@@ -19,7 +19,8 @@
 
 ## Evidence Accuracy
 
-- [ ] Numeric claims (test counts, coverage, badges) verified against actual output
+- [ ] Numeric claims (test counts, coverage, badges) verified against actual
+      output
 - [ ] No new "autonomous" or "fully automated" claims without qualification
 
 ## Checklist

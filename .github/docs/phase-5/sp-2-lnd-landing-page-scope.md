@@ -18,7 +18,8 @@ Build the marketing landing page using GTM messaging (SP-12-702), brand assets
 point for social content (SP-2-SOC) and email campaigns (SP-2-BTN).
 
 **Dependency:** SP-2-MAT (#125) — Matomo analytics tracking will be added once
-Matomo is deployed. Landing page can be built without it; analytics tag added later.
+Matomo is deployed. Landing page can be built without it; analytics tag added
+later.
 
 ---
 
@@ -26,21 +27,21 @@ Matomo is deployed. Landing page can be built without it; analytics tag added la
 
 ### Hero Section
 
-| Element | Content | Source |
-|---------|---------|--------|
-| Headline | "Design it right. Build it fast." | SP-12-702 §3 (tagline, stakeholder-approved March 17) |
-| Subheading | "The first end-to-end platform that combines multi-discipline strategic analysis with iterative implementation." | SP-12-702 §1 (primary value proposition) |
-| Primary CTA | "Explore the Documentation →" | Docs site |
-| Secondary CTA | "View on GitHub →" | Repository link |
+| Element       | Content                                                                                                          | Source                                                |
+| ------------- | ---------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------- |
+| Headline      | "Design it right. Build it fast."                                                                                | SP-12-702 §3 (tagline, stakeholder-approved March 17) |
+| Subheading    | "The first end-to-end platform that combines multi-discipline strategic analysis with iterative implementation." | SP-12-702 §1 (primary value proposition)              |
+| Primary CTA   | "Explore the Documentation →"                                                                                    | Docs site                                             |
+| Secondary CTA | "View on GitHub →"                                                                                               | Repository link                                       |
 
 ### Value Proposition Section (4 Pillars)
 
-| Pillar | Heading | Key Point | Source |
-|--------|---------|-----------|--------|
-| End-to-End Rigor | "Zero gaps from strategy to sprint" | 4-phase analysis + Critic validation | SP-12-702 §2 Pillar 1 |
-| Multi-Discipline | "Every discipline, one system" | 30+ agents across 4 disciplines | SP-12-702 §2 Pillar 2 |
-| Built-In Governance | "Compliance automated, not afterthought" | GDPR, WCAG AA, secret scanning | SP-12-702 §2 Pillar 3 |
-| Execution Speed | "Plan rigorously, ship iteratively" | Sprint execution with CI/CD pipeline | SP-12-702 §2 Pillar 4 |
+| Pillar              | Heading                                  | Key Point                            | Source                |
+| ------------------- | ---------------------------------------- | ------------------------------------ | --------------------- |
+| End-to-End Rigor    | "Zero gaps from strategy to sprint"      | 4-phase analysis + Critic validation | SP-12-702 §2 Pillar 1 |
+| Multi-Discipline    | "Every discipline, one system"           | 30+ agents across 4 disciplines      | SP-12-702 §2 Pillar 2 |
+| Built-In Governance | "Compliance automated, not afterthought" | GDPR, WCAG AA, secret scanning       | SP-12-702 §2 Pillar 3 |
+| Execution Speed     | "Plan rigorously, ship iteratively"      | Sprint execution with CI/CD pipeline | SP-12-702 §2 Pillar 4 |
 
 ### How It Works Section
 
@@ -49,6 +50,7 @@ Phase 1 → Phase 2 → Phase 3 → Phase 4 → Sprint Execution (visual flow)
 ### Social Proof Section
 
 Sprint 1 metrics from sprint-1-completion-report.md:
+
 - 15 sprint items across 4 disciplines
 - 122 automated tests, 0 failures
 - 8-job CI/CD pipeline
@@ -57,6 +59,7 @@ Sprint 1 metrics from sprint-1-completion-report.md:
 ### Email Signup Section
 
 Integration with Buttondown subscribe endpoint (SP-2-BTN §3):
+
 - Email input + segment selector
 - Server-side POST to `/api/subscribe`
 - Privacy-first: no tracking pixels, GDPR-compliant double opt-in
@@ -65,14 +68,14 @@ Integration with Buttondown subscribe endpoint (SP-2-BTN §3):
 
 ## 3. Technical Requirements
 
-| Requirement | Specification |
-|-------------|---------------|
-| Design tokens | From `.github/docs/brand/design-tokens.json` v2.0.0 |
-| Responsive | 4 breakpoints (320, 768, 1024, 1440px) |
+| Requirement   | Specification                                              |
+| ------------- | ---------------------------------------------------------- |
+| Design tokens | From `.github/docs/brand/design-tokens.json` v2.0.0        |
+| Responsive    | 4 breakpoints (320, 768, 1024, 1440px)                     |
 | Accessibility | WCAG 2.1 AA (contrast ≥4.5:1, keyboard nav, screen reader) |
-| Performance | Lighthouse Performance ≥ 90 |
-| Analytics | Matomo tracking tag (added post SP-2-MAT deployment) |
-| Email signup | Buttondown API integration (SP-2-BTN) |
+| Performance   | Lighthouse Performance ≥ 90                                |
+| Analytics     | Matomo tracking tag (added post SP-2-MAT deployment)       |
+| Email signup  | Buttondown API integration (SP-2-BTN)                      |
 
 ---
 

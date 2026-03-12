@@ -51,8 +51,13 @@ describe('SP-2-501: Weblate Docker Compose stack', () => {
     expect(content).toMatch(/\$\{WEBLATE_DB_PASSWORD\}/);
     // No plaintext passwords
     const lines = content.split('\n');
-    const passLines = lines.filter(l =>
-      /PASSWORD/i.test(l) && !/\$\{/.test(l) && !/^\s*#/.test(l) && !/healthcheck/i.test(l) && !/test:/i.test(l)
+    const passLines = lines.filter(
+      (l) =>
+        /PASSWORD/i.test(l) &&
+        !/\$\{/.test(l) &&
+        !/^\s*#/.test(l) &&
+        !/healthcheck/i.test(l) &&
+        !/test:/i.test(l)
     );
     expect(passLines).toHaveLength(0);
   });
@@ -167,10 +172,7 @@ describe('SP-2-501: Locale file readiness for Weblate import', () => {
 /* ── Port isolation validation ───────────────────────────────── */
 describe('SP-2-501: Port isolation', () => {
   it('should not conflict with main app (3000) or Matomo (8080)', () => {
-    const content = fs.readFileSync(
-      path.join(ROOT, 'docker-compose.weblate.yml'), 'utf-8'
-    );
-    const portMatches = content.match(/"\$\{[^}]+\}:\d+"/g) || [];
+    const content = fs.readFileSync(path.join(ROOT, 'docker-compose.weblate.yml'), 'utf-8');
     // Default port is 8081, should not be 3000 or 8080
     expect(content).toContain('8081');
     expect(content).not.toMatch(/"\$\{WEBLATE_PORT:-3000\}/);

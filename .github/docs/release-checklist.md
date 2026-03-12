@@ -1,26 +1,29 @@
 # Release Checklist
 
-| Field | Value |
-|-------|-------|
-| **Document** | Release Checklist |
-| **Version** | 1.0 |
-| **Created** | 2026-03-12 |
+| Field             | Value                                      |
+| ----------------- | ------------------------------------------ |
+| **Document**      | Release Checklist                          |
+| **Version**       | 1.0                                        |
+| **Created**       | 2026-03-12                                 |
 | **Audit Finding** | F-05 (HIGH) — No release discipline exists |
-| **Issue** | #141 |
+| **Issue**         | #141                                       |
 
 ---
 
 ## Pre-Release
 
-- [ ] All tests pass: root (`npm test` — 363 Jest) + .github/ (`npm test` — 809 Vitest)
-- [ ] ESLint clean: both root (ESLint 8) and .github/ (ESLint 10) report 0 errors
+- [ ] All tests pass: root (`npm test` — 363 Jest) + .github/ (`npm test` — 809
+      Vitest)
+- [ ] ESLint clean: both root (ESLint 8) and .github/ (ESLint 10) report 0
+      errors
 - [ ] Coverage thresholds met (`npm run test:coverage` — 70% minimum)
 - [ ] `npm audit` shows no critical/high vulnerabilities
 - [ ] Secret scan passes (`detectSecrets()` on all staged files)
 - [ ] CHANGELOG.md updated with all changes since last release
 - [ ] Version bumped in `package.json` (root) and `.github/package.json`
 - [ ] All `UNCERTAIN:` and `INSUFFICIENT_DATA:` items resolved or documented
-- [ ] GA go/no-go criteria checked (see `.github/docs/ga-definition.md` Section 3)
+- [ ] GA go/no-go criteria checked (see `.github/docs/ga-definition.md`
+      Section 3)
 
 ## Release
 

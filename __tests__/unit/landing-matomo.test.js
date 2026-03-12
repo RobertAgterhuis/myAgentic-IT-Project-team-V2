@@ -59,7 +59,7 @@ describe('SP-2-LND: Matomo tracking integration on landing page', () => {
 
   it('should place tracking script in <head> before page load', () => {
     const headEnd = html.indexOf('</head>');
-    const scriptPos = html.indexOf("var _paq = window._paq");
+    const scriptPos = html.indexOf('var _paq = window._paq');
     expect(scriptPos).toBeGreaterThan(-1);
     expect(scriptPos).toBeLessThan(headEnd);
   });
@@ -78,7 +78,6 @@ describe('SP-2-LND: Matomo tracking integration on landing page', () => {
   it('should defer trackPageView to A/B experiment framework (SP-3-201-M)', () => {
     // trackPageView is now in the experiment script, not the head Matomo init
     const headEnd = html.indexOf('</head>');
-    const expComment = html.indexOf('SP-3-201-M');
     // The head comment references the deferral
     expect(html).toContain('Page view tracking deferred to A/B experiment script');
     // trackPageView push call is after experiment assignment in body

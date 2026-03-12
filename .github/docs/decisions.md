@@ -77,6 +77,7 @@ categories, 111 category-deferred)
 
 | ID      | Priority | Scope | Decision                | Notes | Date |
 | ------- | -------- | ----- | ----------------------- | ----- | ---- |
+| DEC-112 | HIGH | All sprints, Phase 5 | Use a publicly available icon library (e.g. Lucide, Heroicons, Phosphor) for all UI icons and visual assets instead of custom-creating them. No custom icon or illustration production — speeds up development, ensures consistency, and removes design-tool dependency. | DECIDED by Product Owner. Applies to SP-12-701 icon library, all UI components, brand guidelines Section 5. Logo/wordmark remains custom (text-based). Social cards (SP-2-SOC) already created as SVG are retained as-is. | 2026-03-12 |
 | DEC-100 | —        | —     | _(Add a decision here)_ |       |      |
 
 ---
@@ -90,6 +91,7 @@ categories, 111 category-deferred)
 
 ## Change Log
 
+- 2026-03-12T00:00:00.000Z | `create` | `DEC-112` | source: manual — use public icon library for all visual assets
 - 2026-03-07T17:42:05.245Z | `create` | `DEC-111` | source: webapp
 - 2026-03-07T17:41:36.176Z | `create` | `DEC-110` | source: webapp
 - 2026-03-07T17:41:15.853Z | `create` | `DEC-109` | source: webapp

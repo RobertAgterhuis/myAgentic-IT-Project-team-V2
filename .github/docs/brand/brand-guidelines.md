@@ -143,10 +143,14 @@ Imagery direction:
 
 Iconography rules:
 
-- Use outline or duotone icons with consistent stroke weight.
+- **Use a publicly available icon library** (e.g. Lucide, Heroicons, Phosphor)
+  for all UI icons. Do NOT custom-create icons. (Decision DEC-112)
+- Use outline or duotone icons with consistent stroke weight (2px).
 - Keep icon metaphors concrete (process, decision, verification, handoff, risk).
-- Use semantic token colors only.
+- Use semantic token colors only — icons inherit via `currentColor`.
 - Pair icon-only actions with accessible labels.
+- All icons render as inline SVG with `aria-hidden="true"` when adjacent text
+  provides the label.
 
 Illustration style:
 

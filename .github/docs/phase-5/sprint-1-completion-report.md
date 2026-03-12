@@ -256,7 +256,7 @@ No hardcoded credentials, API keys, or tokens found.
 |--------|-----------|----------|
 | SP-11-613 | CI Job 7 verification on `main` (first merge) | HIGH |
 | SP-1-203 | CI Job 8 implementation (axe-core + Lighthouse) | HIGH |
-| SP-12-701 | Implement design tokens, visual assets (Figma/Canva) | MEDIUM |
+| SP-12-701 | Implement design tokens; icon library sourced from public library (DEC-112) — no Figma/Canva needed for icons | MEDIUM |
 | SP-12-703 | Dev.to article publication, LinkedIn posts, GH Discussions | MEDIUM |
 | SP-12-704 | Buttondown ESP setup, email templates (HTML), double opt-in | MEDIUM |
 | SP-12-705 | Matomo deployment, dashboard implementation, first report | MEDIUM |

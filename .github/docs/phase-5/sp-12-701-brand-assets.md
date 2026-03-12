@@ -157,29 +157,35 @@ gates from Day 1. It's how production-ready software should be built."
 
 ---
 
-## 6. Icon Library (In Progress)
+## 6. Icon Library (RESOLVED — Public Library)
 
-### System Icons (Target: 20 core icons)
+> **Decision DEC-112:** All icons sourced from a publicly available icon library
+> (e.g. Lucide, Heroicons, Phosphor). No custom icon production required.
+> This eliminates the design-tool dependency and speeds up development.
 
-| Icon | Context | Status |
-|------|---------|--------|
-| Dashboard | Navigation, landing page | ✅ Spec |
-| Sprint | Sprint view, planning | ✅ Spec |
-| Agent | Agent visualization | ✅ Spec |
-| Questionnaire | Q&A interface | ✅ Spec |
-| Decision | Decision management | ✅ Spec |
-| Risk | Risk matrix, warnings | ✅ Spec |
-| Compliance | Compliance indicators | ✅ Spec |
-| Build | CI/CD pipeline status | ✅ Spec |
-| Test | Test results | ✅ Spec |
-| Deploy | Deployment status | ✅ Spec |
+### System Icons (Target: 20 core icons — sourced from public library)
+
+| Icon | Context | Library Equivalent |
+|------|---------|--------------------|
+| Dashboard | Navigation, landing page | `layout-dashboard` |
+| Sprint | Sprint view, planning | `refresh-cw` / `iteration` |
+| Agent | Agent visualization | `bot` / `cpu` |
+| Questionnaire | Q&A interface | `clipboard-list` |
+| Decision | Decision management | `git-branch` / `split` |
+| Risk | Risk matrix, warnings | `alert-triangle` |
+| Compliance | Compliance indicators | `shield-check` |
+| Build | CI/CD pipeline status | `hammer` / `wrench` |
+| Test | Test results | `flask-conical` / `test-tube` |
+| Deploy | Deployment status | `rocket` |
 
 ### Icon Guidelines
 
+- **Source:** Public icon library (Lucide recommended — MIT license, 24px grid, 2px stroke, matches brand style)
 - **Style:** Outlined, 2px stroke, rounded caps
 - **Grid:** 24 × 24 px
 - **Color:** Inherits from parent (currentColor)
 - **Format:** SVG (inline-ready)
+- **No custom icon creation** — select from library; if an exact match is unavailable, use the closest semantic equivalent
 
 ---
 
@@ -306,9 +312,12 @@ Examples: `agentic-sdlc-logo-horizontal-1x.svg`, `agentic-sdlc-logo-icon-256.png
 
 ---
 
-## 10. Icon Production Specifications
+## 10. Icon Usage Specifications (Public Library)
 
-### SVG Template
+> **Decision DEC-112:** Icons are sourced from a public icon library, not
+> custom-produced. The SVG template below matches Lucide's output format.
+
+### SVG Template (matches Lucide output)
 
 All icons follow the same base template for consistency:
 
@@ -321,41 +330,41 @@ All icons follow the same base template for consistency:
      stroke-width="2"
      stroke-linecap="round"
      stroke-linejoin="round">
-  <!-- icon paths -->
+  <!-- icon paths from public library -->
 </svg>
 ```
 
-### Production Rules
+### Usage Rules
 
 | Rule | Value |
 |------|-------|
+| Source | Public icon library (Lucide recommended, MIT license) |
 | Canvas size | 24 × 24 px |
 | Stroke width | 2px |
 | Stroke style | Round caps, round joins |
 | Fill | None (outline only) |
 | Color | `currentColor` (inherits) |
-| Padding | 2px internal padding (content fits 20 × 20 grid) |
-| Export formats | SVG (inline), SVG (file), PNG @1x, PNG @2x |
-| Naming | `icon-{name}.svg` (lowercase, hyphenated) |
-| Accessibility | Each icon must include `<title>` element when used standalone |
+| Installation | `npm install lucide` or inline SVG copy |
+| Accessibility | `aria-hidden="true"` when paired with text; `<title>` when standalone |
 
-### Icon Descriptions (for Design Tool Production)
+### Icon Mapping (Public Library → Application Context)
 
-| Icon | Visual Description | Key Shapes |
-|------|-------------------|------------|
-| Dashboard | Grid of 4 rectangles (2×2) | Rounded rects, varying heights |
-| Sprint | Circular arrow (iteration cycle) | Arc path, arrowhead |
-| Agent | Stylized robot/node face | Circle head, dot eyes, connection lines |
-| Questionnaire | Clipboard with checklist | Rectangle, 3 horizontal lines, checkmarks |
-| Decision | Fork/branch diverging paths | Y-shaped paths, dots at endpoints |
-| Risk | Triangle with exclamation | Triangle outline, vertical line + dot |
-| Compliance | Shield with checkmark | Shield shape, checkmark path |
-| Build | Hammer/wrench crossed | Two tool shapes at 45° angle |
-| Test | Beaker/flask | Flask outline with liquid level |
-| Deploy | Rocket launching | Rocket shape with flame trail |
+| Context | Lucide Icon Name | Fallback |
+|---------|-----------------|----------|
+| Dashboard | `layout-dashboard` | `grid-2x2` |
+| Sprint | `refresh-cw` | `iteration` |
+| Agent | `bot` | `cpu` |
+| Questionnaire | `clipboard-list` | `list-checks` |
+| Decision | `git-branch` | `split` |
+| Risk | `alert-triangle` | `shield-alert` |
+| Compliance | `shield-check` | `check-circle` |
+| Build | `hammer` | `wrench` |
+| Test | `flask-conical` | `test-tube` |
+| Deploy | `rocket` | `upload-cloud` |
 
-**Note:** SVG file production requires design tool (Figma/Illustrator). Specs
-above are complete for designer handoff. Tracked as Sprint 2 production task.
+**Note:** No custom icon production or design tool required. Select icons
+directly from the library. The webapp already uses this pattern (see
+`.github/webapp/index.html` inline SVGs).
 
 ---
 
@@ -368,12 +377,12 @@ above are complete for designer handoff. Tracked as Sprint 2 production task.
 - [x] Typography application guide (heading hierarchy, font loading, CSS props)
 - [x] Icon production specifications (SVG template, rules, visual descriptions)
 - [ ] Produce logo variant files (requires design tool — SVG/PNG export) → Sprint 2
-- [ ] Export icon library SVGs (10 core icons minimum) → Sprint 2
+- [x] ~~Export icon library SVGs (10 core icons minimum)~~ → RESOLVED by DEC-112: use public icon library (no custom production)
 - [ ] Produce social media sized assets (LinkedIn, Twitter/X headers) → Sprint 2
 
-**Note:** All specification work is complete. Remaining items require a design
-tool (Figma/Illustrator) for visual asset production — scheduled for Sprint 2
-with designer allocation.
+**Note:** Icon library work is resolved — public icon library (Lucide/Heroicons/Phosphor)
+will be used per DEC-112. Remaining items: logo variant files and social media
+sized assets require design tool or text-based generation.
 
 ---
 
@@ -392,5 +401,5 @@ with designer allocation.
 - [x] Logo export specifications defined (11 variants across 5 formats)
 - [x] Social media asset sizes defined (7 platform/asset combinations)
 - [ ] Logo files exported (Sprint 2 — requires design tool)
-- [ ] Icon SVGs exported (Sprint 2 — requires design tool)
+- [x] ~~Icon SVGs exported~~ → RESOLVED by DEC-112: public icon library (no custom production needed)
 - [x] Output written to file per MEMORY MANAGEMENT PROTOCOL

@@ -60,20 +60,20 @@
 
 ## Metrics
 
-| Metric                 | Sprint 4 | Sprint 5 | Delta   |
-| ---------------------- | -------- | -------- | ------- |
-| Planned items          | 8        | 7        | -1      |
-| Completed items        | 8        | 6        | -2      |
-| Deferred items         | 0        | 1        | +1      |
-| Velocity %             | 100%     | 86%      | -14%    |
-| Total tests            | 1172     | 1298     | +126    |
-| Vitest tests           | 809      | 935      | +126    |
-| Jest tests             | 363      | 363      | 0       |
-| Test suites            | 45       | 50       | +5      |
-| CI checks              | 22       | 22       | 0       |
-| Blockers               | 0        | 0        | 0       |
-| Effective days used    | 5        | 3        | -2      |
-| GA findings remaining  | 3        | 0        | -3      |
+| Metric                | Sprint 4 | Sprint 5 | Delta |
+| --------------------- | -------- | -------- | ----- |
+| Planned items         | 8        | 7        | -1    |
+| Completed items       | 8        | 6        | -2    |
+| Deferred items        | 0        | 1        | +1    |
+| Velocity %            | 100%     | 86%      | -14%  |
+| Total tests           | 1172     | 1298     | +126  |
+| Vitest tests          | 809      | 935      | +126  |
+| Jest tests            | 363      | 363      | 0     |
+| Test suites           | 45       | 50       | +5    |
+| CI checks             | 22       | 22       | 0     |
+| Blockers              | 0        | 0        | 0     |
+| Effective days used   | 5        | 3        | -2    |
+| GA findings remaining | 3        | 0        | -3    |
 
 ---
 
@@ -91,13 +91,13 @@
 
 ## Team Health
 
-| Dimension      | Rating | Notes                                                     |
-| -------------- | ------ | --------------------------------------------------------- |
-| Velocity       | 4/5    | 86% velocity; strong execution in 3 days                  |
-| Quality        | 5/5    | +126 tests; all suites passing; complexity resolved       |
-| Process        | 4/5    | KPI tracking applied; one item deferred (external dep)    |
-| Sustainability | 5/5    | 3-day sprint on 7-day budget; no burnout risk             |
-| Morale         | 5/5    | All GA findings closed; first feature sprint succeeded    |
+| Dimension      | Rating | Notes                                                  |
+| -------------- | ------ | ------------------------------------------------------ |
+| Velocity       | 4/5    | 86% velocity; strong execution in 3 days               |
+| Quality        | 5/5    | +126 tests; all suites passing; complexity resolved    |
+| Process        | 4/5    | KPI tracking applied; one item deferred (external dep) |
+| Sustainability | 5/5    | 3-day sprint on 7-day budget; no burnout risk          |
+| Morale         | 5/5    | All GA findings closed; first feature sprint succeeded |
 
 ---
 

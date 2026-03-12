@@ -29,15 +29,15 @@ deferred.
 
 ## Item Completion Summary
 
-| #   | Item ID     | Issue | Source    | Priority | ACs  | Status     | Day |
-| --- | ----------- | ----- | --------- | -------- | ---- | ---------- | --- |
-| 1   | SP-5-CAT    | #146  | F-11      | P1       | 5/5  | DONE       | 1   |
-| 2   | SP-5-ORCH-A | #80   | F-06 / P0 | P0       | 8/8  | DONE       | 2   |
-| 3   | SP-5-ORCH-B | #81   | F-06 / P0 | P0       | 7/7  | DONE       | 2   |
-| 4   | SP-5-SCHEMA | #68   | F-09      | P1       | 6/6  | DONE       | 2   |
-| 5   | SP-5-DESIGN | #36   | Backlog   | P1       | 7/7  | DONE       | 2   |
-| 6   | SP-5-KPI    | #147  | Retro     | P2       | 4/4  | DONE       | 3   |
-| 7   | SP-5-DEVTO  | #133  | Carryover | P2       | 1/4  | DEFERRED   | —   |
+| #   | Item ID     | Issue | Source    | Priority | ACs | Status   | Day |
+| --- | ----------- | ----- | --------- | -------- | --- | -------- | --- |
+| 1   | SP-5-CAT    | #146  | F-11      | P1       | 5/5 | DONE     | 1   |
+| 2   | SP-5-ORCH-A | #80   | F-06 / P0 | P0       | 8/8 | DONE     | 2   |
+| 3   | SP-5-ORCH-B | #81   | F-06 / P0 | P0       | 7/7 | DONE     | 2   |
+| 4   | SP-5-SCHEMA | #68   | F-09      | P1       | 6/6 | DONE     | 2   |
+| 5   | SP-5-DESIGN | #36   | Backlog   | P1       | 7/7 | DONE     | 2   |
+| 6   | SP-5-KPI    | #147  | Retro     | P2       | 4/4 | DONE     | 3   |
+| 7   | SP-5-DEVTO  | #133  | Carryover | P2       | 1/4 | DEFERRED | —   |
 
 Total: 6/7 items completed (86%), 37/41 ACs completed (90%).
 
@@ -112,15 +112,15 @@ section, cross-post plan documentation updated.
 
 ## CI Pipeline Status
 
-| Check               | Status |
-| ------------------- | ------ |
-| ESLint (root)       | PASS   |
-| ESLint (.github)    | PASS   |
-| Prettier            | PASS   |
-| Jest (363 tests)    | PASS   |
-| Vitest (935 tests)  | PASS   |
-| Semgrep             | PASS   |
-| Security scan       | PASS   |
+| Check              | Status |
+| ------------------ | ------ |
+| ESLint (root)      | PASS   |
+| ESLint (.github)   | PASS   |
+| Prettier           | PASS   |
+| Jest (363 tests)   | PASS   |
+| Vitest (935 tests) | PASS   |
+| Semgrep            | PASS   |
+| Security scan      | PASS   |
 
 ---
 

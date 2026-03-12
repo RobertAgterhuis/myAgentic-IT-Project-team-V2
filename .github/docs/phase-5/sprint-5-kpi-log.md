@@ -23,15 +23,15 @@
 
 ## Item Status Tracker
 
-| Sprint ID    | Issue | Status      | Day Started | Day Completed | ACs Done/Total |
-| ------------ | ----- | ----------- | ----------- | ------------- | -------------- |
-| SP-5-ORCH-A  | #80   | ✅ COMPLETE | 2           | 2             | 8/8            |
-| SP-5-ORCH-B  | #81   | ✅ COMPLETE | 3           | 3             | 7/7            |
-| SP-5-SCHEMA  | #68   | ✅ COMPLETE | 4           | 4             | 6/6            |
-| SP-5-DESIGN  | #36   | ✅ COMPLETE | 5           | 5             | 7/7            |
-| SP-5-CAT     | #146  | ✅ COMPLETE | 1           | 1             | 5/5            |
-| SP-5-DEVTO   | #133  | DEFERRED    | 6           | —             | 1/4            |
-| SP-5-KPI     | #147  | ✅ COMPLETE | 1           | 3             | 4/4            |
+| Sprint ID   | Issue | Status      | Day Started | Day Completed | ACs Done/Total |
+| ----------- | ----- | ----------- | ----------- | ------------- | -------------- |
+| SP-5-ORCH-A | #80   | ✅ COMPLETE | 2           | 2             | 8/8            |
+| SP-5-ORCH-B | #81   | ✅ COMPLETE | 3           | 3             | 7/7            |
+| SP-5-SCHEMA | #68   | ✅ COMPLETE | 4           | 4             | 6/6            |
+| SP-5-DESIGN | #36   | ✅ COMPLETE | 5           | 5             | 7/7            |
+| SP-5-CAT    | #146  | ✅ COMPLETE | 1           | 1             | 5/5            |
+| SP-5-DEVTO  | #133  | DEFERRED    | 6           | —             | 1/4            |
+| SP-5-KPI    | #147  | ✅ COMPLETE | 1           | 3             | 4/4            |
 
 **Total ACs:** 37/41 (90%) **Completed Items:** 6/7 (86%) **Deferred:** 1
 

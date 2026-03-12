@@ -31,11 +31,21 @@ const {
 describe('STATES — state definitions', () => {
   it('contains all required states', () => {
     const required = [
-      'IDLE', 'ONBOARDING',
-      'PHASE_1', 'CRITIC_1', 'PHASE_2', 'CRITIC_2',
-      'PHASE_3', 'CRITIC_3', 'PHASE_4', 'CRITIC_4',
-      'SYNTHESIS', 'SPRINT_GATE', 'PHASE_5_EXECUTING',
-      'COMPLETED', 'ERROR',
+      'IDLE',
+      'ONBOARDING',
+      'PHASE_1',
+      'CRITIC_1',
+      'PHASE_2',
+      'CRITIC_2',
+      'PHASE_3',
+      'CRITIC_3',
+      'PHASE_4',
+      'CRITIC_4',
+      'SYNTHESIS',
+      'SPRINT_GATE',
+      'PHASE_5_EXECUTING',
+      'COMPLETED',
+      'ERROR',
     ];
     for (const s of required) {
       expect(STATES).toHaveProperty(s);
@@ -226,9 +236,9 @@ describe('StateMachine — transition guards', () => {
     expect(sm.state).toBe('CRITIC_1');
 
     // Advance with failing gate
-    expect(() =>
-      sm.advance({ verdict: 'REJECTED', reason: 'Missing deliverables' })
-    ).toThrow(/Gate failed at CRITIC_1/);
+    expect(() => sm.advance({ verdict: 'REJECTED', reason: 'Missing deliverables' })).toThrow(
+      /Gate failed at CRITIC_1/
+    );
   });
 
   it('gate pass at CRITIC allows advance', () => {
@@ -410,8 +420,17 @@ describe('StateMachine — serialize()', () => {
 // ─────────────────────────────────────────────────────────────
 describe('MODE_CONFIGS — command variants', () => {
   it('has all required modes', () => {
-    const required = ['CREATE', 'AUDIT', 'CREATE_BUSINESS', 'CREATE_TECH',
-      'CREATE_UX', 'CREATE_MARKETING', 'FEATURE', 'SCOPE_CHANGE', 'HOTFIX'];
+    const required = [
+      'CREATE',
+      'AUDIT',
+      'CREATE_BUSINESS',
+      'CREATE_TECH',
+      'CREATE_UX',
+      'CREATE_MARKETING',
+      'FEATURE',
+      'SCOPE_CHANGE',
+      'HOTFIX',
+    ];
     for (const m of required) {
       expect(MODE_CONFIGS).toHaveProperty(m);
     }
@@ -480,9 +499,15 @@ describe('createCombinationMachine', () => {
     // Both should have same flow
     const flow1 = [];
     const flow2 = [];
-    while (sm1.nextState) { flow1.push(sm1.state); sm1.advance(); }
+    while (sm1.nextState) {
+      flow1.push(sm1.state);
+      sm1.advance();
+    }
     flow1.push(sm1.state);
-    while (sm2.nextState) { flow2.push(sm2.state); sm2.advance(); }
+    while (sm2.nextState) {
+      flow2.push(sm2.state);
+      sm2.advance();
+    }
     flow2.push(sm2.state);
 
     expect(flow1).toEqual(flow2);
@@ -495,7 +520,10 @@ describe('createCombinationMachine', () => {
   it('supports 3-discipline combo', () => {
     const sm = createCombinationMachine(['TECH', 'UX', 'MARKETING']);
     const visited = [];
-    while (sm.nextState) { visited.push(sm.state); sm.advance(); }
+    while (sm.nextState) {
+      visited.push(sm.state);
+      sm.advance();
+    }
     visited.push(sm.state);
 
     expect(visited).toContain('PHASE_2');
@@ -518,7 +546,10 @@ describe('createHotfixMachine', () => {
   it('HOTFIX flow bypasses design phases', () => {
     const sm = createHotfixMachine();
     const visited = [];
-    while (sm.nextState) { visited.push(sm.state); sm.advance(); }
+    while (sm.nextState) {
+      visited.push(sm.state);
+      sm.advance();
+    }
     visited.push(sm.state);
 
     // Should NOT contain any PHASE_1-4

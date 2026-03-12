@@ -56,42 +56,42 @@
 
 ## Retro Actions for Sprint 5
 
-| #   | Action                                                      | Target Item            | Category  |
-| --- | ----------------------------------------------------------- | ---------------------- | --------- |
-| 1   | Produce completion report immediately after PR merge        | Sprint process         | Process   |
-| 2   | Budget 1 day for CI stabilization in feature sprints        | Sprint planning        | Planning  |
-| 3   | Create KPI log on Day 1 and update daily                    | Sprint process         | Process   |
-| 4   | Add document validation tests for governance artifacts      | Test infrastructure    | Technical |
-| 5   | Map Sprint 4 retro actions to Sprint 5 backlog items        | Sprint 5 Sprint Gate   | Process   |
-| 6   | Resolve deferred GA findings F-06, F-09, F-11               | Sprint 5 scope         | Planning  |
-| 7   | Close Sprint 3 carryover SP-3-DEVTO (#133) or defer with reason | Sprint 5 backlog   | Planning  |
+| #   | Action                                                          | Target Item          | Category  |
+| --- | --------------------------------------------------------------- | -------------------- | --------- |
+| 1   | Produce completion report immediately after PR merge            | Sprint process       | Process   |
+| 2   | Budget 1 day for CI stabilization in feature sprints            | Sprint planning      | Planning  |
+| 3   | Create KPI log on Day 1 and update daily                        | Sprint process       | Process   |
+| 4   | Add document validation tests for governance artifacts          | Test infrastructure  | Technical |
+| 5   | Map Sprint 4 retro actions to Sprint 5 backlog items            | Sprint 5 Sprint Gate | Process   |
+| 6   | Resolve deferred GA findings F-06, F-09, F-11                   | Sprint 5 scope       | Planning  |
+| 7   | Close Sprint 3 carryover SP-3-DEVTO (#133) or defer with reason | Sprint 5 backlog     | Planning  |
 
 ---
 
 ## Metrics
 
-| Metric                    | Sprint 3 | Sprint 4 | Delta    |
-| ------------------------- | -------- | -------- | -------- |
-| Planned items             | 7        | 8        | +1       |
-| Completed items           | 6        | 8        | +2       |
-| Deferred items            | 1        | 0        | -1       |
-| Velocity %                | 86%      | 100%     | +14%     |
-| Total tests               | 1143     | 1172     | +29      |
-| CI checks                 | N/A      | 22       | N/A      |
-| Blockers                  | 0        | 0        | —        |
-| PR merge time             | Same day | Same day | —        |
+| Metric          | Sprint 3 | Sprint 4 | Delta |
+| --------------- | -------- | -------- | ----- |
+| Planned items   | 7        | 8        | +1    |
+| Completed items | 6        | 8        | +2    |
+| Deferred items  | 1        | 0        | -1    |
+| Velocity %      | 86%      | 100%     | +14%  |
+| Total tests     | 1143     | 1172     | +29   |
+| CI checks       | N/A      | 22       | N/A   |
+| Blockers        | 0        | 0        | —     |
+| PR merge time   | Same day | Same day | —     |
 
 ---
 
 ## Team Health
 
-| Dimension      | Rating | Notes                                                     |
-| -------------- | ------ | --------------------------------------------------------- |
-| Velocity       | 🟢 5/5 | First 100% sprint                                         |
-| Quality        | 🟢 4/5 | All CI checks pass; test delta modest                     |
-| Process        | 🟡 3/5 | Sprint 3 close-out gap; KPI log missed                    |
-| Sustainability | 🟢 4/5 | 5-day governance sprint was focused and achievable        |
-| Morale         | 🟢 5/5 | GA audit findings provided clear purpose and motivation   |
+| Dimension      | Rating | Notes                                                   |
+| -------------- | ------ | ------------------------------------------------------- |
+| Velocity       | 🟢 5/5 | First 100% sprint                                       |
+| Quality        | 🟢 4/5 | All CI checks pass; test delta modest                   |
+| Process        | 🟡 3/5 | Sprint 3 close-out gap; KPI log missed                  |
+| Sustainability | 🟢 4/5 | 5-day governance sprint was focused and achievable      |
+| Morale         | 🟢 5/5 | GA audit findings provided clear purpose and motivation |
 
 ---
 

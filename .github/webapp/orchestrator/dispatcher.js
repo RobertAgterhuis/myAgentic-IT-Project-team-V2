@@ -69,12 +69,8 @@ const PHASE_AGENTS = Object.freeze({
     { id: '18', name: 'Critic Agent' },
     { id: '19', name: 'Risk Agent' },
   ],
-  [STATES.SYNTHESIS]: [
-    { id: '17', name: 'Synthesis Agent' },
-  ],
-  [STATES.SPRINT_GATE]: [
-    { id: '00', name: 'Orchestrator (Sprint Gate)' },
-  ],
+  [STATES.SYNTHESIS]: [{ id: '17', name: 'Synthesis Agent' }],
+  [STATES.SPRINT_GATE]: [{ id: '00', name: 'Orchestrator (Sprint Gate)' }],
   [STATES.PHASE_5_EXECUTING]: [
     { id: '20', name: 'Implementation Agent' },
     { id: '21', name: 'Test Agent' },
@@ -96,7 +92,7 @@ const PLATFORMS = Object.freeze({
 // ─── Default Configuration ───────────────────────────────────
 const DEFAULT_CONFIG = Object.freeze({
   platform: PLATFORMS.COPILOT,
-  timeoutMs: 300000,  // 5 minutes default
+  timeoutMs: 300000, // 5 minutes default
   maxRetries: 2,
   retryDelayMs: 5000,
   skillsDir: '.github/skills',
@@ -306,8 +302,14 @@ class Dispatcher {
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error('TIMEOUT')), ms);
       promise
-        .then((val) => { clearTimeout(timer); resolve(val); })
-        .catch((err) => { clearTimeout(timer); reject(err); });
+        .then((val) => {
+          clearTimeout(timer);
+          resolve(val);
+        })
+        .catch((err) => {
+          clearTimeout(timer);
+          reject(err);
+        });
     });
   }
 

@@ -55,9 +55,12 @@ const FULL_FLOW = [
  */
 // States always included regardless of selected phases
 const STRUCTURAL_STATES = new Set([
-  STATES.IDLE, STATES.ONBOARDING,
-  STATES.SYNTHESIS, STATES.SPRINT_GATE,
-  STATES.PHASE_5_EXECUTING, STATES.COMPLETED,
+  STATES.IDLE,
+  STATES.ONBOARDING,
+  STATES.SYNTHESIS,
+  STATES.SPRINT_GATE,
+  STATES.PHASE_5_EXECUTING,
+  STATES.COMPLETED,
 ]);
 
 function isPhaseOrMatchingCritic(state, phaseSet) {
@@ -157,7 +160,9 @@ class StateMachine {
   static _buildTransitions(mode, phases) {
     const config = MODE_CONFIGS[mode];
     if (!config) {
-      throw new Error(`Unknown mode: ${mode}. Valid modes: ${Object.keys(MODE_CONFIGS).join(', ')}`);
+      throw new Error(
+        `Unknown mode: ${mode}. Valid modes: ${Object.keys(MODE_CONFIGS).join(', ')}`
+      );
     }
     return buildTransitionMap(phases || config.phases);
   }
@@ -218,7 +223,7 @@ class StateMachine {
     if (!next) {
       const err = new Error(
         `No valid transition from state "${this._state}". ` +
-        (this._state === STATES.COMPLETED ? 'Pipeline is complete.' : 'State machine is stuck.')
+          (this._state === STATES.COMPLETED ? 'Pipeline is complete.' : 'State machine is stuck.')
       );
       this._handleError(err);
       throw err;

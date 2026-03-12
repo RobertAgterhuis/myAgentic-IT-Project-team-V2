@@ -55,25 +55,25 @@ _Updated: 2026-04-01 | Retrospective Agent | Sprint 2 Close_
 
 ## Sprint 3 Lessons
 
-| ID  | Lesson                                                                                  | Type      | Applies To             | Sprint 4 Action                                                          |
-| --- | --------------------------------------------------------------------------------------- | --------- | ---------------------- | ------------------------------------------------------------------------ |
-| L14 | No-response fallback for stakeholder items unblocks sprints on Day 3                    | Process   | Stakeholder items      | ✅ Applied — Sprint 4 had no stakeholder items (governance sprint)       |
-| L15 | Highest single-day velocity possible when all dependencies resolved early               | Planning  | Sprint planning        | ✅ Applied — dependency chain Day 1→2→3→4→5 in Sprint 4                  |
-| L16 | Dual-metric velocity (item + AC) captures last-mile effort better than items alone      | Process   | All sprints            | ✅ Applied — 59 ACs tracked per item in Sprint 4                         |
-| L17 | Self-test findings produce actionable backlog items when pilot recruitment fails         | Process   | Pilot/feedback sprints | N/A — Sprint 4 was governance-only                                       |
-| L18 | Vitest suite alongside Jest requires separate config roots and CI steps                 | Technical | Test infrastructure    | ✅ Applied — dual test runner pipeline in Sprint 4 CI                    |
+| ID  | Lesson                                                                             | Type      | Applies To             | Sprint 4 Action                                                    |
+| --- | ---------------------------------------------------------------------------------- | --------- | ---------------------- | ------------------------------------------------------------------ |
+| L14 | No-response fallback for stakeholder items unblocks sprints on Day 3               | Process   | Stakeholder items      | ✅ Applied — Sprint 4 had no stakeholder items (governance sprint) |
+| L15 | Highest single-day velocity possible when all dependencies resolved early          | Planning  | Sprint planning        | ✅ Applied — dependency chain Day 1→2→3→4→5 in Sprint 4            |
+| L16 | Dual-metric velocity (item + AC) captures last-mile effort better than items alone | Process   | All sprints            | ✅ Applied — 59 ACs tracked per item in Sprint 4                   |
+| L17 | Self-test findings produce actionable backlog items when pilot recruitment fails   | Process   | Pilot/feedback sprints | N/A — Sprint 4 was governance-only                                 |
+| L18 | Vitest suite alongside Jest requires separate config roots and CI steps            | Technical | Test infrastructure    | ✅ Applied — dual test runner pipeline in Sprint 4 CI              |
 
 ---
 
 ## Sprint 4 Lessons
 
-| ID  | Lesson                                                                                  | Type      | Applies To              | Sprint 5 Action                                                           |
-| --- | --------------------------------------------------------------------------------------- | --------- | ----------------------- | ------------------------------------------------------------------------- |
-| L19 | Governance-only sprints (no feature work) achieve highest velocity (100%)               | Planning  | Sprint planning         | Sprint 5 will mix features + deferred items; expect 80-87% velocity       |
-| L20 | External audit findings drive clear, scoped, testable sprint items                      | Process   | Audit-driven sprints    | Use audit deferred items (F-06, F-09, F-11) as Sprint 5 inputs            |
-| L21 | CI pipeline hardening should be done once thoroughly, not incrementally                  | Technical | Infrastructure          | CI pipeline now stable (22 checks); no further hardening needed           |
-| L22 | PR template dogfooding within the sprint ensures template quality                       | Process   | Process sprints         | Continue dogfooding new processes within the sprint that creates them      |
-| L23 | Day 1 scope decisions (deployment profile) create clean dependency chains               | Planning  | Architecture sprints    | Sprint 5 Day 1 should resolve scope decisions before implementation       |
+| ID  | Lesson                                                                    | Type      | Applies To           | Sprint 5 Action                                                       |
+| --- | ------------------------------------------------------------------------- | --------- | -------------------- | --------------------------------------------------------------------- |
+| L19 | Governance-only sprints (no feature work) achieve highest velocity (100%) | Planning  | Sprint planning      | Sprint 5 will mix features + deferred items; expect 80-87% velocity   |
+| L20 | External audit findings drive clear, scoped, testable sprint items        | Process   | Audit-driven sprints | Use audit deferred items (F-06, F-09, F-11) as Sprint 5 inputs        |
+| L21 | CI pipeline hardening should be done once thoroughly, not incrementally   | Technical | Infrastructure       | CI pipeline now stable (22 checks); no further hardening needed       |
+| L22 | PR template dogfooding within the sprint ensures template quality         | Process   | Process sprints      | Continue dogfooding new processes within the sprint that creates them |
+| L23 | Day 1 scope decisions (deployment profile) create clean dependency chains | Planning  | Architecture sprints | Sprint 5 Day 1 should resolve scope decisions before implementation   |
 
 ---
 

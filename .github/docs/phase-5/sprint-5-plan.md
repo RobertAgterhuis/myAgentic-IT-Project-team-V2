@@ -1,15 +1,15 @@
 # Sprint 5 Plan — First Feature Sprint Post-GA
 
-| Field               | Value                                                                                                |
-| ------------------- | ---------------------------------------------------------------------------------------------------- |
-| **Sprint**          | 5                                                                                                    |
-| **Milestone**       | #27 — Sprint 5 — Orchestrator Foundation + Audit Closure                                             |
-| **Branch**          | `feature/sprint-5-implementation`                                                                    |
-| **Start**           | 2026-03-18                                                                                           |
-| **Duration**        | 7 days                                                                                               |
+| Field               | Value                                                                                                 |
+| ------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Sprint**          | 5                                                                                                     |
+| **Milestone**       | #27 — Sprint 5 — Orchestrator Foundation + Audit Closure                                              |
+| **Branch**          | `feature/sprint-5-implementation`                                                                     |
+| **Start**           | 2026-03-18                                                                                            |
+| **Duration**        | 7 days                                                                                                |
 | **Theme**           | Begin feature implementation (FEAT-05 orchestrator), close deferred GA findings, process improvements |
-| **Velocity target** | 87% (6/7 items, based on 4-sprint average: 88%)                                                      |
-| **Source**          | Sprint 4 deferred findings (F-06, F-09, F-11) + product backlog (FEAT-02, FEAT-03, FEAT-05)          |
+| **Velocity target** | 87% (6/7 items, based on 4-sprint average: 88%)                                                       |
+| **Source**          | Sprint 4 deferred findings (F-06, F-09, F-11) + product backlog (FEAT-02, FEAT-03, FEAT-05)           |
 
 ---
 
@@ -27,15 +27,15 @@ backlog gap (F-06).
 
 ## Sprint Gate Validation
 
-| Check                        | Result                                                                 |
-| ---------------------------- | ---------------------------------------------------------------------- |
-| Open HIGH-priority decisions | **PASS** — 0 OPEN HIGH questions in `decisions.md`                     |
-| Reevaluate triggers          | **PASS** — No pending `reevaluate-trigger.json`                        |
-| Lessons injected             | **PASS** — L19, L23, L21 injected (see below)                          |
-| Retro actions mapped         | **PASS** — All 7 Sprint 4 retro actions mapped                         |
-| Definition of Ready          | **PASS** — All items have ACs, estimates, dependencies documented      |
-| Deferred GA findings         | **PASS** — F-06, F-09, F-11 scoped into sprint items                  |
-| CI pipeline status           | **PASS** — 22 checks stable, no infra work needed (L21)               |
+| Check                        | Result                                                            |
+| ---------------------------- | ----------------------------------------------------------------- |
+| Open HIGH-priority decisions | **PASS** — 0 OPEN HIGH questions in `decisions.md`                |
+| Reevaluate triggers          | **PASS** — No pending `reevaluate-trigger.json`                   |
+| Lessons injected             | **PASS** — L19, L23, L21 injected (see below)                     |
+| Retro actions mapped         | **PASS** — All 7 Sprint 4 retro actions mapped                    |
+| Definition of Ready          | **PASS** — All items have ACs, estimates, dependencies documented |
+| Deferred GA findings         | **PASS** — F-06, F-09, F-11 scoped into sprint items              |
+| CI pipeline status           | **PASS** — 22 checks stable, no infra work needed (L21)           |
 
 **Sprint Gate Verdict: APPROVED**
 
@@ -69,29 +69,29 @@ pattern, schema format) before implementation begins on Day 2.
 
 ## Sprint 4 Retro Action → Sprint 5 Mapping
 
-| #   | Retro Action                                        | Sprint 5 Item                 | How Applied                                        |
-| --- | --------------------------------------------------- | ----------------------------- | -------------------------------------------------- |
-| 1   | Completion report immediately after PR merge        | Sprint process                | Built into Day 7 schedule                          |
-| 2   | Budget 1 day for CI stabilization                   | N/A — CI stable (L21)        | No CI items in sprint; budget Day 7 if needed      |
-| 3   | Create KPI log on Day 1 and update daily            | SP-5-KPI (#NEW)               | KPI log created Day 1, updated daily               |
-| 4   | Document validation tests for governance artifacts  | SP-5-KPI (#NEW)               | Schema validation tests for ga-definition, etc.    |
-| 5   | Map Sprint 4 retro actions to Sprint 5 items        | This mapping                  | ✅ Applied                                         |
-| 6   | Resolve deferred GA findings F-06, F-09, F-11       | SP-5-ORCH-A, SP-5-ORCH-B, SP-5-CAT, SP-5-SCHEMA | Deferred items mapped to sprint items |
-| 7   | Close or defer SP-3-DEVTO with reason               | SP-5-DEVTO (#133)             | Completing remaining 4 ACs                         |
+| #   | Retro Action                                       | Sprint 5 Item                                   | How Applied                                     |
+| --- | -------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------- |
+| 1   | Completion report immediately after PR merge       | Sprint process                                  | Built into Day 7 schedule                       |
+| 2   | Budget 1 day for CI stabilization                  | N/A — CI stable (L21)                           | No CI items in sprint; budget Day 7 if needed   |
+| 3   | Create KPI log on Day 1 and update daily           | SP-5-KPI (#NEW)                                 | KPI log created Day 1, updated daily            |
+| 4   | Document validation tests for governance artifacts | SP-5-KPI (#NEW)                                 | Schema validation tests for ga-definition, etc. |
+| 5   | Map Sprint 4 retro actions to Sprint 5 items       | This mapping                                    | ✅ Applied                                      |
+| 6   | Resolve deferred GA findings F-06, F-09, F-11      | SP-5-ORCH-A, SP-5-ORCH-B, SP-5-CAT, SP-5-SCHEMA | Deferred items mapped to sprint items           |
+| 7   | Close or defer SP-3-DEVTO with reason              | SP-5-DEVTO (#133)                               | Completing remaining 4 ACs                      |
 
 ---
 
 ## Item Summary
 
-| #   | Item ID      | Issue  | Source     | Priority | ACs | Days  |
-| --- | ------------ | ------ | ---------- | -------- | --- | ----- |
-| 1   | SP-5-ORCH-A  | #80    | F-06 / P0  | P0       | 8   | 2-3   |
-| 2   | SP-5-ORCH-B  | #81    | F-06 / P0  | P0       | 7   | 3-4   |
-| 3   | SP-5-SCHEMA  | #68    | F-09       | P1       | 6   | 4-5   |
-| 4   | SP-5-DESIGN  | #36    | Backlog    | P1       | 7   | 5-6   |
-| 5   | SP-5-CAT     | #146   | F-11       | P1       | 5   | 1     |
-| 6   | SP-5-DEVTO   | #133   | Carryover  | P2       | 4   | 6     |
-| 7   | SP-5-KPI     | #147   | Retro #3,4 | P2       | 4   | 1,7   |
+| #   | Item ID     | Issue | Source     | Priority | ACs | Days |
+| --- | ----------- | ----- | ---------- | -------- | --- | ---- |
+| 1   | SP-5-ORCH-A | #80   | F-06 / P0  | P0       | 8   | 2-3  |
+| 2   | SP-5-ORCH-B | #81   | F-06 / P0  | P0       | 7   | 3-4  |
+| 3   | SP-5-SCHEMA | #68   | F-09       | P1       | 6   | 4-5  |
+| 4   | SP-5-DESIGN | #36   | Backlog    | P1       | 7   | 5-6  |
+| 5   | SP-5-CAT    | #146  | F-11       | P1       | 5   | 1    |
+| 6   | SP-5-DEVTO  | #133  | Carryover  | P2       | 4   | 6    |
+| 7   | SP-5-KPI    | #147  | Retro #3,4 | P2       | 4   | 1,7  |
 
 **Total: 7 items, ~41 ACs**
 
@@ -129,10 +129,10 @@ Day 7:  Sprint completion + reports + PR
 
 **Theme:** Resolve architectural scope decisions, close F-11, set up sprint tracking.
 
-| Item      | Issue | ACs | Deliverables                                          |
-| --------- | ----- | --- | ----------------------------------------------------- |
-| SP-5-CAT  | #NEW  | 5   | Decision category files for CAT-01 through CAT-09     |
-| SP-5-KPI  | #NEW  | 2   | `sprint-5-kpi-log.md`, governance doc validation tests |
+| Item     | Issue | ACs | Deliverables                                           |
+| -------- | ----- | --- | ------------------------------------------------------ |
+| SP-5-CAT | #NEW  | 5   | Decision category files for CAT-01 through CAT-09      |
+| SP-5-KPI | #NEW  | 2   | `sprint-5-kpi-log.md`, governance doc validation tests |
 
 **SP-5-CAT (F-11) work:**
 
@@ -161,8 +161,8 @@ Day 7:  Sprint completion + reports + PR
 
 **Theme:** Build the core state machine engine that drives the orchestrator.
 
-| Item        | Issue | ACs | Deliverables                              |
-| ----------- | ----- | --- | ----------------------------------------- |
+| Item        | Issue | ACs | Deliverables                                |
+| ----------- | ----- | --- | ------------------------------------------- |
 | SP-5-ORCH-A | #80   | 8   | `src/orchestrator/state-machine.js` + tests |
 
 **FEAT-05-A work (from architecture spec):**
@@ -190,7 +190,7 @@ Day 7:  Sprint completion + reports + PR
 
 | Item        | Issue | ACs | Deliverables                             |
 | ----------- | ----- | --- | ---------------------------------------- |
-| SP-5-ORCH-B | #81   | 7   | `src/orchestrator/dispatcher.js` + tests  |
+| SP-5-ORCH-B | #81   | 7   | `src/orchestrator/dispatcher.js` + tests |
 
 **FEAT-05-B work (from architecture spec):**
 
@@ -215,9 +215,9 @@ Day 7:  Sprint completion + reports + PR
 
 **Theme:** Define the cross-platform agent schema that enables multi-LLM support.
 
-| Item       | Issue | ACs | Deliverables                                         |
-| ---------- | ----- | --- | ---------------------------------------------------- |
-| SP-5-SCHEMA | #68   | 6   | `src/schemas/agent-schema.json`, validation, tests    |
+| Item        | Issue | ACs | Deliverables                                       |
+| ----------- | ----- | --- | -------------------------------------------------- |
+| SP-5-SCHEMA | #68   | 6   | `src/schemas/agent-schema.json`, validation, tests |
 
 **FEAT-03-A work (from architecture spec):**
 
@@ -241,9 +241,9 @@ Day 7:  Sprint completion + reports + PR
 
 **Theme:** Establish the design token system and component architecture.
 
-| Item       | Issue | ACs | Deliverables                               |
-| ---------- | ----- | --- | ------------------------------------------ |
-| SP-5-DESIGN | #36   | 7   | Design tokens, component architecture docs  |
+| Item        | Issue | ACs | Deliverables                               |
+| ----------- | ----- | --- | ------------------------------------------ |
+| SP-5-DESIGN | #36   | 7   | Design tokens, component architecture docs |
 
 **FEAT-02-A work (from UX/UI specs):**
 
@@ -269,8 +269,8 @@ Day 7:  Sprint completion + reports + PR
 
 **Theme:** Close the Sprint 3 carryover item.
 
-| Item      | Issue | ACs | Deliverables                            |
-| --------- | ----- | --- | --------------------------------------- |
+| Item       | Issue | ACs | Deliverables                                 |
+| ---------- | ----- | --- | -------------------------------------------- |
 | SP-5-DEVTO | #133  | 4   | Dev.to articles cross-posted, canonical URLs |
 
 **Remaining work (4/6 ACs):**
@@ -307,22 +307,22 @@ Day 7:  Sprint completion + reports + PR
 
 ## Audit Findings Closure Status
 
-| Finding | Severity | Sprint 4        | Sprint 5                    | Status        |
-| ------- | -------- | ---------------- | --------------------------- | ------------- |
-| F-06    | HIGH     | Deferred         | SP-5-ORCH-A + SP-5-ORCH-B  | 🟡 IN SPRINT |
-| F-09    | MEDIUM   | Deferred         | SP-5-SCHEMA (foundation)    | 🟡 STARTED   |
-| F-11    | MEDIUM   | Deferred         | SP-5-CAT                    | 🟡 IN SPRINT |
+| Finding | Severity | Sprint 4 | Sprint 5                  | Status       |
+| ------- | -------- | -------- | ------------------------- | ------------ |
+| F-06    | HIGH     | Deferred | SP-5-ORCH-A + SP-5-ORCH-B | 🟡 IN SPRINT |
+| F-09    | MEDIUM   | Deferred | SP-5-SCHEMA (foundation)  | 🟡 STARTED   |
+| F-11    | MEDIUM   | Deferred | SP-5-CAT                  | 🟡 IN SPRINT |
 
 ---
 
 ## Risk Register
 
-| Risk                                          | Likelihood | Impact | Mitigation                                                     |
-| --------------------------------------------- | ---------- | ------ | -------------------------------------------------------------- |
-| Orchestrator scope creep (state machine)      | Medium     | High   | Strict AC scoping; only states in session-state.json           |
-| FEAT-05-A → FEAT-05-B dependency blocks Day 4 | Medium     | Medium | State machine API frozen end of Day 2; dispatcher can mock     |
-| Design token system complexity                | Low        | Medium | Build on existing design-tokens.json; don't redesign           |
-| Dev.to account setup requires manual steps    | Medium     | Low    | Can defer to Sprint 6 if blocked; not on critical path         |
+| Risk                                          | Likelihood | Impact | Mitigation                                                 |
+| --------------------------------------------- | ---------- | ------ | ---------------------------------------------------------- |
+| Orchestrator scope creep (state machine)      | Medium     | High   | Strict AC scoping; only states in session-state.json       |
+| FEAT-05-A → FEAT-05-B dependency blocks Day 4 | Medium     | Medium | State machine API frozen end of Day 2; dispatcher can mock |
+| Design token system complexity                | Low        | Medium | Build on existing design-tokens.json; don't redesign       |
+| Dev.to account setup requires manual steps    | Medium     | Low    | Can defer to Sprint 6 if blocked; not on critical path     |
 
 ---
 
@@ -334,9 +334,9 @@ Day 7:  Sprint completion + reports + PR
 
 ## Persistent Carryover
 
-| Item       | Issue | Status            | Sprint 5 Action             |
-| ---------- | ----- | ----------------- | --------------------------- |
-| SP-3-DEVTO | #133  | BACKLOG (2/6 ACs) | SP-5-DEVTO — complete item  |
+| Item       | Issue | Status            | Sprint 5 Action            |
+| ---------- | ----- | ----------------- | -------------------------- |
+| SP-3-DEVTO | #133  | BACKLOG (2/6 ACs) | SP-5-DEVTO — complete item |
 
 ---
 
@@ -359,13 +359,13 @@ Sprint 5 is COMPLETE when:
 
 ## Predecessor Context
 
-| Sprint | Items | Completed | Velocity | Theme                     |
-| ------ | ----- | --------- | -------- | ------------------------- |
-| SP-1   | 15    | 13        | 87%      | Foundation + platform     |
-| SP-2   | 10    | 8         | 80%      | UX + localization         |
-| SP-3   | 7     | 6         | 86%      | Pilot + operations        |
-| SP-4   | 8     | 8         | 100%     | GA governance (audit)     |
-| **SP-5** | **7** | **TBD**  | **87% target** | **Feature foundation** |
+| Sprint   | Items | Completed | Velocity       | Theme                  |
+| -------- | ----- | --------- | -------------- | ---------------------- |
+| SP-1     | 15    | 13        | 87%            | Foundation + platform  |
+| SP-2     | 10    | 8         | 80%            | UX + localization      |
+| SP-3     | 7     | 6         | 86%            | Pilot + operations     |
+| SP-4     | 8     | 8         | 100%           | GA governance (audit)  |
+| **SP-5** | **7** | **TBD**   | **87% target** | **Feature foundation** |
 
 ---
 

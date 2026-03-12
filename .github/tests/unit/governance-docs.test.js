@@ -30,7 +30,7 @@ function readDoc(filename) {
  */
 function extractH2Headings(content) {
   const matches = content.match(/^## .+$/gm) || [];
-  return matches.map(h => h.replace(/^## /, ''));
+  return matches.map((h) => h.replace(/^## /, ''));
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -67,7 +67,7 @@ describe('ga-definition.md — structure validation', () => {
 
   it.each(requiredSections)('contains section "%s"', (section) => {
     const sectionNumber = section.split('.')[0];
-    const matchingHeading = headings.find(h => h.startsWith(`${sectionNumber}.`));
+    const matchingHeading = headings.find((h) => h.startsWith(`${sectionNumber}.`));
     expect(matchingHeading).toBeDefined();
   });
 
@@ -115,7 +115,7 @@ describe('data-inventory.md — structure validation', () => {
 
   it.each(requiredSections)('contains section "%s"', (section) => {
     const sectionNumber = section.split('.')[0];
-    const matchingHeading = headings.find(h => h.startsWith(`${sectionNumber}.`));
+    const matchingHeading = headings.find((h) => h.startsWith(`${sectionNumber}.`));
     expect(matchingHeading).toBeDefined();
   });
 
@@ -163,7 +163,7 @@ describe('security-design.md — structure validation', () => {
 
   it.each(requiredSections)('contains section "%s"', (section) => {
     const sectionNumber = section.split('.')[0];
-    const matchingHeading = headings.find(h => h.startsWith(`${sectionNumber}.`));
+    const matchingHeading = headings.find((h) => h.startsWith(`${sectionNumber}.`));
     expect(matchingHeading).toBeDefined();
   });
 
@@ -172,7 +172,9 @@ describe('security-design.md — structure validation', () => {
   });
 
   it('contains STRIDE threat categories', () => {
-    expect(content).toMatch(/Spoofing|Tampering|Repudiation|Information Disclosure|Denial of Service|Elevation of Privilege/i);
+    expect(content).toMatch(
+      /Spoofing|Tampering|Repudiation|Information Disclosure|Denial of Service|Elevation of Privilege/i
+    );
   });
 
   it('contains hardening checklist items', () => {

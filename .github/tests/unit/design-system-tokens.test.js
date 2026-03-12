@@ -9,21 +9,47 @@ describe('Design system foundation tokens (FEAT-02-A)', () => {
 
   it('defines required typography scale tokens in :root', () => {
     const css = fs.readFileSync(cssPath, 'utf8');
-    for (const token of ['--text-12', '--text-14', '--text-16', '--text-20', '--text-24', '--text-32']) {
+    for (const token of [
+      '--text-12',
+      '--text-14',
+      '--text-16',
+      '--text-20',
+      '--text-24',
+      '--text-32',
+    ]) {
       expect(css).toContain(token);
     }
   });
 
   it('defines required spacing tokens based on 4px grid', () => {
     const css = fs.readFileSync(cssPath, 'utf8');
-    for (const token of ['--space-1', '--space-2', '--space-3', '--space-4', '--space-6', '--space-8', '--space-12', '--space-16']) {
+    for (const token of [
+      '--space-1',
+      '--space-2',
+      '--space-3',
+      '--space-4',
+      '--space-6',
+      '--space-8',
+      '--space-12',
+      '--space-16',
+    ]) {
       expect(css).toContain(token);
     }
   });
 
   it('defines elevation, radius, and motion tokens', () => {
     const css = fs.readFileSync(cssPath, 'utf8');
-    for (const token of ['--shadow-1', '--shadow-2', '--shadow-3', '--shadow-4', '--radius-2', '--radius-4', '--radius-8', '--motion-fast', '--motion-normal']) {
+    for (const token of [
+      '--shadow-1',
+      '--shadow-2',
+      '--shadow-3',
+      '--shadow-4',
+      '--radius-2',
+      '--radius-4',
+      '--radius-8',
+      '--motion-fast',
+      '--motion-normal',
+    ]) {
       expect(css).toContain(token);
     }
   });

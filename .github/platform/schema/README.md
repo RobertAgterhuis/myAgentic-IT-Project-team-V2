@@ -51,7 +51,12 @@ npm test -- tests/unit/agent-schema.test.js
   "role": "Business Analyst specialist role",
   "phase": "PHASE_1",
   "skillFiles": [".github/skills/01-business-analyst.md"],
-  "tools": ["tool.files.read", "tool.files.write", "tool.context.search", "tool.validation.contract"],
+  "tools": [
+    "tool.files.read",
+    "tool.files.write",
+    "tool.context.search",
+    "tool.validation.contract"
+  ],
   "guardrails": [
     ".github/docs/guardrails/00-global-guardrails.md",
     ".github/docs/guardrails/01-business-guardrails.md"

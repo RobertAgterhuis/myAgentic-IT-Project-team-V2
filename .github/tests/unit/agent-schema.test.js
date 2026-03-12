@@ -2,7 +2,11 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { validateCanonicalAgents, SCHEMA_PATH, AGENTS_PATH } = require('../../webapp/orchestrator/agent-schema');
+const {
+  validateCanonicalAgents,
+  SCHEMA_PATH,
+  AGENTS_PATH,
+} = require('../../webapp/orchestrator/agent-schema');
 
 describe('Canonical agent schema validation', () => {
   it('loads schema and agents files', () => {

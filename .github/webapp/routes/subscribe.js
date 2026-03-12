@@ -54,7 +54,10 @@ function parseAndValidateInput(parsed) {
       ok: false,
       response: {
         status: 400,
-        body: errorResponse('INVALID_INPUT', `Segment must be one of: ${VALID_SEGMENTS.join(', ')}`),
+        body: errorResponse(
+          'INVALID_INPUT',
+          `Segment must be one of: ${VALID_SEGMENTS.join(', ')}`
+        ),
       },
     };
   }
@@ -121,10 +124,7 @@ async function handleUpstreamResponse(res, upstream, segment, source) {
   return json(
     res,
     502,
-    errorResponse(
-      'INTERNAL_ERROR',
-      'Newsletter service returned an error. Please try again later.'
-    )
+    errorResponse('INTERNAL_ERROR', 'Newsletter service returned an error. Please try again later.')
   );
 }
 

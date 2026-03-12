@@ -29,7 +29,9 @@ function createMockStore(files = {}) {
   return {
     exists: (fp) => fp in files,
     read: (fp) => files[fp] || '',
-    write: (fp, content) => { files[fp] = content; },
+    write: (fp, content) => {
+      files[fp] = content;
+    },
     _files: files,
   };
 }
@@ -51,7 +53,9 @@ function createFailThenSuccessInvoker(failCount, outputPath = '/output/test.md')
 
 /** Creates a mock invoker that always fails */
 function createFailInvoker(message = 'Agent failed') {
-  return async () => { throw new Error(message); };
+  return async () => {
+    throw new Error(message);
+  };
 }
 
 /** Creates a slow invoker for timeout testing */
@@ -68,10 +72,18 @@ function createSlowInvoker(delayMs) {
 describe('PHASE_AGENTS — agent registry', () => {
   it('has agents for all pipeline states', () => {
     const pipelineStates = [
-      STATES.ONBOARDING, STATES.PHASE_1, STATES.CRITIC_1,
-      STATES.PHASE_2, STATES.CRITIC_2, STATES.PHASE_3, STATES.CRITIC_3,
-      STATES.PHASE_4, STATES.CRITIC_4, STATES.SYNTHESIS,
-      STATES.SPRINT_GATE, STATES.PHASE_5_EXECUTING,
+      STATES.ONBOARDING,
+      STATES.PHASE_1,
+      STATES.CRITIC_1,
+      STATES.PHASE_2,
+      STATES.CRITIC_2,
+      STATES.PHASE_3,
+      STATES.CRITIC_3,
+      STATES.PHASE_4,
+      STATES.CRITIC_4,
+      STATES.SYNTHESIS,
+      STATES.SPRINT_GATE,
+      STATES.PHASE_5_EXECUTING,
     ];
     for (const s of pipelineStates) {
       expect(PHASE_AGENTS[s]).toBeDefined();
@@ -87,13 +99,13 @@ describe('PHASE_AGENTS — agent registry', () => {
 
   it('PHASE_2 has 6 agents including Legal Counsel', () => {
     expect(PHASE_AGENTS[STATES.PHASE_2].length).toBe(6);
-    const names = PHASE_AGENTS[STATES.PHASE_2].map(a => a.name);
+    const names = PHASE_AGENTS[STATES.PHASE_2].map((a) => a.name);
     expect(names).toContain('Legal Counsel');
   });
 
   it('all critic states have Critic + Risk agents', () => {
     for (const s of [STATES.CRITIC_1, STATES.CRITIC_2, STATES.CRITIC_3, STATES.CRITIC_4]) {
-      const names = PHASE_AGENTS[s].map(a => a.name);
+      const names = PHASE_AGENTS[s].map((a) => a.name);
       expect(names).toContain('Critic Agent');
       expect(names).toContain('Risk Agent');
     }
@@ -220,11 +232,7 @@ describe('Dispatcher — invoke (success)', () => {
       store: createMockStore(),
       invoker: createSuccessInvoker('/out/01.md'),
     });
-    const result = await d.invoke(
-      { id: '01', name: 'Business Analyst' },
-      STATES.PHASE_1,
-      {}
-    );
+    const result = await d.invoke({ id: '01', name: 'Business Analyst' }, STATES.PHASE_1, {});
     expect(result.success).toBe(true);
     expect(result.outputPath).toBe('/out/01.md');
   });

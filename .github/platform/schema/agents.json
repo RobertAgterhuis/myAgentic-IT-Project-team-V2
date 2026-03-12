@@ -58,9 +58,7 @@
       "name": "Orchestrator",
       "role": "Orchestrator specialist role",
       "phase": "ORCHESTRATION",
-      "skillFiles": [
-        ".github/skills/00-orchestrator.md"
-      ],
+      "skillFiles": [".github/skills/00-orchestrator.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -69,9 +67,7 @@
         "tool.github.issue",
         "tool.queue.command"
       ],
-      "guardrails": [
-        ".github/docs/guardrails/00-global-guardrails.md"
-      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
       "contracts": [
         ".github/docs/contracts/session-state-contract.md",
         ".github/docs/contracts/tooling-contract.md",
@@ -95,9 +91,7 @@
       "name": "Business Analyst",
       "role": "Business Analyst specialist role",
       "phase": "PHASE_1",
-      "skillFiles": [
-        ".github/skills/01-business-analyst.md"
-      ],
+      "skillFiles": [".github/skills/01-business-analyst.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -115,9 +109,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "25"
-      ],
+      "dependencies": ["25"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -135,9 +127,7 @@
       "name": "Domain Expert",
       "role": "Domain Expert specialist role",
       "phase": "PHASE_1",
-      "skillFiles": [
-        ".github/skills/02-domain-expert.md"
-      ],
+      "skillFiles": [".github/skills/02-domain-expert.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -155,9 +145,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "01"
-      ],
+      "dependencies": ["01"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -175,9 +163,7 @@
       "name": "Sales Strategist",
       "role": "Sales Strategist specialist role",
       "phase": "PHASE_1",
-      "skillFiles": [
-        ".github/skills/03-sales-strategist.md"
-      ],
+      "skillFiles": [".github/skills/03-sales-strategist.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -195,9 +181,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "02"
-      ],
+      "dependencies": ["02"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -215,9 +199,7 @@
       "name": "Financial Analyst",
       "role": "Financial Analyst specialist role",
       "phase": "PHASE_1",
-      "skillFiles": [
-        ".github/skills/04-financial-analyst.md"
-      ],
+      "skillFiles": [".github/skills/04-financial-analyst.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -235,9 +217,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "03"
-      ],
+      "dependencies": ["03"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -255,9 +235,7 @@
       "name": "Software Architect",
       "role": "Software Architect specialist role",
       "phase": "PHASE_2",
-      "skillFiles": [
-        ".github/skills/05-software-architect.md"
-      ],
+      "skillFiles": [".github/skills/05-software-architect.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -277,9 +255,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "19"
-      ],
+      "dependencies": ["19"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -297,9 +273,7 @@
       "name": "Senior Developer",
       "role": "Senior Developer specialist role",
       "phase": "PHASE_2",
-      "skillFiles": [
-        ".github/skills/06-senior-developer.md"
-      ],
+      "skillFiles": [".github/skills/06-senior-developer.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -319,9 +293,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "05"
-      ],
+      "dependencies": ["05"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -339,9 +311,7 @@
       "name": "DevOps Engineer",
       "role": "DevOps Engineer specialist role",
       "phase": "PHASE_2",
-      "skillFiles": [
-        ".github/skills/07-devops-engineer.md"
-      ],
+      "skillFiles": [".github/skills/07-devops-engineer.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -361,9 +331,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "06"
-      ],
+      "dependencies": ["06"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -381,9 +349,7 @@
       "name": "Security Architect",
       "role": "Security Architect specialist role",
       "phase": "PHASE_2",
-      "skillFiles": [
-        ".github/skills/08-security-architect.md"
-      ],
+      "skillFiles": [".github/skills/08-security-architect.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -403,9 +369,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "07"
-      ],
+      "dependencies": ["07"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -423,9 +387,7 @@
       "name": "Data Architect",
       "role": "Data Architect specialist role",
       "phase": "PHASE_2",
-      "skillFiles": [
-        ".github/skills/09-data-architect.md"
-      ],
+      "skillFiles": [".github/skills/09-data-architect.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -445,9 +407,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "08"
-      ],
+      "dependencies": ["08"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -465,9 +425,7 @@
       "name": "UX Researcher",
       "role": "UX Researcher specialist role",
       "phase": "PHASE_3",
-      "skillFiles": [
-        ".github/skills/10-ux-researcher.md"
-      ],
+      "skillFiles": [".github/skills/10-ux-researcher.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -486,9 +444,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "19"
-      ],
+      "dependencies": ["19"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -506,9 +462,7 @@
       "name": "UX Designer",
       "role": "UX Designer specialist role",
       "phase": "PHASE_3",
-      "skillFiles": [
-        ".github/skills/11-ux-designer.md"
-      ],
+      "skillFiles": [".github/skills/11-ux-designer.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -527,9 +481,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "10"
-      ],
+      "dependencies": ["10"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -547,9 +499,7 @@
       "name": "UI Designer",
       "role": "UI Designer specialist role",
       "phase": "PHASE_3",
-      "skillFiles": [
-        ".github/skills/12-ui-designer.md"
-      ],
+      "skillFiles": [".github/skills/12-ui-designer.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -568,9 +518,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "11"
-      ],
+      "dependencies": ["11"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -588,9 +536,7 @@
       "name": "Accessibility Specialist",
       "role": "Accessibility Specialist specialist role",
       "phase": "PHASE_3",
-      "skillFiles": [
-        ".github/skills/13-accessibility-specialist.md"
-      ],
+      "skillFiles": [".github/skills/13-accessibility-specialist.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -609,9 +555,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "12"
-      ],
+      "dependencies": ["12"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -629,9 +573,7 @@
       "name": "Brand Strategist",
       "role": "Brand Strategist specialist role",
       "phase": "PHASE_4",
-      "skillFiles": [
-        ".github/skills/14-brand-strategist.md"
-      ],
+      "skillFiles": [".github/skills/14-brand-strategist.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -650,9 +592,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "19"
-      ],
+      "dependencies": ["19"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -670,9 +610,7 @@
       "name": "Growth Marketer",
       "role": "Growth Marketer specialist role",
       "phase": "PHASE_4",
-      "skillFiles": [
-        ".github/skills/15-growth-marketer.md"
-      ],
+      "skillFiles": [".github/skills/15-growth-marketer.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -691,9 +629,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "14"
-      ],
+      "dependencies": ["14"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -711,9 +647,7 @@
       "name": "CRO Specialist",
       "role": "CRO Specialist specialist role",
       "phase": "PHASE_4",
-      "skillFiles": [
-        ".github/skills/16-cro-specialist.md"
-      ],
+      "skillFiles": [".github/skills/16-cro-specialist.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -732,9 +666,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "15"
-      ],
+      "dependencies": ["15"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -752,25 +684,19 @@
       "name": "Synthesis Agent",
       "role": "Synthesis Agent specialist role",
       "phase": "SYNTHESIS",
-      "skillFiles": [
-        ".github/skills/17-synthesis-agent.md"
-      ],
+      "skillFiles": [".github/skills/17-synthesis-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
         "tool.context.search",
         "tool.synthesis.compose"
       ],
-      "guardrails": [
-        ".github/docs/guardrails/00-global-guardrails.md"
-      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
       "contracts": [
         ".github/docs/contracts/synthesis-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "31"
-      ],
+      "dependencies": ["31"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -788,9 +714,7 @@
       "name": "Critic Agent",
       "role": "Critic Agent specialist role",
       "phase": "CRITIC_RISK",
-      "skillFiles": [
-        ".github/skills/18-critic-agent.md"
-      ],
+      "skillFiles": [".github/skills/18-critic-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -798,16 +722,12 @@
         "tool.validation.contract",
         "tool.risk.assess"
       ],
-      "guardrails": [
-        ".github/docs/guardrails/00-global-guardrails.md"
-      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
       "contracts": [
         ".github/docs/contracts/critic-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "34"
-      ],
+      "dependencies": ["34"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -825,9 +745,7 @@
       "name": "Risk Agent",
       "role": "Risk Agent specialist role",
       "phase": "CRITIC_RISK",
-      "skillFiles": [
-        ".github/skills/19-risk-agent.md"
-      ],
+      "skillFiles": [".github/skills/19-risk-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -835,16 +753,12 @@
         "tool.validation.contract",
         "tool.risk.assess"
       ],
-      "guardrails": [
-        ".github/docs/guardrails/00-global-guardrails.md"
-      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
       "contracts": [
         ".github/docs/contracts/risk-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "18"
-      ],
+      "dependencies": ["18"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -862,9 +776,7 @@
       "name": "Implementation Agent",
       "role": "Implementation Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": [
-        ".github/skills/20-implementation-agent.md"
-      ],
+      "skillFiles": [".github/skills/20-implementation-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -881,9 +793,7 @@
         ".github/docs/contracts/implementation-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "27"
-      ],
+      "dependencies": ["27"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -901,9 +811,7 @@
       "name": "Test Agent",
       "role": "Test Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": [
-        ".github/skills/21-test-agent.md"
-      ],
+      "skillFiles": [".github/skills/21-test-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -920,9 +828,7 @@
         ".github/docs/contracts/test-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "20"
-      ],
+      "dependencies": ["20"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -940,9 +846,7 @@
       "name": "PR/Review Agent",
       "role": "PR/Review Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": [
-        ".github/skills/22-pr-review-agent.md"
-      ],
+      "skillFiles": [".github/skills/22-pr-review-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -959,9 +863,7 @@
         ".github/docs/contracts/pr-review-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "21"
-      ],
+      "dependencies": ["21"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -979,18 +881,14 @@
       "name": "Reevaluate Agent",
       "role": "Reevaluate Agent specialist role",
       "phase": "REEVALUATE",
-      "skillFiles": [
-        ".github/skills/23-reevaluate-agent.md"
-      ],
+      "skillFiles": [".github/skills/23-reevaluate-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
         "tool.context.search",
         "tool.validation.contract"
       ],
-      "guardrails": [
-        ".github/docs/guardrails/00-global-guardrails.md"
-      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
       "contracts": [
         ".github/docs/contracts/reevaluate-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
@@ -1013,18 +911,14 @@
       "name": "Feature Agent",
       "role": "Feature Agent specialist role",
       "phase": "FEATURE",
-      "skillFiles": [
-        ".github/skills/24-feature-agent.md"
-      ],
+      "skillFiles": [".github/skills/24-feature-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
         "tool.context.search",
         "tool.validation.contract"
       ],
-      "guardrails": [
-        ".github/docs/guardrails/00-global-guardrails.md"
-      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
       "contracts": [
         ".github/docs/contracts/feature-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
@@ -1047,18 +941,14 @@
       "name": "Onboarding Agent",
       "role": "Onboarding Agent specialist role",
       "phase": "ONBOARDING",
-      "skillFiles": [
-        ".github/skills/25-onboarding-agent.md"
-      ],
+      "skillFiles": [".github/skills/25-onboarding-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
         "tool.context.search",
         "tool.validation.contract"
       ],
-      "guardrails": [
-        ".github/docs/guardrails/00-global-guardrails.md"
-      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
       "contracts": [
         ".github/docs/contracts/onboarding-output-contract.md",
         ".github/docs/contracts/session-state-contract.md",
@@ -1082,9 +972,7 @@
       "name": "Documentation Agent",
       "role": "Documentation Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": [
-        ".github/skills/26-documentation-agent.md"
-      ],
+      "skillFiles": [".github/skills/26-documentation-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1101,9 +989,7 @@
         ".github/docs/contracts/documentation-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "29"
-      ],
+      "dependencies": ["29"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -1121,9 +1007,7 @@
       "name": "GitHub Integration Agent",
       "role": "GitHub Integration Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": [
-        ".github/skills/27-github-integration-agent.md"
-      ],
+      "skillFiles": [".github/skills/27-github-integration-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1140,9 +1024,7 @@
         ".github/docs/contracts/github-integration-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "17"
-      ],
+      "dependencies": ["17"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -1160,9 +1042,7 @@
       "name": "Sprint Retrospective Agent",
       "role": "Sprint Retrospective Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": [
-        ".github/skills/28-retrospective-agent.md"
-      ],
+      "skillFiles": [".github/skills/28-retrospective-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1179,9 +1059,7 @@
         ".github/docs/contracts/retrospective-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "27"
-      ],
+      "dependencies": ["27"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -1199,9 +1077,7 @@
       "name": "KPI/Metrics Agent",
       "role": "KPI/Metrics Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": [
-        ".github/skills/29-kpi-agent.md"
-      ],
+      "skillFiles": [".github/skills/29-kpi-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1218,9 +1094,7 @@
         ".github/docs/contracts/kpi-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "22"
-      ],
+      "dependencies": ["22"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -1238,9 +1112,7 @@
       "name": "Brand & Assets Agent (Canva)",
       "role": "Brand & Assets Agent (Canva) specialist role",
       "phase": "PHASE_4",
-      "skillFiles": [
-        ".github/skills/30-brand-assets-agent.md"
-      ],
+      "skillFiles": [".github/skills/30-brand-assets-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1256,9 +1128,7 @@
         ".github/docs/contracts/brand-assets-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "19"
-      ],
+      "dependencies": ["19"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -1276,9 +1146,7 @@
       "name": "Storybook Agent",
       "role": "Storybook Agent specialist role",
       "phase": "PHASE_4",
-      "skillFiles": [
-        ".github/skills/31-storybook-agent.md"
-      ],
+      "skillFiles": [".github/skills/31-storybook-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1294,9 +1162,7 @@
         ".github/docs/contracts/storybook-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "30"
-      ],
+      "dependencies": ["30"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -1314,9 +1180,7 @@
       "name": "Content Strategist / UX Writer",
       "role": "Content Strategist / UX Writer specialist role",
       "phase": "PHASE_3",
-      "skillFiles": [
-        ".github/skills/32-content-strategist.md"
-      ],
+      "skillFiles": [".github/skills/32-content-strategist.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1335,9 +1199,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "13"
-      ],
+      "dependencies": ["13"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -1355,9 +1217,7 @@
       "name": "Legal / Privacy Counsel",
       "role": "Legal / Privacy Counsel specialist role",
       "phase": "PHASE_2",
-      "skillFiles": [
-        ".github/skills/33-legal-counsel.md"
-      ],
+      "skillFiles": [".github/skills/33-legal-counsel.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1377,9 +1237,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "09"
-      ],
+      "dependencies": ["09"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -1397,9 +1255,7 @@
       "name": "Product Manager",
       "role": "Product Manager specialist role",
       "phase": "PHASE_1",
-      "skillFiles": [
-        ".github/skills/34-product-manager.md"
-      ],
+      "skillFiles": [".github/skills/34-product-manager.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1417,9 +1273,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "04"
-      ],
+      "dependencies": ["04"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -1437,9 +1291,7 @@
       "name": "Localization Specialist",
       "role": "Localization Specialist specialist role",
       "phase": "PHASE_3",
-      "skillFiles": [
-        ".github/skills/35-localization-specialist.md"
-      ],
+      "skillFiles": [".github/skills/35-localization-specialist.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1458,9 +1310,7 @@
         ".github/docs/contracts/guardrails-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"
       ],
-      "dependencies": [
-        "32"
-      ],
+      "dependencies": ["32"],
       "platformBindings": {
         "copilot": {
           "enabled": true
@@ -1478,9 +1328,7 @@
       "name": "Questionnaire Agent",
       "role": "Questionnaire Agent specialist role",
       "phase": "QUESTIONNAIRE",
-      "skillFiles": [
-        ".github/skills/36-questionnaire-agent.md"
-      ],
+      "skillFiles": [".github/skills/36-questionnaire-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1513,18 +1361,14 @@
       "name": "Scope Change Agent",
       "role": "Scope Change Agent specialist role",
       "phase": "SCOPE_CHANGE",
-      "skillFiles": [
-        ".github/skills/37-scope-change-agent.md"
-      ],
+      "skillFiles": [".github/skills/37-scope-change-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
         "tool.context.search",
         "tool.validation.contract"
       ],
-      "guardrails": [
-        ".github/docs/guardrails/00-global-guardrails.md"
-      ],
+      "guardrails": [".github/docs/guardrails/00-global-guardrails.md"],
       "contracts": [
         ".github/docs/contracts/scope-change-output-contract.md",
         ".github/docs/contracts/agent-handoff-contract.md"

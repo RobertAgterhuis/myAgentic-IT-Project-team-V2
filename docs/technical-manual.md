@@ -9,7 +9,7 @@ description:
 
 # Technical Manual — myAgentic-IT-Project-team
 
-> Version 1.8 | Last updated: 2026-03-26 (Sprint 2 Day 2)
+> Version 1.9 | Last updated: 2026-03-27 (Sprint 2 Day 3)
 
 This manual covers the server architecture, API reference, data model,
 configuration, deployment, and development practices for the Questionnaire &
@@ -951,6 +951,31 @@ docker compose -f docker-compose.analytics.yml ps
 Port configurable via `MATOMO_PORT` env var (default: 8080). Cookieless tracking
 mode configured post-install per `sp-2-mat-matomo-deployment.md`.
 
+### Translation Management (Weblate)
+
+Self-hosted Weblate TMS for i18n, defined in `docker-compose.weblate.yml`
+(3-service stack):
+
+| Service | Image | Purpose |
+|---------|-------|---------|
+| weblate | weblate/weblate:5.4 | Translation UI + REST/GraphQL API |
+| weblate-db | postgres:16-alpine | Persistent translation database |
+| weblate-cache | redis:7-alpine | Cache + async task broker |
+
+```bash
+# Copy env template and set passwords
+cp .env.weblate.example .env.weblate
+# Edit .env.weblate: set WEBLATE_ADMIN_PASSWORD + WEBLATE_DB_PASSWORD
+
+# Start Weblate stack
+docker compose -f docker-compose.weblate.yml --env-file .env.weblate up -d
+```
+
+Port configurable via `WEBLATE_PORT` env var (default: 8081). Pilot translation
+strings in `locales/en-US/` (120 keys across 3 namespaces: ui-labels,
+validation-messages, doc-snippets). Vendor evaluation:
+`.github/docs/phase-5/sp-2-501-tms-vendor-scoring.md`.
+
 ---
 
 ## Security Model
@@ -1051,11 +1076,15 @@ __tests__/
     server.integration.test.js           — API endpoint integration (~22 tests)
     health.integration.test.js           — Health endpoint contracts (9 tests)
     subscribe.integration.test.js        — Newsletter subscribe endpoint (8 tests)
+  unit/
+    email-templates.test.js              — Email template validation (10 tests)
+    weblate-trial.test.js                — Locale strings + Docker config (16 tests)
+    social-cards.test.js                 — Social card SVG validation (12 tests)
   smoke/
     landing.smoke.test.js               — HTTP-based smoke tests (29 tests)
 ```
 
-**Total: 113 tests across 6 suites.**
+**Total: 151 tests across 9 suites.**
 
 #### Running Webapp Tests
 

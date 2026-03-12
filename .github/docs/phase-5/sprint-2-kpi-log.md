@@ -13,6 +13,7 @@
 | ---------- | ----------------- | ------------- | ----------- | ----------------- | ------------------- | ----------- | ----------- | ---------------------------------------------------------------------------- |
 | 2026-03-25 | 0% (0/11)         | 0             | 0           | 122 tests / 6 suites ✅ | 91% WCAG AA ✅ | 95%         | ✅ High     | Sprint 2 Day 1: All 5 tracks START. SP-2-CI7 PR created. SP-2-DOC started. SP-2-BTN + SP-2-SOC parallel. SP-2-201-P pilot scoping. SP-2-501 vendor eval kickoff. |
 | 2026-03-26 | 18% (2/11)        | 0             | 0           | 113 tests / 6 suites ✅ | 91% WCAG AA ✅ | 95%         | ✅ High     | Sprint 2 Day 2: SP-2-CI8 COMPLETE. Subscribe endpoint + 8 tests. Landing page + 6 smoke tests. Matomo Docker stack. Tech manual v1.8. +14 tests. |
+| 2026-03-27 | 27% (3/11)        | 0             | 0           | 151 tests / 9 suites ✅ | 91% WCAG AA ✅ | 95%         | ✅ High     | Sprint 2 Day 3: SP-2-BTN email templates COMPLETE (+10 tests). SP-2-202 pilot rubric + sample brief. SP-2-501 Weblate Docker trial ready (+16 tests). SP-2-SOC 4 social cards (+12 tests). SP-2-DOC tech manual v1.9 + user manual v1.1. +28 tests. |
 
 ---
 

@@ -1,0 +1,95 @@
+# Weblate Docker Compose Trial — TMS Evaluation (SP-2-501)
+#
+# Part of SP-2-501 TMS vendor evaluation. Self-hosted Weblate trial for
+# pilot translation cycle (150 strings EN→FR + EN→DE).
+#
+# Usage:
+#   1. Copy .env.weblate.example to .env.weblate
+#   2. Set WEBLATE_ADMIN_PASSWORD and POSTGRES_PASSWORD
+#   3. docker compose -f docker-compose.weblate.yml up -d
+#   4. Access Weblate at http://localhost:${WEBLATE_PORT:-8081}
+#
+# Documentation: .github/docs/phase-5/sp-2-501-weblate-trial-notes.md
+
+services:
+  weblate:
+    image: weblate/weblate:5.4
+    restart: unless-stopped
+    depends_on:
+      weblate-db:
+        condition: service_healthy
+      weblate-cache:
+        condition: service_healthy
+    environment:
+      WEBLATE_SITE_DOMAIN: "localhost"
+      WEBLATE_SITE_TITLE: "Agentic SDLC Translations"
+      WEBLATE_ADMIN_EMAIL: "${WEBLATE_ADMIN_EMAIL:-admin@localhost}"
+      WEBLATE_ADMIN_PASSWORD: "${WEBLATE_ADMIN_PASSWORD}"
+      WEBLATE_ADMIN_NAME: "Admin"
+      WEBLATE_SERVER_EMAIL: "noreply@localhost"
+      WEBLATE_DEFAULT_FROM_EMAIL: "noreply@localhost"
+      WEBLATE_ALLOWED_HOSTS: "*"
+      WEBLATE_REGISTRATION_OPEN: "0"
+      POSTGRES_PASSWORD: "${WEBLATE_DB_PASSWORD}"
+      POSTGRES_USER: "weblate"
+      POSTGRES_DATABASE: "weblate"
+      POSTGRES_HOST: "weblate-db"
+      POSTGRES_PORT: "5432"
+      REDIS_HOST: "weblate-cache"
+      REDIS_PORT: "6379"
+      WEBLATE_ENABLE_HTTPS: "0"
+      WEBLATE_IP_PROXY_HEADER: ""
+      WEBLATE_REQUIRE_LOGIN: "1"
+    volumes:
+      - weblate-data:/app/data
+    ports:
+      - "${WEBLATE_PORT:-8081}:8080"
+    networks:
+      - weblate-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  weblate-db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: "weblate"
+      POSTGRES_PASSWORD: "${WEBLATE_DB_PASSWORD}"
+      POSTGRES_DB: "weblate"
+    volumes:
+      - weblate-db-data:/var/lib/postgresql/data
+    networks:
+      - weblate-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U weblate"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  weblate-cache:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - weblate-cache-data:/data
+    networks:
+      - weblate-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  weblate-data:
+  weblate-db-data:
+  weblate-cache-data:
+
+networks:
+  weblate-net:
+    driver: bridge

@@ -889,6 +889,42 @@
       .help-content { padding: 20px; }
     }
 
+    /* ── Pipeline / State Machine panel (FEAT-05-F) ────────── */
+    .sm-toolbar { display: flex; align-items: center; gap: 8px; padding: 10px 0; flex-wrap: wrap; }
+    .sm-mode-badge { font-weight: 700; padding: 2px 8px; border-radius: var(--radius); background: var(--accent); color: #fff; font-size: .85rem; }
+    .sm-state-badge { padding: 2px 8px; border-radius: var(--radius); font-size: .85rem; background: var(--bg-card); border: 1px solid var(--border); }
+    .sm-state-badge[data-state='error'] { background: var(--danger); color: #fff; }
+    .sm-platform-select { padding: 4px 8px; border-radius: var(--radius); border: 1px solid var(--border); background: var(--bg-card); color: var(--fg); font-size: .85rem; }
+    .sm-cmd-btn { font-size: .8rem; }
+    .sm-cmd-warn { background: var(--warning); color: #000; }
+    .sm-flow-wrap { overflow-x: auto; padding: 12px 0; }
+    .sm-flow { display: flex; align-items: center; gap: 0; min-width: max-content; }
+    .sm-node { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 90px; padding: 8px 10px; border-radius: var(--radius); border: 2px solid var(--border); background: var(--bg-card); font-size: .78rem; text-align: center; position: relative; transition: border-color .2s, background .2s; }
+    .sm-node .sm-icon { font-size: 1.2rem; }
+    .sm-node .sm-label { margin-top: 2px; }
+    .sm-node.sm-current { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--bg-card)); animation: smPulse 1.5s ease-in-out infinite; }
+    .sm-node.sm-completed { border-color: var(--success); opacity: .85; }
+    .sm-node.sm-completed::after { content: '\2713'; position: absolute; top: 2px; right: 4px; color: var(--success); font-weight: 700; font-size: .7rem; }
+    .sm-node.sm-error { border-color: var(--danger); background: color-mix(in srgb, var(--danger) 10%, var(--bg-card)); }
+    .sm-node.sm-blocked { border-color: var(--warning); }
+    .sm-arrow { font-size: 1.1rem; color: var(--fg-muted); padding: 0 2px; }
+    .sm-gate-results { padding: 8px 0; }
+    .sm-gate-badge { display: inline-block; padding: 2px 8px; border-radius: var(--radius); font-size: .78rem; font-weight: 600; margin-right: 6px; }
+    .sm-gate-pass { background: var(--success); color: #fff; }
+    .sm-gate-fail { background: var(--danger); color: #fff; }
+    .sm-gate-violation { padding: 4px 8px; margin: 2px 0; background: color-mix(in srgb, var(--danger) 8%, var(--bg-card)); border-left: 3px solid var(--danger); font-size: .82rem; }
+    .sm-activity { padding: 8px 0; }
+    .sm-activity-log { max-height: 260px; overflow-y: auto; }
+    .sm-activity-entry { display: flex; gap: 8px; align-items: baseline; padding: 3px 0; font-size: .82rem; border-bottom: 1px solid var(--border); }
+    .sm-activity-entry .sm-ts { color: var(--fg-muted); min-width: 48px; text-align: right; font-variant-numeric: tabular-nums; }
+    .sm-empty { color: var(--fg-muted); font-style: italic; padding: 16px; text-align: center; }
+    @keyframes smPulse { 0%,100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent); } }
+    @media (max-width: 700px) {
+      .sm-toolbar { gap: 4px; }
+      .sm-node { min-width: 72px; padding: 6px 6px; font-size: .72rem; }
+      .sm-activity-log { max-height: 180px; }
+    }
+
     /* ── Responsive ─────────────────────────────────── */
     @media (max-width: 700px) {
       .sidebar { width: 220px; }
@@ -1116,6 +1152,36 @@
     <div class="tab" data-tab="questionnaires" role="tab" id="tab-q" aria-selected="false" aria-controls="panelQuestionnaires" tabindex="-1"><span aria-hidden="true">&#128221;</span> Questionnaires <span class="tab-count" id="tabCountQ">0</span></div>
     <div class="tab" data-tab="decisions" role="tab" id="tab-d" aria-selected="false" aria-controls="panelDecisions" tabindex="-1"><span aria-hidden="true">&#9878;</span> Decisions <span class="tab-count" id="tabCountD">0</span></div>
     <div class="tab" data-tab="metrics" role="tab" id="tab-m" aria-selected="false" aria-controls="panelMetrics" tabindex="-1"><span aria-hidden="true">&#128200;</span> Metrics</div>
+    <div class="tab" data-tab="pipeline" role="tab" id="tab-pipe" aria-selected="false" aria-controls="panelPipeline" tabindex="-1"><span aria-hidden="true">&#128260;</span> Pipeline</div>
+  </div>
+
+  <!-- ── Pipeline panel (FEAT-05-F: state machine visualization) ── -->
+  <div class="container hidden" id="panelPipeline" role="tabpanel" aria-labelledby="tab-pipe">
+    <div class="sm-toolbar">
+      <span class="sm-mode-badge" id="smModeBadge">—</span>
+      <span class="sm-state-badge" id="smStateBadge" data-state="IDLE">IDLE</span>
+      <label for="smPlatformSelect" class="sr-only">Platform</label>
+      <select id="smPlatformSelect" class="sm-platform-select">
+        <option value="copilot" selected>Copilot</option>
+        <option value="claude">Claude</option>
+        <option value="codex">Codex</option>
+      </select>
+      <button class="btn btn-sm sm-cmd-btn" id="smBtnCreate" title="Start a new CREATE session"><span aria-hidden="true">&#128640;</span> Start Create</button>
+      <button class="btn btn-sm sm-cmd-btn" id="smBtnResume" title="Resume the current session"><span aria-hidden="true">&#9654;</span> Resume</button>
+      <button class="btn btn-sm sm-cmd-btn sm-cmd-warn" id="smBtnReeval" title="Trigger REEVALUATE"><span aria-hidden="true">&#128257;</span> REEVALUATE</button>
+    </div>
+    <div class="sm-flow-wrap" id="smFlowWrap">
+      <div class="sm-flow" id="smFlow">
+        <div class="sm-empty">No pipeline data — start a session to see the state flow.</div>
+      </div>
+    </div>
+    <div class="sm-gate-results" id="smGateResults"></div>
+    <div class="sm-activity" id="smActivity">
+      <h3>Agent Activity</h3>
+      <div class="sm-activity-log" id="smActivityLog">
+        <div class="sm-empty">No activity recorded yet.</div>
+      </div>
+    </div>
   </div>
 
   <!-- ── Body ──────────────────────────────── -->
@@ -1849,9 +1915,9 @@ let questionnaires = [];
 let decisions      = { open: [], decided: [], deferred: [], categories: [] };
 let activeFile     = null;
 let activeTab      = sessionStorage.getItem('activeTab') || 'commandcenter';
-const TAB_HASH_MAP = { commandcenter: '#pipeline', dashboard: '#dashboard', questionnaires: '#questionnaires', decisions: '#decisions', metrics: '#metrics' };
-const HASH_TAB_MAP = { '#pipeline': 'commandcenter', '#questionnaires': 'questionnaires', '#decisions': 'decisions', '#metrics': 'metrics' };
-const TAB_TITLES   = { commandcenter: 'Command Center', dashboard: 'Dashboard', questionnaires: 'Questionnaires', decisions: 'Decisions', metrics: 'Metrics' };
+const TAB_HASH_MAP = { commandcenter: '#pipeline', dashboard: '#dashboard', questionnaires: '#questionnaires', decisions: '#decisions', metrics: '#metrics', pipeline: '#orchestrator' };
+const HASH_TAB_MAP = { '#pipeline': 'commandcenter', '#questionnaires': 'questionnaires', '#decisions': 'decisions', '#metrics': 'metrics', '#orchestrator': 'pipeline' };
+const TAB_TITLES   = { commandcenter: 'Command Center', dashboard: 'Dashboard', questionnaires: 'Questionnaires', decisions: 'Decisions', metrics: 'Metrics', pipeline: 'Pipeline' };
 const dirty        = new Map();   // "file::Q-ID" → { answer, status }
 let decFilter      = { text: '', priority: '', status: '', category: '' };
 let pollTimer      = null;
@@ -1877,6 +1943,12 @@ let _sseSource        = null;     // EventSource instance
 let _sseConnected     = false;
 let _sseReconnectDelay = 1000;
 let _sseStopped       = false;
+
+/* ── Pipeline / State Machine state (FEAT-05-F) ──────── */
+let _smStatus    = null;   // latest engine status() snapshot
+let _smActivity  = [];     // activity log entries [{icon, text, ts}]
+let _smStartTime = null;   // session start timestamp
+let _smLastGate  = null;   // last gate result {verdict, criticState, violations}
 
 /* ── Analytics State (SP-R2-004-008) ─────────────────── */
 let _analyticsQueue   = [];
@@ -2460,15 +2532,17 @@ async function switchTab(tab) {
   document.getElementById('panelDecisions').classList.toggle('hidden', tab !== 'decisions');
   document.getElementById('panelCommandCenter').classList.toggle('hidden', tab !== 'commandcenter');
   document.getElementById('panelMetrics').classList.toggle('hidden', tab !== 'metrics');
+  document.getElementById('panelPipeline').classList.toggle('hidden', tab !== 'pipeline');
   /* Announce active tab to screen readers (SP-R2-005-005) */
   announceStatus(STRINGS.labels.switchedTab(tab));
   document.getElementById('btnSaveAll').classList.toggle('hidden', tab !== 'questionnaires');
   document.getElementById('btnNewDecision').classList.toggle('hidden', tab !== 'decisions' && tab !== 'questionnaires');
-  document.getElementById('btnReeval').classList.toggle('hidden', tab === 'commandcenter' || tab === 'metrics');
+  document.getElementById('btnReeval').classList.toggle('hidden', tab === 'commandcenter' || tab === 'metrics' || tab === 'pipeline');
   renderStats();
   if (tab === 'decisions') renderDecisions();
   if (tab === 'commandcenter') renderPipeline();
   if (tab === 'metrics') loadMetricsDashboard();
+  if (tab === 'pipeline') loadPipelinePanel();
 }
 
 function updateTabCounts() {
@@ -3038,6 +3112,119 @@ function renderPipeline() {
 const CMD_NEEDS_PROJECT = ['CREATE', 'AUDIT'];
 const CMD_NEEDS_SCOPE = ['SCOPE CHANGE', 'REEVALUATE'];
 const CMD_NEEDS_DESC = ['FEATURE', 'SCOPE CHANGE', 'HOTFIX'];
+
+/* ── Pipeline / State Machine functions (FEAT-05-F) ───── */
+const SM_STATES_ORDER = ['IDLE','ONBOARDING','PHASE_1','CRITIC_1','PHASE_2','CRITIC_2','PHASE_3','CRITIC_3','PHASE_4','CRITIC_4','SYNTHESIS','SPRINT_GATE','PHASE_5_EXECUTING','COMPLETED'];
+const SM_STATE_META = {
+  IDLE:             { icon: '⏸️', label: 'Idle' },
+  ONBOARDING:       { icon: '📋', label: 'Onboarding' },
+  PHASE_1:          { icon: '📊', label: 'Phase 1' },
+  CRITIC_1:         { icon: '🔍', label: 'Critic 1' },
+  PHASE_2:          { icon: '🏗️', label: 'Phase 2' },
+  CRITIC_2:         { icon: '🔍', label: 'Critic 2' },
+  PHASE_3:          { icon: '🎨', label: 'Phase 3' },
+  CRITIC_3:         { icon: '🔍', label: 'Critic 3' },
+  PHASE_4:          { icon: '📢', label: 'Phase 4' },
+  CRITIC_4:         { icon: '🔍', label: 'Critic 4' },
+  SYNTHESIS:        { icon: '🧩', label: 'Synthesis' },
+  SPRINT_GATE:      { icon: '🚧', label: 'Sprint Gate' },
+  PHASE_5_EXECUTING:{ icon: '⚡', label: 'Phase 5' },
+  COMPLETED:        { icon: '✅', label: 'Completed' },
+  ERROR:            { icon: '❌', label: 'Error' }
+};
+
+async function fetchPipelineStatus() {
+  const res = await fetch('/api/orchestrator/status');
+  if (!res.ok) throw new Error('Pipeline status fetch failed');
+  return res.json();
+}
+
+async function loadPipelinePanel() {
+  try {
+    const st = await fetchPipelineStatus();
+    _smStatus = st;
+    if (!_smStartTime) _smStartTime = Date.now();
+    renderStateMachinePanel(st);
+  } catch (e) {
+    const flow = document.getElementById('smFlow');
+    if (flow) flow.innerHTML = '<div class="sm-empty">Unable to load pipeline status.</div>';
+  }
+}
+
+function renderStateMachinePanel(st) {
+  const flow = document.getElementById('smFlow');
+  const badge = document.getElementById('smStateBadge');
+  const modeBadge = document.getElementById('smModeBadge');
+  if (!flow) return;
+  const current = st.state || 'IDLE';
+  const completed = new Set((st.history || []).map(h => h.from));
+  if (badge) { badge.textContent = current; badge.dataset.state = current === 'ERROR' ? 'error' : ''; }
+  if (modeBadge) modeBadge.textContent = st.mode || '—';
+  let html = '';
+  SM_STATES_ORDER.forEach((s, i) => {
+    const meta = SM_STATE_META[s] || { icon: '❓', label: s };
+    let cls = 'sm-node';
+    if (s === current) cls += ' sm-current';
+    else if (completed.has(s)) cls += ' sm-completed';
+    if (s === current && current === 'ERROR') cls += ' sm-error';
+    if (i > 0) html += '<span class="sm-arrow" aria-hidden="true">&#8594;</span>';
+    html += `<div class="${cls}" data-state="${s}"><span class="sm-icon">${meta.icon}</span><span class="sm-label">${meta.label}</span></div>`;
+  });
+  if (current === 'ERROR') {
+    html += '<span class="sm-arrow" aria-hidden="true">&#8594;</span>';
+    const eMeta = SM_STATE_META.ERROR;
+    html += `<div class="sm-node sm-error" data-state="ERROR"><span class="sm-icon">${eMeta.icon}</span><span class="sm-label">${eMeta.label}</span></div>`;
+  }
+  flow.innerHTML = html;
+  // Gate results
+  const gateEl = document.getElementById('smGateResults');
+  if (gateEl && _smLastGate) {
+    const pass = _smLastGate.verdict === 'APPROVED';
+    let gHtml = `<span class="sm-gate-badge ${pass ? 'sm-gate-pass' : 'sm-gate-fail'}">${pass ? 'PASS' : 'FAIL'}: ${_smLastGate.criticState || ''}</span>`;
+    if (!pass && _smLastGate.violations && _smLastGate.violations.length) {
+      gHtml += `<h3><span aria-hidden="true">&#9888;</span> Gate Violations (${_smLastGate.criticState})</h3>`;
+      _smLastGate.violations.forEach(v => {
+        gHtml += `<div class="sm-gate-violation"><strong>${v.severity || 'ERROR'}:</strong> ${esc(v.message || v.rule || JSON.stringify(v))}</div>`;
+      });
+    }
+    gateEl.innerHTML = gHtml;
+  }
+  renderActivityLog();
+}
+
+function addPipelineActivity(icon, text) {
+  _smActivity.unshift({ icon, text, ts: Date.now() });
+  if (_smActivity.length > 100) _smActivity.length = 100;
+  if (activeTab === 'pipeline') renderActivityLog();
+}
+
+function renderActivityLog() {
+  const el = document.getElementById('smActivityLog');
+  if (!el) return;
+  if (!_smActivity.length) { el.innerHTML = '<div class="sm-empty">No activity recorded yet.</div>'; return; }
+  const base = _smStartTime || Date.now();
+  el.innerHTML = _smActivity.map(a => {
+    const elapsed = Math.round((a.ts - base) / 1000);
+    const sign = elapsed >= 0 ? '+' : '';
+    return `<div class="sm-activity-entry"><span class="sm-ts">${sign}${elapsed}s</span><span>${a.icon} ${a.text}</span></div>`;
+  }).join('');
+}
+
+async function sendPipelineCommand(command, opts) {
+  const platform = document.getElementById('smPlatformSelect')?.value || 'copilot';
+  const body = { command, platform, ...opts };
+  try {
+    const res = await fetch('/api/orchestrator/command', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Command failed');
+    addPipelineActivity('✅', `Command ${command} accepted`);
+    loadPipelinePanel();
+    return data;
+  } catch (e) {
+    addPipelineActivity('❌', `Command ${command} failed: ${e.message}`);
+    throw e;
+  }
+}
 
 function selectCommand(cmd) {
   activeCmd = cmd;

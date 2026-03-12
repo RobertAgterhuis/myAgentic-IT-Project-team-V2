@@ -122,11 +122,39 @@ module.exports = function createOrchestratorRoutes(ctx) {
     }
   }
 
+  // ── POST /api/orchestrator/validate-gate ──────────────────
+
+  async function handleValidateGate(req, res) {
+    try {
+      const body = await parseBody(req);
+      if (!body || !Array.isArray(body.deliverables) || body.deliverables.length === 0) {
+        return json(
+          res,
+          400,
+          errorResponse('INVALID_INPUT', 'deliverables array is required and must not be empty')
+        );
+      }
+      const deliverables = body.deliverables.map((d) => String(d));
+      const engine = getEngine();
+      const result = engine.validateGate(deliverables);
+      structuredLog(result.verdict === 'APPROVED' ? 'info' : 'warn', 'orchestrator_gate_result', {
+        verdict: result.verdict,
+        phase: result.summary.phase,
+        violations: result.summary.totalViolations,
+      });
+      return json(res, 200, { ok: true, ...result });
+    } catch (err) {
+      structuredLog('error', 'orchestrator_validate_gate_error', { error: err.message });
+      return json(res, 500, errorResponse('GATE_VALIDATION_ERROR', err.message));
+    }
+  }
+
   return {
     'GET /api/orchestrator/status': handleStatus,
     'POST /api/orchestrator/advance': handleAdvance,
     'POST /api/orchestrator/error': handleError,
     'POST /api/orchestrator/recover': handleRecover,
     'POST /api/orchestrator/reset': handleReset,
+    'POST /api/orchestrator/validate-gate': handleValidateGate,
   };
 };

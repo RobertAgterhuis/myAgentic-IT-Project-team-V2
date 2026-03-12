@@ -25,6 +25,7 @@ const {
   createHotfixMachine,
 } = require('./state-machine');
 const { loadSessionState, saveSessionState, createAutoPersist } = require('./state-persistence');
+const { runGate } = require('./gate-validator');
 
 /**
  * @typedef {object} EngineOptions
@@ -170,6 +171,45 @@ function createEngine(options) {
     return status();
   }
 
+  /**
+   * Run gate validation for the current critic state (FEAT-05-C).
+   * Validates deliverables against contracts and guardrails,
+   * emits SSE events, and returns a structured result.
+   *
+   * @param {string[]} deliverables - Paths to deliverable files to validate
+   * @param {object} [opts] - Override contractsDir / guardrailsDir
+   * @returns {{verdict: string, violations: Array, questionnaireRequests: Array, summary: object}}
+   */
+  function validateGate(deliverables, opts = {}) {
+    const criticState = machine.state;
+    const result = runGate(store, {
+      criticState,
+      deliverables,
+      ...opts,
+    });
+
+    // AC-7: Emit SSE events for gate results
+    if (result.verdict === 'APPROVED') {
+      sseForward('orchestrator:gate_passed', {
+        criticState,
+        phase: result.summary.phase,
+        deliverableCount: result.summary.deliverableCount,
+        timestamp: result.summary.timestamp,
+      });
+    } else {
+      sseForward('orchestrator:gate_failed', {
+        criticState,
+        phase: result.summary.phase,
+        violationCount: result.summary.totalViolations,
+        bySeverity: result.summary.bySeverity,
+        questionnaireRequestCount: result.summary.questionnaireRequestCount,
+        timestamp: result.summary.timestamp,
+      });
+    }
+
+    return result;
+  }
+
   return {
     machine,
     flows,
@@ -178,6 +218,7 @@ function createEngine(options) {
     recover,
     status,
     reset,
+    validateGate,
   };
 }
 

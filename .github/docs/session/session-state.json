@@ -9,13 +9,13 @@
   "feature_name": null,
   "github_project_name": "Agentic SDLC Platform Task",
   "initiated_at": "2026-03-09T00:00:00Z",
-  "last_updated": "2026-03-25T18:00:00Z",
+  "last_updated": "2026-03-26T18:00:00Z",
 
   "status": "PHASE_5_EXECUTING",
 
   "current_phase": "PHASE_5",
   "current_agent": "implementation-agent",
-  "current_step": "Sprint 2 Day 1 COMPLETE. 8/11 items started, 0/11 complete. PR #130 open (SP-2-CI7). Tech manual v1.7 with CI Pipeline section. 5 new deliverables: BTN setup, SOC publication plan, pilot scope, TMS eval kickoff, LND scope. 122 tests passing. 0 blockers. Day 2: merge CI7 → start CI8, LND implementation, Weblate trial.",
+  "current_step": "Sprint 2 Day 2 COMPLETE. 2/11 items complete (SP-2-CI7, SP-2-CI8). 113 tests, 6 suites. Subscribe endpoint + 8 tests (SP-2-BTN 85%). Landing page + 6 smoke tests (SP-2-LND 80%). Matomo Docker stack + spec (SP-2-MAT 60%). Tech manual v1.8 (SP-2-DOC 95%). Day 3: Matomo staging deploy, email templates, pilot setup, Weblate trial.",
 
   "completed_phases": [
     "ONBOARDING",
@@ -261,7 +261,8 @@
       "week_2_checkpoint_date": "2026-03-21",
       "sprint_1_formally_closed": true,
       "sprint_1_close_date": "2026-03-23",
-      "sprint_1_milestone_github_state": "closed"
+      "sprint_1_milestone_github_state": "closed",
+      "sprint_2_day_2_summary": ".github/docs/phase-5/sprint-2-day-2-summary.md"
     }
   },
 

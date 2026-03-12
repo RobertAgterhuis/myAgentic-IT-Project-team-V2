@@ -9,7 +9,7 @@ description:
 
 # Technical Manual — myAgentic-IT-Project-team
 
-> Version 1.7 | Last updated: 2026-03-25 (Sprint 2 Day 1)
+> Version 1.8 | Last updated: 2026-03-26 (Sprint 2 Day 2)
 
 This manual covers the server architecture, API reference, data model,
 configuration, deployment, and development practices for the Questionnaire &
@@ -183,6 +183,7 @@ map (`{ 'METHOD /path': handler }`).
 | `routes/commands.js`       | 130 | `POST /api/command`, `GET /api/command`                                                                                                                                                                                |
 | `routes/progress.js`       | 160 | `GET /api/progress`                                                                                                                                                                                                    |
 | `routes/misc.js`           | 297 | `GET /api/session`, `POST /api/reevaluate`, `GET /api/export`, `GET /api/help`, `GET /api/events`, `GET /api/metrics`, `GET /api/health`, `POST /api/analytics`, `GET /api/analytics`, `GET /api/audit`, `GET /health` |
+| `routes/subscribe.js`      | 55  | `POST /api/subscribe`                                                                                                                                                                                                  |
 
 ### mcp-server.js
 
@@ -721,11 +722,45 @@ data: {"file":"Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md
 
 ```
 
+### Newsletter
+
+#### POST /api/subscribe
+
+Subscribe an email address to the newsletter via Buttondown ESP.
+
+**Request body:**
+
+```json
+{
+  "email": "user@example.com",
+  "metadata": {
+    "segment": "developers",
+    "source": "landing-page"
+  }
+}
+```
+
+**Segments:** `engineering-leaders`, `product-managers`, `developers`, `evaluators`
+
+**Responses:**
+- `201` — `{ "status": "pending_confirmation", "message": "..." }`
+- `400` — Invalid email or segment
+- `409` — Email already subscribed
+- `503` — `BUTTONDOWN_API_KEY` not configured
+
+**Security:** API key is server-side only, never exposed to clients.
+
+---
+
 ### Static Files
 
 #### GET /
 
 Serves `index.html` (the single-page web UI).
+
+#### GET /landing
+
+Serves `landing.html` (the marketing landing page with subscribe form).
 
 #### GET /health
 
@@ -894,6 +929,28 @@ npx pm2 status
 - `GET /api/health` — Detailed check, includes SSE connection count and
   timestamp
 
+### Analytics Stack (Matomo)
+
+Privacy-first analytics via self-hosted Matomo, defined in
+`docker-compose.analytics.yml` (3-service stack):
+
+| Service | Image | Purpose |
+|---------|-------|---------|
+| matomo | matomo:5-fpm-alpine | Matomo PHP-FPM application |
+| matomo-db | mariadb:11 | Persistent analytics database |
+| matomo-web | nginx:alpine | Reverse proxy (config: `matomo-nginx.conf`) |
+
+```bash
+# Start analytics stack (requires .env with MATOMO_DB_PASSWORD + MATOMO_DB_ROOT_PASSWORD)
+docker compose -f docker-compose.analytics.yml up -d
+
+# Verify health
+docker compose -f docker-compose.analytics.yml ps
+```
+
+Port configurable via `MATOMO_PORT` env var (default: 8080). Cookieless tracking
+mode configured post-install per `sp-2-mat-matomo-deployment.md`.
+
 ---
 
 ## Security Model
@@ -993,11 +1050,12 @@ __tests__/
   integration/
     server.integration.test.js           — API endpoint integration (~22 tests)
     health.integration.test.js           — Health endpoint contracts (9 tests)
+    subscribe.integration.test.js        — Newsletter subscribe endpoint (8 tests)
   smoke/
-    landing.smoke.test.js               — HTTP-based smoke tests (23 tests)
+    landing.smoke.test.js               — HTTP-based smoke tests (29 tests)
 ```
 
-**Total: 99 tests across 5 suites.**
+**Total: 113 tests across 6 suites.**
 
 #### Running Webapp Tests
 
@@ -1015,7 +1073,7 @@ HTTP-based tests using Node `http` module + Jest. No Playwright dependency — t
 smoke suite validates critical user journeys at the HTTP level using the same
 server-import pattern proven in integration tests.
 
-**7 smoke test groups (23 tests):**
+**8 smoke test groups (29 tests):**
 
 | Group | Journey | Tests |
 |-------|---------|-------|
@@ -1026,15 +1084,16 @@ server-import pattern proven in integration tests.
 | SMOKE-005 | Questionnaire list loads | 3 |
 | SMOKE-006 | Security headers baseline | 5 |
 | SMOKE-007 | Decisions endpoint | 2 |
+| SMOKE-008 | Marketing landing page | 6 |
 
 **CI Integration:** Job 7 (smoke-test) in `.github/workflows/ci-pipeline.yml`
 runs on `main` branch pushes after staging deployment. Test artifacts are
 uploaded with 30-day retention.
 
-**Accessibility Gate (Sprint 2):** Job 8 (accessibility-gate) is specified in
-`.github/docs/phase-5/sp-1-203-accessibility-gate.md`. Uses axe-core +
-Lighthouse with a 90% score threshold. Implementation scheduled for Sprint 2
-Week 1.
+**Accessibility Gate (Sprint 2):** Job 8 (accessibility-gate) is IMPLEMENTED in
+`.github/workflows/ci-pipeline.yml` per spec `.github/docs/phase-5/sp-1-203-accessibility-gate.md`.
+Runs axe-core WCAG 2.1 A+AA scan + Lighthouse accessibility audit with a 90%
+score threshold. Triggers on `main` push and all PRs.
 
 Actual coverage (as of Sprint 1 Close): **87.40% statements, 76.45% branches, 92.15%
 functions, 88.94% lines** (649 tests across 22 test files).
@@ -1077,8 +1136,9 @@ security scanning, and deployment for all PRs and pushes to `main`.
 | 4 | `build` | After Jobs 1-3 | `npm run build` + Docker image (GHCR) |
 | 5 | `deploy-staging` | `main` push only | Docker Compose health-checked deployment |
 | 6 | `integration-test` | After staging | `npm run test:integration` in CI |
-| 7 | `smoke-test` | After staging | `npm run test:smoke` (23 tests, 7 journeys) |
-| 8 | `status` | Always | Build status badge generation |
+| 7 | `smoke-test` | After staging | `npm run test:smoke` (29 tests, 8 journeys) |
+| 8 | `accessibility-gate` | `main` push + PRs | axe-core WCAG 2.1 A/AA + Lighthouse > 90 |
+| 9 | `status` | Always | Build status badge generation |
 
 ### Job Details
 
@@ -1116,9 +1176,13 @@ security scanning, and deployment for all PRs and pushes to `main`.
 - Artifacts uploaded with 30-day retention
 
 #### Job 8: Accessibility Gate (Sprint 2)
-- **Status:** Specified in Sprint 1, implementation in Sprint 2 (SP-2-CI8 #124)
-- Runs axe-core WCAG 2.1 A/AA scan + Lighthouse accessibility audit
-- Threshold: Lighthouse score > 90, zero critical/serious axe violations
+- **Status:** ✅ IMPLEMENTED (SP-2-CI8 #124, Sprint 2 Day 2)
+- Runs after build, on `main` pushes and PRs to `main`
+- Starts the application, waits for readiness, then runs:
+  - **axe-core**: WCAG 2.1 A + AA violation detection (`@axe-core/cli`)
+  - **Lighthouse**: Accessibility category audit (headless Chrome)
+- **Threshold:** Lighthouse score > 90, zero critical/serious axe violations
+- **Artifact:** `a11y-report.json` uploaded with 30-day retention
 - Specification: `.github/docs/phase-5/sp-1-203-accessibility-gate.md`
 
 ### Environment
@@ -1135,6 +1199,7 @@ security scanning, and deployment for all PRs and pushes to `main`.
 | `GITHUB_TOKEN` | Automatic — Gitleaks + Docker push |
 | `CODECOV_TOKEN` | Coverage upload (optional) |
 | `GITLEAKS_LICENSE` | Gitleaks enterprise (optional) |
+| `BUTTONDOWN_API_KEY` | Newsletter subscribe endpoint (server-side) |
 
 ---
 

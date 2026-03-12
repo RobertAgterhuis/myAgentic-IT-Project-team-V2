@@ -1,0 +1,39 @@
+# Sprint 2 KPI Dashboard – Daily Tracking Log
+
+**Sprint:** Sprint 2 (March 25 – April 7, 2026)  
+**Reporting Period:** Daily (post-standup)  
+**Baseline Date:** 2026-03-25T09:00:00Z  
+**Sprint Gate Verdict:** APPROVED (10/11 READY, 1 CONDITIONAL)
+
+---
+
+## Daily KPI Summary
+
+| Date       | Sprint Velocity   | Blocker Count | Escalations | Tech Coverage     | Accessibility Score | Brand Audit | Team Morale | Comments                                                                     |
+| ---------- | ----------------- | ------------- | ----------- | ----------------- | ------------------- | ----------- | ----------- | ---------------------------------------------------------------------------- |
+| 2026-03-25 | 0% (0/11)         | 0             | 0           | 122 tests / 6 suites ✅ | 91% WCAG AA ✅ | 95%         | ✅ High     | Sprint 2 Day 1: All 5 tracks START. SP-2-CI7 PR created. SP-2-DOC started. SP-2-BTN + SP-2-SOC parallel. SP-2-201-P pilot scoping. SP-2-501 vendor eval kickoff. |
+| 2026-03-26 | 18% (2/11)        | 0             | 0           | 113 tests / 6 suites ✅ | 91% WCAG AA ✅ | 95%         | ✅ High     | Sprint 2 Day 2: SP-2-CI8 COMPLETE. Subscribe endpoint + 8 tests. Landing page + 6 smoke tests. Matomo Docker stack. Tech manual v1.8. +14 tests. |
+
+---
+
+## KPI Definitions & Targets
+
+| KPI                 | Target              | Source                              |
+| ------------------- | ------------------- | ----------------------------------- |
+| Sprint Velocity     | ≥80% (9/11 items)   | GitHub milestone #24                |
+| Blocker Count       | 0                   | Sprint standup + session-state.json |
+| Open Escalations    | 0                   | Orchestrator queue                  |
+| Tech Test Coverage  | ≥80%                | Jest --coverage                     |
+| Accessibility Score | ≥90% WCAG AA        | Lighthouse / axe-core               |
+| Brand Audit Score   | ≥90%                | Brand audit checklist               |
+| Team Morale         | Subjective          | Standup signal                      |
+
+---
+
+## Checkpoint Targets
+
+| Checkpoint   | Date       | Velocity Target  |
+| ------------ | ---------- | ---------------- |
+| Checkpoint 1 | 2026-03-28 | 25-35% (3-4/11)  |
+| Checkpoint 2 | 2026-04-04 | 70-80% (8-9/11)  |
+| Sprint Close | 2026-04-07 | 80%+ (9-11/11)   |

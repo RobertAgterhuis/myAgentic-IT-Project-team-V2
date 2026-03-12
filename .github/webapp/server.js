@@ -269,6 +269,7 @@ const driftRoutes = require('./routes/drift')(ctx);
 const metricsDashboardRoutes = require('./routes/metrics-dashboard')(ctx);
 const dashboardRoutes = require('./routes/dashboard')(ctx);
 const milestonesRoutes = require('./routes/milestones')(ctx);
+const subscribeRoutes = require('./routes/subscribe')(ctx);
 const miscRoutes = require('./routes/misc')(ctx);
 
 const serveStatic = miscRoutes._serveStatic;
@@ -284,6 +285,7 @@ const ROUTES = {
   ...metricsDashboardRoutes,
   ...dashboardRoutes,
   ...milestonesRoutes,
+  ...subscribeRoutes,
   ...miscRoutes,
 };
 
@@ -367,6 +369,34 @@ function serveDashboardHtml(res) {
   }
 }
 
+function serveLandingHtml(res) {
+  try {
+    const store = getStore();
+    const landingPath = safePath(WEBAPP_DIR, 'landing.html');
+    const landingContent = store.readFile(landingPath);
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Length', Buffer.byteLength(landingContent, 'utf-8'));
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; form-action 'self'; frame-ancestors 'self'; base-uri 'self'"
+    );
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+
+    res.writeHead(200);
+    res.end(landingContent);
+  } catch (err) {
+    structuredLog('warn', 'landing_serve_failed', { error: err.message });
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
+
 function serveDashboardScript(pathname, res) {
   try {
     const store = getStore();
@@ -394,6 +424,10 @@ function handleExplicitStatic(req, pathname, res) {
   }
   if (pathname === '/dashboard' || pathname === '/dashboard.html') {
     serveDashboardHtml(res);
+    return true;
+  }
+  if (pathname === '/landing' || pathname === '/landing.html') {
+    serveLandingHtml(res);
     return true;
   }
   if (pathname.endsWith('.js')) {

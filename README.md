@@ -312,6 +312,13 @@ status: **0 errors, 0 warnings**.
 
 ---
 
+## Community
+
+- **[GitHub Discussions](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/discussions)** — Ask questions, share ideas, and show what you've built
+- **[Issues](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/issues)** — Bug reports and feature requests
+
+---
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding standards,

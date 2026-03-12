@@ -1,6 +1,6 @@
 {
   "name": "myagentic-it-project-team-v2",
-  "version": "1.0.0",
+  "version": "0.4.0-rc.1",
   "description": "Agentic SDLC Platform - Multi-agent software development system",
   "main": ".github/webapp/server.js",
   "scripts": {

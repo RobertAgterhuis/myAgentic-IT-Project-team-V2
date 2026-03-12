@@ -251,6 +251,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install webapp dependencies
+        run: npm --prefix .github install --omit=dev
+
       - name: Start application
         run: npm start &
 

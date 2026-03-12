@@ -139,15 +139,21 @@ describe('Blur validation event listeners', () => {
   });
 
   it('delegated focusout on #main for questionnaire textareas', () => {
-    expect(js).toMatch(/getElementById\(\s*['"]main['"]\s*\)\.addEventListener\(\s*['"]focusout['"]/);
+    expect(js).toMatch(
+      /getElementById\(\s*['"]main['"]\s*\)\.addEventListener\(\s*['"]focusout['"]/
+    );
   });
 
   it('delegated focusout on #decMain for decision answer textareas', () => {
-    expect(js).toMatch(/getElementById\(\s*['"]decMain['"]\s*\)\.addEventListener\(\s*['"]focusout['"]/);
+    expect(js).toMatch(
+      /getElementById\(\s*['"]decMain['"]\s*\)\.addEventListener\(\s*['"]focusout['"]/
+    );
   });
 
   it('delegated focusout on #cmdMain for command center fields', () => {
-    expect(js).toMatch(/getElementById\(\s*['"]cmdMain['"]\s*\)\.addEventListener\(\s*['"]focusout['"]/);
+    expect(js).toMatch(
+      /getElementById\(\s*['"]cmdMain['"]\s*\)\.addEventListener\(\s*['"]focusout['"]/
+    );
   });
 
   it('delegated change on #main for status select validation', () => {

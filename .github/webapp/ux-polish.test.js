@@ -94,7 +94,9 @@ describe('UX-04: Save button loading wiring', () => {
   });
 
   it('saveBtn restores via .finally(() => setBtnLoading(saveBtn, false))', () => {
-    expect(js).toMatch(/saveOne[\s\S]*?\.finally\(\s*\(\)\s*=>\s*setBtnLoading\(\s*saveBtn\s*,\s*false\s*\)\s*\)/);
+    expect(js).toMatch(
+      /saveOne[\s\S]*?\.finally\(\s*\(\)\s*=>\s*setBtnLoading\(\s*saveBtn\s*,\s*false\s*\)\s*\)/
+    );
   });
 
   it('saveAllBtn uses setBtnLoading in delegated click handler', () => {
@@ -110,27 +112,39 @@ describe('UX-04: Save button loading wiring', () => {
 
 describe('UX-04: Decision button loading wiring', () => {
   it('answerDecision button uses setBtnLoading', () => {
-    expect(js).toMatch(/ansBtn[\s\S]*?setBtnLoading\(\s*ansBtn\s*,\s*true\s*\)[\s\S]*?answerDecision/);
+    expect(js).toMatch(
+      /ansBtn[\s\S]*?setBtnLoading\(\s*ansBtn\s*,\s*true\s*\)[\s\S]*?answerDecision/
+    );
   });
 
   it('decideDecision button uses setBtnLoading', () => {
-    expect(js).toMatch(/decBtn[\s\S]*?setBtnLoading\(\s*decBtn\s*,\s*true\s*\)[\s\S]*?decideDecision/);
+    expect(js).toMatch(
+      /decBtn[\s\S]*?setBtnLoading\(\s*decBtn\s*,\s*true\s*\)[\s\S]*?decideDecision/
+    );
   });
 
   it('deferDecision button uses setBtnLoading', () => {
-    expect(js).toMatch(/defBtn[\s\S]*?setBtnLoading\(\s*defBtn\s*,\s*true\s*\)[\s\S]*?deferDecision/);
+    expect(js).toMatch(
+      /defBtn[\s\S]*?setBtnLoading\(\s*defBtn\s*,\s*true\s*\)[\s\S]*?deferDecision/
+    );
   });
 
   it('expireDecision button uses setBtnLoading', () => {
-    expect(js).toMatch(/expBtn[\s\S]*?setBtnLoading\(\s*expBtn\s*,\s*true\s*\)[\s\S]*?expireDecision/);
+    expect(js).toMatch(
+      /expBtn[\s\S]*?setBtnLoading\(\s*expBtn\s*,\s*true\s*\)[\s\S]*?expireDecision/
+    );
   });
 
   it('reopenDecision button uses setBtnLoading', () => {
-    expect(js).toMatch(/reopBtn[\s\S]*?setBtnLoading\(\s*reopBtn\s*,\s*true\s*\)[\s\S]*?reopenDecision/);
+    expect(js).toMatch(
+      /reopBtn[\s\S]*?setBtnLoading\(\s*reopBtn\s*,\s*true\s*\)[\s\S]*?reopenDecision/
+    );
   });
 
   it('activateDeferredCategory button uses setBtnLoading', () => {
-    expect(js).toMatch(/actCatBtn[\s\S]*?setBtnLoading\(\s*actCatBtn\s*,\s*true\s*\)[\s\S]*?activateDeferredCategory/);
+    expect(js).toMatch(
+      /actCatBtn[\s\S]*?setBtnLoading\(\s*actCatBtn\s*,\s*true\s*\)[\s\S]*?activateDeferredCategory/
+    );
   });
 
   it('decision buttons check !btn.disabled before firing', () => {
@@ -144,15 +158,21 @@ describe('UX-04: Decision button loading wiring', () => {
 
 describe('UX-04: Modal button loading wiring', () => {
   it('btnConfirmNewDec uses setBtnLoading', () => {
-    expect(js).toMatch(/btnConfirmNewDec[\s\S]*?setBtnLoading\(\s*btn\s*,\s*true\s*\)[\s\S]*?createDecision/);
+    expect(js).toMatch(
+      /btnConfirmNewDec[\s\S]*?setBtnLoading\(\s*btn\s*,\s*true\s*\)[\s\S]*?createDecision/
+    );
   });
 
   it('btnConfirmReeval uses setBtnLoading', () => {
-    expect(js).toMatch(/btnConfirmReeval[\s\S]*?setBtnLoading\(\s*btn\s*,\s*true\s*\)[\s\S]*?doReeval/);
+    expect(js).toMatch(
+      /btnConfirmReeval[\s\S]*?setBtnLoading\(\s*btn\s*,\s*true\s*\)[\s\S]*?doReeval/
+    );
   });
 
   it('btnConfirmEditDec uses setBtnLoading', () => {
-    expect(js).toMatch(/btnConfirmEditDec[\s\S]*?setBtnLoading\(\s*btn\s*,\s*true\s*\)[\s\S]*?saveEditDecision/);
+    expect(js).toMatch(
+      /btnConfirmEditDec[\s\S]*?setBtnLoading\(\s*btn\s*,\s*true\s*\)[\s\S]*?saveEditDecision/
+    );
   });
 });
 
@@ -177,7 +197,7 @@ describe('UX-05: Empty state STRINGS', () => {
   it('noDecisionsSteps has multiple step entries', () => {
     const match = js.match(/noDecisionsSteps:\s*\[([\s\S]*?)\]/);
     expect(match).toBeTruthy();
-    const steps = match[1].split("'").filter(s => s.trim().length > 10);
+    const steps = match[1].split("'").filter((s) => s.trim().length > 10);
     expect(steps.length).toBeGreaterThanOrEqual(2);
   });
 });
@@ -258,6 +278,8 @@ describe('UX-04: Decisions skeleton loader', () => {
   });
 
   it('load() clears aria-busy on decMain after load', () => {
-    expect(js).toMatch(/decMain[\s\S]*?setAttribute\(\s*['"]aria-busy['"]\s*,\s*['"]false['"]\s*\)/);
+    expect(js).toMatch(
+      /decMain[\s\S]*?setAttribute\(\s*['"]aria-busy['"]\s*,\s*['"]false['"]\s*\)/
+    );
   });
 });

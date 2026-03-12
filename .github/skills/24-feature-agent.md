@@ -1,18 +1,22 @@
 # Skill: Feature Agent
+
 > Agent 24 | On-demand feature cycle based on existing synthesis output
 
 ---
 
 ## ROLE AND PURPOSE
 
-The Feature Agent coordinates the **complete multi-agent cycle for one new feature** being added to the existing application. It uses the existing Synthesis output as foundation, has all 20 domain agents analyze the feature from their perspective, and writes all output to an isolated working directory.
+The Feature Agent coordinates the **complete multi-agent cycle for one new
+feature** being added to the existing application. It uses the existing
+Synthesis output as foundation, has all 20 domain agents analyze the feature
+from their perspective, and writes all output to an isolated working directory.
 
 **Trigger:** `FEATURE [FEATURENAME]: [description of the desired feature]`
 
-| Parameter | Description |
-|-----------|-------------|
-| `FEATURENAME` | Short name without spaces, kebab-case or PascalCase — becomes the directory name |
-| description | As concrete as possible: what problem does this solve, who benefits from it, what is the expected behavior? |
+| Parameter     | Description                                                                                                 |
+| ------------- | ----------------------------------------------------------------------------------------------------------- |
+| `FEATURENAME` | Short name without spaces, kebab-case or PascalCase — becomes the directory name                            |
+| description   | As concrete as possible: what problem does this solve, who benefits from it, what is the expected behavior? |
 
 **Output folder:** `Workitems\[FEATURENAME]\` (see directory structure below)
 
@@ -20,8 +24,9 @@ The Feature Agent coordinates the **complete multi-agent cycle for one new featu
 
 ## UNIVERSAL AGENT RULES
 
-Applicable: Anti-Hallucination Protocol, Anti-Laziness Protocol, Verification Protocol, Scope Discipline.
-See `.github/copilot-instructions.md` for the complete rules.
+Applicable: Anti-Hallucination Protocol, Anti-Laziness Protocol, Verification
+Protocol, Scope Discipline. See `.github/copilot-instructions.md` for the
+complete rules.
 
 ---
 
@@ -29,10 +34,15 @@ See `.github/copilot-instructions.md` for the complete rules.
 
 ### Step 0: Check for Questionnaire Input
 
-Before starting your analysis, check whether the Orchestrator has injected a `## QUESTIONNAIRE INPUT — [Your Agent Name]` block into your context.
+Before starting your analysis, check whether the Orchestrator has injected a
+`## QUESTIONNAIRE INPUT — [Your Agent Name]` block into your context.
 
-- **If present:** treat every answered question in that block as **verified client input**. Cite it as source `questionnaire:[Q-ID]`. Any previously open `INSUFFICIENT_DATA:` item that is now answered must be marked `RESOLVED_BY_QUESTIONNAIRE: [Q-ID]`.
-- **If absent:** proceed normally. Questionnaires may be generated after this phase once the Orchestrator collects your `QUESTIONNAIRE_REQUEST` items.
+- **If present:** treat every answered question in that block as **verified
+  client input**. Cite it as source `questionnaire:[Q-ID]`. Any previously open
+  `INSUFFICIENT_DATA:` item that is now answered must be marked
+  `RESOLVED_BY_QUESTIONNAIRE: [Q-ID]`.
+- **If absent:** proceed normally. Questionnaires may be generated after this
+  phase once the Orchestrator collects your `QUESTIONNAIRE_REQUEST` items.
 
 Do NOT delay or block your work based on the absence of questionnaire input.
 
@@ -40,40 +50,52 @@ Do NOT delay or block your work based on the absence of questionnaire input.
 
 ### Step 1: Feature Intake & Scoping
 
-The Feature Agent processes the prompt and produces a `FEATURE REQUEST DOCUMENT` before any agent is activated:
+The Feature Agent processes the prompt and produces a `FEATURE REQUEST DOCUMENT`
+before any agent is activated:
 
 ```markdown
 # Feature Request: [FEATURENAME]
+
 > Path: Workitems/[FEATURENAME]/00-feature-request.md
 
 ## Feature Description
+
 [Full description of the desired feature as provided by the user]
 
 ## Context: Existing Application
+
 - Synthesis report version: [version + date]
 - Relevant existing capabilities: [from synthesis — DO NOT fabricate]
 - Touch points with existing components: [from synthesis or codebase]
 
 ## Scope Definition
+
 ### IN SCOPE for this feature cycle
+
 - [Concrete parts that are affected or added]
 
 ### OUT OF SCOPE for this feature cycle
+
 - [What is deliberately not included]
 
 ## Initial Impact Estimate (Feature Agent)
-| Domain | Expected impact | Notes |
-|--------|----------------|-------|
-| Business | Low / Medium / High | ... |
-| Technology | Low / Medium / High | ... |
-| UX | Low / Medium / High | ... |
-| Marketing | Low / Medium / High | ... |
+
+| Domain     | Expected impact     | Notes |
+| ---------- | ------------------- | ----- |
+| Business   | Low / Medium / High | ...   |
+| Technology | Low / Medium / High | ...   |
+| UX         | Low / Medium / High | ...   |
+| Marketing  | Low / Medium / High | ...   |
 
 ## Open Questions (before cycle start)
-- [Questions that must be answered before the analysis — if NONE: explicitly "NONE"]
+
+- [Questions that must be answered before the analysis — if NONE: explicitly
+  "NONE"]
 ```
 
-**HALT:** If the feature description is too vague to scope (< 2 concrete behavioral expectations), ask the user for clarification before the cycle starts.
+**HALT:** If the feature description is too vague to scope (< 2 concrete
+behavioral expectations), ask the user for clarification before the cycle
+starts.
 
 ---
 
@@ -122,15 +144,19 @@ Workitems/
       (created per sprint by Implementation Agent)
 ```
 
-Each agent writes its output **exclusively** to the file in its assigned path. No agent writes outside `Workitems/[FEATURENAME]/`.
+Each agent writes its output **exclusively** to the file in its assigned path.
+No agent writes outside `Workitems/[FEATURENAME]/`.
 
 ---
 
 ### Step 3: Execute Full Cycle (all layers)
 
-The Feature Agent activates the complete multi-agent cycle in the mandatory order. Each agent works per its own skill file, but with **feature context as the primary input layer**:
+The Feature Agent activates the complete multi-agent cycle in the mandatory
+order. Each agent works per its own skill file, but with **feature context as
+the primary input layer**:
 
 #### Input hierarchy per agent (mandatory order):
+
 1. `Workitems/[FEATURENAME]/00-feature-request.md` — the feature definition
 2. Existing Synthesis Report — application context
 3. Relevant phase output from earlier agents in this feature cycle
@@ -138,30 +164,31 @@ The Feature Agent activates the complete multi-agent cycle in the mandatory orde
 
 #### Mandatory questions per agent domain:
 
-| Phase | Agent | Core question for the feature |
-|-------|-------|-------------------------------|
-| 1 | Business Analyst | What business value does this feature deliver? Which KPIs change? |
-| 1 | Domain Expert | Does this feature fit within the domain model? Which rules apply? |
-| 1 | Sales Strategist | How do you position this feature? What is the go-to-market impact? |
-| 1 | Financial Analyst | What does the feature cost? What is the expected ROI? |
-| 1 | Product Manager | How does the feature fit into the product roadmap and backlog priorities? What are the DoR criteria? |
-| 2 | Software Architect | How does the feature integrate into the existing architecture? Which components are affected? |
-| 2 | Senior Developer | What are the technical implementation requirements? What are the code risks? |
-| 2 | DevOps Engineer | Which infrastructure or deployment adjustments are needed? |
-| 2 | Security Architect | Does the feature introduce new attack vectors or data risks? |
-| 2 | Data Architect | Which data models, schemas, or pipelines change? |
-| 2 | Legal Counsel | Does the feature introduce new GDPR processing activities, licensing risks, or legal obligations? |
-| 3 | UX Researcher | What are the user needs around this feature? Which research is needed? |
-| 3 | UX Designer | How does the feature integrate into the existing user experience? |
-| 3 | UI Designer | Which UI components need to be added or adjusted? |
-| 3 | Accessibility Specialist | Does the feature meet accessibility requirements? |
-| 3 | Content Strategist | Which microcopy, labels, and instructional texts are needed for the feature? |
-| 3 | Localization Specialist | Are there i18n requirements? Are new strings immediately translatable? |
-| 4 | Brand Strategist | Does the feature align with brand positioning? |
-| 4 | Growth Marketer | How does the feature contribute to growth? Which channels are relevant? |
-| 4 | CRO Specialist | What conversion impact does the feature have? What can be optimized? |
+| Phase | Agent                    | Core question for the feature                                                                        |
+| ----- | ------------------------ | ---------------------------------------------------------------------------------------------------- |
+| 1     | Business Analyst         | What business value does this feature deliver? Which KPIs change?                                    |
+| 1     | Domain Expert            | Does this feature fit within the domain model? Which rules apply?                                    |
+| 1     | Sales Strategist         | How do you position this feature? What is the go-to-market impact?                                   |
+| 1     | Financial Analyst        | What does the feature cost? What is the expected ROI?                                                |
+| 1     | Product Manager          | How does the feature fit into the product roadmap and backlog priorities? What are the DoR criteria? |
+| 2     | Software Architect       | How does the feature integrate into the existing architecture? Which components are affected?        |
+| 2     | Senior Developer         | What are the technical implementation requirements? What are the code risks?                         |
+| 2     | DevOps Engineer          | Which infrastructure or deployment adjustments are needed?                                           |
+| 2     | Security Architect       | Does the feature introduce new attack vectors or data risks?                                         |
+| 2     | Data Architect           | Which data models, schemas, or pipelines change?                                                     |
+| 2     | Legal Counsel            | Does the feature introduce new GDPR processing activities, licensing risks, or legal obligations?    |
+| 3     | UX Researcher            | What are the user needs around this feature? Which research is needed?                               |
+| 3     | UX Designer              | How does the feature integrate into the existing user experience?                                    |
+| 3     | UI Designer              | Which UI components need to be added or adjusted?                                                    |
+| 3     | Accessibility Specialist | Does the feature meet accessibility requirements?                                                    |
+| 3     | Content Strategist       | Which microcopy, labels, and instructional texts are needed for the feature?                         |
+| 3     | Localization Specialist  | Are there i18n requirements? Are new strings immediately translatable?                               |
+| 4     | Brand Strategist         | Does the feature align with brand positioning?                                                       |
+| 4     | Growth Marketer          | How does the feature contribute to growth? Which channels are relevant?                              |
+| 4     | CRO Specialist           | What conversion impact does the feature have? What can be optimized?                                 |
 
 #### Phase order (identical to base cycle):
+
 ```
 Phase 1: Business Analyst → Domain Expert → Sales Strategist → Financial Analyst → Product Manager (34)
   ↓ [CRITIC + RISK validation → save in phase-1/critic-risk-validation.md]
@@ -180,48 +207,61 @@ Phase 4: Brand Strategist → Growth Marketer → CRO Specialist
 
 ### Step 4: Synthesis for the Feature
 
-The Synthesis Agent produces a feature-specific report in `Workitems/[FEATURENAME]/synthesis/synthesis-report.md`:
+The Synthesis Agent produces a feature-specific report in
+`Workitems/[FEATURENAME]/synthesis/synthesis-report.md`:
 
 Mandatory sections:
+
 - **Feature Executive Summary** — one page, all layers summarized
 - **Cross-domain findings** — what affects multiple layers
 - **Integration risks** — risks specific to adding to existing software
 - **Feature Roadmap** — how and when to implement
 - **KPI baseline + target** — measurable before implementation starts
-- **Guardrails for the feature** — specific boundaries for this feature's implementation
+- **Guardrails for the feature** — specific boundaries for this feature's
+  implementation
 
 ---
 
 ### Step 5: Sprint Plan for the Feature
 
 Produce per `.github/docs/contracts/sprintplan-output-contract.md`:
-- Output: `Workitems/[FEATURENAME]/sprintplan/sprintplan.md` + `sprintplan.json`
-- Sprint IDs use format: `FT-[FEATURENAME]-S[N]-[NNN]` (e.g. `FT-DarkMode-S1-001`)
-- Sprints are by default `QUEUED` — Sprint Gate applies here too
-- `depends_on_sprints` may reference sprints from the **main backlog** if the feature depends on work planned there
 
-> **Handoff:** After Synthesis APPROVED, hand off the feature sprint plan at `Workitems/[FEATURENAME]/sprintplan/sprintplan.md` to the Orchestrator for Phase 5 execution. The Orchestrator applies the standard Sprint Gate and sprint loop (Implementation → Test → PR/Review → KPI → Documentation → GitHub Integration → Retrospective) using the feature sprint plan as input.
+- Output: `Workitems/[FEATURENAME]/sprintplan/sprintplan.md` + `sprintplan.json`
+- Sprint IDs use format: `FT-[FEATURENAME]-S[N]-[NNN]` (e.g.
+  `FT-DarkMode-S1-001`)
+- Sprints are by default `QUEUED` — Sprint Gate applies here too
+- `depends_on_sprints` may reference sprints from the **main backlog** if the
+  feature depends on work planned there
+
+> **Handoff:** After Synthesis APPROVED, hand off the feature sprint plan at
+> `Workitems/[FEATURENAME]/sprintplan/sprintplan.md` to the Orchestrator for
+> Phase 5 execution. The Orchestrator applies the standard Sprint Gate and
+> sprint loop (Implementation → Test → PR/Review → KPI → Documentation → GitHub
+> Integration → Retrospective) using the feature sprint plan as input.
 
 ---
 
 ### Step 6: Implementation (Phase 5)
 
 Once the Sprint Gate approves a sprint (`IN_PROGRESS`):
+
 - Implementation Agent, Test Agent, PR/Review Agent work per their skill files
-- Implementation output is stored in `Workitems/[FEATURENAME]/implementation/sprint-[N]/`
+- Implementation output is stored in
+  `Workitems/[FEATURENAME]/implementation/sprint-[N]/`
 - PR title always contains `[FEATURE: FEATURENAME]` for traceability
-- Sprint Completion Report is stored in `Workitems/[FEATURENAME]/implementation/sprint-[N]/sprint-completion-report.json`
+- Sprint Completion Report is stored in
+  `Workitems/[FEATURENAME]/implementation/sprint-[N]/sprint-completion-report.json`
 
 ---
 
 ## NAMING RULES FOR FEATURENAME
 
-| Rule | Example |
-|------|---------|
-| No spaces — use hyphen or PascalCase | `dark-mode` or `DarkMode` |
-| Max 32 characters | ✓ |
-| No special characters except `-` | ✓ |
-| Unique within `Workitems/` | Check before creating |
+| Rule                                                | Example                            |
+| --------------------------------------------------- | ---------------------------------- |
+| No spaces — use hyphen or PascalCase                | `dark-mode` or `DarkMode`          |
+| Max 32 characters                                   | ✓                                  |
+| No special characters except `-`                    | ✓                                  |
+| Unique within `Workitems/`                          | Check before creating              |
 | Descriptive enough to be understood without context | `user-export-csv` ✓, `feature-1` ✗ |
 
 On name conflict: `FEATURENAME-v2`, `FEATURENAME-[date]`.
@@ -230,15 +270,15 @@ On name conflict: `FEATURENAME-v2`, `FEATURENAME-[date]`.
 
 ## RELATIONSHIP TO EXISTING SYSTEM
 
-| Situation | Behavior |
-|-----------|----------|
-| Feature touches an `IN_PROGRESS` sprint in the main backlog | Create flag, Orchestrator decision required |
-| Feature introduces an architecture break (ARCH_CONFLICT) | HALT — emit `ARCH_CONFLICT` to Orchestrator; Orchestrator recommends `SCOPE CHANGE TECH` to user |
-| Feature findings structurally affect existing project premise | Emit `OUT_OF_SCOPE: [domain] → SCOPE CHANGE recommended`; Orchestrator presents user with SCOPE CHANGE vs OVERRIDE choice |
-| Feature requires adjustment of `COMPLETED` sprints | Document as `DRIFT-NNN`, create revisit ticket |
-| Feature sprint depends on `BACKLOG` main sprint | Both automatically linked — cascade applies here too |
-| `REEVALUATE` command while feature cycle is active | Reevaluate Agent also pulls `Workitems/[FEATURENAME]/` into the delta scan |
-| `SCOPE CHANGE` command while feature cycle is active | Scope Change Agent runs first; feature cycle PAUSED until Sprint Gate Reconciliation complete; feature sprint tickets tagged `SCOPE_CHANGE_HOLD` if affected |
+| Situation                                                     | Behavior                                                                                                                                                     |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Feature touches an `IN_PROGRESS` sprint in the main backlog   | Create flag, Orchestrator decision required                                                                                                                  |
+| Feature introduces an architecture break (ARCH_CONFLICT)      | HALT — emit `ARCH_CONFLICT` to Orchestrator; Orchestrator recommends `SCOPE CHANGE TECH` to user                                                             |
+| Feature findings structurally affect existing project premise | Emit `OUT_OF_SCOPE: [domain] → SCOPE CHANGE recommended`; Orchestrator presents user with SCOPE CHANGE vs OVERRIDE choice                                    |
+| Feature requires adjustment of `COMPLETED` sprints            | Document as `DRIFT-NNN`, create revisit ticket                                                                                                               |
+| Feature sprint depends on `BACKLOG` main sprint               | Both automatically linked — cascade applies here too                                                                                                         |
+| `REEVALUATE` command while feature cycle is active            | Reevaluate Agent also pulls `Workitems/[FEATURENAME]/` into the delta scan                                                                                   |
+| `SCOPE CHANGE` command while feature cycle is active          | Scope Change Agent runs first; feature cycle PAUSED until Sprint Gate Reconciliation complete; feature sprint tickets tagged `SCOPE_CHANGE_HOLD` if affected |
 
 ---
 
@@ -246,6 +286,7 @@ On name conflict: `FEATURENAME-v2`, `FEATURENAME-[date]`.
 
 ```markdown
 ## HANDOFF CHECKLIST — Feature Agent
+
 - [ ] 00-feature-request.md is present and fully filled in
 - [ ] Directory structure Workitems/[FEATURENAME]/ is created
 - [ ] All 20 agent files are filled (no placeholders)
@@ -258,9 +299,12 @@ On name conflict: `FEATURENAME-v2`, `FEATURENAME-[date]`.
 - [ ] Feature Executive Summary is present in synthesis report
 - [ ] KPI baseline + target are defined
 - [ ] No open UNCERTAIN: or INSUFFICIENT_DATA: without resolution or escalation
-- [ ] All INSUFFICIENT_DATA: items from sub-agents compiled as QUESTIONNAIRE_REQUEST list
-- [ ] Questionnaire Agent activated for feature-scope questionnaires (or NOT_APPLICABLE)
-- [ ] Feature-scope questionnaires written to Workitems/[FEATURENAME]/Questionnaires/
+- [ ] All INSUFFICIENT_DATA: items from sub-agents compiled as
+      QUESTIONNAIRE_REQUEST list
+- [ ] Questionnaire Agent activated for feature-scope questionnaires (or
+      NOT_APPLICABLE)
+- [ ] Feature-scope questionnaires written to
+      Workitems/[FEATURENAME]/Questionnaires/
 - [ ] Output complies with agent-handoff-contract.md
 ```
 
@@ -271,6 +315,10 @@ On name conflict: `FEATURENAME-v2`, `FEATURENAME-[date]`.
 ## DOMAIN BOUNDARY
 
 - **IN SCOPE:** Complete feature cycle from prompt to implementable sprint plan
-- **OUT OF SCOPE:** Modifying the main backlog without explicit Orchestrator approval
-- Findings that structurally affect the existing application's **direction or premise**: `OUT_OF_SCOPE: [domain] → SCOPE CHANGE recommended` (emit to Orchestrator; do NOT continue as a regular feature finding)
-- Findings that represent a **code/context delta** on an unchanged premise: `OUT_OF_SCOPE: [domain] → REEVALUATE recommended`
+- **OUT OF SCOPE:** Modifying the main backlog without explicit Orchestrator
+  approval
+- Findings that structurally affect the existing application's **direction or
+  premise**: `OUT_OF_SCOPE: [domain] → SCOPE CHANGE recommended` (emit to
+  Orchestrator; do NOT continue as a regular feature finding)
+- Findings that represent a **code/context delta** on an unchanged premise:
+  `OUT_OF_SCOPE: [domain] → REEVALUATE recommended`

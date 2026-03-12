@@ -19,10 +19,10 @@ const SEVERITY = Object.freeze({ CRITICAL: 'CRITICAL', WARNING: 'WARNING', INFO:
 
 const DRIFT_TYPE = Object.freeze({
   SPRINT_STATUS_MISMATCH: 'SPRINT_STATUS_MISMATCH',
-  MISSING_SYNC_REPORT:    'MISSING_SYNC_REPORT',
-  STORY_STATUS_MISMATCH:  'STORY_STATUS_MISMATCH',
-  ORPHANED_ISSUE:         'ORPHANED_ISSUE',
-  MISSING_ISSUE:          'MISSING_ISSUE',
+  MISSING_SYNC_REPORT: 'MISSING_SYNC_REPORT',
+  STORY_STATUS_MISMATCH: 'STORY_STATUS_MISMATCH',
+  ORPHANED_ISSUE: 'ORPHANED_ISSUE',
+  MISSING_ISSUE: 'MISSING_ISSUE',
 });
 
 /* ── Sprint Plan Parser ───────────────────────────────────────── */
@@ -92,9 +92,13 @@ function _classifySprintLine(line, currentSprint, sprintHeaderRe) {
 }
 
 function _isValidStoryId(sid) {
-  return sid !== 'Story ID' && !sid.startsWith('--')
-    && !sid.startsWith('Track') && !sid.startsWith('KPI')
-    && /^[A-Z]/.test(sid);
+  return (
+    sid !== 'Story ID' &&
+    !sid.startsWith('--') &&
+    !sid.startsWith('Track') &&
+    !sid.startsWith('KPI') &&
+    /^[A-Z]/.test(sid)
+  );
 }
 
 /* ── Sync Report Parser ───────────────────────────────────────── */
@@ -106,7 +110,8 @@ function _isValidStoryId(sid) {
  */
 function parseSyncReport(content) {
   if (typeof content !== 'string') return { closed: [], open: [] };
-  const closedSectionRe = /(?:Issues?\s*Closed|Updated\s*Issues|Actions?\s*Performed)([\s\S]*?)(?=\n##|\n---|\n$)/i;
+  const closedSectionRe =
+    /(?:Issues?\s*Closed|Updated\s*Issues|Actions?\s*Performed)([\s\S]*?)(?=\n##|\n---|\n$)/i;
   const openSectionRe = /(?:Issues?\s*(?:Still\s*)?Open)([\s\S]*?)(?=\n##|\n---|\n$)/i;
   const closed = _parseClosedSection(content, closedSectionRe);
   _parseCloseActions(content, closed);
@@ -142,7 +147,7 @@ function _extractStoryFirstRows(text, closed) {
   while ((m = re.exec(text)) !== null) {
     const sid = m[1].trim();
     const num = parseInt(m[2], 10);
-    if (/^[A-Z]/.test(sid) && !isNaN(num) && !closed.some(c => c.issueNumber === num)) {
+    if (/^[A-Z]/.test(sid) && !isNaN(num) && !closed.some((c) => c.issueNumber === num)) {
       closed.push({ issueNumber: num, storyId: sid });
     }
   }
@@ -154,7 +159,7 @@ function _parseCloseActions(content, closed) {
   while ((m = re.exec(content)) !== null) {
     const num = parseInt(m[1], 10);
     const sid = m[2].trim();
-    if (!closed.some(c => c.issueNumber === num)) {
+    if (!closed.some((c) => c.issueNumber === num)) {
       closed.push({ issueNumber: num, storyId: sid });
     }
   }
@@ -192,13 +197,20 @@ function detectDrift({ sessionState, sprintPlanContent, syncReports }) {
     return _emptyReport('Session state is missing or invalid');
   }
 
-  const sprintStatuses = (sessionState.sprint_backlog && sessionState.sprint_backlog.sprint_statuses) || {};
+  const sprintStatuses =
+    (sessionState.sprint_backlog && sessionState.sprint_backlog.sprint_statuses) || {};
   const storyIssueMap = parseStoryIssueMap(sprintPlanContent || '');
   const sprintAssignments = parseSprintStoryAssignments(sprintPlanContent || '');
   const lookups = _buildIssueLookups(storyIssueMap);
   const ctx = { drifts: [], counter: 0 };
 
-  const syncedSprints = _checkPerSprintDrift(sprintStatuses, syncReports, sprintAssignments, lookups.storyToIssue, ctx);
+  const syncedSprints = _checkPerSprintDrift(
+    sprintStatuses,
+    syncReports,
+    sprintAssignments,
+    lookups.storyToIssue,
+    ctx
+  );
   _findOrphanedIssues(syncReports, lookups.issueToStory, ctx);
   _findSprintLevelMismatches(sprintStatuses, syncReports, ctx);
 
@@ -236,12 +248,28 @@ function _checkPerSprintDrift(sprintStatuses, syncReports, sprintAssignments, st
   const syncedSprints = [];
   for (const [sprintId, status] of Object.entries(sprintStatuses)) {
     const reportContent = syncReports ? syncReports[sprintId] : null;
-    _processSprint(sprintId, status, reportContent, sprintAssignments, storyToIssue, ctx, syncedSprints);
+    _processSprint(
+      sprintId,
+      status,
+      reportContent,
+      sprintAssignments,
+      storyToIssue,
+      ctx,
+      syncedSprints
+    );
   }
   return syncedSprints;
 }
 
-function _processSprint(sprintId, status, reportContent, sprintAssignments, storyToIssue, ctx, syncedSprints) {
+function _processSprint(
+  sprintId,
+  status,
+  reportContent,
+  sprintAssignments,
+  storyToIssue,
+  ctx,
+  syncedSprints
+) {
   if (status === 'DONE' && !reportContent) {
     _addDrift(ctx, DRIFT_TYPE.MISSING_SYNC_REPORT, SEVERITY.WARNING, sprintId, {
       expected: `Sync report exists for completed sprint ${sprintId}`,
@@ -272,10 +300,10 @@ function _checkStoryStatuses(assignedStories, syncData, storyToIssue, sprintId, 
       });
       continue;
     }
-    const isClosed = syncData.closed.some(c => c.issueNumber === issueNum);
-    const isStillOpen = syncData.open.some(o => o.issueNumber === issueNum);
+    const isClosed = syncData.closed.some((c) => c.issueNumber === issueNum);
+    const isStillOpen = syncData.open.some((o) => o.issueNumber === issueNum);
     if (!isClosed && isStillOpen) {
-      const openEntry = syncData.open.find(o => o.issueNumber === issueNum);
+      const openEntry = syncData.open.find((o) => o.issueNumber === issueNum);
       _addDrift(ctx, DRIFT_TYPE.STORY_STATUS_MISMATCH, SEVERITY.CRITICAL, sprintId, {
         story_id: storyId,
         issue_number: issueNum,
@@ -312,11 +340,11 @@ function _findSprintLevelMismatches(sprintStatuses, syncReports, ctx) {
     if (!reportContent) continue;
     const syncData = parseSyncReport(reportContent);
     if (syncData.open.length === 0) continue;
-    const hasStoryDrift = ctx.drifts.some(d =>
-      d.sprint === sprintId && d.type === DRIFT_TYPE.STORY_STATUS_MISMATCH
+    const hasStoryDrift = ctx.drifts.some(
+      (d) => d.sprint === sprintId && d.type === DRIFT_TYPE.STORY_STATUS_MISMATCH
     );
     if (hasStoryDrift) continue;
-    const openIds = syncData.open.map(o => `#${o.issueNumber}`).join(', ');
+    const openIds = syncData.open.map((o) => `#${o.issueNumber}`).join(', ');
     _addDrift(ctx, DRIFT_TYPE.SPRINT_STATUS_MISMATCH, SEVERITY.CRITICAL, sprintId, {
       expected: `All issues closed for completed sprint ${sprintId}`,
       actual: `Sprint ${sprintId} DONE but issues still open: ${openIds}`,
@@ -326,19 +354,19 @@ function _findSprintLevelMismatches(sprintStatuses, syncReports, ctx) {
 }
 
 function _buildReport(drifts, storyIssueMap, syncedSprints) {
-  const driftStoryIds = new Set(drifts.filter(d => d.story_id).map(d => d.story_id));
+  const driftStoryIds = new Set(drifts.filter((d) => d.story_id).map((d) => d.story_id));
   const summary = {
     total_drifts: drifts.length,
-    critical: drifts.filter(d => d.severity === SEVERITY.CRITICAL).length,
-    warning:  drifts.filter(d => d.severity === SEVERITY.WARNING).length,
-    info:     drifts.filter(d => d.severity === SEVERITY.INFO).length,
+    critical: drifts.filter((d) => d.severity === SEVERITY.CRITICAL).length,
+    warning: drifts.filter((d) => d.severity === SEVERITY.WARNING).length,
+    info: drifts.filter((d) => d.severity === SEVERITY.INFO).length,
   };
   return {
     generated_at: new Date().toISOString(),
     summary,
     drifts,
     in_sync: {
-      sprints: syncedSprints.filter(s => !drifts.some(d => d.sprint === s)),
+      sprints: syncedSprints.filter((s) => !drifts.some((d) => d.sprint === s)),
       stories: storyIssueMap.length - driftStoryIds.size,
     },
   };

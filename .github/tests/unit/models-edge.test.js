@@ -28,10 +28,9 @@ describe('parseQuestionnaire — edge cases', () => {
 
 describe('nextDecisionId', () => {
   it('increments the highest existing DEC-ID', () => {
-    const md = [
-      '| DEC-R2-001 | Something | DECIDED |',
-      '| DEC-R2-003 | Another | DECIDED |',
-    ].join('\n');
+    const md = ['| DEC-R2-001 | Something | DECIDED |', '| DEC-R2-003 | Another | DECIDED |'].join(
+      '\n'
+    );
     const next = nextDecisionId(md, 'DEC-R2-');
     expect(next).toBe('DEC-R2-004');
   });

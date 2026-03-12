@@ -1,10 +1,10 @@
 {
   "repo": "RobertAgterhuis/myAgentic-IT-Project-team-V2",
-  "captured_at": "2026-03-09T18:38:36.736Z",
+  "captured_at": "2026-03-10T11:02:27.539Z",
   "summary": {
-    "milestones_open": 19,
+    "milestones_open": 21,
     "milestones_closed": 3,
-    "issues_open": 54,
+    "issues_open": 71,
     "issues_closed": 47
   },
   "milestones": [
@@ -171,6 +171,15 @@
       "description": "Make context window management and memory/state persistence platform-aware. Configurable file-splitting thresholds, conversation boundary triggers, and memory path adapters per platform."
     },
     {
+      "number": 23,
+      "title": "Sprint 1",
+      "state": "open",
+      "open_issues": 13,
+      "closed_issues": 0,
+      "due_on": "2026-03-24T00:00:00Z",
+      "description": "First implementation sprint - P1 critical path items"
+    },
+    {
       "number": 1,
       "title": "SP-9: Pre-GA Readiness",
       "state": "open",
@@ -178,6 +187,15 @@
       "closed_issues": 0,
       "due_on": "2026-04-05T00:00:00Z",
       "description": "Final sprint — Docker deployment readiness (TECH-08, 8 SP) + Domain glossary (BIZ-02, 2 SP). Total: 10 SP. Status: DEFERRED."
+    },
+    {
+      "number": 24,
+      "title": "Sprint 2",
+      "state": "open",
+      "open_issues": 4,
+      "closed_issues": 0,
+      "due_on": "2026-04-07T00:00:00Z",
+      "description": "Second implementation sprint - P2 and follow-up items"
     },
     {
       "number": 3,
@@ -209,13 +227,231 @@
   ],
   "issues": [
     {
+      "number": 121,
+      "title": "[SP-1-105] Product launch community prep",
+      "state": "open",
+      "labels": ["marketing", "P1", "sprint-item", "growth"],
+      "milestone": {
+        "number": 23,
+        "title": "Sprint 1"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:47:00Z",
+      "closed_at": null
+    },
+    {
+      "number": 120,
+      "title": "[SP-10-603] Dependency governance and CI audit checks",
+      "state": "open",
+      "labels": ["tech", "P1", "sprint-item", "ci-cd", "security"],
+      "milestone": {
+        "number": 23,
+        "title": "Sprint 1"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 119,
+      "title": "[SP-1-501] Locale prioritization kickoff",
+      "state": "open",
+      "labels": ["ux", "P1", "sprint-item", "BLOCKED", "localization"],
+      "milestone": {
+        "number": 23,
+        "title": "Sprint 1"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 118,
+      "title": "[SP-1-003] Q4 milestone governance and slip escalation",
+      "state": "open",
+      "labels": ["business", "P1", "sprint-item", "governance"],
+      "milestone": {
+        "number": 23,
+        "title": "Sprint 1"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 117,
+      "title": "[SP-2-501] TMS setup and integration",
+      "state": "open",
+      "labels": ["ux", "P1", "sprint-item", "BLOCKED", "localization"],
+      "milestone": {
+        "number": 23,
+        "title": "Sprint 1"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 116,
+      "title": "[SP-11-612] Critical E2E smoke suite",
+      "state": "open",
+      "labels": ["tech", "P1", "sprint-item", "testing", "e2e"],
+      "milestone": {
+        "number": 23,
+        "title": "Sprint 1"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 115,
+      "title": "[SP-2-201] Landing experiment production deployment",
+      "state": "open",
+      "labels": ["marketing", "P1", "sprint-item", "cro", "experimentation"],
+      "milestone": {
+        "number": 23,
+        "title": "Sprint 1"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 114,
+      "title": "[SP-1-201] Privacy-first analytics setup and funnel measurement",
+      "state": "open",
+      "labels": ["marketing", "P1", "sprint-item", "analytics", "BLOCKED"],
+      "milestone": {
+        "number": 24,
+        "title": "Sprint 2"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 113,
+      "title": "[SP-1-001] Team capacity formalization",
+      "state": "open",
+      "labels": ["business", "P1", "sprint-item", "capacity-planning"],
+      "milestone": {
+        "number": 23,
+        "title": "Sprint 1"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 110,
+      "title": "[SP-2-202] Pilot rubric for structured feedback",
+      "state": "open",
+      "labels": ["business", "sprint-item", "P2", "pilot-validation"],
+      "milestone": {
+        "number": 24,
+        "title": "Sprint 2"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 108,
+      "title": "[SP-1-101] Brand brief and foundation",
+      "state": "open",
+      "labels": ["marketing", "P1", "sprint-item", "brand"],
+      "milestone": {
+        "number": 23,
+        "title": "Sprint 1"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 112,
+      "title": "[SP-11-613] Maintainability thresholds in CI",
+      "state": "open",
+      "labels": ["tech", "sprint-item", "P2", "code-quality"],
+      "milestone": {
+        "number": 24,
+        "title": "Sprint 2"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 111,
+      "title": "[SP-1-203] Accessibility audit dependency gate",
+      "state": "open",
+      "labels": ["ux", "accessibility", "P1", "sprint-item", "wcag"],
+      "milestone": {
+        "number": 23,
+        "title": "Sprint 1"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 109,
+      "title": "[SP-1-108] Onboarding friction validation",
+      "state": "open",
+      "labels": ["marketing", "P1", "sprint-item", "growth", "onboarding"],
+      "milestone": {
+        "number": 23,
+        "title": "Sprint 1"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 107,
+      "title": "[SP-2-201] Internal pilot to validate adoption blockers",
+      "state": "open",
+      "labels": ["business", "sprint-item", "P2", "pilot-validation"],
+      "milestone": {
+        "number": 24,
+        "title": "Sprint 2"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 106,
+      "title": "[SP-11-611] Formal multi-layer test strategy",
+      "state": "open",
+      "labels": ["tech", "P1", "sprint-item", "testing"],
+      "milestone": {
+        "number": 23,
+        "title": "Sprint 1"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
+      "number": 105,
+      "title": "[SP-1-201] Token lock baseline (UI system)",
+      "state": "open",
+      "labels": ["ux", "P1", "sprint-item", "design-system"],
+      "milestone": {
+        "number": 23,
+        "title": "Sprint 1"
+      },
+      "assignees": [],
+      "created_at": "2026-03-10T09:46:47Z",
+      "closed_at": null
+    },
+    {
       "number": 102,
       "title": "FEAT-09-E: Multi-platform setup & switching documentation",
       "state": "open",
-      "labels": [
-        "documentation",
-        "P2-medium"
-      ],
+      "labels": ["documentation", "P2-medium"],
       "milestone": {
         "number": 22,
         "title": "FEAT-09: Context ;& Memory Portability"
@@ -228,11 +464,7 @@
       "number": 101,
       "title": "FEAT-09-D: Token budget tracking & cost dashboard per platform",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "tech", "P2-medium"],
       "milestone": {
         "number": 22,
         "title": "FEAT-09: Context ;& Memory Portability"
@@ -245,11 +477,7 @@
       "number": 100,
       "title": "FEAT-09-C: Session state portability — cross-platform resume",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 22,
         "title": "FEAT-09: Context ;& Memory Portability"
@@ -262,11 +490,7 @@
       "number": 99,
       "title": "FEAT-09-B: Memory path adapters — per-platform persistence mapping",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 22,
         "title": "FEAT-09: Context ;& Memory Portability"
@@ -279,11 +503,7 @@
       "number": 98,
       "title": "FEAT-09-A: Platform-aware context window manager — configurable limits",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 22,
         "title": "FEAT-09: Context ;& Memory Portability"
@@ -296,12 +516,7 @@
       "number": 97,
       "title": "FEAT-08-D: MCP server health monitoring & webapp dashboard",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P3-low",
-        "infra"
-      ],
+      "labels": ["enhancement", "tech", "P3-low", "infra"],
       "milestone": {
         "number": 21,
         "title": "FEAT-08: Universal MCP Server Layer"
@@ -314,11 +529,7 @@
       "number": 96,
       "title": "FEAT-08-C: GitHub MCP cross-platform compatibility testing",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "tech", "P2-medium"],
       "milestone": {
         "number": 21,
         "title": "FEAT-08: Universal MCP Server Layer"
@@ -331,11 +542,7 @@
       "number": 95,
       "title": "FEAT-08-B: Custom MCP server — orchestrator tools exposed via MCP",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 21,
         "title": "FEAT-08: Universal MCP Server Layer"
@@ -348,12 +555,7 @@
       "number": 94,
       "title": "FEAT-08-A: MCP server configuration — per-platform config generation",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high",
-        "infra"
-      ],
+      "labels": ["enhancement", "tech", "P1-high", "infra"],
       "milestone": {
         "number": 21,
         "title": "FEAT-08: Universal MCP Server Layer"
@@ -366,11 +568,7 @@
       "number": 93,
       "title": "FEAT-07-D: Codex end-to-end pipeline validation & comparison",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "tech", "P2-medium"],
       "milestone": {
         "number": 20,
         "title": "FEAT-07: OpenAI Codex Integration"
@@ -383,11 +581,7 @@
       "number": 92,
       "title": "FEAT-07-C: Codex multi-agent threading — Assistants API orchestration",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 20,
         "title": "FEAT-07: OpenAI Codex Integration"
@@ -400,11 +594,7 @@
       "number": 91,
       "title": "FEAT-07-B: OpenAI API integration layer — Assistants & function calling",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 20,
         "title": "FEAT-07: OpenAI Codex Integration"
@@ -417,11 +607,7 @@
       "number": 90,
       "title": "FEAT-07-A: codex.md generation & Codex CLI project setup",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 20,
         "title": "FEAT-07: OpenAI Codex Integration"
@@ -434,11 +620,7 @@
       "number": 89,
       "title": "FEAT-06-D: Claude end-to-end pipeline validation & comparison",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "tech", "P2-medium"],
       "milestone": {
         "number": 19,
         "title": "FEAT-06: Claude Integration"
@@ -451,11 +633,7 @@
       "number": 88,
       "title": "FEAT-06-C: Claude sub-agent invocation — Task tool orchestration",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 19,
         "title": "FEAT-06: Claude Integration"
@@ -468,11 +646,7 @@
       "number": 87,
       "title": "FEAT-06-B: Claude API integration layer — Anthropic client",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 19,
         "title": "FEAT-06: Claude Integration"
@@ -485,11 +659,7 @@
       "number": 86,
       "title": "FEAT-06-A: CLAUDE.md generation & Claude Code project setup",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 19,
         "title": "FEAT-06: Claude Integration"
@@ -502,12 +672,7 @@
       "number": 85,
       "title": "FEAT-05-F: Orchestrator webapp integration — pipeline visualization",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P2-medium",
-        "ui"
-      ],
+      "labels": ["enhancement", "tech", "P2-medium", "ui"],
       "milestone": {
         "number": 18,
         "title": "FEAT-05: Code-Based Orchestrator"
@@ -520,11 +685,7 @@
       "number": 84,
       "title": "FEAT-05-E: Orchestrator CLI & API — command interface",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "tech", "P2-medium"],
       "milestone": {
         "number": 18,
         "title": "FEAT-05: Code-Based Orchestrator"
@@ -537,11 +698,7 @@
       "number": 83,
       "title": "FEAT-05-D: Sprint Gate engine — Definition of Ready & readiness checks",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 18,
         "title": "FEAT-05: Code-Based Orchestrator"
@@ -554,11 +711,7 @@
       "number": 82,
       "title": "FEAT-05-C: Gate validation engine — Critic + Risk checks",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 18,
         "title": "FEAT-05: Code-Based Orchestrator"
@@ -571,11 +724,7 @@
       "number": 81,
       "title": "FEAT-05-B: Agent invocation dispatcher — multi-platform routing",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "P0-critical",
-        "tech"
-      ],
+      "labels": ["enhancement", "P0-critical", "tech"],
       "milestone": {
         "number": 18,
         "title": "FEAT-05: Code-Based Orchestrator"
@@ -588,11 +737,7 @@
       "number": 80,
       "title": "FEAT-05-A: Orchestrator state machine engine — executable flow runner",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "P0-critical",
-        "tech"
-      ],
+      "labels": ["enhancement", "P0-critical", "tech"],
       "milestone": {
         "number": 18,
         "title": "FEAT-05: Code-Based Orchestrator"
@@ -605,11 +750,7 @@
       "number": 79,
       "title": "FEAT-04-E: Tool capability matrix & fallback strategies",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "tech", "P2-medium"],
       "milestone": {
         "number": 17,
         "title": "FEAT-04: Multi-Platform Tool Abstraction"
@@ -622,11 +763,7 @@
       "number": 78,
       "title": "FEAT-04-D: OpenAI Codex tool adapter — function calling mapping",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 17,
         "title": "FEAT-04: Multi-Platform Tool Abstraction"
@@ -639,11 +776,7 @@
       "number": 77,
       "title": "FEAT-04-C: Claude tool adapter — native tool mapping",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 17,
         "title": "FEAT-04: Multi-Platform Tool Abstraction"
@@ -656,11 +789,7 @@
       "number": 76,
       "title": "FEAT-04-B: Copilot tool adapter — native tool mapping",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 17,
         "title": "FEAT-04: Multi-Platform Tool Abstraction"
@@ -673,11 +802,7 @@
       "number": 75,
       "title": "FEAT-04-A: Tool abstraction interface — platform-agnostic API",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 17,
         "title": "FEAT-04: Multi-Platform Tool Abstraction"
@@ -690,11 +815,7 @@
       "number": 74,
       "title": "FEAT-03-G: Transpiler CI pipeline — sync validation & auto-generation",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "P2-medium",
-        "infra"
-      ],
+      "labels": ["enhancement", "P2-medium", "infra"],
       "milestone": {
         "number": 16,
         "title": "FEAT-03: Canonical Schema ;& Instruction Transpiler"
@@ -707,11 +828,7 @@
       "number": 73,
       "title": "FEAT-03-F: OpenAI Codex instruction generator — transpiler target 3",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 16,
         "title": "FEAT-03: Canonical Schema ;& Instruction Transpiler"
@@ -724,11 +841,7 @@
       "number": 72,
       "title": "FEAT-03-E: Claude instruction generator — transpiler target 2",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 16,
         "title": "FEAT-03: Canonical Schema ;& Instruction Transpiler"
@@ -741,11 +854,7 @@
       "number": 71,
       "title": "FEAT-03-D: Copilot instruction generator — transpiler target 1",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 16,
         "title": "FEAT-03: Canonical Schema ;& Instruction Transpiler"
@@ -758,11 +867,7 @@
       "number": 70,
       "title": "FEAT-03-C: Canonical tool contract schema — abstract tool definitions",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 16,
         "title": "FEAT-03: Canonical Schema ;& Instruction Transpiler"
@@ -775,11 +880,7 @@
       "number": 69,
       "title": "FEAT-03-B: Canonical flow schema — phases, gates, handoffs",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 16,
         "title": "FEAT-03: Canonical Schema ;& Instruction Transpiler"
@@ -792,11 +893,7 @@
       "number": 68,
       "title": "FEAT-03-A: Canonical agent schema — platform-neutral YAML/JSON spec",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "tech",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "tech", "P1-high"],
       "milestone": {
         "number": 16,
         "title": "FEAT-03: Canonical Schema ;& Instruction Transpiler"
@@ -809,10 +906,7 @@
       "number": 42,
       "title": "FEAT-02-G: Dashboard home — project health, metrics, activity feed",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "ui"
-      ],
+      "labels": ["enhancement", "ui"],
       "milestone": {
         "number": 13,
         "title": "FEAT-02: Enterprise UI Redesign"
@@ -825,10 +919,7 @@
       "number": 41,
       "title": "FEAT-02-F: Feedback system — toasts, dialogs, progress, alerts",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "ui"
-      ],
+      "labels": ["enhancement", "ui"],
       "milestone": {
         "number": 13,
         "title": "FEAT-02: Enterprise UI Redesign"
@@ -841,10 +932,7 @@
       "number": 40,
       "title": "FEAT-02-E: Forms & inputs — buttons, fields, validation, toggles",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "ui"
-      ],
+      "labels": ["enhancement", "ui"],
       "milestone": {
         "number": 13,
         "title": "FEAT-02: Enterprise UI Redesign"
@@ -857,10 +945,7 @@
       "number": 39,
       "title": "FEAT-02-D: Data tables & lists — sorting, filtering, row actions",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "ui"
-      ],
+      "labels": ["enhancement", "ui"],
       "milestone": {
         "number": 13,
         "title": "FEAT-02: Enterprise UI Redesign"
@@ -873,10 +958,7 @@
       "number": 38,
       "title": "FEAT-02-C: Card & panel components — metric cards, status badges, skeletons",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "ui"
-      ],
+      "labels": ["enhancement", "ui"],
       "milestone": {
         "number": 13,
         "title": "FEAT-02: Enterprise UI Redesign"
@@ -889,10 +971,7 @@
       "number": 37,
       "title": "FEAT-02-B: Navigation & layout — sidebar, header, CSS Grid structure",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "ui"
-      ],
+      "labels": ["enhancement", "ui"],
       "milestone": {
         "number": 13,
         "title": "FEAT-02: Enterprise UI Redesign"
@@ -905,10 +984,7 @@
       "number": 36,
       "title": "FEAT-02-A: Design system foundation — tokens, typography, spacing, colors",
       "state": "open",
-      "labels": [
-        "enhancement",
-        "ui"
-      ],
+      "labels": ["enhancement", "ui"],
       "milestone": {
         "number": 13,
         "title": "FEAT-02: Enterprise UI Redesign"
@@ -921,10 +997,7 @@
       "number": 35,
       "title": "CAT-09: Microsoft PowerShell — Decision framework and guardrails",
       "state": "open",
-      "labels": [
-        "decisions",
-        "category"
-      ],
+      "labels": ["decisions", "category"],
       "milestone": {
         "number": 12,
         "title": "CAT-09: Microsoft PowerShell Decisions"
@@ -937,10 +1010,7 @@
       "number": 34,
       "title": "CAT-08: Microsoft Playwright — Decision framework and guardrails",
       "state": "open",
-      "labels": [
-        "decisions",
-        "category"
-      ],
+      "labels": ["decisions", "category"],
       "milestone": {
         "number": 11,
         "title": "CAT-08: Microsoft Playwright Decisions"
@@ -953,10 +1023,7 @@
       "number": 33,
       "title": "CAT-07: Google Lighthouse — Decision framework and guardrails",
       "state": "open",
-      "labels": [
-        "decisions",
-        "category"
-      ],
+      "labels": ["decisions", "category"],
       "milestone": {
         "number": 10,
         "title": "CAT-07: Google Lighthouse Decisions"
@@ -969,10 +1036,7 @@
       "number": 32,
       "title": "CAT-06: Microsoft SharePoint — Decision framework and guardrails",
       "state": "open",
-      "labels": [
-        "decisions",
-        "category"
-      ],
+      "labels": ["decisions", "category"],
       "milestone": {
         "number": 9,
         "title": "CAT-06: Microsoft SharePoint Decisions"
@@ -985,10 +1049,7 @@
       "number": 31,
       "title": "CAT-05: Microsoft Teams — Decision framework and guardrails",
       "state": "open",
-      "labels": [
-        "decisions",
-        "category"
-      ],
+      "labels": ["decisions", "category"],
       "milestone": {
         "number": 8,
         "title": "CAT-05: Microsoft Teams Decisions"
@@ -1001,10 +1062,7 @@
       "number": 30,
       "title": "CAT-04: Microsoft Purview — Decision framework and guardrails",
       "state": "open",
-      "labels": [
-        "decisions",
-        "category"
-      ],
+      "labels": ["decisions", "category"],
       "milestone": {
         "number": 7,
         "title": "CAT-04: Microsoft Purview Decisions"
@@ -1017,10 +1075,7 @@
       "number": 29,
       "title": "CAT-03: Microsoft Exchange — Decision framework and guardrails",
       "state": "open",
-      "labels": [
-        "decisions",
-        "category"
-      ],
+      "labels": ["decisions", "category"],
       "milestone": {
         "number": 6,
         "title": "CAT-03: Microsoft Exchange Decisions"
@@ -1033,10 +1088,7 @@
       "number": 28,
       "title": "CAT-02: Microsoft Entra ID — Decision framework and guardrails",
       "state": "open",
-      "labels": [
-        "decisions",
-        "category"
-      ],
+      "labels": ["decisions", "category"],
       "milestone": {
         "number": 5,
         "title": "CAT-02: Microsoft Entra ID Decisions"
@@ -1049,10 +1101,7 @@
       "number": 27,
       "title": "CAT-01: Microsoft Graph API — Decision framework and guardrails",
       "state": "open",
-      "labels": [
-        "decisions",
-        "category"
-      ],
+      "labels": ["decisions", "category"],
       "milestone": {
         "number": 4,
         "title": "CAT-01: Microsoft Graph API Decisions"
@@ -1065,9 +1114,7 @@
       "number": 22,
       "title": "SYS-01: Add PROMOTE_TO_DECISION flag to lessons-learned system",
       "state": "open",
-      "labels": [
-        "enhancement"
-      ],
+      "labels": ["enhancement"],
       "milestone": {
         "number": 2,
         "title": "SYS-01: Lesson-to-Decision Promotion Mechanism"
@@ -1080,10 +1127,7 @@
       "number": 21,
       "title": "TECH-08: Docker deployment readiness",
       "state": "open",
-      "labels": [
-        "infra",
-        "P1"
-      ],
+      "labels": ["infra", "P1"],
       "milestone": {
         "number": 1,
         "title": "SP-9: Pre-GA Readiness"
@@ -1096,21 +1140,12 @@
       "number": 16,
       "title": "BIZ-02: Define and document domain glossary",
       "state": "open",
-      "labels": [
-        "documentation",
-        "audit-finding",
-        "SP-2",
-        "P2-medium",
-        "business",
-        "sprint-done"
-      ],
+      "labels": ["documentation", "audit-finding", "SP-2", "P2-medium", "business", "sprint-done"],
       "milestone": {
         "number": 1,
         "title": "SP-9: Pre-GA Readiness"
       },
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:19:03Z",
       "closed_at": null
     },
@@ -1118,10 +1153,7 @@
       "number": 67,
       "title": "FEAT-01-V: Drill-down links — click sprint to view detail",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "P2-medium"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1134,10 +1166,7 @@
       "number": 66,
       "title": "FEAT-01-U: Configurable date range — filter last N sprints",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "P2-medium"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1150,10 +1179,7 @@
       "number": 65,
       "title": "FEAT-01-T: Export dashboard data — CSV and JSON download",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P3-low"
-      ],
+      "labels": ["enhancement", "P3-low"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1166,10 +1192,7 @@
       "number": 64,
       "title": "FEAT-01-S: Data freshness indicator — last updated & staleness warning",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "P2-medium"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1182,10 +1205,7 @@
       "number": 63,
       "title": "FEAT-01-R: Estimation accuracy histogram — over/under distribution",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "P2-medium"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1198,10 +1218,7 @@
       "number": 62,
       "title": "FEAT-01-Q: Sprint-over-sprint delta row — change indicators",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "P1-high"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1214,10 +1231,7 @@
       "number": 61,
       "title": "FEAT-01-P: Risk trend arrows — directional indicators per metric",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "P2-medium"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1230,10 +1244,7 @@
       "number": 60,
       "title": "FEAT-01-O: Velocity forecast — projected completion date",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "P1-high"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1246,10 +1257,7 @@
       "number": 59,
       "title": "FEAT-01-N: Interactive tooltips with sprint detail and deltas",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "P2-medium"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1262,10 +1270,7 @@
       "number": 58,
       "title": "FEAT-01-M: Heatmap grid — sprint × metric matrix",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "P1-high"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1278,10 +1283,7 @@
       "number": 57,
       "title": "FEAT-01-L: Stacked bar chart for quality — passed/failed/skipped",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "P2-medium"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1294,10 +1296,7 @@
       "number": 56,
       "title": "FEAT-01-K: Deviation bands on burnup chart — ideal vs actual",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "P1-high"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1310,10 +1309,7 @@
       "number": 55,
       "title": "FEAT-01-J: Sparkline mini-charts in summary cards",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "P2-medium"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1326,10 +1322,7 @@
       "number": 54,
       "title": "FEAT-01-I: Defect density — regressions + findings per SP",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "P2-medium"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1342,10 +1335,7 @@
       "number": 53,
       "title": "FEAT-01-H: Cycle time distribution — median in-progress to done",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P3-low"
-      ],
+      "labels": ["enhancement", "P3-low"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1358,10 +1348,7 @@
       "number": 52,
       "title": "FEAT-01-G: Scope creep indicator — mid-sprint additions tracking",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "P2-medium"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1374,10 +1361,7 @@
       "number": 51,
       "title": "FEAT-01-F: Rolling averages — 3-sprint moving average on charts",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P1-high"
-      ],
+      "labels": ["enhancement", "P1-high"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1390,10 +1374,7 @@
       "number": 50,
       "title": "FEAT-01-E: Sprint health scorecard — RAG status per sprint",
       "state": "closed",
-      "labels": [
-        "enhancement",
-        "P2-medium"
-      ],
+      "labels": ["enhancement", "P2-medium"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1406,9 +1387,7 @@
       "number": 49,
       "title": "INFRA-02-D: session-state.json github_sync section & guardrail G-GLOB-65",
       "state": "closed",
-      "labels": [
-        "infra"
-      ],
+      "labels": ["infra"],
       "milestone": {
         "number": 15,
         "title": "INFRA-02: GitHub State Sync & Reevaluate Integration"
@@ -1421,9 +1400,7 @@
       "number": 48,
       "title": "INFRA-02-C: Drift detection — session-state vs GitHub board",
       "state": "closed",
-      "labels": [
-        "infra"
-      ],
+      "labels": ["infra"],
       "milestone": {
         "number": 15,
         "title": "INFRA-02: GitHub State Sync & Reevaluate Integration"
@@ -1436,9 +1413,7 @@
       "number": 47,
       "title": "INFRA-02-B: Sprint Gate Step 0 — snapshot injection",
       "state": "closed",
-      "labels": [
-        "infra"
-      ],
+      "labels": ["infra"],
       "milestone": {
         "number": 15,
         "title": "INFRA-02: GitHub State Sync & Reevaluate Integration"
@@ -1451,9 +1426,7 @@
       "number": 46,
       "title": "INFRA-02-A: GitHub state snapshot script",
       "state": "closed",
-      "labels": [
-        "infra"
-      ],
+      "labels": ["infra"],
       "milestone": {
         "number": 15,
         "title": "INFRA-02: GitHub State Sync & Reevaluate Integration"
@@ -1479,9 +1452,7 @@
       "number": 44,
       "title": "INFRA-01-B: GitHub branch protection & repo settings",
       "state": "closed",
-      "labels": [
-        "infra"
-      ],
+      "labels": ["infra"],
       "milestone": {
         "number": 14,
         "title": "INFRA-01: Branch Protection & GitHub Config Audit"
@@ -1494,9 +1465,7 @@
       "number": 43,
       "title": "INFRA-01-A: Pre-commit hook & hook installer",
       "state": "closed",
-      "labels": [
-        "infra"
-      ],
+      "labels": ["infra"],
       "milestone": {
         "number": 14,
         "title": "INFRA-01: Branch Protection & GitHub Config Audit"
@@ -1509,9 +1478,7 @@
       "number": 26,
       "title": "FEAT-01-D: Estimated vs actual time tracking and comparison",
       "state": "closed",
-      "labels": [
-        "enhancement"
-      ],
+      "labels": ["enhancement"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1524,9 +1491,7 @@
       "number": 25,
       "title": "FEAT-01-C: Quality metrics trend — tests, coverage, defects",
       "state": "closed",
-      "labels": [
-        "enhancement"
-      ],
+      "labels": ["enhancement"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1539,9 +1504,7 @@
       "number": 24,
       "title": "FEAT-01-B: Burnup chart — cumulative SP delivered",
       "state": "closed",
-      "labels": [
-        "enhancement"
-      ],
+      "labels": ["enhancement"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1554,9 +1517,7 @@
       "number": 23,
       "title": "FEAT-01-A: Velocity chart — planned vs realized SP per sprint",
       "state": "closed",
-      "labels": [
-        "enhancement"
-      ],
+      "labels": ["enhancement"],
       "milestone": {
         "number": 3,
         "title": "FEAT-01: Metrics & Velocity Dashboard"
@@ -1569,16 +1530,9 @@
       "number": 20,
       "title": "MKT-03: Add Open Graph meta tags to index.html",
       "state": "closed",
-      "labels": [
-        "audit-finding",
-        "SP-6",
-        "P3-low",
-        "marketing"
-      ],
+      "labels": ["audit-finding", "SP-6", "P3-low", "marketing"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:19:46Z",
       "closed_at": "2026-03-09T06:25:54Z"
     },
@@ -1586,16 +1540,9 @@
       "number": 19,
       "title": "MKT-02: Deploy docs to GitHub Pages",
       "state": "closed",
-      "labels": [
-        "audit-finding",
-        "SP-6",
-        "P3-low",
-        "marketing"
-      ],
+      "labels": ["audit-finding", "SP-6", "P3-low", "marketing"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:19:36Z",
       "closed_at": "2026-03-09T06:25:48Z"
     },
@@ -1603,17 +1550,9 @@
       "number": 18,
       "title": "MKT-01: Decide and apply canonical product name",
       "state": "closed",
-      "labels": [
-        "audit-finding",
-        "P2-medium",
-        "SP-5",
-        "marketing",
-        "sprint-done"
-      ],
+      "labels": ["audit-finding", "P2-medium", "SP-5", "marketing", "sprint-done"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:19:26Z",
       "closed_at": "2026-03-09T04:56:30Z"
     },
@@ -1621,17 +1560,9 @@
       "number": 17,
       "title": "BIZ-03: Design unattended execution architecture (discovery spike)",
       "state": "closed",
-      "labels": [
-        "audit-finding",
-        "P1-high",
-        "SP-2",
-        "business",
-        "spike"
-      ],
+      "labels": ["audit-finding", "P1-high", "SP-2", "business", "spike"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:19:16Z",
       "closed_at": "2026-03-08T20:55:00Z"
     },
@@ -1639,17 +1570,9 @@
       "number": 15,
       "title": "BIZ-01: Create product roadmap document",
       "state": "closed",
-      "labels": [
-        "documentation",
-        "SP-1",
-        "audit-finding",
-        "P1-high",
-        "business"
-      ],
+      "labels": ["documentation", "SP-1", "audit-finding", "P1-high", "business"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:18:53Z",
       "closed_at": "2026-03-08T20:25:30Z"
     },
@@ -1657,17 +1580,9 @@
       "number": 14,
       "title": "UX-06: Create component inventory document",
       "state": "closed",
-      "labels": [
-        "documentation",
-        "audit-finding",
-        "ux",
-        "SP-6",
-        "P3-low"
-      ],
+      "labels": ["documentation", "audit-finding", "ux", "SP-6", "P3-low"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:18:42Z",
       "closed_at": "2026-03-09T06:25:42Z"
     },
@@ -1675,16 +1590,9 @@
       "number": 13,
       "title": "UX-05: Add empty state guidance / first-run experience",
       "state": "closed",
-      "labels": [
-        "audit-finding",
-        "P2-medium",
-        "ux",
-        "SP-5"
-      ],
+      "labels": ["audit-finding", "P2-medium", "ux", "SP-5"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:18:31Z",
       "closed_at": "2026-03-09T05:46:22Z"
     },
@@ -1692,16 +1600,9 @@
       "number": 12,
       "title": "UX-04: Implement loading state pattern",
       "state": "closed",
-      "labels": [
-        "audit-finding",
-        "P2-medium",
-        "ux",
-        "SP-5"
-      ],
+      "labels": ["audit-finding", "P2-medium", "ux", "SP-5"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:18:21Z",
       "closed_at": "2026-03-09T05:46:22Z"
     },
@@ -1709,18 +1610,9 @@
       "number": 11,
       "title": "UX-03: Add visible focus indicators to all interactive elements",
       "state": "closed",
-      "labels": [
-        "audit-finding",
-        "P1-high",
-        "SP-3",
-        "ux",
-        "accessibility",
-        "sprint-done"
-      ],
+      "labels": ["audit-finding", "P1-high", "SP-3", "ux", "accessibility", "sprint-done"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:18:11Z",
       "closed_at": "2026-03-09T04:56:18Z"
     },
@@ -1728,18 +1620,9 @@
       "number": 10,
       "title": "UX-02: Implement skip-to-content navigation link",
       "state": "closed",
-      "labels": [
-        "audit-finding",
-        "P1-high",
-        "SP-3",
-        "ux",
-        "accessibility",
-        "sprint-done"
-      ],
+      "labels": ["audit-finding", "P1-high", "SP-3", "ux", "accessibility", "sprint-done"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:18:01Z",
       "closed_at": "2026-03-09T04:56:12Z"
     },
@@ -1747,18 +1630,9 @@
       "number": 9,
       "title": "UX-01: Add ARIA landmark roles (banner, main, navigation, contentinfo)",
       "state": "closed",
-      "labels": [
-        "audit-finding",
-        "P1-high",
-        "SP-3",
-        "ux",
-        "accessibility",
-        "sprint-done"
-      ],
+      "labels": ["audit-finding", "P1-high", "SP-3", "ux", "accessibility", "sprint-done"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:17:51Z",
       "closed_at": "2026-03-09T04:56:06Z"
     },
@@ -1766,17 +1640,9 @@
       "number": 8,
       "title": "TECH-07: Add /health endpoint",
       "state": "closed",
-      "labels": [
-        "tech",
-        "audit-finding",
-        "SP-4",
-        "P2-medium",
-        "sprint-done"
-      ],
+      "labels": ["tech", "audit-finding", "SP-4", "P2-medium", "sprint-done"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:17:41Z",
       "closed_at": "2026-03-09T04:56:00Z"
     },
@@ -1784,17 +1650,9 @@
       "number": 7,
       "title": "TECH-06: Fix ESLint complexity violations",
       "state": "closed",
-      "labels": [
-        "tech",
-        "audit-finding",
-        "refactor",
-        "SP-2",
-        "P2-medium"
-      ],
+      "labels": ["tech", "audit-finding", "refactor", "SP-2", "P2-medium"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:17:19Z",
       "closed_at": "2026-03-08T21:23:16Z"
     },
@@ -1802,17 +1660,9 @@
       "number": 6,
       "title": "TECH-05: Persistent metrics + structured logging",
       "state": "closed",
-      "labels": [
-        "tech",
-        "audit-finding",
-        "SP-4",
-        "P2-medium",
-        "sprint-done"
-      ],
+      "labels": ["tech", "audit-finding", "SP-4", "P2-medium", "sprint-done"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:17:10Z",
       "closed_at": "2026-03-09T04:55:54Z"
     },
@@ -1820,16 +1670,9 @@
       "number": 5,
       "title": "TECH-04: Unify MCP/HTTP write paths through shared FileStore",
       "state": "closed",
-      "labels": [
-        "tech",
-        "audit-finding",
-        "P1-high",
-        "SP-2"
-      ],
+      "labels": ["tech", "audit-finding", "P1-high", "SP-2"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:17:01Z",
       "closed_at": "2026-03-08T20:54:41Z"
     },
@@ -1837,16 +1680,9 @@
       "number": 4,
       "title": "TECH-03: Add schema validators for 7 unvalidated stores",
       "state": "closed",
-      "labels": [
-        "tech",
-        "audit-finding",
-        "P1-high",
-        "SP-2"
-      ],
+      "labels": ["tech", "audit-finding", "P1-high", "SP-2"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:16:50Z",
       "closed_at": "2026-03-08T21:23:16Z"
     },
@@ -1854,18 +1690,9 @@
       "number": 3,
       "title": "TECH-02: Begin server.js decomposition (extract route handlers)",
       "state": "closed",
-      "labels": [
-        "SP-1",
-        "tech",
-        "audit-finding",
-        "P1-high",
-        "refactor",
-        "sprint-done"
-      ],
+      "labels": ["SP-1", "tech", "audit-finding", "P1-high", "refactor", "sprint-done"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:16:38Z",
       "closed_at": "2026-03-09T04:55:48Z"
     },
@@ -1873,16 +1700,9 @@
       "number": 2,
       "title": "TECH-01: Implement file locking for all JSON stores",
       "state": "closed",
-      "labels": [
-        "SP-1",
-        "P0-critical",
-        "tech",
-        "audit-finding"
-      ],
+      "labels": ["SP-1", "P0-critical", "tech", "audit-finding"],
       "milestone": null,
-      "assignees": [
-        "RobertAgterhuis"
-      ],
+      "assignees": ["RobertAgterhuis"],
       "created_at": "2026-03-08T19:09:50Z",
       "closed_at": "2026-03-08T20:25:30Z"
     }

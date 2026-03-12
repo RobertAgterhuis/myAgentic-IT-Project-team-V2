@@ -10,14 +10,14 @@ describe('withFileLock — concurrency', () => {
 
     const p1 = withFileLock('/test/file.md', async () => {
       order.push('start-1');
-      await new Promise(r => setTimeout(r, 30));
+      await new Promise((r) => setTimeout(r, 30));
       order.push('end-1');
       return 'result-1';
     });
 
     const p2 = withFileLock('/test/file.md', async () => {
       order.push('start-2');
-      await new Promise(r => setTimeout(r, 10));
+      await new Promise((r) => setTimeout(r, 10));
       order.push('end-2');
       return 'result-2';
     });
@@ -34,13 +34,13 @@ describe('withFileLock — concurrency', () => {
 
     const p1 = withFileLock('/path/a.md', async () => {
       order.push('a-start');
-      await new Promise(r => setTimeout(r, 20));
+      await new Promise((r) => setTimeout(r, 20));
       order.push('a-end');
     });
 
     const p2 = withFileLock('/path/b.md', async () => {
       order.push('b-start');
-      await new Promise(r => setTimeout(r, 5));
+      await new Promise((r) => setTimeout(r, 5));
       order.push('b-end');
     });
 
@@ -58,15 +58,27 @@ describe('withFileLock — concurrency', () => {
 
   it('cleans up lock map even after error', async () => {
     const path = '/test/error-cleanup.md';
-    await expect(withFileLock(path, async () => { throw new Error('fail'); })).rejects.toThrow('fail');
+    await expect(
+      withFileLock(path, async () => {
+        throw new Error('fail');
+      })
+    ).rejects.toThrow('fail');
     expect(_writeLocks.has(require('node:path').resolve(path))).toBe(false);
   });
 
   it('serializes three chained writes to the same path', async () => {
     const order = [];
-    const p1 = withFileLock('/test/triple.md', async () => { order.push(1); await new Promise(r => setTimeout(r, 15)); });
-    const p2 = withFileLock('/test/triple.md', async () => { order.push(2); await new Promise(r => setTimeout(r, 5)); });
-    const p3 = withFileLock('/test/triple.md', async () => { order.push(3); });
+    const p1 = withFileLock('/test/triple.md', async () => {
+      order.push(1);
+      await new Promise((r) => setTimeout(r, 15));
+    });
+    const p2 = withFileLock('/test/triple.md', async () => {
+      order.push(2);
+      await new Promise((r) => setTimeout(r, 5));
+    });
+    const p3 = withFileLock('/test/triple.md', async () => {
+      order.push(3);
+    });
     await Promise.all([p1, p2, p3]);
     expect(order).toEqual([1, 2, 3]);
   });
@@ -80,7 +92,9 @@ describe('withFileLock — concurrency', () => {
 
   it('releases lock even when fn throws', async () => {
     await expect(
-      withFileLock('/test/err.md', async () => { throw new Error('boom'); })
+      withFileLock('/test/err.md', async () => {
+        throw new Error('boom');
+      })
     ).rejects.toThrow('boom');
 
     // Subsequent lock on same path should still work

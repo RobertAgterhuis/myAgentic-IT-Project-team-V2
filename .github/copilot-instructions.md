@@ -1,33 +1,42 @@
 # GitHub Copilot – Repository Instructions
+
 ## System: End-to-End New Software Solution Creation (Multi-Agent)
 
 ---
 
 ## PURPOSE OF THIS SYSTEM
 
-This system creates complete, production-ready new software solutions through a structured multi-agent process across four phases:
+This system creates complete, production-ready new software solutions through a
+structured multi-agent process across four phases:
 
-1. **Phase 1 – Requirements & Strategy** — Define business model, requirements, and strategic positioning
-2. **Phase 2 – Architecture & Design** — Design system architecture, technology stack, security, and data model
-3. **Phase 3 – Experience Design** — Design UX/UI, accessibility baseline, content strategy, and i18n plan
-4. **Phase 4 – Brand & Growth** — Create brand identity, go-to-market strategy, and conversion design
+1. **Phase 1 – Requirements & Strategy** — Define business model, requirements,
+   and strategic positioning
+2. **Phase 2 – Architecture & Design** — Design system architecture, technology
+   stack, security, and data model
+3. **Phase 3 – Experience Design** — Design UX/UI, accessibility baseline,
+   content strategy, and i18n plan
+4. **Phase 4 – Brand & Growth** — Create brand identity, go-to-market strategy,
+   and conversion design
 
 Each phase produces four deliverables per discipline:  
 **Analysis → Recommendations → Sprint Plan → Guardrails**
 
-The system also supports **auditing existing software** as an alternative mode (see AUDIT commands below).
+The system also supports **auditing existing software** as an alternative mode
+(see AUDIT commands below).
 
 ---
 
 ## HOW THIS SYSTEM WORKS
 
 This is a **multi-agent, sequential system**. Each agent:
+
 - Has a fixed role (see `/.github/docs/playbooks/software-creation-playbook.md`)
 - Works within an **output contract** (see `/.github/docs/contracts/`)
 - Must comply with **guardrails** (see `/.github/docs/guardrails/`)
 - Must NOT start without the output of the previous phase as input
 
 ### Phase Sequence (MANDATORY)
+
 ```
 === PRIMARY MODE: CREATE (New Software Solution) ===
 
@@ -119,29 +128,47 @@ Onboarding maintenance:
 ## UNIVERSAL AGENT RULES (APPLY TO ALL AGENTS)
 
 ### ANTI-HALLUCINATION PROTOCOL (MANDATORY)
-1. **Never assert facts you cannot verify** from the provided input, code, documentation, or data.
-2. Use the prefix `UNCERTAIN:` for any claim where you are not 100% certain of the source.
-3. Use `INSUFFICIENT_DATA:` when a required field cannot be filled based on available input.
+
+1. **Never assert facts you cannot verify** from the provided input, code,
+   documentation, or data.
+2. Use the prefix `UNCERTAIN:` for any claim where you are not 100% certain of
+   the source.
+3. Use `INSUFFICIENT_DATA:` when a required field cannot be filled based on
+   available input.
 4. **Never fabricate** metrics, percentages, KPI values, scores, or timestamps.
-5. **Always cite the source** of every finding: filename, line number, document page, or interview transcript.
-6. If a tool or external service is unavailable, escalate to the Orchestrator — do NOT make assumptions.
+5. **Always cite the source** of every finding: filename, line number, document
+   page, or interview transcript.
+6. If a tool or external service is unavailable, escalate to the Orchestrator —
+   do NOT make assumptions.
 
 ### ANTI-LAZINESS PROTOCOL (MANDATORY)
-1. Always deliver the **complete** deliverable as defined by the contract. No summaries, no partials.
+
+1. Always deliver the **complete** deliverable as defined by the contract. No
+   summaries, no partials.
 2. Never skip a step, even if it seems "obvious".
-3. Never write "see appendix" or "this speaks for itself" as a substitute for content.
+3. Never write "see appendix" or "this speaks for itself" as a substitute for
+   content.
 4. Always produce concrete, specific findings — NO generic statements.
-5. If a section risks being empty: conduct additional research or mark as `INSUFFICIENT_DATA:` + escalate.
+5. If a section risks being empty: conduct additional research or mark as
+   `INSUFFICIENT_DATA:` + escalate.
 6. Do NOT assume what the user "probably already knows".
 
 ### MEMORY MANAGEMENT PROTOCOL (MANDATORY — prevents JS heap out of memory)
-1. **Write all deliverables to disk files**, NOT as inline chat output. Chat contains ONLY: summary (max 20 lines) + file path + handoff status.
-2. Never read entire predecessor outputs into context — use targeted file reads with line ranges.
-3. If output exceeds 400 lines, split across multiple files and produce a summary + file manifest.
-4. At phase boundaries, the Orchestrator will instruct the user to start a **fresh Copilot Chat conversation**. All state is preserved in `session-state.json`.
-5. Refer to `/.github/docs/guardrails/00-global-guardrails.md` Section 6 for full rules (G-GLOB-50 through G-GLOB-55).
+
+1. **Write all deliverables to disk files**, NOT as inline chat output. Chat
+   contains ONLY: summary (max 20 lines) + file path + handoff status.
+2. Never read entire predecessor outputs into context — use targeted file reads
+   with line ranges.
+3. If output exceeds 400 lines, split across multiple files and produce a
+   summary + file manifest.
+4. At phase boundaries, the Orchestrator will instruct the user to start a
+   **fresh Copilot Chat conversation**. All state is preserved in
+   `session-state.json`.
+5. Refer to `/.github/docs/guardrails/00-global-guardrails.md` Section 6 for
+   full rules (G-GLOB-50 through G-GLOB-55).
 
 ### VERIFICATION PROTOCOL (MANDATORY BEFORE HANDOFF)
+
 Every agent MUST produce a **Handoff Checklist** at the end of its output:
 
 ```
@@ -160,46 +187,86 @@ Every agent MUST produce a **Handoff Checklist** at the end of its output:
 **AN AGENT MAY NOT HAND OFF THE TASK IF ANY CHECKBOX IS UNCHECKED.**
 
 ### QUESTIONNAIRE PROTOCOL (MANDATORY FOR ALL PHASE AGENTS)
-1. At the START of your work, check whether the Orchestrator has injected a `## QUESTIONNAIRE INPUT — [Your Agent Name]` block. If present, treat every answered question in that block as **verified client input** — cite it as source `questionnaire:[Q-ID]`.
-2. At the END of your analysis, compile all remaining `INSUFFICIENT_DATA:` items that cannot be resolved from code or documentation. Pass these items to the Orchestrator with the tag `QUESTIONNAIRE_REQUEST` so the Questionnaire Agent can generate customer-facing questions.
-3. **Never block your handoff** because of missing questionnaire answers — mark items `INSUFFICIENT_DATA:`, pass the `QUESTIONNAIRE_REQUEST`, and complete your handoff. The Questionnaire Agent runs after Critic + Risk validation, not before.
-4. When an answered questionnaire resolves a previously open `INSUFFICIENT_DATA:` item in a REEVALUATE cycle, mark the finding as `RESOLVED_BY_QUESTIONNAIRE: [Q-ID]` with the answer as source.
+
+1. At the START of your work, check whether the Orchestrator has injected a
+   `## QUESTIONNAIRE INPUT — [Your Agent Name]` block. If present, treat every
+   answered question in that block as **verified client input** — cite it as
+   source `questionnaire:[Q-ID]`.
+2. At the END of your analysis, compile all remaining `INSUFFICIENT_DATA:` items
+   that cannot be resolved from code or documentation. Pass these items to the
+   Orchestrator with the tag `QUESTIONNAIRE_REQUEST` so the Questionnaire Agent
+   can generate customer-facing questions.
+3. **Never block your handoff** because of missing questionnaire answers — mark
+   items `INSUFFICIENT_DATA:`, pass the `QUESTIONNAIRE_REQUEST`, and complete
+   your handoff. The Questionnaire Agent runs after Critic + Risk validation,
+   not before.
+4. When an answered questionnaire resolves a previously open
+   `INSUFFICIENT_DATA:` item in a REEVALUATE cycle, mark the finding as
+   `RESOLVED_BY_QUESTIONNAIRE: [Q-ID]` with the answer as source.
 
 ### SCOPE DISCIPLINE (MANDATORY)
+
 1. Each agent operates EXCLUSIVELY within its defined domain.
-2. Findings outside your domain are documented as `OUT_OF_SCOPE: [domain]` and passed to the Orchestrator.
+2. Findings outside your domain are documented as `OUT_OF_SCOPE: [domain]` and
+   passed to the Orchestrator.
 3. Never make a recommendation outside your area of competence.
 
 ---
 
 ## SKILLS, GUARDRAILS & CONTRACTS INDEX
 
-All agent skill files, guardrail files, and contract files are listed in: **`.github/docs/agent-index.md`**
+All agent skill files, guardrail files, and contract files are listed in:
+**`.github/docs/agent-index.md`**
 
-Read that file when you need to look up a specific agent's skill file, a guardrail scope, or a contract path. The index is NOT loaded every turn — only read it when needed.
+Read that file when you need to look up a specific agent's skill file, a
+guardrail scope, or a contract path. The index is NOT loaded every turn — only
+read it when needed.
 
 ---
 
 ## PLAYBOOK
 
 Full creation process: `.github/docs/playbooks/software-creation-playbook.md`
-Legacy audit process: `.github/docs/playbooks/commercial-software-audit-playbook.md` (preserved for AUDIT mode)
+Legacy audit process:
+`.github/docs/playbooks/commercial-software-audit-playbook.md` (preserved for
+AUDIT mode)
 
 ---
 
 ## DEFINITION OF DONE (SYSTEM LEVEL)
 
 The system is complete when:
+
 1. All four design/strategy phases have been completed
 2. All Critic + Risk validations have passed
-3. The Synthesis Agent has produced the following documents in `.github/docs/synthesis/`:
-   - `final-report-master.md` (Executive Summary, Solution Blueprint Heatmap, Risk Matrix, Roadmap, Guardrails, KPIs, Open Items)
-   - `final-report-business.md`, `final-report-tech.md`, `final-report-ux.md`, `final-report-marketing.md` (per discipline, each with blocker section)
-   - `cross-team-blocker-matrix.md` (all cross-team dependencies classified as BLOCKING or ADVISORY)
-4. Each department report contains an explicit statement in the "Blockers from other teams" section (even if there are no blockers)
-5. `.github/docs/brand/design-tokens.json` is present (or `SKIPPED_NO_TOKEN` documented) AND `.github/docs/brand/brand-guidelines.md` is present with sections 1–6 (also when `SKIPPED_NO_TOKEN`)
-6. `.github/docs/storybook/component-inventory.md` is present with guardrail for Implementation Agent
-7. No open `UNCERTAIN:` or `INSUFFICIENT_DATA:` items without resolution — unresolvable items have a corresponding question in `BusinessDocs/[PHASE]/Questionnaires/`
-8. `BusinessDocs/questionnaire-index.md` is present; all REQUIRED questions in all questionnaires are either ANSWERED or explicitly marked `DEFERRED` by the Orchestrator
-9. `BusinessDocs/OfficialDocuments/document-registry.md` is present; all 8 official documents exist (completeness may be < 100% when questionnaires are still open)
-10. (Phase 5) Per sprint: Sprint Completion Report APPROVED, all stories IMPLEMENTED or BLOCKED with escalation, secret scan PASSED, KPI report written (`sprint-[SP-N]-kpi.json`), PR merged, user-manual.md and technical-manual.md updated, GitHub board updated (all implemented issues closed), retrospective COMPLETE (`sprint-[SP-N]-retrospective.md`), `.github/docs/retrospectives/velocity-log.json` updated, lessons-learned.md updated
+3. The Synthesis Agent has produced the following documents in
+   `.github/docs/synthesis/`:
+   - `final-report-master.md` (Executive Summary, Solution Blueprint Heatmap,
+     Risk Matrix, Roadmap, Guardrails, KPIs, Open Items)
+   - `final-report-business.md`, `final-report-tech.md`, `final-report-ux.md`,
+     `final-report-marketing.md` (per discipline, each with blocker section)
+   - `cross-team-blocker-matrix.md` (all cross-team dependencies classified as
+     BLOCKING or ADVISORY)
+4. Each department report contains an explicit statement in the "Blockers from
+   other teams" section (even if there are no blockers)
+5. `.github/docs/brand/design-tokens.json` is present (or `SKIPPED_NO_TOKEN`
+   documented) AND `.github/docs/brand/brand-guidelines.md` is present with
+   sections 1–6 (also when `SKIPPED_NO_TOKEN`)
+6. `.github/docs/storybook/component-inventory.md` is present with guardrail for
+   Implementation Agent
+7. No open `UNCERTAIN:` or `INSUFFICIENT_DATA:` items without resolution —
+   unresolvable items have a corresponding question in
+   `BusinessDocs/[PHASE]/Questionnaires/`
+8. `BusinessDocs/questionnaire-index.md` is present; all REQUIRED questions in
+   all questionnaires are either ANSWERED or explicitly marked `DEFERRED` by the
+   Orchestrator
+9. `BusinessDocs/OfficialDocuments/document-registry.md` is present; all 8
+   official documents exist (completeness may be < 100% when questionnaires are
+   still open)
+10. (Phase 5) Per sprint: Sprint Completion Report APPROVED, all stories
+    IMPLEMENTED or BLOCKED with escalation, secret scan PASSED, KPI report
+    written (`sprint-[SP-N]-kpi.json`), PR merged, user-manual.md and
+    technical-manual.md updated, GitHub board updated (all implemented issues
+    closed), retrospective COMPLETE (`sprint-[SP-N]-retrospective.md`),
+    `.github/docs/retrospectives/velocity-log.json` updated, lessons-learned.md
+    updated

@@ -1,0 +1,101 @@
+# Gitleaks Configuration - Sprint 1 Item SP-11-611 (Security Scanning)
+# Purpose: Secret detection to prevent credential leaks in commits
+# Owner: Security Architect + DevOps Engineer
+# Created: 2026-03-11 (Sprint 1 Day 1)
+
+title = "Gitleaks Config for Agentic SDLC Platform"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "github-pat"
+description = "GitHub Personal Access Token"
+regex = '''ghp_[0-9a-zA-Z]{36}'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+id = "github-oauth"
+description = "GitHub OAuth Access Token"
+regex = '''gho_[0-9a-zA-Z]{36}'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+id = "github-app-token"
+description = "GitHub App Token"
+regex = '''(ghu|ghs)_[0-9a-zA-Z]{36}'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+id = "github-refresh-token"
+description = "GitHub Refresh Token"
+regex = '''ghr_[0-9a-zA-Z]{36}'''
+tags = ["key", "GitHub"]
+
+[[rules]]
+id = "azure-storage-account-key"
+description = "Azure Storage Account Key"
+regex = '''(?i)azure.{0,20}key.{0,20}['\"][0-9a-zA-Z+/]{86}=='''
+tags = ["key", "Azure"]
+
+[[rules]]
+id = "azure-connection-string"
+description = "Azure Connection String"
+regex = '''(?i)DefaultEndpointsProtocol=https;AccountName=[a-z0-9]+;AccountKey=[0-9a-zA-Z+/]{86}=='''
+tags = ["key", "Azure"]
+
+[[rules]]
+id = "openai-api-key"
+description = "OpenAI API Key"
+regex = '''sk-[a-zA-Z0-9]{48}'''
+tags = ["key", "OpenAI"]
+
+[[rules]]
+id = "slack-token"
+description = "Slack Bot Token"
+regex = '''xox[baprs]-[0-9]{10,12}-[0-9]{10,12}-[a-zA-Z0-9]{24,32}'''
+tags = ["key", "Slack"]
+
+[[rules]]
+id = "aws-access-key"
+description = "AWS Access Key ID"
+regex = '''AKIA[0-9A-Z]{16}'''
+tags = ["key", "AWS"]
+
+[[rules]]
+id = "private-key"
+description = "Private Key (RSA/EC)"
+regex = '''-----BEGIN (RSA |EC )?PRIVATE KEY-----'''
+tags = ["key", "private"]
+
+[[rules]]
+id = "jwt-token"
+description = "JSON Web Token"
+regex = '''eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'''
+tags = ["token", "JWT"]
+
+[allowlist]
+description = "Global allowlist for false positives"
+paths = [
+  '''\.gitleaks\.toml$''',
+  '''\.github/workflows/.*\.yml$''',
+  '''docs/.*\.md$''',
+  '''README\.md$''',
+  '''package-lock\.json$''',
+  '''.*test.*\.js$''',
+  '''.*\.test\.ts$''',
+  '''.*\.spec\.ts$'''
+]
+
+regexes = [
+  '''example\.com''',
+  '''placeholder''',
+  '''your-.*-here''',
+  '''INSERT_.*_HERE''',
+  '''TODO:'''
+]
+
+[[rules]]
+id = "config-example-file"
+description = "Example configuration files (allowed)"
+path = '''(\.example|\.sample|\.template)'''

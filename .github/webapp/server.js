@@ -6,36 +6,50 @@
 
 const http = require('http');
 const path = require('path');
-const { getStore }     = require('./store');
-const { FileCache }    = require('./cache');
-const { AuditTrail }   = require('./audit');
+const { getStore } = require('./store');
+const { FileCache } = require('./cache');
+const { AuditTrail } = require('./audit');
 const { withFileLock } = require('./file-lock');
 const { resolveSessionFile } = require('./session-state-resolver');
 const { errorResponse } = require('./utils/errors');
 const {
-  structuredLog, log, json, setSecurityHeaders, safePath,
-  sanitizeMarkdown, sanitizeQID, detectSecrets, checkSecretsInBody,
-  handleMethodNotAllowed, handleRouteError,
+  structuredLog,
+  log,
+  json,
+  setSecurityHeaders,
+  safePath,
+  sanitizeMarkdown,
+  sanitizeQID,
+  detectSecrets,
+  checkSecretsInBody,
+  handleMethodNotAllowed,
+  handleRouteError,
 } = require('./middleware');
 
 /* ── Configuration ────────────────────────────────────────────── */
 
-const PORT          = (() => { const p = parseInt(process.env.PORT, 10); return (p >= 1 && p <= 65535) ? p : 3000; })();
-const HOST          = '127.0.0.1';
-const WEBAPP_DIR    = __dirname;
-const PROJECT_ROOT  = path.resolve(WEBAPP_DIR, '..', '..');
+const PORT = (() => {
+  const p = parseInt(process.env.PORT, 10);
+  return p >= 1 && p <= 65535 ? p : 3000;
+})();
+const HOST =
+  typeof process.env.HOST === 'string' && process.env.HOST.trim()
+    ? process.env.HOST.trim()
+    : '127.0.0.1';
+const WEBAPP_DIR = __dirname;
+const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
-const GITHUB_DOCS   = path.join(PROJECT_ROOT, '.github', 'docs');
-const SESSION_DIR   = path.join(GITHUB_DOCS, 'session');
-const SESSION_FILE  = path.join(SESSION_DIR, 'session-state.json');
+const GITHUB_DOCS = path.join(PROJECT_ROOT, '.github', 'docs');
+const SESSION_DIR = path.join(GITHUB_DOCS, 'session');
+const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
 const SESSION_AUDIT_FILE = path.join(SESSION_DIR, 'session-state-audit.json');
-const Q_INDEX_FILE  = path.join(BUSINESS_DOCS, 'questionnaire-index.md');
+const Q_INDEX_FILE = path.join(BUSINESS_DOCS, 'questionnaire-index.md');
 const DECISIONS_FILE = path.join(GITHUB_DOCS, 'decisions.md');
-const DECISIONS_DIR  = path.join(GITHUB_DOCS, 'decisions');
-const COMMAND_QUEUE  = path.join(SESSION_DIR, 'command-queue.json');
-const HELP_DIR       = path.join(PROJECT_ROOT, '.github', 'help');
+const DECISIONS_DIR = path.join(GITHUB_DOCS, 'decisions');
+const COMMAND_QUEUE = path.join(SESSION_DIR, 'command-queue.json');
+const HELP_DIR = path.join(PROJECT_ROOT, '.github', 'help');
 const ANALYTICS_FILE = path.join(GITHUB_DOCS, 'analytics-events.json');
-const METRICS_FILE   = path.join(GITHUB_DOCS, 'metrics', 'runtime-metrics.json');
+const METRICS_FILE = path.join(GITHUB_DOCS, 'metrics', 'runtime-metrics.json');
 const SSE_HEARTBEAT_MS = 30000;
 const ANALYTICS_MAX_EVENTS = 5000;
 const METRICS_FLUSH_INTERVAL_MS = 60000;
@@ -43,12 +57,19 @@ const SNAPSHOT_SYNC_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 
 /* ── Shared state ─────────────────────────────────────────────── */
 
-const _cache      = new FileCache();
+const _cache = new FileCache();
 const _sseClients = new Set();
-const _metrics    = { requestCount: 0, errorCount: 0, responseTimes: [], fileOpsCount: 0, startedAt: Date.now(), perEndpoint: {} };
+const _metrics = {
+  requestCount: 0,
+  errorCount: 0,
+  responseTimes: [],
+  fileOpsCount: 0,
+  startedAt: Date.now(),
+  perEndpoint: {},
+};
 const METRICS_MAX_SAMPLES = 1000;
-const AUDIT_DIR   = path.join(GITHUB_DOCS, 'audit');
-const _audit      = new AuditTrail({ logDir: AUDIT_DIR });
+const AUDIT_DIR = path.join(GITHUB_DOCS, 'audit');
+const _audit = new AuditTrail({ logDir: AUDIT_DIR });
 
 /* ── Metrics persistence (TECH-05) ────────────────────────────── */
 
@@ -78,7 +99,10 @@ function loadMetrics() {
     const saved = JSON.parse(raw);
     _restoreCounters(saved);
     _restoreEndpointMetrics(saved);
-    structuredLog('info', 'metrics_loaded', { file: METRICS_FILE, requestCount: _metrics.requestCount });
+    structuredLog('info', 'metrics_loaded', {
+      file: METRICS_FILE,
+      requestCount: _metrics.requestCount,
+    });
   } catch (err) {
     structuredLog('warn', 'metrics_load_failed', { error: err.message });
   }
@@ -120,7 +144,11 @@ loadMetrics();
 function sseNotify(eventType, data) {
   const payload = `event: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`;
   for (const client of _sseClients) {
-    try { client.write(payload); } catch { _sseClients.delete(client); }
+    try {
+      client.write(payload);
+    } catch {
+      _sseClients.delete(client);
+    }
   }
 }
 
@@ -139,7 +167,7 @@ function recordMetric(method, pathname, durationMs, statusCode) {
 
 function percentile(sorted, p) {
   if (sorted.length === 0) return 0;
-  const idx = Math.ceil(p / 100 * sorted.length) - 1;
+  const idx = Math.ceil((p / 100) * sorted.length) - 1;
   return sorted[Math.max(0, idx)];
 }
 
@@ -152,8 +180,12 @@ function buildAuditMeta(filePath, meta) {
   const relative = path.relative(PROJECT_ROOT, filePath).replace(/\\/g, '/');
   const defaults = {
     operation: 'update',
-    entityType: relative.split('/').pop().replace(/\.\w+$/, ''),
-    entityId: null, user: 'system',
+    entityType: relative
+      .split('/')
+      .pop()
+      .replace(/\.\w+$/, ''),
+    entityId: null,
+    user: 'system',
     summary: `File written: ${relative}`,
   };
   if (!meta) return defaults;
@@ -181,7 +213,9 @@ function scheduleRebuildIndex() {
   _rebuildTimer = setTimeout(() => {
     _rebuildTimer = null;
     if (ctx._rebuildQuestionnaireIndex) {
-      ctx._rebuildQuestionnaireIndex().catch(e => structuredLog('error', 'rebuild_index_failed', { error: e.message }));
+      ctx
+        ._rebuildQuestionnaireIndex()
+        .catch((e) => structuredLog('error', 'rebuild_index_failed', { error: e.message }));
     }
   }, 500);
 }
@@ -189,34 +223,53 @@ function scheduleRebuildIndex() {
 /* ── Shared context for route modules ─────────────────────────── */
 
 const ctx = {
-  _cache, _sseClients, _metrics, _audit,
-  safeWriteSync, sseNotify, computePercentiles, recordMetric,
-  scheduleRebuildIndex, flushMetrics,
-  PROJECT_ROOT, BUSINESS_DOCS, GITHUB_DOCS,
-  SESSION_DIR, SESSION_FILE, Q_INDEX_FILE,
+  _cache,
+  _sseClients,
+  _metrics,
+  _audit,
+  safeWriteSync,
+  sseNotify,
+  computePercentiles,
+  recordMetric,
+  scheduleRebuildIndex,
+  flushMetrics,
+  PROJECT_ROOT,
+  BUSINESS_DOCS,
+  GITHUB_DOCS,
+  SESSION_DIR,
+  SESSION_FILE,
+  Q_INDEX_FILE,
   SESSION_AUDIT_FILE,
   resolveSessionFile: () => resolveSessionFile(getStore(), _cache, SESSION_DIR),
-  DECISIONS_FILE, DECISIONS_DIR, COMMAND_QUEUE,
-  HELP_DIR, ANALYTICS_FILE, METRICS_FILE, WEBAPP_DIR,
-  HOST, PORT, SSE_HEARTBEAT_MS, ANALYTICS_MAX_EVENTS,
+  DECISIONS_FILE,
+  DECISIONS_DIR,
+  COMMAND_QUEUE,
+  HELP_DIR,
+  ANALYTICS_FILE,
+  METRICS_FILE,
+  WEBAPP_DIR,
+  HOST,
+  PORT,
+  SSE_HEARTBEAT_MS,
+  ANALYTICS_MAX_EVENTS,
 };
 
 /* ── Route modules ────────────────────────────────────────────── */
 
 const questionnaireRoutes = require('./routes/questionnaires')(ctx);
-const decisionRoutes      = require('./routes/decisions')(ctx);
-const commandRoutes       = require('./routes/commands')(ctx);
+const decisionRoutes = require('./routes/decisions')(ctx);
+const commandRoutes = require('./routes/commands')(ctx);
 
 // Wire cross-module helpers before progress and misc init
 ctx._getLatestCommand = commandRoutes._getLatestCommand;
 ctx._readCommandQueue = commandRoutes._readCommandQueue;
 
-const progressRoutes         = require('./routes/progress')(ctx);
-const driftRoutes            = require('./routes/drift')(ctx);
+const progressRoutes = require('./routes/progress')(ctx);
+const driftRoutes = require('./routes/drift')(ctx);
 const metricsDashboardRoutes = require('./routes/metrics-dashboard')(ctx);
-const dashboardRoutes         = require('./routes/dashboard')(ctx);
-const milestonesRoutes        = require('./routes/milestones')(ctx);
-const miscRoutes             = require('./routes/misc')(ctx);
+const dashboardRoutes = require('./routes/dashboard')(ctx);
+const milestonesRoutes = require('./routes/milestones')(ctx);
+const miscRoutes = require('./routes/misc')(ctx);
 
 const serveStatic = miscRoutes._serveStatic;
 
@@ -267,18 +320,118 @@ delete ROUTES._getLatestCommand;
 delete ROUTES._serveStatic;
 delete ROUTES._rebuildQuestionnaireIndex;
 
+function serveDesignSystemCss(res) {
+  try {
+    const store = getStore();
+    const cssPath = safePath(WEBAPP_DIR, 'design-system.css');
+    const cssContent = store.readFile(cssPath);
+    res.setHeader('Content-Type', 'text/css; charset=utf-8');
+    res.setHeader('Content-Length', Buffer.byteLength(cssContent, 'utf-8'));
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.writeHead(200);
+    res.end(cssContent);
+  } catch (err) {
+    structuredLog('warn', 'css_serve_failed', { error: err.message });
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
+
+function serveDashboardHtml(res) {
+  try {
+    const store = getStore();
+    const dashboardPath = safePath(WEBAPP_DIR, 'dashboard.html');
+    const dashboardContent = store.readFile(dashboardPath);
+
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Length', Buffer.byteLength(dashboardContent, 'utf-8'));
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; form-action 'self'; frame-ancestors 'self'; base-uri 'self'"
+    );
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
+    res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+    res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+
+    res.writeHead(200);
+    res.end(dashboardContent);
+  } catch (err) {
+    structuredLog('warn', 'dashboard_serve_failed', { error: err.message });
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
+
+function serveDashboardScript(pathname, res) {
+  try {
+    const store = getStore();
+    const jsPath = safePath(WEBAPP_DIR, pathname.substring(1));
+    const jsContent = store.readFile(jsPath);
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    res.setHeader('Content-Length', Buffer.byteLength(jsContent, 'utf-8'));
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.writeHead(200);
+    res.end(jsContent);
+  } catch (err) {
+    structuredLog('warn', 'js_serve_failed', { error: err.message, pathname });
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not found');
+  }
+}
+
+function handleExplicitStatic(req, pathname, res) {
+  if (req.method !== 'GET') return false;
+  if (pathname === '/design-system.css') {
+    serveDesignSystemCss(res);
+    return true;
+  }
+  if (pathname === '/dashboard' || pathname === '/dashboard.html') {
+    serveDashboardHtml(res);
+    return true;
+  }
+  if (pathname.endsWith('.js')) {
+    serveDashboardScript(pathname, res);
+    return true;
+  }
+  return false;
+}
+
+async function dispatchRequest(req, res, pathname) {
+  const routeHandler = resolveRoute(ROUTES, req.method, pathname);
+  if (routeHandler) {
+    try {
+      await routeHandler(req, res);
+    } catch (err) {
+      handleRouteError(err, res);
+    }
+    return;
+  }
+
+  if (req.method === 'GET' && !pathname.startsWith('/api')) {
+    serveStatic(req, res);
+    return;
+  }
+
+  if (!handleMethodNotAllowed(res, pathname, ROUTES)) {
+    json(res, 404, errorResponse('NOT_FOUND', 'Not found'));
+  }
+}
+
 const server = http.createServer(async (req, res) => {
   const start = Date.now();
   const pathname = new URL(req.url, `http://${HOST}:${PORT}`).pathname.replace(/\/+$/, '') || '/';
-  const routeHandler = resolveRoute(ROUTES, req.method, pathname);
-  if (routeHandler) {
-    try { await routeHandler(req, res); }
-    catch (err) { handleRouteError(err, res); }
-  } else if (req.method === 'GET' && !pathname.startsWith('/api')) {
-    serveStatic(req, res);
-  } else if (!handleMethodNotAllowed(res, pathname, ROUTES)) {
-    json(res, 404, errorResponse('NOT_FOUND', 'Not found'));
+  if (handleExplicitStatic(req, pathname, res)) {
+    return;
   }
+
+  await dispatchRequest(req, res, pathname);
   const duration = Date.now() - start;
   if (pathname !== '/api/events') {
     recordMetric(req.method, pathname, duration, res.statusCode);
@@ -293,7 +446,10 @@ server.keepAliveTimeout = 5000;
 if (require.main === module) {
   server.on('error', (err) => {
     if (err.code === 'EADDRINUSE') {
-      structuredLog('error', 'port_in_use', { port: PORT, hint: 'Set PORT=3001 or stop the other process' });
+      structuredLog('error', 'port_in_use', {
+        port: PORT,
+        hint: 'Set PORT=3001 or stop the other process',
+      });
     } else {
       structuredLog('error', 'server_error', { error: err.message });
     }
@@ -301,7 +457,11 @@ if (require.main === module) {
   });
 
   server.listen(PORT, HOST, () => {
-    structuredLog('info', 'server_started', { host: HOST, port: PORT, url: `http://${HOST}:${PORT}` });
+    structuredLog('info', 'server_started', {
+      host: HOST,
+      port: PORT,
+      url: `http://${HOST}:${PORT}`,
+    });
   });
 
   const metricsFlushTimer = setInterval(flushMetrics, METRICS_FLUSH_INTERVAL_MS);
@@ -309,7 +469,11 @@ if (require.main === module) {
 
   // GitHub state snapshot sync (every 10 minutes)
   let _snapshotScript;
-  try { _snapshotScript = require('../scripts/github-state-snapshot'); } catch { /* gh CLI may not be available */ }
+  try {
+    _snapshotScript = require('../scripts/github-state-snapshot');
+  } catch {
+    /* gh CLI may not be available */
+  }
   let _snapshotRunning = false;
   function syncGitHubSnapshot() {
     if (!_snapshotScript || _snapshotRunning) return;
@@ -334,21 +498,47 @@ if (require.main === module) {
     clearInterval(metricsFlushTimer);
     clearInterval(snapshotTimer);
     flushMetrics();
-    server.close(() => { structuredLog('info', 'server_closed'); process.exit(0); });
-    const forceTimer = setTimeout(() => { structuredLog('error', 'forced_shutdown'); process.exit(1); }, 5000);
+    server.close(() => {
+      structuredLog('info', 'server_closed');
+      process.exit(0);
+    });
+    const forceTimer = setTimeout(() => {
+      structuredLog('error', 'forced_shutdown');
+      process.exit(1);
+    }, 5000);
     forceTimer.unref();
   }
   process.on('SIGTERM', shutdown);
   process.on('SIGINT', shutdown);
-  process.on('unhandledRejection', (reason) => { structuredLog('error', 'unhandled_rejection', { error: String(reason) }); });
-  process.on('uncaughtException', (err) => { structuredLog('error', 'uncaught_exception', { error: err.message }); shutdown(); });
+  process.on('unhandledRejection', (reason) => {
+    structuredLog('error', 'unhandled_rejection', { error: String(reason) });
+  });
+  process.on('uncaughtException', (err) => {
+    structuredLog('error', 'uncaught_exception', { error: err.message });
+    shutdown();
+  });
 }
 
 /* ── Backward-compatible exports (mcp-server.js + tests) ───────── */
 
 module.exports = {
-  sanitizeMarkdown, sanitizeQID, detectSecrets, checkSecretsInBody,
-  structuredLog, withFileLock, safePath, setSecurityHeaders, server,
-  _cache, _sseClients, sseNotify, _metrics, recordMetric, computePercentiles,
-  _audit, flushMetrics, loadMetrics, METRICS_FILE,
+  sanitizeMarkdown,
+  sanitizeQID,
+  detectSecrets,
+  checkSecretsInBody,
+  structuredLog,
+  withFileLock,
+  safePath,
+  setSecurityHeaders,
+  server,
+  _cache,
+  _sseClients,
+  sseNotify,
+  _metrics,
+  recordMetric,
+  computePercentiles,
+  _audit,
+  flushMetrics,
+  loadMetrics,
+  METRICS_FILE,
 };

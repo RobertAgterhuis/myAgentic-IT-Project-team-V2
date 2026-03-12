@@ -10,20 +10,33 @@
 
 const path = require('path');
 const { getStore } = require('../store');
-const schemas      = require('../schemas');
-const models       = require('../models');
+const schemas = require('../schemas');
+const models = require('../models');
 const { withFileLock } = require('../file-lock');
 const { attachSecretWarnings } = require('../utils/secret-utils');
-const { errorResponse }        = require('../utils/errors');
-const { VALIDATION: V }        = require('../strings');
+const { errorResponse } = require('../utils/errors');
+const { VALIDATION: V } = require('../strings');
 const {
-  structuredLog, json, parseBody, assertString, safePath,
-  sanitizeMarkdown, sanitizeQID, detectSecrets,
+  structuredLog,
+  json,
+  parseBody,
+  assertString,
+  safePath,
+  sanitizeMarkdown,
+  sanitizeQID,
+  detectSecrets,
 } = require('../middleware');
 
 module.exports = function createQuestionnaireRoutes(ctx) {
-  const { _cache, safeWriteSync, sseNotify, scheduleRebuildIndex,
-          BUSINESS_DOCS, PROJECT_ROOT, Q_INDEX_FILE } = ctx;
+  const {
+    _cache,
+    safeWriteSync,
+    sseNotify,
+    scheduleRebuildIndex,
+    BUSINESS_DOCS,
+    PROJECT_ROOT,
+    Q_INDEX_FILE,
+  } = ctx;
 
   function discoverQuestionnaires() {
     const store = getStore();
@@ -32,13 +45,19 @@ module.exports = function createQuestionnaireRoutes(ctx) {
     (function walk(dir, depth) {
       if (depth > 20) return;
       let entries;
-      try { entries = store.readdir(dir, { withFileTypes: true }); } catch { return; }
+      try {
+        entries = store.readdir(dir, { withFileTypes: true });
+      } catch {
+        return;
+      }
       for (const entry of entries) {
         const full = path.join(dir, entry.name);
         try {
           if (entry.isDirectory()) walk(full, depth + 1);
           else if (entry.isFile() && entry.name.endsWith('-questionnaire.md')) results.push(full);
-        } catch { /* skip inaccessible entry */ }
+        } catch {
+          /* skip inaccessible entry */
+        }
       }
     })(BUSINESS_DOCS, 0);
     return results.sort();
@@ -52,20 +71,33 @@ module.exports = function createQuestionnaireRoutes(ctx) {
       const rows = [];
       for (const f of files) {
         let content;
-        try { content = _cache.read(f); } catch { continue; }
+        try {
+          content = _cache.read(f);
+        } catch {
+          continue;
+        }
         const p = models.parseQuestionnaire(content, f, BUSINESS_DOCS);
-        const total    = p.questions.length;
-        const answered = p.questions.filter(q => q.status === 'ANSWERED').length;
-        const status   = total === 0 ? 'OPEN' : answered === total ? 'COMPLETE' : answered > 0 ? 'PARTIAL' : 'OPEN';
+        const total = p.questions.length;
+        const answered = p.questions.filter((q) => q.status === 'ANSWERED').length;
+        const status =
+          total === 0
+            ? 'OPEN'
+            : answered === total
+              ? 'COMPLETE'
+              : answered > 0
+                ? 'PARTIAL'
+                : 'OPEN';
         rows.push(`| ${p.file} | ${p.phase} | ${p.agent} | ${total} | ${answered} | ${status} |`);
       }
 
       const md = [
         '# Questionnaire Index',
-        `> Last updated: ${models.isoNow()}`, '',
+        `> Last updated: ${models.isoNow()}`,
+        '',
         '| File | Phase | Agent | Questions | Answered | Status |',
         '|------|-------|-------|-----------|----------|--------|',
-        ...rows, '',
+        ...rows,
+        '',
       ].join('\n');
 
       safeWriteSync(Q_INDEX_FILE, md);
@@ -81,7 +113,11 @@ module.exports = function createQuestionnaireRoutes(ctx) {
     const corruptionWarnings = [];
     for (const f of files) {
       let content;
-      try { content = _cache.read(f); } catch { continue; }
+      try {
+        content = _cache.read(f);
+      } catch {
+        continue;
+      }
       const issues = models.detectMarkdownCorruption(content);
       if (issues.length > 0) {
         const relative = path.relative(PROJECT_ROOT, f).replace(/\\/g, '/');
@@ -96,7 +132,8 @@ module.exports = function createQuestionnaireRoutes(ctx) {
   }
 
   function validateSaveUpdates(updates) {
-    if (!Array.isArray(updates) || updates.length === 0 || updates.length > 200) return V.UPDATES_RANGE;
+    if (!Array.isArray(updates) || updates.length === 0 || updates.length > 200)
+      return V.UPDATES_RANGE;
     for (const u of updates) {
       const r = schemas.validateQuestionnaireUpdate(u);
       if (!r.valid) return r.errors[0];
@@ -106,12 +143,16 @@ module.exports = function createQuestionnaireRoutes(ctx) {
   }
 
   function sanitizeSaveUpdates(updates) {
-    for (const u of updates) { if (u.answer) u.answer = sanitizeMarkdown(sanitizeQID(u.answer)); }
+    for (const u of updates) {
+      if (u.answer) u.answer = sanitizeMarkdown(sanitizeQID(u.answer));
+    }
   }
 
   function detectSaveSecrets(updates) {
     const warnings = [];
-    for (const u of updates) { if (u.answer) warnings.push(...detectSecrets(u.answer)); }
+    for (const u of updates) {
+      if (u.answer) warnings.push(...detectSecrets(u.answer));
+    }
     const unique = [...new Set(warnings)];
     if (unique.length > 0) structuredLog('warn', 'secret_pattern_in_save', { patterns: unique });
     return unique;
@@ -124,17 +165,21 @@ module.exports = function createQuestionnaireRoutes(ctx) {
     if (validationError) return json(res, 400, errorResponse('VALIDATION_ERROR', validationError));
 
     const filePath = safePath(BUSINESS_DOCS, body.file);
-    if (!getStore().exists(filePath)) return json(res, 404, errorResponse('FILE_NOT_FOUND', 'File not found'));
+    if (!getStore().exists(filePath))
+      return json(res, 404, errorResponse('FILE_NOT_FOUND', 'File not found'));
 
     sanitizeSaveUpdates(body.updates);
 
     await withFileLock(filePath, () => {
       let content = getStore().readFile(filePath);
-      for (const u of body.updates) content = models.updateAnswerInContent(content, u.questionId, u.answer, u.status);
+      for (const u of body.updates)
+        content = models.updateAnswerInContent(content, u.questionId, u.answer, u.status);
       safeWriteSync(filePath, content, undefined, {
-        operation: 'update', entityType: 'questionnaire',
-        entityId: body.updates.map(u => u.questionId).join(','),
-        user: 'webapp', summary: `Updated ${body.updates.length} answer(s) in ${body.file}`,
+        operation: 'update',
+        entityType: 'questionnaire',
+        entityId: body.updates.map((u) => u.questionId).join(','),
+        user: 'webapp',
+        summary: `Updated ${body.updates.length} answer(s) in ${body.file}`,
       });
     });
 
@@ -148,6 +193,6 @@ module.exports = function createQuestionnaireRoutes(ctx) {
 
   return {
     'GET /api/questionnaires': apiGetQuestionnaires,
-    'POST /api/save':          apiSave,
+    'POST /api/save': apiSave,
   };
 };

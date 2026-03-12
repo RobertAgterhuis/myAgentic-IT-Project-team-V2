@@ -12,36 +12,31 @@
  */
 
 const path = require('node:path');
-const fs   = require('node:fs');
+const fs = require('node:fs');
 
 /* ── MCP SDK imports (CJS) ──────────────────────────────────────── */
 const sdkBase = require.resolve('@modelcontextprotocol/sdk/server');
-const { McpServer }            = require(sdkBase.replace(/index\.js$/, 'mcp.js'));
+const { McpServer } = require(sdkBase.replace(/index\.js$/, 'mcp.js'));
 const { StdioServerTransport } = require(sdkBase.replace(/index\.js$/, 'stdio.js'));
 
 /* ── Webapp module imports ──────────────────────────────────────── */
-const { FileStore }  = require('./store');
-const { FileCache }  = require('./cache');
+const { FileStore } = require('./store');
+const { FileCache } = require('./cache');
 const { AuditTrail } = require('./audit');
 const { resolveSessionFile } = require('./session-state-resolver');
-const models         = require('./models');
-const {
-  sanitizeMarkdown,
-  sanitizeQID,
-  detectSecrets,
-  safePath,
-} = require('./server');
+const models = require('./models');
+const { sanitizeMarkdown, sanitizeQID, detectSecrets, safePath } = require('./server');
 const { withFileLock } = require('./file-lock');
-const schemas          = require('./schemas');
+const schemas = require('./schemas');
 
 /* ── Path constants ─────────────────────────────────────────────── */
-const PROJECT_ROOT   = path.resolve(__dirname, '../..');
-const DOC_ROOT       = path.resolve(__dirname, '../docs');
-const BUSINESS_DOCS  = path.join(PROJECT_ROOT, 'BusinessDocs');
-const HELP_DIR       = path.resolve(__dirname, '../help');
-const SESSION_DIR    = path.join(DOC_ROOT, 'session');
+const PROJECT_ROOT = path.resolve(__dirname, '../..');
+const DOC_ROOT = path.resolve(__dirname, '../docs');
+const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
+const HELP_DIR = path.resolve(__dirname, '../help');
+const SESSION_DIR = path.join(DOC_ROOT, 'session');
 const DECISIONS_PATH = path.join(DOC_ROOT, 'decisions.md');
-const AUDIT_DIR      = path.join(DOC_ROOT, 'audit');
+const AUDIT_DIR = path.join(DOC_ROOT, 'audit');
 
 /* ── Shared instances ───────────────────────────────────────────── */
 const store = new FileStore();
@@ -65,30 +60,39 @@ function safeWrite(filePath, data) {
 
 function parseQuestionnaireFile(full, name) {
   const content = fs.readFileSync(full, 'utf8');
-  const parsed  = models.parseQuestionnaire(content, full, BUSINESS_DOCS);
-  const rel     = path.relative(PROJECT_ROOT, full).replace(/\\/g, '/');
-  const qs      = parsed.questions || [];
+  const parsed = models.parseQuestionnaire(content, full, BUSINESS_DOCS);
+  const rel = path.relative(PROJECT_ROOT, full).replace(/\\/g, '/');
+  const qs = parsed.questions || [];
   return {
     file: rel,
     phase: parsed.phase || '',
     title: parsed.title || name,
     total: qs.length,
-    answered:   qs.filter(q => q.status === 'ANSWERED').length,
-    unanswered: qs.filter(q => q.status === 'OPEN' || q.status === 'UNANSWERED').length,
-    deferred:   qs.filter(q => q.status === 'DEFERRED').length,
+    answered: qs.filter((q) => q.status === 'ANSWERED').length,
+    unanswered: qs.filter((q) => q.status === 'OPEN' || q.status === 'UNANSWERED').length,
+    deferred: qs.filter((q) => q.status === 'DEFERRED').length,
   };
 }
 
 function walkQuestionnaires(dir, results) {
   let entries;
-  try { entries = fs.readdirSync(dir, { withFileTypes: true }); }
-  catch { return; }
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
   for (const e of entries) {
     const full = path.join(dir, e.name);
-    if (e.isDirectory() && e.name !== '.backups') { walkQuestionnaires(full, results); continue; }
+    if (e.isDirectory() && e.name !== '.backups') {
+      walkQuestionnaires(full, results);
+      continue;
+    }
     if (!e.isFile() || !e.name.endsWith('-questionnaire.md')) continue;
-    try { results.push(parseQuestionnaireFile(full, e.name)); }
-    catch { /* skip unparseable files */ }
+    try {
+      results.push(parseQuestionnaireFile(full, e.name));
+    } catch {
+      /* skip unparseable files */
+    }
   }
 }
 
@@ -100,17 +104,24 @@ function discoverQuestionnaires() {
 }
 
 function readSessionState() {
-  const file = resolveSessionFile(store, cache, SESSION_DIR) || path.join(SESSION_DIR, 'session-state.json');
+  const file =
+    resolveSessionFile(store, cache, SESSION_DIR) || path.join(SESSION_DIR, 'session-state.json');
   if (!fs.existsSync(file)) return null;
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
-  catch { return null; }
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return null;
+  }
 }
 
 function readCommandQueue() {
   const file = path.join(SESSION_DIR, 'command-queue.json');
   if (!fs.existsSync(file)) return [];
-  try { return JSON.parse(fs.readFileSync(file, 'utf8')); }
-  catch { return []; }
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return [];
+  }
 }
 
 function readDecisions() {
@@ -126,14 +137,21 @@ function readDecisions() {
 
 function buildProgress(session) {
   if (!session) {
-    return { projectName: null, mode: null, currentPhase: null, currentAgent: null, phases: [], activeSprint: null };
+    return {
+      projectName: null,
+      mode: null,
+      currentPhase: null,
+      currentAgent: null,
+      phases: [],
+      activeSprint: null,
+    };
   }
   return {
-    projectName:  session.projectName  || null,
-    mode:         session.mode         || null,
+    projectName: session.projectName || null,
+    mode: session.mode || null,
     currentPhase: session.currentPhase || null,
     currentAgent: session.currentAgent || null,
-    phases:       session.phases       || [],
+    phases: session.phases || [],
     activeSprint: session.activeSprint || null,
   };
 }
@@ -156,20 +174,22 @@ mcp.tool(
   'Get the current project status including session state, pipeline progress, active command, and command queue summary',
   async () => {
     try {
-      const session  = readSessionState();
-      const queue    = readCommandQueue();
+      const session = readSessionState();
+      const queue = readCommandQueue();
       const progress = buildProgress(session);
       return jsonResult({
-        session: session ? {
-          projectName:  session.projectName,
-          mode:         session.mode,
-          status:       session.status,
-          currentPhase: session.currentPhase,
-          currentAgent: session.currentAgent,
-        } : null,
+        session: session
+          ? {
+              projectName: session.projectName,
+              mode: session.mode,
+              status: session.status,
+              currentPhase: session.currentPhase,
+              currentAgent: session.currentAgent,
+            }
+          : null,
         progress,
         commandQueue: {
-          total:  queue.length,
+          total: queue.length,
           latest: queue.length ? queue[queue.length - 1] : null,
         },
       });
@@ -213,7 +233,8 @@ mcp.tool(
     properties: {
       file: {
         type: 'string',
-        description: 'Questionnaire file path relative to project root (e.g. BusinessDocs/Phase1-Business/Questionnaires/ba-questionnaire.md)',
+        description:
+          'Questionnaire file path relative to project root (e.g. BusinessDocs/Phase1-Business/Questionnaires/ba-questionnaire.md)',
       },
     },
     required: ['file'],
@@ -249,8 +270,12 @@ mcp.tool(
           type: 'object',
           properties: {
             questionId: { type: 'string', description: 'Question ID (e.g. Q-01-0001)' },
-            answer:     { type: 'string', description: 'Answer text' },
-            status:     { type: 'string', enum: ['ANSWERED', 'DEFERRED'], description: 'New question status' },
+            answer: { type: 'string', description: 'Answer text' },
+            status: {
+              type: 'string',
+              enum: ['ANSWERED', 'DEFERRED'],
+              description: 'New question status',
+            },
           },
           required: ['questionId', 'answer', 'status'],
         },
@@ -291,15 +316,15 @@ function applyOneUpdate(u, content, warnings) {
     warnings.push(`Secret pattern detected in answer for ${u.questionId}`);
   }
   const sanitized = sanitizeQID(sanitizeMarkdown(u.answer || ''));
-  const updated   = models.updateAnswerInContent(content, u.questionId, sanitized, u.status);
+  const updated = models.updateAnswerInContent(content, u.questionId, sanitized, u.status);
   return { content: updated, applied: updated !== content };
 }
 
 function applySaveAnswers(abs, file, updates) {
   return withFileLock(abs, async () => {
-    let content  = fs.readFileSync(abs, 'utf8');
+    let content = fs.readFileSync(abs, 'utf8');
     const warnings = [];
-    let applied  = 0;
+    let applied = 0;
 
     for (const u of updates) {
       const r = applyOneUpdate(u, content, warnings);
@@ -309,8 +334,10 @@ function applySaveAnswers(abs, file, updates) {
 
     safeWrite(abs, content);
     audit.log({
-      operation: 'SAVE_ANSWERS', entityType: 'questionnaire',
-      entityId: file, user: 'mcp',
+      operation: 'SAVE_ANSWERS',
+      entityType: 'questionnaire',
+      entityId: file,
+      user: 'mcp',
       summary: `Updated ${applied} of ${updates.length} answers`,
     });
 
@@ -340,11 +367,15 @@ mcp.tool(
   {
     type: 'object',
     properties: {
-      type:     { type: 'string', enum: ['question', 'operational'], description: 'Decision type: question (needs answer) or operational (immediate decision)' },
+      type: {
+        type: 'string',
+        enum: ['question', 'operational'],
+        description: 'Decision type: question (needs answer) or operational (immediate decision)',
+      },
       priority: { type: 'string', enum: ['HIGH', 'MEDIUM', 'LOW'], description: 'Priority level' },
-      scope:    { type: 'string', description: 'Scope/category (e.g. TECH, BUSINESS, UX, MARKETING)' },
-      text:     { type: 'string', description: 'The question or decision text' },
-      notes:    { type: 'string', description: 'Optional additional context or notes' },
+      scope: { type: 'string', description: 'Scope/category (e.g. TECH, BUSINESS, UX, MARKETING)' },
+      text: { type: 'string', description: 'The question or decision text' },
+      notes: { type: 'string', description: 'Optional additional context or notes' },
     },
     required: ['type', 'priority', 'scope', 'text'],
   },
@@ -352,25 +383,42 @@ mcp.tool(
     try {
       const valErr = validateDecisionFields(type, priority, scope, text);
       if (valErr) return valErr;
-      if (!fs.existsSync(DECISIONS_PATH)) return errorResult('decisions.md not found — run a CREATE or AUDIT command first');
+      if (!fs.existsSync(DECISIONS_PATH))
+        return errorResult('decisions.md not found — run a CREATE or AUDIT command first');
 
       return await withFileLock(DECISIONS_PATH, async () => {
         let content = fs.readFileSync(DECISIONS_PATH, 'utf8');
         const id = models.nextDecisionId(content, 'DEC-');
-        const safeText  = sanitizeMarkdown(text);
+        const safeText = sanitizeMarkdown(text);
         const safeNotes = notes ? sanitizeMarkdown(notes) : '';
 
         if (type === 'question') {
-          content = models.addOpenQuestion(content, { id, priority, scope, question: safeText, answer: '', date: models.today() });
+          content = models.addOpenQuestion(content, {
+            id,
+            priority,
+            scope,
+            question: safeText,
+            answer: '',
+            date: models.today(),
+          });
         } else {
-          content = models.addOperationalDecision(content, { id, priority, scope, decision: safeText, notes: safeNotes, date: models.today() });
+          content = models.addOperationalDecision(content, {
+            id,
+            priority,
+            scope,
+            decision: safeText,
+            notes: safeNotes,
+            date: models.today(),
+          });
         }
         content = models.appendAuditTrail(content, 'create', id);
 
         safeWrite(DECISIONS_PATH, content);
         audit.log({
-          operation: 'CREATE_DECISION', entityType: 'decision',
-          entityId: id, user: 'mcp',
+          operation: 'CREATE_DECISION',
+          entityType: 'decision',
+          entityId: id,
+          user: 'mcp',
           summary: `${type}: ${text.slice(0, 80)}`,
         });
         return jsonResult({ created: true, id, type, priority, scope });
@@ -387,7 +435,7 @@ mcp.tool(
   {
     type: 'object',
     properties: {
-      id:     { type: 'string', description: 'Decision ID (e.g. DEC-Q-001)' },
+      id: { type: 'string', description: 'Decision ID (e.g. DEC-Q-001)' },
       answer: { type: 'string', description: 'The answer text' },
     },
     required: ['id', 'answer'],
@@ -408,13 +456,16 @@ mcp.tool(
 
         safeWrite(DECISIONS_PATH, content);
         audit.log({
-          operation: 'ANSWER_DECISION', entityType: 'decision',
-          entityId: id, user: 'mcp',
+          operation: 'ANSWER_DECISION',
+          entityType: 'decision',
+          entityId: id,
+          user: 'mcp',
           summary: `Answered: ${answer.slice(0, 80)}`,
         });
 
         const result = { answered: true, id };
-        if (secrets.length) result.warnings = ['Secret pattern detected in answer — review before committing'];
+        if (secrets.length)
+          result.warnings = ['Secret pattern detected in answer — review before committing'];
         return jsonResult(result);
       });
     } catch (err) {
@@ -446,8 +497,10 @@ mcp.tool(
 
         safeWrite(DECISIONS_PATH, content);
         audit.log({
-          operation: 'DECIDE_QUESTION', entityType: 'decision',
-          entityId: id, user: 'mcp',
+          operation: 'DECIDE_QUESTION',
+          entityType: 'decision',
+          entityId: id,
+          user: 'mcp',
           summary: `Decided: ${id}`,
         });
         return jsonResult({ decided: true, id });
@@ -467,9 +520,18 @@ function validateDecisionFields(type, priority, scope, text) {
 }
 
 const VALID_COMMANDS = [
-  'CREATE', 'AUDIT',
-  'CREATE BUSINESS', 'CREATE TECH', 'CREATE UX', 'CREATE MARKETING', 'CREATE SYNTHESIS',
-  'REEVALUATE', 'FEATURE', 'SCOPE CHANGE', 'HOTFIX', 'REFRESH ONBOARDING',
+  'CREATE',
+  'AUDIT',
+  'CREATE BUSINESS',
+  'CREATE TECH',
+  'CREATE UX',
+  'CREATE MARKETING',
+  'CREATE SYNTHESIS',
+  'REEVALUATE',
+  'FEATURE',
+  'SCOPE CHANGE',
+  'HOTFIX',
+  'REFRESH ONBOARDING',
 ];
 
 mcp.tool(
@@ -478,11 +540,23 @@ mcp.tool(
   {
     type: 'object',
     properties: {
-      command:     { type: 'string', description: 'The command to queue (e.g. CREATE, AUDIT, REEVALUATE)' },
-      project:     { type: 'string', description: 'Project name (for CREATE/AUDIT)' },
-      scope:       { type: 'string', description: 'Scope for REEVALUATE/SCOPE CHANGE: ALL, BUSINESS, TECH, UX, MARKETING' },
-      description: { type: 'string', description: 'Description for FEATURE, SCOPE CHANGE, or HOTFIX' },
-      brief:       { type: 'string', description: 'Full project brief text (saved to BusinessDocs/project-brief.md)' },
+      command: {
+        type: 'string',
+        description: 'The command to queue (e.g. CREATE, AUDIT, REEVALUATE)',
+      },
+      project: { type: 'string', description: 'Project name (for CREATE/AUDIT)' },
+      scope: {
+        type: 'string',
+        description: 'Scope for REEVALUATE/SCOPE CHANGE: ALL, BUSINESS, TECH, UX, MARKETING',
+      },
+      description: {
+        type: 'string',
+        description: 'Description for FEATURE, SCOPE CHANGE, or HOTFIX',
+      },
+      brief: {
+        type: 'string',
+        description: 'Full project brief text (saved to BusinessDocs/project-brief.md)',
+      },
     },
     required: ['command'],
   },
@@ -491,7 +565,7 @@ mcp.tool(
       if (!command) return errorResult('command is required');
       const upperCmd = command.toUpperCase().trim();
 
-      if (!VALID_COMMANDS.some(v => upperCmd.startsWith(v))) {
+      if (!VALID_COMMANDS.some((v) => upperCmd.startsWith(v))) {
         return errorResult(`Unknown command: ${command}. Valid: ${VALID_COMMANDS.join(', ')}`);
       }
 
@@ -512,8 +586,8 @@ mcp.tool(
 
 function buildCommandText(upperCmd, project, scope, description) {
   let text = upperCmd;
-  if (project)     text += ` ${project}`;
-  if (scope)       text += ` ${scope}`;
+  if (project) text += ` ${project}`;
+  if (scope) text += ` ${scope}`;
   if (description) text += `: ${description}`;
   return text;
 }
@@ -532,8 +606,8 @@ async function enqueueCommand(upperCmd, text, project, scope, description) {
   await withFileLock(queuePath, async () => {
     const queue = readCommandQueue();
     const entry = { command: upperCmd, text, timestamp: models.isoNow(), status: 'QUEUED' };
-    if (project)     entry.project     = project;
-    if (scope)       entry.scope       = scope;
+    if (project) entry.project = project;
+    if (scope) entry.scope = scope;
     if (description) entry.description = description;
     queue.push(entry);
 
@@ -541,8 +615,11 @@ async function enqueueCommand(upperCmd, text, project, scope, description) {
   });
 
   audit.log({
-    operation: 'QUEUE_COMMAND', entityType: 'command',
-    entityId: text, user: 'mcp', summary: text,
+    operation: 'QUEUE_COMMAND',
+    entityType: 'command',
+    entityId: text,
+    user: 'mcp',
+    summary: text,
   });
 }
 
@@ -568,7 +645,8 @@ mcp.tool(
     properties: {
       topic: {
         type: 'string',
-        description: 'Help topic slug (e.g. commands, phases, decisions). Omit for table of contents.',
+        description:
+          'Help topic slug (e.g. commands, phases, decisions). Omit for table of contents.',
       },
     },
   },
@@ -577,8 +655,8 @@ mcp.tool(
       if (!fs.existsSync(HELP_DIR)) return errorResult('Help directory not found');
 
       if (!topic) {
-        const files  = fs.readdirSync(HELP_DIR).filter(f => f.endsWith('.md'));
-        const topics = files.map(f => ({ slug: f.replace('.md', ''), file: f }));
+        const files = fs.readdirSync(HELP_DIR).filter((f) => f.endsWith('.md'));
+        const topics = files.map((f) => ({ slug: f.replace('.md', ''), file: f }));
         return jsonResult({ topics });
       }
 
@@ -602,25 +680,50 @@ mcp.tool(
     try {
       const { detectDrift } = require('./drift-detector');
       const session = readSessionState();
-      if (!session) return jsonResult({ generated_at: new Date().toISOString(), summary: { total_drifts: 0, critical: 0, warning: 0, info: 0 }, drifts: [], in_sync: { sprints: [], stories: 0 }, error: 'No session state found' });
+      if (!session)
+        return jsonResult({
+          generated_at: new Date().toISOString(),
+          summary: { total_drifts: 0, critical: 0, warning: 0, info: 0 },
+          drifts: [],
+          in_sync: { sprints: [], stories: 0 },
+          error: 'No session state found',
+        });
 
-      const sprintStatuses = (session.sprint_backlog && session.sprint_backlog.sprint_statuses) || {};
+      const sprintStatuses =
+        (session.sprint_backlog && session.sprint_backlog.sprint_statuses) || {};
       const planPath = session.sprint_backlog && session.sprint_backlog.path;
       let sprintPlanContent = null;
       if (planPath) {
         const abs = path.resolve(PROJECT_ROOT, planPath);
-        try { sprintPlanContent = fs.readFileSync(abs, 'utf8'); } catch { /* missing plan */ }
+        try {
+          sprintPlanContent = fs.readFileSync(abs, 'utf8');
+        } catch {
+          /* missing plan */
+        }
       }
 
       const sprintsDir = path.join(DOC_ROOT, 'sprints');
-      const phase5Dir  = path.join(DOC_ROOT, 'phase-5');
+      const phase5Dir = path.join(DOC_ROOT, 'phase-5');
       const syncReports = {};
       for (const sprintId of Object.keys(sprintStatuses)) {
         syncReports[sprintId] = null;
         const p1 = path.join(sprintsDir, sprintId, 'github-sync-report.md');
-        if (fs.existsSync(p1)) { try { syncReports[sprintId] = fs.readFileSync(p1, 'utf8'); continue; } catch { /* */ } }
+        if (fs.existsSync(p1)) {
+          try {
+            syncReports[sprintId] = fs.readFileSync(p1, 'utf8');
+            continue;
+          } catch {
+            /* */
+          }
+        }
         const p2 = path.join(phase5Dir, `sprint-${sprintId}`, 'github-sync-report.md');
-        if (fs.existsSync(p2)) { try { syncReports[sprintId] = fs.readFileSync(p2, 'utf8'); } catch { /* */ } }
+        if (fs.existsSync(p2)) {
+          try {
+            syncReports[sprintId] = fs.readFileSync(p2, 'utf8');
+          } catch {
+            /* */
+          }
+        }
       }
 
       const report = detectDrift({ sessionState: session, sprintPlanContent, syncReports });
@@ -663,26 +766,36 @@ mcp.tool(
 mcp.resource(
   'session-state',
   'agentic://session-state',
-  { description: 'Current session state (project name, mode, phase, agent, sprint)', mimeType: 'application/json' },
+  {
+    description: 'Current session state (project name, mode, phase, agent, sprint)',
+    mimeType: 'application/json',
+  },
   async (uri) => ({
-    contents: [{
-      uri: uri.href,
-      text: JSON.stringify(readSessionState(), null, 2),
-      mimeType: 'application/json',
-    }],
+    contents: [
+      {
+        uri: uri.href,
+        text: JSON.stringify(readSessionState(), null, 2),
+        mimeType: 'application/json',
+      },
+    ],
   })
 );
 
 mcp.resource(
   'decisions',
   'agentic://decisions',
-  { description: 'All decisions: open questions, decided items, deferred items', mimeType: 'application/json' },
+  {
+    description: 'All decisions: open questions, decided items, deferred items',
+    mimeType: 'application/json',
+  },
   async (uri) => ({
-    contents: [{
-      uri: uri.href,
-      text: JSON.stringify(readDecisions(), null, 2),
-      mimeType: 'application/json',
-    }],
+    contents: [
+      {
+        uri: uri.href,
+        text: JSON.stringify(readDecisions(), null, 2),
+        mimeType: 'application/json',
+      },
+    ],
   })
 );
 
@@ -691,11 +804,13 @@ mcp.resource(
   'agentic://command-queue',
   { description: 'Command queue with all orchestrator commands', mimeType: 'application/json' },
   async (uri) => ({
-    contents: [{
-      uri: uri.href,
-      text: JSON.stringify(readCommandQueue(), null, 2),
-      mimeType: 'application/json',
-    }],
+    contents: [
+      {
+        uri: uri.href,
+        text: JSON.stringify(readCommandQueue(), null, 2),
+        mimeType: 'application/json',
+      },
+    ],
   })
 );
 

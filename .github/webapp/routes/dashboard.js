@@ -17,7 +17,80 @@
  * @returns {object} Route map { 'GET /api/dashboard/...': handler }.
  */
 
-const { json }        = require('../middleware');
+const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+const { json } = require('../middleware');
+
+function safeReadJson(filePath, fallback) {
+  try {
+    const raw = fs.readFileSync(filePath, 'utf8');
+    return JSON.parse(raw);
+  } catch {
+    return fallback;
+  }
+}
+
+function getRepoRoot(ctx) {
+  return ctx?.PROJECT_ROOT || path.resolve(__dirname, '..', '..', '..');
+}
+
+function getGitLines(command, cwd) {
+  try {
+    return execSync(command, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] })
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+function getGitTrackedFileCount(repoRoot) {
+  const lines = getGitLines('git ls-files', repoRoot);
+  return lines.length;
+}
+
+function getRecentGitContributors(repoRoot) {
+  const lines = getGitLines('git log --since="180 days ago" --format=%aN', repoRoot);
+  return new Set(lines.map((name) => name.toLowerCase())).size;
+}
+
+function normalizeAuditUser(user) {
+  if (!user || user === 'system' || user === 'webapp') return null;
+  return user;
+}
+
+function toTitleCase(value) {
+  return String(value || '')
+    .replace(/[_-]+/g, ' ')
+    .replace(/\b\w/g, (m) => m.toUpperCase());
+}
+
+function getAuditEntries(ctx, limit) {
+  if (!ctx || !ctx._audit || typeof ctx._audit.read !== 'function') return [];
+  const entries = ctx._audit.read(limit);
+  return Array.isArray(entries) ? entries : [];
+}
+
+function mapAuditOperationToType(operation) {
+  if (operation === 'create') return 'milestone_created';
+  if (operation === 'delete') return 'deployment';
+  return 'commit';
+}
+
+function mapAuditEntryToActivity(entry) {
+  const entityType = toTitleCase(entry.entity_type || 'record');
+  const operation = String(entry.operation || 'update').toLowerCase();
+  return {
+    type: mapAuditOperationToType(operation),
+    user: normalizeAuditUser(entry.user),
+    action: `${toTitleCase(operation)} ${entityType}`,
+    details: entry.summary || `Changed ${entityType}`,
+    metadata: entry.entity_id ? { id: entry.entity_id } : undefined,
+    timestamp: entry.timestamp || new Date().toISOString(),
+  };
+}
 
 /* ── Health Indicator Helper ──────────────────────────────────── */
 
@@ -34,26 +107,26 @@ function computeHealthStatus() {
       value: 94,
       label: 'Code Quality',
       status: 'excellent',
-      details: 'ESLint complexity ≤ 8, 100% rule compliance'
+      details: 'ESLint complexity ≤ 8, 100% rule compliance',
     },
     coverage: {
       value: '87.4%',
       label: 'Test Coverage',
       status: 'high',
-      details: '788/899 statements covered'
+      details: '788/899 statements covered',
     },
     builds: {
       value: '✓ Passing',
       label: 'Build Status',
       status: 'healthy',
-      details: 'Latest 5 builds successful'
+      details: 'Latest 5 builds successful',
     },
     deployment: {
       value: 'Live',
       label: 'Deployment Status',
       status: 'stable',
-      details: 'Last deploy 2 hours ago'
-    }
+      details: 'Last deploy 2 hours ago',
+    },
   };
 }
 
@@ -64,12 +137,18 @@ function computeHealthStatus() {
  * Returns: { requests, errors, response_time, uptime }
  */
 function computeKeyMetrics(ctx) {
-  const metrics = ctx._metrics || { requestCount: 0, errorCount: 0, responseTimes: [], startedAt: Date.now() };
-  
+  const metrics = ctx._metrics || {
+    requestCount: 0,
+    errorCount: 0,
+    responseTimes: [],
+    startedAt: Date.now(),
+  };
+
   // Calculate error rate
-  const errorRate = metrics.requestCount > 0
-    ? ((metrics.errorCount / metrics.requestCount) * 100).toFixed(1)
-    : '0.0';
+  const errorRate =
+    metrics.requestCount > 0
+      ? ((metrics.errorCount / metrics.requestCount) * 100).toFixed(1)
+      : '0.0';
 
   // Calculate average response time
   let avgResponseTime = 142; // Default
@@ -84,7 +163,7 @@ function computeKeyMetrics(ctx) {
       label: 'HTTP Requests',
       period: 'Last Hour',
       trend: '+12%',
-      trend_direction: 'up'
+      trend_direction: 'up',
     },
     error_rate: {
       value: errorRate + '%',
@@ -92,15 +171,15 @@ function computeKeyMetrics(ctx) {
       period: 'Current',
       trend: '-0.3%',
       trend_direction: 'down',
-      status: errorRate < 5 ? 'good' : 'warning'
+      status: errorRate < 5 ? 'good' : 'warning',
     },
     response_time: {
       value: avgResponseTime.toString(),
       unit: 'ms',
       label: 'Avg Response Time',
       period: 'Current',
-      status: avgResponseTime < 200 ? 'good' : 'warning'
-    }
+      status: avgResponseTime < 200 ? 'good' : 'warning',
+    },
   };
 }
 
@@ -110,34 +189,20 @@ function computeKeyMetrics(ctx) {
  * Generate recent activity timeline from audit trail.
  * Returns array of activity items with timestamps, users, descriptions.
  */
-function computeActivityFeed(_ctx) {
-  // TODO: Read from ./audit/*.jsonl, git log, deployment logs
-  // For MVP (SP-7.2): Return sample activity timeline
-  // Phase 5 follow-up: Parse actual audit trail and git history
+function computeActivityFeed(ctx) {
+  const auditEntries = getAuditEntries(ctx, 25);
+
+  if (Array.isArray(auditEntries) && auditEntries.length > 0) {
+    return auditEntries.slice().reverse().slice(0, 12).map(mapAuditEntryToActivity);
+  }
+
   return [
     {
-      type: 'commit',
-      user: 'Robert Agterhuis',
-      user_avatar: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"%3E%3Ccircle cx="24" cy="24" r="24" fill="%233f51b5"/%3E%3Ctext x="24" y="32" text-anchor="middle" fill="white" font-size="24"%3ERA%3C/text%3E%3C/svg%3E',
-      action: 'Merged branch feature/FEAT-02-enterprise-ui-redesign',
-      details: 'Design system CSS with 80+ components complete',
-      metadata: { branch: 'feature/FEAT-02-enterprise-ui-redesign', additions: 2500 },
-      timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString() // 2 hours ago
+      type: 'deployment',
+      action: 'No audit events recorded yet',
+      details: 'Activity feed will populate as soon as mutations are logged.',
+      timestamp: new Date().toISOString(),
     },
-    {
-      type: 'test_complete',
-      action: 'Test Suite Passed',
-      details: 'All 788 tests passing, zero regressions detected in FEAT-02 builds',
-      metadata: { passed: 788, failed: 0, coverage: '87.4%' },
-      timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString() // 4 hours ago
-    },
-    {
-      type: 'milestone_created',
-      action: 'Phase 5 milestone created',
-      details: 'Implementation phase begins — Sprint 7: Dashboard Home HTML structure',
-      metadata: { phase: 5, sprint: 'SP-7', name: 'Dashboard Implementation' },
-      timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString() // 6 hours ago
-    }
   ];
 }
 
@@ -147,35 +212,56 @@ function computeActivityFeed(_ctx) {
  * Compute quick statistics (files, team, sprint, stars).
  * Returns: { files, team_members, sprint_progress, github_stars }
  */
-function computeQuickStats() {
-  // TODO: Read from file system (count files), team config, sprint-state.json, GitHub API
-  // For MVP (SP-7.2): Return hardcoded stats
-  // Phase 5 follow-up: Count actual files, read sprint state, query GitHub API
+function computeQuickStats(ctx) {
+  const repoRoot = getRepoRoot(ctx);
+  const milestonesPath = path.join(repoRoot, '.github', 'data', 'milestones.json');
+  const milestones = safeReadJson(milestonesPath, []).filter((m) => !m.archived);
+  const completeCount = milestones.filter(
+    (m) => String(m.status || '').toLowerCase() === 'complete'
+  ).length;
+  const totalCount = milestones.length;
+  const sprintPercent = totalCount > 0 ? Math.round((completeCount / totalCount) * 100) : 0;
+
+  const trackedFiles = getGitTrackedFileCount(repoRoot);
+  const contributors = getRecentGitContributors(repoRoot);
+  const auditContributors = new Set(
+    (ctx?._audit ? ctx._audit.read(200) : [])
+      .map((entry) => normalizeAuditUser(entry.user))
+      .filter(Boolean)
+      .map((name) => name.toLowerCase())
+  );
+  const teamCount = Math.max(contributors, auditContributors.size, 1);
+
+  const starsFromEnv = Number.parseInt(process.env.GITHUB_STARS || '', 10);
+  const starsValue = Number.isFinite(starsFromEnv) ? String(starsFromEnv) : '—';
+
   return {
     active_files: {
-      value: '42',
+      value: String(trackedFiles || 0),
       label: 'Active Files',
       icon: '📄',
-      details: 'Source files tracked in git'
+      details: 'Tracked by git ls-files',
     },
     team_members: {
-      value: '8',
+      value: String(teamCount),
       label: 'Team Members',
       icon: '👥',
-      details: 'Contributors in current cycle'
+      details: 'Unique contributors (git + audit, last 180 days)',
     },
     sprint_progress: {
-      value: '72%',
+      value: `${sprintPercent}%`,
       label: 'Sprint Complete',
       icon: '🎯',
-      details: '18 of 25 stories completed'
+      details: `${completeCount} of ${totalCount} active milestones complete`,
     },
     github_stars: {
-      value: '156',
+      value: starsValue,
       label: 'GitHub Stars',
       icon: '⭐',
-      details: 'Community recognition'
-    }
+      details: Number.isFinite(starsFromEnv)
+        ? 'From GITHUB_STARS environment variable'
+        : 'Set GITHUB_STARS env var to display real stars',
+    },
   };
 }
 
@@ -191,7 +277,7 @@ async function getHealth(req, res) {
     json(res, 200, {
       ok: true,
       data: health,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     json(res, 500, { error: 'Failed to compute health status', details: err.message });
@@ -208,7 +294,7 @@ async function getMetrics(req, res, ctx) {
     json(res, 200, {
       ok: true,
       data: metrics,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     json(res, 500, { error: 'Failed to compute metrics', details: err.message });
@@ -225,7 +311,7 @@ async function getActivity(req, res, ctx) {
     json(res, 200, {
       ok: true,
       data: activity,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     json(res, 500, { error: 'Failed to fetch activity feed', details: err.message });
@@ -236,13 +322,13 @@ async function getActivity(req, res, ctx) {
  * GET /api/dashboard/stats
  * Returns quick statistics: files, team, sprint, stars.
  */
-async function getStats(req, res) {
+async function getStats(req, res, ctx) {
   try {
-    const stats = computeQuickStats();
+    const stats = computeQuickStats(ctx);
     json(res, 200, {
       ok: true,
       data: stats,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     json(res, 500, { error: 'Failed to compute statistics', details: err.message });
@@ -256,6 +342,6 @@ module.exports = function dashboardRoutes(ctx) {
     'GET /api/dashboard/health': (req, res) => getHealth(req, res),
     'GET /api/dashboard/metrics': (req, res) => getMetrics(req, res, ctx),
     'GET /api/dashboard/activity': (req, res) => getActivity(req, res, ctx),
-    'GET /api/dashboard/stats': (req, res) => getStats(req, res)
+    'GET /api/dashboard/stats': (req, res) => getStats(req, res, ctx),
   };
 };

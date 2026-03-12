@@ -59,9 +59,8 @@ function isInPlaceholder(src, index) {
 }
 
 describe('Emoji Accessibility — WCAG 1.1.1 / 4.1.2', () => {
-
   const emojis = findEmojiEntities(html).filter(
-    e => !isInStyleBlock(html, e.index) && !isInPlaceholder(html, e.index)
+    (e) => !isInStyleBlock(html, e.index) && !isInPlaceholder(html, e.index)
   );
 
   it('finds emoji entities in the HTML', () => {
@@ -73,8 +72,7 @@ describe('Emoji Accessibility — WCAG 1.1.1 / 4.1.2', () => {
     for (const e of emojis) {
       const before50 = html.slice(Math.max(0, e.index - 80), e.index);
       const hasAriaHidden =
-        before50.includes('aria-hidden="true">') ||
-        before50.includes("aria-hidden='true'>");
+        before50.includes('aria-hidden="true">') || before50.includes("aria-hidden='true'>");
       if (!hasAriaHidden) {
         unwrapped.push(`L${e.lineNum}: &#${e.code}; — ${e.lineText.slice(0, 100)}`);
       }
@@ -83,7 +81,7 @@ describe('Emoji Accessibility — WCAG 1.1.1 / 4.1.2', () => {
   });
 
   it('no duplicate aria-hidden attributes exist', () => {
-    const dupes = (html.match(/aria-hidden="true"\s+aria-hidden="true"/g) || []);
+    const dupes = html.match(/aria-hidden="true"\s+aria-hidden="true"/g) || [];
     expect(dupes.length).toBe(0);
   });
 
@@ -105,9 +103,9 @@ describe('Emoji Accessibility — WCAG 1.1.1 / 4.1.2', () => {
 
     it('tab emojis are wrapped with aria-hidden', () => {
       // All 3 tabs (one has class="tab active")
-      const tabLines = html.split(/\r?\n/).filter(l =>
-        /class="tab[\s"]/.test(l) && l.includes('aria-hidden="true"')
-      );
+      const tabLines = html
+        .split(/\r?\n/)
+        .filter((l) => /class="tab[\s"]/.test(l) && l.includes('aria-hidden="true"'));
       expect(tabLines.length).toBeGreaterThanOrEqual(3);
     });
 
@@ -162,7 +160,7 @@ describe('Emoji Accessibility — WCAG 1.1.1 / 4.1.2', () => {
     });
 
     it('fallback phase icon is wrapped', () => {
-      expect(html).toContain("|| '<span aria-hidden=\"true\">&#128196;</span>'");
+      expect(html).toContain('|| \'<span aria-hidden="true">&#128196;</span>\'');
     });
   });
 });

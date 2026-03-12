@@ -47,9 +47,12 @@ function log(method, url, status, ms) {
  */
 function setSecurityHeaders(res) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-  res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src 'self' data:");
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; form-action 'self'; frame-ancestors 'self'; base-uri 'self'"
+  );
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
@@ -65,11 +68,14 @@ function setSecurityHeaders(res) {
  * @throws {{ status: 403, errorCode: 'PATH_TRAVERSAL' }} If the path escapes base.
  */
 function safePath(base, relative) {
-  const absBase  = path.resolve(base);
+  const absBase = path.resolve(base);
   const resolved = path.resolve(base, relative);
   const rel = path.relative(absBase, resolved);
   if (rel.startsWith('..') || path.isAbsolute(rel)) {
-    throw Object.assign(new Error('Path traversal blocked'), { status: 403, errorCode: 'PATH_TRAVERSAL' });
+    throw Object.assign(new Error('Path traversal blocked'), {
+      status: 403,
+      errorCode: 'PATH_TRAVERSAL',
+    });
   }
   return resolved;
 }
@@ -84,8 +90,16 @@ function safePath(base, relative) {
  * @throws {{ status: 400, errorCode: 'INVALID_INPUT' }} If validation fails.
  */
 function assertString(val, name, maxLen = 1000) {
-  if (typeof val !== 'string') throw Object.assign(new Error(`${name} must be a string`), { status: 400, errorCode: 'INVALID_INPUT' });
-  if (val.length > maxLen) throw Object.assign(new Error(`${name} exceeds max length (${maxLen})`), { status: 400, errorCode: 'INVALID_INPUT' });
+  if (typeof val !== 'string')
+    throw Object.assign(new Error(`${name} must be a string`), {
+      status: 400,
+      errorCode: 'INVALID_INPUT',
+    });
+  if (val.length > maxLen)
+    throw Object.assign(new Error(`${name} exceeds max length (${maxLen})`), {
+      status: 400,
+      errorCode: 'INVALID_INPUT',
+    });
 }
 
 /* ── Response helpers ─────────────────────────────────────────── */
@@ -100,7 +114,7 @@ function json(res, status, data) {
   const body = JSON.stringify(data);
   setSecurityHeaders(res);
   res.writeHead(status, {
-    'Content-Type':  'application/json; charset=utf-8',
+    'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': Buffer.byteLength(body),
     'Cache-Control': 'no-store',
   });
@@ -121,9 +135,17 @@ function readBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
     let size = 0;
-    req.on('data', c => {
+    req.on('data', (c) => {
       size += c.length;
-      if (size > MAX_BODY) { req.destroy(); return reject(Object.assign(new Error('Payload too large'), { status: 413, errorCode: 'PAYLOAD_TOO_LARGE' })); }
+      if (size > MAX_BODY) {
+        req.destroy();
+        return reject(
+          Object.assign(new Error('Payload too large'), {
+            status: 413,
+            errorCode: 'PAYLOAD_TOO_LARGE',
+          })
+        );
+      }
       chunks.push(c);
     });
     req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
@@ -132,14 +154,23 @@ function readBody(req) {
 }
 
 async function parseBody(req) {
-  const ct = (req.headers['content-type'] || '');
+  const ct = req.headers['content-type'] || '';
   const mediaType = ct.split(';')[0].trim().toLowerCase();
   if (mediaType !== 'application/json') {
-    throw Object.assign(new Error('Content-Type must be application/json'), { status: 415, errorCode: 'INVALID_CONTENT_TYPE' });
+    throw Object.assign(new Error('Content-Type must be application/json'), {
+      status: 415,
+      errorCode: 'INVALID_CONTENT_TYPE',
+    });
   }
   const raw = await readBody(req);
-  try { return JSON.parse(raw); }
-  catch { throw Object.assign(new Error('Invalid JSON in request body'), { status: 400, errorCode: 'INVALID_JSON' }); }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    throw Object.assign(new Error('Invalid JSON in request body'), {
+      status: 400,
+      errorCode: 'INVALID_JSON',
+    });
+  }
 }
 
 /* ── Content sanitization (IMPL-CONSTRAINT-002) ───────────────── */
@@ -172,12 +203,15 @@ function sanitizeQID(text) {
 /* ── Secret detection (IMPL-CONSTRAINT-008) ───────────────────── */
 
 const SECRET_PATTERNS = [
-  { name: 'AWS Access Key',     re: /AKIA[0-9A-Z]{16}/ },
-  { name: 'GitHub Token',       re: /gh[ps]_[A-Za-z0-9_]{36,}/ },
-  { name: 'Azure Storage Key',  re: /[A-Za-z0-9/+]{86}==/ },
-  { name: 'Generic API Key',    re: /(?:api[_-]?key|apikey|secret[_-]?key)\s*[:=]\s*['"]?[A-Za-z0-9_\-]{20,}/i },
-  { name: 'Private Key',        re: /-----BEGIN (?:RSA |EC |DSA )?PRIVATE KEY-----/ },
-  { name: 'Bearer Token',       re: /Bearer\s+[A-Za-z0-9\-._~+/]+=*/i },
+  { name: 'AWS Access Key', re: /AKIA[0-9A-Z]{16}/ },
+  { name: 'GitHub Token', re: /gh[ps]_[A-Za-z0-9_]{36,}/ },
+  { name: 'Azure Storage Key', re: /[A-Za-z0-9/+]{86}==/ },
+  {
+    name: 'Generic API Key',
+    re: /(?:api[_-]?key|apikey|secret[_-]?key)\s*[:=]\s*['"]?[A-Za-z0-9_\-]{20,}/i,
+  },
+  { name: 'Private Key', re: /-----BEGIN (?:RSA |EC |DSA )?PRIVATE KEY-----/ },
+  { name: 'Bearer Token', re: /Bearer\s+[A-Za-z0-9\-._~+/]+=*/i },
 ];
 
 /**
@@ -238,13 +272,13 @@ function handleMethodNotAllowed(res, pathname, routes) {
   };
 
   const allowed = Object.keys(routes)
-    .filter(k => {
+    .filter((k) => {
       const splitAt = k.indexOf(' ');
       if (splitAt < 0) return false;
       const routePath = k.slice(splitAt + 1);
       return matchPathTemplate(routePath, pathname);
     })
-    .map(k => k.split(' ')[0]);
+    .map((k) => k.split(' ')[0]);
   if (allowed.length === 0) return false;
   setSecurityHeaders(res);
   const body = JSON.stringify(errorResponse('METHOD_NOT_ALLOWED', 'Method Not Allowed'));
@@ -252,7 +286,7 @@ function handleMethodNotAllowed(res, pathname, routes) {
     'Content-Type': 'application/json; charset=utf-8',
     'Content-Length': Buffer.byteLength(body),
     'Cache-Control': 'no-store',
-    'Allow': allowed.join(', '),
+    Allow: allowed.join(', '),
   });
   res.end(body);
   return true;
@@ -267,13 +301,26 @@ function handleRouteError(err, res) {
   if (!res.headersSent) {
     const code = err.errorCode || statusToCode(err.status || 500);
     json(res, err.status || 500, errorResponse(code, err.message));
-  } else { res.end(); }
+  } else {
+    res.end();
+  }
 }
 
 module.exports = {
-  structuredLog, log,
-  setSecurityHeaders, safePath, assertString,
-  json, readBody, parseBody, MAX_BODY,
-  sanitizeMarkdown, sanitizeQID, SECRET_PATTERNS, detectSecrets, checkSecretsInBody,
-  handleMethodNotAllowed, handleRouteError,
+  structuredLog,
+  log,
+  setSecurityHeaders,
+  safePath,
+  assertString,
+  json,
+  readBody,
+  parseBody,
+  MAX_BODY,
+  sanitizeMarkdown,
+  sanitizeQID,
+  SECRET_PATTERNS,
+  detectSecrets,
+  checkSecretsInBody,
+  handleMethodNotAllowed,
+  handleRouteError,
 };

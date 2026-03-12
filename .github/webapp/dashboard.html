@@ -4,11 +4,134 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard Home — myAgentic-IT Project Team</title>
+  <link rel="stylesheet" href="design-system.css?v=20260309a">
   <style>
+    :root,
+    [data-theme="light"] {
+      --space-0: 0px;
+      --space-px: 1px;
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-7: 28px;
+      --space-8: 32px;
+
+      --motion-fast: 150ms;
+      --motion-normal: 250ms;
+      --motion-slow: 400ms;
+
+      --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+      --text-caption: 0.625rem;
+      --text-label: 0.6875rem;
+      --text-sm: 0.75rem;
+      --text-body: 0.8125rem;
+      --text-md: 0.875rem;
+      --text-lg: 0.9375rem;
+      --text-h4: 1rem;
+      --text-h3: 1.125rem;
+      --text-h2: 1.25rem;
+      --text-h1: 1.625rem;
+      --leading-tight: 1.25;
+      --leading-normal: 1.5;
+      --fw-normal: 400;
+      --fw-medium: 500;
+      --fw-semibold: 600;
+      --fw-bold: 700;
+      --fw-extrabold: 800;
+
+      --radius-none: 0px;
+      --radius-xs: 4px;
+      --radius-sm: 6px;
+      --radius: 10px;
+      --radius-lg: 16px;
+      --radius-pill: 20px;
+      --radius-full: 9999px;
+
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --primary-light: rgba(99, 102, 241, 0.1);
+      --accent: #8b5cf6;
+      --success: #059669;
+      --success-light: rgba(5, 150, 105, 0.1);
+      --neutral-light: rgba(148, 163, 184, 0.14);
+      --warning: #d97706;
+      --warning-light: rgba(217, 119, 6, 0.1);
+      --danger: #ef4444;
+      --danger-light: rgba(239, 68, 68, 0.1);
+
+      --bg: #f4f6fb;
+      --bg-subtle: #eef1f8;
+      --surface: #ffffff;
+      --surface-raised: #ffffff;
+      --text: #1e293b;
+      --text-sec: #5b6b7e;
+      --text-muted: #5e6d80;
+      --text-subtle: #74839a;
+      --border: #e2e8f0;
+      --border-hover: #cbd5e1;
+      --border-subtle: #f1f5f9;
+      --border-control: #7e8b9a;
+      --input-bg: #ffffff;
+      --code-bg: #f1f5f9;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+
+      color-scheme: light;
+    }
+
+    [data-theme="dark"] {
+      --primary: #818cf8;
+      --primary-dark: #6366f1;
+      --primary-light: rgba(129, 140, 248, 0.12);
+      --accent: #a78bfa;
+      --success: #34d399;
+      --success-light: rgba(52, 211, 153, 0.12);
+      --neutral-light: rgba(148, 163, 184, 0.16);
+      --warning: #fbbf24;
+      --warning-light: rgba(251, 191, 36, 0.12);
+      --danger: #f87171;
+      --danger-light: rgba(248, 113, 113, 0.12);
+
+      --bg: #0f1117;
+      --bg-subtle: #151823;
+      --surface: #1a1d2e;
+      --surface-raised: #1e2235;
+      --text: #e2e8f0;
+      --text-sec: #94a3b8;
+      --text-muted: #8494a7;
+      --text-subtle: #72839b;
+      --border: #2a2f45;
+      --border-hover: #616e91;
+      --border-subtle: #1e2235;
+      --border-control: #5f6a82;
+      --input-bg: #151823;
+      --code-bg: #151823;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.15);
+      --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3), 0 2px 4px rgba(0, 0, 0, 0.2);
+      --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
+
+      color-scheme: dark;
+    }
+
     /* Fallback styles for dashboard-specific layout */
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
-    body { margin: 0; padding: 0; font-family: inherit; }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font-sans);
+      font-size: var(--text-body);
+      color: var(--text);
+      background: var(--bg);
+      line-height: var(--leading-normal);
+    }
   </style>
 </head>
 <body>
@@ -315,6 +438,9 @@
       <div class="dashboard-section-header">
         <h2 class="dashboard-section-title">Recent Milestones</h2>
         <div class="dashboard-section-actions">
+          <button class="btn btn-sm btn-primary" id="btn-create-milestone" onclick="window.Dashboard.openMilestoneCreateModal();">
+            <span aria-hidden="true">+</span> Create Milestone
+          </button>
           <button class="btn btn-sm btn-primary" id="btn-view-all-milestones">
             View All Milestones →
           </button>
@@ -346,6 +472,17 @@
             <option value="in progress">In Progress</option>
             <option value="blocked">Blocked</option>
           </select>
+
+          <label for="milestone-completion-start" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">Completion date from</label>
+          <input id="milestone-completion-start" type="date" class="input" placeholder="From" style="min-width: 140px;" title="Completion date start range" />
+
+          <label for="milestone-completion-end" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">Completion date to</label>
+          <input id="milestone-completion-end" type="date" class="input" placeholder="To" style="min-width: 140px;" title="Completion date end range" />
+
+          <div style="display: flex; flex-direction: column; gap: 4px; min-width: 200px; max-width: 280px;">
+            <label for="milestone-progress-min" style="font-size: 12px; color: var(--text-muted);">Progress: <span id="milestone-progress-label">0%–100%</span></label>
+            <input id="milestone-progress-slider" type="range" min="0" max="100" value="0" class="input" style="cursor: pointer; width: 100%;" />
+          </div>
 
           <button class="btn btn-sm btn-ghost" id="btn-reset-milestone-filters" type="button">Reset</button>
         </div>
@@ -468,12 +605,179 @@
     </button>
   </div>
 
+  <!-- ── Create Milestone Modal (SP-9.8) ───────────────────────────── -->
+  <div class="modal-overlay" id="milestone-create-modal" role="presentation" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Create New Milestone</h2>
+        <button class="modal-close" title="Close" onclick="window.Dashboard.closeMilestoneCreateModal();">×</button>
+      </div>
+      <div class="modal-content">
+        <form id="milestone-create-form" style="padding: var(--space-3);">
+          <div style="margin-bottom: var(--space-3);">
+            <label for="create-milestone-name" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Milestone Name <span style="color: var(--danger);">*</span>
+            </label>
+            <input 
+              id="create-milestone-name" 
+              type="text" 
+              class="input" 
+              placeholder="e.g., FEAT-03 Mobile Optimization" 
+              required 
+              style="width: 100%;"
+            />
+            <div id="create-name-error" style="color: var(--danger); font-size: 12px; margin-top: 4px;"></div>
+          </div>
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="create-milestone-status" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Status <span style="color: var(--danger);">*</span>
+            </label>
+            <select id="create-milestone-status" class="input" required style="width: 100%;">
+              <option value="" disabled selected>Select status...</option>
+              <option value="not started">Not Started</option>
+              <option value="in progress">In Progress</option>
+              <option value="complete">Complete</option>
+              <option value="blocked">Blocked</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="create-milestone-progress" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Progress <span style="color: var(--danger);">*</span> <span style="color: var(--text-muted); font-weight: normal;">(<span id="create-progress-label">0</span>%)</span>
+            </label>
+            <input 
+              id="create-milestone-progress" 
+              type="range" 
+              min="0" 
+              max="100" 
+              value="0" 
+              class="input" 
+              required 
+              style="width: 100%; cursor: pointer;"
+            />
+            <div style="display: flex; gap: var(--space-2); margin-top: 4px; font-size: 12px; color: var(--text-muted);">
+              <span>0%</span>
+              <span style="flex: 1;"></span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="create-milestone-completion" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Completion Date <span style="color: var(--danger);">*</span>
+            </label>
+            <input 
+              id="create-milestone-completion" 
+              type="date" 
+              class="input" 
+              required 
+              style="width: 100%;"
+            />
+            <div id="create-completion-error" style="color: var(--danger); font-size: 12px; margin-top: 4px;"></div>
+          </div>
+
+          <div id="create-form-errors" style="background: var(--danger); background-color: rgba(var(--danger-rgb), 0.1); color: var(--danger); padding: var(--space-2); border-radius: var(--radius-1); margin-bottom: var(--space-3); display: none;"></div>
+
+          <div style="display: flex; gap: var(--space-2); justify-content: flex-end;">
+            <button type="button" class="btn btn-ghost" onclick="window.Dashboard.closeMilestoneCreateModal();">Cancel</button>
+            <button type="submit" class="btn btn-primary">Create Milestone</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Edit Milestone Modal (SP-9.4) ───────────────────────────────── -->
+  <div class="modal-overlay" id="milestone-edit-modal" role="presentation" style="display: none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Edit Milestone</h2>
+        <button class="modal-close" title="Close" onclick="window.Dashboard.closeMilestoneEditModal();">×</button>
+      </div>
+      <div class="modal-content">
+        <form id="milestone-edit-form" style="padding: var(--space-3);">
+          <input type="hidden" id="edit-milestone-id" value="">
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="edit-milestone-name" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Milestone Name <span style="color: var(--danger);">*</span>
+            </label>
+            <input 
+              id="edit-milestone-name" 
+              type="text" 
+              class="input" 
+              placeholder="e.g., FEAT-03 Mobile Optimization" 
+              required 
+              style="width: 100%;"
+            />
+            <div id="edit-name-error" style="color: var(--danger); font-size: 12px; margin-top: 4px;"></div>
+          </div>
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="edit-milestone-status" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Status <span style="color: var(--danger);">*</span>
+            </label>
+            <select id="edit-milestone-status" class="input" required style="width: 100%;">
+              <option value="not started">Not Started</option>
+              <option value="in progress">In Progress</option>
+              <option value="complete">Complete</option>
+              <option value="blocked">Blocked</option>
+            </select>
+          </div>
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="edit-milestone-progress" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Progress <span style="color: var(--danger);">*</span> <span style="color: var(--text-muted); font-weight: normal;">(<span id="edit-progress-label">0</span>%)</span>
+            </label>
+            <input 
+              id="edit-milestone-progress" 
+              type="range" 
+              min="0" 
+              max="100" 
+              value="0" 
+              class="input" 
+              required 
+              style="width: 100%; cursor: pointer;"
+            />
+            <div style="display: flex; gap: var(--space-2); margin-top: 4px; font-size: 12px; color: var(--text-muted);">
+              <span>0%</span>
+              <span style="flex: 1;"></span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom: var(--space-3);">
+            <label for="edit-milestone-completion" style="display: block; font-weight: bold; margin-bottom: var(--space-1);">
+              Completion Date <span style="color: var(--danger);">*</span>
+            </label>
+            <input 
+              id="edit-milestone-completion" 
+              type="date" 
+              class="input" 
+              required 
+              style="width: 100%;"
+            />
+            <div id="edit-completion-error" style="color: var(--danger); font-size: 12px; margin-top: 4px;"></div>
+          </div>
+
+          <div id="edit-form-errors" style="background: var(--danger); background-color: rgba(var(--danger-rgb), 0.1); color: var(--danger); padding: var(--space-2); border-radius: var(--radius-1); margin-bottom: var(--space-3); display: none;"></div>
+
+          <div style="display: flex; gap: var(--space-2); justify-content: flex-end;">
+            <button type="button" class="btn btn-ghost" onclick="window.Dashboard.closeMilestoneEditModal();">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <!-- ── Row Detail Modal Template (SP-8.3) ────────────────────────── -->
   <div class="modal-overlay" id="milestone-detail-modal" role="presentation" style="display: none;">
     <div class="modal">
       <div class="modal-header">
         <h2 class="modal-title" id="milestone-detail-title">Milestone Details</h2>
-        <button class="modal-close" title="Close" onclick="closeMilestoneDetailModal();">×</button>
+        <button class="modal-close" title="Close" onclick="window.Dashboard.closeMilestoneDetailModal();">×</button>
       </div>
       <div class="modal-content">
         <div id="milestone-detail-content">
@@ -498,7 +802,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" onclick="closeMilestoneDetailModal();">Close</button>
+        <button class="btn btn-ghost" onclick="window.Dashboard.closeMilestoneDetailModal();">Close</button>
       </div>
     </div>
   </div>
@@ -521,7 +825,58 @@
   </div>
 
   <!-- ── Scripts ──────────────────────────────────────────────────────── -->
+  <script>
+    (function initDashboardTheme() {
+      function getStoredTheme() {
+        try { return localStorage.getItem('theme'); } catch { return null; }
+      }
+
+      function setStoredTheme(theme) {
+        try { localStorage.setItem('theme', theme); } catch {}
+      }
+
+      function detectTheme() {
+        const saved = getStoredTheme();
+        if (saved === 'dark' || saved === 'light') return saved;
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+
+      function applyTheme(theme) {
+        const normalized = theme === 'dark' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', normalized);
+
+        const btn = document.getElementById('btnTheme');
+        if (btn) {
+          btn.innerHTML = normalized === 'dark'
+            ? '<span aria-hidden="true">&#9728;&#65039;</span>'
+            : '<span aria-hidden="true">&#127769;</span>';
+        }
+      }
+
+      applyTheme(detectTheme());
+
+      window.addEventListener('storage', function onThemeStorageChange(event) {
+        if (event.key === 'theme') applyTheme(detectTheme());
+      });
+
+      const media = window.matchMedia('(prefers-color-scheme: dark)');
+      media.addEventListener('change', function onSchemeChange() {
+        if (!getStoredTheme()) applyTheme(detectTheme());
+      });
+
+      const btn = document.getElementById('btnTheme');
+      if (btn) {
+        btn.addEventListener('click', function onThemeToggle() {
+          const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+          const next = current === 'dark' ? 'light' : 'dark';
+          applyTheme(next);
+          setStoredTheme(next);
+        });
+      }
+    }());
+  </script>
+
   <!-- Dashboard data loading & rendering (SP-7.3) -->
-  <script src="./dashboard.js"></script>
+  <script src="./dashboard.js?v=20260309b"></script>
 </body>
 </html>

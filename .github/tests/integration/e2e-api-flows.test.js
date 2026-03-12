@@ -13,14 +13,14 @@ const path = require('path');
 const { InMemoryStore, setStore } = require('../../webapp/store');
 const { server, _cache } = require('../../webapp/server');
 
-const WEBAPP_DIR    = path.resolve(__dirname, '../../webapp');
-const PROJECT_ROOT  = path.resolve(WEBAPP_DIR, '..', '..');
+const WEBAPP_DIR = path.resolve(__dirname, '../../webapp');
+const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
-const GITHUB_DOCS   = path.join(PROJECT_ROOT, '.github', 'docs');
-const SESSION_DIR   = path.join(GITHUB_DOCS, 'session');
-const SESSION_FILE  = path.join(SESSION_DIR, 'session-state.json');
+const GITHUB_DOCS = path.join(PROJECT_ROOT, '.github', 'docs');
+const SESSION_DIR = path.join(GITHUB_DOCS, 'session');
+const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
 const DECISIONS_FILE = path.join(GITHUB_DOCS, 'decisions.md');
-const HELP_DIR       = path.join(PROJECT_ROOT, '.github', 'help');
+const HELP_DIR = path.join(PROJECT_ROOT, '.github', 'help');
 
 let baseUrl;
 
@@ -41,11 +41,15 @@ function req(method, urlPath, body) {
     }
     const r = http.request(opts, (res) => {
       const chunks = [];
-      res.on('data', c => chunks.push(c));
+      res.on('data', (c) => chunks.push(c));
       res.on('end', () => {
         const text = Buffer.concat(chunks).toString();
         let json;
-        try { json = JSON.parse(text); } catch { json = null; }
+        try {
+          json = JSON.parse(text);
+        } catch {
+          json = null;
+        }
         resolve({ status: res.statusCode, headers: res.headers, text, json });
       });
     });
@@ -98,7 +102,10 @@ const SESSION_STATE = {
   completed_phases: ['ONBOARDING', 'PHASE-2', 'PHASE-3'],
   completed_agents: ['25-onboarding-agent', '05-software-architect'],
   phase_outputs: {},
-  sprint_backlog: { total_sprints: 7, sprint_statuses: { 'SP-R2-001': 'DONE', 'SP-R2-002': 'DONE' } },
+  sprint_backlog: {
+    total_sprints: 7,
+    sprint_statuses: { 'SP-R2-001': 'DONE', 'SP-R2-002': 'DONE' },
+  },
 };
 
 const DECISIONS_MD = `# Decisions & Open Questions
@@ -145,7 +152,10 @@ const DECISIONS_MD = `# Decisions & Open Questions
 `;
 
 function seedStore() {
-  const qPath = path.join(BUSINESS_DOCS, 'Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md');
+  const qPath = path.join(
+    BUSINESS_DOCS,
+    'Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md'
+  );
   const helpPath = path.join(HELP_DIR, 'getting-started.md');
   return new InMemoryStore({
     [qPath]: Q05_MD,
@@ -210,11 +220,11 @@ describe('E2E: Questionnaire answer journey', () => {
     const verify = await req('GET', '/api/questionnaires');
     expect(verify.status).toBe(200);
     const updated = verify.json.questionnaires[0];
-    const q1 = updated.questions.find(x => x.id === 'Q-05-001');
+    const q1 = updated.questions.find((x) => x.id === 'Q-05-001');
     expect(q1.answer).toBe('Local Node.js server');
     expect(q1.status).toBe('ANSWERED');
     // Q-05-002 should still be OPEN
-    const q2 = updated.questions.find(x => x.id === 'Q-05-002');
+    const q2 = updated.questions.find((x) => x.id === 'Q-05-002');
     expect(q2.status).toBe('OPEN');
   });
 
@@ -231,9 +241,9 @@ describe('E2E: Questionnaire answer journey', () => {
 
     const verify = await req('GET', '/api/questionnaires');
     const qs = verify.json.questionnaires[0].questions;
-    expect(qs.find(x => x.id === 'Q-05-001').answer).toBe('Docker containers');
-    expect(qs.find(x => x.id === 'Q-05-002').answer).toBe('500 req/sec');
-    expect(qs.every(x => x.status === 'ANSWERED')).toBe(true);
+    expect(qs.find((x) => x.id === 'Q-05-001').answer).toBe('Docker containers');
+    expect(qs.find((x) => x.id === 'Q-05-002').answer).toBe('500 req/sec');
+    expect(qs.every((x) => x.status === 'ANSWERED')).toBe(true);
   });
 
   it('handles sequential answer updates (overwrite previous)', async () => {
@@ -250,7 +260,7 @@ describe('E2E: Questionnaire answer journey', () => {
     });
 
     const verify = await req('GET', '/api/questionnaires');
-    const q1 = verify.json.questionnaires[0].questions.find(x => x.id === 'Q-05-001');
+    const q1 = verify.json.questionnaires[0].questions.find((x) => x.id === 'Q-05-001');
     expect(q1.answer).toBe('Updated answer');
   });
 });
@@ -283,7 +293,7 @@ describe('E2E: Decision full lifecycle', () => {
     // Step 3: Verify it appears in the open list
     const afterCreate = await req('GET', '/api/decisions');
     expect(afterCreate.json.open).toHaveLength(2);
-    const newQ = afterCreate.json.open.find(q => q.id === newId);
+    const newQ = afterCreate.json.open.find((q) => q.id === newId);
     expect(newQ).toBeDefined();
     expect(newQ.question).toContain('WebSockets');
 
@@ -298,7 +308,7 @@ describe('E2E: Decision full lifecycle', () => {
 
     // Step 5: Verify answer persisted
     const afterAnswer = await req('GET', '/api/decisions');
-    const answered = afterAnswer.json.open.find(q => q.id === newId);
+    const answered = afterAnswer.json.open.find((q) => q.id === newId);
     expect(answered.answer).toContain('SSE is sufficient');
 
     // Step 6: Decide (move to decided)
@@ -312,9 +322,9 @@ describe('E2E: Decision full lifecycle', () => {
 
     // Step 7: Verify it moved from open to decided
     const afterDecide = await req('GET', '/api/decisions');
-    expect(afterDecide.json.open.find(q => q.id === newId)).toBeUndefined();
+    expect(afterDecide.json.open.find((q) => q.id === newId)).toBeUndefined();
     // It should now be in the decided list
-    const decided = afterDecide.json.decided.find(d => d.id === newId);
+    const decided = afterDecide.json.decided.find((d) => d.id === newId);
     expect(decided).toBeDefined();
   });
 
@@ -340,8 +350,8 @@ describe('E2E: Decision full lifecycle', () => {
 
     // Verify deferred
     const afterDefer = await req('GET', '/api/decisions');
-    expect(afterDefer.json.open.find(q => q.id === id)).toBeUndefined();
-    expect(afterDefer.json.deferred.find(d => d.id === id)).toBeDefined();
+    expect(afterDefer.json.open.find((q) => q.id === id)).toBeUndefined();
+    expect(afterDefer.json.deferred.find((d) => d.id === id)).toBeDefined();
 
     // Reopen
     const reopen = await req('POST', '/api/decisions', {
@@ -353,8 +363,8 @@ describe('E2E: Decision full lifecycle', () => {
 
     // Verify reopened (back to open)
     const afterReopen = await req('GET', '/api/decisions');
-    expect(afterReopen.json.open.find(q => q.id === id)).toBeDefined();
-    expect(afterReopen.json.deferred.find(d => d.id === id)).toBeUndefined();
+    expect(afterReopen.json.open.find((q) => q.id === id)).toBeDefined();
+    expect(afterReopen.json.deferred.find((d) => d.id === id)).toBeUndefined();
   });
 
   it('creates an operational decision directly', async () => {
@@ -370,7 +380,7 @@ describe('E2E: Decision full lifecycle', () => {
     expect(create.json.action).toBe('created_decision');
 
     const after = await req('GET', '/api/decisions');
-    const dec = after.json.decided.find(d => d.id === create.json.id);
+    const dec = after.json.decided.find((d) => d.id === create.json.id);
     expect(dec).toBeDefined();
     expect(dec.decision).toContain('file-based storage');
   });
@@ -387,7 +397,7 @@ describe('E2E: Decision full lifecycle', () => {
     expect(edit.json.action).toBe('edited');
 
     const after = await req('GET', '/api/decisions');
-    const edited = after.json.decided.find(d => d.id === 'DEC-R2-001');
+    const edited = after.json.decided.find((d) => d.id === 'DEC-R2-001');
     expect(edited.decision).toContain('confirmed production constraint');
     expect(edited.notes).toContain('Updated security');
   });
@@ -402,8 +412,8 @@ describe('E2E: Decision full lifecycle', () => {
     expect(expire.json.action).toBe('expired');
 
     const after = await req('GET', '/api/decisions');
-    expect(after.json.decided.find(d => d.id === 'DEC-R2-001')).toBeUndefined();
-    const expired = after.json.deferred.find(d => d.id === 'DEC-R2-001');
+    expect(after.json.decided.find((d) => d.id === 'DEC-R2-001')).toBeUndefined();
+    const expired = after.json.deferred.find((d) => d.id === 'DEC-R2-001');
     expect(expired).toBeDefined();
     expect(expired.status).toBe('EXPIRED');
   });
@@ -480,13 +490,13 @@ describe('E2E: Session and progress monitoring', () => {
     expect(progress.json.phases).toHaveLength(7);
 
     // Completed phases should show as done
-    const p2 = progress.json.phases.find(p => p.key === 'PHASE-2');
+    const p2 = progress.json.phases.find((p) => p.key === 'PHASE-2');
     expect(p2.status).toBe('done');
-    const p3 = progress.json.phases.find(p => p.key === 'PHASE-3');
+    const p3 = progress.json.phases.find((p) => p.key === 'PHASE-3');
     expect(p3.status).toBe('done');
 
     // Current phase (PHASE-5) should be active
-    const p5 = progress.json.phases.find(p => p.key === 'PHASE-5');
+    const p5 = progress.json.phases.find((p) => p.key === 'PHASE-5');
     expect(p5.status).toBe('active');
 
     // Sprint info should be present
@@ -508,8 +518,16 @@ describe('E2E: Analytics event flow', () => {
     // Step 2: Post batch 1
     const post1 = await req('POST', '/api/analytics', {
       events: [
-        { event: 'session_start', properties: { source: 'test' }, timestamp: '2026-03-08T00:00:00Z' },
-        { event: 'page_view', properties: { page: 'dashboard' }, timestamp: '2026-03-08T00:01:00Z' },
+        {
+          event: 'session_start',
+          properties: { source: 'test' },
+          timestamp: '2026-03-08T00:00:00Z',
+        },
+        {
+          event: 'page_view',
+          properties: { page: 'dashboard' },
+          timestamp: '2026-03-08T00:01:00Z',
+        },
       ],
     });
     expect(post1.status).toBe(200);
@@ -518,7 +536,11 @@ describe('E2E: Analytics event flow', () => {
     // Step 3: Post batch 2
     const post2 = await req('POST', '/api/analytics', {
       events: [
-        { event: 'tab_switch', properties: { tab: 'decisions' }, timestamp: '2026-03-08T00:02:00Z' },
+        {
+          event: 'tab_switch',
+          properties: { tab: 'decisions' },
+          timestamp: '2026-03-08T00:02:00Z',
+        },
       ],
     });
     expect(post2.status).toBe(200);
@@ -528,9 +550,9 @@ describe('E2E: Analytics event flow', () => {
     const readAll = await req('GET', '/api/analytics');
     expect(readAll.status).toBe(200);
     expect(readAll.json.total).toBe(3);
-    expect(readAll.json.events.some(e => e.event === 'session_start')).toBe(true);
-    expect(readAll.json.events.some(e => e.event === 'page_view')).toBe(true);
-    expect(readAll.json.events.some(e => e.event === 'tab_switch')).toBe(true);
+    expect(readAll.json.events.some((e) => e.event === 'session_start')).toBe(true);
+    expect(readAll.json.events.some((e) => e.event === 'page_view')).toBe(true);
+    expect(readAll.json.events.some((e) => e.event === 'tab_switch')).toBe(true);
   });
 });
 
@@ -695,7 +717,13 @@ describe('E2E: Secret detection across endpoints', () => {
   it('detects secrets in questionnaire answers', async () => {
     const r = await req('POST', '/api/save', {
       file: 'Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md',
-      updates: [{ questionId: 'Q-05-001', status: 'ANSWERED', answer: 'Use key AKIAIOSFODNN7EXAMPLE to connect' }],
+      updates: [
+        {
+          questionId: 'Q-05-001',
+          status: 'ANSWERED',
+          answer: 'Use key AKIAIOSFODNN7EXAMPLE to connect',
+        },
+      ],
     });
     expect(r.status).toBe(200);
     expect(r.json.warnings).toBeDefined();

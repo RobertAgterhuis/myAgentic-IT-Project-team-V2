@@ -32,20 +32,31 @@ function escAttr(s) {
  * markdown constructs are converted.
  */
 function renderMarkdown(md) {
-  let html = md
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+  let html = md.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   // fenced code blocks
-  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, _lang, code) =>
-    '<pre><code>' + code + '</code></pre>');
+  html = html.replace(
+    /```(\w*)\n([\s\S]*?)```/g,
+    (_, _lang, code) => '<pre><code>' + code + '</code></pre>'
+  );
   // tables
   html = html.replace(/^(\|.+\|)\n(\|[-|: ]+\|)\n((?:\|.+\|\n?)*)/gm, (_, hdr, _sep, body) => {
-    const thCells = hdr.split('|').filter(c => c.trim()).map(c => '<th>' + c.trim() + '</th>').join('');
-    const rows = body.trim().split('\n').map(row => {
-      const cells = row.split('|').filter(c => c.trim()).map(c => '<td>' + c.trim() + '</td>').join('');
-      return '<tr>' + cells + '</tr>';
-    }).join('');
+    const thCells = hdr
+      .split('|')
+      .filter((c) => c.trim())
+      .map((c) => '<th>' + c.trim() + '</th>')
+      .join('');
+    const rows = body
+      .trim()
+      .split('\n')
+      .map((row) => {
+        const cells = row
+          .split('|')
+          .filter((c) => c.trim())
+          .map((c) => '<td>' + c.trim() + '</td>')
+          .join('');
+        return '<tr>' + cells + '</tr>';
+      })
+      .join('');
     return '<table><thead><tr>' + thCells + '</tr></thead><tbody>' + rows + '</tbody></table>';
   });
   // headings
@@ -71,13 +82,21 @@ function renderMarkdown(md) {
     return `<a href="${safeHref}" target="_blank" rel="noopener">${text}</a>`;
   });
   // unordered list
-  html = html.replace(/^((?:- .+\n?)+)/gm, m => {
-    const items = m.trim().split('\n').map(l => '<li>' + l.replace(/^- /, '') + '</li>').join('');
+  html = html.replace(/^((?:- .+\n?)+)/gm, (m) => {
+    const items = m
+      .trim()
+      .split('\n')
+      .map((l) => '<li>' + l.replace(/^- /, '') + '</li>')
+      .join('');
     return '<ul>' + items + '</ul>';
   });
   // ordered list
-  html = html.replace(/^((?:\d+\. .+\n?)+)/gm, m => {
-    const items = m.trim().split('\n').map(l => '<li>' + l.replace(/^\d+\.\s*/, '') + '</li>').join('');
+  html = html.replace(/^((?:\d+\. .+\n?)+)/gm, (m) => {
+    const items = m
+      .trim()
+      .split('\n')
+      .map((l) => '<li>' + l.replace(/^\d+\.\s*/, '') + '</li>')
+      .join('');
     return '<ol>' + items + '</ol>';
   });
   // paragraphs — wrap remaining plain lines
@@ -120,13 +139,13 @@ function computePollInterval(progress) {
 function findCrossRefs(decision, questionnaireList) {
   const scope = (decision.scope || '').toLowerCase();
   if (!scope || !questionnaireList.length) return '';
-  const matches = questionnaireList.filter(q => {
+  const matches = questionnaireList.filter((q) => {
     const ph = (q.phase || '').toLowerCase();
     return (ph && scope.includes(ph)) || (ph && ph.includes(scope)) || scope.includes('all');
   });
   if (matches.length === 0) return '';
   const total = matches.reduce((n, q) => n + q.questions.length, 0);
-  return ` <span class="xref-badge" title="Related: ${matches.map(q => q.agent).join(', ')}"><span aria-hidden="true">&#128203;</span> ${total} Q</span>`;
+  return ` <span class="xref-badge" title="Related: ${matches.map((q) => q.agent).join(', ')}"><span aria-hidden="true">&#128203;</span> ${total} Q</span>`;
 }
 
 /* ── DOM validation helpers (require jsdom for testing) ── */
@@ -146,7 +165,10 @@ function setFieldError(field, msg) {
     const el = document.createElement('div');
     el.className = 'error-msg';
     el.setAttribute('role', 'alert');
-    if (errId) { el.id = errId; field.setAttribute('aria-describedby', errId); }
+    if (errId) {
+      el.id = errId;
+      field.setAttribute('aria-describedby', errId);
+    }
     el.textContent = msg;
     field.parentElement.appendChild(el);
   } else {

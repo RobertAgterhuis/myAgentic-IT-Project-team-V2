@@ -65,8 +65,9 @@ describe('UX-01: ARIA landmark roles', () => {
   it('all dialogs have aria-modal and aria-labelledby or aria-label', () => {
     const dialogs = html.match(/role="dialog"/g) || [];
     const withModal = html.match(/role="dialog"[^>]*aria-modal="true"/g) || [];
-    const withLabel = (html.match(/role="dialog"[^>]*aria-labelledby="/g) || [])
-      .concat(html.match(/role="dialog"[^>]*aria-label="/g) || []);
+    const withLabel = (html.match(/role="dialog"[^>]*aria-labelledby="/g) || []).concat(
+      html.match(/role="dialog"[^>]*aria-label="/g) || []
+    );
     expect(dialogs.length).toBeGreaterThan(0);
     expect(withModal.length).toBe(dialogs.length);
     expect(withLabel.length).toBe(dialogs.length);
@@ -151,9 +152,10 @@ describe('UX-03: Visible focus indicators', () => {
       if (block.includes('outline: none') || block.includes('outline:none')) {
         // If outline:none is present, there should be an alternative visible indicator:
         // either box-shadow, border-color change, or a separate outline declaration
-        const hasAlternative = block.includes('box-shadow') ||
-                              block.includes('border-color') ||
-                              block.includes('outline: 2px');
+        const hasAlternative =
+          block.includes('box-shadow') ||
+          block.includes('border-color') ||
+          block.includes('outline: 2px');
         expect(hasAlternative).toBe(true);
       }
     }
@@ -186,8 +188,8 @@ describe('MKT-01: Canonical product name (DEC-R4-003)', () => {
     const htmlContent = bodyHtml.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '');
     // Allow in comments, don't allow in visible elements
     const lines = htmlContent.split(/\r?\n/);
-    const violations = lines.filter(l =>
-      !l.trim().startsWith('<!--') && l.includes('Agentic System')
+    const violations = lines.filter(
+      (l) => !l.trim().startsWith('<!--') && l.includes('Agentic System')
     );
     expect(violations).toEqual([]);
   });

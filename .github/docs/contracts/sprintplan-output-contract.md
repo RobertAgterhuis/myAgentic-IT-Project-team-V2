@@ -1,12 +1,16 @@
 ````markdown
 # Sprint Plan Output Contract
+
 > Version: 1.2 | Applies to all sprint plan deliverables of all agents
 
 ---
 
 ## PURPOSE
-This contract defines the mandatory structure for the **Sprint Plan** deliverable per agent.
-A sprint plan without capacity assumption, team assignment, story type classification, dependencies, parallel tracks, blocker register, or measurable outcomes is NOT valid.
+
+This contract defines the mandatory structure for the **Sprint Plan**
+deliverable per agent. A sprint plan without capacity assumption, team
+assignment, story type classification, dependencies, parallel tracks, blocker
+register, or measurable outcomes is NOT valid.
 
 ---
 
@@ -14,47 +18,58 @@ A sprint plan without capacity assumption, team assignment, story type classific
 
 `.github/docs/phases/phase-N-[discipline]-sprintplan.md`
 
-Where `N` is the phase number (1–4) and `[discipline]` is the lowercase discipline name (e.g., `phase-3-ux-sprintplan.md`).
+Where `N` is the phase number (1–4) and `[discipline]` is the lowercase
+discipline name (e.g., `phase-3-ux-sprintplan.md`).
 
 ---
 
 ## FUNDAMENTAL PRINCIPLE: TRACK INDEPENDENCE
 
-**CRITICAL RULE:** A blocker in a CONTENT-, DESIGN-, or ANALYSIS-story may NEVER block a CODE-story in the same sprint, and vice versa.
+**CRITICAL RULE:** A blocker in a CONTENT-, DESIGN-, or ANALYSIS-story may NEVER
+block a CODE-story in the same sprint, and vice versa.
 
-Every story has a `story_type`. This type determines which **execution pipeline** the story runs through:
+Every story has a `story_type`. This type determines which **execution
+pipeline** the story runs through:
 
-| Story Type | Description | Execution Pipeline |
-|------------|-------------|-------------------|
-| `CODE` | Modify or add production code | Implementation Agent → Test Agent → PR/Review Agent |
-| `INFRA` | Infrastructure, CI/CD, configuration | Implementation Agent → Test Agent → PR/Review Agent |
-| `DESIGN` | Design, wireframes, prototypes, style guides | Manual or design tooling |
-| `CONTENT` | Copy, campaigns, marketing materials, texts | Manual or content tooling |
-| `ANALYSIS` | Research, data analysis, reporting, strategy documents | Manual |
+| Story Type | Description                                            | Execution Pipeline                                  |
+| ---------- | ------------------------------------------------------ | --------------------------------------------------- |
+| `CODE`     | Modify or add production code                          | Implementation Agent → Test Agent → PR/Review Agent |
+| `INFRA`    | Infrastructure, CI/CD, configuration                   | Implementation Agent → Test Agent → PR/Review Agent |
+| `DESIGN`   | Design, wireframes, prototypes, style guides           | Manual or design tooling                            |
+| `CONTENT`  | Copy, campaigns, marketing materials, texts            | Manual or content tooling                           |
+| `ANALYSIS` | Research, data analysis, reporting, strategy documents | Manual                                              |
 
 **Blockers are track-bound:**
-- An EXTERN blocker on story type `CONTENT` (e.g. waiting for client approval of campaign text) **never blocks** a `CODE` story in the same sprint.
-- Parallel tracks are ALWAYS grouped per story type, so the code team is never dependent on the progress of non-technical tracks.
-- The Orchestrator routes automatically based on `story_type`. CODE and INFRA stories go to the autonomous implementation pipeline. Other types follow their own throughput time.
+
+- An EXTERN blocker on story type `CONTENT` (e.g. waiting for client approval of
+  campaign text) **never blocks** a `CODE` story in the same sprint.
+- Parallel tracks are ALWAYS grouped per story type, so the code team is never
+  dependent on the progress of non-technical tracks.
+- The Orchestrator routes automatically based on `story_type`. CODE and INFRA
+  stories go to the autonomous implementation pipeline. Other types follow their
+  own throughput time.
 
 ---
 
 ## MANDATORY ASSUMPTIONS BEFORE SPRINT PLAN
 
-Before a sprint plan is created, the following assumptions MUST be documented EXPLICITLY:
+Before a sprint plan is created, the following assumptions MUST be documented
+EXPLICITLY:
 
 ```markdown
 ## Sprint Plan Assumptions
+
 - Team composition: [per team: name, roles, number of people]
   - Team A – [name]: [roles] – [n people] – capacity: [SP or hours/sprint]
-  - Team B – [name]: [roles] – [n people] – capacity: [SP or hours/sprint]
-  (add teams based on available data, or mark as INSUFFICIENT_DATA:)
+  - Team B – [name]: [roles] – [n people] – capacity: [SP or hours/sprint] (add
+    teams based on available data, or mark as INSUFFICIENT_DATA:)
 - Sprint duration: [n weeks]
 - Technology stack: [relevant for the sprint]
 - Prerequisites: [what must be in place before sprint 1 starts]
 ```
 
-If these assumptions are NOT available: mark as `INSUFFICIENT_DATA:` and do NOT create a fictional sprint plan.
+If these assumptions are NOT available: mark as `INSUFFICIENT_DATA:` and do NOT
+create a fictional sprint plan.
 
 ---
 
@@ -66,6 +81,7 @@ If these assumptions are NOT available: mark as `INSUFFICIENT_DATA:` and do NOT 
 # Sprint Plan – [Discipline] – [Date]
 
 ## Metadata
+
 - Agent: [name]
 - Phase: [1 / 2 / 3 / 4]
 - Based on recommendations: [reference document]
@@ -74,49 +90,64 @@ If these assumptions are NOT available: mark as `INSUFFICIENT_DATA:` and do NOT 
 - Mode: [CREATE | AUDIT]
 
 ## Assumptions
+
 [See mandatory assumptions above]
 
 ## Sprint [N] – [Sprint name]
 
 ### Goal
-[What is the outcome of this sprint – not the output, but the result for the business/user]
+
+[What is the outcome of this sprint – not the output, but the result for the
+business/user]
 
 ### Stories
 
-| Story ID | Description | Type | Team | Acceptance Criteria | Story Points | Dependencies | Blocker | Risk |
-|----------|-------------|------|------|-------------------|--------------|-----------------|---------|--------|
-| SP-N-001 | [concrete task] | CODE | [Team A] | [SMART, testable] | [number] | [story ID or external] | [NONE / INTERN: description / EXTERN: description + owner] | [optional] |
+| Story ID | Description     | Type | Team     | Acceptance Criteria | Story Points | Dependencies           | Blocker                                                    | Risk       |
+| -------- | --------------- | ---- | -------- | ------------------- | ------------ | ---------------------- | ---------------------------------------------------------- | ---------- |
+| SP-N-001 | [concrete task] | CODE | [Team A] | [SMART, testable]   | [number]     | [story ID or external] | [NONE / INTERN: description / EXTERN: description + owner] | [optional] |
 
-> **Type**: required. Choose from: `CODE`, `INFRA`, `DESIGN`, `CONTENT`, `ANALYSIS`. Determines the execution pipeline.  
-> **Team**: required per story. Use team names from assumptions, or `INSUFFICIENT_DATA:`.  
-> **Blocker**: use `NONE` if there is no blocker. Intern = resolvable within the project. Extern = outside project control (vendor, client, legislation). Always mention owner + escalation route for EXTERN.  
-> **TRACK INDEPENDENCE:** A blocker from a CONTENT/DESIGN/ANALYSIS story may NEVER appear as a blocker on a CODE/INFRA story.
+> **Type**: required. Choose from: `CODE`, `INFRA`, `DESIGN`, `CONTENT`,
+> `ANALYSIS`. Determines the execution pipeline.  
+> **Team**: required per story. Use team names from assumptions, or
+> `INSUFFICIENT_DATA:`.  
+> **Blocker**: use `NONE` if there is no blocker. Intern = resolvable within the
+> project. Extern = outside project control (vendor, client, legislation).
+> Always mention owner + escalation route for EXTERN.  
+> **TRACK INDEPENDENCE:** A blocker from a CONTENT/DESIGN/ANALYSIS story may
+> NEVER appear as a blocker on a CODE/INFRA story.
 
 ### Parallel Tracks
-Explicitly identify which stories can be executed **in parallel** (no mutual dependency). Group first by story type, then by team:
 
-| Track | Type | Stories | Team(s) | Start condition |
-|-------|------|---------|---------|----------------|
-| Track 1 (Code) | CODE | SP-N-001, SP-N-002 | Team Dev | Sprint N start |
-| Track 2 (Design) | DESIGN | SP-N-003 | Team UX | Sprint N start |
-| Track 3 (Content) | CONTENT | SP-N-004 | Team Marketing | Sprint N start |
+Explicitly identify which stories can be executed **in parallel** (no mutual
+dependency). Group first by story type, then by team:
 
-> **PROHIBITION:** Do not claim a parallel track if a hidden dependency exists. Document doubt as `UNCERTAIN:`.  
-> **RULE:** CODE/INFRA tracks and DESIGN/CONTENT/ANALYSIS tracks are by definition independent of each other's blockers. Document this explicitly.
+| Track             | Type    | Stories            | Team(s)        | Start condition |
+| ----------------- | ------- | ------------------ | -------------- | --------------- |
+| Track 1 (Code)    | CODE    | SP-N-001, SP-N-002 | Team Dev       | Sprint N start  |
+| Track 2 (Design)  | DESIGN  | SP-N-003           | Team UX        | Sprint N start  |
+| Track 3 (Content) | CONTENT | SP-N-004           | Team Marketing | Sprint N start  |
+
+> **PROHIBITION:** Do not claim a parallel track if a hidden dependency exists.
+> Document doubt as `UNCERTAIN:`.  
+> **RULE:** CODE/INFRA tracks and DESIGN/CONTENT/ANALYSIS tracks are by
+> definition independent of each other's blockers. Document this explicitly.
 
 ### Blocker Register (Sprint N)
+
 All blockers from stories in this sprint consolidated:
 
-| Blocker ID | Type | Description | Owner | Expected Resolution | Escalation if not resolved by |
-|------------|------|-------------|---------|--------------------|---------------------------------|
-| BLK-N-001 | INTERN / EXTERN | [description] | [name/role] | [date or sprint] | [escalation route] |
+| Blocker ID | Type            | Description   | Owner       | Expected Resolution | Escalation if not resolved by |
+| ---------- | --------------- | ------------- | ----------- | ------------------- | ----------------------------- |
+| BLK-N-001  | INTERN / EXTERN | [description] | [name/role] | [date or sprint]    | [escalation route]            |
 
 ### Sprint KPIs
-| KPI | Baseline | Target after sprint | Measurement method |
-|-----|----------|-----------------|-------------|
-| [name] | [value] | [value] | [method] |
+
+| KPI    | Baseline | Target after sprint | Measurement method |
+| ------ | -------- | ------------------- | ------------------ |
+| [name] | [value]  | [value]             | [method]           |
 
 ### Definition of Done (Sprint N)
+
 - [ ] All stories complete (acceptance criteria met)
 - [ ] Code review performed
 - [ ] Tests passed
@@ -125,34 +156,41 @@ All blockers from stories in this sprint consolidated:
 - [ ] No new CRITICAL_FINDING introduced
 
 ## Dependency Overview
+
 Tabular or visual overview of story dependencies across sprints:
 
-| Story | Depends on | Type | Blocking? |
-|-------|----------------|------|------------|
-| SP-2-001 | SP-1-003 | Internal story | Yes |
-| SP-2-002 | External API delivery | EXTERN | Yes – BLK-2-001 |
+| Story    | Depends on            | Type           | Blocking?       |
+| -------- | --------------------- | -------------- | --------------- |
+| SP-2-001 | SP-1-003              | Internal story | Yes             |
+| SP-2-002 | External API delivery | EXTERN         | Yes – BLK-2-001 |
 
 ## Parallel Tracks Overview
+
 Overview of all parallel workflows across all sprints:
 
-| Sprint | Track | Stories | Teams |
-|--------|-------|---------|-------|
+| Sprint   | Track   | Stories            | Teams  |
+| -------- | ------- | ------------------ | ------ |
 | Sprint 1 | Track 1 | SP-1-001, SP-1-002 | Team A |
-| Sprint 1 | Track 2 | SP-1-003 | Team B |
+| Sprint 1 | Track 2 | SP-1-003           | Team B |
 
 ## Sprint Plan Risk Log
+
 | Risk | Probability | Impact | Mitigation | Sprint |
-|--------|------|--------|-----------|--------|
+| ---- | ----------- | ------ | ---------- | ------ |
 
 ## Consolidated Blocker Register
+
 All blockers across all sprints:
 
 | Blocker ID | Sprint | Type | Description | Owner | Escalation if not resolved by |
-|------------|--------|------|-------------|---------|----------------------------------|
+| ---------- | ------ | ---- | ----------- | ----- | ----------------------------- |
 
 ## HANDOFF CHECKLIST
-- [ ] Sprint plan assumptions are explicitly documented (including teams with capacity)
-- [ ] Every story has a story type classification (CODE/INFRA/DESIGN/CONTENT/ANALYSIS)
+
+- [ ] Sprint plan assumptions are explicitly documented (including teams with
+      capacity)
+- [ ] Every story has a story type classification
+      (CODE/INFRA/DESIGN/CONTENT/ANALYSIS)
 - [ ] Every story has a team assignment (or INSUFFICIENT_DATA:)
 - [ ] Every story has acceptance criteria
 - [ ] Every story has a story point estimate (or INSUFFICIENT_DATA:)
@@ -164,8 +202,13 @@ All blockers across all sprints:
 - [ ] Consolidated Blocker Register is present
 - [ ] Definition of Done is present per sprint
 - [ ] No fictional capacity assumptions
-- [ ] All INSUFFICIENT_DATA: items tagged with QUESTIONNAIRE_REQUEST in handoff message
-- [ ] If cycle_type is SCOPE_CHANGE: all stories in the affected dimension that are no longer executable are tagged `SCOPE_CHANGE_HOLD SC-[N]` or `SCOPE_CHANGE_CANCELLED SC-[N]`; REQUEUED stories carry restored status; unaffected stories carry original status (or `NOT_APPLICABLE — normal cycle`)
+- [ ] All INSUFFICIENT_DATA: items tagged with QUESTIONNAIRE_REQUEST in handoff
+      message
+- [ ] If cycle_type is SCOPE_CHANGE: all stories in the affected dimension that
+      are no longer executable are tagged `SCOPE_CHANGE_HOLD SC-[N]` or
+      `SCOPE_CHANGE_CANCELLED SC-[N]`; REQUEUED stories carry restored status;
+      unaffected stories carry original status (or
+      `NOT_APPLICABLE — normal cycle`)
 - [ ] JSON export is valid
 ```
 
@@ -303,11 +346,14 @@ All blockers across all sprints:
 ---
 
 ## VALIDATION CRITERIA
+
 A sprint plan is REJECTED if:
+
 - Capacity assumptions per team are missing (not marked as INSUFFICIENT_DATA:)
 - Stories have no team assignment
 - Stories have no story type classification (CODE/INFRA/DESIGN/CONTENT/ANALYSIS)
-- A CODE/INFRA story has a blocker originating from a DESIGN/CONTENT/ANALYSIS story
+- A CODE/INFRA story has a blocker originating from a DESIGN/CONTENT/ANALYSIS
+  story
 - Stories have no acceptance criteria
 - Story points are missing without marking
 - Sprint KPIs are not SMART
@@ -317,6 +363,8 @@ A sprint plan is REJECTED if:
 - Parallel tracks are not identified (or absent without motivation)
 
 ### Cross-reference: ORC-35
-**ORC-35**: If this contract's output fails validation 3 consecutive times in the same session, the Orchestrator escalates to the user with options: ACCEPT_PARTIAL, RETRY_SIMPLIFIED, or MANUAL_OVERRIDE.
 
+**ORC-35**: If this contract's output fails validation 3 consecutive times in
+the same session, the Orchestrator escalates to the user with options:
+ACCEPT_PARTIAL, RETRY_SIMPLIFIED, or MANUAL_OVERRIDE.
 ````

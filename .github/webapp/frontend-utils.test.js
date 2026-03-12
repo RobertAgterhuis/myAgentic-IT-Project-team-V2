@@ -34,8 +34,9 @@ describe('escAttr', () => {
   });
   it('returns empty string for empty input', () => expect(escAttr('')).toBe(''));
   it('handles combined special chars', () => {
-    expect(escAttr('<script>"xss"&</script>'))
-      .toBe('&lt;script&gt;&quot;xss&quot;&amp;&lt;/script&gt;');
+    expect(escAttr('<script>"xss"&</script>')).toBe(
+      '&lt;script&gt;&quot;xss&quot;&amp;&lt;/script&gt;'
+    );
   });
   it('preserves safe characters', () => {
     expect(escAttr('Hello World 123!')).toBe('Hello World 123!');
@@ -60,7 +61,8 @@ describe('renderMarkdown', () => {
       const out = renderMarkdown('***both***');
       expect(out).toContain('<strong><em>both</em></strong>');
     });
-    it('renders inline code', () => expect(renderMarkdown('use `foo()`')).toContain('<code>foo()</code>'));
+    it('renders inline code', () =>
+      expect(renderMarkdown('use `foo()`')).toContain('<code>foo()</code>'));
   });
 
   describe('code blocks', () => {
@@ -124,7 +126,9 @@ describe('renderMarkdown', () => {
   describe('other elements', () => {
     it('renders hr', () => expect(renderMarkdown('---')).toContain('<hr>'));
     it('renders blockquote', () => {
-      expect(renderMarkdown('> important note')).toContain('<blockquote>important note</blockquote>');
+      expect(renderMarkdown('> important note')).toContain(
+        '<blockquote>important note</blockquote>'
+      );
     });
     it('wraps plain text in <p>', () => {
       expect(renderMarkdown('Just text')).toContain('<p>Just text</p>');
@@ -231,7 +235,11 @@ describe('findCrossRefs', () => {
   const questionnaires = [
     { phase: 'Phase-1', agent: 'Business Analyst', questions: [{ id: 'Q1' }, { id: 'Q2' }] },
     { phase: 'Phase-2', agent: 'Software Architect', questions: [{ id: 'Q3' }] },
-    { phase: 'Phase-3', agent: 'UX Designer', questions: [{ id: 'Q4' }, { id: 'Q5' }, { id: 'Q6' }] },
+    {
+      phase: 'Phase-3',
+      agent: 'UX Designer',
+      questions: [{ id: 'Q4' }, { id: 'Q5' }, { id: 'Q6' }],
+    },
   ];
 
   it('returns empty string when scope is empty', () => {
@@ -385,8 +393,12 @@ describe('validateAnswerStatus', () => {
     answerEl = document.createElement('textarea');
     answerEl.id = 'answer';
     statusEl = document.createElement('select');
-    const opt1 = document.createElement('option'); opt1.value = 'UNANSWERED'; opt1.text = 'Unanswered';
-    const opt2 = document.createElement('option'); opt2.value = 'ANSWERED'; opt2.text = 'Answered';
+    const opt1 = document.createElement('option');
+    opt1.value = 'UNANSWERED';
+    opt1.text = 'Unanswered';
+    const opt2 = document.createElement('option');
+    opt2.value = 'ANSWERED';
+    opt2.text = 'Answered';
     statusEl.appendChild(opt1);
     statusEl.appendChild(opt2);
     container.appendChild(answerEl);
@@ -402,8 +414,9 @@ describe('validateAnswerStatus', () => {
     statusEl.value = 'ANSWERED';
     answerEl.value = '';
     expect(validateAnswerStatus(answerEl, statusEl)).toBe(false);
-    expect(container.querySelector('.error-msg').textContent)
-      .toBe('Answer cannot be empty when status is ANSWERED');
+    expect(container.querySelector('.error-msg').textContent).toBe(
+      'Answer cannot be empty when status is ANSWERED'
+    );
   });
 
   it('returns true when status is ANSWERED and answer is present', () => {

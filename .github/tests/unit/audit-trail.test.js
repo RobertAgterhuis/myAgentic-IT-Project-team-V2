@@ -1,9 +1,9 @@
 'use strict';
 /* Unit tests for the AuditTrail module (SP-R2-007-005). */
 
-const fs   = require('fs');
+const fs = require('fs');
 const path = require('path');
-const os   = require('os');
+const os = require('os');
 const { AuditTrail } = require('../../webapp/audit');
 
 let tempDir;
@@ -27,8 +27,20 @@ describe('AuditTrail', () => {
   });
 
   it('appends entries as JSON Lines', () => {
-    trail.log({ operation: 'create', entityType: 'decision', entityId: 'DEC-001', user: 'webapp', summary: 'Created decision' });
-    trail.log({ operation: 'update', entityType: 'questionnaire', entityId: 'Q-05-001', user: 'webapp', summary: 'Answer saved' });
+    trail.log({
+      operation: 'create',
+      entityType: 'decision',
+      entityId: 'DEC-001',
+      user: 'webapp',
+      summary: 'Created decision',
+    });
+    trail.log({
+      operation: 'update',
+      entityType: 'questionnaire',
+      entityId: 'Q-05-001',
+      user: 'webapp',
+      summary: 'Answer saved',
+    });
 
     const lines = fs.readFileSync(trail.logPath, 'utf8').trim().split('\n');
     expect(lines).toHaveLength(2);
@@ -74,11 +86,21 @@ describe('AuditTrail', () => {
   it('rotates log when max size exceeded', () => {
     const smallTrail = new AuditTrail({ logDir: tempDir, maxSizeBytes: 100 });
     // Write enough to exceed 100 bytes
-    smallTrail.log({ operation: 'create', entityType: 'decision', entityId: 'DEC-001', summary: 'First entry with enough text to exceed limit' });
+    smallTrail.log({
+      operation: 'create',
+      entityType: 'decision',
+      entityId: 'DEC-001',
+      summary: 'First entry with enough text to exceed limit',
+    });
     // The file is now > 100 bytes; next write should trigger rotation
-    smallTrail.log({ operation: 'update', entityType: 'decision', entityId: 'DEC-002', summary: 'Second entry after rotation' });
+    smallTrail.log({
+      operation: 'update',
+      entityType: 'decision',
+      entityId: 'DEC-002',
+      summary: 'Second entry after rotation',
+    });
 
-    const files = fs.readdirSync(tempDir).filter(f => f.endsWith('.jsonl'));
+    const files = fs.readdirSync(tempDir).filter((f) => f.endsWith('.jsonl'));
     expect(files.length).toBeGreaterThanOrEqual(2); // original rotated + new
   });
 

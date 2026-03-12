@@ -1,12 +1,15 @@
 ````markdown
 # Contract: Session State
-> Version 1.0 | Defines how the Orchestrator and agents track progress and resume an interrupted cycle
+
+> Version 1.0 | Defines how the Orchestrator and agents track progress and
+> resume an interrupted cycle
 
 ---
 
 ## PURPOSE
 
 This contract defines:
+
 1. The format of the session state
 2. How agents update the state
 3. How an interrupted session is detected and resumed
@@ -16,8 +19,13 @@ This contract defines:
 
 ## SESSION STATE FILE
 
-**Location:** `.github/docs/session/session-state.json`
-**Owner:** Only the Orchestrator writes to this file. The Orchestrator **creates** this file immediately upon receiving a command (per ORC-46 in `.github/skills/00-orchestrator.md`) with `status: "ONBOARDING"`. The Onboarding Agent **updates** it to `status: "ONBOARDING_COMPLETE"` at the end of onboarding. Other agents submit state updates **to** the Orchestrator via their HANDOFF CHECKLIST.
+**Location:** `.github/docs/session/session-state.json` **Owner:** Only the
+Orchestrator writes to this file. The Orchestrator **creates** this file
+immediately upon receiving a command (per ORC-46 in
+`.github/skills/00-orchestrator.md`) with `status: "ONBOARDING"`. The Onboarding
+Agent **updates** it to `status: "ONBOARDING_COMPLETE"` at the end of
+onboarding. Other agents submit state updates **to** the Orchestrator via their
+HANDOFF CHECKLIST.
 
 ---
 
@@ -190,13 +198,18 @@ This contract defines:
 
 ## REEVALUATE TRIGGER FILE (WEB UI)
 
-**Location:** `.github/docs/session/reevaluate-trigger.json`
-**Written by:** Questionnaire & Decisions Manager web UI (`.github/webapp/server.js`)
-**Read by:** Orchestrator (per RULE ORC-28 in `.github/skills/00-orchestrator.md`)
+**Location:** `.github/docs/session/reevaluate-trigger.json` **Written by:**
+Questionnaire & Decisions Manager web UI (`.github/webapp/server.js`) **Read
+by:** Orchestrator (per RULE ORC-28 in `.github/skills/00-orchestrator.md`)
 
-> **ORC-28 summary:** At every session start and before every Sprint Gate, check for this file with `status: "PENDING"`. If found, treat as equivalent to `REEVALUATE [scope]`. After processing, set `status` to `"CONSUMED"` and add `consumed_at`.
+> **ORC-28 summary:** At every session start and before every Sprint Gate, check
+> for this file with `status: "PENDING"`. If found, treat as equivalent to
+> `REEVALUATE [scope]`. After processing, set `status` to `"CONSUMED"` and add
+> `consumed_at`.
 
-This file is NOT part of `session-state.json` — it is a separate signal file. The Orchestrator checks for its existence at every session start and before every Sprint Gate.
+This file is NOT part of `session-state.json` — it is a separate signal file.
+The Orchestrator checks for its existence at every session start and before
+every Sprint Gate.
 
 ```json
 {
@@ -208,25 +221,32 @@ This file is NOT part of `session-state.json` — it is a separate signal file. 
 }
 ```
 
-| Field | Description |
-|-------|-------------|
-| `requested_at` | Timestamp when the user clicked Reevaluate in the web UI |
-| `scope` | Reevaluation scope — maps to `REEVALUATE [scope]` command |
-| `source` | Always `"questionnaire-webapp"` for web UI triggers |
-| `status` | `PENDING` = not yet consumed; `CONSUMED` = Orchestrator has processed it |
-| `consumed_at` | Set by Orchestrator after processing; null while PENDING |
+| Field          | Description                                                              |
+| -------------- | ------------------------------------------------------------------------ |
+| `requested_at` | Timestamp when the user clicked Reevaluate in the web UI                 |
+| `scope`        | Reevaluation scope — maps to `REEVALUATE [scope]` command                |
+| `source`       | Always `"questionnaire-webapp"` for web UI triggers                      |
+| `status`       | `PENDING` = not yet consumed; `CONSUMED` = Orchestrator has processed it |
+| `consumed_at`  | Set by Orchestrator after processing; null while PENDING                 |
 
 ---
 
 ## COMMAND QUEUE FILE (WEB UI COMMAND CENTER)
 
-**Location:** `.github/docs/session/command-queue.json`
-**Written by:** Questionnaire & Decisions Manager web UI (`.github/webapp/server.js` — Command Center tab)
-**Read by:** Orchestrator (per RULE ORC-29 in `.github/skills/00-orchestrator.md`)
+**Location:** `.github/docs/session/command-queue.json` **Written by:**
+Questionnaire & Decisions Manager web UI (`.github/webapp/server.js` — Command
+Center tab) **Read by:** Orchestrator (per RULE ORC-29 in
+`.github/skills/00-orchestrator.md`)
 
-> **ORC-29 summary:** At every session start and before every Sprint Gate, check for this file with `status: "PENDING"`. Read the `command` field and execute the full workflow for that command. After acknowledging, set `status` to `"CONSUMED"` and add `consumed_at`.
+> **ORC-29 summary:** At every session start and before every Sprint Gate, check
+> for this file with `status: "PENDING"`. Read the `command` field and execute
+> the full workflow for that command. After acknowledging, set `status` to
+> `"CONSUMED"` and add `consumed_at`.
 
-This file is a separate signal file (same pattern as `reevaluate-trigger.json`). The web UI writes it when a user launches a command from the Command Center. The Orchestrator checks for its existence at every session start and before every Sprint Gate.
+This file is a separate signal file (same pattern as `reevaluate-trigger.json`).
+The web UI writes it when a user launches a command from the Command Center. The
+Orchestrator checks for its existence at every session start and before every
+Sprint Gate.
 
 ```json
 {
@@ -242,17 +262,17 @@ This file is a separate signal file (same pattern as `reevaluate-trigger.json`).
 }
 ```
 
-| Field | Description |
-|-------|-------------|
-| `command` | The system command to execute — must be one of the VALID_COMMANDS defined in server.js |
-| `project` | Project name (for CREATE/AUDIT commands); null for commands that don't need it |
-| `description` | Feature/hotfix description (for FEATURE, SCOPE CHANGE, HOTFIX); null otherwise |
-| `scope` | Dimension scope (for SCOPE CHANGE, REEVALUATE); null otherwise |
-| `requested_at` | Timestamp when the user launched the command in the web UI |
-| `status` | `PENDING` = not yet consumed; `CONSUMED` = Orchestrator has processed it |
-| `consumed_at` | Set by Orchestrator after processing; null while PENDING |
-| `source` | Always `"webapp"` for Command Center triggers |
-| `clipboard_text` | The exact text to paste into Copilot Chat (e.g. `CREATE MyApp`) |
+| Field            | Description                                                                            |
+| ---------------- | -------------------------------------------------------------------------------------- |
+| `command`        | The system command to execute — must be one of the VALID_COMMANDS defined in server.js |
+| `project`        | Project name (for CREATE/AUDIT commands); null for commands that don't need it         |
+| `description`    | Feature/hotfix description (for FEATURE, SCOPE CHANGE, HOTFIX); null otherwise         |
+| `scope`          | Dimension scope (for SCOPE CHANGE, REEVALUATE); null otherwise                         |
+| `requested_at`   | Timestamp when the user launched the command in the web UI                             |
+| `status`         | `PENDING` = not yet consumed; `CONSUMED` = Orchestrator has processed it               |
+| `consumed_at`    | Set by Orchestrator after processing; null while PENDING                               |
+| `source`         | Always `"webapp"` for Command Center triggers                                          |
+| `clipboard_text` | The exact text to paste into Copilot Chat (e.g. `CREATE MyApp`)                        |
 
 ---
 
@@ -295,14 +315,17 @@ HOTFIX → PHASE-5                  (Sprint Gate BYPASSED)
 PHASE-5 (HOTFIX) → COMPLETE      (after PR merged + retrospective)
 ```
 
-**PROHIBITION:** Do not skip any phase. Do not jump back to an earlier phase without an explicit `REEVALUATE` trigger.
+**PROHIBITION:** Do not skip any phase. Do not jump back to an earlier phase
+without an explicit `REEVALUATE` trigger.
 
 ---
 
 ## RESUMING SESSION AFTER INTERRUPTION
 
 ### Detection
+
 At every new interaction the Orchestrator checks:
+
 1. Does `.github/docs/session/session-state.json` exist?
 2. Is `status` anything other than `COMPLETE`?
 
@@ -323,13 +346,16 @@ Choose:
 ```
 
 ### On RESUME:
+
 - Load all `phase_outputs` that are not `null` as context
 - Continue from `current_agent` in `current_phase`
 - Reopen all `open_human_escalations` with status `OPEN` — re-present them
 - Load all `insufficient_data_items` with status `OPEN` as context-warnings
 
 ### On RESET:
-- Rename current `session-state.json` to `session-state-[session_id]-archived.json`
+
+- Rename current `session-state.json` to
+  `session-state-[session_id]-archived.json`
 - Initialize new session state via Onboarding Agent
 
 ---
@@ -340,6 +366,7 @@ Every agent reports at the end of their HANDOFF CHECKLIST:
 
 ```markdown
 ## STATE UPDATE
+
 - Agent: [name]
 - Output path: [path to output file]
 - Status: COMPLETE | PARTIAL | BLOCKED
@@ -348,60 +375,64 @@ Every agent reports at the end of their HANDOFF CHECKLIST:
 - Next agent (suggestion): [name]
 ```
 
-The Orchestrator processes this and writes the state update to `session-state.json`.
+The Orchestrator processes this and writes the state update to
+`session-state.json`.
 
 ---
 
 ## CYCLE TYPE CANONICAL MAPPING
 
-The `cycle_type` field in session-state.json maps CLI commands to internal cycle types as follows:
+The `cycle_type` field in session-state.json maps CLI commands to internal cycle
+types as follows:
 
-| User Command | `cycle_type` Value | `scope` Value |
-|---|---|---|
-| `CREATE [project]` | `FULL_CREATE` | `["BUSINESS","TECH","UX","MARKETING"]` |
-| `AUDIT [project]` | `FULL_AUDIT` | `["BUSINESS","TECH","UX","MARKETING"]` |
-| `CREATE BUSINESS [project]` | `PARTIAL_CREATE` | `["BUSINESS"]` |
-| `CREATE TECH [project]` | `PARTIAL_CREATE` | `["TECH"]` |
-| `CREATE UX [project]` | `PARTIAL_CREATE` | `["UX"]` |
-| `CREATE MARKETING [project]` | `PARTIAL_CREATE` | `["MARKETING"]` |
-| `AUDIT BUSINESS [project]` | `PARTIAL_AUDIT` | `["BUSINESS"]` |
-| `AUDIT TECH [project]` | `PARTIAL_AUDIT` | `["TECH"]` |
-| `AUDIT UX [project]` | `PARTIAL_AUDIT` | `["UX"]` |
-| `AUDIT MARKETING [project]` | `PARTIAL_AUDIT` | `["MARKETING"]` |
-| `CREATE TECH UX [project]` | `COMBO_CREATE` | `["TECH","UX"]` |
-| `AUDIT BUSINESS MARKETING [project]` | `COMBO_AUDIT` | `["BUSINESS","MARKETING"]` |
-| `FEATURE [name]: [desc]` | `FEATURE` | `["BUSINESS","TECH","UX","MARKETING"]` |
-| `REEVALUATE [scope]` | `REEVALUATE` | `["[scope]"]` (or `["BUSINESS","TECH","UX","MARKETING"]` for ALL) |
-| `SCOPE CHANGE [DIM]: [desc]` | `SCOPE_CHANGE` | `["[DIM]"]` (or all 4 for ALL) |
-| `HOTFIX [desc]` | `HOTFIX` | `[]` |
-| `REFRESH ONBOARDING` | `REFRESH` | `[]` |
+| User Command                         | `cycle_type` Value | `scope` Value                                                     |
+| ------------------------------------ | ------------------ | ----------------------------------------------------------------- |
+| `CREATE [project]`                   | `FULL_CREATE`      | `["BUSINESS","TECH","UX","MARKETING"]`                            |
+| `AUDIT [project]`                    | `FULL_AUDIT`       | `["BUSINESS","TECH","UX","MARKETING"]`                            |
+| `CREATE BUSINESS [project]`          | `PARTIAL_CREATE`   | `["BUSINESS"]`                                                    |
+| `CREATE TECH [project]`              | `PARTIAL_CREATE`   | `["TECH"]`                                                        |
+| `CREATE UX [project]`                | `PARTIAL_CREATE`   | `["UX"]`                                                          |
+| `CREATE MARKETING [project]`         | `PARTIAL_CREATE`   | `["MARKETING"]`                                                   |
+| `AUDIT BUSINESS [project]`           | `PARTIAL_AUDIT`    | `["BUSINESS"]`                                                    |
+| `AUDIT TECH [project]`               | `PARTIAL_AUDIT`    | `["TECH"]`                                                        |
+| `AUDIT UX [project]`                 | `PARTIAL_AUDIT`    | `["UX"]`                                                          |
+| `AUDIT MARKETING [project]`          | `PARTIAL_AUDIT`    | `["MARKETING"]`                                                   |
+| `CREATE TECH UX [project]`           | `COMBO_CREATE`     | `["TECH","UX"]`                                                   |
+| `AUDIT BUSINESS MARKETING [project]` | `COMBO_AUDIT`      | `["BUSINESS","MARKETING"]`                                        |
+| `FEATURE [name]: [desc]`             | `FEATURE`          | `["BUSINESS","TECH","UX","MARKETING"]`                            |
+| `REEVALUATE [scope]`                 | `REEVALUATE`       | `["[scope]"]` (or `["BUSINESS","TECH","UX","MARKETING"]` for ALL) |
+| `SCOPE CHANGE [DIM]: [desc]`         | `SCOPE_CHANGE`     | `["[DIM]"]` (or all 4 for ALL)                                    |
+| `HOTFIX [desc]`                      | `HOTFIX`           | `[]`                                                              |
+| `REFRESH ONBOARDING`                 | `REFRESH`          | `[]`                                                              |
 
-The `scope` array determines which phase agents the Orchestrator activates. CONTINUE uses `scope` to determine the next eligible phase.
+The `scope` array determines which phase agents the Orchestrator activates.
+CONTINUE uses `scope` to determine the next eligible phase.
 
 ---
 
 ## STORY STATUS STATE MACHINE (UNIFIED)
 
-Story statuses flow through the system across multiple agents. This table defines the canonical mapping to prevent status loss between agents:
+Story statuses flow through the system across multiple agents. This table
+defines the canonical mapping to prevent status loss between agents:
 
 ### Canonical story statuses
 
-| Status | Owner | Meaning |
-|---|---|---|
-| `QUEUED` | Sprint Plan / Orchestrator | Story is in the backlog, not yet started |
-| `NOT_READY` | Orchestrator (ORC-14) | Story failed Definition of Ready — deferred to next sprint |
-| `IN_PROGRESS` | Implementation Agent | Story is actively being implemented |
-| `IMPLEMENTED` | Implementation Agent | Code/infra complete, ready for testing |
-| `TESTING` | Test Agent | Story is being tested |
-| `TEST_FAILED` | Test Agent | Test rejected — returned to Implementation Agent |
-| `REVIEW` | PR/Review Agent | Story is in code review |
-| `REVIEW_FAILED` | PR/Review Agent | Review rejected — returned to Implementation Agent |
-| `COMPLETED` | Orchestrator | Story passed all gates, PR merged, documented |
-| `BLOCKED` | Any agent | Story cannot proceed — escalation raised |
-| `BACKLOG` | Orchestrator | Story deferred (sprint-level BACKLOG) |
-| `BACKLOG_CASCADE` | Orchestrator | Story deferred due to cascade from another sprint (e.g., `BACKLOG (CASCADE from SP-N)`) |
-| `REQUEUED` | Scope Change Agent | Story restored from `SCOPE_CHANGE_HOLD` back into the backlog |
-| `CANCELLED` | Scope Change Agent | Story invalidated by scope change |
+| Status            | Owner                      | Meaning                                                                                 |
+| ----------------- | -------------------------- | --------------------------------------------------------------------------------------- |
+| `QUEUED`          | Sprint Plan / Orchestrator | Story is in the backlog, not yet started                                                |
+| `NOT_READY`       | Orchestrator (ORC-14)      | Story failed Definition of Ready — deferred to next sprint                              |
+| `IN_PROGRESS`     | Implementation Agent       | Story is actively being implemented                                                     |
+| `IMPLEMENTED`     | Implementation Agent       | Code/infra complete, ready for testing                                                  |
+| `TESTING`         | Test Agent                 | Story is being tested                                                                   |
+| `TEST_FAILED`     | Test Agent                 | Test rejected — returned to Implementation Agent                                        |
+| `REVIEW`          | PR/Review Agent            | Story is in code review                                                                 |
+| `REVIEW_FAILED`   | PR/Review Agent            | Review rejected — returned to Implementation Agent                                      |
+| `COMPLETED`       | Orchestrator               | Story passed all gates, PR merged, documented                                           |
+| `BLOCKED`         | Any agent                  | Story cannot proceed — escalation raised                                                |
+| `BACKLOG`         | Orchestrator               | Story deferred (sprint-level BACKLOG)                                                   |
+| `BACKLOG_CASCADE` | Orchestrator               | Story deferred due to cascade from another sprint (e.g., `BACKLOG (CASCADE from SP-N)`) |
+| `REQUEUED`        | Scope Change Agent         | Story restored from `SCOPE_CHANGE_HOLD` back into the backlog                           |
+| `CANCELLED`       | Scope Change Agent         | Story invalidated by scope change                                                       |
 
 ### Valid transitions
 
@@ -424,46 +455,51 @@ CANCELLED → (terminal state)
 
 ### Mapping from legacy/agent-specific statuses
 
-| Agent-specific status | Canonical status |
-|---|---|
-| Sprint plan `QUEUED` | `QUEUED` |
-| Sprint plan `IN_PROGRESS` | `IN_PROGRESS` |
-| Sprint plan `COMPLETED` | `COMPLETED` |
-| Sprint plan `BACKLOG` | `BACKLOG` |
-| Implementation `IMPLEMENTED` | `IMPLEMENTED` |
-| Implementation `PARTIAL` | `IN_PROGRESS` (rework needed) |
-| Implementation `BLOCKED` | `BLOCKED` |
-| Test `APPROVED` | `COMPLETED` (for story-level; or `REVIEW` if PR review follows) |
-| Test `REJECTED` (deprecated) | `TEST_FAILED` |
+| Agent-specific status        | Canonical status                                                |
+| ---------------------------- | --------------------------------------------------------------- |
+| Sprint plan `QUEUED`         | `QUEUED`                                                        |
+| Sprint plan `IN_PROGRESS`    | `IN_PROGRESS`                                                   |
+| Sprint plan `COMPLETED`      | `COMPLETED`                                                     |
+| Sprint plan `BACKLOG`        | `BACKLOG`                                                       |
+| Implementation `IMPLEMENTED` | `IMPLEMENTED`                                                   |
+| Implementation `PARTIAL`     | `IN_PROGRESS` (rework needed)                                   |
+| Implementation `BLOCKED`     | `BLOCKED`                                                       |
+| Test `APPROVED`              | `COMPLETED` (for story-level; or `REVIEW` if PR review follows) |
+| Test `REJECTED` (deprecated) | `TEST_FAILED`                                                   |
 
-The Orchestrator is responsible for translating agent-specific statuses to canonical statuses when updating `session-state.json`.
+The Orchestrator is responsible for translating agent-specific statuses to
+canonical statuses when updating `session-state.json`.
 
 ---
 
 ## SCOPE FIELD
 
-The `scope` field is an array of discipline names that determines which phases are active in the current cycle:
+The `scope` field is an array of discipline names that determines which phases
+are active in the current cycle:
 
-| Discipline | Phase |
-|---|---|
-| `BUSINESS` | Phase 1 — Requirements & Strategy |
-| `TECH` | Phase 2 — Architecture & Design |
-| `UX` | Phase 3 — Experience Design |
-| `MARKETING` | Phase 4 — Brand & Growth |
+| Discipline  | Phase                             |
+| ----------- | --------------------------------- |
+| `BUSINESS`  | Phase 1 — Requirements & Strategy |
+| `TECH`      | Phase 2 — Architecture & Design   |
+| `UX`        | Phase 3 — Experience Design       |
+| `MARKETING` | Phase 4 — Brand & Growth          |
 
 **Rules:**
+
 - For `FULL_CREATE` / `FULL_AUDIT`: `scope` contains all 4 disciplines
 - For `PARTIAL_*`: `scope` contains exactly 1 discipline
 - For `COMBO_*`: `scope` contains 2 or 3 disciplines
 - For `FEATURE`: `scope` contains all 4 disciplines (full cycle per feature)
 - For `HOTFIX` / `REFRESH`: `scope` is empty (no phase agents activated)
-- CONTINUE uses `scope` + `completed_phases` to determine which phase to activate next
+- CONTINUE uses `scope` + `completed_phases` to determine which phase to
+  activate next
 
 ---
 
 ## ARCHIVING
 
 After `COMPLETE`:
+
 - Rename `session-state.json` to `session-state-[session_id]-complete.json`
 - Store in `.github/docs/session/archive/`
 - For feature cycles: also store in `Workitems/[FEATURENAME]/session/`
@@ -472,39 +508,45 @@ After `COMPLETE`:
 
 ## Decisions Schema
 
-The file `BusinessDocs/decisions.md` (or `.github/docs/decisions.md`) tracks all project decisions. The Questionnaire & Decisions Manager web UI writes to this file directly.
+The file `BusinessDocs/decisions.md` (or `.github/docs/decisions.md`) tracks all
+project decisions. The Questionnaire & Decisions Manager web UI writes to this
+file directly.
 
 ### Sections
 
-| Section | Purpose |
-|---------|--------|
-| **Open Questions** | Unresolved questions awaiting stakeholder input |
-| **Decided Items** | Questions that have been answered with a binding decision |
-| **Deferred Items** | Questions explicitly postponed (with reason and revisit date) |
-| **Operational Decisions** | Runtime/process decisions made by the Orchestrator or agents |
+| Section                   | Purpose                                                       |
+| ------------------------- | ------------------------------------------------------------- |
+| **Open Questions**        | Unresolved questions awaiting stakeholder input               |
+| **Decided Items**         | Questions that have been answered with a binding decision     |
+| **Deferred Items**        | Questions explicitly postponed (with reason and revisit date) |
+| **Operational Decisions** | Runtime/process decisions made by the Orchestrator or agents  |
 
 ### Column Structure (per table)
 
-| Column | Description |
-|--------|------------|
-| `ID` | Decision ID (e.g., `DEC-001`) |
-| `Question` | The question or decision point |
-| `Source` | Questionnaire Q-ID (e.g., `Q-P1-003`), agent name, or `USER` |
-| `Decision` | The answer / chosen option (empty if Open) |
-| `Decided By` | Stakeholder, agent, or `ORCHESTRATOR` |
-| `Date` | ISO 8601 date of decision |
-| `Impact` | Which phases/agents/stories are affected |
+| Column       | Description                                                  |
+| ------------ | ------------------------------------------------------------ |
+| `ID`         | Decision ID (e.g., `DEC-001`)                                |
+| `Question`   | The question or decision point                               |
+| `Source`     | Questionnaire Q-ID (e.g., `Q-P1-003`), agent name, or `USER` |
+| `Decision`   | The answer / chosen option (empty if Open)                   |
+| `Decided By` | Stakeholder, agent, or `ORCHESTRATOR`                        |
+| `Date`       | ISO 8601 date of decision                                    |
+| `Impact`     | Which phases/agents/stories are affected                     |
 
 ### Relationship to Questionnaire Q-IDs
+
 - Each questionnaire question has a `Q-ID` (e.g., `Q-P1-003`)
-- When a questionnaire answer leads to a decision, the `Source` column references the Q-ID
-- The Orchestrator picks up decisions at Sprint Gate Step 0 and injects them into agent context
+- When a questionnaire answer leads to a decision, the `Source` column
+  references the Q-ID
+- The Orchestrator picks up decisions at Sprint Gate Step 0 and injects them
+  into agent context
 
 ---
 
 ## Phase 5 Schema Extension
 
-The `phase_outputs` object in session-state.json includes a `phase_5` section keyed by sprint ID:
+The `phase_outputs` object in session-state.json includes a `phase_5` section
+keyed by sprint ID:
 
 ```json
 "phase_5": {
@@ -522,5 +564,4 @@ The `phase_outputs` object in session-state.json includes a `phase_5` section ke
   }
 }
 ```
-
 ````

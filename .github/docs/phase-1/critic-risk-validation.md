@@ -1,234 +1,198 @@
-# Phase 1 — Critic + Risk Validation
-
----
-
-# PART A: CRITIC VALIDATION
+# Phase 1 Critic + Risk Validation
 
 ## 1. Critic Validation Header
-- **Phase:** Phase 1 — Requirements & Strategy
-- **Date:** 2026-03-08
-- **Outputs reviewed:**
 
-| # | Agent | File |
-|---|-------|------|
-| 01 | Business Analyst | `.github/docs/phase-1/01-business-analyst.md` |
-| 02 | Domain Expert | `.github/docs/phase-1/02-domain-expert.md` |
-| 03 | Sales Strategist | `.github/docs/phase-1/03-sales-strategist.md` |
-| 04 | Financial Analyst | `.github/docs/phase-1/04-financial-analyst.md` |
-| 34 | Product Manager | `.github/docs/phase-1/34-product-manager.md` |
-
----
+- Phase: Phase 1
+- Date: 2026-03-09
+- Agent outputs reviewed:
+  - 01 Business Analyst: `.github/docs/phase-1/01-business-analyst-analysis.md`,
+    `.github/docs/phase-1/01-business-analyst-recommendations.md`,
+    `.github/docs/phase-1/01-business-analyst-sprintplan.md`,
+    `.github/docs/phase-1/01-business-analyst-guardrails.md`
+  - 02 Domain Expert: `.github/docs/phase-1/02-domain-expert-analysis.md`,
+    `.github/docs/phase-1/02-domain-expert-recommendations.md`,
+    `.github/docs/phase-1/02-domain-expert-sprintplan.md`,
+    `.github/docs/phase-1/02-domain-expert-guardrails.md`
+  - 03 Sales Strategist: `.github/docs/phase-1/03-sales-strategist-analysis.md`,
+    `.github/docs/phase-1/03-sales-strategist-recommendations.md`,
+    `.github/docs/phase-1/03-sales-strategist-sprintplan.md`,
+    `.github/docs/phase-1/03-sales-strategist-guardrails.md`
+  - 04 Financial Analyst:
+    `.github/docs/phase-1/04-financial-analyst-analysis.md`,
+    `.github/docs/phase-1/04-financial-analyst-recommendations.md`,
+    `.github/docs/phase-1/04-financial-analyst-sprintplan.md`,
+    `.github/docs/phase-1/04-financial-analyst-guardrails.md`
+  - 34 Product Manager: `.github/docs/phase-1/34-product-manager-analysis.md`,
+    `.github/docs/phase-1/34-product-manager-recommendations.md`,
+    `.github/docs/phase-1/34-product-manager-sprintplan.md`,
+    `.github/docs/phase-1/34-product-manager-guardrails.md`
+- Decision register loaded: `.github/docs/decisions.md`
+- Decision conflict result: no explicit contradiction detected against top-level
+  DECIDED table in `decisions.md`.
 
 ## 2. Per-Agent Compliance Check
 
-### Agent 01 — Business Analyst
-| Check | Result | Notes |
-|-------|--------|-------|
-| Contract compliance (analysis-output-contract) | PASS | All 7 mandatory sections present |
-| Anti-hallucination compliance | PASS | All claims cite source (file:line or project-brief) |
-| Completeness | PASS | No empty sections, no placeholders |
-| Guardrail compliance (01-business-guardrails) | PASS | No fabricated metrics (G-BUS-06) |
-| Cross-reference consistency | PASS | Findings align with Domain Expert and Product Manager |
-| **Per-agent verdict** | **APPROVED** | |
+### Critic Verdict - 01 Business Analyst - 2026-03-09
 
-### Agent 02 — Domain Expert
-| Check | Result | Notes |
-|-------|--------|-------|
-| Contract compliance | PASS | All 6 sections present, domain model complete |
-| Anti-hallucination compliance | PASS | UNCERTAIN: tag used correctly for entity completeness |
-| Completeness | PASS | All fields filled |
-| Guardrail compliance | PASS | No out-of-scope recommendations |
-| Cross-reference consistency | PASS | Domain entities match Business Analyst capabilities map |
-| **Per-agent verdict** | **APPROVED** | |
+- Contract compliance: PASSED
+- Anti-hallucination: PASSED
+- Internal consistency: PASSED
+- Completeness: PASSED
+- Overall verdict: APPROVED
+- Evidence: handoff checklist present
+  `.github/docs/phase-1/01-business-analyst-analysis.md:838`; JSON export
+  present `.github/docs/phase-1/01-business-analyst-analysis.md:878`; P1/P2
+  recommendation traceability in sprint plan
+  `.github/docs/phase-1/01-business-analyst-sprintplan.md:30`.
 
-### Agent 03 — Sales Strategist
-| Check | Result | Notes |
-|-------|--------|-------|
-| Contract compliance | PASS | All sections present; appropriately scoped for non-commercial project |
-| Anti-hallucination compliance | PASS | INSUFFICIENT_DATA used correctly for missing metrics |
-| Completeness | PASS | No empty sections — "N/A" entries are justified and sourced |
-| Guardrail compliance | PASS | No fabricated growth projections |
-| Cross-reference consistency | PASS | Aligns with Financial Analyst re: no revenue model |
-| **Per-agent verdict** | **APPROVED** | |
+### Critic Verdict - 02 Domain Expert - 2026-03-09
 
-### Agent 04 — Financial Analyst
-| Check | Result | Notes |
-|-------|--------|-------|
-| Contract compliance | PASS | All sections present |
-| Anti-hallucination compliance | PASS | Cost estimates cite README prerequisites, not fabricated |
-| Completeness | PASS | Financial N/A items properly justified |
-| Guardrail compliance | PASS | G-BUS-06 satisfied — no benchmark substitution |
-| Cross-reference consistency | PASS | Capacity risk aligns with Product Manager scope creep risk |
-| **Per-agent verdict** | **APPROVED** | |
+- Contract compliance: PASSED
+- Anti-hallucination: PASSED
+- Internal consistency: PASSED
+- Completeness: PASSED
+- Overall verdict: APPROVED
+- Evidence: handoff checklist
+  `.github/docs/phase-1/02-domain-expert-analysis.md:145`; recommendation matrix
+  rows `.github/docs/phase-1/02-domain-expert-recommendations.md:134`; sprint
+  traceability `.github/docs/phase-1/02-domain-expert-sprintplan.md:29`.
 
-### Agent 34 — Product Manager
-| Check | Result | Notes |
-|-------|--------|-------|
-| Contract compliance | PASS | All sections present + consolidated summary |
-| Anti-hallucination compliance | PASS | Feature maturity assessments based on codebase evidence |
-| Completeness | PASS | Feature map complete, gaps sourced |
-| Guardrail compliance | PASS | No unsourced claims |
-| Cross-reference consistency | PASS | Synthesis of all Phase 1 agent findings is consistent |
-| **Per-agent verdict** | **APPROVED** | |
+### Critic Verdict - 03 Sales Strategist - 2026-03-09
 
----
+- Contract compliance: PASSED
+- Anti-hallucination: PASSED
+- Internal consistency: PASSED
+- Completeness: PASSED
+- Overall verdict: APPROVED
+- Evidence: handoff checklist
+  `.github/docs/phase-1/03-sales-strategist-analysis.md:108`; recommendation
+  matrix `.github/docs/phase-1/03-sales-strategist-recommendations.md:133`;
+  sprint traceability
+  `.github/docs/phase-1/03-sales-strategist-sprintplan.md:26`.
+
+### Critic Verdict - 04 Financial Analyst - 2026-03-09
+
+- Contract compliance: PASSED
+- Anti-hallucination: PASSED
+- Internal consistency: PASSED
+- Completeness: PASSED
+- Overall verdict: APPROVED
+- Evidence: handoff checklist
+  `.github/docs/phase-1/04-financial-analyst-analysis.md:139`; recommendation
+  matrix `.github/docs/phase-1/04-financial-analyst-recommendations.md:109`;
+  sprint traceability
+  `.github/docs/phase-1/04-financial-analyst-sprintplan.md:28`.
+
+### Critic Verdict - 34 Product Manager - 2026-03-09
+
+- Contract compliance: PASSED
+- Anti-hallucination: PASSED
+- Internal consistency: PASSED
+- Completeness: PASSED
+- Overall verdict: APPROVED
+- Evidence: handoff checklist
+  `.github/docs/phase-1/34-product-manager-analysis.md:150`; recommendation
+  matrix `.github/docs/phase-1/34-product-manager-recommendations.md:106`;
+  sprint traceability
+  `.github/docs/phase-1/34-product-manager-sprintplan.md:26`.
 
 ## 3. Findings Summary
 
-| Metric | Count |
-|--------|-------|
-| Total agents reviewed | 5 |
-| Total findings | 4 |
-| CRITICAL | 0 |
-| HIGH (MAJOR) | 2 |
-| MEDIUM (MINOR) | 1 |
-| LOW (INFO) | 1 |
+- Total agents reviewed: 5
+- Total findings: 2
+- Findings by severity:
+  - CRITICAL: 0
+  - MAJOR: 0
+  - MINOR: 1
+  - INFO: 1
 
-### Itemized Findings
+### Findings
 
-| ID | Severity | Agent | Section | Description |
-|----|----------|-------|---------|-------------|
-| C-P1-001 | HIGH | 02-Domain Expert | Gap 2.2 | No domain event catalog exists — required for event-driven architecture transformation |
-| C-P1-002 | HIGH | 02-Domain Expert | Gap 2.3 | No machine-readable output contract validation — 25 contracts exist only as markdown |
-| C-P1-003 | MEDIUM | 34-Product Manager | Gap 2.1 | No product roadmap exists — transformation scope is unbounded |
-| C-P1-004 | LOW | 03-Sales Strategist | Gap 2.1 | No developer onboarding metrics — acceptable for solo project |
+1. `MINOR` - Decision register category files include active decisions not
+   expanded in this validation artifact; explicit DECIDED constraints from
+   category files should be enumerated in future runs for stronger traceability.
+   Source: `.github/docs/decisions.md:57`.
+2. `INFO` - Phase-level open questionnaire dependencies remain for pilot
+   participants and trigger thresholds, but marked as `INSUFFICIENT_DATA` and
+   not phase-blocking. Source:
+   `.github/docs/phase-1/34-product-manager-analysis.md:147`.
 
----
+## 4. Critic Verdict
 
-## 4. Verdict
-
-| Scope | Verdict |
-|-------|---------|
-| Agent 01 — Business Analyst | APPROVED |
-| Agent 02 — Domain Expert | APPROVED |
-| Agent 03 — Sales Strategist | APPROVED |
-| Agent 04 — Financial Analyst | APPROVED |
-| Agent 34 — Product Manager | APPROVED |
-| **Overall Phase 1** | **APPROVED** |
-
-No CRITICAL findings. All HIGH findings have mitigation paths identified in the originating agent outputs.
+- Overall phase verdict: APPROVED
+- Per-agent verdicts:
+  - 01 Business Analyst: APPROVED
+  - 02 Domain Expert: APPROVED
+  - 03 Sales Strategist: APPROVED
+  - 04 Financial Analyst: APPROVED
+  - 34 Product Manager: APPROVED
+- Remediation required before next phase: none (non-blocking improvements only)
 
 ---
 
-# PART B: RISK ASSESSMENT
+## 5. Risk Assessment Header
 
-## 1. Risk Assessment Header
-- **Phase:** Phase 1 — Requirements & Strategy
-- **Date:** 2026-03-08
-- **Outputs assessed:** Same 5 agents as Critic section above
+- Phase: Phase 1
+- Date: 2026-03-09
+- Inputs assessed: same 5 agent output sets listed above
+- Critic verdict consumed: APPROVED
+- Decision register load result: loaded `.github/docs/decisions.md`; no explicit
+  phase-blocking DECIDED conflict found in reviewed phase outputs.
 
----
+## 6. Risk Inventory
 
-## 2. Risk Inventory
+| Risk ID     | Category    | Severity | Likelihood | Description                                                                                                              | Source                                                                                 | Impact                                                         | Mitigation                                                                            | Owner    |
+| ----------- | ----------- | -------- | ---------- | ------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------------- | -------- |
+| RISK-P1-001 | TECHNICAL   | MEDIUM   | POSSIBLE   | Phase-2 architecture could overfit assumptions if localhost-only constraint is not restated in technical design kickoff. | `.github/docs/phase-1/01-business-analyst-sprintplan.md:31`                            | Rework in Phase 2 architecture decisions.                      | Add explicit non-goal check at Phase-2 kickoff gate.                                  | TECH     |
+| RISK-P1-002 | BUSINESS    | MEDIUM   | LIKELY     | Internal adoption scale remains uncertain without named pilot participants.                                              | `.github/docs/phase-1/34-product-manager-analysis.md:147`                              | Lower confidence in readiness and prioritization.              | Resolve questionnaire item for pilot participants before first implementation sprint. | BUSINESS |
+| RISK-P1-003 | SECURITY    | LOW      | POSSIBLE   | Data classification policy is recommended but not yet implemented.                                                       | `.github/docs/phase-1/02-domain-expert-analysis.md:143`                                | Potential mishandling of session/questionnaire data.           | Execute REC-202 in early sprint and validate policy coverage.                         | TECH     |
+| RISK-P1-004 | OPERATIONAL | MEDIUM   | POSSIBLE   | Single senior contributor introduces execution concentration risk.                                                       | `BusinessDocs/Phase1-Business/Questionnaires/phase1-business-questionnaire-answers.md` | Throughput bottleneck and delay risk.                          | Introduce backup ownership for critical planning artifacts.                           | BUSINESS |
+| RISK-P1-005 | LEGAL       | LOW      | UNLIKELY   | License governance remains implementation-dependent pending CI enforcement.                                              | `.github/docs/phase-1/01-business-analyst-sprintplan.md:73`                            | Exposure to incompatible dependency ingestion if not enforced. | Prioritize license gate implementation in Sprint 2.                                   | TECH     |
+| RISK-P1-006 | COMPLIANCE  | LOW      | POSSIBLE   | No formal compliance regime declared; governance controls may drift without explicit policy baseline.                    | `BusinessDocs/Phase1-Business/Questionnaires/phase1-business-questionnaire-answers.md` | Inconsistent auditability over time.                           | Keep lightweight policy checklist and decision logging mandatory.                     | BUSINESS |
 
-### RISK-P1-001
-- **Category:** OPERATIONAL
-- **Severity:** CRITICAL
-- **Likelihood:** VERY_LIKELY
-- **Description:** Solo developer capacity constraint against 5 major transformation goals. The system has 38 agents, 25 contracts, and 10 guardrails to maintain while building net-new infrastructure.
-- **Source:** Agent 04 (Financial Analyst), Risk 3.1; Agent 34 (Product Manager), Risk 3.1
-- **Impact:** Transformation stalls, technical debt accumulates, or scope must be dramatically reduced.
-- **Mitigation:** (1) Define strict MoSCoW priority per transformation goal; (2) time-box each goal; (3) consider OSS contributors for non-core features; (4) implement one goal end-to-end before starting next
-- **Owner:** BUSINESS
+## 7. Risk Summary Matrix
 
-### RISK-P1-002
-- **Category:** TECHNICAL
-- **Severity:** HIGH
-- **Likelihood:** LIKELY
-- **Description:** LLM dependency — the entire multisystem depends on GitHub Copilot's chat agent mode. Changes to Copilot's capabilities, token limits, or tool-use behavior could break the orchestration protocol.
-- **Source:** Agent 01 (Business Analyst), Risk 3.1
-- **Impact:** System becomes partially or fully non-functional after a Copilot update.
-- **Mitigation:** (1) Build abstraction layer between orchestration logic and LLM; (2) add integration tests that validate core Copilot interactions; (3) document minimum Copilot capability requirements
-- **Owner:** TECH
+- Total risks by category:
+  - TECHNICAL: 1
+  - BUSINESS: 1
+  - SECURITY: 1
+  - OPERATIONAL: 1
+  - LEGAL: 1
+  - COMPLIANCE: 1
+- Total risks by severity:
+  - CRITICAL: 0
+  - HIGH: 0
+  - MEDIUM: 3
+  - LOW: 3
+- CRITICAL/HIGH list: none
 
-### RISK-P1-003
-- **Category:** TECHNICAL
-- **Severity:** HIGH
-- **Likelihood:** LIKELY
-- **Description:** State corruption risk — file-based storage with synchronous I/O and no locking mechanism allows concurrent operations to corrupt session state, audit trail, or command queue.
-- **Source:** Agent 01 (Business Analyst), Risk 3.2; Agent 02 (Domain Expert), Gap 2.3
-- **Impact:** Lost work, inconsistent session state, broken audit trail integrity.
-- **Mitigation:** (1) Add file-level locking; (2) implement transactional writes (write-tmp + atomic rename); (3) add checksum validation on read
-- **Owner:** TECH
+## 8. Cross-Phase Risk Dependencies
 
-### RISK-P1-004
-- **Category:** TECHNICAL
-- **Severity:** HIGH
-- **Likelihood:** POSSIBLE
-- **Description:** Scalability ceiling — in-memory metrics are not persisted, FileCache has no size bound, SSE client registry has no limit. System behavior under load is untested.
-- **Source:** Agent 01 (Business Analyst), Risk 3.3
-- **Impact:** Memory exhaustion, degraded performance, data loss on restart.
-- **Mitigation:** (1) Persist metrics to disk; (2) add LRU eviction to FileCache; (3) cap SSE connections; (4) add load testing
-- **Owner:** TECH
+- `RISK-P1-001` -> Phase 2 dependency: must preserve localhost-only non-goal in
+  architecture scope.
+- `RISK-P1-002` -> Phase 2/5 dependency: pilot participant ambiguity impacts
+  rollout and prioritization confidence.
+- `RISK-P1-003` -> Cross-team blocker candidate for synthesis: data policy
+  controls touch Business + Tech execution.
 
-### RISK-P1-005
-- **Category:** BUSINESS
-- **Severity:** MEDIUM
-- **Likelihood:** POSSIBLE
-- **Description:** Domain complexity growth — 38 agents with implicit domain language, no formal glossary, no event catalog. Adding new capabilities compounds cognitive load.
-- **Source:** Agent 02 (Domain Expert), Risk 3.1
-- **Impact:** Slower development velocity, higher error rate in agent skill files.
-- **Mitigation:** (1) Create formal domain glossary; (2) extract domain event catalog; (3) generate documentation from single source of truth
-- **Owner:** TECH
+## 9. Risk Verdict
 
-### RISK-P1-006
-- **Category:** LEGAL
-- **Severity:** LOW
-- **Likelihood:** UNLIKELY
-- **Description:** MIT license scope covers all code including generated outputs. Generated enterprise-targeted content may create implied warranties not intended by MIT.
-- **Source:** Agent 01 (Business Analyst), Risk 3.4; `LICENSE` file
-- **Impact:** Minimal — MIT is well-established and broadly understood.
-- **Mitigation:** Add disclaimer to generated outputs clarifying they are AI-assisted and not warranted.
-- **Owner:** BUSINESS
+- Overall risk verdict: APPROVED
+- Immediate attention list:
+  - `RISK-P1-002` (business uncertainty) should be closed before implementation
+    sprint commitment.
 
----
+## 10. HANDOFF CHECKLIST - Critic + Risk - Phase 1 - 2026-03-09
 
-## 3. Risk Summary Matrix
-
-| Category | CRITICAL | HIGH | MEDIUM | LOW | Total |
-|----------|----------|------|--------|-----|-------|
-| TECHNICAL | 0 | 3 | 0 | 0 | 3 |
-| BUSINESS | 0 | 0 | 1 | 0 | 1 |
-| SECURITY | 0 | 0 | 0 | 0 | 0 |
-| OPERATIONAL | 1 | 0 | 0 | 0 | 1 |
-| LEGAL | 0 | 0 | 0 | 1 | 1 |
-| COMPLIANCE | 0 | 0 | 0 | 0 | 0 |
-| **Total** | **1** | **3** | **1** | **1** | **6** |
-
-**CRITICAL + HIGH risks:** RISK-P1-001 (CRITICAL), RISK-P1-002 (HIGH), RISK-P1-003 (HIGH), RISK-P1-004 (HIGH)
-
----
-
-## 4. Cross-Phase Risk Dependencies
-
-| Risk ID | Affects Phase(s) | Blocker? | Notes |
-|---------|-------------------|----------|-------|
-| RISK-P1-001 | All phases | ADVISORY | Capacity constraint impacts all transformation work |
-| RISK-P1-002 | Phase 2 (Tech), Phase 5 (Impl) | ADVISORY | LLM abstraction is a Phase 2 architecture decision |
-| RISK-P1-003 | Phase 2 (Tech) | BLOCKING | Must be resolved in Phase 2 architecture — core to "state consistency" vision goal |
-| RISK-P1-004 | Phase 2 (Tech) | ADVISORY | Scalability design decisions feed into Phase 2 |
-| RISK-P1-005 | Phase 2 (Tech), Phase 3 (UX) | ADVISORY | Domain formalization affects documentation and UI design |
-
----
-
-## 5. Verdict
-- **Overall risk verdict:** APPROVED
-- RISK-P1-001 (CRITICAL) has mitigation and is inherent to the project's nature — it cannot be eliminated, only managed. Mitigation path is clear: strict prioritization.
-- All HIGH risks have concrete mitigation strategies and are tagged for Phase 2 resolution.
-- No CRITICAL risk is unaddressed.
-
----
-
-## HANDOFF CHECKLIST
-- [x] All agent outputs in Phase 1 have been reviewed (5/5)
-- [x] Each agent has an explicit per-agent verdict (all APPROVED)
-- [x] Anti-hallucination compliance checked per agent
-- [x] No CRITICAL findings remain unaddressed
-- [x] Findings Summary totals consistent with Per-Agent sections
-- [x] All six risk categories assessed (TECHNICAL, BUSINESS, SECURITY, OPERATIONAL, LEGAL, COMPLIANCE)
-- [x] Every risk has unique ID, severity, likelihood, source reference
-- [x] No CRITICAL risk without mitigation
-- [x] Risk Summary Matrix totals consistent with Risk Inventory
-- [x] Cross-phase dependencies identified and tagged
-- [x] Verdict present and consistent with findings
-- [x] Deliverable written to file per MEMORY MANAGEMENT PROTOCOL
+- [x] All agents in Phase 1 assessed
+- [x] Contract compliance checked per agent
+- [x] Anti-hallucination scan performed per agent
+- [x] Internal consistency checked within and between agents
+- [x] Completeness check performed
+- [x] QUESTIONNAIRE_REQUEST carry-over items captured
+- [x] Critic phase verdict determined
+- [x] Risk inventory completed across all 6 risk categories
+- [x] Risk summary matrix and cross-phase dependencies documented
+- [x] Risk phase verdict determined
+- [x] Output written to `.github/docs/phase-1/critic-risk-validation.md`
+- STATUS: PHASE 1 APPROVED

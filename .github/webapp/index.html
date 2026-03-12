@@ -4,7 +4,6 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'self';">
   <meta property="og:title" content="myAgentic-IT-Project-team — Command Center">
   <meta property="og:description" content="Multi-agent system for end-to-end software solution creation. Manage questionnaires, decisions, and pipeline orchestration.">
   <meta property="og:type" content="website">
@@ -1508,15 +1507,15 @@
   <!-- ── Confirmation modal ────────────────── -->
   <div class="overlay hidden" id="confirmOverlay" role="dialog" aria-modal="true" aria-labelledby="confirmTitle">
     <div class="modal">
-      <h2 id="confirmTitle">Confirm Action</h2>
-      <p id="confirmText">Are you sure?</p>
+      <h2 id="confirmTitle">Confirm Decision Action</h2>
+      <p id="confirmText">Review this action and confirm to continue.</p>
       <div class="form-group hidden" id="confirmReasonGroup">
         <label for="confirmReason">Reason (optional)</label>
-        <input type="text" id="confirmReason" placeholder="Why?" maxlength="500">
+        <input type="text" id="confirmReason" placeholder="Add context (optional)" maxlength="500">
       </div>
       <div class="modal-actions">
         <button class="btn" id="btnCancelConfirm">Cancel</button>
-        <button class="btn btn-primary" id="btnDoConfirm">Confirm</button>
+        <button class="btn btn-primary" id="btnDoConfirm">Confirm Action</button>
       </div>
     </div>
   </div>
@@ -1587,7 +1586,6 @@ const STRINGS = {
     checkServer:             'Check that the server is running.',
     connectionLost:          'Connection lost \u2014 server may be down. Retrying automatically.',
     serverUnreachable:       'Server unreachable \u2014 retrying automatically',
-    fieldRequired:           (name) => `${name} is required`,
     scopeTextRequired:       'Scope and text are required',
     answerRequired:          'Enter an answer first',
     answerRequiredDecide:    'Enter an answer first before deciding',
@@ -1755,6 +1753,7 @@ const STRINGS = {
     showDetails:             'Show command details',
     copiedBtn:               '\u2705 Copied!',
     copyBtn:                 '\uD83D\uDCCB Copy',
+    copyBtnTitle:            'Copy command to clipboard',
     continueBtn:             'Continue',
     continueBtnTitle:        'Copy CONTINUE to clipboard for pasting into a new Copilot Chat',
     sessionInfoSub:          (id, type) => `Session: ${id} \u00b7 ${type}`,
@@ -1877,6 +1876,7 @@ let _lastRefreshTime  = null;     // last successful load timestamp
 let _sseSource        = null;     // EventSource instance
 let _sseConnected     = false;
 let _sseReconnectDelay = 1000;
+let _sseStopped       = false;
 
 /* ── Analytics State (SP-R2-004-008) ─────────────────── */
 let _analyticsQueue   = [];
@@ -3168,7 +3168,7 @@ async function launchCommand() {
       </div>
       <div class="cmd-clipboard">
         <code id="clipText">${esc(r.clipboard_text)}</code>
-        <button id="btnCopyClip" title="Copy to clipboard"><span aria-hidden="true">&#128203;</span> ${STRINGS.commands.copyBtn}</button>
+        <button id="btnCopyClip" title="${STRINGS.commands.copyBtnTitle}"><span aria-hidden="true">&#128203;</span> ${STRINGS.commands.copyBtn}</button>
       </div>`;
     document.getElementById('btnCopyClip').addEventListener('click', copyClipboard);
 
@@ -3741,6 +3741,8 @@ window.addEventListener('beforeunload', e => {
 
 /* ── SSE Client (SP-R2-004-006) ──────────────────────── */
 function connectSSE() {
+  if (_sseStopped) return;
+  if (document.visibilityState === 'hidden') return;
   if (_sseSource) { _sseSource.close(); _sseSource = null; }
   try {
     _sseSource = new EventSource('/api/events');
@@ -3758,13 +3760,16 @@ function connectSSE() {
   };
 
   _sseSource.onerror = () => {
+    if (_sseStopped) return;
     _sseConnected = false;
     updateConnectionStatus();
     if (_sseSource) { _sseSource.close(); _sseSource = null; }
     /* Exponential backoff reconnect (max 30s) */
     const delay = _sseReconnectDelay;
     _sseReconnectDelay = Math.min(_sseReconnectDelay * 2, 30000);
-    setTimeout(connectSSE, delay);
+    setTimeout(() => {
+      if (!_sseStopped && document.visibilityState !== 'hidden') connectSSE();
+    }, delay);
     /* Restore normal polling while SSE is down */
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
     pollInterval = 10000;
@@ -3788,6 +3793,33 @@ function connectSSE() {
     updateConnectionStatus();
   });
 }
+
+function stopSSE() {
+  _sseStopped = true;
+  _sseConnected = false;
+  if (_sseSource) {
+    _sseSource.close();
+    _sseSource = null;
+  }
+  updateConnectionStatus();
+}
+
+function resumeSSE() {
+  if (!_sseStopped) return;
+  _sseStopped = false;
+  _sseReconnectDelay = 1000;
+  connectSSE();
+}
+
+window.addEventListener('beforeunload', stopSSE);
+window.addEventListener('pagehide', stopSSE);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    stopSSE();
+  } else {
+    resumeSSE();
+  }
+});
 
 /* ── Analytics Client (SP-R2-004-008) ────────────────── */
 function trackEvent(eventName, properties) {

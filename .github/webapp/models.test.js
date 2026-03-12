@@ -184,8 +184,12 @@ describe('addOpenQuestion', () => {
 
   it('replaces placeholder with new question', () => {
     const result = models.addOpenQuestion(base, {
-      id: 'DEC-NEW-001', priority: 'HIGH', scope: 'Tech',
-      question: 'New Q?', answer: '', date: '2026-03-07',
+      id: 'DEC-NEW-001',
+      priority: 'HIGH',
+      scope: 'Tech',
+      question: 'New Q?',
+      answer: '',
+      date: '2026-03-07',
     });
     expect(result).toContain('DEC-NEW-001');
     expect(result).toContain('New Q?');

@@ -79,12 +79,15 @@ describe('FileCache with InMemoryStore (mock-store injection)', () => {
   it('readJSON applies validator from schemas', () => {
     const { validateSessionState } = require('../../webapp/schemas');
     const filePath = path.resolve('/fake/session.json');
-    store.writeFile(filePath, JSON.stringify({
-      session_id: 'test-001',
-      cycle_type: 'FULL_CREATE',
-      status: 'IN_PROGRESS',
-      current_phase: 'Phase 2',
-    }));
+    store.writeFile(
+      filePath,
+      JSON.stringify({
+        session_id: 'test-001',
+        cycle_type: 'FULL_CREATE',
+        status: 'IN_PROGRESS',
+        current_phase: 'Phase 2',
+      })
+    );
 
     const { data, errors } = cache.readJSON(filePath, validateSessionState);
     expect(errors).toBeNull();

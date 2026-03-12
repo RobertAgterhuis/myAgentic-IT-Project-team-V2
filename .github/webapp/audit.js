@@ -3,7 +3,7 @@
 'use strict';
 
 const path = require('path');
-const fs   = require('fs');
+const fs = require('fs');
 
 /* ── Mutation Audit Trail (SP-R2-007-005 / GR-DATA-004) ───────── *
  * Append-only JSON Lines log of all data mutations.
@@ -101,7 +101,11 @@ class AuditTrail {
     const entries = [];
     const start = Math.max(0, lines.length - limit);
     for (let i = start; i < lines.length; i++) {
-      try { entries.push(JSON.parse(lines[i])); } catch { /* skip malformed */ }
+      try {
+        entries.push(JSON.parse(lines[i]));
+      } catch {
+        /* skip malformed */
+      }
     }
     return entries;
   }

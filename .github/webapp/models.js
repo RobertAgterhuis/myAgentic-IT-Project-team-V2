@@ -13,13 +13,21 @@ const path = require('path');
 /* ── Shared utilities ─────────────────────────────────────────── */
 
 /** Escape special regex characters in a string. @param {string} s @returns {string} */
-function escRx(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+function escRx(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 /** @returns {string} Today's date as YYYY-MM-DD. */
-function today() { return new Date().toISOString().split('T')[0]; }
+function today() {
+  return new Date().toISOString().split('T')[0];
+}
 /** @returns {string} Current timestamp in ISO 8601 format. */
-function isoNow() { return new Date().toISOString(); }
+function isoNow() {
+  return new Date().toISOString();
+}
 /** Escape pipe characters for safe markdown table embedding. @param {string} s @returns {string} */
-function escPipe(s) { return (s || '').replace(/\|/g, '\\|'); }
+function escPipe(s) {
+  return (s || '').replace(/\|/g, '\\|');
+}
 /**
  * Replace a literal substring (no regex expansion of $ in replacement).
  * @param {string} str - Source string.
@@ -27,7 +35,9 @@ function escPipe(s) { return (s || '').replace(/\|/g, '\\|'); }
  * @param {string} replacement - Replacement text.
  * @returns {string}
  */
-function literalReplace(str, search, replacement) { return str.replace(search, () => replacement); }
+function literalReplace(str, search, replacement) {
+  return str.replace(search, () => replacement);
+}
 
 /** Regex for validating question IDs (e.g. Q-05-001). */
 const Q_ID_RE = /^Q-\d{1,3}-\d{1,4}$/;
@@ -40,8 +50,14 @@ function parseQuestionnaireMetadata(content) {
   const meta = { agent: '', phase: '', generated: '', version: '' };
   const titleM = content.match(/^#\s+Questionnaire:\s*(.+)/m);
   if (titleM) meta.agent = titleM[1].trim();
-  const metaM = content.match(/>\s*Phase:\s*(.+?)\s*\|\s*Generated:\s*(.+?)\s*\|\s*Version:\s*(.+)/m);
-  if (metaM) { meta.phase = metaM[1].trim(); meta.generated = metaM[2].trim(); meta.version = metaM[3].trim(); }
+  const metaM = content.match(
+    />\s*Phase:\s*(.+?)\s*\|\s*Generated:\s*(.+?)\s*\|\s*Version:\s*(.+)/m
+  );
+  if (metaM) {
+    meta.phase = metaM[1].trim();
+    meta.generated = metaM[2].trim();
+    meta.version = metaM[3].trim();
+  }
   return meta;
 }
 
@@ -51,7 +67,8 @@ function parseStatusMap(content) {
   if (tableStart === -1) return statusMap;
   const re = /\|\s*(Q-\d+-\d+)\s*\|\s*(\w+)\s*\|\s*(.+?)\s*\|/g;
   let m;
-  while ((m = re.exec(content.slice(tableStart)))) statusMap[m[1]] = { status: m[2], lastUpdated: m[3].trim() };
+  while ((m = re.exec(content.slice(tableStart))))
+    statusMap[m[1]] = { status: m[2], lastUpdated: m[3].trim() };
   return statusMap;
 }
 
@@ -70,10 +87,10 @@ function skipToAnswerEnd(lines, startIdx) {
 
 function applyQuestionField(line, cur) {
   let fm;
-  if ((fm = line.match(/^\*\*Question:\*\*\s*(.+)/)))           cur.question        = fm[1].trim();
-  else if ((fm = line.match(/^\*\*Why we need this:\*\*\s*(.+)/))) cur.whyNeeded    = fm[1].trim();
-  else if ((fm = line.match(/^\*\*Expected format:\*\*\s*(.+)/)))  cur.expectedFormat = fm[1].trim();
-  else if ((fm = line.match(/^\*\*Example:\*\*\s*(.+)/)))          cur.example        = fm[1].trim();
+  if ((fm = line.match(/^\*\*Question:\*\*\s*(.+)/))) cur.question = fm[1].trim();
+  else if ((fm = line.match(/^\*\*Why we need this:\*\*\s*(.+)/))) cur.whyNeeded = fm[1].trim();
+  else if ((fm = line.match(/^\*\*Expected format:\*\*\s*(.+)/))) cur.expectedFormat = fm[1].trim();
+  else if ((fm = line.match(/^\*\*Example:\*\*\s*(.+)/))) cur.example = fm[1].trim();
 }
 
 /**
@@ -89,12 +106,17 @@ function parseQuestionnaire(content, filePath, basePath) {
   const meta = parseQuestionnaireMetadata(content);
   const q = {
     file: path.relative(basePath, filePath).replace(/\\/g, '/'),
-    agent: meta.agent, phase: meta.phase, generated: meta.generated, version: meta.version,
-    sections: [], questions: [],
+    agent: meta.agent,
+    phase: meta.phase,
+    generated: meta.generated,
+    version: meta.version,
+    sections: [],
+    questions: [],
   };
   const statusMap = parseStatusMap(content);
 
-  let sec = null, cur = null;
+  let sec = null,
+    cur = null;
 
   function finalize() {
     if (!cur) return;
@@ -108,15 +130,34 @@ function parseQuestionnaire(content, filePath, basePath) {
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    if (/^##\s+Answer\s+Status/i.test(line)) { finalize(); break; }
+    if (/^##\s+Answer\s+Status/i.test(line)) {
+      finalize();
+      break;
+    }
 
     const secM = line.match(/^##\s+Section\s+\d+:\s*(.+)/);
-    if (secM) { finalize(); sec = { title: secM[1].trim(), questions: [] }; q.sections.push(sec); continue; }
+    if (secM) {
+      finalize();
+      sec = { title: secM[1].trim(), questions: [] };
+      q.sections.push(sec);
+      continue;
+    }
 
     const qM = line.match(/^###\s+(Q-\d+-\d+)\s+\[(REQUIRED|OPTIONAL)]/);
     if (qM) {
       finalize();
-      cur = { id: qM[1], classification: qM[2], question: '', whyNeeded: '', expectedFormat: '', example: '', answer: '', section: sec ? sec.title : '', status: 'OPEN', lastUpdated: '' };
+      cur = {
+        id: qM[1],
+        classification: qM[2],
+        question: '',
+        whyNeeded: '',
+        expectedFormat: '',
+        example: '',
+        answer: '',
+        section: sec ? sec.title : '',
+        status: 'OPEN',
+        lastUpdated: '',
+      };
       continue;
     }
 
@@ -135,13 +176,19 @@ function parseQuestionnaire(content, filePath, basePath) {
 }
 
 function skipOldAnswerLines(lines, i) {
-  while (i < lines.length && !/^---/.test(lines[i]) && !/^###/.test(lines[i]) && !/^##\s/.test(lines[i])) i++;
+  while (
+    i < lines.length &&
+    !/^---/.test(lines[i]) &&
+    !/^###/.test(lines[i]) &&
+    !/^##\s/.test(lines[i])
+  )
+    i++;
   return i;
 }
 
 function formatAnswerLines(newAnswer) {
   if (newAnswer && newAnswer.trim()) {
-    return newAnswer.split('\n').map(l => `> ${l}`);
+    return newAnswer.split('\n').map((l) => `> ${l}`);
   }
   return ['> *(fill in here)*'];
 }
@@ -216,34 +263,89 @@ function parseDecisionTable(content, sectionRegex, rowRegex, mapRow) {
 function parseDecisions(content) {
   if (!content) return { open: [], decided: [], deferred: [] };
 
-  const open = parseDecisionTable(content,
+  const open = parseDecisionTable(
+    content,
     /## Open Questions[^\n]*\n([\s\S]*?)(?=\n---|\n## )/,
     /\|\s*(DEC-[\w-]+)\s*\|\s*(HIGH|MEDIUM|LOW)\s*\|\s*([^|]*)\|\s*([^|]*)\|\s*([^|]*)\|\s*([\d-]*)\s*\|/g,
-    m => m[4].includes('No open questions') ? null : { id: m[1], type: 'OPEN_QUESTION', status: 'OPEN', priority: m[2], scope: m[3].trim(), question: m[4].trim(), answer: m[5].trim(), date: m[6].trim() }
+    (m) =>
+      m[4].includes('No open questions')
+        ? null
+        : {
+            id: m[1],
+            type: 'OPEN_QUESTION',
+            status: 'OPEN',
+            priority: m[2],
+            scope: m[3].trim(),
+            question: m[4].trim(),
+            answer: m[5].trim(),
+            date: m[6].trim(),
+          }
   );
 
-  const trans = parseDecisionTable(content,
+  const trans = parseDecisionTable(
+    content,
     /### Transformation Decisions[^\n]*\n([\s\S]*?)(?=\n### |\n---|\n## )/,
     /\|\s*(DEC-T-[\d]+)\s*\|\s*(HIGH|MEDIUM|LOW)\s*\|\s*([^|]*)\|\s*([^|]*)\|\s*([^|]*)\|\s*([\d-]*)\s*\|/g,
-    m => ({ id: m[1], type: 'DECIDED', status: 'DECIDED', priority: m[2], scope: m[3].trim(), decision: m[4].trim(), notes: m[5].trim(), date: m[6].trim() })
+    (m) => ({
+      id: m[1],
+      type: 'DECIDED',
+      status: 'DECIDED',
+      priority: m[2],
+      scope: m[3].trim(),
+      decision: m[4].trim(),
+      notes: m[5].trim(),
+      date: m[6].trim(),
+    })
   );
 
-  const reev = parseDecisionTable(content,
+  const reev = parseDecisionTable(
+    content,
     /### Reevaluation Decisions[^\n]*\n([\s\S]*?)(?=\n### |\n---|\n## )/,
     /\|\s*(DEC-R2-[\d]+)\s*\|\s*(HIGH|MEDIUM|LOW)\s*\|\s*([^|]*)\|\s*([^|]*)\|\s*([^|]*)\|\s*([\d-]*)\s*\|/g,
-    m => ({ id: m[1], type: 'DECIDED', status: 'DECIDED', priority: m[2], scope: m[3].trim(), decision: m[4].trim(), notes: m[5].trim(), date: m[6].trim() })
+    (m) => ({
+      id: m[1],
+      type: 'DECIDED',
+      status: 'DECIDED',
+      priority: m[2],
+      scope: m[3].trim(),
+      decision: m[4].trim(),
+      notes: m[5].trim(),
+      date: m[6].trim(),
+    })
   );
 
-  const ops = parseDecisionTable(content,
+  const ops = parseDecisionTable(
+    content,
     /### (?:Operational|Uncategorized) Decisions[^\n]*\n([\s\S]*?)(?=\n---|\n## )/,
     /\|\s*(DEC-[\d]+)\s*\|\s*(HIGH|MEDIUM|LOW|—)\s*\|\s*([^|]*)\|\s*([^|]*)\|\s*([^|]*)\|\s*([\d-]*)\s*\|/g,
-    m => m[4].includes('Add a decision here') ? null : { id: m[1], type: 'DECIDED', status: 'DECIDED', priority: m[2], scope: m[3].trim(), decision: m[4].trim(), notes: m[5].trim(), date: m[6].trim() }
+    (m) =>
+      m[4].includes('Add a decision here')
+        ? null
+        : {
+            id: m[1],
+            type: 'DECIDED',
+            status: 'DECIDED',
+            priority: m[2],
+            scope: m[3].trim(),
+            decision: m[4].trim(),
+            notes: m[5].trim(),
+            date: m[6].trim(),
+          }
   );
 
-  const deferred = parseDecisionTable(content,
+  const deferred = parseDecisionTable(
+    content,
     /## Deferred & Expired[^\n]*\n([\s\S]*?)(?=\n---|\n## |$)/,
     /\|\s*(DEC-[\w-]+)\s*\|\s*(DEFERRED|EXPIRED)\s*\|\s*([^|]*)\|\s*([^|]*)\|\s*([^|]*)\|\s*([\d-]*)\s*\|/g,
-    m => ({ id: m[1], type: m[2] === 'DEFERRED' ? 'OPEN_QUESTION' : 'DECIDED', status: m[2], scope: m[3].trim(), subject: m[4].trim(), reason: m[5].trim(), date: m[6].trim() })
+    (m) => ({
+      id: m[1],
+      type: m[2] === 'DEFERRED' ? 'OPEN_QUESTION' : 'DECIDED',
+      status: m[2],
+      scope: m[3].trim(),
+      subject: m[4].trim(),
+      reason: m[5].trim(),
+      date: m[6].trim(),
+    })
   );
 
   return { open, decided: [...trans, ...reev, ...ops], deferred };
@@ -275,7 +377,8 @@ function parseCategoryHeader(content) {
  */
 function parseCategoryDecisions(content, category) {
   const rows = [];
-  const re = /\|\s*(DEC-[\w-]+)\s*\|\s*(HIGH|MEDIUM|LOW|—)\s*\|\s*([^|]*)\|\s*([^|]*)\|\s*([^|]*)\|\s*([\d-]*)\s*\|/g;
+  const re =
+    /\|\s*(DEC-[\w-]+)\s*\|\s*(HIGH|MEDIUM|LOW|—)\s*\|\s*([^|]*)\|\s*([^|]*)\|\s*([^|]*)\|\s*([\d-]*)\s*\|/g;
   let m;
   while ((m = re.exec(content))) {
     if (m[4].includes('Add a decision here')) continue;
@@ -283,11 +386,15 @@ function parseCategoryDecisions(content, category) {
     const before = content.slice(0, m.index);
     const inDeferred = /## Deferred Decisions[^\n]*$/m.test(before.slice(-200));
     rows.push({
-      id: m[1], type: 'DECIDED',
+      id: m[1],
+      type: 'DECIDED',
       status: inDeferred ? 'CAT_DEFERRED' : 'DECIDED',
-      priority: m[2], scope: m[3].trim(),
-      decision: m[4].trim(), notes: m[5].trim(),
-      date: m[6].trim(), category,
+      priority: m[2],
+      scope: m[3].trim(),
+      decision: m[4].trim(),
+      notes: m[5].trim(),
+      date: m[6].trim(),
+      category,
     });
   }
   return rows;
@@ -340,7 +447,8 @@ function insertTableRow(content, marker, sectionRe, row) {
  */
 function nextDecisionId(content, prefix) {
   const re = new RegExp(`${escRx(prefix)}(\\d+)`, 'g');
-  let max = 0, m;
+  let max = 0,
+    m;
   while ((m = re.exec(content))) max = Math.max(max, parseInt(m[1], 10));
   return `${prefix}${String(max + 1).padStart(3, '0')}`;
 }
@@ -354,7 +462,12 @@ function nextDecisionId(content, prefix) {
 function addOpenQuestion(content, entry) {
   const marker = /\|\s*\|\s*\|\s*\|\s*\*\(No open questions\)\*\s*\|\s*\|\s*\|/;
   const row = `| ${escPipe(entry.id)} | ${escPipe(entry.priority)} | ${escPipe(entry.scope)} | ${escPipe(entry.question)} | ${escPipe(entry.answer || '')} | ${escPipe(entry.date)} |`;
-  return insertTableRow(content, marker, /(## Open Questions[^\n]*\n[\s\S]*?\|[^\n]+\|)\s*\n+---/, row);
+  return insertTableRow(
+    content,
+    marker,
+    /(## Open Questions[^\n]*\n[\s\S]*?\|[^\n]+\|)\s*\n+---/,
+    row
+  );
 }
 
 /**
@@ -366,7 +479,12 @@ function addOpenQuestion(content, entry) {
 function addOperationalDecision(content, entry) {
   const marker = /\|\s*DEC-100\s*\|\s*—\s*\|\s*—\s*\|\s*\*\(Add a decision here\)\*\s*\|[^\n]*\|/;
   const row = `| ${escPipe(entry.id)} | ${escPipe(entry.priority)} | ${escPipe(entry.scope)} | ${escPipe(entry.decision)} | ${escPipe(entry.notes || '')} | ${escPipe(entry.date)} |`;
-  return insertTableRow(content, marker, /(### (?:Operational|Uncategorized) Decisions[^\n]*\n[\s\S]*?\|[^\n]+\|)\s*\n+---/, row);
+  return insertTableRow(
+    content,
+    marker,
+    /(### (?:Operational|Uncategorized) Decisions[^\n]*\n[\s\S]*?\|[^\n]+\|)\s*\n+---/,
+    row
+  );
 }
 
 /**
@@ -378,7 +496,9 @@ function addOperationalDecision(content, entry) {
  */
 function answerOpenQuestion(content, id, answer) {
   const esc = escRx(id);
-  const re = new RegExp(`(\\|\\s*${esc}\\s*\\|\\s*(?:HIGH|MEDIUM|LOW)\\s*\\|\\s*[^|]*\\|\\s*[^|]*\\|)\\s*[^|]*\\|\\s*[\\d-]*\\s*\\|`);
+  const re = new RegExp(
+    `(\\|\\s*${esc}\\s*\\|\\s*(?:HIGH|MEDIUM|LOW)\\s*\\|\\s*[^|]*\\|\\s*[^|]*\\|)\\s*[^|]*\\|\\s*[\\d-]*\\s*\\|`
+  );
   const m = content.match(re);
   if (!m) return content;
   const replacement = `${m[1]} ${escPipe(answer)} | ${today()} |`;
@@ -403,16 +523,26 @@ function restoreOpenPlaceholderIfEmpty(content) {
  */
 function moveToDecided(content, id) {
   const esc = escRx(id);
-  const rowRe = new RegExp(`\\|\\s*${esc}\\s*\\|\\s*(HIGH|MEDIUM|LOW)\\s*\\|\\s*([^|]*)\\|\\s*([^|]*)\\|\\s*([^|]*)\\|\\s*([\\d-]*)\\s*\\|[^\\n]*\\n?`);
+  const rowRe = new RegExp(
+    `\\|\\s*${esc}\\s*\\|\\s*(HIGH|MEDIUM|LOW)\\s*\\|\\s*([^|]*)\\|\\s*([^|]*)\\|\\s*([^|]*)\\|\\s*([\\d-]*)\\s*\\|[^\\n]*\\n?`
+  );
   const m = content.match(rowRe);
   if (!m) return content;
-  const priority = m[1], scope = m[2].trim(), question = m[3].trim(), answer = m[4].trim();
+  const priority = m[1],
+    scope = m[2].trim(),
+    question = m[3].trim(),
+    answer = m[4].trim();
   content = content.replace(m[0], '');
   content = restoreOpenPlaceholderIfEmpty(content);
   const entry = { id, priority, scope, decision: question, notes: answer, date: today() };
   const marker = /\|\s*DEC-100\s*\|\s*—\s*\|\s*—\s*\|\s*\*\(Add a decision here\)\*\s*\|[^\n]*\|/;
   const row = `| ${escPipe(entry.id)} | ${escPipe(entry.priority)} | ${escPipe(entry.scope)} | ${escPipe(entry.decision)} | ${escPipe(entry.notes)} | ${escPipe(entry.date)} |`;
-  content = insertTableRow(content, marker, /(### (?:Operational|Uncategorized) Decisions[^\n]*\n[\s\S]*?\|[^\n]+\|)\s*\n+---/, row);
+  content = insertTableRow(
+    content,
+    marker,
+    /(### (?:Operational|Uncategorized) Decisions[^\n]*\n[\s\S]*?\|[^\n]+\|)\s*\n+---/,
+    row
+  );
   return content;
 }
 
@@ -425,13 +555,23 @@ function moveToDecided(content, id) {
  */
 function deferOpenQuestion(content, id, reason) {
   const esc = escRx(id);
-  const rowRe = new RegExp(`\\|\\s*${esc}\\s*\\|\\s*(HIGH|MEDIUM|LOW)\\s*\\|\\s*([^|]*)\\|\\s*([^|]*)\\|`);
+  const rowRe = new RegExp(
+    `\\|\\s*${esc}\\s*\\|\\s*(HIGH|MEDIUM|LOW)\\s*\\|\\s*([^|]*)\\|\\s*([^|]*)\\|`
+  );
   const m = content.match(rowRe);
   if (!m) return content;
-  const scope = m[2].trim(), question = m[3].trim();
+  const scope = m[2].trim(),
+    question = m[3].trim();
   content = content.replace(new RegExp(`\\|\\s*${esc}\\s*\\|[^\\n]*\\n?`), '');
   content = restoreOpenPlaceholderIfEmpty(content);
-  return insertDeferredRow(content, id, 'DEFERRED', scope, question, reason || 'Deferred via webapp');
+  return insertDeferredRow(
+    content,
+    id,
+    'DEFERRED',
+    scope,
+    question,
+    reason || 'Deferred via webapp'
+  );
 }
 
 /**
@@ -443,10 +583,13 @@ function deferOpenQuestion(content, id, reason) {
  */
 function expireDecidedItem(content, id, reason) {
   const esc = escRx(id);
-  const rowRe = new RegExp(`\\|\\s*${esc}\\s*\\|\\s*(HIGH|MEDIUM|LOW|—)\\s*\\|\\s*([^|]*)\\|\\s*([^|]*)\\|`);
+  const rowRe = new RegExp(
+    `\\|\\s*${esc}\\s*\\|\\s*(HIGH|MEDIUM|LOW|—)\\s*\\|\\s*([^|]*)\\|\\s*([^|]*)\\|`
+  );
   const m = content.match(rowRe);
   if (!m) return content;
-  const scope = m[2].trim(), text = m[3].trim();
+  const scope = m[2].trim(),
+    text = m[3].trim();
   content = content.replace(new RegExp(`\\|\\s*${esc}\\s*\\|[^\\n]*\\n?`), '');
   return insertDeferredRow(content, id, 'EXPIRED', scope, text, reason || 'Expired via webapp');
 }
@@ -459,19 +602,40 @@ function expireDecidedItem(content, id, reason) {
  */
 function reopenItem(content, id) {
   const esc = escRx(id);
-  const defRe = new RegExp(`\\|\\s*${esc}\\s*\\|\\s*(?:DEFERRED|EXPIRED)\\s*\\|\\s*([^|]*)\\|\\s*([^|]*)\\|`);
+  const defRe = new RegExp(
+    `\\|\\s*${esc}\\s*\\|\\s*(?:DEFERRED|EXPIRED)\\s*\\|\\s*([^|]*)\\|\\s*([^|]*)\\|`
+  );
   let m = content.match(defRe);
   if (m) {
-    const scope = m[1].trim(), subject = m[2].trim();
+    const scope = m[1].trim(),
+      subject = m[2].trim();
     content = content.replace(new RegExp(`\\|\\s*${esc}\\s*\\|[^\\n]*\\n?`), '');
-    return addOpenQuestion(content, { id, priority: 'HIGH', scope, question: subject, answer: '', date: today() });
+    return addOpenQuestion(content, {
+      id,
+      priority: 'HIGH',
+      scope,
+      question: subject,
+      answer: '',
+      date: today(),
+    });
   }
-  const decRe = new RegExp(`\\|\\s*${esc}\\s*\\|\\s*(HIGH|MEDIUM|LOW|—)\\s*\\|\\s*([^|]*)\\|\\s*([^|]*)\\|`);
+  const decRe = new RegExp(
+    `\\|\\s*${esc}\\s*\\|\\s*(HIGH|MEDIUM|LOW|—)\\s*\\|\\s*([^|]*)\\|\\s*([^|]*)\\|`
+  );
   m = content.match(decRe);
   if (m) {
-    const priority = m[1] === '—' ? 'MEDIUM' : m[1], scope = m[2].trim(), text = m[3].trim();
+    const priority = m[1] === '—' ? 'MEDIUM' : m[1],
+      scope = m[2].trim(),
+      text = m[3].trim();
     content = content.replace(new RegExp(`\\|\\s*${esc}\\s*\\|[^\\n]*\\n?`), '');
-    return addOpenQuestion(content, { id, priority, scope, question: text, answer: '', date: today() });
+    return addOpenQuestion(content, {
+      id,
+      priority,
+      scope,
+      question: text,
+      answer: '',
+      date: today(),
+    });
   }
   return content;
 }
@@ -485,13 +649,15 @@ function reopenItem(content, id) {
  */
 function editDecidedRow(content, id, fields) {
   const esc = escRx(id);
-  const rowRe = new RegExp(`\\|\\s*${esc}\\s*\\|\\s*(HIGH|MEDIUM|LOW|—)\\s*\\|\\s*([^|]*)\\|\\s*([^|]*)\\|\\s*([^|]*)\\|\\s*([\\d-]*)\\s*\\|`);
+  const rowRe = new RegExp(
+    `\\|\\s*${esc}\\s*\\|\\s*(HIGH|MEDIUM|LOW|—)\\s*\\|\\s*([^|]*)\\|\\s*([^|]*)\\|\\s*([^|]*)\\|\\s*([\\d-]*)\\s*\\|`
+  );
   const m = content.match(rowRe);
   if (!m) return content;
   const p = fields.priority || m[1].trim();
   if (p && !['HIGH', 'MEDIUM', 'LOW', '—'].includes(p)) return content;
   const s = fields.scope !== undefined ? fields.scope : m[2].trim();
-  const t = fields.text  !== undefined ? fields.text  : m[3].trim();
+  const t = fields.text !== undefined ? fields.text : m[3].trim();
   const n = fields.notes !== undefined ? fields.notes : m[4].trim();
   const replacement = `| ${escPipe(id)} | ${escPipe(p)} | ${escPipe(s)} | ${escPipe(t)} | ${escPipe(n)} | ${today()} |`;
   return literalReplace(content, m[0], replacement);
@@ -524,7 +690,11 @@ function insertDeferredRow(content, id, status, scope, subject, reason) {
   const section = content.slice(defIdx, sectionEnd);
 
   if (/\|\s*\|\s*\|\s*\|\s*\|\s*\|\s*\|/.test(section)) {
-    return content.slice(0, defIdx) + section.replace(/\|\s*\|\s*\|\s*\|\s*\|\s*\|\s*\|/, row) + content.slice(sectionEnd);
+    return (
+      content.slice(0, defIdx) +
+      section.replace(/\|\s*\|\s*\|\s*\|\s*\|\s*\|\s*\|/, row) +
+      content.slice(sectionEnd)
+    );
   }
   const lines = section.split('\n');
   const insertAt = findTableInsertionLine(lines);
@@ -549,7 +719,9 @@ function appendAuditTrail(content, action, id) {
   }
   const exIdx = content.indexOf('\n## Examples');
   if (exIdx !== -1) {
-    return content.slice(0, exIdx) + '\n---\n\n## Change Log\n\n' + entry + '\n' + content.slice(exIdx);
+    return (
+      content.slice(0, exIdx) + '\n---\n\n## Change Log\n\n' + entry + '\n' + content.slice(exIdx)
+    );
   }
   return content.trimEnd() + '\n\n---\n\n## Change Log\n\n' + entry + '\n';
 }
@@ -563,8 +735,11 @@ function appendAuditTrail(content, action, id) {
  */
 function parseSessionState(content) {
   if (!content) return null;
-  try { return JSON.parse(content); }
-  catch { return null; }
+  try {
+    return JSON.parse(content);
+  } catch {
+    return null;
+  }
 }
 
 /* ── Markdown Corruption Detection (GAP-009) ──────────────────── */
@@ -584,7 +759,8 @@ function detectMarkdownCorruption(content) {
   // Check for broken YAML frontmatter (opened but not closed)
   if (/^---\s*\n/.test(content)) {
     const secondFence = content.indexOf('\n---', 4);
-    if (secondFence === -1) issues.push('Unclosed YAML frontmatter (opening --- without closing ---)');
+    if (secondFence === -1)
+      issues.push('Unclosed YAML frontmatter (opening --- without closing ---)');
   }
 
   // Check for unclosed code fences
@@ -606,7 +782,9 @@ function detectMarkdownCorruption(content) {
   // Check for malformed question blocks (### Q-nn-nnnn without [REQUIRED] or [OPTIONAL])
   const qHeaders = content.match(/^###\s+Q-\d+-\d+(?!\s+\[)/gm);
   if (qHeaders && qHeaders.length > 0) {
-    issues.push(`Malformed question header (missing [REQUIRED]/[OPTIONAL] tag): ${qHeaders[0].trim()}`);
+    issues.push(
+      `Malformed question header (missing [REQUIRED]/[OPTIONAL] tag): ${qHeaders[0].trim()}`
+    );
   }
 
   // Check for orphaned answer blocks (** Your answer:** outside a question context)
@@ -623,17 +801,35 @@ function detectMarkdownCorruption(content) {
 
 module.exports = {
   // Shared utils
-  escRx, today, isoNow, escPipe, literalReplace, Q_ID_RE, DEC_ID_RE,
+  escRx,
+  today,
+  isoNow,
+  escPipe,
+  literalReplace,
+  Q_ID_RE,
+  DEC_ID_RE,
 
   // Questionnaire
-  parseQuestionnaire, updateAnswerInContent,
+  parseQuestionnaire,
+  updateAnswerInContent,
 
   // Decisions
-  parseDecisions, parseCategoryHeader, parseCategoryDecisions, activateCategoryHeader, nextDecisionId,
-  addOpenQuestion, addOperationalDecision, answerOpenQuestion,
-  moveToDecided, deferOpenQuestion, expireDecidedItem,
-  reopenItem, editDecidedRow, restoreOpenPlaceholderIfEmpty,
-  insertDeferredRow, appendAuditTrail,
+  parseDecisions,
+  parseCategoryHeader,
+  parseCategoryDecisions,
+  activateCategoryHeader,
+  nextDecisionId,
+  addOpenQuestion,
+  addOperationalDecision,
+  answerOpenQuestion,
+  moveToDecided,
+  deferOpenQuestion,
+  expireDecidedItem,
+  reopenItem,
+  editDecidedRow,
+  restoreOpenPlaceholderIfEmpty,
+  insertDeferredRow,
+  appendAuditTrail,
 
   // Pipeline
   parseSessionState,

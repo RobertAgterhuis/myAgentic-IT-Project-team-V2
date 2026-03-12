@@ -7,7 +7,7 @@
  */
 
 const path = require('path');
-const fs   = require('fs');
+const fs = require('fs');
 
 const {
   mcp,
@@ -45,9 +45,9 @@ function parseToolResult(result) {
    cleanupTemp restores it instead of deleting real project files.   */
 
 const TMP_SESSION_DIR = SESSION_DIR;
-const TMP_DECISIONS   = DECISIONS_PATH;
-const TMP_BUSINESS    = BUSINESS_DOCS;
-const createdPaths    = [];
+const TMP_DECISIONS = DECISIONS_PATH;
+const TMP_BUSINESS = BUSINESS_DOCS;
+const createdPaths = [];
 const originalContent = new Map();
 
 function ensureDir(dir) {
@@ -79,7 +79,9 @@ function cleanupTemp() {
         if (stat.isDirectory()) fs.rmSync(p, { recursive: true, force: true });
         else fs.unlinkSync(p);
       }
-    } catch { /* best-effort */ }
+    } catch {
+      /* best-effort */
+    }
   }
   createdPaths.length = 0;
   originalContent.clear();
@@ -237,7 +239,10 @@ describe('readCommandQueue', () => {
   });
 
   it('parses valid command-queue.json', () => {
-    writeTemp(path.join(SESSION_DIR, 'command-queue.json'), JSON.stringify([{ command: 'CREATE', status: 'QUEUED' }]));
+    writeTemp(
+      path.join(SESSION_DIR, 'command-queue.json'),
+      JSON.stringify([{ command: 'CREATE', status: 'QUEUED' }])
+    );
     const result = readCommandQueue();
     expect(result).toHaveLength(1);
     expect(result[0].command).toBe('CREATE');
@@ -270,9 +275,14 @@ describe('tool: get_project_status', () => {
   });
 
   it('returns valid session data when session file exists', async () => {
-    writeTemp(path.join(SESSION_DIR, 'session-state.json'), JSON.stringify({
-      projectName: 'MCP Test', mode: 'CREATE', status: 'active',
-    }));
+    writeTemp(
+      path.join(SESSION_DIR, 'session-state.json'),
+      JSON.stringify({
+        projectName: 'MCP Test',
+        mode: 'CREATE',
+        status: 'active',
+      })
+    );
     const result = await callTool('get_project_status');
     const data = parseToolResult(result);
     expect(data.session.projectName).toBe('MCP Test');
@@ -337,7 +347,7 @@ describe('tool: list_questionnaires', () => {
     const result = await callTool('list_questionnaires');
     const data = parseToolResult(result);
     expect(data.length).toBeGreaterThanOrEqual(1);
-    const found = data.find(q => q.file.includes('test-questionnaire.md'));
+    const found = data.find((q) => q.file.includes('test-questionnaire.md'));
     expect(found).toBeDefined();
     expect(found.total).toBe(2);
     expect(found.answered).toBe(1);
@@ -414,7 +424,9 @@ describe('tool: save_answers', () => {
     const result = await callTool('save_answers', {
       file: 'x.md',
       updates: Array.from({ length: 201 }, (_, i) => ({
-        questionId: `Q-01-${String(i).padStart(4, '0')}`, answer: 'a', status: 'ANSWERED',
+        questionId: `Q-01-${String(i).padStart(4, '0')}`,
+        answer: 'a',
+        status: 'ANSWERED',
       })),
     });
     expect(result.isError).toBe(true);
@@ -460,21 +472,30 @@ describe('tool: list_decisions', () => {
 describe('tool: create_decision', () => {
   it('returns error for invalid type', async () => {
     const result = await callTool('create_decision', {
-      type: 'INVALID', priority: 'HIGH', scope: 'TECH', text: 'test',
+      type: 'INVALID',
+      priority: 'HIGH',
+      scope: 'TECH',
+      text: 'test',
     });
     expect(result.isError).toBe(true);
   });
 
   it('returns error for invalid priority', async () => {
     const result = await callTool('create_decision', {
-      type: 'question', priority: 'CRITICAL', scope: 'TECH', text: 'test',
+      type: 'question',
+      priority: 'CRITICAL',
+      scope: 'TECH',
+      text: 'test',
     });
     expect(result.isError).toBe(true);
   });
 
   it('returns error for missing scope', async () => {
     const result = await callTool('create_decision', {
-      type: 'question', priority: 'HIGH', scope: '', text: 'test',
+      type: 'question',
+      priority: 'HIGH',
+      scope: '',
+      text: 'test',
     });
     expect(result.isError).toBe(true);
   });
@@ -482,7 +503,10 @@ describe('tool: create_decision', () => {
   it('returns error when decisions.md is missing', async () => {
     if (fs.existsSync(DECISIONS_PATH)) return;
     const result = await callTool('create_decision', {
-      type: 'question', priority: 'HIGH', scope: 'TECH', text: 'How to test?',
+      type: 'question',
+      priority: 'HIGH',
+      scope: 'TECH',
+      text: 'How to test?',
     });
     expect(result.isError).toBe(true);
   });
@@ -553,7 +577,15 @@ describe('tool: queue_command', () => {
   });
 
   it('accepts all valid command types', async () => {
-    const cmds = ['CREATE', 'AUDIT', 'REEVALUATE', 'FEATURE', 'SCOPE CHANGE', 'HOTFIX', 'REFRESH ONBOARDING'];
+    const cmds = [
+      'CREATE',
+      'AUDIT',
+      'REEVALUATE',
+      'FEATURE',
+      'SCOPE CHANGE',
+      'HOTFIX',
+      'REFRESH ONBOARDING',
+    ];
     for (const cmd of cmds) {
       ensureDir(SESSION_DIR);
       const queueFile = path.join(SESSION_DIR, 'command-queue.json');
@@ -571,7 +603,9 @@ describe('tool: queue_command', () => {
     createdPaths.push(briefPath);
 
     await callTool('queue_command', {
-      command: 'CREATE', project: 'BriefTest', brief: '# Project Brief\nThis is a test.',
+      command: 'CREATE',
+      project: 'BriefTest',
+      brief: '# Project Brief\nThis is a test.',
     });
 
     expect(fs.existsSync(briefPath)).toBe(true);
@@ -590,14 +624,20 @@ describe('tool: get_command_queue', () => {
 
 describe('tool: get_help', () => {
   it('returns error when help directory does not exist', async () => {
-    const helpDir = path.resolve(path.dirname(require.resolve('../../webapp/mcp-server')), '../help');
+    const helpDir = path.resolve(
+      path.dirname(require.resolve('../../webapp/mcp-server')),
+      '../help'
+    );
     if (fs.existsSync(helpDir)) return; // skip if help dir exists
     const result = await callTool('get_help', {});
     expect(result.isError).toBe(true);
   });
 
   it('returns error for unknown topic', async () => {
-    const helpDir = path.resolve(path.dirname(require.resolve('../../webapp/mcp-server')), '../help');
+    const helpDir = path.resolve(
+      path.dirname(require.resolve('../../webapp/mcp-server')),
+      '../help'
+    );
     if (!fs.existsSync(helpDir)) return; // skip if no help dir
     const result = await callTool('get_help', { topic: 'nonexistent_xyz_12345' });
     expect(result.isError).toBe(true);

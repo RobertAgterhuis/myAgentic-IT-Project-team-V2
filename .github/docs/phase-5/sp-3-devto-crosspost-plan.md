@@ -112,7 +112,7 @@ Each cross-posted article gets:
 
 Add Dev.to link to the existing footer link row in `landing.html`:
 
-```
+```text
 Current: GitHub | Docs | Subscribe | Discussions
 Updated: GitHub | Docs | Subscribe | Discussions | Dev.to
 ```
@@ -185,18 +185,19 @@ Matomo (now verified working per SP-3-MAT-FIX) will track these inbound visits.
 
 ## 7. Acceptance Criteria Status
 
-| AC  | Description                                 | Status     | Notes                                  |
-| --- | ------------------------------------------- | ---------- | -------------------------------------- |
-| 1   | Dev.to account created/configured           | ⏸️ BACKLOG | Non-blocking — execute when convenient |
-| 2   | Canonical URL strategy defined              | ✅ DONE    | Section 2                              |
-| 3   | At least 2 articles cross-posted            | ⬜ PENDING | 2 articles identified, Days 5+7        |
-| 4   | Dev.to profile linked from landing + social | ⬜ PENDING | Scheduled Day 8                        |
-| 5   | Analytics tracking verified on cross-posts  | ⬜ PENDING | UTM strategy defined, Day 8            |
-| 6   | Publication schedule documented             | ✅ DONE    | Section 6                              |
+- AC1: Dev.to account created/configured — ⏸️ BACKLOG (external operational action)
+- AC2: Canonical URL strategy defined — ✅ DONE (Section 2)
+- AC3: At least 2 articles cross-posted — ⬜ PENDING (requires publication on Dev.to)
+- AC4: Dev.to profile linked from landing + social — ✅ DONE (landing footer + social-cards README)
+- AC5: Analytics tracking verified on cross-posts — ⬜ PENDING (after articles are live)
+- AC6: Publication schedule documented — ✅ DONE (Section 6)
 
-**Day 2 status:** 2/6 ACs complete (strategy + schedule). Remaining 4 require
-account creation and article publishing (Days 3-8, per L13 3-day estimate).
+**Current status:** 3/6 ACs complete (strategy + schedule + profile linking).
+Remaining 3 ACs require external operational actions (Dev.to account creation,
+actual cross-post publication, and post-publication analytics verification).
 
 ---
 
-_Created: 2026-04-09 Day 2 | Implementation Agent_
+## Metadata
+
+Created: 2026-04-09 Day 2 | Implementation Agent

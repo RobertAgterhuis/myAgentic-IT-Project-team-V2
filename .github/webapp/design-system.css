@@ -38,10 +38,115 @@
 ────────────────────────────────────────────────────────────────────────────────── */
 
 :root {
+  /* Typography: Segoe UI / Inter enterprise stack with strict scale */
+  --font-sans: 'Segoe UI', Inter, system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', Consolas, 'Courier New', monospace;
+  --text-12: 12px;
+  --text-14: 14px;
+  --text-16: 16px;
+  --text-20: 20px;
+  --text-24: 24px;
+  --text-32: 32px;
+
+  /* Semantic aliases for existing components */
+  --text-caption: var(--text-12);
+  --text-label: var(--text-14);
+  --text-body: var(--text-16);
+  --text-title: var(--text-20);
+  --text-heading: var(--text-24);
+  --text-display: var(--text-32);
+
+  /* Spacing system: 4px base unit */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Neutral palette + brand + semantic colors */
+  --gray-50: #f7fafc;
+  --gray-100: #f0f4f8;
+  --gray-200: #d9e2ec;
+  --gray-300: #bcccdc;
+  --gray-400: #9fb3c8;
+  --gray-500: #829ab1;
+  --gray-600: #627d98;
+  --gray-700: #486581;
+  --gray-800: #334e68;
+  --gray-900: #102a43;
+
+  --brand-primary: #0a3a66;
+  --brand-accent: #e87722;
+  --primary: var(--brand-primary);
+  --accent: var(--brand-accent);
+
+  --bg: var(--gray-50);
+  --surface: #ffffff;
+  --bg-subtle: var(--gray-100);
+  --text: var(--gray-900);
+  --text-sec: var(--gray-800);
+  --text-muted: var(--gray-600);
+  --border: var(--gray-200);
+
+  --color-success: #027a48;
+  --color-warning: #b54708;
+  --color-error: #b42318;
+  --color-info: #0a3a66;
+
+  --success: var(--color-success);
+  --warning: var(--color-warning);
+  --danger: var(--color-error);
+  --info: var(--color-info);
+
+  /* Elevation system */
+  --shadow-1: 0 1px 2px rgba(16, 42, 67, 0.12);
+  --shadow-2: 0 4px 12px rgba(16, 42, 67, 0.14);
+  --shadow-3: 0 12px 24px rgba(16, 42, 67, 0.16);
+  --shadow-4: 0 24px 48px rgba(16, 42, 67, 0.2);
+
+  /* Backward-compatible aliases */
+  --shadow-sm: var(--shadow-1);
+  --shadow-md: var(--shadow-2);
+  --shadow-lg: var(--shadow-3);
+
+  /* Border radius tokens */
+  --radius-2: 2px;
+  --radius-4: 4px;
+  --radius-8: 8px;
+  --radius-sm: var(--radius-4);
+  --radius-md: var(--radius-8);
+
+  /* Motion tokens */
+  --motion-fast: 150ms ease;
+  --motion-normal: 250ms ease-in-out;
+
   /* Focus ring styling (consistent across all interactive elements) */
   --focus-ring-width: 2px;
   --focus-ring-style: solid;
   --focus-ring-offset: 2px;
+  --focus-ring-color: #2f80ed;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1f33;
+    --surface: #1a3a54;
+    --bg-subtle: #243b53;
+    --text: #f0f4f8;
+    --text-sec: #bcccdc;
+    --text-muted: #9fb3c8;
+    --border: #486581;
+    --primary: #74b0e8;
+    --accent: #f2a766;
+
+    --color-success: #57d9a3;
+    --color-warning: #f7b955;
+    --color-error: #f97066;
+    --color-info: #74b0e8;
+  }
 }
 
 /* ──────────────────────────────────────────────────────────────────────────────

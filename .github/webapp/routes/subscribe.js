@@ -26,7 +26,109 @@ const LOCAL_SUBS_FILE = path.resolve(
   'local-subscriptions.json'
 );
 
-module.exports = function createSubscribeRoutes(ctx) {
+function isValidEmail(email) {
+  return typeof email === 'string' && EMAIL_RE.test(email);
+}
+
+function pickMetadataString(metadata, key, fallback) {
+  const value = metadata?.[key];
+  return typeof value === 'string' ? value : fallback;
+}
+
+function parseAndValidateInput(parsed) {
+  const { email, metadata } = parsed;
+
+  if (!isValidEmail(email)) {
+    return {
+      ok: false,
+      response: {
+        status: 400,
+        body: errorResponse('INVALID_INPUT', 'Please provide a valid email address.'),
+      },
+    };
+  }
+
+  const segment = pickMetadataString(metadata, 'segment', 'evaluators');
+  if (!VALID_SEGMENTS.includes(segment)) {
+    return {
+      ok: false,
+      response: {
+        status: 400,
+        body: errorResponse('INVALID_INPUT', `Segment must be one of: ${VALID_SEGMENTS.join(', ')}`),
+      },
+    };
+  }
+
+  const source = pickMetadataString(metadata, 'source', 'direct').slice(0, 100);
+
+  return {
+    ok: true,
+    value: { email, segment, source },
+  };
+}
+
+function readLocalSubscriptions() {
+  if (!fs.existsSync(LOCAL_SUBS_FILE)) {
+    return [];
+  }
+  return JSON.parse(fs.readFileSync(LOCAL_SUBS_FILE, 'utf-8'));
+}
+
+function handleLocalFallback(res, email, segment, source) {
+  structuredLog('info', 'subscribe_local_fallback', { email: '[redacted]', segment, source });
+  try {
+    const subs = readLocalSubscriptions();
+    if (subs.some((s) => s.email === email)) {
+      return json(res, 409, {
+        error: 'already_subscribed',
+        message: 'This email is already subscribed (local).',
+      });
+    }
+    subs.push({ email, segment, source, subscribedAt: new Date().toISOString() });
+    fs.writeFileSync(LOCAL_SUBS_FILE, JSON.stringify(subs, null, 2));
+  } catch (writeErr) {
+    structuredLog('error', 'subscribe_local_write_error', { message: writeErr.message });
+  }
+
+  return json(res, 201, {
+    status: 'stored_locally',
+    message: 'Newsletter service not configured. Subscription recorded locally.',
+  });
+}
+
+async function handleUpstreamResponse(res, upstream, segment, source) {
+  if (upstream.status === 201) {
+    structuredLog('info', 'subscribe_success', { segment, source });
+    return json(res, 201, {
+      status: 'pending_confirmation',
+      message: 'Please check your email to confirm subscription.',
+    });
+  }
+
+  if (upstream.status === 409) {
+    return json(res, 409, {
+      error: 'already_subscribed',
+      message: 'This email is already subscribed.',
+    });
+  }
+
+  const text = await upstream.text().catch(() => '');
+  structuredLog('error', 'subscribe_upstream_error', {
+    status: upstream.status,
+    body: text.slice(0, 200),
+  });
+
+  return json(
+    res,
+    502,
+    errorResponse(
+      'INTERNAL_ERROR',
+      'Newsletter service returned an error. Please try again later.'
+    )
+  );
+}
+
+module.exports = function createSubscribeRoutes(_ctx) {
   async function handleSubscribe(req, res) {
     let parsed;
     try {
@@ -37,52 +139,16 @@ module.exports = function createSubscribeRoutes(ctx) {
       return json(res, status, errorResponse(code, err.message));
     }
 
-    const { email, metadata } = parsed;
-
-    if (!email || typeof email !== 'string' || !EMAIL_RE.test(email)) {
-      return json(
-        res,
-        400,
-        errorResponse('INVALID_INPUT', 'Please provide a valid email address.')
-      );
+    const validation = parseAndValidateInput(parsed);
+    if (!validation.ok) {
+      return json(res, validation.response.status, validation.response.body);
     }
 
-    const segment =
-      metadata && typeof metadata.segment === 'string' ? metadata.segment : 'evaluators';
-    if (!VALID_SEGMENTS.includes(segment)) {
-      return json(
-        res,
-        400,
-        errorResponse('INVALID_INPUT', `Segment must be one of: ${VALID_SEGMENTS.join(', ')}`)
-      );
-    }
-
-    const source =
-      metadata && typeof metadata.source === 'string' ? metadata.source.slice(0, 100) : 'direct';
+    const { email, segment, source } = validation.value;
 
     const apiKey = process.env.BUTTONDOWN_API_KEY;
     if (!apiKey) {
-      structuredLog('info', 'subscribe_local_fallback', { email: '[redacted]', segment, source });
-      try {
-        let subs = [];
-        if (fs.existsSync(LOCAL_SUBS_FILE)) {
-          subs = JSON.parse(fs.readFileSync(LOCAL_SUBS_FILE, 'utf-8'));
-        }
-        if (subs.some((s) => s.email === email)) {
-          return json(res, 409, {
-            error: 'already_subscribed',
-            message: 'This email is already subscribed (local).',
-          });
-        }
-        subs.push({ email, segment, source, subscribedAt: new Date().toISOString() });
-        fs.writeFileSync(LOCAL_SUBS_FILE, JSON.stringify(subs, null, 2));
-      } catch (writeErr) {
-        structuredLog('error', 'subscribe_local_write_error', { message: writeErr.message });
-      }
-      return json(res, 201, {
-        status: 'stored_locally',
-        message: 'Newsletter service not configured. Subscription recorded locally.',
-      });
+      return handleLocalFallback(res, email, segment, source);
     }
 
     try {
@@ -99,35 +165,7 @@ module.exports = function createSubscribeRoutes(ctx) {
           referrer_url: source,
         }),
       });
-
-      if (upstream.status === 201) {
-        structuredLog('info', 'subscribe_success', { segment, source });
-        return json(res, 201, {
-          status: 'pending_confirmation',
-          message: 'Please check your email to confirm subscription.',
-        });
-      }
-
-      if (upstream.status === 409) {
-        return json(res, 409, {
-          error: 'already_subscribed',
-          message: 'This email is already subscribed.',
-        });
-      }
-
-      const text = await upstream.text().catch(() => '');
-      structuredLog('error', 'subscribe_upstream_error', {
-        status: upstream.status,
-        body: text.slice(0, 200),
-      });
-      return json(
-        res,
-        502,
-        errorResponse(
-          'INTERNAL_ERROR',
-          'Newsletter service returned an error. Please try again later.'
-        )
-      );
+      return handleUpstreamResponse(res, upstream, segment, source);
     } catch (err) {
       structuredLog('error', 'subscribe_network_error', { message: err.message });
       return json(

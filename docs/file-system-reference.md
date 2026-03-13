@@ -254,8 +254,6 @@ main project cycle.
 | ------------------- | ---------------------------------------------------------------------------- |
 | `server.js`         | Express server (API + static files)                                          |
 | `mcp-server.js`     | MCP server for Copilot integration                                           |
-| `index.html`        | Single-page UI (Command Center, Pipeline, Questionnaires, Decisions, Agents) |
-| `frontend-utils.js` | Shared UI utilities                                                          |
 | `store.js`          | State management                                                             |
 | `schemas.js`        | Validation schemas                                                           |
 | `models.js`         | Data models                                                                  |

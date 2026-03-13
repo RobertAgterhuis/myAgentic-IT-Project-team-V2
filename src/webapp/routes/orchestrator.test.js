@@ -66,6 +66,8 @@ describe('orchestrator routes (integration)', () => {
   });
 
   beforeEach(() => {
+    // Ensure the session directory exists (may not in CI)
+    fs.mkdirSync(path.dirname(SESSION_FILE), { recursive: true });
     // Write clean IDLE state so each test starts fresh
     fs.writeFileSync(SESSION_FILE, IDLE_STATE);
     routes = createOrchestratorRoutes({ sseNotify: vi.fn() });

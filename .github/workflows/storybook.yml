@@ -32,7 +32,7 @@ jobs:
         run: npm ci
 
       - name: Build design tokens
-        run: node ../../../scripts/build-tokens.mjs
+        run: node scripts/build-tokens.mjs
         working-directory: .
 
       - name: Build Storybook

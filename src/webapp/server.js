@@ -324,25 +324,6 @@ delete ROUTES._getLatestCommand;
 delete ROUTES._serveStatic;
 delete ROUTES._rebuildQuestionnaireIndex;
 
-function serveDesignSystemCss(res) {
-  try {
-    const store = getStore();
-    const cssPath = safePath(WEBAPP_DIR, 'design-system.css');
-    const cssContent = store.readFile(cssPath);
-    res.setHeader('Content-Type', 'text/css; charset=utf-8');
-    res.setHeader('Content-Length', Buffer.byteLength(cssContent, 'utf-8'));
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader('Cache-Control', 'public, max-age=3600');
-    res.writeHead(200);
-    res.end(cssContent);
-  } catch (err) {
-    structuredLog('warn', 'css_serve_failed', { error: err.message });
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('Not found');
-  }
-}
-
 function serveLocaleFile(pathname, res) {
   try {
     const store = getStore();
@@ -367,10 +348,6 @@ function serveLocaleFile(pathname, res) {
 
 function handleExplicitStatic(req, pathname, res) {
   if (req.method !== 'GET') return false;
-  if (pathname === '/design-system.css') {
-    serveDesignSystemCss(res);
-    return true;
-  }
   if (pathname.startsWith('/locales/') && pathname.endsWith('.json')) {
     serveLocaleFile(pathname, res);
     return true;

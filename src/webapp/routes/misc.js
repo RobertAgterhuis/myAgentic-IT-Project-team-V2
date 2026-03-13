@@ -380,16 +380,7 @@ module.exports = function createMiscRoutes(ctx) {
     const spaPath = path.join(UI_DIST, 'index.html');
     if (getStore().exists(spaPath)) cachedSpaHtml = Buffer.from(getStore().readFile(spaPath));
   } catch {
-    /* React build not present — fallback to legacy index.html */
-  }
-  if (!cachedSpaHtml) {
-    try {
-      const legacyPath = path.join(WEBAPP_DIR, 'index.html');
-      if (getStore().exists(legacyPath))
-        cachedSpaHtml = Buffer.from(getStore().readFile(legacyPath));
-    } catch {
-      /* No HTML available */
-    }
+    /* React build not present — run `npm run build` in src/webapp/ui/ */
   }
 
   function serveDistFile(pathname, res) {

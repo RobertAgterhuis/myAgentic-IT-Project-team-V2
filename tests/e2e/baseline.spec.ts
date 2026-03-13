@@ -1,11 +1,8 @@
 /**
- * Baseline E2E tests — Safety Net (Sprint 9A)
+ * Baseline E2E tests — Safety Net (Sprint 9A → S9H)
  *
- * These tests capture the existing app behavior BEFORE the React migration.
- * They run against the live Node server + vanilla HTML frontend and must
- * continue passing throughout the Strangler-fig migration to ensure no
- * regressions. When Sprint 9H deletes index.html, these same tests must
- * pass against the new React shell.
+ * Originally captured legacy app behavior. Now validates the React SPA shell
+ * that replaced the vanilla HTML monolith (S9H migration complete).
  */
 import { test, expect } from '@playwright/test';
 
@@ -83,9 +80,10 @@ test.describe('Milestones API', () => {
 });
 
 test.describe('Static Assets', () => {
-  test('design-system.css is served', async ({ request }) => {
-    const res = await request.get('/design-system.css');
+  test('React SPA assets are served with correct content type', async ({ request }) => {
+    // The SPA root serves HTML — Vite assets are hashed and served from /assets/
+    const res = await request.get('/');
     expect(res.ok()).toBeTruthy();
-    expect(res.headers()['content-type']).toContain('css');
+    expect(res.headers()['content-type']).toContain('html');
   });
 });

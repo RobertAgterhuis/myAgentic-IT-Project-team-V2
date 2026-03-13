@@ -1,13 +1,34 @@
 # Git and editor files
 .git
 .gitignore
+.github
 .vscode
 
 # Dependencies and build artifacts
 node_modules
 coverage
+dist
+build
+
+# Documentation and non-runtime files
+agents/
+BusinessDocs/
+word/
+hooks/
+*.md
+!README.md
 
 # Local logs/temp
 *.log
 *.tmp
 *.swp
+
+# Test files
+tests/
+**/*.test.js
+**/*.spec.js
+vitest.config.mjs
+
+# Environment
+.env
+.env.*

@@ -9,7 +9,7 @@ const _writeLocks = new Map();
  * Locks are chained — if a lock is already held, the function waits for it.
  * Shared across server.js and mcp-server.js so both coordinate on the same locks.
  * @param {string} filePath - Path used as the lock key.
- * @param {function(): Promise<*>} fn - Async function to execute under the lock.
+ * @param {function(): (Promise<*>|*)} fn - Function to execute under the lock (sync or async).
  * @returns {Promise<*>} The return value of fn.
  */
 async function withFileLock(filePath, fn) {

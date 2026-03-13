@@ -1,0 +1,36 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "allowJs": true,
+    "checkJs": true,
+    "noEmit": true,
+    "strict": false,
+    "strictNullChecks": false,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": ".",
+    "outDir": "./dist",
+    "declaration": true,
+    "declarationDir": "./dist/types",
+    "typeRoots": ["./node_modules/@types", "./src/webapp/types"]
+  },
+  "include": [
+    "src/**/*.js",
+    "src/**/*.ts",
+    "scripts/**/*.js",
+    "src/webapp/types/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "coverage",
+    "dist",
+    "**/*.test.js",
+    "**/*.test.ts",
+    "**/*.spec.js",
+    "src/webapp/dashboard.js"
+  ]
+}

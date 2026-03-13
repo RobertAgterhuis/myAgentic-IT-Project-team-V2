@@ -519,7 +519,7 @@ contact
 **Content Zones:**
 
 1. **Help Sidebar (30% width):**
-   - Search input (full-text search across all .md files in .github/help/)
+   - Search input (full-text search across all .md files in docs/help/)
    - Category tree (collapsible):
      - Getting Started
      - Phase Guides (1-5)

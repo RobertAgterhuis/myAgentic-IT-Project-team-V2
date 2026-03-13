@@ -72,8 +72,8 @@ Sprint 4. F-06, F-09, F-11 closed in Sprint 5. F-10 closed in Sprint 3.
 
 ### 3. Canonical Agent Schema (SP-5-SCHEMA, #68)
 
-- `.github/platform/schema/agent-canonical.schema.json` — JSON Schema definition
-- `.github/platform/schema/agents.json` — 38 agents mapped with tool catalog
+- `platform/schema/agent-canonical.schema.json` — JSON Schema definition
+- `platform/schema/agents.json` — 38 agents mapped with tool catalog
 - `src/webapp/orchestrator/agent-schema.js` — Ajv-based validator
 - `tests/unit/agent-schema.test.js` — schema + mapping validation
 

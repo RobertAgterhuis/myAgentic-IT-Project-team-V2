@@ -529,7 +529,7 @@ Help tab for self-service user support.
 **Definition of Done:**
 
 - [ ] All 10 articles written (≥ 500 words each)
-- [ ] Articles stored in `.github/help/` folder
+- [ ] Articles stored in `docs/help/` folder
 - [ ] Help tab UI renders article list and viewer
 - [ ] Search filters articles correctly (case-insensitive, partial match)
 - [ ] Click article → renders in viewer with breadcrumb

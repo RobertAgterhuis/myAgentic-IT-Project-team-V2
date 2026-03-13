@@ -109,7 +109,7 @@ flow.
 | `decisions/*.md` | Category files (11 technology stacks)           | You + web UI + Orchestrator | **Yes** (header status, decision rows) |
 
 This is your primary communication channel with the agent team. See the
-[Decisions help file](../.github/help/decisions.md) for details.
+[Decisions help file](docs/help/decisions.md) for details.
 
 ### Session state — `docs/session/`
 

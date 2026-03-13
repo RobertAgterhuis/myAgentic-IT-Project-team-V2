@@ -44,7 +44,7 @@ version-controlled files with timestamps and ownership attribution.
 No phase, sprint, or story is considered complete without Critic + Risk
 validation and Definition of Done compliance.
 
-**Quality Gates:** See `.github/help/quality-gates.md`
+**Quality Gates:** See `docs/help/quality-gates.md`
 
 ### 2.3 Agent Autonomy with Human Oversight
 

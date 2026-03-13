@@ -550,7 +550,7 @@ This document outlines comprehensive test coverage for all features.
 
 - **Setup**: Milestone edited (e.g., status changed), page refreshed
 - **Action**: Check API data directly
-- **Expected Result**: Changes persisted to `.github/data/milestones.json`
+- **Expected Result**: Changes persisted to `data/milestones.json`
 - **Status**: [ ] PASS / [ ] FAIL
 - **Notes**:
 

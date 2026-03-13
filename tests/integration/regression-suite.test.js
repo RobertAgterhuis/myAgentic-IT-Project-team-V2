@@ -38,7 +38,7 @@ const GITHUB_DOCS = path.join(PROJECT_ROOT, 'docs');
 const SESSION_DIR = path.join(GITHUB_DOCS, 'session');
 const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
 const DECISIONS_FILE = path.join(GITHUB_DOCS, 'decisions.md');
-const HELP_DIR = path.join(PROJECT_ROOT, '.github', 'help');
+const HELP_DIR = path.join(PROJECT_ROOT, 'docs', 'help');
 const ANALYTICS_FILE = path.join(GITHUB_DOCS, 'analytics-events.json');
 
 let baseUrl;

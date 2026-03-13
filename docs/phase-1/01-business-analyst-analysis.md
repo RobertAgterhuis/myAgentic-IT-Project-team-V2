@@ -224,7 +224,7 @@ feature prioritization.
 - README.md documentation
 - User manual (`docs/user-manual.md`)
 - Technical manual (`docs/technical-manual.md`)
-- Help documentation (`.github/help/`)
+- Help documentation (`docs/help/`)
 
 **Promotion channels:** INSUFFICIENT_DATA: — no marketing plan provided
 

@@ -11,7 +11,7 @@ const path = require('path');
 
 /* ── Mock deps via _setDeps (dependency injection) ───────────── */
 
-const snapshot = require('../../.github/scripts/github-state-snapshot');
+const snapshot = require('../../scripts/github-state-snapshot');
 
 const mockExecSync = vi.fn();
 const mockWriteFileSync = vi.fn();

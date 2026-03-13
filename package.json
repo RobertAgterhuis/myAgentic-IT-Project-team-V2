@@ -4,7 +4,7 @@
   "description": "Agentic SDLC Platform - Multi-agent software development system",
   "main": "src/webapp/server.js",
   "scripts": {
-    "prepare": "node .github/scripts/install-hooks.js",
+    "prepare": "node scripts/install-hooks.js",
     "start": "node src/webapp/server.js",
     "start:mcp": "node src/webapp/mcp-server.js",
     "test": "jest --passWithNoTests",
@@ -20,8 +20,8 @@
     "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
     "build": "echo 'No build step required — server runs native Node.js'",
-    "audit:github": "node .github/scripts/github-config-audit.js",
-    "snapshot:github": "node .github/scripts/github-state-snapshot.js"
+    "audit:github": "node scripts/github-config-audit.js",
+    "snapshot:github": "node scripts/github-state-snapshot.js"
   },
   "repository": {
     "type": "git",

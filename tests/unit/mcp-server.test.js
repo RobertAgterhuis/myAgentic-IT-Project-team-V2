@@ -626,7 +626,7 @@ describe('tool: get_help', () => {
   it('returns error when help directory does not exist', async () => {
     const helpDir = path.resolve(
       path.dirname(require.resolve('../../src/webapp/mcp-server')),
-      '../help'
+      '../..', 'docs', 'help'
     );
     if (fs.existsSync(helpDir)) return; // skip if help dir exists
     const result = await callTool('get_help', {});
@@ -636,7 +636,7 @@ describe('tool: get_help', () => {
   it('returns error for unknown topic', async () => {
     const helpDir = path.resolve(
       path.dirname(require.resolve('../../src/webapp/mcp-server')),
-      '../help'
+      '../..', 'docs', 'help'
     );
     if (!fs.existsSync(helpDir)) return; // skip if no help dir
     const result = await callTool('get_help', { topic: 'nonexistent_xyz_12345' });

@@ -31,9 +31,9 @@ const schemas = require('./schemas');
 
 /* ── Path constants ─────────────────────────────────────────────── */
 const PROJECT_ROOT = path.resolve(__dirname, '../..');
-const DOC_ROOT = path.resolve(__dirname, '../docs');
+const DOC_ROOT = path.join(PROJECT_ROOT, 'docs');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
-const HELP_DIR = path.resolve(__dirname, '../help');
+const HELP_DIR = path.join(PROJECT_ROOT, 'docs', 'help');
 const SESSION_DIR = path.join(DOC_ROOT, 'session');
 const DECISIONS_PATH = path.join(DOC_ROOT, 'decisions.md');
 const AUDIT_DIR = path.join(DOC_ROOT, 'audit');

@@ -144,7 +144,7 @@ Decisions you create here become hard constraints that all agents follow.
 
 > **For the complete decision lifecycle, category system, deferred activation,
 > and Sprint Gate blocking rules, see
-> [`.github/help/decisions.md`](../.github/help/decisions.md).**  
+> [`docs/help/decisions.md`](docs/help/decisions.md).**  
 > **For technical architecture (file layout, data flow, enforcement chain), see
 > [`docs/decisions-architecture.md`](decisions-architecture.md).**
 

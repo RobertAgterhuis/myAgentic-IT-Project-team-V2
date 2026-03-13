@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * install-hooks.js — Copies Git hooks from .github/hooks/ to .git/hooks/
+ * install-hooks.js — Copies Git hooks from hooks/ to .git/hooks/
  * Run automatically via `npm install` (package.json "prepare" script)
  * Guardrail: G-GLOB-60 local enforcement
  */
@@ -10,10 +10,10 @@ const fs = require('fs');
 const path = require('path');
 
 const HOOKS_SRC = path.resolve(__dirname, '..', 'hooks');
-const GIT_HOOKS = path.resolve(__dirname, '..', '..', '.git', 'hooks');
+const GIT_HOOKS = path.resolve(__dirname, '..', '.git', 'hooks');
 
 if (!fs.existsSync(HOOKS_SRC)) {
-  console.log('[install-hooks] No .github/hooks/ directory found, skipping.');
+  console.log('[install-hooks] No hooks/ directory found, skipping.');
   process.exit(0);
 }
 

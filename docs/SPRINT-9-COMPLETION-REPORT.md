@@ -447,7 +447,7 @@ features:
 
 ### Data Files
 
-- `.github/data/milestones.json` - Milestone storage (updated)
+- `data/milestones.json` - Milestone storage (updated)
 - `docs/audit/milestones-archive-*.jsonl` - Soft-delete audit trail
 
 ---

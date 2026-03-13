@@ -622,7 +622,7 @@ complex workflows (e.g., resolving BLOCKING items, executing SCOPE CHANGE).
 ### Recommendation
 
 Content Strategist (Agent 32) writes **10 help articles** (500-800 words each)
-in `.github/help/`:
+in `docs/help/`:
 
 1. `what-is-create-vs-audit-mode.md`
 2. `how-to-answer-questionnaire.md`
@@ -645,7 +645,7 @@ Each article includes:
 
 ### Success Criteria (SMART)
 
-- **Specific:** 10 help articles written in Markdown, stored in `.github/help/`,
+- **Specific:** 10 help articles written in Markdown, stored in `docs/help/`,
   indexed in Help tab
 - **Measurable:** All 10 articles ≥ 500 words, with step-by-step instructions
 - **Achievable:** Content Strategist skill file includes help writing

@@ -581,15 +581,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: .github/scripts/check-zero-runtime-deps.sh # ARCH-G-001
-      - run: .github/scripts/check-no-database-deps.sh # ARCH-G-002
-      - run: .github/scripts/check-license-compliance.sh # ARCH-G-010
+      - run: scripts/check-zero-runtime-deps.sh # ARCH-G-001
+      - run: scripts/check-no-database-deps.sh # ARCH-G-002
+      - run: scripts/check-license-compliance.sh # ARCH-G-010
 
   code-guardrails:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: .github/scripts/check-atomic-writes.sh # ARCH-G-003
+      - run: scripts/check-atomic-writes.sh # ARCH-G-003
       - run: npm ci
       - run: npm run test:ci:schemas # ARCH-G-004
       - run: npm run test:ci:localhost-binding # ARCH-G-008

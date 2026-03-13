@@ -806,7 +806,7 @@ Before every sprint, the Orchestrator performs the following checks:
 
 **Step 0a: Capture GitHub State**
 
-1. Run `node .github/scripts/github-state-snapshot.js` to capture the current
+1. Run `node scripts/github-state-snapshot.js` to capture the current
    GitHub board state (milestones, issues, labels) into
    `docs/session/github-state-snapshot.json`.
 2. Inject the snapshot summary as a `## GITHUB STATE` context block into the

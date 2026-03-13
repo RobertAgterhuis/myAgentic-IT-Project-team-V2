@@ -11,7 +11,7 @@ description:
 
 > This document describes the internal architecture of the decision system: file
 > layout, data flow, agent interactions, category lifecycle, and enforcement
-> mechanisms. For a user-facing guide, see `.github/help/decisions.md`.
+> mechanisms. For a user-facing guide, see `docs/help/decisions.md`.
 
 ---
 

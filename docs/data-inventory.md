@@ -62,7 +62,7 @@ All data stored by the Agentic SDLC Platform in the v1 GA
 | --------------------- | ------------- | ------------------------ | ---------------------------------- | ------------------------------------- |
 | Git history           | Git           | `.git/`                  | Yes (author name/email in commits) | Repository lifetime                   |
 | Server logs           | JSON (stdout) | Terminal output          | No                                 | Terminal session only (not persisted) |
-| npm audit results     | JSON          | `.github/npm-audit.json` | No                                 | Overwritten per audit run             |
+| npm audit results     | JSON          | `npm-audit.json`         | No                                 | Overwritten per audit run             |
 | Test coverage         | JSON, HTML    | `coverage/`              | No                                 | Overwritten per test run              |
 | Environment variables | Env file      | `.env` (gitignored)      | No (passwords for local services)  | Manual; operator-managed              |
 
@@ -72,7 +72,7 @@ All data stored by the Agentic SDLC Platform in the v1 GA
 | ----------------------- | ----------------------- | ------------------------------------------------- | -------------------------- | ---------------- |
 | Webapp form submissions | JSON (in-memory → file) | Questionnaire/decision endpoints → Markdown files | Potentially                | Project lifetime |
 | SSE subscriptions       | In-memory               | Server runtime                                    | No (connection state only) | Session only     |
-| Help text               | Markdown                | `.github/help/`                                   | No                         | Static           |
+| Help text               | Markdown                | `docs/help/`                                      | No                         | Static           |
 
 ---
 

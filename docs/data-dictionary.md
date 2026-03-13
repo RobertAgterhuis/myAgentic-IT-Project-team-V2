@@ -38,7 +38,7 @@ locations, and field descriptions.
 | Analytics Events    | JSON     | `docs/analytics-events.json`                  | Server-side event type validation |
 | Audit Log           | JSONL    | `docs/audit/audit.jsonl`                      | `audit.js` internal validation    |
 | Reevaluate Trigger  | JSON     | `docs/session/reevaluate-trigger.json`        | Inline validation in server.js    |
-| Help Content        | Markdown | `.github/help/*.md`                                   | Filesystem scan, slug validation  |
+| Help Content        | Markdown | `docs/help/*.md`                                      | Filesystem scan, slug validation  |
 | Official Documents  | Markdown | `BusinessDocs/OfficialDocuments/*.md`                 | N/A (freeform content)            |
 | Document Registry   | Markdown | `BusinessDocs/OfficialDocuments/document-registry.md` | N/A                               |
 
@@ -221,7 +221,7 @@ file renamed to `audit-[timestamp].jsonl`.
 
 ### 9. Help Content
 
-**Files:** `.github/help/*.md` **Format:** Markdown **Access:**
+**Files:** `docs/help/*.md` **Format:** Markdown **Access:**
 `GET /api/help?topic=[slug]`
 
 Help topics are discovered by scanning the help directory. Each `.md` file

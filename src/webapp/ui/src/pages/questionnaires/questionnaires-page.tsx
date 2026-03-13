@@ -174,7 +174,9 @@ export default function QuestionnairesPage() {
       {/* Sidebar */}
       <div className="w-72 shrink-0 border-r overflow-y-auto">
         <div className="p-4 border-b">
-          <Heading level={1} className="text-lg">Questionnaires</Heading>
+          <Heading level={1} className="text-lg">
+            Questionnaires
+          </Heading>
         </div>
         <SidePanel
           sections={sections}

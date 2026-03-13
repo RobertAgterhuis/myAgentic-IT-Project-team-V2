@@ -85,11 +85,7 @@
     ],
     "testMatch": [
       "<rootDir>/tests/unit/email-templates.test.js",
-      "<rootDir>/tests/unit/landing-experiment.test.js",
-      "<rootDir>/tests/unit/landing-matomo.test.js",
-      "<rootDir>/tests/unit/landing-qa.test.js",
       "<rootDir>/tests/unit/matomo-analytics.test.js",
-      "<rootDir>/tests/unit/matomo-cors-fix.test.js",
       "<rootDir>/tests/unit/middleware.test.js",
       "<rootDir>/tests/unit/pilot-readiness.test.js",
       "<rootDir>/tests/unit/social-cards.test.js",

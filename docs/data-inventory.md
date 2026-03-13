@@ -1,14 +1,14 @@
 # Data Inventory — Agentic SDLC Platform
 
-| Field             | Value                                                                                                  |
-| ----------------- | ------------------------------------------------------------------------------------------------------ |
-| **Document**      | Data Inventory and Retention Model                                                                     |
-| **Version**       | 1.0                                                                                                    |
-| **Status**        | DRAFT                                                                                                  |
-| **Created**       | 2026-03-12                                                                                             |
-| **Owner**         | Robert Agterhuis                                                                                       |
-| **Audit Finding** | F-03 (CRITICAL) — Privacy/compliance operations are not finished                                       |
-| **Issue**         | #139                                                                                                   |
+| Field             | Value                                                                                  |
+| ----------------- | -------------------------------------------------------------------------------------- |
+| **Document**      | Data Inventory and Retention Model                                                     |
+| **Version**       | 1.0                                                                                    |
+| **Status**        | DRAFT                                                                                  |
+| **Created**       | 2026-03-12                                                                             |
+| **Owner**         | Robert Agterhuis                                                                       |
+| **Audit Finding** | F-03 (CRITICAL) — Privacy/compliance operations are not finished                       |
+| **Issue**         | #139                                                                                   |
 | **Depends on**    | `docs/ga-definition.md` (deployment profile), `docs/security-design.md` (data-at-rest) |
 
 ---
@@ -20,8 +20,8 @@ All data stored by the Agentic SDLC Platform in the v1 GA
 
 ### 1.1 Session Data
 
-| Data Element        | Format | Location                                        | Contains PII | Retention                     |
-| ------------------- | ------ | ----------------------------------------------- | ------------ | ----------------------------- |
+| Data Element        | Format | Location                                | Contains PII | Retention                     |
+| ------------------- | ------ | --------------------------------------- | ------------ | ----------------------------- |
 | Session state       | JSON   | `docs/session/session-state.json`       | No           | Project lifetime              |
 | Session audit trail | JSON   | `docs/session/session-state-audit.json` | No           | Project lifetime              |
 | Command queue       | JSON   | `docs/session/command-queue.json`       | No           | Overwritten per command cycle |
@@ -34,13 +34,13 @@ All data stored by the Agentic SDLC Platform in the v1 GA
 | Questionnaire answers | Markdown | `BusinessDocs/Phase*/Questionnaires/` | Potentially (business context) | Project lifetime |
 | Questionnaire index   | Markdown | `BusinessDocs/questionnaire-index.md` | No                             | Project lifetime |
 | Official documents    | Markdown | `BusinessDocs/OfficialDocuments/`     | Potentially (business context) | Project lifetime |
-| Decisions log         | Markdown | `docs/decisions.md`           | No                             | Project lifetime |
-| Decision records      | Markdown | `docs/decisions/`             | No                             | Project lifetime |
+| Decisions log         | Markdown | `docs/decisions.md`                   | No                             | Project lifetime |
+| Decision records      | Markdown | `docs/decisions/`                     | No                             | Project lifetime |
 
 ### 1.3 Phase Deliverables
 
-| Data Element         | Format         | Location                        | Contains PII | Retention        |
-| -------------------- | -------------- | ------------------------------- | ------------ | ---------------- |
+| Data Element         | Format         | Location                | Contains PII | Retention        |
+| -------------------- | -------------- | ----------------------- | ------------ | ---------------- |
 | Phase 1–4 analyses   | Markdown       | `docs/phase-{1,2,3,4}/` | No           | Project lifetime |
 | Synthesis reports    | Markdown       | `docs/synthesis/`       | No           | Project lifetime |
 | Sprint plans/reports | Markdown       | `docs/phase-5/`         | No           | Project lifetime |
@@ -49,22 +49,22 @@ All data stored by the Agentic SDLC Platform in the v1 GA
 
 ### 1.4 Analytics Data
 
-| Data Element           | Format  | Location                          | Contains PII                   | Retention                        |
-| ---------------------- | ------- | --------------------------------- | ------------------------------ | -------------------------------- |
-| Matomo analytics DB    | MariaDB | Docker volume (`matomo-db`)       | Potentially (IP if configured) | Container lifetime               |
-| Matomo configuration   | PHP/env | Docker volume                     | No                             | Container lifetime               |
-| Local analytics events | JSON    | `src/webapp/` (runtime)       | No                             | In-memory only; reset on restart |
-| Metrics snapshot       | JSON    | `docs/session/` (runtime) | No                             | Overwritten per collection cycle |
+| Data Element           | Format  | Location                    | Contains PII                   | Retention                        |
+| ---------------------- | ------- | --------------------------- | ------------------------------ | -------------------------------- |
+| Matomo analytics DB    | MariaDB | Docker volume (`matomo-db`) | Potentially (IP if configured) | Container lifetime               |
+| Matomo configuration   | PHP/env | Docker volume               | No                             | Container lifetime               |
+| Local analytics events | JSON    | `src/webapp/` (runtime)     | No                             | In-memory only; reset on restart |
+| Metrics snapshot       | JSON    | `docs/session/` (runtime)   | No                             | Overwritten per collection cycle |
 
 ### 1.5 Operational Data
 
-| Data Element          | Format        | Location                 | Contains PII                       | Retention                             |
-| --------------------- | ------------- | ------------------------ | ---------------------------------- | ------------------------------------- |
-| Git history           | Git           | `.git/`                  | Yes (author name/email in commits) | Repository lifetime                   |
-| Server logs           | JSON (stdout) | Terminal output          | No                                 | Terminal session only (not persisted) |
-| npm audit results     | JSON          | `npm-audit.json`         | No                                 | Overwritten per audit run             |
-| Test coverage         | JSON, HTML    | `coverage/`              | No                                 | Overwritten per test run              |
-| Environment variables | Env file      | `.env` (gitignored)      | No (passwords for local services)  | Manual; operator-managed              |
+| Data Element          | Format        | Location            | Contains PII                       | Retention                             |
+| --------------------- | ------------- | ------------------- | ---------------------------------- | ------------------------------------- |
+| Git history           | Git           | `.git/`             | Yes (author name/email in commits) | Repository lifetime                   |
+| Server logs           | JSON (stdout) | Terminal output     | No                                 | Terminal session only (not persisted) |
+| npm audit results     | JSON          | `npm-audit.json`    | No                                 | Overwritten per audit run             |
+| Test coverage         | JSON, HTML    | `coverage/`         | No                                 | Overwritten per test run              |
+| Environment variables | Env file      | `.env` (gitignored) | No (passwords for local services)  | Manual; operator-managed              |
 
 ### 1.6 User-Generated Content
 
@@ -165,7 +165,7 @@ directly edit any file to correct inaccurate data.
 | **Recipients**                        | None — all data stays on local machine (v1 GA)                                          |
 | **Transfers to third countries**      | None (v1 GA)                                                                            |
 | **Retention periods**                 | See Section 2.1 Retention Classes                                                       |
-| **Technical/organizational measures** | See `docs/security-design.md`                                                   |
+| **Technical/organizational measures** | See `docs/security-design.md`                                                           |
 | **Data protection impact assessment** | Not required for v1 GA (single operator, localhost only, no sensitive categories)       |
 | **Legal basis**                       | Legitimate interest (operator managing their own software project)                      |
 

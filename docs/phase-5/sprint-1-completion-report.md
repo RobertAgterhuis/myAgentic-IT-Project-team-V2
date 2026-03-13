@@ -230,14 +230,14 @@ hardcoded credentials, API keys, or tokens found.
 
 ### 6.3 Test Infrastructure
 
-| File                                                  | Tests                       | Status |
-| ----------------------------------------------------- | --------------------------- | ------ |
+| File                                              | Tests                       | Status |
+| ------------------------------------------------- | --------------------------- | ------ |
 | `tests/unit/middleware.test.js`                   | Unit tests                  | ✅     |
 | `tests/integration/server.test.js`                | Integration tests           | ✅     |
 | `tests/integration/health.integration.test.js`    | Health contract tests       | ✅     |
 | `tests/integration/decisions.integration.test.js` | Decision CRUD tests         | ✅     |
 | `tests/smoke/smoke.test.js`                       | 23 smoke tests              | ✅     |
-| `.github/workflows/ci-pipeline.yml`                   | CI pipeline (7 active jobs) | ✅     |
+| `.github/workflows/ci-pipeline.yml`               | CI pipeline (7 active jobs) | ✅     |
 
 ---
 
@@ -285,8 +285,8 @@ hardcoded credentials, API keys, or tokens found.
 | 6   | technical-manual.md updated                             | ✅ Current (v1.5)                                       |
 | 7   | GitHub board updated (implemented issues closed)        | ✅ 13 closed, 2 moved to Sprint 2                       |
 | 8   | Retrospective COMPLETE                                  | ✅ sprint-1-retrospective.md                            |
-| 9   | velocity-log.json updated                               | ✅ Created in `docs/retrospectives/`            |
-| 10  | lessons-learned.md updated                              | ✅ Created in `docs/retrospectives/`            |
+| 9   | velocity-log.json updated                               | ✅ Created in `docs/retrospectives/`                    |
+| 10  | lessons-learned.md updated                              | ✅ Created in `docs/retrospectives/`                    |
 
 ---
 

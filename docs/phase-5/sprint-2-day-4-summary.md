@@ -78,19 +78,19 @@
 
 ## Files Created (Day 4)
 
-| File                                                        | Purpose                                    |
-| ----------------------------------------------------------- | ------------------------------------------ |
-| `tests/unit/matomo-analytics.test.js`                   | Matomo stack validation tests (32)         |
-| `tests/unit/landing-matomo.test.js`                     | Landing Matomo integration tests (12)      |
-| `tests/unit/weblate-docker.test.js`                     | Weblate Docker stack validation tests (25) |
+| File                                                | Purpose                                    |
+| --------------------------------------------------- | ------------------------------------------ |
+| `tests/unit/matomo-analytics.test.js`               | Matomo stack validation tests (32)         |
+| `tests/unit/landing-matomo.test.js`                 | Landing Matomo integration tests (12)      |
+| `tests/unit/weblate-docker.test.js`                 | Weblate Docker stack validation tests (25) |
 | `docs/phase-5/sp-2-501-weblate-trial-execution.md`  | Weblate trial execution report             |
 | `docs/phase-5/sp-2-201p-pilot-distribution-plan.md` | Pilot distribution plan                    |
 
 ## Files Modified (Day 4)
 
-| File                                                     | Changes                                                  |
-| -------------------------------------------------------- | -------------------------------------------------------- |
-| `src/webapp/landing.html`                            | Matomo cookieless tracking script + noscript fallback    |
+| File                                             | Changes                                                  |
+| ------------------------------------------------ | -------------------------------------------------------- |
+| `src/webapp/landing.html`                        | Matomo cookieless tracking script + noscript fallback    |
 | `docs/phase-5/sp-2-mat-matomo-deployment.md`     | Status → COMPLETE (100%), Day 4 progress, all AC checked |
 | `docs/phase-5/sp-2-lnd-landing-page-scope.md`    | Status → 95%                                             |
 | `docs/phase-5/sp-2-501-weblate-trial-notes.md`   | Status → TRIAL_EXECUTED, setup steps checked             |

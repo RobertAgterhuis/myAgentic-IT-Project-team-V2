@@ -132,15 +132,15 @@ through the server-side endpoint.
 
 ### Brand-Aligned Template (from SP-12-704 §4)
 
-| Element        | Value                            | Source                |
-| -------------- | -------------------------------- | --------------------- |
-| Logo           | SP-12-701 brand assets           | `docs/brand/` |
-| Background     | `#FAFAFA` (`--color-background`) | Design tokens         |
-| Primary accent | `#2563EB` (`--color-primary`)    | Design tokens         |
-| Font family    | Inter (`--font-family-primary`)  | Design tokens         |
-| Body font size | 16px (`--font-size-body`)        | Design tokens         |
-| Link color     | `#2563EB` (`--color-primary`)    | Design tokens         |
-| Max width      | 600px                            | Email best practice   |
+| Element        | Value                            | Source              |
+| -------------- | -------------------------------- | ------------------- |
+| Logo           | SP-12-701 brand assets           | `docs/brand/`       |
+| Background     | `#FAFAFA` (`--color-background`) | Design tokens       |
+| Primary accent | `#2563EB` (`--color-primary`)    | Design tokens       |
+| Font family    | Inter (`--font-family-primary`)  | Design tokens       |
+| Body font size | 16px (`--font-size-body`)        | Design tokens       |
+| Link color     | `#2563EB` (`--color-primary`)    | Design tokens       |
+| Max width      | 600px                            | Email best practice |
 
 ### Cross-Client Testing Matrix
 

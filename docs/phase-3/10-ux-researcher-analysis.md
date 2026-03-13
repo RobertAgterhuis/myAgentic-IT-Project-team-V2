@@ -25,18 +25,18 @@
 
 ### 1.1 User-Related Input from Phase 1
 
-| Data Type             | Status    | Source                                                               | Reliability                          |
-| --------------------- | --------- | -------------------------------------------------------------------- | ------------------------------------ |
+| Data Type             | Status    | Source                                                       | Reliability                          |
+| --------------------- | --------- | ------------------------------------------------------------ | ------------------------------------ |
 | **ICP Definition**    | ✓ Present | `docs/phase-1/03-sales-strategist-analysis.md`               | PRIMARY (Phase 1 validated)          |
 | **Customer Segments** | ✓ Present | `docs/phase-1/01-business-analyst-analysis.md`               | PRIMARY (Phase 1 validated)          |
 | **Stakeholder Map**   | ✓ Present | `docs/phase-1/34-product-manager-analysis.md`                | PRIMARY (Phase 1 validated)          |
-| **Problem Statement** | ✓ Present | `BusinessDocs/project-brief.md` + onboarding output                  | PRIMARY                              |
+| **Problem Statement** | ✓ Present | `BusinessDocs/project-brief.md` + onboarding output          | PRIMARY                              |
 | **Value Proposition** | ✓ Present | `docs/phase-1/01-business-analyst-analysis.md` (BMC section) | PRIMARY                              |
-| **User Interviews**   | ✗ Absent  | NONE                                                                 | INSUFFICIENT_DATA                    |
-| **User Surveys**      | ✗ Absent  | NONE                                                                 | INSUFFICIENT_DATA                    |
-| **Usability Tests**   | ✗ Absent  | NONE                                                                 | INSUFFICIENT_DATA                    |
-| **Analytics Data**    | ✗ Absent  | NONE (greenfield project)                                            | N/A (not applicable for CREATE mode) |
-| **Support Tickets**   | ✗ Absent  | NONE (greenfield project)                                            | N/A                                  |
+| **User Interviews**   | ✗ Absent  | NONE                                                         | INSUFFICIENT_DATA                    |
+| **User Surveys**      | ✗ Absent  | NONE                                                         | INSUFFICIENT_DATA                    |
+| **Usability Tests**   | ✗ Absent  | NONE                                                         | INSUFFICIENT_DATA                    |
+| **Analytics Data**    | ✗ Absent  | NONE (greenfield project)                                    | N/A (not applicable for CREATE mode) |
+| **Support Tickets**   | ✗ Absent  | NONE (greenfield project)                                    | N/A                                  |
 
 **Finding UX-001:**  
 Research foundation is based on strategic business inputs (ICP, BMC, stakeholder
@@ -1189,7 +1189,7 @@ surveys).
 | **Session state persistence across conversation resets**                | Data Architect IND-901 (session state schema) + DevOps IND-702 (file system durability)                          | ✓ FEASIBLE  | NONE                                                                      |
 | **Audit trail for all mutations**                                       | Data Architect IND-905 (append-only JSON Lines)                                                                  | ✓ FEASIBLE  | NONE                                                                      |
 | **WCAG 2.1 AA compliance (keyboard navigation, screen reader support)** | Security Architect IND-802 (CSP headers) + Accessibility Specialist (Phase 3, Agent 13 — not yet executed)       | ✓ FEASIBLE  | DEPENDENT_ON: Accessibility Specialist (Agent 13) for detailed guidelines |
-| **Synthesis dashboard (Master Report + Department Reports viewing)**    | Software Architect ADR-001 (Modular Monolith) + Synthesis Agent (17 — executed in synthesis phase after Phase 4) | ✓ FEASIBLE  | DEPENDENT_ON: Synthesis Agent outputs (`docs/synthesis/*.md`)     |
+| **Synthesis dashboard (Master Report + Department Reports viewing)**    | Software Architect ADR-001 (Modular Monolith) + Synthesis Agent (17 — executed in synthesis phase after Phase 4) | ✓ FEASIBLE  | DEPENDENT_ON: Synthesis Agent outputs (`docs/synthesis/*.md`)             |
 | **Sprint backlog visualization**                                        | Software Architect ADR-001 + GitHub Integration Agent (27 — Phase 5)                                             | ✓ FEASIBLE  | DEPENDENT_ON: GitHub Integration Agent (Phase 5)                          |
 
 **Finding UX-012:**  

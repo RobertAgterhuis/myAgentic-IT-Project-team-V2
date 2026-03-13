@@ -45,16 +45,16 @@ All 8 items directly addressed GA audit findings. No feature work was in scope.
 
 ## GA Audit Findings Addressed
 
-| Finding | Severity | Deliverable                                                     | Status    |
-| ------- | -------- | --------------------------------------------------------------- | --------- |
-| F-01    | CRITICAL | `docs/ga-definition.md` — deployment profile, go/no-go  | ✅ Closed |
-| F-02    | CRITICAL | `docs/security-design.md` — STRIDE, hardening checklist | ✅ Closed |
-| F-03    | CRITICAL | `docs/data-inventory.md`, `docs/privacy-policy.md`      | ✅ Closed |
-| F-04    | HIGH     | README.md updated — supervised framing, accurate claims         | ✅ Closed |
-| F-05    | HIGH     | `CHANGELOG.md`, release v0.4.0-rc.1, release templates          | ✅ Closed |
-| F-07    | HIGH     | README.md truth-source, test badges, technology table           | ✅ Closed |
-| F-08    | MEDIUM   | `.github/PULL_REQUEST_TEMPLATE.md`, CONTRIBUTING.md updated     | ✅ Closed |
-| F-12    | MEDIUM   | `docs/quick-start.md`, `docs/operating-handbook.md`     | ✅ Closed |
+| Finding | Severity | Deliverable                                                 | Status    |
+| ------- | -------- | ----------------------------------------------------------- | --------- |
+| F-01    | CRITICAL | `docs/ga-definition.md` — deployment profile, go/no-go      | ✅ Closed |
+| F-02    | CRITICAL | `docs/security-design.md` — STRIDE, hardening checklist     | ✅ Closed |
+| F-03    | CRITICAL | `docs/data-inventory.md`, `docs/privacy-policy.md`          | ✅ Closed |
+| F-04    | HIGH     | README.md updated — supervised framing, accurate claims     | ✅ Closed |
+| F-05    | HIGH     | `CHANGELOG.md`, release v0.4.0-rc.1, release templates      | ✅ Closed |
+| F-07    | HIGH     | README.md truth-source, test badges, technology table       | ✅ Closed |
+| F-08    | MEDIUM   | `.github/PULL_REQUEST_TEMPLATE.md`, CONTRIBUTING.md updated | ✅ Closed |
+| F-12    | MEDIUM   | `docs/quick-start.md`, `docs/operating-handbook.md`         | ✅ Closed |
 
 ### Deferred to Sprint 5+
 

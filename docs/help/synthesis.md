@@ -130,8 +130,8 @@ usable digital assets.
 
 ### What It Produces
 
-| Output                                       | Location                                    |
-| -------------------------------------------- | ------------------------------------------- |
+| Output                                       | Location                            |
+| -------------------------------------------- | ----------------------------------- |
 | Brand guidelines                             | `docs/brand/brand-guidelines.md`    |
 | Design tokens                                | `docs/brand/design-tokens.json`     |
 | Brand assets report                          | `docs/brand/brand-assets-report.md` |
@@ -171,13 +171,13 @@ component library that governs all UI implementation.
 
 ### What It Produces
 
-| Output                  | Location                                        |
-| ----------------------- | ----------------------------------------------- |
+| Output                  | Location                                |
+| ----------------------- | --------------------------------------- |
 | Component inventory     | `docs/storybook/component-inventory.md` |
-| Design tokens (CSS)     | `src/tokens/tokens.css`                         |
-| Design tokens (JS)      | `src/tokens/tokens.js`                          |
-| Storybook configuration | `.storybook/` directory                         |
-| Component stories       | Per-component `.stories.js` files               |
+| Design tokens (CSS)     | `src/tokens/tokens.css`                 |
+| Design tokens (JS)      | `src/tokens/tokens.js`                  |
+| Storybook configuration | `.storybook/` directory                 |
+| Component stories       | Per-component `.stories.js` files       |
 
 ### Why It Matters
 

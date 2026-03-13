@@ -27,16 +27,16 @@ timing on external decisions (locales and pricing structure).
 
 ## 3. Recommendations
 
-| Priority | Recommendation                                         | Why                                                     | Source                                                      |
-| -------- | ------------------------------------------------------ | ------------------------------------------------------- | ----------------------------------------------------------- |
+| Priority | Recommendation                                         | Why                                                     | Source                                              |
+| -------- | ------------------------------------------------------ | ------------------------------------------------------- | --------------------------------------------------- |
 | P1       | Resolve locale prioritization decision before Sprint 1 | Unblocks UX/localization critical path                  | `docs/phase-3/RISK-ASSESSMENT-PHASE-3.md:79`        |
 | P1       | Timebox pricing-tier structure confirmation            | Prevents brand architecture rework and launch drift     | `docs/phase-4/critic-risk-validation.md:529`        |
 | P2       | Formalize recurring business checkpoint cadence        | Prevents schedule slippage and hidden risk accumulation | `docs/phase-1/01-business-analyst-sprintplan.md:32` |
 
 ## 4. Sprint Plan Items
 
-| Sprint ID | Item                                         | Priority | Source                                                      |
-| --------- | -------------------------------------------- | -------- | ----------------------------------------------------------- |
+| Sprint ID | Item                                         | Priority | Source                                              |
+| --------- | -------------------------------------------- | -------- | --------------------------------------------------- |
 | SP-1-001  | Team capacity formalization                  | P1       | `docs/phase-1/01-business-analyst-sprintplan.md:30` |
 | SP-1-003  | Q4 milestone governance and slip escalation  | P1       | `docs/phase-1/01-business-analyst-sprintplan.md:32` |
 | SP-2-201  | Internal pilot to validate adoption blockers | P2       | `docs/phase-1/02-domain-expert-sprintplan.md:63`    |

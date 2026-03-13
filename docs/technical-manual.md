@@ -1500,7 +1500,7 @@ When opted out, `trackEvent()` returns immediately without queuing.
 
 | Property     | Value                                |
 | ------------ | ------------------------------------ |
-| File         | `docs/analytics-events.json` |
+| File         | `docs/analytics-events.json`         |
 | Format       | JSON array of event objects          |
 | Max events   | 5 000 (`ANALYTICS_MAX_EVENTS`)       |
 | Overflow     | Oldest events trimmed (FIFO)         |

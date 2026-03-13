@@ -19,7 +19,7 @@ application:
 | **Social cards og:image** | Added `og:image` + `twitter:card` meta tags to `landing.html`; new `serveSocialCard()` route for `/social-cards/*.svg`             |
 | **Locale API**            | New `serveLocaleFile()` route for `/locales/:locale/:file.json` with `safePath` traversal protection                               |
 | **Subscribe fallback**    | Local fallback in `subscribe.js` stores subscriptions to `BusinessDocs/local-subscriptions.json` when `BUTTONDOWN_API_KEY` not set |
-| **Root package.json**     | `main` → `src/webapp/server.js`, `start` → `node src/webapp/server.js`                                                     |
+| **Root package.json**     | `main` → `src/webapp/server.js`, `start` → `node src/webapp/server.js`                                                             |
 
 Subscribe integration tests updated (201 local fallback vs 503). All 323 tests
 passing.
@@ -61,17 +61,17 @@ passing.
 
 ## Files Created
 
-| File                                                  | Purpose                                                         |
-| ----------------------------------------------------- | --------------------------------------------------------------- |
+| File                                          | Purpose                                                         |
+| --------------------------------------------- | --------------------------------------------------------------- |
 | `docs/phase-5/sp-2-202-pilot-findings-log.md` | Post-pilot findings log template (severity, scores, resolution) |
 | `docs/phase-5/sprint-2-day-6-summary.md`      | This summary                                                    |
 
 ## Files Modified
 
-| File                                                        | Change                                                              |
-| ----------------------------------------------------------- | ------------------------------------------------------------------- |
-| `docs/technical-manual.md`                                  | v1.9 → v2.0: Docker Compose section, new routes, subscribe fallback |
-| `docs/user-manual.md`                                       | v1.1 → v1.2: Corrected segments, i18n key counts, local fallback    |
+| File                                                | Change                                                              |
+| --------------------------------------------------- | ------------------------------------------------------------------- |
+| `docs/technical-manual.md`                          | v1.9 → v2.0: Docker Compose section, new routes, subscribe fallback |
+| `docs/user-manual.md`                               | v1.1 → v1.2: Corrected segments, i18n key counts, local fallback    |
 | `docs/session/session-state.json`                   | Day 6 COMPLETE, 7/10 items                                          |
 | `docs/phase-5/sprint-2-kpi-log.md`                  | Day 6 row added                                                     |
 | `docs/phase-5/sp-2-soc-social-content-plan.md`      | Status 35% → 50%, visual assets ✅                                  |

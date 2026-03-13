@@ -70,8 +70,8 @@ Day 5:  #144 (F-12 Docs)  +  Sprint completion       ← Operator docs + wrap-up
 
 **Theme:** Define what GA means — this scopes everything else.
 
-| Item        | Issue | ACs | Deliverables                    |
-| ----------- | ----- | --- | ------------------------------- |
+| Item        | Issue | ACs | Deliverables            |
+| ----------- | ----- | --- | ----------------------- |
 | SP-4-GA-DEF | #137  | 8   | `docs/ga-definition.md` |
 
 **Key decisions to make:**
@@ -95,8 +95,8 @@ Day 5:  #144 (F-12 Docs)  +  Sprint completion       ← Operator docs + wrap-up
 **Theme:** Close the two remaining CRITICAL audit findings using the deployment
 profile from Day 1.
 
-| Item      | Issue | ACs | Deliverables                                               |
-| --------- | ----- | --- | ---------------------------------------------------------- |
+| Item      | Issue | ACs | Deliverables                                       |
+| --------- | ----- | --- | -------------------------------------------------- |
 | SP-4-SEC  | #138  | 8   | `docs/security-design.md`                          |
 | SP-4-PRIV | #139  | 8   | `docs/data-inventory.md`, `docs/privacy-policy.md` |
 
@@ -202,8 +202,8 @@ profile from Day 1.
 
 **Theme:** Make the platform operator-friendly. Close the sprint.
 
-| Item      | Issue | ACs | Deliverables                                                           |
-| --------- | ----- | --- | ---------------------------------------------------------------------- |
+| Item      | Issue | ACs | Deliverables                                                   |
+| --------- | ----- | --- | -------------------------------------------------------------- |
 | SP-4-DOCS | #144  | 6   | `docs/quick-start.md`, `docs/operating-handbook.md`, doc index |
 
 **SP-4-DOCS (F-12) work:**

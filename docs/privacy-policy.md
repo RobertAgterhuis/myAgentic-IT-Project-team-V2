@@ -54,7 +54,7 @@ MariaDB database and is not transmitted externally.
 | Data Type     | Storage Location                                  |
 | ------------- | ------------------------------------------------- |
 | Project files | Your local file system (project directory)        |
-| Session state | `docs/session/` (JSON files)              |
+| Session state | `docs/session/` (JSON files)                      |
 | Business data | `BusinessDocs/` (Markdown files)                  |
 | Analytics     | Docker volume on your machine (if Matomo enabled) |
 | Git history   | `.git/` directory                                 |

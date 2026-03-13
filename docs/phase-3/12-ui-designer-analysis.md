@@ -357,12 +357,12 @@ Screen-specific focus:
 
 ## 4. KPI Baseline
 
-| KPI                                               | Current value                                   | Source                                        | Measurement method                                              |
-| ------------------------------------------------- | ----------------------------------------------- | --------------------------------------------- | --------------------------------------------------------------- |
-| Design token coverage across target component set | INSUFFICIENT_DATA: no baseline file             | Phase 3 workspace                             | Count components with token mapping / total priority components |
+| KPI                                               | Current value                                   | Source                                | Measurement method                                              |
+| ------------------------------------------------- | ----------------------------------------------- | ------------------------------------- | --------------------------------------------------------------- |
+| Design token coverage across target component set | INSUFFICIENT_DATA: no baseline file             | Phase 3 workspace                     | Count components with token mapping / total priority components |
 | WCAG AA-ready color pairs in token set            | INSUFFICIENT_DATA: pending accessibility review | `docs/guardrails/04-ux-guardrails.md` | Contrast audit of all text/background and state combinations    |
-| Responsive spec completeness for 8 screens        | 0% formalized in dedicated UI doc               | Phase 3 file set                              | Check each screen has per-breakpoint behavior and layout notes  |
-| Dark mode token parity                            | INSUFFICIENT_DATA                               | UI design not finalized                       | Count dark equivalents for each semantic surface/token          |
+| Responsive spec completeness for 8 screens        | 0% formalized in dedicated UI doc               | Phase 3 file set                      | Check each screen has per-breakpoint behavior and layout notes  |
+| Dark mode token parity                            | INSUFFICIENT_DATA                               | UI design not finalized               | Count dark equivalents for each semantic surface/token          |
 
 ---
 

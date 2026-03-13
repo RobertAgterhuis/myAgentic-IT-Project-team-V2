@@ -271,8 +271,8 @@
 | CI security scan families enabled | 3 (`secret-scan`, `sast`, `npm-audit`) | `.github/workflows/ci.yml`               | Count security jobs in CI             |
 | DAST coverage                     | 0 configured                           | `.github/workflows/ci.yml`               | Presence of DAST stage and target run |
 | Container scan coverage           | 0 configured                           | `.github/workflows/ci.yml`, `Dockerfile` | Presence of image scan stage          |
-| Auth-protected API routes         | 0 explicit route-level auth checks     | `src/webapp/server.js`               | Route policy audit                    |
-| Rate limiting coverage            | 0 endpoints with throttling            | `src/webapp/server.js`               | Runtime middleware verification       |
+| Auth-protected API routes         | 0 explicit route-level auth checks     | `src/webapp/server.js`                   | Route policy audit                    |
+| Rate limiting coverage            | 0 endpoints with throttling            | `src/webapp/server.js`                   | Runtime middleware verification       |
 
 ## 5. UNCERTAIN Items
 

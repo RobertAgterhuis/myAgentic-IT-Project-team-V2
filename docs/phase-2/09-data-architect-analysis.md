@@ -260,13 +260,13 @@
 
 ## 4. KPI Baseline
 
-| KPI                                                       | Current value               | Source                                                                             | Measurement method                           |
-| --------------------------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------- |
+| KPI                                                       | Current value               | Source                                                                     | Measurement method                           |
+| --------------------------------------------------------- | --------------------------- | -------------------------------------------------------------------------- | -------------------------------------------- |
 | Governed entities with documented schema parser/validator | 8+ core entities documented | `docs/data-dictionary.md`, `src/webapp/schemas.js`, `src/webapp/models.js` | Entity inventory coverage audit              |
-| Domains with explicit data owner assignment               | 0                           | docs scan                                                                          | Count domains with assigned owner role       |
-| Integrity automation cadence                              | 0 scheduled checks          | `.github/workflows/ci.yml`                                                         | Count scheduled integrity jobs/month         |
-| Classification coverage across entities                   | INSUFFICIENT_DATA           | pending matrix from Data + Security + Legal                                        | % entities with approved class               |
-| KPI catalog coverage                                      | INSUFFICIENT_DATA           | no central metric catalog file                                                     | % dashboard KPIs mapped to metric dictionary |
+| Domains with explicit data owner assignment               | 0                           | docs scan                                                                  | Count domains with assigned owner role       |
+| Integrity automation cadence                              | 0 scheduled checks          | `.github/workflows/ci.yml`                                                 | Count scheduled integrity jobs/month         |
+| Classification coverage across entities                   | INSUFFICIENT_DATA           | pending matrix from Data + Security + Legal                                | % entities with approved class               |
+| KPI catalog coverage                                      | INSUFFICIENT_DATA           | no central metric catalog file                                             | % dashboard KPIs mapped to metric dictionary |
 
 ## 5. UNCERTAIN Items
 

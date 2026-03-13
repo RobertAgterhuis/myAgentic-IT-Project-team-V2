@@ -28,18 +28,18 @@ PORT=8080 node src/webapp/server.js
 
 ## What It Does
 
-| Feature                | Description                                                                                                                                        |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Command Center**     | Pipeline view showing phase/agent progress; command launcher for CREATE, AUDIT, REEVALUATE, etc.                                                   |
-| **Questionnaires**     | Shows all questionnaires grouped by phase with answer-progress bars; per-question answer editing with auto-resize                                  |
-| **Decisions**          | Create new decisions, answer or defer existing ones, view decision history                                                                         |
-| **Status management**  | Dropdown per question: OPEN → ANSWERED → DEFERRED                                                                                                  |
-| **Save**               | Per-question save, per-file save, or global Save All (Ctrl+S)                                                                                      |
+| Feature                | Description                                                                                                                                |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Command Center**     | Pipeline view showing phase/agent progress; command launcher for CREATE, AUDIT, REEVALUATE, etc.                                           |
+| **Questionnaires**     | Shows all questionnaires grouped by phase with answer-progress bars; per-question answer editing with auto-resize                          |
+| **Decisions**          | Create new decisions, answer or defer existing ones, view decision history                                                                 |
+| **Status management**  | Dropdown per question: OPEN → ANSWERED → DEFERRED                                                                                          |
+| **Save**               | Per-question save, per-file save, or global Save All (Ctrl+S)                                                                              |
 | **Reevaluate**         | Saves all pending changes, writes `docs/session/reevaluate-trigger.json`, and prompts you to type `REEVALUATE [SCOPE]` in the Copilot chat |
-| **Export**             | Export all questionnaire data as JSON for external processing                                                                                      |
-| **Help**               | Built-in help system with topic navigation (F1 or ? to toggle)                                                                                     |
+| **Export**             | Export all questionnaire data as JSON for external processing                                                                              |
+| **Help**               | Built-in help system with topic navigation (F1 or ? to toggle)                                                                             |
 | **Contract-compliant** | Reads/writes the exact markdown format defined in `docs/contracts/questionnaire-output-contract.md`                                        |
-| **Index rebuild**      | Automatically updates `BusinessDocs/questionnaire-index.md` after every save (debounced)                                                           |
+| **Index rebuild**      | Automatically updates `BusinessDocs/questionnaire-index.md` after every save (debounced)                                                   |
 
 ## Architecture
 

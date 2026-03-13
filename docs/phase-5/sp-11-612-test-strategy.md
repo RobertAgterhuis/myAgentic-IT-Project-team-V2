@@ -177,7 +177,7 @@ addresses these risks from the risk matrix:
 | 4   | Coverage reporting with ≥80% gate               | ✅ COMPLETE | CI pipeline Job 2 (existing)                                           |
 | 5   | CI integration-test job enabled                 | ✅ COMPLETE | ci-pipeline.yml Job 6 enabled (Day 4)                                  |
 | 6   | Risk-aligned test cases (RISK-801, 804)         | ✅ COMPLETE | RISK-801 path traversal + error leak; RISK-804 concurrency             |
-| 7   | E2E test scaffold for SP-11-613                 | ✅ COMPLETE | `tests/smoke/landing.smoke.test.js` with 5 journey defs            |
+| 7   | E2E test scaffold for SP-11-613                 | ✅ COMPLETE | `tests/smoke/landing.smoke.test.js` with 5 journey defs                |
 | 8   | Test strategy document approved                 | ✅ COMPLETE | Approved at March 17 Week 2 standup — 77 tests all green, CI validated |
 
 **Progress:** 8/8 complete = **100%** ✅ DONE

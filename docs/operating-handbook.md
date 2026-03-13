@@ -238,15 +238,15 @@ npm test
 
 ## 7. File Locations Reference
 
-| File                                            | Purpose                                      |
-| ----------------------------------------------- | -------------------------------------------- |
+| File                                    | Purpose                                      |
+| --------------------------------------- | -------------------------------------------- |
 | `docs/session/session-state.json`       | Current session state                        |
 | `docs/session/session-state-audit.json` | Session audit trail                          |
 | `docs/decisions.md`                     | Decisions and open questions                 |
-| `BusinessDocs/`                                 | Questionnaire answers and official documents |
+| `BusinessDocs/`                         | Questionnaire answers and official documents |
 | `docs/synthesis/`                       | Final reports and blocker matrix             |
-| `docs/`                                         | User-facing documentation (GitHub Pages)     |
-| `.env`                                          | Environment variables (gitignored)           |
+| `docs/`                                 | User-facing documentation (GitHub Pages)     |
+| `.env`                                  | Environment variables (gitignored)           |
 
 ---
 

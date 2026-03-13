@@ -221,6 +221,6 @@ You don't have to wait for the system to ask. Good moments to add decisions:
 
 | What                                                | Path                             |
 | --------------------------------------------------- | -------------------------------- |
-| Decision index (open questions + category registry) | `docs/decisions.md`      |
-| Category files (per technology stack)               | `docs/decisions/*.md`    |
+| Decision index (open questions + category registry) | `docs/decisions.md`              |
+| Category files (per technology stack)               | `docs/decisions/*.md`            |
 | Technical architecture reference                    | `docs/decisions-architecture.md` |

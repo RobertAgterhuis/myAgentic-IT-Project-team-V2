@@ -39,8 +39,8 @@ demonstrably derivable from available measurement data. Not measurable =
 
 ## OUTPUT FILES
 
-| File                                          | Type                                              | Description                             |
-| --------------------------------------------- | ------------------------------------------------- | --------------------------------------- |
+| File                                  | Type                                              | Description                             |
+| ------------------------------------- | ------------------------------------------------- | --------------------------------------- |
 | `docs/metrics/kpi-baseline.json`      | Created once after Synthesis, readonly thereafter | KPI targets from Synthesis Final Report |
 | `docs/metrics/sprint-[SP-N]-kpi.json` | Per sprint, immutable                             | Realized KPI values this sprint         |
 | `docs/metrics/kpi-trend.md`           | Cumulative, updated every sprint                  | Readable trend overview for all KPIs    |

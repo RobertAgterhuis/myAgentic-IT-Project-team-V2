@@ -57,12 +57,12 @@
 
 ## Files Modified
 
-| File                                                  | Change                                          |
-| ----------------------------------------------------- | ----------------------------------------------- |
-| `matomo-nginx.conf`                                   | CORS headers + OPTIONS preflight (SP-3-MAT-FIX) |
-| `src/webapp/landing.html`                         | Noscript fallback fix + Discussions footer link |
-| `README.md`                                           | Community section with Discussions link         |
-| `tests/unit/matomo-cors-fix.test.js`              | 15 new tests (SP-3-MAT-FIX)                     |
+| File                                          | Change                                          |
+| --------------------------------------------- | ----------------------------------------------- |
+| `matomo-nginx.conf`                           | CORS headers + OPTIONS preflight (SP-3-MAT-FIX) |
+| `src/webapp/landing.html`                     | Noscript fallback fix + Discussions footer link |
+| `README.md`                                   | Community section with Discussions link         |
+| `tests/unit/matomo-cors-fix.test.js`          | 15 new tests (SP-3-MAT-FIX)                     |
 | `docs/phase-5/sprint-3-plan.md`               | Sprint 3 plan (NEW)                             |
 | `docs/phase-5/sprint-3-kpi-log.md`            | Sprint 3 KPI log (NEW)                          |
 | `docs/phase-5/sp-3-mat-fix-implementation.md` | Implementation report (NEW)                     |

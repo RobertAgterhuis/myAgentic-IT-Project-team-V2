@@ -79,20 +79,20 @@ complete working solution first
 
 ## Files Created (Day 3)
 
-| File                                                           | Purpose                       |
-| -------------------------------------------------------------- | ----------------------------- |
+| File                                                       | Purpose                       |
+| ---------------------------------------------------------- | ----------------------------- |
 | `src/webapp/email-templates/base-layout.html`              | Responsive HTML email wrapper |
 | `src/webapp/email-templates/README.md`                     | Template system docs          |
 | `src/webapp/email-templates/welcome-1.md` – `welcome-5.md` | 5 welcome emails              |
-| `docs/phase-5/sp-2-202-pilot-feedback-rubric.md`       | Pilot feedback instrument     |
-| `docs/phase-5/sp-2-201p-sample-project-brief.md`       | Sample pilot project          |
-| `docker-compose.weblate.yml`                                   | Weblate TMS Docker stack      |
-| `.env.weblate.example`                                         | Weblate env template          |
-| `locales/en-US/ui-labels.json`                                 | 50 UI label strings           |
-| `locales/en-US/validation-messages.json`                       | 30 validation/error strings   |
-| `locales/en-US/doc-snippets.json`                              | 40 doc/onboarding strings     |
-| `docs/phase-5/sp-2-501-tms-vendor-scoring.md`          | TMS vendor evaluation         |
-| `docs/phase-5/sp-2-501-weblate-trial-notes.md`         | Weblate trial notes           |
+| `docs/phase-5/sp-2-202-pilot-feedback-rubric.md`           | Pilot feedback instrument     |
+| `docs/phase-5/sp-2-201p-sample-project-brief.md`           | Sample pilot project          |
+| `docker-compose.weblate.yml`                               | Weblate TMS Docker stack      |
+| `.env.weblate.example`                                     | Weblate env template          |
+| `locales/en-US/ui-labels.json`                             | 50 UI label strings           |
+| `locales/en-US/validation-messages.json`                   | 30 validation/error strings   |
+| `locales/en-US/doc-snippets.json`                          | 40 doc/onboarding strings     |
+| `docs/phase-5/sp-2-501-tms-vendor-scoring.md`              | TMS vendor evaluation         |
+| `docs/phase-5/sp-2-501-weblate-trial-notes.md`             | Weblate trial notes           |
 | `src/webapp/social-cards/card-launch.svg`                  | Launch social card            |
 | `src/webapp/social-cards/card-risk-matrix.svg`             | Risk matrix social card       |
 | `src/webapp/social-cards/card-architecture.svg`            | CI/CD architecture card       |
@@ -104,10 +104,10 @@ complete working solution first
 
 ## Files Modified (Day 3)
 
-| File                                       | Changes                                                        |
-| ------------------------------------------ | -------------------------------------------------------------- |
-| `docs/technical-manual.md`                 | v1.9: Weblate TMS section, 151 tests/9 suites, new test suites |
-| `docs/user-manual.md`                      | v1.1: Newsletter, Analytics, i18n sections                     |
+| File                               | Changes                                                        |
+| ---------------------------------- | -------------------------------------------------------------- |
+| `docs/technical-manual.md`         | v1.9: Weblate TMS section, 151 tests/9 suites, new test suites |
+| `docs/user-manual.md`              | v1.1: Newsletter, Analytics, i18n sections                     |
 | `docs/phase-5/sprint-2-kpi-log.md` | Day 3 KPI row                                                  |
 
 ---

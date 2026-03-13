@@ -66,15 +66,15 @@
 
 ## Files Changed
 
-| File                                                          | Action                                                       |
-| ------------------------------------------------------------- | ------------------------------------------------------------ |
+| File                                                  | Action                                                       |
+| ----------------------------------------------------- | ------------------------------------------------------------ |
 | `docs/phase-5/sp-3-201p-pilot-prep.md`                | Updated: AC4 done, escalation gate result, scoring summary   |
 | `docs/phase-5/sp-3-201p-internal-self-test-rubric.md` | Created (Day 3 AM): full self-test rubric with 17 findings   |
 | `docs/phase-5/sp-3-202-pilot-analysis-framework.md`   | Created: analysis framework with scoring + prioritization    |
 | `docs/phase-5/sp-3-201m-landing-experiment.md`        | Created: experiment config, workflow, statistical guardrails |
-| `src/webapp/landing.html`                                 | Modified: A/B experiment framework, deferred trackPageView   |
-| `tests/unit/landing-experiment.test.js`                   | Created: 25 tests for experiment framework                   |
-| `tests/unit/landing-matomo.test.js`                       | Updated: adapted for deferred tracking                       |
+| `src/webapp/landing.html`                             | Modified: A/B experiment framework, deferred trackPageView   |
+| `tests/unit/landing-experiment.test.js`               | Created: 25 tests for experiment framework                   |
+| `tests/unit/landing-matomo.test.js`                   | Updated: adapted for deferred tracking                       |
 | `docs/phase-5/sprint-3-kpi-log.md`                    | Updated: Day 3 data + velocity chart                         |
 
 ---

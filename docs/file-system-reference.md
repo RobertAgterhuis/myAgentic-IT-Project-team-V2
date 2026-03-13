@@ -289,12 +289,12 @@ Run with: `npm run test:vitest`
 
 ## What's safe to delete?
 
-| Path                                                       | Safe to delete? | Consequence                                       |
-| ---------------------------------------------------------- | --------------- | ------------------------------------------------- |
-| `session-state.json`                                       | Yes             | Loses current progress; can start fresh           |
-| `command-queue.json`                                       | Yes             | Loses queued (unconsumed) command                 |
-| `reevaluate-trigger.json`                                  | Yes             | Cancels pending reevaluation                      |
-| `BusinessDocs/` contents                                   | With caution    | Loses all phase outputs and questionnaire answers |
+| Path                                               | Safe to delete? | Consequence                                       |
+| -------------------------------------------------- | --------------- | ------------------------------------------------- |
+| `session-state.json`                               | Yes             | Loses current progress; can start fresh           |
+| `command-queue.json`                               | Yes             | Loses queued (unconsumed) command                 |
+| `reevaluate-trigger.json`                          | Yes             | Cancels pending reevaluation                      |
+| `BusinessDocs/` contents                           | With caution    | Loses all phase outputs and questionnaire answers |
 | `docs/synthesis/` contents                         | With caution    | Must re-run Synthesis Agent                       |
 | Anything in `agents/`, `contracts/`, `guardrails/` | **No**          | Breaks agent behavior                             |
-| `session-state-*-archived.json`                            | Yes             | Old session archives, safe to clean up            |
+| `session-state-*-archived.json`                    | Yes             | Old session archives, safe to clean up            |

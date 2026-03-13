@@ -32,8 +32,8 @@ Key outcomes:
 
 ## 2. Solution Blueprint Heatmap
 
-| Discipline              | Status | Evidence                                             | Notes                                                        |
-| ----------------------- | ------ | ---------------------------------------------------- | ------------------------------------------------------------ |
+| Discipline              | Status | Evidence                                     | Notes                                                        |
+| ----------------------- | ------ | -------------------------------------------- | ------------------------------------------------------------ |
 | Business (Phase 1)      | GREEN  | `docs/phase-1/critic-risk-validation.md:21`  | Critic approvals across core business agents                 |
 | Tech (Phase 2)          | GREEN  | `docs/phase-2/critic-risk-validation.md:71`  | Critic approvals and governance traceability                 |
 | UX (Phase 3)            | YELLOW | `docs/phase-3/RISK-ASSESSMENT-PHASE-3.md:79` | Critical external locale decision + TMS procurement blockers |
@@ -43,8 +43,8 @@ Key outcomes:
 
 ## 3. Risk Matrix
 
-| Risk ID                     | Severity | Category    | Owner    | Mitigation Status        | Source                                               |
-| --------------------------- | -------- | ----------- | -------- | ------------------------ | ---------------------------------------------------- |
+| Risk ID                     | Severity | Category    | Owner    | Mitigation Status        | Source                                       |
+| --------------------------- | -------- | ----------- | -------- | ------------------------ | -------------------------------------------- |
 | BLK-1-501 (locale decision) | CRITICAL | BUSINESS/UX | BUSINESS | OPEN                     | `docs/phase-3/RISK-ASSESSMENT-PHASE-3.md:79` |
 | BLK-2-501 (TMS procurement) | HIGH     | OPERATIONAL | TECH     | OPEN                     | `docs/phase-3/RISK-ASSESSMENT-PHASE-3.md:80` |
 | RISK-P4-001                 | HIGH     | OPERATIONAL | TECH     | OPEN, mitigation defined | `docs/phase-4/critic-risk-validation.md:528` |
@@ -82,8 +82,8 @@ Consolidated implementation-critical guardrails:
 
 ## 6. KPIs
 
-| Discipline   | KPI                             | Baseline            | Target                       | Measurement Method                    | Source                                                      |
-| ------------ | ------------------------------- | ------------------- | ---------------------------- | ------------------------------------- | ----------------------------------------------------------- |
+| Discipline   | KPI                             | Baseline            | Target                       | Measurement Method                    | Source                                              |
+| ------------ | ------------------------------- | ------------------- | ---------------------------- | ------------------------------------- | --------------------------------------------------- |
 | Business     | Timeline adherence              | Q4 target set       | <= 1 week slip threshold     | Weekly milestone tracking             | `docs/phase-1/01-business-analyst-sprintplan.md:32` |
 | Tech         | CI quality gate coverage        | Partial             | All critical pipelines gated | CI pass/fail + artifact evidence      | `docs/phase-2/06-senior-developer-sprintplan.md:79` |
 | UX           | WCAG release compliance         | Baseline defined    | WCAG AA sustained            | A11y audits + release gate            | `docs/phase-3/RISK-ASSESSMENT-PHASE-3.md:114`       |
@@ -92,8 +92,8 @@ Consolidated implementation-critical guardrails:
 
 ## 7. Open Items
 
-| Open Item                                       | Type              | Owner    | Impact                             | Resolution Path                                    | Source                                               |
-| ----------------------------------------------- | ----------------- | -------- | ---------------------------------- | -------------------------------------------------- | ---------------------------------------------------- |
+| Open Item                                       | Type              | Owner    | Impact                             | Resolution Path                                    | Source                                       |
+| ----------------------------------------------- | ----------------- | -------- | ---------------------------------- | -------------------------------------------------- | -------------------------------------------- |
 | Target locales decision                         | INSUFFICIENT_DATA | BUSINESS | Blocks localization sequencing     | Resolve in PM decision gate before Sprint 1 start  | `docs/phase-3/RISK-ASSESSMENT-PHASE-3.md:79` |
 | TMS procurement and vendor path                 | INSUFFICIENT_DATA | TECH     | Blocks localization CI integration | Parallel vendor shortlist and procurement approval | `docs/phase-3/RISK-ASSESSMENT-PHASE-3.md:80` |
 | Finance confirmation for pricing tier structure | INSUFFICIENT_DATA | BUSINESS | Delays brand/pricing consistency   | Timebox decision in Sprint 2                       | `docs/phase-4/critic-risk-validation.md:529` |

@@ -76,7 +76,7 @@ All written content sourced from SP-12-703 §6-7.
 | Primary color | `#2563EB`                    |
 | Background    | `#FAFAFA`                    |
 | Font          | Inter                        |
-| Logo          | `docs/brand/` assets |
+| Logo          | `docs/brand/` assets         |
 | Style         | Clean, minimal, professional |
 
 ---

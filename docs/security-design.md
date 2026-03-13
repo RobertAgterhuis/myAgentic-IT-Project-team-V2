@@ -9,7 +9,7 @@
 | **Owner**         | Robert Agterhuis                                                            |
 | **Audit Finding** | F-02 (CRITICAL) — Security hardening beyond localhost is not fully designed |
 | **Issue**         | #138                                                                        |
-| **Depends on**    | `docs/ga-definition.md` (F-01 — deployment profiles)                |
+| **Depends on**    | `docs/ga-definition.md` (F-01 — deployment profiles)                        |
 
 ---
 
@@ -228,8 +228,8 @@ networking but creates a potential exposure if the host machine is on a network.
 
 ## 5. Existing Security Controls
 
-| Control                   | Implementation                                                                                 | File                               |
-| ------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------- |
+| Control                   | Implementation                                                                                 | File                           |
+| ------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------ |
 | Security response headers | `setSecurityHeaders()` — CSP, X-Frame-Options, COOP, COEP, Referrer-Policy, Permissions-Policy | `src/webapp/middleware.js:48`  |
 | Path traversal prevention | `safePath()` — resolves and validates paths stay within base directory                         | `src/webapp/middleware.js:70`  |
 | Input sanitization        | `sanitizeMarkdown()`, `sanitizeQID()`, `assertString()`                                        | `src/webapp/middleware.js`     |
@@ -239,7 +239,7 @@ networking but creates a potential exposure if the host machine is on a network.
 | Structured logging        | `structuredLog()` — JSON format with level, event, details                                     | `src/webapp/middleware.js`     |
 | Method validation         | `handleMethodNotAllowed()` — rejects unexpected HTTP methods per route                         | `src/webapp/middleware.js`     |
 | Error boundary            | `handleRouteError()` — catches and sanitizes all route errors                                  | `src/webapp/middleware.js`     |
-| Security policy           | `SECURITY.md` — vulnerability disclosure process                                               | `SECURITY.md`                      |
+| Security policy           | `SECURITY.md` — vulnerability disclosure process                                               | `SECURITY.md`                  |
 
 ---
 

@@ -193,8 +193,8 @@ myAgentic-IT-Project-team-V2/
 | CI/CD       | Yes     | GitHub Actions (`.github/workflows/ci.yml`, `release.yml`, `my-agentic-team-board-sync.yml`) |
 | Docker      | Yes     | `Dockerfile`, `docker-compose.yml`, `.dockerignore`                                          |
 | Environment | Partial | Detected in webapp server.js (PORT, HOST) — no .env file detected                            |
-| Linting     | Yes     | ESLint 9 flat config (`.eslintrc.js`)                                           |
-| Testing     | Yes     | Vitest (`vitest.config.mjs`)                                                         |
+| Linting     | Yes     | ESLint 9 flat config (`.eslintrc.js`)                                                        |
+| Testing     | Yes     | Vitest (`vitest.config.mjs`)                                                                 |
 
 ### Test Structure
 
@@ -251,8 +251,8 @@ myAgentic-IT-Project-team-V2/
 | **Node.js**             | ✓ Yes     | v22.14.0         | Runtime, testing, HTTP server       | Exceeds minimum (≥18)                                 |
 | **File system (read)**  | ✓ Yes     | Native           | Code scanning, documentation access | Fully operational                                     |
 | **File system (write)** | ✓ Yes     | Native           | File creation, updates              | Fully operational                                     |
-| **Vitest**              | ✓ Yes     | Latest           | Test runner, coverage               | Configured in `vitest.config.mjs`             |
-| **ESLint**              | ✓ Yes     | 9 (flat config)  | Static analysis, linting            | Configured in `.eslintrc.js`             |
+| **Vitest**              | ✓ Yes     | Latest           | Test runner, coverage               | Configured in `vitest.config.mjs`                     |
+| **ESLint**              | ✓ Yes     | 9 (flat config)  | Static analysis, linting            | Configured in `.eslintrc.js`                          |
 | **Docker**              | UNKNOWN   | -                | Containerization                    | Dockerfile present, runtime not verified in this scan |
 | **GitHub CLI**          | UNKNOWN   | -                | GitHub API, project management      | Not verified, may be available                        |
 

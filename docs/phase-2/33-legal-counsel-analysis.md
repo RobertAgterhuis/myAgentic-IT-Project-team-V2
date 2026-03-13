@@ -250,13 +250,13 @@
 
 ## 4. KPI Baseline
 
-| KPI                                     | Current value       | Source                                                   | Measurement method                    |
-| --------------------------------------- | ------------------- | -------------------------------------------------------- | ------------------------------------- |
+| KPI                                     | Current value       | Source                                           | Measurement method                    |
+| --------------------------------------- | ------------------- | ------------------------------------------------ | ------------------------------------- |
 | `LICENSE_CHECK` items closed            | 0/2 formally closed | `docs/phase-2/05-software-architect-analysis.md` | Track LCHECK closure evidence file    |
-| Legal template pack coverage            | 0 core templates    | docs scan                                                | Count required template docs present  |
+| Legal template pack coverage            | 0 core templates    | docs scan                                        | Count required template docs present  |
 | Data entities with legal retention rule | INSUFFICIENT_DATA   | `docs/phase-2/09-data-architect-analysis.md`     | % entities mapped to retention matrix |
-| CI license policy gate                  | 0 configured        | `.github/workflows/ci.yml`                               | Presence of license compliance step   |
-| GDPR disclosure checklist completion    | 0%                  | docs scan                                                | Required Art. 13/14 fields mapped     |
+| CI license policy gate                  | 0 configured        | `.github/workflows/ci.yml`                       | Presence of license compliance step   |
+| GDPR disclosure checklist completion    | 0%                  | docs scan                                        | Required Art. 13/14 fields mapped     |
 
 ## 5. UNCERTAIN Items
 

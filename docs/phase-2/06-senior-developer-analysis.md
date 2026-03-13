@@ -290,13 +290,13 @@
 
 ## 4. KPI Baseline
 
-| KPI                                                       | Current value         | Source                      | Measurement method                                  |
-| --------------------------------------------------------- | --------------------- | --------------------------- | --------------------------------------------------- |
-| Lint complexity cap compliance                            | Configured (`max: 8`) | `.eslintrc.js` | ESLint CI run with complexity rule violations count |
+| KPI                                                       | Current value         | Source              | Measurement method                                  |
+| --------------------------------------------------------- | --------------------- | ------------------- | --------------------------------------------------- |
+| Lint complexity cap compliance                            | Configured (`max: 8`) | `.eslintrc.js`      | ESLint CI run with complexity rule violations count |
 | Coverage thresholds (statements/branches/functions/lines) | 70 / 50 / 70 / 70     | `vitest.config.mjs` | Vitest coverage report (`coverage-summary.json`)    |
-| Runtime dependencies count                                | 0                     | `package.json`              | Count keys in `dependencies` object during CI       |
-| E2E critical user flow coverage                           | INSUFFICIENT_DATA     | no e2e suite found          | Presence of e2e test files + execution in CI        |
-| SAST scan pass rate                                       | INSUFFICIENT_DATA     | no tool selected            | % of PRs passing defined SAST gate                  |
+| Runtime dependencies count                                | 0                     | `package.json`      | Count keys in `dependencies` object during CI       |
+| E2E critical user flow coverage                           | INSUFFICIENT_DATA     | no e2e suite found  | Presence of e2e test files + execution in CI        |
+| SAST scan pass rate                                       | INSUFFICIENT_DATA     | no tool selected    | % of PRs passing defined SAST gate                  |
 
 ## 5. UNCERTAIN Items
 

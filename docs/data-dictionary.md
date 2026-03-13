@@ -30,14 +30,14 @@ locations, and field descriptions.
 
 | Entity              | Type     | Location                                              | Schema Validator                  |
 | ------------------- | -------- | ----------------------------------------------------- | --------------------------------- |
-| Session State       | JSON     | `docs/session/session-state.json`             | `schemas.validateSessionState()`  |
-| Command Queue       | JSON     | `docs/session/command-queue.json`             | `schemas.validateCommandQueue()`  |
-| Decisions           | Markdown | `docs/decisions.md`                           | `models.parseDecisions()`         |
+| Session State       | JSON     | `docs/session/session-state.json`                     | `schemas.validateSessionState()`  |
+| Command Queue       | JSON     | `docs/session/command-queue.json`                     | `schemas.validateCommandQueue()`  |
+| Decisions           | Markdown | `docs/decisions.md`                                   | `models.parseDecisions()`         |
 | Questionnaires      | Markdown | `BusinessDocs/Phase[N]-*/Questionnaires/*.md`         | `models.parseQuestionnaire()`     |
 | Questionnaire Index | Markdown | `BusinessDocs/questionnaire-index.md`                 | `models.parseIndex()`             |
-| Analytics Events    | JSON     | `docs/analytics-events.json`                  | Server-side event type validation |
-| Audit Log           | JSONL    | `docs/audit/audit.jsonl`                      | `audit.js` internal validation    |
-| Reevaluate Trigger  | JSON     | `docs/session/reevaluate-trigger.json`        | Inline validation in server.js    |
+| Analytics Events    | JSON     | `docs/analytics-events.json`                          | Server-side event type validation |
+| Audit Log           | JSONL    | `docs/audit/audit.jsonl`                              | `audit.js` internal validation    |
+| Reevaluate Trigger  | JSON     | `docs/session/reevaluate-trigger.json`                | Inline validation in server.js    |
 | Help Content        | Markdown | `docs/help/*.md`                                      | Filesystem scan, slug validation  |
 | Official Documents  | Markdown | `BusinessDocs/OfficialDocuments/*.md`                 | N/A (freeform content)            |
 | Document Registry   | Markdown | `BusinessDocs/OfficialDocuments/document-registry.md` | N/A                               |

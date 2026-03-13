@@ -70,8 +70,8 @@
 
 ## 4. Visual Assets Inventory
 
-| Asset               | File                      | Location                       | Dimensions | Brand Compliant          | Served via                              |
-| ------------------- | ------------------------- | ------------------------------ | ---------- | ------------------------ | --------------------------------------- |
+| Asset               | File                      | Location                   | Dimensions | Brand Compliant          | Served via                              |
+| ------------------- | ------------------------- | -------------------------- | ---------- | ------------------------ | --------------------------------------- |
 | Launch Card         | `card-launch.svg`         | `src/webapp/social-cards/` | 1200×627   | ✅ Design tokens palette | `/social-cards/card-launch.svg`         |
 | Risk Matrix Card    | `card-risk-matrix.svg`    | `src/webapp/social-cards/` | 1200×627   | ✅ Design tokens palette | `/social-cards/card-risk-matrix.svg`    |
 | Architecture Card   | `card-architecture.svg`   | `src/webapp/social-cards/` | 1200×627   | ✅ Design tokens palette | `/social-cards/card-architecture.svg`   |

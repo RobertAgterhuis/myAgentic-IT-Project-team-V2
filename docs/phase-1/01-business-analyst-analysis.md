@@ -31,7 +31,7 @@ per onboarding)
 
 | Artifact Type              | Status          | Source                                         | Quality                                                           |
 | -------------------------- | --------------- | ---------------------------------------------- | ----------------------------------------------------------------- |
-| **Onboarding output**      | ✓ Present       | `docs/onboarding/onboarding-output.md` | Complete                                                          |
+| **Onboarding output**      | ✓ Present       | `docs/onboarding/onboarding-output.md`         | Complete                                                          |
 | **Project brief**          | ✓ Present       | `BusinessDocs/project-brief.md`                | Minimal (173 chars)                                               |
 | **Problem statement**      | ✓ Present       | project-brief                                  | Clear but terse                                                   |
 | **Target audience**        | ✓ Partial       | onboarding (DevOps Engineer + team)            | Incomplete (team size, roles INSUFFICIENT_DATA)                   |
@@ -265,15 +265,15 @@ based on utility, not profit).
 **Finding:**  
 **Major cost categories:**
 
-| Cost Category            | Description                            | Estimated Impact   | Source                                                                       |
-| ------------------------ | -------------------------------------- | ------------------ | ---------------------------------------------------------------------------- |
-| **Development**          | DevOps Engineer time (self + team)     | High               | Implicit (primary investment)                                                |
-| **Infrastructure**       | Hosting (if deployed beyond localhost) | INSUFFICIENT_DATA: | Not specified                                                                |
-| **Third-party services** | GitHub Copilot subscription (required) | Medium             | `codebase:README.md` (Prerequisites)                                         |
+| Cost Category            | Description                            | Estimated Impact   | Source                                                               |
+| ------------------------ | -------------------------------------- | ------------------ | -------------------------------------------------------------------- |
+| **Development**          | DevOps Engineer time (self + team)     | High               | Implicit (primary investment)                                        |
+| **Infrastructure**       | Hosting (if deployed beyond localhost) | INSUFFICIENT_DATA: | Not specified                                                        |
+| **Third-party services** | GitHub Copilot subscription (required) | Medium             | `codebase:README.md` (Prerequisites)                                 |
 | **Third-party services** | Canva Connect API (optional)           | Low (optional)     | `onboarding:docs/onboarding/onboarding-output.md` (Canva token SKIP) |
-| **Compute**              | Local Node.js runtime (negligible)     | Low                | Zero external runtime dependencies                                           |
-| **Database**             | File-based storage (negligible)        | Low                | No database licensing costs                                                  |
-| **Testing/QA**           | Automated (Vitest, ESLint)             | Low                | One-time dev dependency setup                                                |
+| **Compute**              | Local Node.js runtime (negligible)     | Low                | Zero external runtime dependencies                                   |
+| **Database**             | File-based storage (negligible)        | Low                | No database licensing costs                                          |
+| **Testing/QA**           | Automated (Vitest, ESLint)             | Low                | One-time dev dependency setup                                        |
 
 **Total cost profile:** Low operational cost (file-based, localhost-first),
 medium development cost (engineer time)
@@ -897,25 +897,25 @@ See REC-005.
 
 ## 4. KPI Baseline
 
-| KPI                                           | Current Value            | Source                                                                         | Measurement Method                                         | Data Status       |
-| --------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------ | ---------------------------------------------------------- | ----------------- |
-| **Test count**                                | 576 passing              | `codebase:README.md` (badge)                                                   | Vitest test runner output                                  | Available         |
-| **Test coverage**                             | 95%+                     | `codebase:README.md` (badge)                                                   | @vitest/coverage-v8 report                                 | Available         |
-| **ESLint errors**                             | 0                        | `codebase:README.md` (badge)                                                   | ESLint static analysis                                     | Available         |
+| KPI                                           | Current Value            | Source                                                                 | Measurement Method                                         | Data Status       |
+| --------------------------------------------- | ------------------------ | ---------------------------------------------------------------------- | ---------------------------------------------------------- | ----------------- |
+| **Test count**                                | 576 passing              | `codebase:README.md` (badge)                                           | Vitest test runner output                                  | Available         |
+| **Test coverage**                             | 95%+                     | `codebase:README.md` (badge)                                           | @vitest/coverage-v8 report                                 | Available         |
+| **ESLint errors**                             | 0                        | `codebase:README.md` (badge)                                           | ESLint static analysis                                     | Available         |
 | **Technical debt (TODO comments)**            | 11                       | `onboarding:docs/onboarding/onboarding-output.md` (codebase scan)      | `grep -r "TODO"` count                                     | Available         |
 | **Technical debt (FIXME comments)**           | 0                        | `onboarding:docs/onboarding/onboarding-output.md` (codebase scan)      | `grep -r "FIXME"` count                                    | Available         |
 | **Technical debt (HACK comments)**            | 0                        | `onboarding:docs/onboarding/onboarding-output.md` (codebase scan)      | `grep -r "HACK"` count                                     | Available         |
-| **Agent count**                               | 38                       | `codebase:README.md` (Features)                                                | Manual count of skill files in `agents/`           | Available         |
+| **Agent count**                               | 38                       | `codebase:README.md` (Features)                                        | Manual count of skill files in `agents/`                   | Available         |
 | **External runtime dependencies**             | 0                        | `onboarding:docs/onboarding/onboarding-output.md` (Notable Finding #1) | `package.json` analysis (webapp excludes node_modules)     | Available         |
-| **Analysis cycle time (manual)**              | 7–10 weeks               | `codebase:README.md` (line 12 — baseline claim)                                | PROJECTED: — industry standard, not measured for this team | UNCERTAIN         |
-| **Analysis cycle time (with platform)**       | 5–10 days                | `codebase:README.md` (line 12 — target claim)                                  | PROJECTED: — not yet measured                              | UNCERTAIN         |
-| **Active attention required (with platform)** | 7–12 hours               | `codebase:README.md` (line 12 — target claim)                                  | PROJECTED: — not yet measured                              | UNCERTAIN         |
-| **User satisfaction**                         | INSUFFICIENT_DATA:       | N/A                                                                            | Not measured                                               | INSUFFICIENT_DATA |
-| **Task completion rate (Command Center UI)**  | INSUFFICIENT_DATA:       | N/A                                                                            | Not measured                                               | INSUFFICIENT_DATA |
-| **Error rate (web UI)**                       | INSUFFICIENT_DATA:       | N/A                                                                            | Not measured                                               | INSUFFICIENT_DATA |
-| **Monthly active users**                      | 1 (DevOps Engineer self) | Implicit (internal use only)                                                   | PROJECTED:                                                 | PROJECTED         |
-| **GitHub stars**                              | INSUFFICIENT_DATA:       | N/A                                                                            | Public repo metric                                         | INSUFFICIENT_DATA |
-| **Contributors (external)**                   | 0 (assumed)              | Implicit (no contributor docs)                                                 | GitHub API                                                 | PROJECTED         |
+| **Analysis cycle time (manual)**              | 7–10 weeks               | `codebase:README.md` (line 12 — baseline claim)                        | PROJECTED: — industry standard, not measured for this team | UNCERTAIN         |
+| **Analysis cycle time (with platform)**       | 5–10 days                | `codebase:README.md` (line 12 — target claim)                          | PROJECTED: — not yet measured                              | UNCERTAIN         |
+| **Active attention required (with platform)** | 7–12 hours               | `codebase:README.md` (line 12 — target claim)                          | PROJECTED: — not yet measured                              | UNCERTAIN         |
+| **User satisfaction**                         | INSUFFICIENT_DATA:       | N/A                                                                    | Not measured                                               | INSUFFICIENT_DATA |
+| **Task completion rate (Command Center UI)**  | INSUFFICIENT_DATA:       | N/A                                                                    | Not measured                                               | INSUFFICIENT_DATA |
+| **Error rate (web UI)**                       | INSUFFICIENT_DATA:       | N/A                                                                    | Not measured                                               | INSUFFICIENT_DATA |
+| **Monthly active users**                      | 1 (DevOps Engineer self) | Implicit (internal use only)                                           | PROJECTED:                                                 | PROJECTED         |
+| **GitHub stars**                              | INSUFFICIENT_DATA:       | N/A                                                                    | Public repo metric                                         | INSUFFICIENT_DATA |
+| **Contributors (external)**                   | 0 (assumed)              | Implicit (no contributor docs)                                         | GitHub API                                                 | PROJECTED         |
 
 ### KPI Baseline Summary
 

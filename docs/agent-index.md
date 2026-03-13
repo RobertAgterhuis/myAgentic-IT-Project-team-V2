@@ -10,8 +10,8 @@
 
 Each agent has a dedicated skill file:
 
-| #   | Agent                          | Skill file                                      |
-| --- | ------------------------------ | ----------------------------------------------- |
+| #   | Agent                          | Skill file                              |
+| --- | ------------------------------ | --------------------------------------- |
 | 00  | Orchestrator                   | `agents/00-orchestrator.md`             |
 | 01  | Business Analyst               | `agents/01-business-analyst.md`         |
 | 02  | Domain Expert                  | `agents/02-domain-expert.md`            |
@@ -55,8 +55,8 @@ Each agent has a dedicated skill file:
 
 ## GUARDRAILS REFERENCE
 
-| Scope                         | Guardrail file                                            |
-| ----------------------------- | --------------------------------------------------------- |
+| Scope                         | Guardrail file                                    |
+| ----------------------------- | ------------------------------------------------- |
 | Global                        | `docs/guardrails/00-global-guardrails.md`         |
 | Business                      | `docs/guardrails/01-business-guardrails.md`       |
 | Architecture                  | `docs/guardrails/02-architecture-guardrails.md`   |
@@ -72,8 +72,8 @@ Each agent has a dedicated skill file:
 
 ## CONTRACTS REFERENCE
 
-| Contract                  | File                                                           |
-| ------------------------- | -------------------------------------------------------------- |
+| Contract                  | File                                                   |
+| ------------------------- | ------------------------------------------------------ |
 | Analysis output           | `docs/contracts/analysis-output-contract.md`           |
 | Recommendations output    | `docs/contracts/recommendations-output-contract.md`    |
 | Sprint plan output        | `docs/contracts/sprintplan-output-contract.md`         |

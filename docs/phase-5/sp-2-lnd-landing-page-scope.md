@@ -70,7 +70,7 @@ Integration with Buttondown subscribe endpoint (SP-2-BTN §3):
 
 | Requirement   | Specification                                              |
 | ------------- | ---------------------------------------------------------- |
-| Design tokens | From `docs/brand/design-tokens.json` v2.0.0        |
+| Design tokens | From `docs/brand/design-tokens.json` v2.0.0                |
 | Responsive    | 4 breakpoints (320, 768, 1024, 1440px)                     |
 | Accessibility | WCAG 2.1 AA (contrast ≥4.5:1, keyboard nav, screen reader) |
 | Performance   | Lighthouse Performance ≥ 90                                |

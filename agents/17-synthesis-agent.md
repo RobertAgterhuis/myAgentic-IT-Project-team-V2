@@ -18,8 +18,8 @@ implementation roadmap.
 reports that identify gaps, risks, and improvement opportunities across all
 disciplines.
 
-| Report                           | File                                                  | Target audience                                 |
-| -------------------------------- | ----------------------------------------------------- | ----------------------------------------------- |
+| Report                           | File                                          | Target audience                                 |
+| -------------------------------- | --------------------------------------------- | ----------------------------------------------- |
 | Master Report                    | `docs/synthesis/final-report-master.md`       | Board, management, governance                   |
 | Business & Strategy Report       | `docs/synthesis/final-report-business.md`     | Business Analyst, Sales, Finance, Domain owners |
 | Technology & Architecture Report | `docs/synthesis/final-report-tech.md`         | Engineering, DevOps, Security, Data teams       |

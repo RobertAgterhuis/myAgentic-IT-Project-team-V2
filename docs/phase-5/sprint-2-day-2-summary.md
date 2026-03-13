@@ -161,23 +161,23 @@ pending)
 
 ### Created (6 files)
 
-| File                                                  | Purpose                        |
-| ----------------------------------------------------- | ------------------------------ |
+| File                                              | Purpose                        |
+| ------------------------------------------------- | ------------------------------ |
 | `src/webapp/routes/subscribe.js`                  | Newsletter subscribe endpoint  |
 | `src/webapp/landing.html`                         | Marketing landing page         |
 | `tests/integration/subscribe.integration.test.js` | Subscribe endpoint tests       |
-| `docker-compose.analytics.yml`                        | Matomo Docker stack            |
-| `matomo-nginx.conf`                                   | Nginx reverse proxy for Matomo |
-| `docs/phase-5/sp-2-mat-matomo-deployment.md`  | Matomo deployment spec         |
+| `docker-compose.analytics.yml`                    | Matomo Docker stack            |
+| `matomo-nginx.conf`                               | Nginx reverse proxy for Matomo |
+| `docs/phase-5/sp-2-mat-matomo-deployment.md`      | Matomo deployment spec         |
 
 ### Modified (4 files)
 
-| File                                    | Changes                                |
-| --------------------------------------- | -------------------------------------- |
-| `.github/workflows/ci-pipeline.yml`     | Added Job 8 accessibility gate         |
+| File                                | Changes                                |
+| ----------------------------------- | -------------------------------------- |
+| `.github/workflows/ci-pipeline.yml` | Added Job 8 accessibility gate         |
 | `src/webapp/server.js`              | Subscribe route + landing page serving |
 | `tests/smoke/landing.smoke.test.js` | Added SMOKE-008 (6 tests)              |
-| `docs/technical-manual.md`              | Updated to v1.8                        |
+| `docs/technical-manual.md`          | Updated to v1.8                        |
 
 ---
 

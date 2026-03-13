@@ -46,11 +46,11 @@ Questionnaire answers may arrive through any of the following channels. All
 channels write to the same `BusinessDocs/` markdown files — the markdown file is
 the **single source of truth**.
 
-| Channel                      | Description                                                                   | File modified directly?                                        |
-| ---------------------------- | ----------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| Direct file edit             | User edits the `*-questionnaire.md` file in their editor                      | Yes                                                            |
+| Channel                      | Description                                                               | File modified directly?                                        |
+| ---------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| Direct file edit             | User edits the `*-questionnaire.md` file in their editor                  | Yes                                                            |
 | Questionnaire Manager web UI | User fills in answers via `http://127.0.0.1:3000` (source: `src/webapp/`) | Yes — the server writes to the same `*-questionnaire.md` files |
-| Future integrations          | Any tool or API that writes answers to the standardized markdown format       | Yes                                                            |
+| Future integrations          | Any tool or API that writes answers to the standardized markdown format   | Yes                                                            |
 
 The Questionnaire Agent's Answer Loading workflow does NOT distinguish between
 channels. It reads the markdown files and builds the answer map identically

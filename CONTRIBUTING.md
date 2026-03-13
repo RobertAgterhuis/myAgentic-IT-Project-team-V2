@@ -35,15 +35,15 @@ npm start
 
 ### Useful Commands
 
-| Command                               | Purpose                                        |
-| ------------------------------------- | ---------------------------------------------- |
-| `npm start`                           | Start the web server on localhost:3000         |
-| `npm test`                            | Run root tests (Jest, 363 tests)               |
-| `npm run test:vitest`                 | Run vitest tests (1239 tests)                  |
-| `npm run test:vitest:watch`           | Watch mode — re-runs on file changes           |
-| `npm run test:vitest:coverage`        | Generate coverage report                       |
-| `npm run test:all`                    | Run all tests (vitest + Jest)                  |
-| `npm run lint`                        | Run ESLint                                     |
+| Command                        | Purpose                                |
+| ------------------------------ | -------------------------------------- |
+| `npm start`                    | Start the web server on localhost:3000 |
+| `npm test`                     | Run root tests (Jest, 363 tests)       |
+| `npm run test:vitest`          | Run vitest tests (1239 tests)          |
+| `npm run test:vitest:watch`    | Watch mode — re-runs on file changes   |
+| `npm run test:vitest:coverage` | Generate coverage report               |
+| `npm run test:all`             | Run all tests (vitest + Jest)          |
+| `npm run lint`                 | Run ESLint                             |
 
 ---
 

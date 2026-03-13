@@ -28,8 +28,8 @@ testimonial/partner timing).
 
 ## 3. Recommendations
 
-| Priority | Recommendation                                   | Why                                                 | Source                                               |
-| -------- | ------------------------------------------------ | --------------------------------------------------- | ---------------------------------------------------- |
+| Priority | Recommendation                                   | Why                                                 | Source                                       |
+| -------- | ------------------------------------------------ | --------------------------------------------------- | -------------------------------------------- |
 | P1       | Enforce analytics readiness launch gate          | Avoids blind growth and invalid experiment outcomes | `docs/phase-4/critic-risk-validation.md:528` |
 | P1       | Keep legal/finance pricing approval as hard gate | Prevents compliance and deployment risk             | `docs/phase-4/critic-risk-validation.md:531` |
 | P1       | Lock copy handoff SLA between Content and CRO    | Protects experiment timelines and signal quality    | `docs/phase-4/critic-risk-validation.md:530` |
@@ -37,8 +37,8 @@ testimonial/partner timing).
 
 ## 4. Sprint Plan Items
 
-| Sprint ID | Item                                     | Priority | Source                                                      |
-| --------- | ---------------------------------------- | -------- | ----------------------------------------------------------- |
+| Sprint ID | Item                                     | Priority | Source                                              |
+| --------- | ---------------------------------------- | -------- | --------------------------------------------------- |
 | SP-1-101  | Brand brief and foundation               | P1       | `docs/phase-4/14-brand-strategist-sprintplan.md:47` |
 | SP-1-105  | Product launch community prep            | P1       | `docs/phase-4/15-growth-marketer-sprintplan.md:151` |
 | SP-1-108  | Onboarding friction validation           | P1       | `docs/phase-4/15-growth-marketer-sprintplan.md:227` |

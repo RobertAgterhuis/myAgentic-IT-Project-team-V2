@@ -55,23 +55,23 @@
 
 ## Files Created
 
-| File                                            | Tests | Purpose                                          |
-| ----------------------------------------------- | ----- | ------------------------------------------------ |
-| `locales/fr-FR/ui-labels.json`                  | —     | French UI labels (49 keys)                       |
-| `locales/fr-FR/validation-messages.json`        | —     | French validation messages (30 keys)             |
-| `locales/fr-FR/doc-snippets.json`               | —     | French doc snippets (48 keys)                    |
-| `locales/de-DE/ui-labels.json`                  | —     | German UI labels (49 keys)                       |
-| `locales/de-DE/validation-messages.json`        | —     | German validation messages (30 keys)             |
-| `locales/de-DE/doc-snippets.json`               | —     | German doc snippets (48 keys)                    |
+| File                                        | Tests | Purpose                                          |
+| ------------------------------------------- | ----- | ------------------------------------------------ |
+| `locales/fr-FR/ui-labels.json`              | —     | French UI labels (49 keys)                       |
+| `locales/fr-FR/validation-messages.json`    | —     | French validation messages (30 keys)             |
+| `locales/fr-FR/doc-snippets.json`           | —     | French doc snippets (48 keys)                    |
+| `locales/de-DE/ui-labels.json`              | —     | German UI labels (49 keys)                       |
+| `locales/de-DE/validation-messages.json`    | —     | German validation messages (30 keys)             |
+| `locales/de-DE/doc-snippets.json`           | —     | German doc snippets (48 keys)                    |
 | `tests/unit/translation-validation.test.js` | 37    | Translation key parity, placeholders, ICU, brand |
 | `tests/unit/landing-qa.test.js`             | 43    | Landing page 8 acceptance criteria validation    |
 | `tests/unit/pilot-readiness.test.js`        | 23    | Pilot materials completeness validation          |
 
 ## Files Modified
 
-| File                                                       | Change                                              |
-| ---------------------------------------------------------- | --------------------------------------------------- |
-| `locales/fr-FR/doc-snippets.json`                          | Fixed brand name preservation                       |
+| File                                               | Change                                              |
+| -------------------------------------------------- | --------------------------------------------------- |
+| `locales/fr-FR/doc-snippets.json`                  | Fixed brand name preservation                       |
 | `docs/phase-5/sp-2-501-weblate-trial-notes.md`     | Status → TRANSLATION_COMPLETE, key counts corrected |
 | `docs/phase-5/sp-2-501-weblate-trial-execution.md` | Last AC checked (translation cycle)                 |
 | `docs/phase-5/sp-2-lnd-landing-page-scope.md`      | Status → COMPLETE (100%)                            |

@@ -31,8 +31,8 @@ complete rules.
 
 ## OUTPUT FILES
 
-| File                                                         | Type                             | Description                                   |
-| ------------------------------------------------------------ | -------------------------------- | --------------------------------------------- |
+| File                                                 | Type                             | Description                                   |
+| ---------------------------------------------------- | -------------------------------- | --------------------------------------------- |
 | `docs/retrospectives/sprint-[SP-N]-retrospective.md` | Per sprint, immutable            | Full retrospective for this sprint            |
 | `docs/retrospectives/lessons-learned.md`             | Cumulative, extended each sprint | All active lessons learned across all sprints |
 | `docs/retrospectives/velocity-log.json`              | Cumulative, machine-readable     | Velocity data per sprint for Orchestrator     |
@@ -45,11 +45,11 @@ complete rules.
 
 Read the following files as input:
 
-| Source                   | Path                                                           | What is read                                      |
-| ------------------------ | -------------------------------------------------------------- | ------------------------------------------------- |
-| Sprint Completion Report | Output PR/Review Agent sprint SP-N                             | Stories, statuses, KPI measurement                |
+| Source                   | Path                                                   | What is read                                      |
+| ------------------------ | ------------------------------------------------------ | ------------------------------------------------- |
+| Sprint Completion Report | Output PR/Review Agent sprint SP-N                     | Stories, statuses, KPI measurement                |
 | KPI Report sprint SP-N   | `docs/metrics/sprint-[SP-N]-kpi.json`                  | Realized KPI values                               |
-| Sprint plan SP-N         | Sprint plan output                                             | Planned story points, stories                     |
+| Sprint plan SP-N         | Sprint plan output                                     | Planned story points, stories                     |
 | Previous retrospective   | `docs/retrospectives/sprint-[SP-N-1]-retrospective.md` | Previously detected patterns                      |
 | Current lessons-learned  | `docs/retrospectives/lessons-learned.md`               | Active lessons (or: file does not yet exist)      |
 | Velocity log             | `docs/retrospectives/velocity-log.json`                | Historical velocity (or: file does not yet exist) |

@@ -38,14 +38,14 @@ None.
 
 ## Deliverables Created
 
-| File                                                                                        | Story             | Description                                                                                          |
-| ------------------------------------------------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------- |
+| File                                                                                | Story             | Description                                                                                          |
+| ----------------------------------------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------- |
 | [sp-2-btn-buttondown-setup.md](docs/phase-5/sp-2-btn-buttondown-setup.md)           | SP-2-BTN (#126)   | Buttondown account config, API spec, template spec, welcome sequence deployment plan                 |
 | [sp-2-soc-social-content-plan.md](docs/phase-5/sp-2-soc-social-content-plan.md)     | SP-2-SOC (#127)   | Publication schedule (10 posts, Weeks 1-2), visual asset requirements, metrics baseline              |
 | [sp-2-201p-internal-pilot-scope.md](docs/phase-5/sp-2-201p-internal-pilot-scope.md) | SP-2-201-P (#107) | Pilot scope (mini-cycle, 6 steps), participant criteria, feedback framework, severity classification |
 | [sp-2-501-tms-vendor-evaluation.md](docs/phase-5/sp-2-501-tms-vendor-evaluation.md) | SP-2-501 (#117)   | 3-vendor evaluation (Weblate, Lokalize, POEditor), scoring matrix, pilot translation scope, timeline |
 | [sp-2-lnd-landing-page-scope.md](docs/phase-5/sp-2-lnd-landing-page-scope.md)       | SP-2-LND (#128)   | Page structure (hero, pillars, social proof, signup), technical requirements, acceptance criteria    |
-| docs/technical-manual.md (updated)                                                          | SP-2-DOC (#129)   | v1.7 — CI/CD Pipeline section (8 jobs, architecture diagram, env config, required secrets)           |
+| docs/technical-manual.md (updated)                                                  | SP-2-DOC (#129)   | v1.7 — CI/CD Pipeline section (8 jobs, architecture diagram, env config, required secrets)           |
 
 ---
 

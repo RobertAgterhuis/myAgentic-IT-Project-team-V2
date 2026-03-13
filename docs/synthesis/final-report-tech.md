@@ -26,16 +26,16 @@ and marketing measurement.
 
 ## 3. Recommendations
 
-| Priority | Recommendation                                             | Why                                               | Source                                                      |
-| -------- | ---------------------------------------------------------- | ------------------------------------------------- | ----------------------------------------------------------- |
+| Priority | Recommendation                                             | Why                                               | Source                                              |
+| -------- | ---------------------------------------------------------- | ------------------------------------------------- | --------------------------------------------------- |
 | P1       | Enforce telemetry readiness gate before launch             | Protects experiment validity and KPI integrity    | `docs/phase-4/critic-risk-validation.md:528`        |
 | P1       | Resolve SAST/DAST and legal interpretation workflows early | Avoids CI and compliance delays in implementation | `docs/phase-2/06-senior-developer-sprintplan.md:34` |
 | P2       | Add weekly instrumentation audit cadence                   | Prevents attribution drift and reporting disputes | `docs/phase-4/critic-risk-validation.md:532`        |
 
 ## 4. Sprint Plan Items
 
-| Sprint ID | Item                                      | Priority | Source                                                      |
-| --------- | ----------------------------------------- | -------- | ----------------------------------------------------------- |
+| Sprint ID | Item                                      | Priority | Source                                              |
+| --------- | ----------------------------------------- | -------- | --------------------------------------------------- |
 | SP-10-603 | Dependency governance and CI audit checks | P1       | `docs/phase-2/06-senior-developer-sprintplan.md:34` |
 | SP-11-611 | Formal multi-layer test strategy          | P1       | `docs/phase-2/06-senior-developer-sprintplan.md:79` |
 | SP-11-612 | Critical E2E smoke suite                  | P1       | `docs/phase-2/06-senior-developer-sprintplan.md:80` |

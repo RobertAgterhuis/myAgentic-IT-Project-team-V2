@@ -8,8 +8,8 @@ Disciplines covered: BUSINESS, TECH, UX, MARKETING
 
 ## 2. Blocker Inventory
 
-| Blocker ID    | Source -> Target      | Description                                                                                          | Classification | Resolution Status | Source                                                       |
-| ------------- | --------------------- | ---------------------------------------------------------------------------------------------------- | -------------- | ----------------- | ------------------------------------------------------------ |
+| Blocker ID    | Source -> Target      | Description                                                                                          | Classification | Resolution Status | Source                                               |
+| ------------- | --------------------- | ---------------------------------------------------------------------------------------------------- | -------------- | ----------------- | ---------------------------------------------------- |
 | BLK-1-501     | BUSINESS -> UX        | Target locale decision unresolved; blocks localization prioritization and downstream TMS/QA planning | BLOCKING       | OPEN              | `docs/phase-3/RISK-ASSESSMENT-PHASE-3.md:79`         |
 | BLK-2-501     | TECH -> UX            | TMS procurement delay risk blocks localization setup and CI integration                              | BLOCKING       | OPEN              | `docs/phase-3/RISK-ASSESSMENT-PHASE-3.md:80`         |
 | BLOCKER-1-502 | TECH -> MARKETING     | GA4/account readiness dependency for funnel instrumentation and launch experiments                   | BLOCKING       | OPEN              | `docs/phase-4/16-cro-specialist-sprintplan.md:237`   |

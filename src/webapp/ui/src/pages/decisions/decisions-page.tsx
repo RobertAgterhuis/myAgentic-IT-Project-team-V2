@@ -26,7 +26,7 @@ import type {
   DecisionPriority,
 } from '@/lib/api-types';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Scale, Plus, Filter, ArrowRight, Trash2 } from 'lucide-react';
+import { Scale, Plus, Filter, ArrowRight, Trash2, Eye, X } from 'lucide-react';
 
 /* ── Types ── */
 type DecisionItem =
@@ -128,9 +128,98 @@ function CreateDecisionDialog({
   );
 }
 
+/* ── Decision Detail Dialog ── */
+function DecisionDetailDialog({
+  decision,
+  onClose,
+}: {
+  decision: DecisionItem | null;
+  onClose: () => void;
+}) {
+  if (!decision) return null;
+
+  const subject =
+    decision._kind === 'open'
+      ? decision.question
+      : decision._kind === 'decided'
+        ? decision.decision
+        : decision.subject;
+
+  return (
+    <ModalDialog
+      title={`Decision ${decision.id}`}
+      description={subject}
+      open={!!decision}
+      onOpenChange={(open) => { if (!open) onClose(); }}
+      size="lg"
+      footer={
+        <Button variant="outline" onClick={onClose}>Close</Button>
+      }
+    >
+      <div className="space-y-4" data-testid="decision-detail">
+        {/* Status & Priority */}
+        <div className="flex items-center gap-3">
+          <Badge variant={statusBadge[decision.status] ?? 'secondary'}>{decision.status}</Badge>
+          {'priority' in decision && decision.priority && (
+            <Badge variant={priorityBadge[decision.priority] ?? 'info'}>{decision.priority}</Badge>
+          )}
+          <LifecycleFlow status={decision.status} />
+        </div>
+
+        {/* Core fields */}
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <Text muted className="text-xs">Scope</Text>
+            <p className="font-medium">{decision.scope || '—'}</p>
+          </div>
+          <div>
+            <Text muted className="text-xs">Date</Text>
+            <p className="font-medium">{decision.date}</p>
+          </div>
+          {'category' in decision && decision.category && (
+            <div>
+              <Text muted className="text-xs">Category</Text>
+              <p className="font-medium">{decision.category}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Context — question text for open, decision text for decided */}
+        <div>
+          <Text muted className="text-xs">
+            {decision._kind === 'open' ? 'Question' : decision._kind === 'decided' ? 'Decision' : 'Subject'}
+          </Text>
+          <p className="mt-1">{subject}</p>
+        </div>
+
+        {/* Rationale / Notes */}
+        {decision._kind === 'open' && decision.answer && (
+          <div>
+            <Text muted className="text-xs">Answer</Text>
+            <p className="mt-1">{decision.answer}</p>
+          </div>
+        )}
+        {decision._kind === 'decided' && decision.notes && (
+          <div>
+            <Text muted className="text-xs">Rationale</Text>
+            <p className="mt-1">{decision.notes}</p>
+          </div>
+        )}
+        {decision._kind === 'deferred' && decision.reason && (
+          <div>
+            <Text muted className="text-xs">Reason for Deferral</Text>
+            <p className="mt-1">{decision.reason}</p>
+          </div>
+        )}
+      </div>
+    </ModalDialog>
+  );
+}
+
 /* ── Columns ── */
 function getColumns(
   onAction: (item: DecisionItem, action: string) => void,
+  onView: (item: DecisionItem) => void,
 ): ColumnDef<DecisionItem, unknown>[] {
   return [
     {
@@ -188,6 +277,14 @@ function getColumns(
       header: '',
       cell: ({ row }) => (
         <div className="flex gap-1">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => onView(row.original)}
+            aria-label={`View ${row.original.id}`}
+          >
+            <Eye className="size-3.5" />
+          </Button>
           {row.original._kind === 'open' && (
             <Button
               size="sm"
@@ -218,7 +315,11 @@ export default function DecisionsPage() {
   const updateDecision = useUpdateDecision();
   const deleteDecision = useDeleteDecision();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [showCreate, setShowCreate] = useState(false);
+  const [selectedDecision, setSelectedDecision] = useState<DecisionItem | null>(null);
 
   // Flatten decisions into a single list
   const allDecisions: DecisionItem[] = useMemo(() => {
@@ -230,11 +331,38 @@ export default function DecisionsPage() {
     ];
   }, [data]);
 
+  // Unique scopes for category filter
+  const scopes = useMemo(() => {
+    const set = new Set(allDecisions.map((d) => d.scope).filter(Boolean));
+    return Array.from(set).sort();
+  }, [allDecisions]);
+
   // Filtered list
   const filtered = useMemo(() => {
-    if (statusFilter === 'all') return allDecisions;
-    return allDecisions.filter((d) => d._kind === statusFilter);
-  }, [allDecisions, statusFilter]);
+    let result = allDecisions;
+    if (statusFilter !== 'all') {
+      result = result.filter((d) => d._kind === statusFilter);
+    }
+    if (categoryFilter !== 'all') {
+      result = result.filter((d) => d.scope === categoryFilter);
+    }
+    if (dateFrom) {
+      result = result.filter((d) => d.date >= dateFrom);
+    }
+    if (dateTo) {
+      result = result.filter((d) => d.date <= dateTo);
+    }
+    return result;
+  }, [allDecisions, statusFilter, categoryFilter, dateFrom, dateTo]);
+
+  const hasActiveFilters = statusFilter !== 'all' || categoryFilter !== 'all' || dateFrom || dateTo;
+
+  const clearFilters = useCallback(() => {
+    setStatusFilter('all');
+    setCategoryFilter('all');
+    setDateFrom('');
+    setDateTo('');
+  }, []);
 
   // Action handler
   const handleAction = useCallback(
@@ -248,7 +376,7 @@ export default function DecisionsPage() {
     [deleteDecision, updateDecision],
   );
 
-  const columns = useMemo(() => getColumns(handleAction), [handleAction]);
+  const columns = useMemo(() => getColumns(handleAction, setSelectedDecision), [handleAction]);
 
   // Stats
   const stats = useMemo(() => ({
@@ -291,7 +419,7 @@ export default function DecisionsPage() {
       </div>
 
       {/* Filter bar */}
-      <div className="flex items-center gap-2" role="toolbar" aria-label="Decision filters">
+      <div className="flex flex-wrap items-center gap-2" role="toolbar" aria-label="Decision filters">
         <Filter className="size-4 text-muted-foreground" />
         {(['all', 'open', 'decided', 'deferred'] as const).map((f) => (
           <Button
@@ -304,6 +432,45 @@ export default function DecisionsPage() {
             {f === 'all' ? 'All' : f.charAt(0).toUpperCase() + f.slice(1)}
           </Button>
         ))}
+
+        <span className="mx-1 h-5 w-px bg-border" />
+
+        {/* Category filter */}
+        <select
+          className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          aria-label="Filter by category"
+        >
+          <option value="all">All scopes</option>
+          {scopes.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
+        </select>
+
+        {/* Date range */}
+        <input
+          type="date"
+          className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+          value={dateFrom}
+          onChange={(e) => setDateFrom(e.target.value)}
+          aria-label="Date from"
+        />
+        <span className="text-xs text-muted-foreground">–</span>
+        <input
+          type="date"
+          className="h-8 rounded-md border border-input bg-background px-2 text-xs"
+          value={dateTo}
+          onChange={(e) => setDateTo(e.target.value)}
+          aria-label="Date to"
+        />
+
+        {hasActiveFilters && (
+          <Button size="sm" variant="ghost" onClick={clearFilters} aria-label="Clear all filters">
+            <X className="size-3.5 mr-1" />
+            Clear
+          </Button>
+        )}
       </div>
 
       {/* Table */}
@@ -329,6 +496,9 @@ export default function DecisionsPage() {
 
       {/* Create Dialog */}
       <CreateDecisionDialog open={showCreate} onOpenChange={setShowCreate} />
+
+      {/* Detail Dialog */}
+      <DecisionDetailDialog decision={selectedDecision} onClose={() => setSelectedDecision(null)} />
     </div>
   );
 }

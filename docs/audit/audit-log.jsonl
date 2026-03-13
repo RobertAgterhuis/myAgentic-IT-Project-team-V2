@@ -2525,3 +2525,8 @@
 {"timestamp":"2026-03-13T11:30:45.412Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
 {"timestamp":"2026-03-13T11:30:45.413Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
 {"timestamp":"2026-03-13T11:30:45.424Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T18:09:24.464Z","operation":"create","entity_type":"decision","entity_id":"DEC-113","user":"webapp","summary":"Decision create: DEC-113"}
+{"timestamp":"2026-03-13T18:09:24.477Z","operation":"create","entity_type":"decision","entity_id":"DEC-114","user":"webapp","summary":"Decision create: DEC-114"}
+{"timestamp":"2026-03-13T18:11:40.012Z","operation":"create","entity_type":"decision","entity_id":"DEC-115","user":"webapp","summary":"Decision create: DEC-115"}
+{"timestamp":"2026-03-13T18:11:40.208Z","operation":"create","entity_type":"decision","entity_id":"DEC-116","user":"webapp","summary":"Decision create: DEC-116"}
+{"timestamp":"2026-03-13T18:11:40.226Z","operation":"update","entity_type":"decision","entity_id":"DEC-116","user":"webapp","summary":"Decision decide: DEC-116"}

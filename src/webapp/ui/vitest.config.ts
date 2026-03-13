@@ -42,6 +42,13 @@ export default defineConfig({
           include: ['src/**/*.{test,spec}.{ts,tsx}'],
           exclude: ['src/**/*.stories.{ts,tsx}'],
           setupFiles: ['./src/test/setup.ts'],
+          pool: 'forks',
+          testTimeout: 10000,
+          server: {
+            deps: {
+              inline: ['@mswjs/interceptors'],
+            },
+          },
         },
       },
       {

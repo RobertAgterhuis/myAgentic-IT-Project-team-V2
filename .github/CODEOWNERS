@@ -2,11 +2,13 @@
 * @RobertAgterhuis
 
 # Webapp
-.github/webapp/ @RobertAgterhuis
+src/webapp/ @RobertAgterhuis
 
 # CI/CD
 .github/workflows/ @RobertAgterhuis
 
 # Agent system
-.github/skills/ @RobertAgterhuis
-.github/docs/ @RobertAgterhuis
+agents/ @RobertAgterhuis
+docs/ @RobertAgterhuis
+platform/ @RobertAgterhuis
+scripts/ @RobertAgterhuis

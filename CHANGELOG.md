@@ -12,18 +12,18 @@ and this project adheres to
 
 ### Added
 
-- GA definition document (`.github/docs/ga-definition.md`) — defines v1 GA as
+- GA definition document (`docs/ga-definition.md`) — defines v1 GA as
   localhost/single-operator with supervised autonomy posture
-- Security design document (`.github/docs/security-design.md`) — STRIDE threat
+- Security design document (`docs/security-design.md`) — STRIDE threat
   model, 3 deployment profiles, hardening checklist
-- Data inventory (`.github/docs/data-inventory.md`) — all data categories,
+- Data inventory (`docs/data-inventory.md`) — all data categories,
   retention policy, DSAR procedure, ROPA skeleton
 - Privacy policy (`docs/privacy-policy.md`) — user-facing localhost privacy
   policy
-- Truth-source policy (`.github/docs/truth-source-policy.md`) — evidence
+- Truth-source policy (`docs/truth-source-policy.md`) — evidence
   accuracy rules and enforcement
 - CHANGELOG.md (this file)
-- Release checklist document (`.github/docs/release-checklist.md`)
+- Release checklist document (`docs/release-checklist.md`)
 - Light/dark theme color tokens in design-tokens.json
 
 ### Changed

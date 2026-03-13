@@ -9,7 +9,7 @@
 #   3. docker compose -f docker-compose.weblate.yml up -d
 #   4. Access Weblate at http://localhost:${WEBLATE_PORT:-8081}
 #
-# Documentation: .github/docs/phase-5/sp-2-501-weblate-trial-notes.md
+# Documentation: docs/phase-5/sp-2-501-weblate-trial-notes.md
 
 services:
   weblate:

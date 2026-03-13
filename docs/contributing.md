@@ -57,7 +57,7 @@ npm start
 ## Architecture Overview
 
 ```
-.github/webapp/           ← Web application (the code you'll work with most)
+src/webapp/           ← Web application (the code you'll work with most)
   server.js               ← HTTP server, route handlers, SSE, metrics
   store.js                ← Storage abstraction (FileStore + InMemoryStore)
   models.js               ← Domain parsing (questionnaires, decisions, session state)
@@ -69,10 +69,10 @@ npm start
   utils/secret-utils.js   ← Secret pattern detection + warning formatting
   index.html              ← Single-page web UI (HTML/CSS/JS, no build step)
 
-.github/skills/           ← Agent skill files (38 agents)
-.github/docs/             ← Contracts, guardrails, playbooks, templates
+agents/           ← Agent skill files (38 agents)
+docs/             ← Contracts, guardrails, playbooks, templates
 
-.github/tests/
+tests/
   unit/                   ← Unit tests (models, cache, schemas, sanitization, etc.)
   integration/            ← Integration tests (API, SSE, store, regression suite)
 ```
@@ -97,7 +97,7 @@ npm start
 
 ### ESLint Configuration
 
-ESLint 9 with flat config (`.github/eslint.config.mjs`) enforces:
+ESLint 8 (`.eslintrc.js`) enforces (via `src/webapp/` override):
 
 | Rule              | Setting                   | Rationale                         |
 | ----------------- | ------------------------- | --------------------------------- |
@@ -174,8 +174,7 @@ docs: update README with badges and technology stack
 3. **Run the full test suite** and ensure all tests pass:
 
    ```bash
-   cd .github
-   npm test
+   npm run test:all
    ```
 
 4. **Run ESLint** and fix any issues:
@@ -211,7 +210,7 @@ docs: update README with badges and technology stack
 
 ## Webapp Development Cookbook
 
-Common recipes for extending the web UI at `.github/webapp/`.
+Common recipes for extending the web UI at `src/webapp/`.
 
 ### Adding a New API Endpoint
 

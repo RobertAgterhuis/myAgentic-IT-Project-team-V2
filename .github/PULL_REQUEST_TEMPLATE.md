@@ -13,7 +13,7 @@
 ## Testing
 
 - [ ] Root tests pass (`npm test` — Jest, 363 tests)
-- [ ] `.github/` tests pass (`cd .github && npm test` — Vitest, 809 tests)
+- [ ] Vitest tests pass (`npm run test:vitest` — 1239 tests)
 - [ ] New tests added for new functionality
 - [ ] Manual testing completed
 

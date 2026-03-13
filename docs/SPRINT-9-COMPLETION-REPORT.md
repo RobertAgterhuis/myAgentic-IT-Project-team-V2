@@ -71,7 +71,7 @@ features:
 
 ## Technical Deliverables
 
-### Backend API (`.github/webapp/routes/milestones.js`)
+### Backend API (`src/webapp/routes/milestones.js`)
 
 **Endpoints Implemented**:
 
@@ -99,7 +99,7 @@ features:
 5. **PATCH /api/milestones/:id/archive** (SP-9.3)
    - Soft-delete: sets `archived: true`
    - Returns 200 OK with updated milestone
-   - Audit trail: records event in `.github/docs/audit/` with timestamp
+   - Audit trail: records event in `docs/audit/` with timestamp
 
 **Test Coverage**:
 
@@ -109,12 +109,12 @@ features:
 
 **API Documentation**:
 
-- Updated `.github/docs/api/milestones-api.md` with full reference
+- Updated `docs/api/milestones-api.md` with full reference
 - Includes data model, validation rules, error codes, examples
 
 ---
 
-### Frontend UI (`.github/webapp/dashboard.html` & `dashboard.js`)
+### Frontend UI (`src/webapp/dashboard.html` & `dashboard.js`)
 
 **Modal Components Implemented**:
 
@@ -434,21 +434,21 @@ features:
 
 ### Modified Files
 
-- `.github/webapp/routes/milestones.js` - Backend API implementation
-- `.github/webapp/dashboard.html` - Modal and filter UI
-- `.github/webapp/dashboard.js` - Filter handlers and modal lifecycle
-- `.github/docs/api/milestones-api.md` - API documentation
+- `src/webapp/routes/milestones.js` - Backend API implementation
+- `src/webapp/dashboard.html` - Modal and filter UI
+- `src/webapp/dashboard.js` - Filter handlers and modal lifecycle
+- `docs/api/milestones-api.md` - API documentation
 
 ### Created Files
 
-- `.github/tests/integration/milestones-api.test.js` - 21 integration tests
+- `tests/integration/milestones-api.test.js` - 21 integration tests
 - `docs/SPRINT-9-TEST-PLAN.md` - Comprehensive manual test plan
 - `docs/SPRINT-9-COMPLETION-REPORT.md` - This document
 
 ### Data Files
 
-- `.github/data/milestones.json` - Milestone storage (updated)
-- `.github/docs/audit/milestones-archive-*.jsonl` - Soft-delete audit trail
+- `data/milestones.json` - Milestone storage (updated)
+- `docs/audit/milestones-archive-*.jsonl` - Soft-delete audit trail
 
 ---
 

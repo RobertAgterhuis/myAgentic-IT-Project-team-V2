@@ -22,13 +22,12 @@ minutes.
 git clone https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2.git
 cd myAgentic-IT-Project-team-V2
 npm install
-cd .github && npm install && cd ..
 ```
 
 ## Step 2: Start the Command Center
 
 ```bash
-node .github/webapp/server.js
+node src/webapp/server.js
 ```
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser.
@@ -89,7 +88,7 @@ When agents need your input:
 ```bash
 # Run test suites to confirm everything works
 npm test                      # Root suite (363 tests)
-cd .github && npm test        # .github/ suite (809 tests)
+npm run test:vitest      # Vitest suite (1239 tests)
 ```
 
 Both suites should report **0 failures**.
@@ -100,7 +99,7 @@ Both suites should report **0 failures**.
 
 - **[User Manual](user-manual.md)** — Comprehensive guide to all features
 - **[Technical Manual](technical-manual.md)** — Architecture and API reference
-- **[Operating Handbook](../.github/docs/operating-handbook.md)** — Monitoring,
+- **[Operating Handbook](../docs/operating-handbook.md)** — Monitoring,
   troubleshooting, recovery
 - **[Available Commands](../README.md#available-commands)** — All CREATE, AUDIT,
   FEATURE, and utility commands

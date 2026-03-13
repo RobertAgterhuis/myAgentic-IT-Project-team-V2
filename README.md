@@ -76,7 +76,7 @@ implementation (human-in-the-loop, CONTINUE-to-proceed).
 **2. (Recommended) Launch the Command Center web UI:**
 
 ```bash
-node .github/webapp/server.js
+node src/webapp/server.js
 ```
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser.
@@ -134,7 +134,7 @@ appears automatically in the Copilot tools panel.
 ```json
 {
   "command": "node",
-  "args": [".github/webapp/mcp-server.js"]
+  "args": ["src/webapp/mcp-server.js"]
 }
 ```
 
@@ -270,7 +270,7 @@ Command Center pipeline view is unaffected by conversation resets.
 For the full guide including all agents, FAQ, troubleshooting, and ground rules,
 see:
 
-**[`.github/docs/README.md`](.github/docs/README.md)**
+**[`docs/README.md`](docs/README.md)**
 
 ---
 
@@ -297,9 +297,9 @@ npm run test:watch
 The test suite includes **1172 tests** across 45 files (17 Jest + 28 Vitest)
 with statement coverage enforced at 70%:
 
-- **Root (`__tests__/`)** — 363 Jest tests: API endpoints, SSE, store caching,
+- **Root (`tests/`)** — 363 Jest tests: API endpoints, SSE, store caching,
   decisions round-trip, path traversal, concurrent requests
-- **`.github/tests/`** — 809 Vitest tests: unit (models, sanitization, cache,
+- **`tests/`** — 809 Vitest tests: unit (models, sanitization, cache,
   schemas, audit trail, file locking, MCP server) + integration (API, store,
   regression suite, WCAG contrast)
 - Coverage thresholds enforced at 70% (statements, branches, functions, lines)

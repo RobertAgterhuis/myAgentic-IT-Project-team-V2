@@ -54,7 +54,7 @@ MariaDB database and is not transmitted externally.
 | Data Type     | Storage Location                                  |
 | ------------- | ------------------------------------------------- |
 | Project files | Your local file system (project directory)        |
-| Session state | `.github/docs/session/` (JSON files)              |
+| Session state | `docs/session/` (JSON files)                      |
 | Business data | `BusinessDocs/` (Markdown files)                  |
 | Analytics     | Docker volume on your machine (if Matomo enabled) |
 | Git history   | `.git/` directory                                 |
@@ -87,7 +87,7 @@ You have full control over all data processed by the platform:
 ### 5.1 Access
 
 All data is stored in human-readable formats (Markdown, JSON) that you can
-inspect directly. See `.github/docs/data-inventory.md` for a complete catalog.
+inspect directly. See `docs/data-inventory.md` for a complete catalog.
 
 ### 5.2 Export
 
@@ -98,7 +98,7 @@ built-in GDPR export feature.
 
 - Delete the project directory to remove all project data
 - Run `docker-compose down -v` to remove analytics data
-- See `.github/docs/data-inventory.md` Section 3, "Data Deletion" for detailed
+- See `docs/data-inventory.md` Section 3, "Data Deletion" for detailed
   procedures
 
 ### 5.4 Rectification
@@ -109,7 +109,7 @@ Edit any Markdown or JSON file directly to correct inaccurate data.
 
 ## 6. Security
 
-See `.github/docs/security-design.md` for the complete security design. Key
+See `docs/security-design.md` for the complete security design. Key
 measures include:
 
 - Content Security Policy (CSP) headers

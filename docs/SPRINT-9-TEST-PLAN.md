@@ -199,7 +199,7 @@ This document outlines comprehensive test coverage for all features.
 ### Test Case 3.4: Soft-Delete Audit Trail
 
 - **Setup**: Milestone archived via delete button
-- **Action**: Check `.github/docs/audit/` for event log
+- **Action**: Check `docs/audit/` for event log
 - **Expected Result**:
   - New entry in audit log with event="archived"
   - Includes milestone id, name, timestamp, archived_at
@@ -550,7 +550,7 @@ This document outlines comprehensive test coverage for all features.
 
 - **Setup**: Milestone edited (e.g., status changed), page refreshed
 - **Action**: Check API data directly
-- **Expected Result**: Changes persisted to `.github/data/milestones.json`
+- **Expected Result**: Changes persisted to `data/milestones.json`
 - **Status**: [ ] PASS / [ ] FAIL
 - **Notes**:
 

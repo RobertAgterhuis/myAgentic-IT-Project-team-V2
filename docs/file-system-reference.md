@@ -32,7 +32,7 @@ myAgentic-IT-Project-team/
 
 ## `.github/` — System internals
 
-### Agent skill files — `.github/skills/`
+### Agent skill files — `agents/`
 
 | File pattern                                                | Purpose                             | Modified by             |
 | ----------------------------------------------------------- | ----------------------------------- | ----------------------- |
@@ -42,7 +42,7 @@ myAgentic-IT-Project-team/
 These files define agent behavior. **Do not modify** unless you're changing the
 system itself.
 
-### System documentation — `.github/docs/`
+### System documentation — `docs/`
 
 | Path                    | Purpose                                            | Written by         | Safe to edit? |
 | ----------------------- | -------------------------------------------------- | ------------------ | ------------- |
@@ -51,7 +51,7 @@ system itself.
 | `README.md`             | Overview of the docs/ structure                    | System maintainers | No            |
 | `analytics-events.json` | Event tracking definitions                         | System maintainers | No            |
 
-### Contracts — `.github/docs/contracts/`
+### Contracts — `docs/contracts/`
 
 25 contract files defining the input/output format for every agent type. These
 are **agent-facing specifications** — they tell each agent what to produce and
@@ -67,7 +67,7 @@ Key contracts: | File | Defines | |------|---------| |
 
 **Do not modify** contracts unless you're changing agent behavior.
 
-### Guardrails — `.github/docs/guardrails/`
+### Guardrails — `docs/guardrails/`
 
 10 guardrail files that define rules agents must follow:
 
@@ -86,12 +86,12 @@ Key contracts: | File | Defines | |------|---------| |
 
 **Do not modify** unless you're changing system rules.
 
-### Templates — `.github/docs/templates/`
+### Templates — `docs/templates/`
 
 4 template files used by agents to format their outputs (analysis,
 recommendations, sprint plan, guardrails). **Do not modify.**
 
-### Playbooks — `.github/docs/playbooks/`
+### Playbooks — `docs/playbooks/`
 
 | File                                    | Purpose                  |
 | --------------------------------------- | ------------------------ |
@@ -101,7 +101,7 @@ recommendations, sprint plan, guardrails). **Do not modify.**
 Agent-facing process definitions. **Do not modify** unless changing the system
 flow.
 
-### Decisions — `.github/docs/decisions.md` + `.github/docs/decisions/`
+### Decisions — `docs/decisions.md` + `docs/decisions/`
 
 | Path             | Purpose                                         | Written by                  | Safe to edit?                          |
 | ---------------- | ----------------------------------------------- | --------------------------- | -------------------------------------- |
@@ -109,9 +109,9 @@ flow.
 | `decisions/*.md` | Category files (11 technology stacks)           | You + web UI + Orchestrator | **Yes** (header status, decision rows) |
 
 This is your primary communication channel with the agent team. See the
-[Decisions help file](../.github/help/decisions.md) for details.
+[Decisions help file](docs/help/decisions.md) for details.
 
-### Session state — `.github/docs/session/`
+### Session state — `docs/session/`
 
 | File                      | Purpose                          | Written by                      | Safe to edit?                     |
 | ------------------------- | -------------------------------- | ------------------------------- | --------------------------------- |
@@ -120,7 +120,7 @@ This is your primary communication channel with the agent team. See the
 | `reevaluate-trigger.json` | Reevaluation trigger from web UI | Web UI Decisions tab            | Transient — auto-consumed         |
 | `README.md`               | Explains the session directory   | —                               | No                                |
 
-### Brand assets — `.github/docs/brand/`
+### Brand assets — `docs/brand/`
 
 | File                     | Purpose                                        | Written by                                        |
 | ------------------------ | ---------------------------------------------- | ------------------------------------------------- |
@@ -131,7 +131,7 @@ This is your primary communication channel with the agent team. See the
 Generated after Phase 4. **Safe to review and suggest changes** — changes take
 effect via the decision system or reevaluation.
 
-### Storybook — `.github/docs/storybook/`
+### Storybook — `docs/storybook/`
 
 | File                     | Purpose                              | Written by      |
 | ------------------------ | ------------------------------------ | --------------- |
@@ -139,7 +139,7 @@ effect via the decision system or reevaluation.
 
 Generated after Phase 4, before Synthesis.
 
-### Synthesis — `.github/docs/synthesis/`
+### Synthesis — `docs/synthesis/`
 
 | File                           | Purpose                                          | Written by      |
 | ------------------------------ | ------------------------------------------------ | --------------- |
@@ -153,14 +153,14 @@ Generated after Phase 4, before Synthesis.
 You must **APPROVE** all 6 before Phase 5 starts. These are read-only after
 approval.
 
-### Security — `.github/docs/security/`
+### Security — `docs/security/`
 
 | File                           | Purpose                                     | Written by                   |
 | ------------------------------ | ------------------------------------------- | ---------------------------- |
 | `security-handoff-context.md`  | Security constraints for all Phase 5 agents | Security Architect (Phase 2) |
 | `sprint-[SP-N]-secret-scan.md` | Secret scan results per sprint              | PR/Review Agent              |
 
-### Audit trail — `.github/docs/audit/`
+### Audit trail — `docs/audit/`
 
 | File              | Purpose                               |
 | ----------------- | ------------------------------------- |
@@ -168,7 +168,7 @@ approval.
 
 Auto-generated. **Do not modify.**
 
-### Retrospectives — `.github/docs/retrospectives/` (created in Phase 5)
+### Retrospectives — `docs/retrospectives/` (created in Phase 5)
 
 | File                             | Purpose                                             | Written by          |
 | -------------------------------- | --------------------------------------------------- | ------------------- |
@@ -176,7 +176,7 @@ Auto-generated. **Do not modify.**
 | `lessons-learned.md`             | Cumulative lessons, top-3 injected into next sprint | Retrospective Agent |
 | `velocity-log.json`              | Machine-readable velocity data                      | Retrospective Agent |
 
-### Metrics — `.github/docs/metrics/` (created in Phase 5)
+### Metrics — `docs/metrics/` (created in Phase 5)
 
 | File                     | Purpose                       | Written by |
 | ------------------------ | ----------------------------- | ---------- |
@@ -248,7 +248,7 @@ main project cycle.
 
 ---
 
-## `.github/webapp/` — Web UI application
+## `src/webapp/` — Web UI application
 
 | File                | Purpose                                                                      |
 | ------------------- | ---------------------------------------------------------------------------- |
@@ -265,7 +265,7 @@ main project cycle.
 | `start.ps1`         | PowerShell startup script                                                    |
 | `utils/`            | Utility modules                                                              |
 
-### Tests: `.github/tests/` + `.github/webapp/*.test.js`
+### Tests: `tests/` + `src/webapp/*.test.js`
 
 | Path                 | Purpose               |
 | -------------------- | --------------------- |
@@ -273,7 +273,7 @@ main project cycle.
 | `tests/integration/` | Integration tests     |
 | `webapp/*.test.js`   | Webapp-specific tests |
 
-Run with: `cd .github && npm test`
+Run with: `npm run test:vitest`
 
 ---
 
@@ -289,12 +289,12 @@ Run with: `cd .github && npm test`
 
 ## What's safe to delete?
 
-| Path                                                       | Safe to delete? | Consequence                                       |
-| ---------------------------------------------------------- | --------------- | ------------------------------------------------- |
-| `session-state.json`                                       | Yes             | Loses current progress; can start fresh           |
-| `command-queue.json`                                       | Yes             | Loses queued (unconsumed) command                 |
-| `reevaluate-trigger.json`                                  | Yes             | Cancels pending reevaluation                      |
-| `BusinessDocs/` contents                                   | With caution    | Loses all phase outputs and questionnaire answers |
-| `.github/docs/synthesis/` contents                         | With caution    | Must re-run Synthesis Agent                       |
-| Anything in `.github/skills/`, `contracts/`, `guardrails/` | **No**          | Breaks agent behavior                             |
-| `session-state-*-archived.json`                            | Yes             | Old session archives, safe to clean up            |
+| Path                                               | Safe to delete? | Consequence                                       |
+| -------------------------------------------------- | --------------- | ------------------------------------------------- |
+| `session-state.json`                               | Yes             | Loses current progress; can start fresh           |
+| `command-queue.json`                               | Yes             | Loses queued (unconsumed) command                 |
+| `reevaluate-trigger.json`                          | Yes             | Cancels pending reevaluation                      |
+| `BusinessDocs/` contents                           | With caution    | Loses all phase outputs and questionnaire answers |
+| `docs/synthesis/` contents                         | With caution    | Must re-run Synthesis Agent                       |
+| Anything in `agents/`, `contracts/`, `guardrails/` | **No**          | Breaks agent behavior                             |
+| `session-state-*-archived.json`                    | Yes             | Old session archives, safe to clean up            |

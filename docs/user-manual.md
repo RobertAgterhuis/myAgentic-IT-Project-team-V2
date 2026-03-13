@@ -45,7 +45,7 @@ Command Center, and troubleshooting common issues.
 ### 2. Launch the Web UI
 
 ```bash
-node .github/webapp/server.js
+node src/webapp/server.js
 ```
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser. The server
@@ -144,7 +144,7 @@ Decisions you create here become hard constraints that all agents follow.
 
 > **For the complete decision lifecycle, category system, deferred activation,
 > and Sprint Gate blocking rules, see
-> [`.github/help/decisions.md`](../.github/help/decisions.md).**  
+> [`docs/help/decisions.md`](docs/help/decisions.md).**  
 > **For technical architecture (file layout, data flow, enforcement chain), see
 > [`docs/decisions-architecture.md`](decisions-architecture.md).**
 
@@ -259,9 +259,9 @@ switching to the web UI.
 
 - **VS Code** — Works out of the box (`.vscode/mcp.json` is pre-configured)
 - **Visual Studio** — Add an MCP stdio server:
-  `node .github/webapp/mcp-server.js`
+  `node src/webapp/mcp-server.js`
 - **JetBrains IDEs** — Add an MCP stdio server:
-  `node .github/webapp/mcp-server.js`
+  `node src/webapp/mcp-server.js`
 
 ### What You Can Do via MCP
 
@@ -279,7 +279,7 @@ when needed. It reads and writes the same files as the web UI, so both
 interfaces stay in sync.
 
 No additional setup is needed for VS Code. For other IDEs, configure an MCP
-server with command `node` and argument `.github/webapp/mcp-server.js`.
+server with command `node` and argument `src/webapp/mcp-server.js`.
 
 ---
 
@@ -328,7 +328,7 @@ repository as files.
 `CREATE TECH MyProject` to run only Phase 2.
 
 **Q: How do I reset the project?** A: Delete the session state file at
-`.github/docs/session/session-state.json` and start fresh.
+`docs/session/session-state.json` and start fresh.
 
 **Q: Can I run multiple projects simultaneously?** A: Not in the same
 repository. Each repository supports one active session.
@@ -384,7 +384,7 @@ session state.
 
 ### Decisions not saving
 
-- Check that `.github/docs/decisions.md` exists and is writable.
+- Check that `docs/decisions.md` exists and is writable.
 - Look for error messages in the browser console (F12 → Console tab).
 - The server creates backups before writing — check for `.bak` files if data
   seems lost.
@@ -423,7 +423,7 @@ the platform.
 
 ### Email Templates
 
-Welcome sequence templates are in `.github/webapp/email-templates/`:
+Welcome sequence templates are in `src/webapp/email-templates/`:
 
 - `welcome-1.md` — Value proposition (Day 0)
 - `welcome-2.md` — Problem awareness (Day 2)

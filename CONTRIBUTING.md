@@ -35,21 +35,22 @@ npm start
 
 ### Useful Commands
 
-| Command                               | Purpose                                        |
-| ------------------------------------- | ---------------------------------------------- |
-| `npm start`                           | Start the web server on localhost:3000         |
-| `npm test`                            | Run root tests (Jest, 363 tests)               |
-| `cd .github && npm test`              | Run .github/ tests (Vitest, 809 tests)         |
-| `cd .github && npm run test:watch`    | Watch mode — re-runs on file changes           |
-| `cd .github && npm run test:coverage` | Generate coverage report                       |
-| `cd .github && npm run lint`          | Run ESLint (.github/ — ESLint 10, flat config) |
+| Command                        | Purpose                                |
+| ------------------------------ | -------------------------------------- |
+| `npm start`                    | Start the web server on localhost:3000 |
+| `npm test`                     | Run root tests (Jest, 363 tests)       |
+| `npm run test:vitest`          | Run vitest tests (1239 tests)          |
+| `npm run test:vitest:watch`    | Watch mode — re-runs on file changes   |
+| `npm run test:vitest:coverage` | Generate coverage report               |
+| `npm run test:all`             | Run all tests (vitest + Jest)          |
+| `npm run lint`                 | Run ESLint                             |
 
 ---
 
 ## Architecture Overview
 
 ```
-.github/webapp/           ← Web application (the code you'll work with most)
+src/webapp/           ← Web application (the code you'll work with most)
   server.js               ← HTTP server, route handlers, SSE, metrics
   store.js                ← Storage abstraction (FileStore + InMemoryStore)
   models.js               ← Domain parsing (questionnaires, decisions, session state)
@@ -61,10 +62,10 @@ npm start
   utils/secret-utils.js   ← Secret pattern detection + warning formatting
   index.html              ← Single-page web UI (HTML/CSS/JS, no build step)
 
-.github/skills/           ← Agent skill files (38 agents)
-.github/docs/             ← Contracts, guardrails, playbooks, templates
+agents/           ← Agent skill files (38 agents)
+docs/             ← Contracts, guardrails, playbooks, templates
 
-.github/tests/
+tests/
   unit/                   ← Unit tests (models, cache, schemas, sanitization, etc.)
   integration/            ← Integration tests (API, SSE, store, regression suite)
 ```
@@ -89,12 +90,8 @@ npm start
 
 ### ESLint Configuration
 
-Two ESLint configurations are used:
-
-- **Root** — ESLint 8.57.1 (legacy `.eslintrc` format)
-- **`.github/`** — ESLint 10.0.3 (flat config, `.github/eslint.config.mjs`)
-
-The `.github/` flat config enforces:
+A single ESLint configuration (`.eslintrc.js`, ESLint 8.57.1) covers the entire project.
+The `src/webapp/` override enforces:
 
 | Rule              | Setting                   | Rationale                         |
 | ----------------- | ------------------------- | --------------------------------- |

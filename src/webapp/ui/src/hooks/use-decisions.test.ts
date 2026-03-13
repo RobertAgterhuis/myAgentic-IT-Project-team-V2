@@ -3,7 +3,13 @@
  */
 import { describe, it, expect } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useDecisions, useDecision, useCreateDecision, useUpdateDecision, useDeleteDecision } from '@/hooks/use-decisions';
+import {
+  useDecisions,
+  useDecision,
+  useCreateDecision,
+  useUpdateDecision,
+  useDeleteDecision,
+} from '@/hooks/use-decisions';
 import { TestWrapper } from '@/test/test-wrapper';
 
 describe('useDecisions', () => {

@@ -126,7 +126,14 @@ export interface DecisionsResponse {
   categories: DecisionCategory[];
 }
 
-export type DecisionAction = 'create' | 'answer' | 'decide' | 'defer' | 'expire' | 'reopen' | 'edit';
+export type DecisionAction =
+  | 'create'
+  | 'answer'
+  | 'decide'
+  | 'defer'
+  | 'expire'
+  | 'reopen'
+  | 'edit';
 
 export interface CreateDecisionPayload {
   action: 'create';
@@ -265,8 +272,16 @@ export interface ValidateGateResponse extends OkResponse {
 }
 
 export type OrchestratorCommandName =
-  | 'CREATE' | 'CREATE_BUSINESS' | 'CREATE_TECH' | 'CREATE_UX' | 'CREATE_MARKETING'
-  | 'REEVALUATE' | 'FEATURE' | 'SCOPE_CHANGE' | 'HOTFIX' | 'AUDIT';
+  | 'CREATE'
+  | 'CREATE_BUSINESS'
+  | 'CREATE_TECH'
+  | 'CREATE_UX'
+  | 'CREATE_MARKETING'
+  | 'REEVALUATE'
+  | 'FEATURE'
+  | 'SCOPE_CHANGE'
+  | 'HOTFIX'
+  | 'AUDIT';
 
 export interface OrchestratorCommandPayload {
   command: OrchestratorCommandName;
@@ -462,10 +477,13 @@ export interface ServerMetrics {
   sse_connections: number;
   file_ops_count: number;
   cache_hit_ratio: number;
-  per_endpoint: Record<string, {
-    count: number;
-    p50: number;
-    p95: number;
-    p99: number;
-  }>;
+  per_endpoint: Record<
+    string,
+    {
+      count: number;
+      p50: number;
+      p95: number;
+      p99: number;
+    }
+  >;
 }

@@ -13,12 +13,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { ModalDialog } from '@/components/ui/modal-dialog';
 import { InputField } from '@/components/ui/input-field';
 import { FormRow } from '@/components/ui/form-row';
-import {
-  useDecisions,
-  useCreateDecision,
-  useUpdateDecision,
-  useDeleteDecision,
-} from '@/hooks';
+import { useDecisions, useCreateDecision, useUpdateDecision, useDeleteDecision } from '@/hooks';
 import type {
   OpenDecision,
   DecidedDecision,
@@ -59,15 +54,10 @@ function LifecycleFlow({ status }: { status: string }) {
     <div className="flex items-center gap-1 text-xs" aria-label={`Lifecycle: ${status}`}>
       {steps.map((step, i) => (
         <span key={step} className="flex items-center gap-1">
-          <Badge
-            variant={i <= currentIdx ? 'success' : 'secondary'}
-            className="text-[10px] px-1.5"
-          >
+          <Badge variant={i <= currentIdx ? 'success' : 'secondary'} className="text-[10px] px-1.5">
             {step}
           </Badge>
-          {i < steps.length - 1 && (
-            <ArrowRight className="size-3 text-muted-foreground" />
-          )}
+          {i < steps.length - 1 && <ArrowRight className="size-3 text-muted-foreground" />}
         </span>
       ))}
     </div>
@@ -91,7 +81,13 @@ function CreateDecisionDialog({
     if (!text.trim()) return;
     create.mutate(
       { action: 'create', type: 'OPEN_QUESTION', priority, scope: scope.trim(), text: text.trim() },
-      { onSuccess: () => { onOpenChange(false); setScope(''); setText(''); } },
+      {
+        onSuccess: () => {
+          onOpenChange(false);
+          setScope('');
+          setText('');
+        },
+      }
     );
   }, [create, text, scope, priority, onOpenChange]);
 
@@ -102,16 +98,32 @@ function CreateDecisionDialog({
       onOpenChange={onOpenChange}
       footer={
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={!text.trim() || create.isPending} loading={create.isPending}>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!text.trim() || create.isPending}
+            loading={create.isPending}
+          >
             Create
           </Button>
         </div>
       }
     >
       <div className="space-y-4">
-        <InputField label="Question / Decision" value={text} onChange={(e) => setText(e.target.value)} placeholder="What needs to be decided?" />
-        <InputField label="Scope" value={scope} onChange={(e) => setScope(e.target.value)} placeholder="e.g., architecture, ux, business" />
+        <InputField
+          label="Question / Decision"
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          placeholder="What needs to be decided?"
+        />
+        <InputField
+          label="Scope"
+          value={scope}
+          onChange={(e) => setScope(e.target.value)}
+          placeholder="e.g., architecture, ux, business"
+        />
         <FormRow label="Priority">
           <select
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
@@ -150,10 +162,14 @@ function DecisionDetailDialog({
       title={`Decision ${decision.id}`}
       description={subject}
       open={!!decision}
-      onOpenChange={(open) => { if (!open) onClose(); }}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
       size="lg"
       footer={
-        <Button variant="outline" onClick={onClose}>Close</Button>
+        <Button variant="outline" onClick={onClose}>
+          Close
+        </Button>
       }
     >
       <div className="space-y-4" data-testid="decision-detail">
@@ -169,16 +185,22 @@ function DecisionDetailDialog({
         {/* Core fields */}
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
-            <Text muted className="text-xs">Scope</Text>
+            <Text muted className="text-xs">
+              Scope
+            </Text>
             <p className="font-medium">{decision.scope || '—'}</p>
           </div>
           <div>
-            <Text muted className="text-xs">Date</Text>
+            <Text muted className="text-xs">
+              Date
+            </Text>
             <p className="font-medium">{decision.date}</p>
           </div>
           {'category' in decision && decision.category && (
             <div>
-              <Text muted className="text-xs">Category</Text>
+              <Text muted className="text-xs">
+                Category
+              </Text>
               <p className="font-medium">{decision.category}</p>
             </div>
           )}
@@ -187,7 +209,11 @@ function DecisionDetailDialog({
         {/* Context — question text for open, decision text for decided */}
         <div>
           <Text muted className="text-xs">
-            {decision._kind === 'open' ? 'Question' : decision._kind === 'decided' ? 'Decision' : 'Subject'}
+            {decision._kind === 'open'
+              ? 'Question'
+              : decision._kind === 'decided'
+                ? 'Decision'
+                : 'Subject'}
           </Text>
           <p className="mt-1">{subject}</p>
         </div>
@@ -195,19 +221,25 @@ function DecisionDetailDialog({
         {/* Rationale / Notes */}
         {decision._kind === 'open' && decision.answer && (
           <div>
-            <Text muted className="text-xs">Answer</Text>
+            <Text muted className="text-xs">
+              Answer
+            </Text>
             <p className="mt-1">{decision.answer}</p>
           </div>
         )}
         {decision._kind === 'decided' && decision.notes && (
           <div>
-            <Text muted className="text-xs">Rationale</Text>
+            <Text muted className="text-xs">
+              Rationale
+            </Text>
             <p className="mt-1">{decision.notes}</p>
           </div>
         )}
         {decision._kind === 'deferred' && decision.reason && (
           <div>
-            <Text muted className="text-xs">Reason for Deferral</Text>
+            <Text muted className="text-xs">
+              Reason for Deferral
+            </Text>
             <p className="mt-1">{decision.reason}</p>
           </div>
         )}
@@ -219,7 +251,7 @@ function DecisionDetailDialog({
 /* ── Columns ── */
 function getColumns(
   onAction: (item: DecisionItem, action: string) => void,
-  onView: (item: DecisionItem) => void,
+  onView: (item: DecisionItem) => void
 ): ColumnDef<DecisionItem, unknown>[] {
   return [
     {
@@ -373,18 +405,21 @@ export default function DecisionsPage() {
         updateDecision.mutate({ action: 'decide', id: item.id });
       }
     },
-    [deleteDecision, updateDecision],
+    [deleteDecision, updateDecision]
   );
 
   const columns = useMemo(() => getColumns(handleAction, setSelectedDecision), [handleAction]);
 
   // Stats
-  const stats = useMemo(() => ({
-    total: allDecisions.length,
-    open: data?.open.length ?? 0,
-    decided: data?.decided.length ?? 0,
-    deferred: data?.deferred.length ?? 0,
-  }), [allDecisions.length, data]);
+  const stats = useMemo(
+    () => ({
+      total: allDecisions.length,
+      open: data?.open.length ?? 0,
+      decided: data?.decided.length ?? 0,
+      deferred: data?.deferred.length ?? 0,
+    }),
+    [allDecisions.length, data]
+  );
 
   if (isLoading) {
     return (
@@ -412,14 +447,20 @@ export default function DecisionsPage() {
       <div className="grid grid-cols-4 gap-4">
         {(['total', 'open', 'decided', 'deferred'] as const).map((key) => (
           <Card key={key} elevation="flat" className="p-4 text-center">
-            <Text muted className="text-xs capitalize">{key}</Text>
+            <Text muted className="text-xs capitalize">
+              {key}
+            </Text>
             <p className="text-2xl font-bold">{stats[key]}</p>
           </Card>
         ))}
       </div>
 
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-2" role="toolbar" aria-label="Decision filters">
+      <div
+        className="flex flex-wrap items-center gap-2"
+        role="toolbar"
+        aria-label="Decision filters"
+      >
         <Filter className="size-4 text-muted-foreground" />
         {(['all', 'open', 'decided', 'deferred'] as const).map((f) => (
           <Button
@@ -444,7 +485,9 @@ export default function DecisionsPage() {
         >
           <option value="all">All scopes</option>
           {scopes.map((s) => (
-            <option key={s} value={s}>{s}</option>
+            <option key={s} value={s}>
+              {s}
+            </option>
           ))}
         </select>
 

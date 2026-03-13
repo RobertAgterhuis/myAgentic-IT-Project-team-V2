@@ -16,7 +16,7 @@ function renderLayout(initialEntries: string[] = ['/']) {
   return render(
     <RouterTestWrapper initialEntries={initialEntries}>
       <AppLayout />
-    </RouterTestWrapper>,
+    </RouterTestWrapper>
   );
 }
 

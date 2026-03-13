@@ -35,10 +35,18 @@ export function useKeyboardShortcuts() {
       if (pendingRef.current === 'g') {
         clearPending();
         switch (key.toLowerCase()) {
-          case 'd': navigate('/'); return;
-          case 'c': navigate('/command-center'); return;
-          case 'p': navigate('/pipeline'); return;
-          case 'q': navigate('/questionnaires'); return;
+          case 'd':
+            navigate('/');
+            return;
+          case 'c':
+            navigate('/command-center');
+            return;
+          case 'p':
+            navigate('/pipeline');
+            return;
+          case 'q':
+            navigate('/questionnaires');
+            return;
         }
         return;
       }

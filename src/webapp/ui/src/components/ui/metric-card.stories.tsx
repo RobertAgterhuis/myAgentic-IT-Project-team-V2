@@ -18,7 +18,13 @@ export const TrendUp: Story = {
 };
 
 export const TrendDown: Story = {
-  args: { label: 'Open Bugs', value: 8, delta: '-3', trend: 'down', icon: <Bug className="size-4" /> },
+  args: {
+    label: 'Open Bugs',
+    value: 8,
+    delta: '-3',
+    trend: 'down',
+    icon: <Bug className="size-4" />,
+  },
 };
 
 export const Neutral: Story = {
@@ -33,9 +39,27 @@ export const Dashboard: Story = {
   args: { label: 'Velocity', value: '21 SP' },
   render: () => (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <MetricCard label="Velocity" value="21 SP" delta="+12%" trend="up" icon={<Zap className="size-4" />} />
-      <MetricCard label="Open Bugs" value={3} delta="-2" trend="down" icon={<Bug className="size-4" />} />
-      <MetricCard label="Done" value="87%" delta="+5%" trend="up" icon={<CheckCircle2 className="size-4" />} />
+      <MetricCard
+        label="Velocity"
+        value="21 SP"
+        delta="+12%"
+        trend="up"
+        icon={<Zap className="size-4" />}
+      />
+      <MetricCard
+        label="Open Bugs"
+        value={3}
+        delta="-2"
+        trend="down"
+        icon={<Bug className="size-4" />}
+      />
+      <MetricCard
+        label="Done"
+        value="87%"
+        delta="+5%"
+        trend="up"
+        icon={<CheckCircle2 className="size-4" />}
+      />
     </div>
   ),
 };

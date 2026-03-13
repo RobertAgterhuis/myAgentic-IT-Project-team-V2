@@ -24,10 +24,9 @@ describe('useMilestones', () => {
 
 describe('useMilestone', () => {
   it('fetches a single milestone', async () => {
-    const { result } = renderHook(
-      () => useMilestone('milestone-20260301-abc'),
-      { wrapper: TestWrapper },
-    );
+    const { result } = renderHook(() => useMilestone('milestone-20260301-abc'), {
+      wrapper: TestWrapper,
+    });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.name).toBe('M1: Foundation');
   });

@@ -74,8 +74,7 @@ export function HelpPanel({ onClose }: HelpPanelProps) {
       if (!filter) return true;
       const q = filter.toLowerCase();
       return (
-        s.description.toLowerCase().includes(q) ||
-        s.keys.some((k) => k.toLowerCase().includes(q))
+        s.description.toLowerCase().includes(q) || s.keys.some((k) => k.toLowerCase().includes(q))
       );
     });
   }, [filter, location.pathname]);
@@ -88,7 +87,7 @@ export function HelpPanel({ onClose }: HelpPanelProps) {
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) onClose();
     },
-    [onClose],
+    [onClose]
   );
 
   return (
@@ -157,7 +156,11 @@ export function HelpPanel({ onClose }: HelpPanelProps) {
           )}
 
           {contextShortcuts.length === 0 && (
-            <div className={cn('flex flex-col items-center gap-2 py-6 text-center text-muted-foreground')}>
+            <div
+              className={cn(
+                'flex flex-col items-center gap-2 py-6 text-center text-muted-foreground'
+              )}
+            >
               <HelpCircle className="size-8" />
               <span className="text-sm">No shortcuts match "{filter}"</span>
             </div>

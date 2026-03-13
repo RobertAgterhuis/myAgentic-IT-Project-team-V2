@@ -53,9 +53,7 @@ function SectionGroup({
         {!collapsed && section.progress != null && (
           <span className="text-[10px] tabular-nums">{section.progress}%</span>
         )}
-        <ChevronDown
-          className={cn('size-3.5 transition-transform', !open && '-rotate-90')}
-        />
+        <ChevronDown className={cn('size-3.5 transition-transform', !open && '-rotate-90')} />
       </button>
 
       {/* Progress bar */}
@@ -80,13 +78,11 @@ function SectionGroup({
                   'hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                   activeItemId === item.id
                     ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-foreground',
+                    : 'text-foreground'
                 )}
                 aria-current={activeItemId === item.id ? 'page' : undefined}
               >
-                {item.icon && (
-                  <span className="shrink-0 [&>svg]:size-4">{item.icon}</span>
-                )}
+                {item.icon && <span className="shrink-0 [&>svg]:size-4">{item.icon}</span>}
                 {!collapsed && <span className="truncate">{item.label}</span>}
               </button>
             </li>
@@ -114,7 +110,7 @@ function SidePanel({
       className={cn(
         'flex flex-col border-r bg-card transition-[width] duration-200',
         collapsed ? 'w-14' : 'w-60',
-        className,
+        className
       )}
       {...props}
     >
@@ -126,9 +122,7 @@ function SidePanel({
           className="rounded-sm p-1 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
-          <ChevronLeft
-            className={cn('size-4 transition-transform', collapsed && 'rotate-180')}
-          />
+          <ChevronLeft className={cn('size-4 transition-transform', collapsed && 'rotate-180')} />
         </button>
       </div>
 

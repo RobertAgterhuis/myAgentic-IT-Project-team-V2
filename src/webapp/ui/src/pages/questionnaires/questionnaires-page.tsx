@@ -44,7 +44,9 @@ function QuestionRow({
               {question.status}
             </Badge>
             {question.classification === 'REQUIRED' && (
-              <Badge variant="error" className="text-xs">REQUIRED</Badge>
+              <Badge variant="error" className="text-xs">
+                REQUIRED
+              </Badge>
             )}
           </div>
           <p className="text-sm font-medium">{question.question}</p>
@@ -85,7 +87,9 @@ export default function QuestionnairesPage() {
     }
 
     return Array.from(grouped.entries()).map(([phase, items]) => {
-      const answered = items.flatMap((q) => q.questions).filter((q) => q.status === 'ANSWERED').length;
+      const answered = items
+        .flatMap((q) => q.questions)
+        .filter((q) => q.status === 'ANSWERED').length;
       const total = items.flatMap((q) => q.questions).length;
 
       return {
@@ -112,7 +116,7 @@ export default function QuestionnairesPage() {
       (q) =>
         q.question.toLowerCase().includes(term) ||
         q.section.toLowerCase().includes(term) ||
-        q.answer.toLowerCase().includes(term),
+        q.answer.toLowerCase().includes(term)
     );
   }, [selected, searchTerm]);
 
@@ -130,14 +134,17 @@ export default function QuestionnairesPage() {
       .map(([questionId, answer]) => ({
         questionId,
         answer,
-        status: answer.trim() ? 'ANSWERED' as const : 'OPEN' as const,
+        status: answer.trim() ? ('ANSWERED' as const) : ('OPEN' as const),
       }));
 
     if (updates.length === 0) return;
 
-    save.mutate({ file: selectedFile, updates }, {
-      onSuccess: () => setDrafts({}),
-    });
+    save.mutate(
+      { file: selectedFile, updates },
+      {
+        onSuccess: () => setDrafts({}),
+      }
+    );
   }
 
   // Stats for selected questionnaire
@@ -147,7 +154,7 @@ export default function QuestionnairesPage() {
     const answered = selected.questions.filter((q) => q.status === 'ANSWERED').length;
     const required = selected.questions.filter((q) => q.classification === 'REQUIRED').length;
     const requiredAnswered = selected.questions.filter(
-      (q) => q.classification === 'REQUIRED' && q.status === 'ANSWERED',
+      (q) => q.classification === 'REQUIRED' && q.status === 'ANSWERED'
     ).length;
     return { total, answered, required, requiredAnswered };
   }, [selected]);
@@ -192,7 +199,9 @@ export default function QuestionnairesPage() {
             <div className="flex items-center justify-between">
               <div>
                 <Heading level={1}>{selected.agent || 'Questionnaire'}</Heading>
-                <Text muted>{selected.phase} — v{selected.version}</Text>
+                <Text muted>
+                  {selected.phase} — v{selected.version}
+                </Text>
               </div>
               <Button
                 onClick={handleSave}

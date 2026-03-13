@@ -51,11 +51,7 @@ function ConfirmDialog({
       closeOnBackdropClick={false}
       footer={
         <>
-          <Button
-            ref={cancelRef}
-            variant="outline"
-            onClick={() => handleOpenChange(false)}
-          >
+          <Button ref={cancelRef} variant="outline" onClick={() => handleOpenChange(false)}>
             {cancelLabel}
           </Button>
           <Button

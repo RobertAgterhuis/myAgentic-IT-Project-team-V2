@@ -57,7 +57,11 @@ export const WithAction: Story = {
   args: {
     variant: 'error',
     icon: <AlertCircle />,
-    action: <Button size="sm" variant="outline">Retry</Button>,
+    action: (
+      <Button size="sm" variant="outline">
+        Retry
+      </Button>
+    ),
     children: 'Failed to save. Please try again.',
   },
 };

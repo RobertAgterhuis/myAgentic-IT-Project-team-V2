@@ -9,19 +9,40 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { InputField } from '@/components/ui/input-field';
-import {
-  useOrchestratorStatus,
-  useOrchestratorQueue,
-  useQueueCommand,
-} from '@/hooks';
+import { useOrchestratorStatus, useOrchestratorQueue, useQueueCommand } from '@/hooks';
 import type { OrchestratorCommandName } from '@/lib/api-types';
 import { Terminal, Play, Zap, Bug, Search, Send } from 'lucide-react';
 
-const QUICK_ACTIONS: { command: OrchestratorCommandName; label: string; icon: React.ReactNode; description: string }[] = [
-  { command: 'CREATE', label: 'CREATE', icon: <Play className="size-4" />, description: 'Start full creation cycle' },
-  { command: 'AUDIT', label: 'AUDIT', icon: <Search className="size-4" />, description: 'Audit existing software' },
-  { command: 'FEATURE', label: 'FEATURE', icon: <Zap className="size-4" />, description: 'Add a new feature' },
-  { command: 'HOTFIX', label: 'HOTFIX', icon: <Bug className="size-4" />, description: 'Emergency hotfix' },
+const QUICK_ACTIONS: {
+  command: OrchestratorCommandName;
+  label: string;
+  icon: React.ReactNode;
+  description: string;
+}[] = [
+  {
+    command: 'CREATE',
+    label: 'CREATE',
+    icon: <Play className="size-4" />,
+    description: 'Start full creation cycle',
+  },
+  {
+    command: 'AUDIT',
+    label: 'AUDIT',
+    icon: <Search className="size-4" />,
+    description: 'Audit existing software',
+  },
+  {
+    command: 'FEATURE',
+    label: 'FEATURE',
+    icon: <Zap className="size-4" />,
+    description: 'Add a new feature',
+  },
+  {
+    command: 'HOTFIX',
+    label: 'HOTFIX',
+    icon: <Bug className="size-4" />,
+    description: 'Emergency hotfix',
+  },
 ];
 
 const statusVariant: Record<string, 'success' | 'warning' | 'error' | 'info' | 'secondary'> = {
@@ -114,7 +135,9 @@ export default function CommandCenterPage() {
 
       {/* Quick Actions */}
       <div>
-        <Heading level={2} className="mb-3">Quick Actions</Heading>
+        <Heading level={2} className="mb-3">
+          Quick Actions
+        </Heading>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {QUICK_ACTIONS.map((action) => (
             <Card
@@ -126,7 +149,9 @@ export default function CommandCenterPage() {
               <div className="flex flex-col items-center gap-2 py-2 text-center">
                 {action.icon}
                 <span className="font-semibold text-sm">{action.label}</span>
-                <Text muted className="text-xs">{action.description}</Text>
+                <Text muted className="text-xs">
+                  {action.description}
+                </Text>
               </div>
             </Card>
           ))}
@@ -135,7 +160,9 @@ export default function CommandCenterPage() {
 
       {/* Command Queue */}
       <div>
-        <Heading level={2} className="mb-3">Command Queue</Heading>
+        <Heading level={2} className="mb-3">
+          Command Queue
+        </Heading>
 
         {queue?.queue && queue.queue.length > 0 ? (
           <div className="space-y-2">
@@ -149,7 +176,9 @@ export default function CommandCenterPage() {
                     <div>
                       <span className="font-mono text-sm font-medium">{entry.command}</span>
                       {entry.project && (
-                        <Text muted className="text-xs ml-2">{entry.project}</Text>
+                        <Text muted className="text-xs ml-2">
+                          {entry.project}
+                        </Text>
                       )}
                     </div>
                   </div>
@@ -158,7 +187,9 @@ export default function CommandCenterPage() {
                   </Text>
                 </div>
                 {entry.description && (
-                  <Text muted className="text-xs mt-1">{entry.description}</Text>
+                  <Text muted className="text-xs mt-1">
+                    {entry.description}
+                  </Text>
                 )}
               </Card>
             ))}

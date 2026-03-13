@@ -30,10 +30,7 @@ export const Success: Story = {
 
 export const Error: Story = {
   render: () => (
-    <Button
-      variant="destructive"
-      onClick={() => showToast.error('Something went wrong')}
-    >
+    <Button variant="destructive" onClick={() => showToast.error('Something went wrong')}>
       Show Error Toast
     </Button>
   ),
@@ -41,10 +38,7 @@ export const Error: Story = {
 
 export const Warning: Story = {
   render: () => (
-    <Button
-      variant="outline"
-      onClick={() => showToast.warning('Disk space running low')}
-    >
+    <Button variant="outline" onClick={() => showToast.warning('Disk space running low')}>
       Show Warning Toast
     </Button>
   ),
@@ -52,10 +46,7 @@ export const Warning: Story = {
 
 export const Info: Story = {
   render: () => (
-    <Button
-      variant="secondary"
-      onClick={() => showToast.info('New version available')}
-    >
+    <Button variant="secondary" onClick={() => showToast.info('New version available')}>
       Show Info Toast
     </Button>
   ),

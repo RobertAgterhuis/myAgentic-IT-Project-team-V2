@@ -3,7 +3,11 @@
  */
 import { describe, it, expect } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import { useQuestionnaires, useQuestionnaire, useSaveQuestionnaire } from '@/hooks/use-questionnaires';
+import {
+  useQuestionnaires,
+  useQuestionnaire,
+  useSaveQuestionnaire,
+} from '@/hooks/use-questionnaires';
 import { TestWrapper } from '@/test/test-wrapper';
 import { mockQuestionnaires } from '@/test/msw-handlers';
 
@@ -25,7 +29,9 @@ describe('useQuestionnaire', () => {
   });
 
   it('returns null for non-existent file', async () => {
-    const { result } = renderHook(() => useQuestionnaire('nonexistent.md'), { wrapper: TestWrapper });
+    const { result } = renderHook(() => useQuestionnaire('nonexistent.md'), {
+      wrapper: TestWrapper,
+    });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toBeNull();
   });

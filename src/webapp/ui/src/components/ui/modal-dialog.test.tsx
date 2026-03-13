@@ -6,14 +6,9 @@ import { Button } from './button';
 
 function renderModal(props: Partial<React.ComponentProps<typeof ModalDialog>> = {}) {
   return render(
-    <ModalDialog
-      title="Test Modal"
-      open={true}
-      onOpenChange={() => {}}
-      {...props}
-    >
+    <ModalDialog title="Test Modal" open={true} onOpenChange={() => {}} {...props}>
       <p>Modal content</p>
-    </ModalDialog>,
+    </ModalDialog>
   );
 }
 
@@ -58,12 +53,9 @@ describe('ModalDialog', () => {
 
   it('renders trigger button', () => {
     render(
-      <ModalDialog
-        title="With Trigger"
-        trigger={<Button>Open</Button>}
-      >
+      <ModalDialog title="With Trigger" trigger={<Button>Open</Button>}>
         <p>Content</p>
-      </ModalDialog>,
+      </ModalDialog>
     );
     expect(screen.getByRole('button', { name: 'Open' })).toBeInTheDocument();
   });

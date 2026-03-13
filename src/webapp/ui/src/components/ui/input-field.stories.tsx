@@ -30,7 +30,12 @@ export const ErrorState: Story = {
 };
 
 export const SuccessState: Story = {
-  args: { label: 'Username', defaultValue: 'johndoe', success: true, helperText: 'Username available' },
+  args: {
+    label: 'Username',
+    defaultValue: 'johndoe',
+    success: true,
+    helperText: 'Username available',
+  },
 };
 
 export const WithCharacterCount: Story = {

@@ -9,13 +9,14 @@ describe('AlertBanner', () => {
     expect(screen.getByText('Something happened')).toBeInTheDocument();
   });
 
-  it.each(['info', 'warning', 'error', 'success'] as const)(
-    'renders variant=%s',
-    (variant) => {
-      render(<AlertBanner variant={variant} data-testid="alert">Alert</AlertBanner>);
-      expect(screen.getByTestId('alert')).toHaveAttribute('data-variant', variant);
-    },
-  );
+  it.each(['info', 'warning', 'error', 'success'] as const)('renders variant=%s', (variant) => {
+    render(
+      <AlertBanner variant={variant} data-testid="alert">
+        Alert
+      </AlertBanner>
+    );
+    expect(screen.getByTestId('alert')).toHaveAttribute('data-variant', variant);
+  });
 
   it('error variant has role=alert', () => {
     render(<AlertBanner variant="error">Error!</AlertBanner>);
@@ -28,20 +29,12 @@ describe('AlertBanner', () => {
   });
 
   it('renders icon slot', () => {
-    render(
-      <AlertBanner icon={<span data-testid="icon">I</span>}>
-        With icon
-      </AlertBanner>,
-    );
+    render(<AlertBanner icon={<span data-testid="icon">I</span>}>With icon</AlertBanner>);
     expect(screen.getByTestId('icon')).toBeInTheDocument();
   });
 
   it('renders action slot', () => {
-    render(
-      <AlertBanner action={<button>Retry</button>}>
-        With action
-      </AlertBanner>,
-    );
+    render(<AlertBanner action={<button>Retry</button>}>With action</AlertBanner>);
     expect(screen.getByRole('button', { name: 'Retry' })).toBeInTheDocument();
   });
 
@@ -51,7 +44,7 @@ describe('AlertBanner', () => {
     render(
       <AlertBanner dismissible onDismiss={onDismiss}>
         Dismiss me
-      </AlertBanner>,
+      </AlertBanner>
     );
     await user.click(screen.getByRole('button', { name: 'Dismiss' }));
     expect(screen.queryByText('Dismiss me')).not.toBeInTheDocument();

@@ -12,9 +12,19 @@ export interface RouteEntry {
 
 export const routes = {
   dashboard: { path: '/', label: 'Dashboard', icon: 'LayoutDashboard', section: 'Overview' },
-  commandCenter: { path: '/command-center', label: 'Command Center', icon: 'Terminal', section: 'Operations' },
+  commandCenter: {
+    path: '/command-center',
+    label: 'Command Center',
+    icon: 'Terminal',
+    section: 'Operations',
+  },
   pipeline: { path: '/pipeline', label: 'Pipeline', icon: 'GitBranch', section: 'Operations' },
-  questionnaires: { path: '/questionnaires', label: 'Questionnaires', icon: 'ClipboardList', section: 'Data' },
+  questionnaires: {
+    path: '/questionnaires',
+    label: 'Questionnaires',
+    icon: 'ClipboardList',
+    section: 'Data',
+  },
   decisions: { path: '/decisions', label: 'Decisions', icon: 'Scale', section: 'Data' },
   metrics: { path: '/metrics', label: 'Metrics', icon: 'BarChart3', section: 'Monitoring' },
 } as const satisfies Record<string, RouteEntry>;

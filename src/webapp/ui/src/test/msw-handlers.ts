@@ -151,7 +151,12 @@ export const mockDashboardMetrics: TimestampedResponse<DashboardMetrics> = {
 export const mockDashboardActivity: TimestampedResponse<ActivityEntry[]> = {
   ok: true,
   data: [
-    { type: 'commit', action: 'push', details: 'feat: add Sprint 9D', timestamp: '2026-03-13T10:00:00Z' },
+    {
+      type: 'commit',
+      action: 'push',
+      details: 'feat: add Sprint 9D',
+      timestamp: '2026-03-13T10:00:00Z',
+    },
   ],
   timestamp: new Date().toISOString(),
 };
@@ -176,9 +181,11 @@ export const handlers = [
 
   /* Decisions */
   http.get('/api/decisions', () => HttpResponse.json(mockDecisions)),
-  http.post('/api/decisions', () => HttpResponse.json({ ok: true, id: 'DEC-003', action: 'create' })),
+  http.post('/api/decisions', () =>
+    HttpResponse.json({ ok: true, id: 'DEC-003', action: 'create' })
+  ),
   http.post('/api/decisions/activate-category', () =>
-    HttpResponse.json({ ok: true, action: 'activated', file: 'cat.md', name: 'Cat', stack: 'tech' }),
+    HttpResponse.json({ ok: true, action: 'activated', file: 'cat.md', name: 'Cat', stack: 'tech' })
   ),
 
   /* Milestones */
@@ -201,7 +208,12 @@ export const handlers = [
       updated_at: new Date().toISOString(),
       archived: false,
     };
-    return HttpResponse.json({ ok: true, data: ms, timestamp: new Date().toISOString(), message: 'Created' });
+    return HttpResponse.json({
+      ok: true,
+      data: ms,
+      timestamp: new Date().toISOString(),
+      message: 'Created',
+    });
   }),
   http.put('/api/milestones/:id', async ({ request, params }) => {
     const body = (await request.json()) as Record<string, unknown>;
@@ -215,10 +227,14 @@ export const handlers = [
 
   /* Milestone Templates */
   http.get('/api/milestone-templates', () =>
-    HttpResponse.json({ ok: true, data: [], timestamp: new Date().toISOString() }),
+    HttpResponse.json({ ok: true, data: [], timestamp: new Date().toISOString() })
   ),
   http.post('/api/milestone-templates', () =>
-    HttpResponse.json({ ok: true, data: { id: 'tpl-1', name: 'TPL' }, timestamp: new Date().toISOString() }),
+    HttpResponse.json({
+      ok: true,
+      data: { id: 'tpl-1', name: 'TPL' },
+      timestamp: new Date().toISOString(),
+    })
   ),
   http.delete('/api/milestone-templates/:id', () => HttpResponse.json({ ok: true })),
   http.post('/api/milestone-templates/:id/apply', () =>
@@ -226,31 +242,39 @@ export const handlers = [
       ok: true,
       data: mockMilestonesList.data[0],
       timestamp: new Date().toISOString(),
-    }),
+    })
   ),
 
   /* Orchestrator */
   http.get('/api/orchestrator/status', () => HttpResponse.json(mockOrchestratorStatus)),
   http.get('/api/orchestrator/run-history', () => HttpResponse.json([])),
   http.post('/api/orchestrator/advance', () =>
-    HttpResponse.json({ ok: true, transition: {}, status: mockOrchestratorStatus }),
+    HttpResponse.json({ ok: true, transition: {}, status: mockOrchestratorStatus })
   ),
   http.post('/api/orchestrator/error', () => HttpResponse.json({ ok: true })),
   http.post('/api/orchestrator/recover', () => HttpResponse.json({ ok: true })),
   http.post('/api/orchestrator/reset', () => HttpResponse.json({ ok: true })),
   http.post('/api/orchestrator/stop', () => HttpResponse.json({ ok: true })),
   http.post('/api/orchestrator/validate-gate', () =>
-    HttpResponse.json({ ok: true, verdict: 'APPROVED', summary: { phase: 'Phase 1', totalViolations: 0 } }),
+    HttpResponse.json({
+      ok: true,
+      verdict: 'APPROVED',
+      summary: { phase: 'Phase 1', totalViolations: 0 },
+    })
   ),
   http.post('/api/orchestrator/command', () => HttpResponse.json({ ok: true })),
   http.post('/api/orchestrator/sprint-gate', () =>
-    HttpResponse.json({ ok: true, verdict: 'READY', summary: { sprintId: 'SP-1', totalBlockers: 0 } }),
+    HttpResponse.json({
+      ok: true,
+      verdict: 'READY',
+      summary: { sprintId: 'SP-1', totalBlockers: 0 },
+    })
   ),
 
   /* Command queue */
   http.get('/api/command', () => HttpResponse.json(mockCommandQueue)),
   http.post('/api/command', () =>
-    HttpResponse.json({ ok: true, clipboard_text: 'test', brief_saved: false, message: 'Queued' }),
+    HttpResponse.json({ ok: true, clipboard_text: 'test', brief_saved: false, message: 'Queued' })
   ),
 
   /* Dashboard */

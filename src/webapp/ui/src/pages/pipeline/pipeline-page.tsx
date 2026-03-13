@@ -38,8 +38,10 @@ const agentStatusBadge: Record<string, 'success' | 'info' | 'secondary'> = {
 /* ── Gate indicator ── */
 
 function GateIndicator({ status }: { status: 'passed' | 'pending' | 'blocked' }) {
-  if (status === 'passed') return <ShieldCheck className="size-4 text-green-600" aria-label="Gate passed" />;
-  if (status === 'blocked') return <ShieldAlert className="size-4 text-red-600" aria-label="Gate blocked" />;
+  if (status === 'passed')
+    return <ShieldCheck className="size-4 text-green-600" aria-label="Gate passed" />;
+  if (status === 'blocked')
+    return <ShieldAlert className="size-4 text-red-600" aria-label="Gate blocked" />;
   return <Clock className="size-4 text-muted-foreground" aria-label="Gate pending" />;
 }
 
@@ -95,7 +97,12 @@ function PhaseCard({
             <GateIndicator status={deriveGateStatus(phase)} />
           </div>
 
-          <ProgressBar value={pct} label={`${phase.done}/${phase.total} agents`} showPercentage className="mt-2" />
+          <ProgressBar
+            value={pct}
+            label={`${phase.done}/${phase.total} agents`}
+            showPercentage
+            className="mt-2"
+          />
         </div>
       </div>
 
@@ -140,9 +147,7 @@ export default function PipelinePage() {
           <Text muted>Orchestrator state machine flow and phase gates</Text>
         </div>
         {status && (
-          <Badge variant={status.state === 'IDLE' ? 'secondary' : 'info'}>
-            {status.state}
-          </Badge>
+          <Badge variant={status.state === 'IDLE' ? 'secondary' : 'info'}>{status.state}</Badge>
         )}
       </div>
 
@@ -151,19 +156,27 @@ export default function PipelinePage() {
         <Card elevation="flat">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
-              <Text muted className="text-xs">Cycle</Text>
+              <Text muted className="text-xs">
+                Cycle
+              </Text>
               <span className="font-medium">{progress.session.cycle_type}</span>
             </div>
             <div>
-              <Text muted className="text-xs">Phase</Text>
+              <Text muted className="text-xs">
+                Phase
+              </Text>
               <span className="font-medium">{progress.session.current_phase}</span>
             </div>
             <div>
-              <Text muted className="text-xs">Agent</Text>
+              <Text muted className="text-xs">
+                Agent
+              </Text>
               <span className="font-medium">{progress.session.current_agent}</span>
             </div>
             <div>
-              <Text muted className="text-xs">Step</Text>
+              <Text muted className="text-xs">
+                Step
+              </Text>
               <span className="font-medium">{progress.session.current_step}</span>
             </div>
           </div>
@@ -178,9 +191,7 @@ export default function PipelinePage() {
               <PhaseCard
                 phase={phase}
                 isExpanded={expandedPhase === phase.key}
-                onToggle={() =>
-                  setExpandedPhase((prev) => (prev === phase.key ? null : phase.key))
-                }
+                onToggle={() => setExpandedPhase((prev) => (prev === phase.key ? null : phase.key))}
               />
               {i < phases.length - 1 && <Connector />}
             </div>

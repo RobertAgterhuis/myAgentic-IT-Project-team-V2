@@ -6,14 +6,14 @@ Items deferred from current sprint for future resolution.
 
 ## BACKLOG-S9G-001 — Fix Vitest + MSW interaction test infrastructure on Windows
 
-| Field        | Value                                                                |
-| ------------ | -------------------------------------------------------------------- |
-| **Origin**   | S9G-36 (Issue #243) — Decisions page unit tests                      |
-| **Priority** | MEDIUM                                                               |
-| **Points**   | 3                                                                    |
-| **Type**     | Infrastructure / Test tooling                                        |
-| **Status**   | DEFERRED                                                             |
-| **Blocked**  | 5 skipped tests in `decisions-page.test.tsx`                         |
+| Field        | Value                                           |
+| ------------ | ----------------------------------------------- |
+| **Origin**   | S9G-36 (Issue #243) — Decisions page unit tests |
+| **Priority** | MEDIUM                                          |
+| **Points**   | 3                                               |
+| **Type**     | Infrastructure / Test tooling                   |
+| **Status**   | DEFERRED                                        |
+| **Blocked**  | 5 skipped tests in `decisions-page.test.tsx`    |
 
 ### Problem
 

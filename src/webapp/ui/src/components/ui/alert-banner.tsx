@@ -48,7 +48,7 @@ function AlertBanner({
       className={cn(
         'relative flex items-start gap-3 rounded-lg border px-4 py-3 text-sm',
         variantStyles[variant],
-        className,
+        className
       )}
       {...props}
     >

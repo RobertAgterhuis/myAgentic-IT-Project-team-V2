@@ -51,10 +51,7 @@ function TopNavigation({
   return (
     <header
       role="banner"
-      className={cn(
-        'flex h-14 items-center gap-4 border-b bg-card px-4',
-        className,
-      )}
+      className={cn('flex h-14 items-center gap-4 border-b bg-card px-4', className)}
       {...props}
     >
       {/* Mobile hamburger */}

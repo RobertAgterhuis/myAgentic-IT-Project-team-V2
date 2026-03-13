@@ -43,7 +43,7 @@ describe('SidePanel', () => {
     render(<SidePanel sections={sections} activeItemId="ba" />);
     expect(screen.getByText('Business Analyst').closest('button')).toHaveAttribute(
       'aria-current',
-      'page',
+      'page'
     );
   });
 

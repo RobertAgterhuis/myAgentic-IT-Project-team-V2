@@ -34,10 +34,14 @@ export const SemanticOverride: HeadingStory = {
 export const TextVariants: HeadingStory = {
   render: () => (
     <div className="space-y-2">
-      <Text size="xl" weight="bold">Extra-large bold</Text>
+      <Text size="xl" weight="bold">
+        Extra-large bold
+      </Text>
       <Text size="lg">Large text</Text>
       <Text>Base text (default)</Text>
-      <Text size="sm" muted>Small muted text</Text>
+      <Text size="sm" muted>
+        Small muted text
+      </Text>
       <Text size="xs">Extra-small text</Text>
     </div>
   ),

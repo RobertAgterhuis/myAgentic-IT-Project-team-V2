@@ -42,17 +42,11 @@ function SwitchField({
         aria-describedby={descriptionId}
       />
       <div className="grid gap-0.5">
-        <Label
-          htmlFor={id}
-          className={cn(disabled && 'text-muted-foreground cursor-not-allowed')}
-        >
+        <Label htmlFor={id} className={cn(disabled && 'text-muted-foreground cursor-not-allowed')}>
           {label}
         </Label>
         {description && (
-          <p
-            id={descriptionId}
-            className="text-sm text-muted-foreground"
-          >
+          <p id={descriptionId} className="text-sm text-muted-foreground">
             {description}
           </p>
         )}

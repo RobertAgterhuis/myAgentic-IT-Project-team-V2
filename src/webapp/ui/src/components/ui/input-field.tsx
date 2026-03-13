@@ -27,12 +27,13 @@ function InputField({
   const id = idProp ?? generatedId;
   const helperId = `${id}-helper`;
   const errorId = `${id}-error`;
-  const describedBy = [error ? errorId : null, helperText ? helperId : null]
-    .filter(Boolean)
-    .join(' ') || undefined;
+  const describedBy =
+    [error ? errorId : null, helperText ? helperId : null].filter(Boolean).join(' ') || undefined;
 
   const [charCount, setCharCount] = React.useState(
-    typeof props.value === 'string' ? props.value.length : (props.defaultValue?.toString().length ?? 0)
+    typeof props.value === 'string'
+      ? props.value.length
+      : (props.defaultValue?.toString().length ?? 0)
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

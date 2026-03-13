@@ -11,7 +11,7 @@ function renderPage() {
   return render(
     <RouterTestWrapper initialEntries={['/decisions']}>
       <DecisionsPage />
-    </RouterTestWrapper>,
+    </RouterTestWrapper>
   );
 }
 

@@ -26,9 +26,7 @@ function ProgressBar({
       {(label || showPercentage) && (
         <div className="flex justify-between text-sm">
           {label && <span className="text-muted-foreground">{label}</span>}
-          {showPercentage && (
-            <span className="font-medium">{Math.round(pct)}%</span>
-          )}
+          {showPercentage && <span className="font-medium">{Math.round(pct)}%</span>}
         </div>
       )}
       <div
@@ -73,22 +71,19 @@ function StepIndicator({ steps, className, ...props }: StepIndicatorProps) {
                 'flex size-8 shrink-0 items-center justify-center rounded-full text-sm font-medium transition-colors',
                 step.status === 'completed' && 'bg-primary text-primary-foreground',
                 step.status === 'active' && 'border-2 border-primary text-primary',
-                step.status === 'upcoming' && 'border border-muted-foreground/30 text-muted-foreground',
+                step.status === 'upcoming' &&
+                  'border border-muted-foreground/30 text-muted-foreground'
               )}
               aria-current={step.status === 'active' ? 'step' : undefined}
             >
-              {step.status === 'completed' ? (
-                <Check className="size-4" />
-              ) : (
-                i + 1
-              )}
+              {step.status === 'completed' ? <Check className="size-4" /> : i + 1}
             </span>
             <span
               className={cn(
                 'text-sm',
                 step.status === 'active' && 'font-medium text-foreground',
                 step.status === 'upcoming' && 'text-muted-foreground',
-                step.status === 'completed' && 'text-foreground',
+                step.status === 'completed' && 'text-foreground'
               )}
             >
               {step.label}
@@ -96,10 +91,7 @@ function StepIndicator({ steps, className, ...props }: StepIndicatorProps) {
             {/* Connector line */}
             {i < steps.length - 1 && (
               <div
-                className={cn(
-                  'h-px w-8',
-                  step.status === 'completed' ? 'bg-primary' : 'bg-muted',
-                )}
+                className={cn('h-px w-8', step.status === 'completed' ? 'bg-primary' : 'bg-muted')}
               />
             )}
           </li>

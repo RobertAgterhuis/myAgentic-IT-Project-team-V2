@@ -44,11 +44,7 @@ export function createQueryClient(): QueryClient {
 const appQueryClient = createQueryClient();
 
 export function QueryProvider({ children }: { children: ReactNode }) {
-  return (
-    <QueryClientProvider client={appQueryClient}>
-      {children}
-    </QueryClientProvider>
-  );
+  return <QueryClientProvider client={appQueryClient}>{children}</QueryClientProvider>;
 }
 
 export { appQueryClient };

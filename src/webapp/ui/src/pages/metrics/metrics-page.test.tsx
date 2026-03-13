@@ -11,7 +11,7 @@ function renderPage() {
   return render(
     <RouterTestWrapper initialEntries={['/metrics']}>
       <MetricsPage />
-    </RouterTestWrapper>,
+    </RouterTestWrapper>
   );
 }
 

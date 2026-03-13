@@ -292,5 +292,61 @@
       }
     ],
     "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-13T18:51:19.425Z",
+    "ended_at": "2026-03-13T18:51:19.428Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-13T18:51:19.425Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-13T18:54:18.898Z",
+    "ended_at": "2026-03-13T18:54:18.900Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-13T18:54:18.898Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-13T18:55:45.622Z",
+    "ended_at": "2026-03-13T18:55:45.624Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-13T18:55:45.622Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-13T19:03:05.779Z",
+    "ended_at": "2026-03-13T19:03:05.781Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-13T19:03:05.779Z"
+      }
+    ],
+    "gate_results": {}
   }
 ]

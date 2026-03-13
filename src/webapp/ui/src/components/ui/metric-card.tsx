@@ -65,12 +65,7 @@ interface ActivityFeedProps extends React.ComponentProps<'div'> {
   pageSize?: number;
 }
 
-function ActivityFeed({
-  items,
-  pageSize = 10,
-  className,
-  ...props
-}: ActivityFeedProps) {
+function ActivityFeed({ items, pageSize = 10, className, ...props }: ActivityFeedProps) {
   const [visibleCount, setVisibleCount] = React.useState(pageSize);
   const visible = items.slice(0, visibleCount);
   const hasMore = visibleCount < items.length;

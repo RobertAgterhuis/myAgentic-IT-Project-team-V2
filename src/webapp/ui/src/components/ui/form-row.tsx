@@ -9,7 +9,11 @@ interface FormRowProps {
   error?: string;
   required?: boolean;
   className?: string;
-  children: React.ReactElement<{ id?: string; 'aria-invalid'?: boolean; 'aria-describedby'?: string }>;
+  children: React.ReactElement<{
+    id?: string;
+    'aria-invalid'?: boolean;
+    'aria-describedby'?: string;
+  }>;
 }
 
 function FormRow({
@@ -26,9 +30,9 @@ function FormRow({
   const errorId = `${inputId}-error`;
   const helperId = `${inputId}-helper`;
 
-  const describedBy = [error ? errorId : null, helperText && !error ? helperId : null]
-    .filter(Boolean)
-    .join(' ') || undefined;
+  const describedBy =
+    [error ? errorId : null, helperText && !error ? helperId : null].filter(Boolean).join(' ') ||
+    undefined;
 
   const child = React.cloneElement(children, {
     id: inputId,
@@ -40,7 +44,11 @@ function FormRow({
     <div className={cn('grid gap-1.5', className)}>
       <Label htmlFor={inputId} className={cn(error && 'text-destructive')}>
         {label}
-        {required && <span className="text-destructive ml-0.5" aria-hidden="true">*</span>}
+        {required && (
+          <span className="text-destructive ml-0.5" aria-hidden="true">
+            *
+          </span>
+        )}
       </Label>
       {child}
       {error && (

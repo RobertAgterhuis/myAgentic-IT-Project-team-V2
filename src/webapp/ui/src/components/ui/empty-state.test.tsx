@@ -31,8 +31,12 @@ describe('EmptyState', () => {
 describe('ErrorBoundary', () => {
   // Suppress React error boundary console.error in tests
   const originalError = console.error;
-  beforeAll(() => { console.error = vi.fn(); });
-  afterAll(() => { console.error = originalError; });
+  beforeAll(() => {
+    console.error = vi.fn();
+  });
+  afterAll(() => {
+    console.error = originalError;
+  });
 
   function ThrowingComponent({ shouldThrow }: { shouldThrow: boolean }) {
     if (shouldThrow) throw new Error('Test error');
@@ -43,7 +47,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <ThrowingComponent shouldThrow={false} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     expect(screen.getByText('Ok')).toBeInTheDocument();
   });
@@ -52,7 +56,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <ThrowingComponent shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     expect(screen.getByText('Test error')).toBeInTheDocument();
@@ -63,7 +67,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary onError={onError}>
         <ThrowingComponent shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     expect(onError).toHaveBeenCalledOnce();
     expect(onError.mock.calls[0][0]).toBeInstanceOf(Error);
@@ -73,7 +77,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary>
         <ThrowingComponent shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     expect(screen.getByText('Something went wrong')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
@@ -83,7 +87,7 @@ describe('ErrorBoundary', () => {
     render(
       <ErrorBoundary fallback={<div>Custom fallback</div>}>
         <ThrowingComponent shouldThrow={true} />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
     expect(screen.getByText('Custom fallback')).toBeInTheDocument();
   });

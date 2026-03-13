@@ -10,7 +10,7 @@ function renderPage() {
   return render(
     <RouterTestWrapper initialEntries={['/']}>
       <DashboardPage />
-    </RouterTestWrapper>,
+    </RouterTestWrapper>
   );
 }
 

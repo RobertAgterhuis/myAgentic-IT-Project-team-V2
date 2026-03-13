@@ -50,9 +50,7 @@ const driftColumns: ColumnDef<DriftEntry, unknown>[] = [
     cell: ({ row }) => (
       <div className="flex items-center gap-1.5">
         {severityIcons[row.original.severity]}
-        <Badge variant={severityBadge[row.original.severity]}>
-          {row.original.severity}
-        </Badge>
+        <Badge variant={severityBadge[row.original.severity]}>{row.original.severity}</Badge>
       </div>
     ),
   },
@@ -64,7 +62,9 @@ const driftColumns: ColumnDef<DriftEntry, unknown>[] = [
     accessorKey: 'sprint',
     header: 'Sprint',
     cell: ({ getValue }) => (
-      <Badge variant="secondary" className="text-xs">{getValue() as string}</Badge>
+      <Badge variant="secondary" className="text-xs">
+        {getValue() as string}
+      </Badge>
     ),
   },
   {
@@ -103,7 +103,9 @@ function exportData(drifts: DriftEntry[], format: 'json' | 'csv') {
   } else {
     const headers = ['id', 'type', 'severity', 'sprint', 'expected', 'actual', 'recommendation'];
     const rows = drifts.map((d) =>
-      headers.map((h) => `"${String(d[h as keyof DriftEntry] ?? '').replace(/"/g, '""')}"`).join(','),
+      headers
+        .map((h) => `"${String(d[h as keyof DriftEntry] ?? '').replace(/"/g, '""')}"`)
+        .join(',')
     );
     content = [headers.join(','), ...rows].join('\n');
     mime = 'text/csv';
@@ -163,7 +165,11 @@ export default function MetricsPage() {
         </div>
         <div className="flex items-center gap-2">
           {/* Time range selector */}
-          <div className="flex items-center gap-1 bg-muted rounded-md p-1" role="radiogroup" aria-label="Time range">
+          <div
+            className="flex items-center gap-1 bg-muted rounded-md p-1"
+            role="radiogroup"
+            aria-label="Time range"
+          >
             {(['24h', '7d', '30d', '90d'] as TimeRange[]).map((range) => (
               <button
                 key={range}
@@ -201,7 +207,9 @@ export default function MetricsPage() {
 
       {/* Drift Summary Cards */}
       <section aria-label="Drift summary">
-        <Heading level={2} className="mb-3">Drift Summary</Heading>
+        <Heading level={2} className="mb-3">
+          Drift Summary
+        </Heading>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <MetricCard
             label="Total Drifts"
@@ -233,7 +241,9 @@ export default function MetricsPage() {
 
       {/* KPI Section */}
       <section aria-label="KPI overview">
-        <Heading level={2} className="mb-3">KPI Overview</Heading>
+        <Heading level={2} className="mb-3">
+          KPI Overview
+        </Heading>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {/* Overall pipeline progress */}
           <Card elevation="flat" className="p-4">
@@ -241,7 +251,11 @@ export default function MetricsPage() {
               <BarChart3 className="size-4" />
               <span className="font-semibold text-sm">Pipeline Progress</span>
             </div>
-            <ProgressBar value={overallPct} label={`${doneAgents}/${totalAgents} agents`} showPercentage />
+            <ProgressBar
+              value={overallPct}
+              label={`${doneAgents}/${totalAgents} agents`}
+              showPercentage
+            />
             {phases.length > 0 && (
               <div className="mt-3 space-y-2">
                 {phases.map((phase) => {
@@ -271,7 +285,16 @@ export default function MetricsPage() {
                 <p className="text-2xl font-bold">{sprintStats.total} sprints</p>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(sprintStats.statuses).map(([sprint, status]) => (
-                    <Badge key={sprint} variant={status === 'DONE' ? 'success' : status === 'IN_PROGRESS' ? 'info' : 'secondary'}>
+                    <Badge
+                      key={sprint}
+                      variant={
+                        status === 'DONE'
+                          ? 'success'
+                          : status === 'IN_PROGRESS'
+                            ? 'info'
+                            : 'secondary'
+                      }
+                    >
                       {sprint}: {status}
                     </Badge>
                   ))}
@@ -304,7 +327,9 @@ export default function MetricsPage() {
 
       {/* Drift Detail Table */}
       <section aria-label="Drift details">
-        <Heading level={2} className="mb-3">Drift Details</Heading>
+        <Heading level={2} className="mb-3">
+          Drift Details
+        </Heading>
         {drifts.length === 0 ? (
           <EmptyState
             icon={<CheckCircle className="size-12" />}

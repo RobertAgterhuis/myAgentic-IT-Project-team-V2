@@ -12,14 +12,7 @@ import {
   type RowSelectionState,
 } from '@tanstack/react-table';
 import { cn } from '@/lib/utils';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from './table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
 import { Button } from './button';
 import { Input } from './input';
 import { Skeleton } from './skeleton';
@@ -120,7 +113,7 @@ function DataTable<TData>({
                       <div
                         className={cn(
                           'flex items-center gap-1',
-                          header.column.getCanSort() && 'cursor-pointer select-none',
+                          header.column.getCanSort() && 'cursor-pointer select-none'
                         )}
                         onClick={header.column.getToggleSortingHandler()}
                       >
@@ -163,10 +156,7 @@ function DataTable<TData>({
             </TableRow>
           ) : (
             table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() ? 'selected' : undefined}
-              >
+              <TableRow key={row.id} data-state={row.getIsSelected() ? 'selected' : undefined}>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -182,8 +172,7 @@ function DataTable<TData>({
       {enablePagination && !loading && table.getRowModel().rows.length > 0 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-muted-foreground">
-            Page {table.getState().pagination.pageIndex + 1} of{' '}
-            {table.getPageCount()}
+            Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
           </div>
           <div className="flex items-center gap-1">
             <Button

@@ -15,7 +15,11 @@ describe('Heading', () => {
   });
 
   it('supports visual level different from semantic', () => {
-    render(<Heading level={1} as={3}>Visual H1, Semantic H3</Heading>);
+    render(
+      <Heading level={1} as={3}>
+        Visual H1, Semantic H3
+      </Heading>
+    );
     const el = screen.getByText('Visual H1, Semantic H3');
     expect(el.tagName).toBe('H3');
     expect(el.className).toMatch(/text-4xl/);

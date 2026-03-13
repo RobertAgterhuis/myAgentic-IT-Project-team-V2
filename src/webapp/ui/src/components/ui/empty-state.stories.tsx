@@ -43,6 +43,6 @@ export const SearchEmpty: Story = {
   args: {
     icon: <Search className="size-12" />,
     title: 'No search results',
-    description: 'We couldn\'t find anything matching your query.',
+    description: "We couldn't find anything matching your query.",
   },
 };

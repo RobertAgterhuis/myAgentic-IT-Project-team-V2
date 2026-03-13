@@ -63,14 +63,7 @@ describe('DataTable', () => {
       status: 'active',
     }));
     const user = userEvent.setup();
-    render(
-      <DataTable
-        columns={columns}
-        data={bigData}
-        enablePagination
-        pageSizes={[5]}
-      />,
-    );
+    render(<DataTable columns={columns} data={bigData} enablePagination pageSizes={[5]} />);
     expect(screen.getByText('Page 1 of 3')).toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Next page' }));
     expect(screen.getByText('Page 2 of 3')).toBeInTheDocument();

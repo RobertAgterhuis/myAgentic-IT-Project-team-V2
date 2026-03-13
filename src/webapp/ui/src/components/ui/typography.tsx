@@ -24,7 +24,7 @@ function Heading({ level = 2, as, className, children, ...props }: HeadingProps)
   return React.createElement(
     Tag,
     { className: cn('font-sans text-foreground', headingClasses[level], className), ...props },
-    children,
+    children
   );
 }
 
@@ -48,7 +48,15 @@ interface TextProps extends React.HTMLAttributes<HTMLParagraphElement> {
   as?: 'p' | 'span' | 'div';
 }
 
-function Text({ size = 'base', weight = 'normal', muted, as = 'p', className, children, ...props }: TextProps) {
+function Text({
+  size = 'base',
+  weight = 'normal',
+  muted,
+  as = 'p',
+  className,
+  children,
+  ...props
+}: TextProps) {
   return React.createElement(
     as,
     {
@@ -57,11 +65,11 @@ function Text({ size = 'base', weight = 'normal', muted, as = 'p', className, ch
         textSizeClasses[size],
         `font-${weight}`,
         muted ? 'text-muted-foreground' : 'text-foreground',
-        className,
+        className
       ),
       ...props,
     },
-    children,
+    children
   );
 }
 
@@ -71,13 +79,7 @@ interface InlineCodeProps extends React.HTMLAttributes<HTMLElement> {}
 
 function InlineCode({ className, children, ...props }: InlineCodeProps) {
   return (
-    <code
-      className={cn(
-        'font-mono rounded bg-muted px-1.5 py-0.5 text-sm',
-        className,
-      )}
-      {...props}
-    >
+    <code className={cn('font-mono rounded bg-muted px-1.5 py-0.5 text-sm', className)} {...props}>
       {children}
     </code>
   );
@@ -88,10 +90,7 @@ interface CodeBlockProps extends React.HTMLAttributes<HTMLPreElement> {}
 function CodeBlock({ className, children, ...props }: CodeBlockProps) {
   return (
     <pre
-      className={cn(
-        'font-mono overflow-x-auto rounded-md bg-muted p-4 text-sm',
-        className,
-      )}
+      className={cn('font-mono overflow-x-auto rounded-md bg-muted p-4 text-sm', className)}
       {...props}
     >
       <code>{children}</code>

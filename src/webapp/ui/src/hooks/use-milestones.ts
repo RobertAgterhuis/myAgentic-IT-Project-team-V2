@@ -28,7 +28,7 @@ export function useMilestones(includeArchived = false) {
     queryFn: () =>
       apiGet<MilestonesListResponse>(
         '/milestones',
-        includeArchived ? { include_archived: 'true' } : undefined,
+        includeArchived ? { include_archived: 'true' } : undefined
       ),
     select: (res) => res.data,
   });
@@ -69,14 +69,15 @@ export function useUpdateMilestone() {
 
     onMutate: async ({ id, ...updates }) => {
       await qc.cancelQueries({ queryKey: queryKeys.milestones.all });
-      const previous = qc.getQueryData<MilestonesListResponse>([...queryKeys.milestones.all, { includeArchived: false }]);
+      const previous = qc.getQueryData<MilestonesListResponse>([
+        ...queryKeys.milestones.all,
+        { includeArchived: false },
+      ]);
 
       if (previous) {
         const updated: MilestonesListResponse = {
           ...previous,
-          data: previous.data.map((m: Milestone) =>
-            m.id === id ? { ...m, ...updates } : m,
-          ),
+          data: previous.data.map((m: Milestone) => (m.id === id ? { ...m, ...updates } : m)),
         };
         qc.setQueryData([...queryKeys.milestones.all, { includeArchived: false }], updated);
       }
@@ -86,7 +87,10 @@ export function useUpdateMilestone() {
 
     onError: (_err, _vars, context) => {
       if (context?.previous) {
-        qc.setQueryData([...queryKeys.milestones.all, { includeArchived: false }], context.previous);
+        qc.setQueryData(
+          [...queryKeys.milestones.all, { includeArchived: false }],
+          context.previous
+        );
       }
     },
 
@@ -105,8 +109,7 @@ export function useArchiveMilestone() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) =>
-      apiPatch<MilestoneResponse>(`/milestones/${id}/archive`),
+    mutationFn: (id: string) => apiPatch<MilestoneResponse>(`/milestones/${id}/archive`),
 
     onSuccess: (data) => {
       showToast.success(`Milestone "${data.data.name}" archived`);
@@ -151,8 +154,7 @@ export function useDeleteMilestoneTemplate() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (id: string) =>
-      apiDelete<OkResponse>(`/milestone-templates/${id}`),
+    mutationFn: (id: string) => apiDelete<OkResponse>(`/milestone-templates/${id}`),
 
     onSuccess: () => {
       showToast.success('Template deleted');

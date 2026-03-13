@@ -162,7 +162,9 @@ export default function DashboardPage() {
       {/* Health Cards */}
       {health && (
         <section aria-label="Health indicators">
-          <Heading level={2} className="mb-3">Health</Heading>
+          <Heading level={2} className="mb-3">
+            Health
+          </Heading>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {(Object.entries(health) as [string, HealthIndicator][]).map(([name, indicator]) => (
               <HealthCard key={name} name={name} indicator={indicator} />
@@ -174,7 +176,9 @@ export default function DashboardPage() {
       {/* Key Metrics */}
       {metricEntries.length > 0 && (
         <section aria-label="Key metrics">
-          <Heading level={2} className="mb-3">Metrics</Heading>
+          <Heading level={2} className="mb-3">
+            Metrics
+          </Heading>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {metricEntries.map((m) => (
               <MetricCard
@@ -193,31 +197,40 @@ export default function DashboardPage() {
       {/* Stats */}
       {stats && (
         <section aria-label="Quick stats">
-          <Heading level={2} className="mb-3">Stats</Heading>
+          <Heading level={2} className="mb-3">
+            Stats
+          </Heading>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {(Object.entries(stats) as [string, { value: number | string; label: string; icon: string; details: string }][]).map(
-              ([key, stat]) => (
-                <MetricCard
-                  key={key}
-                  label={stat.label}
-                  value={String(stat.value)}
-                  icon={statIcons[key] ?? <Clock className="size-4" />}
-                />
-              ),
-            )}
+            {(
+              Object.entries(stats) as [
+                string,
+                { value: number | string; label: string; icon: string; details: string },
+              ][]
+            ).map(([key, stat]) => (
+              <MetricCard
+                key={key}
+                label={stat.label}
+                value={String(stat.value)}
+                icon={statIcons[key] ?? <Clock className="size-4" />}
+              />
+            ))}
           </div>
         </section>
       )}
 
       {/* Quick Links */}
       <section aria-label="Quick links">
-        <Heading level={2} className="mb-3">Quick Links</Heading>
+        <Heading level={2} className="mb-3">
+          Quick Links
+        </Heading>
         <QuickLinks />
       </section>
 
       {/* Activity Feed */}
       <section aria-label="Recent activity">
-        <Heading level={2} className="mb-3">Recent Activity</Heading>
+        <Heading level={2} className="mb-3">
+          Recent Activity
+        </Heading>
         {feedItems.length > 0 ? (
           <Card elevation="flat" className="p-4">
             <ActivityFeed items={feedItems} pageSize={10} />

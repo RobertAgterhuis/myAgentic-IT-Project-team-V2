@@ -8,7 +8,7 @@ describe('FormRow', () => {
     render(
       <FormRow label="Email">
         <Input />
-      </FormRow>,
+      </FormRow>
     );
     expect(screen.getByLabelText('Email')).toBeInTheDocument();
   });
@@ -17,7 +17,7 @@ describe('FormRow', () => {
     render(
       <FormRow label="Name" required>
         <Input />
-      </FormRow>,
+      </FormRow>
     );
     expect(screen.getByText('*')).toBeInTheDocument();
   });
@@ -26,7 +26,7 @@ describe('FormRow', () => {
     render(
       <FormRow label="Password" helperText="Min 8 characters">
         <Input />
-      </FormRow>,
+      </FormRow>
     );
     expect(screen.getByText('Min 8 characters')).toBeInTheDocument();
   });
@@ -35,7 +35,7 @@ describe('FormRow', () => {
     render(
       <FormRow label="Email" helperText="Enter email" error="Invalid email">
         <Input />
-      </FormRow>,
+      </FormRow>
     );
     expect(screen.getByText('Invalid email')).toBeInTheDocument();
     expect(screen.queryByText('Enter email')).not.toBeInTheDocument();
@@ -45,7 +45,7 @@ describe('FormRow', () => {
     render(
       <FormRow label="Field" error="Required">
         <Input />
-      </FormRow>,
+      </FormRow>
     );
     expect(screen.getByLabelText('Field')).toHaveAttribute('aria-invalid', 'true');
   });
@@ -54,7 +54,7 @@ describe('FormRow', () => {
     render(
       <FormRow label="X" error="Oops">
         <Input />
-      </FormRow>,
+      </FormRow>
     );
     expect(screen.getByRole('alert')).toHaveTextContent('Oops');
   });
@@ -63,7 +63,7 @@ describe('FormRow', () => {
     render(
       <FormRow label="Custom" htmlFor="my-input">
         <Input />
-      </FormRow>,
+      </FormRow>
     );
     expect(screen.getByLabelText('Custom')).toHaveAttribute('id', 'my-input');
   });

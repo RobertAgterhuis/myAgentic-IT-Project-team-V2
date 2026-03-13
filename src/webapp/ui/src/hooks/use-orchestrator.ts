@@ -178,7 +178,8 @@ export function useQueueCommand() {
       description?: string;
       scope?: string;
       brief?: string;
-    }) => apiPost<OkResponse & { clipboard_text: string; brief_saved: boolean }>('/command', payload),
+    }) =>
+      apiPost<OkResponse & { clipboard_text: string; brief_saved: boolean }>('/command', payload),
 
     onSuccess: (data) => {
       showToast.success('Command queued');

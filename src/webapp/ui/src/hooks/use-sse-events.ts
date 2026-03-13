@@ -73,10 +73,7 @@ export function useSSEEvents() {
       esRef.current = null;
 
       // Exponential backoff reconnect
-      const delay = Math.min(
-        1000 * 2 ** reconnectAttemptRef.current,
-        MAX_RECONNECT_DELAY,
-      );
+      const delay = Math.min(1000 * 2 ** reconnectAttemptRef.current, MAX_RECONNECT_DELAY);
       reconnectAttemptRef.current += 1;
 
       reconnectTimerRef.current = setTimeout(connect, delay);

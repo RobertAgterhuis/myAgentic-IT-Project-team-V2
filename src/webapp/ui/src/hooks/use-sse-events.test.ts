@@ -45,7 +45,8 @@ describe('useSSEEvents', () => {
 
   it('creates an EventSource connection', () => {
     renderHook(() => useSSEEvents(), { wrapper: TestWrapper });
-    const instances = (globalThis.EventSource as unknown as { instances: { url: string }[] }).instances;
+    const instances = (globalThis.EventSource as unknown as { instances: { url: string }[] })
+      .instances;
     expect(instances.length).toBeGreaterThan(0);
     expect(instances[0].url).toBe('/api/events');
   });

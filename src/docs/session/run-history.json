@@ -264,5 +264,33 @@
       }
     ],
     "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-13T11:24:00.285Z",
+    "ended_at": "2026-03-13T11:24:00.286Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-13T11:24:00.285Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-13T11:30:41.993Z",
+    "ended_at": "2026-03-13T11:30:41.993Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-13T11:30:41.993Z"
+      }
+    ],
+    "gate_results": {}
   }
 ]

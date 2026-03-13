@@ -1,1 +1,17 @@
-[]
+[
+  {
+    "id": "M5",
+    "name": "M5: Security + TypeScript (AUDIT)",
+    "status": "in_progress",
+    "branch": "feature/M5-security-typescript-audit",
+    "created_at": "2026-03-13",
+    "stories": [
+      { "id": "S5-1", "title": "Docker Hardening", "status": "done" },
+      { "id": "S5-2", "title": "CSP + Security Headers", "status": "done" },
+      { "id": "S5-3", "title": "TypeScript Foundation", "status": "done" },
+      { "id": "S5-4", "title": "Core Module Type Stubs", "status": "done" },
+      { "id": "S5-5", "title": "Security CI Gate", "status": "done" },
+      { "id": "S5-6", "title": "Audit Report + Tests", "status": "done" }
+    ]
+  }
+]

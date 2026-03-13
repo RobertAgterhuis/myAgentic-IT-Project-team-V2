@@ -97,7 +97,6 @@ jobs:
 
       - name: Run Gitleaks (Secret Scanning)
         uses: gitleaks/gitleaks-action@v2
-        continue-on-error: true # Requires GITLEAKS_LICENSE; TruffleHog in ci.yml is primary secret scan
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}

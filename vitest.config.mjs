@@ -36,16 +36,15 @@ export default defineConfig({
         'src/webapp/**/*.test.js',
         'src/webapp/node_modules/**',
         'src/webapp/start.ps1',
+        'src/webapp/dashboard.js', // Browser-side IIFE (requires DOM/jsdom, not testable in Node)
       ],
       reporter: ['text', 'text-summary', 'json-summary', 'json'],
       reportsDirectory: 'coverage',
       thresholds: {
-        // Lowered to match current coverage after route expansion (dashboard, drift, subscribe, milestones)
-        // Target: raise back to 70%+ as tests are added for new routes
-        statements: 60,
-        branches: 50,
-        functions: 65,
-        lines: 60,
+        statements: 80,
+        branches: 80,
+        functions: 80,
+        lines: 80,
       },
     },
   },

@@ -75,24 +75,18 @@ regex = '''eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}'''
 tags = ["token", "JWT"]
 
 [allowlist]
-description = "Global allowlist for false positives"
+description = "Global allowlist — minimized per S2-3"
 paths = [
   '''\.gitleaks\.toml$''',
   '''\.github/workflows/.*\.yml$''',
-  '''docs/.*\.md$''',
-  '''README\.md$''',
-  '''package-lock\.json$''',
-  '''.*test.*\.js$''',
-  '''.*\.test\.ts$''',
-  '''.*\.spec\.ts$'''
+  '''package-lock\.json$'''
 ]
 
 regexes = [
   '''example\.com''',
   '''placeholder''',
   '''your-.*-here''',
-  '''INSERT_.*_HERE''',
-  '''TODO:'''
+  '''INSERT_.*_HERE'''
 ]
 
 [[rules]]

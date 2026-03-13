@@ -12,7 +12,7 @@
 
 ### 1. SP-2-MAT — Matomo Analytics (COMPLETE ✅)
 
-- Created 32 validation tests (`__tests__/unit/matomo-analytics.test.js`):
+- Created 32 validation tests (`tests/unit/matomo-analytics.test.js`):
   - Docker Compose stack: 13 tests (services, images, env-var secrets, health
     checks, volumes, network)
   - Nginx reverse proxy: 7 tests (port, root, FastCGI, caching, .ht denial)
@@ -32,7 +32,7 @@
   - Async `matomo.js` loading for performance
   - `<noscript>` tracking pixel fallback for JS-disabled users
 - Created 12 tracking integration tests
-  (`__tests__/unit/landing-matomo.test.js`):
+  (`tests/unit/landing-matomo.test.js`):
   - Script presence, disableCookies, trackPageView, enableLinkTracking
   - Tracker URL, siteId, async loading, dynamic hostname
   - Noscript fallback, head placement, SP-2-MAT reference
@@ -49,7 +49,7 @@
   - All P0 + P1 integration requirements validated (Git workflow, JSON format,
     TM, glossary, QA checks)
 - Created 25 Weblate Docker stack validation tests
-  (`__tests__/unit/weblate-docker.test.js`):
+  (`tests/unit/weblate-docker.test.js`):
   - Docker Compose: 14 tests (services, images, ports, env-var secrets, health
     checks, volumes, network, Redis limits)
   - Environment template: 4 tests (required variables)
@@ -80,9 +80,9 @@
 
 | File                                                        | Purpose                                    |
 | ----------------------------------------------------------- | ------------------------------------------ |
-| `__tests__/unit/matomo-analytics.test.js`                   | Matomo stack validation tests (32)         |
-| `__tests__/unit/landing-matomo.test.js`                     | Landing Matomo integration tests (12)      |
-| `__tests__/unit/weblate-docker.test.js`                     | Weblate Docker stack validation tests (25) |
+| `tests/unit/matomo-analytics.test.js`                   | Matomo stack validation tests (32)         |
+| `tests/unit/landing-matomo.test.js`                     | Landing Matomo integration tests (12)      |
+| `tests/unit/weblate-docker.test.js`                     | Weblate Docker stack validation tests (25) |
 | `docs/phase-5/sp-2-501-weblate-trial-execution.md`  | Weblate trial execution report             |
 | `docs/phase-5/sp-2-201p-pilot-distribution-plan.md` | Pilot distribution plan                    |
 

@@ -98,9 +98,9 @@ complete working solution first
 | `src/webapp/social-cards/card-architecture.svg`            | CI/CD architecture card       |
 | `src/webapp/social-cards/card-sprint-results.svg`          | Sprint results card           |
 | `src/webapp/social-cards/README.md`                        | Social card docs              |
-| `__tests__/unit/email-templates.test.js`                       | Email template tests (10)     |
-| `__tests__/unit/weblate-trial.test.js`                         | Weblate trial tests (16)      |
-| `__tests__/unit/social-cards.test.js`                          | Social card tests (12)        |
+| `tests/unit/email-templates.test.js`                       | Email template tests (10)     |
+| `tests/unit/weblate-trial.test.js`                         | Weblate trial tests (16)      |
+| `tests/unit/social-cards.test.js`                          | Social card tests (12)        |
 
 ## Files Modified (Day 3)
 

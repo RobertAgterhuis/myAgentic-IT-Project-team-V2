@@ -60,14 +60,14 @@ Sprint 4. F-06, F-09, F-11 closed in Sprint 5. F-10 closed in Sprint 3.
 
 - `src/webapp/orchestrator/state-machine.js` — executable state machine
   with phase transitions, validation, recovery, and audit trail
-- `.github/tests/unit/state-machine.test.js` — full test coverage
+- `tests/unit/state-machine.test.js` — full test coverage
 - Complexity refactored to meet ESLint thresholds
 
 ### 2. Agent Invocation Dispatcher (SP-5-ORCH-B, #81)
 
 - `src/webapp/orchestrator/dispatcher.js` — multi-platform routing with
   retries, timeouts, structured logging, and context management
-- `.github/tests/unit/dispatcher.test.js` — full test coverage
+- `tests/unit/dispatcher.test.js` — full test coverage
 - Error classification extracted for maintainability
 
 ### 3. Canonical Agent Schema (SP-5-SCHEMA, #68)
@@ -75,14 +75,14 @@ Sprint 4. F-06, F-09, F-11 closed in Sprint 5. F-10 closed in Sprint 3.
 - `.github/platform/schema/agent-canonical.schema.json` — JSON Schema definition
 - `.github/platform/schema/agents.json` — 38 agents mapped with tool catalog
 - `src/webapp/orchestrator/agent-schema.js` — Ajv-based validator
-- `.github/tests/unit/agent-schema.test.js` — schema + mapping validation
+- `tests/unit/agent-schema.test.js` — schema + mapping validation
 
 ### 4. Design System Foundation (SP-5-DESIGN, #36)
 
 - `src/webapp/design-system.css` — semantic CSS custom properties with
   typography, spacing, palette, elevation, radius, motion + dark mode
 - `docs/brand/design-tokens.json` — aligned token definitions
-- `.github/tests/unit/design-system-tokens.test.js` — regression coverage
+- `tests/unit/design-system-tokens.test.js` — regression coverage
 
 ### 5. Category Decision Frameworks (SP-5-CAT, #146)
 
@@ -94,7 +94,7 @@ Sprint 4. F-06, F-09, F-11 closed in Sprint 5. F-10 closed in Sprint 3.
 ### 6. KPI & Process Improvements (SP-5-KPI, #147)
 
 - `docs/phase-5/sprint-5-kpi-log.md` — daily velocity tracking (L7)
-- `.github/tests/unit/governance-docs.test.js` — governance document validation
+- `tests/unit/governance-docs.test.js` — governance document validation
 - Sprint 4 retro actions validated and applied
 
 ---

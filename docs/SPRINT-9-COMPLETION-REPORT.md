@@ -441,7 +441,7 @@ features:
 
 ### Created Files
 
-- `.github/tests/integration/milestones-api.test.js` - 21 integration tests
+- `tests/integration/milestones-api.test.js` - 21 integration tests
 - `docs/SPRINT-9-TEST-PLAN.md` - Comprehensive manual test plan
 - `docs/SPRINT-9-COMPLETION-REPORT.md` - This document
 

@@ -52,7 +52,7 @@ Node.js application with a Docker-based deployment model.
 ## 2. Test File Organization
 
 ```
-__tests__/
+tests/
   example.test.js              # Baseline (SP-11-611) — RETAINED
   unit/
     config.test.js             # Configuration validation
@@ -74,7 +74,7 @@ __tests__/
 
 These patterns match the npm scripts already defined in `package.json`:
 
-- `npm test` → all `__tests__/**/*.{js,ts}` files
+- `npm test` → all `tests/**/*.{js,ts}` files
 - `npm run test:integration` → `**/*.integration.test.js`
 - `npm run test:smoke` → `**/*.smoke.test.js`
 
@@ -177,7 +177,7 @@ addresses these risks from the risk matrix:
 | 4   | Coverage reporting with ≥80% gate               | ✅ COMPLETE | CI pipeline Job 2 (existing)                                           |
 | 5   | CI integration-test job enabled                 | ✅ COMPLETE | ci-pipeline.yml Job 6 enabled (Day 4)                                  |
 | 6   | Risk-aligned test cases (RISK-801, 804)         | ✅ COMPLETE | RISK-801 path traversal + error leak; RISK-804 concurrency             |
-| 7   | E2E test scaffold for SP-11-613                 | ✅ COMPLETE | `__tests__/smoke/landing.smoke.test.js` with 5 journey defs            |
+| 7   | E2E test scaffold for SP-11-613                 | ✅ COMPLETE | `tests/smoke/landing.smoke.test.js` with 5 journey defs            |
 | 8   | Test strategy document approved                 | ✅ COMPLETE | Approved at March 17 Week 2 standup — 77 tests all green, CI validated |
 
 **Progress:** 8/8 complete = **100%** ✅ DONE

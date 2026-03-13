@@ -73,8 +73,8 @@
 | `docs/phase-5/sp-3-202-pilot-analysis-framework.md`   | Created: analysis framework with scoring + prioritization    |
 | `docs/phase-5/sp-3-201m-landing-experiment.md`        | Created: experiment config, workflow, statistical guardrails |
 | `src/webapp/landing.html`                                 | Modified: A/B experiment framework, deferred trackPageView   |
-| `__tests__/unit/landing-experiment.test.js`                   | Created: 25 tests for experiment framework                   |
-| `__tests__/unit/landing-matomo.test.js`                       | Updated: adapted for deferred tracking                       |
+| `tests/unit/landing-experiment.test.js`                   | Created: 25 tests for experiment framework                   |
+| `tests/unit/landing-matomo.test.js`                       | Updated: adapted for deferred tracking                       |
 | `docs/phase-5/sprint-3-kpi-log.md`                    | Updated: Day 3 data + velocity chart                         |
 
 ---

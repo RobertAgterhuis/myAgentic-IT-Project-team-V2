@@ -63,9 +63,9 @@
 | `locales/de-DE/ui-labels.json`                  | —     | German UI labels (49 keys)                       |
 | `locales/de-DE/validation-messages.json`        | —     | German validation messages (30 keys)             |
 | `locales/de-DE/doc-snippets.json`               | —     | German doc snippets (48 keys)                    |
-| `__tests__/unit/translation-validation.test.js` | 37    | Translation key parity, placeholders, ICU, brand |
-| `__tests__/unit/landing-qa.test.js`             | 43    | Landing page 8 acceptance criteria validation    |
-| `__tests__/unit/pilot-readiness.test.js`        | 23    | Pilot materials completeness validation          |
+| `tests/unit/translation-validation.test.js` | 37    | Translation key parity, placeholders, ICU, brand |
+| `tests/unit/landing-qa.test.js`             | 43    | Landing page 8 acceptance criteria validation    |
+| `tests/unit/pilot-readiness.test.js`        | 23    | Pilot materials completeness validation          |
 
 ## Files Modified
 

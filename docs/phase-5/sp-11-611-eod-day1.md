@@ -70,7 +70,7 @@
   line endings
 - Overrides: Markdown (80-char, prose wrap), YAML (double quotes)
 
-### 6. Baseline Test Suite (`__tests__/example.test.js`)
+### 6. Baseline Test Suite (`tests/example.test.js`)
 
 - **15 tests created:** Math, String, Array, Object, Async utilities
 - **All passing:** ✅ 15/15 tests passed
@@ -195,7 +195,7 @@ Jest, ESLint, Prettier, Secret Scanning"
   - `.gitleaks.toml` (80+ lines)
   - `.eslintrc.js` (36 lines)
   - `.prettierrc.json` (20 lines)
-  - `__tests__/example.test.js` (115 lines)
+  - `tests/example.test.js` (115 lines)
   - `docs/phase-5/sp-11-611-ci-pipeline-progress.md` (260+ lines)
 - **Modified (2 files):**
   - `package.json` (scripts, devDependencies, Jest config)

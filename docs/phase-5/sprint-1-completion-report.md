@@ -232,11 +232,11 @@ hardcoded credentials, API keys, or tokens found.
 
 | File                                                  | Tests                       | Status |
 | ----------------------------------------------------- | --------------------------- | ------ |
-| `__tests__/unit/middleware.test.js`                   | Unit tests                  | ✅     |
-| `__tests__/integration/server.test.js`                | Integration tests           | ✅     |
-| `__tests__/integration/health.integration.test.js`    | Health contract tests       | ✅     |
-| `__tests__/integration/decisions.integration.test.js` | Decision CRUD tests         | ✅     |
-| `__tests__/smoke/smoke.test.js`                       | 23 smoke tests              | ✅     |
+| `tests/unit/middleware.test.js`                   | Unit tests                  | ✅     |
+| `tests/integration/server.test.js`                | Integration tests           | ✅     |
+| `tests/integration/health.integration.test.js`    | Health contract tests       | ✅     |
+| `tests/integration/decisions.integration.test.js` | Decision CRUD tests         | ✅     |
+| `tests/smoke/smoke.test.js`                       | 23 smoke tests              | ✅     |
 | `.github/workflows/ci-pipeline.yml`                   | CI pipeline (7 active jobs) | ✅     |
 
 ---

@@ -297,9 +297,9 @@ npm run test:watch
 The test suite includes **1172 tests** across 45 files (17 Jest + 28 Vitest)
 with statement coverage enforced at 70%:
 
-- **Root (`__tests__/`)** — 363 Jest tests: API endpoints, SSE, store caching,
+- **Root (`tests/`)** — 363 Jest tests: API endpoints, SSE, store caching,
   decisions round-trip, path traversal, concurrent requests
-- **`.github/tests/`** — 809 Vitest tests: unit (models, sanitization, cache,
+- **`tests/`** — 809 Vitest tests: unit (models, sanitization, cache,
   schemas, audit trail, file locking, MCP server) + integration (API, store,
   regression suite, WCAG contrast)
 - Coverage thresholds enforced at 70% (statements, branches, functions, lines)

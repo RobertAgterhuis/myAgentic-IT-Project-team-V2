@@ -1071,7 +1071,7 @@ not blocked.
 ### Test Structure
 
 ```
-.github/tests/
+tests/
   unit/
     audit-trail.test.js       — AuditTrail class
     backup-strategy.test.js    — Backup-on-write behavior
@@ -1117,7 +1117,7 @@ server and middleware.
 #### Test Structure
 
 ```
-__tests__/
+tests/
   example.test.js                        — Baseline validation (15 tests)
   unit/
     middleware.test.js                   — Pure middleware functions (27 tests)

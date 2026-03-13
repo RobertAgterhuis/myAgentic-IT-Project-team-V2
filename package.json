@@ -54,7 +54,23 @@
       "!.github/**"
     ],
     "testMatch": [
-      "**/__tests__/**/*.{js,ts}"
+      "<rootDir>/tests/unit/email-templates.test.js",
+      "<rootDir>/tests/unit/landing-experiment.test.js",
+      "<rootDir>/tests/unit/landing-matomo.test.js",
+      "<rootDir>/tests/unit/landing-qa.test.js",
+      "<rootDir>/tests/unit/matomo-analytics.test.js",
+      "<rootDir>/tests/unit/matomo-cors-fix.test.js",
+      "<rootDir>/tests/unit/middleware.test.js",
+      "<rootDir>/tests/unit/pilot-readiness.test.js",
+      "<rootDir>/tests/unit/social-cards.test.js",
+      "<rootDir>/tests/unit/translation-validation.test.js",
+      "<rootDir>/tests/unit/weblate-docker.test.js",
+      "<rootDir>/tests/unit/weblate-trial.test.js",
+      "<rootDir>/tests/integration/health.integration.test.js",
+      "<rootDir>/tests/integration/server.integration.test.js",
+      "<rootDir>/tests/integration/subscribe.integration.test.js",
+      "<rootDir>/tests/smoke/landing.smoke.test.js",
+      "<rootDir>/tests/example.test.js"
     ],
     "testPathIgnorePatterns": [
       "/node_modules/",

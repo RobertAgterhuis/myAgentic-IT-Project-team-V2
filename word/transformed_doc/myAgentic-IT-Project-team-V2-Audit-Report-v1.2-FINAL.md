@@ -126,7 +126,7 @@ SEVERITY: HIGH. GitHub reserves .github/ for repository configuration (workflows
 | src/webapp/ | 62 | src/webapp/ | Application source belongs in src/ |
 | agents/ | 38 | agents/ | Core project content, not GitHub config |
 | docs/ | 269 | docs/ (merge) | Two docs/ directories causes confusion |
-| .github/tests/ | 19 | tests/ (unify) | Tests split across 3 locations |
+| tests/ | 19 | tests/ (unify) | Tests split across 3 locations |
 | .github/package.json | 1 | Root (merge) | Two package.json = two npm installs |
 | .github/eslint.config | 1 | Root (merge) | One lint config for whole project |
 

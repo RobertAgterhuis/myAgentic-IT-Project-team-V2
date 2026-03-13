@@ -64,7 +64,7 @@ npx lighthouse http://127.0.0.1:3000 --only-categories=accessibility \
 
 ### 2.3 Existing Test Coverage (Active)
 
-The smoke test suite (`__tests__/smoke/landing.smoke.test.js`) provides baseline
+The smoke test suite (`tests/smoke/landing.smoke.test.js`) provides baseline
 accessibility validation through:
 
 - **SMOKE-006:** Security headers on all endpoints (X-Content-Type-Options)

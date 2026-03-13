@@ -71,7 +71,7 @@
 
 - Finding: Health and observability endpoint behavior is covered by integration
   tests, which supports operational confidence but not deployment gating yet.
-- Source: `.github/tests/integration/observability.test.js`
+- Source: `tests/integration/observability.test.js`
 - Impact: Medium
 
 ### 1.3 IaC and Environment Strategy Baseline
@@ -107,7 +107,7 @@
 - Finding: Runtime metrics persistence and health endpoints exist, enabling
   baseline technical observability.
 - Source: `src/webapp/server.js`,
-  `.github/tests/integration/observability.test.js`
+  `tests/integration/observability.test.js`
 - Impact: High
 
 - Finding: Distributed tracing is not present; no OpenTelemetry or equivalent
@@ -348,7 +348,7 @@
       "id": "CS-705",
       "topic": "Observability baseline",
       "finding": "Health and metrics behaviors are test-covered, but alerting/tracing are absent.",
-      "source": ".github/tests/integration/observability.test.js",
+      "source": "tests/integration/observability.test.js",
       "impact": "Medium",
       "design_decision_id": null
     }

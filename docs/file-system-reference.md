@@ -265,7 +265,7 @@ main project cycle.
 | `start.ps1`         | PowerShell startup script                                                    |
 | `utils/`            | Utility modules                                                              |
 
-### Tests: `.github/tests/` + `src/webapp/*.test.js`
+### Tests: `tests/` + `src/webapp/*.test.js`
 
 | Path                 | Purpose               |
 | -------------------- | --------------------- |

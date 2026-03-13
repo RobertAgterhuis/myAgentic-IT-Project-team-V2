@@ -37,7 +37,7 @@ static hostname is required; this matches the most common local access pattern.
 
 ### 3. Test Suite — `matomo-cors-fix.test.js` (15 tests)
 
-New test file: `__tests__/unit/matomo-cors-fix.test.js`
+New test file: `tests/unit/matomo-cors-fix.test.js`
 
 | Test Group                       | Count | Validates                                                                   |
 | -------------------------------- | ----- | --------------------------------------------------------------------------- |

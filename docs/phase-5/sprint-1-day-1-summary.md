@@ -84,7 +84,7 @@ Docker) - escalated to PM for March 12 standup resolution.
    - Allowlist for test files, docs, examples
    - Integrated via Gitleaks + Trivy in security job
 
-3. **Testing Framework** (`package.json`, `__tests__/example.test.js`)
+3. **Testing Framework** (`package.json`, `tests/example.test.js`)
    - Jest configured with Node environment
    - 15 baseline tests (all passing): Math, String, Array, Object, Async
      utilities

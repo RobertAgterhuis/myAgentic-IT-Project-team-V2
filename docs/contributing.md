@@ -72,7 +72,7 @@ src/webapp/           ← Web application (the code you'll work with most)
 agents/           ← Agent skill files (38 agents)
 docs/             ← Contracts, guardrails, playbooks, templates
 
-.github/tests/
+tests/
   unit/                   ← Unit tests (models, cache, schemas, sanitization, etc.)
   integration/            ← Integration tests (API, SSE, store, regression suite)
 ```

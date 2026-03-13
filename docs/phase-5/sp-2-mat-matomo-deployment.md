@@ -191,7 +191,7 @@ Add to webapp HTML (already specified in SP-12-705 §6):
 
 ## 10. Day 4 Progress (Checkpoint 1)
 
-- ✅ 32 validation tests created (`__tests__/unit/matomo-analytics.test.js`):
+- ✅ 32 validation tests created (`tests/unit/matomo-analytics.test.js`):
   Docker Compose stack (13), Nginx proxy (7), cookieless GDPR mode (6), tracking
   script format (3), port isolation (3)
 - ✅ Stack configuration validated: all 3 services correct images, health

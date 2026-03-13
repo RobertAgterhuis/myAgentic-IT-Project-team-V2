@@ -12,7 +12,7 @@
 - Added CORS headers to `matomo-nginx.conf` (PHP endpoints + static assets)
 - Added OPTIONS preflight handler (204 response)
 - Fixed noscript fallback URL (removed hardcoded `localhost`)
-- Created 15 validation tests (`__tests__/unit/matomo-cors-fix.test.js`)
+- Created 15 validation tests (`tests/unit/matomo-cors-fix.test.js`)
 - **Status:** Code-complete, 5 runtime ACs pending Docker verification
 - **Documentation:**
   [sp-3-mat-fix-implementation.md](sp-3-mat-fix-implementation.md)
@@ -62,7 +62,7 @@
 | `matomo-nginx.conf`                                   | CORS headers + OPTIONS preflight (SP-3-MAT-FIX) |
 | `src/webapp/landing.html`                         | Noscript fallback fix + Discussions footer link |
 | `README.md`                                           | Community section with Discussions link         |
-| `__tests__/unit/matomo-cors-fix.test.js`              | 15 new tests (SP-3-MAT-FIX)                     |
+| `tests/unit/matomo-cors-fix.test.js`              | 15 new tests (SP-3-MAT-FIX)                     |
 | `docs/phase-5/sprint-3-plan.md`               | Sprint 3 plan (NEW)                             |
 | `docs/phase-5/sprint-3-kpi-log.md`            | Sprint 3 KPI log (NEW)                          |
 | `docs/phase-5/sp-3-mat-fix-implementation.md` | Implementation report (NEW)                     |

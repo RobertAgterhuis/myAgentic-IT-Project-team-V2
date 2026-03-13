@@ -88,6 +88,10 @@ categories, 163 category-deferred)
 | ------- | -------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------- |
 | DEC-112 | HIGH     | All sprints, Phase 5 | Use a publicly available icon library (e.g. Lucide, Heroicons, Phosphor) for all UI icons and visual assets instead of custom-creating them. No custom icon or illustration production — speeds up development, ensures consistency, and removes design-tool dependency. | DECIDED by Product Owner. Applies to SP-12-701 icon library, all UI components, brand guidelines Section 5. Logo/wordmark remains custom (text-based). Social cards (SP-2-SOC) already created as SVG are retained as-is. | 2026-03-12 |
 | DEC-100 | —        | —                    | _(Add a decision here)_                                                                                                                                                                                                                                                  |                                                                                                                                                                                                                           |            |
+| DEC-113 | HIGH     | e2e-lifecycle        | Lifecycle test — decide step                                                                                                                                                                                                                                             |                                                                                                                                                                                                                           | 2026-03-13 |
+| DEC-114 | MEDIUM   | e2e-test             | E2E test decision — should we automate?                                                                                                                                                                                                                                  |                                                                                                                                                                                                                           | 2026-03-13 |
+| DEC-115 | MEDIUM   | e2e-test             | E2E test decision — should we automate?                                                                                                                                                                                                                                  |                                                                                                                                                                                                                           | 2026-03-13 |
+| DEC-116 | HIGH     | e2e-lifecycle        | Lifecycle test — decide step                                                                                                                                                                                                                                             | Yes, we should. Automated E2E lifecycle test                                                                                                                                                                              | 2026-03-13 |
 
 ---
 
@@ -100,6 +104,11 @@ categories, 163 category-deferred)
 
 ## Change Log
 
+- 2026-03-13T18:11:40.223Z | `decide` | `DEC-116` | source: webapp
+- 2026-03-13T18:11:40.205Z | `create` | `DEC-116` | source: webapp
+- 2026-03-13T18:11:40.008Z | `create` | `DEC-115` | source: webapp
+- 2026-03-13T18:09:24.476Z | `create` | `DEC-114` | source: webapp
+- 2026-03-13T18:09:24.459Z | `create` | `DEC-113` | source: webapp
 - 2026-03-12T00:00:00.000Z | `create` | `DEC-112` | source: manual — use public
   icon library for all visual assets
 - 2026-03-07T17:42:05.245Z | `create` | `DEC-111` | source: webapp

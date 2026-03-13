@@ -20,6 +20,7 @@ export default [
       'BusinessDocs/',
       'word/',
       'locales/',
+      'src/webapp/ui/',
       '*.config.js',
       '*.config.mjs',
     ],
@@ -30,7 +31,7 @@ export default [
 
   /* ── All JS/TS files: TypeScript parser + Prettier ──────────── */
   {
-    files: ['**/*.js', '**/*.ts', '**/*.jsx', '**/*.tsx'],
+    files: ['**/*.js', '**/*.mjs', '**/*.ts', '**/*.jsx', '**/*.tsx'],
     languageOptions: {
       parser: tsParser,
       ecmaVersion: 2022,
@@ -87,7 +88,7 @@ export default [
 
   /* ── Script files: relax console ────────────────────────────── */
   {
-    files: ['scripts/**/*.js'],
+    files: ['scripts/**/*.{js,mjs}'],
     rules: {
       'no-console': 'off',
     },

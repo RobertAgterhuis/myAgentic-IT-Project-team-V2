@@ -1,0 +1,73 @@
+import * as React from 'react';
+import { cva, type VariantProps } from 'class-variance-authority';
+import { Slot } from 'radix-ui';
+import { X } from 'lucide-react';
+
+import { cn } from '@/lib/utils';
+
+const badgeVariants = cva(
+  'inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-full border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 [&>svg]:pointer-events-none [&>svg]:size-3',
+  {
+    variants: {
+      variant: {
+        default: 'bg-primary text-primary-foreground [a&]:hover:bg-primary/90',
+        secondary: 'bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90',
+        destructive:
+          'bg-destructive text-white focus-visible:ring-destructive/20 dark:bg-destructive/60 [a&]:hover:bg-destructive/90',
+        outline:
+          'border-border text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground',
+        success: 'bg-success text-success-foreground',
+        warning: 'bg-warning text-warning-foreground',
+        error: 'bg-destructive text-white',
+        info: 'bg-info text-info-foreground',
+        neutral: 'bg-muted text-muted-foreground',
+      },
+    },
+    defaultVariants: {
+      variant: 'default',
+    },
+  }
+);
+
+function Badge({
+  className,
+  variant = 'default',
+  asChild = false,
+  dot = false,
+  removable = false,
+  onRemove,
+  children,
+  ...props
+}: React.ComponentProps<'span'> &
+  VariantProps<typeof badgeVariants> & {
+    asChild?: boolean;
+    dot?: boolean;
+    removable?: boolean;
+    onRemove?: () => void;
+  }) {
+  const Comp = asChild ? Slot.Root : 'span';
+
+  return (
+    <Comp
+      data-slot="badge"
+      data-variant={variant}
+      className={cn(badgeVariants({ variant }), className)}
+      {...props}
+    >
+      {dot && <span className="size-1.5 rounded-full bg-current" aria-hidden="true" />}
+      {children}
+      {removable && (
+        <button
+          type="button"
+          onClick={onRemove}
+          className="ml-0.5 -mr-1 inline-flex size-4 items-center justify-center rounded-full hover:bg-black/10 focus:outline-none"
+          aria-label="Remove"
+        >
+          <X className="!size-2.5" />
+        </button>
+      )}
+    </Comp>
+  );
+}
+
+export { Badge, badgeVariants };

@@ -26,6 +26,9 @@
     "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
     "build": "echo 'No build step required — server runs native Node.js'",
+    "tokens:build": "node scripts/build-tokens.mjs",
+    "test:e2e": "npx playwright test",
+    "test:e2e:headed": "npx playwright test --headed",
     "audit:github": "node scripts/github-config-audit.js",
     "snapshot:github": "node scripts/github-state-snapshot.js"
   },
@@ -48,6 +51,7 @@
   "devDependencies": {
     "@axe-core/cli": "^4.10.3",
     "@eslint/js": "^8.57.1",
+    "@playwright/test": "^1.58.2",
     "@types/jest": "^29.5.14",
     "@types/node": "^20.19.37",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
@@ -109,6 +113,6 @@
     "ajv-formats": "^3.0.1"
   },
   "lint-staged": {
-    "*.{js,ts,jsx,tsx}": "eslint --max-warnings=0"
+    "*.{js,ts,jsx,tsx}": "eslint --max-warnings=0 --no-warn-ignored"
   }
 }

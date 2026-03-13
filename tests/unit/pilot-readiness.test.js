@@ -31,6 +31,37 @@ describe('SP-2-202 — Pilot Materials Readiness', () => {
     test('technical manual exists', () => {
       expect(fs.existsSync(path.join(DOCS, 'technical-manual.md'))).toBe(true);
     });
+
+    test('participant guide exists', () => {
+      expect(fs.existsSync(path.join(PHASE5, 'pilot-participant-guide.md'))).toBe(true);
+    });
+  });
+
+  describe('Participant guide — S1-6 validation', () => {
+    const guide = fs.readFileSync(path.join(PHASE5, 'pilot-participant-guide.md'), 'utf8');
+
+    test('defines at least 3 pilot scenarios', () => {
+      expect(guide).toContain('Scenario A');
+      expect(guide).toContain('Scenario B');
+      expect(guide).toContain('Scenario C');
+    });
+
+    test('has evaluation criteria for all 4 disciplines', () => {
+      expect(guide).toContain('### Business (Phase 1)');
+      expect(guide).toContain('### Technology (Phase 2)');
+      expect(guide).toContain('### UX/Experience (Phase 3)');
+      expect(guide).toContain('### Marketing (Phase 4)');
+    });
+
+    test('has feedback collection mechanism', () => {
+      expect(guide).toContain('Feedback Collection');
+      expect(guide).toContain('How to Submit');
+    });
+
+    test('has environment setup instructions', () => {
+      expect(guide).toContain('Environment Setup');
+      expect(guide).toContain('npm ci');
+    });
   });
 
   describe('Feedback rubric structure', () => {

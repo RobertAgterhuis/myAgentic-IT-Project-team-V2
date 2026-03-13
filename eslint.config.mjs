@@ -20,6 +20,7 @@ export default [
       'BusinessDocs/',
       'word/',
       'locales/',
+      'src/webapp/ui/',
       '*.config.js',
       '*.config.mjs',
     ],

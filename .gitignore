@@ -39,3 +39,14 @@ docs/session/command-queue.json
 vitest.out
 npm-audit.json
 *.bak
+
+*storybook.log
+storybook-static
+
+# React UI build output
+src/webapp/ui/dist/
+src/webapp/ui/storybook-static/
+
+# Playwright
+playwright-report/
+test-results/

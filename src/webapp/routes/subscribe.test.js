@@ -1,15 +1,19 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
+// Integration tests — no mocking (vitest v4 cannot intercept CJS require).
 
-import * as fs from 'fs';
+import path from 'path';
+import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'fs';
+import { fileURLToPath } from 'url';
 import createSubscribeRoutes from './subscribe.js';
 
-/* ── Mocks ──────────────────────────────────────────────────────── */
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const LOCAL_SUBS_FILE = path.resolve(
+  __dirname, '..', '..', '..', 'BusinessDocs', 'local-subscriptions.json'
+);
 
-vi.mock('fs', () => ({
-  existsSync: vi.fn(() => false),
-  readFileSync: vi.fn(() => '[]'),
-  writeFileSync: vi.fn(),
-}));
+function cleanupSubsFile() {
+  try { unlinkSync(LOCAL_SUBS_FILE); } catch { /* ignore */ }
+}
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 
@@ -44,13 +48,14 @@ describe('subscribe routes', () => {
   const originalEnv = process.env.BUTTONDOWN_API_KEY;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    cleanupSubsFile();
     delete process.env.BUTTONDOWN_API_KEY;
     routes = createSubscribeRoutes({});
     handler = routes['POST /api/subscribe'];
   });
 
   afterEach(() => {
+    cleanupSubsFile();
     if (originalEnv !== undefined) {
       process.env.BUTTONDOWN_API_KEY = originalEnv;
     } else {
@@ -88,10 +93,8 @@ describe('subscribe routes', () => {
   });
 
   it('accepts valid segments', async () => {
-    fs.existsSync.mockReturnValue(false);
     for (const segment of ['engineering-leaders', 'product-managers', 'developers', 'evaluators']) {
-      vi.clearAllMocks();
-      fs.existsSync.mockReturnValue(false);
+      cleanupSubsFile();
       const res = fakeRes();
       await handler(fakeReq({
         email: 'user@example.com',
@@ -102,7 +105,6 @@ describe('subscribe routes', () => {
   });
 
   it('defaults segment to evaluators when missing', async () => {
-    fs.existsSync.mockReturnValue(false);
     const res = fakeRes();
     await handler(fakeReq({ email: 'user@example.com', metadata: {} }), res);
     expect(res.status).toBe(201);
@@ -126,7 +128,6 @@ describe('subscribe routes', () => {
   /* ── Local fallback (no API key) ───────────────────────────── */
 
   it('stores locally when no API key is configured', async () => {
-    fs.existsSync.mockReturnValue(false);
     const res = fakeRes();
     await handler(fakeReq({
       email: 'test@example.com',
@@ -135,12 +136,11 @@ describe('subscribe routes', () => {
 
     expect(res.status).toBe(201);
     expect(res.json.status).toBe('stored_locally');
-    expect(fs.writeFileSync).toHaveBeenCalled();
+    expect(existsSync(LOCAL_SUBS_FILE)).toBe(true);
   });
 
   it('returns 409 for duplicate local subscription', async () => {
-    fs.existsSync.mockReturnValue(true);
-    fs.readFileSync.mockReturnValue(JSON.stringify([
+    writeFileSync(LOCAL_SUBS_FILE, JSON.stringify([
       { email: 'dupe@example.com', segment: 'developers', source: 'landing' },
     ]));
 
@@ -154,16 +154,13 @@ describe('subscribe routes', () => {
     expect(res.json.error).toBe('already_subscribed');
   });
 
-  it('still returns 201 when local write fails', async () => {
-    fs.existsSync.mockReturnValue(false);
-    fs.writeFileSync.mockImplementation(() => { throw new Error('disk full'); });
-
+  it('returns 201 even when existing subscriptions file is corrupt', async () => {
+    writeFileSync(LOCAL_SUBS_FILE, 'not-json');
     const res = fakeRes();
     await handler(fakeReq({
       email: 'test@example.com',
       metadata: { segment: 'developers' },
     }), res);
-
     expect(res.status).toBe(201);
     expect(res.json.status).toBe('stored_locally');
   });
@@ -248,17 +245,14 @@ describe('subscribe routes', () => {
   /* ── Source metadata ───────────────────────────────────────── */
 
   it('uses default source "direct" when not provided', async () => {
-    fs.existsSync.mockReturnValue(false);
     const res = fakeRes();
     await handler(fakeReq({ email: 'test@example.com', metadata: {} }), res);
     expect(res.status).toBe(201);
-    // Subscription was stored; verify writeFileSync was called with default source
-    const written = JSON.parse(fs.writeFileSync.mock.calls[0][1]);
+    const written = JSON.parse(readFileSync(LOCAL_SUBS_FILE, 'utf-8'));
     expect(written[0].source).toBe('direct');
   });
 
   it('truncates overly long source to 100 chars', async () => {
-    fs.existsSync.mockReturnValue(false);
     const longSource = 'x'.repeat(200);
     const res = fakeRes();
     await handler(fakeReq({
@@ -266,7 +260,7 @@ describe('subscribe routes', () => {
       metadata: { segment: 'developers', source: longSource },
     }), res);
     expect(res.status).toBe(201);
-    const written = JSON.parse(fs.writeFileSync.mock.calls[0][1]);
+    const written = JSON.parse(readFileSync(LOCAL_SUBS_FILE, 'utf-8'));
     expect(written[0].source.length).toBe(100);
   });
 });

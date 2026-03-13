@@ -1,25 +1,10 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
+// Integration tests — no mocking (vitest v4 cannot intercept CJS require).
 
 import path from 'path';
-import * as fs from 'fs';
-import { detectDrift } from '../drift-detector.js';
+import os from 'os';
+import { mkdirSync, writeFileSync, rmSync } from 'fs';
 import createDriftRoutes from './drift.js';
-
-/* ── Mocks ──────────────────────────────────────────────────────── */
-
-vi.mock('fs', () => ({
-  existsSync: vi.fn(() => false),
-  readFileSync: vi.fn(() => '{}'),
-}));
-
-vi.mock('../drift-detector', () => ({
-  detectDrift: vi.fn(() => ({
-    generated_at: '2026-01-01T00:00:00Z',
-    summary: { total_drifts: 0, critical: 0, warning: 0, info: 0 },
-    drifts: [],
-    in_sync: { sprints: [], stories: 0 },
-  })),
-}));
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 
@@ -36,11 +21,50 @@ function fakeRes() {
   };
 }
 
+let _tmpDirs = [];
+
+function makeTmpProject(sessionState, extras = {}) {
+  const tmpDir = path.join(os.tmpdir(), `drift-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  _tmpDirs.push(tmpDir);
+  const sessionDir = path.join(tmpDir, 'docs', 'session');
+  mkdirSync(sessionDir, { recursive: true });
+
+  const sessionFile = path.join(sessionDir, 'session-state.json');
+  if (sessionState !== null) {
+    writeFileSync(sessionFile, JSON.stringify(sessionState));
+  }
+
+  if (extras.sprintPlan) {
+    const planAbs = path.resolve(tmpDir, extras.sprintPlan.path);
+    mkdirSync(path.dirname(planAbs), { recursive: true });
+    writeFileSync(planAbs, extras.sprintPlan.content);
+  }
+
+  if (extras.syncReports) {
+    for (const [sprintId, report] of Object.entries(extras.syncReports)) {
+      const dir = report.dir === 'phase-5'
+        ? path.join(tmpDir, 'docs', 'phase-5', `sprint-${sprintId}`)
+        : path.join(tmpDir, 'docs', 'sprints', sprintId);
+      mkdirSync(dir, { recursive: true });
+      writeFileSync(path.join(dir, 'github-sync-report.md'), report.content);
+    }
+  }
+
+  const ctx = {
+    SESSION_FILE: sessionFile,
+    resolveSessionFile: () => sessionFile,
+    PROJECT_ROOT: tmpDir,
+    ...(extras.ctxOverrides || {}),
+  };
+
+  return { tmpDir, sessionFile, ctx };
+}
+
 function makeCtx(overrides = {}) {
   return {
-    SESSION_FILE: '/project/docs/session/session-state.json',
-    resolveSessionFile: overrides.resolveSessionFile || (() => '/project/docs/session/session-state.json'),
-    PROJECT_ROOT: '/project',
+    SESSION_FILE: '/nonexistent/docs/session/session-state.json',
+    resolveSessionFile: overrides.resolveSessionFile || (() => '/nonexistent/docs/session/session-state.json'),
+    PROJECT_ROOT: '/nonexistent',
     ...overrides,
   };
 }
@@ -51,9 +75,15 @@ describe('drift routes', () => {
   let routes, handler;
 
   beforeEach(() => {
-    vi.clearAllMocks();
     routes = createDriftRoutes(makeCtx());
     handler = routes['GET /api/drift'];
+  });
+
+  afterEach(() => {
+    for (const d of _tmpDirs) {
+      try { rmSync(d, { recursive: true, force: true }); } catch { /* ignore */ }
+    }
+    _tmpDirs = [];
   });
 
   it('exports the GET /api/drift route', () => {
@@ -61,7 +91,6 @@ describe('drift routes', () => {
   });
 
   it('returns empty drift report when no session state exists', () => {
-    fs.existsSync.mockReturnValue(false);
     const res = fakeRes();
     handler({}, res);
     expect(res.status).toBe(200);
@@ -69,124 +98,134 @@ describe('drift routes', () => {
     expect(res.json.error).toBe('No session state found');
   });
 
-  it('calls detectDrift with session state and sync reports', () => {
+  it('returns drift report when session state exists', () => {
     const sessionState = {
-      sprint_statuses: { 'SP-1': 'COMPLETE', 'SP-2': 'IN_PROGRESS' },
-      sprint_backlog: { path: 'docs/sprint-plan.md' },
+      sprint_backlog: {
+        path: 'docs/sprint-plan.md',
+        sprint_statuses: { 'SP-1': 'COMPLETE', 'SP-2': 'IN_PROGRESS' },
+      },
     };
 
-    fs.existsSync.mockReturnValue(true);
-    fs.readFileSync.mockImplementation((fp) => {
-      if (fp.includes('session-state')) return JSON.stringify(sessionState);
-      if (fp.includes('sprint-plan')) return '# Sprint Plan';
-      if (fp.includes('github-sync-report')) return '# Sync Report';
-      return '{}';
+    const { ctx } = makeTmpProject(sessionState, {
+      sprintPlan: { path: 'docs/sprint-plan.md', content: '# Sprint Plan' },
+      syncReports: {
+        'SP-1': { dir: 'sprints', content: '# Sync Report' },
+      },
     });
 
+    routes = createDriftRoutes(ctx);
+    handler = routes['GET /api/drift'];
     const res = fakeRes();
     handler({}, res);
 
-    expect(detectDrift).toHaveBeenCalled();
     expect(res.status).toBe(200);
+    const body = res.json;
+    expect(body).toHaveProperty('generated_at');
+    expect(body).toHaveProperty('summary');
+    expect(body).toHaveProperty('drifts');
+    expect(body).toHaveProperty('in_sync');
+    expect(body.error).toBeUndefined();
   });
 
-  it('returns drift results from detectDrift', () => {
+  it('detects MISSING_SYNC_REPORT when sprint has no sync report', () => {
     const sessionState = {
-      sprint_statuses: { 'SP-1': 'COMPLETE' },
-      sprint_backlog: { path: 'docs/plan.md' },
+      sprint_backlog: {
+        sprint_statuses: { 'SP-1': 'DONE' },
+      },
     };
 
-    const driftReport = {
-      generated_at: '2026-01-15T00:00:00Z',
-      summary: { total_drifts: 2, critical: 1, warning: 1, info: 0 },
-      drifts: [
-        { severity: 'critical', sprint: 'SP-1', message: 'Status mismatch' },
-        { severity: 'warning', sprint: 'SP-1', message: 'Story count differs' },
-      ],
-      in_sync: { sprints: [], stories: 0 },
-    };
-
-    detectDrift.mockReturnValue(driftReport);
-    fs.existsSync.mockReturnValue(true);
-    fs.readFileSync.mockImplementation((fp) => {
-      if (fp.includes('session-state')) return JSON.stringify(sessionState);
-      return '';
-    });
-
+    // No sync reports on disk
+    const { ctx } = makeTmpProject(sessionState);
+    routes = createDriftRoutes(ctx);
+    handler = routes['GET /api/drift'];
     const res = fakeRes();
     handler({}, res);
+
     expect(res.status).toBe(200);
-    expect(res.json.summary.total_drifts).toBe(2);
-    expect(res.json.summary.critical).toBe(1);
+    const body = res.json;
+    const missingSyncDrift = body.drifts.find(d => d.type === 'MISSING_SYNC_REPORT');
+    expect(missingSyncDrift).toBeDefined();
   });
 
   it('handles resolveSessionFile returning a different file', () => {
-    const ctx = makeCtx({
-      resolveSessionFile: () => '/project/docs/session/session-state-audit.json',
-    });
+    const sessionState = { sprint_backlog: { sprint_statuses: {} } };
+    const { tmpDir } = makeTmpProject(sessionState);
+
+    const altSessionDir = path.join(tmpDir, 'docs', 'session');
+    const altSessionFile = path.join(altSessionDir, 'session-state-audit.json');
+    writeFileSync(altSessionFile, JSON.stringify(sessionState));
+
+    const ctx = {
+      SESSION_FILE: altSessionFile,
+      resolveSessionFile: () => altSessionFile,
+      PROJECT_ROOT: tmpDir,
+    };
+
     routes = createDriftRoutes(ctx);
     handler = routes['GET /api/drift'];
-
-    fs.existsSync.mockReturnValue(true);
-    fs.readFileSync.mockReturnValue(JSON.stringify({
-      sprint_statuses: {},
-    }));
-
     const res = fakeRes();
     handler({}, res);
     expect(res.status).toBe(200);
+    expect(res.json.error).toBeUndefined();
   });
 
   it('handles resolveSessionFile not being a function', () => {
     const ctx = makeCtx({ resolveSessionFile: undefined });
     routes = createDriftRoutes(ctx);
     handler = routes['GET /api/drift'];
-
-    // SESSION_FILE doesn't exist
-    fs.existsSync.mockReturnValue(false);
     const res = fakeRes();
     handler({}, res);
     expect(res.status).toBe(200);
     expect(res.json.error).toBe('No session state found');
   });
 
-  it('handles session state file existing but parse error', () => {
-    fs.existsSync.mockReturnValue(true);
-    fs.readFileSync.mockImplementation(() => { throw new Error('read fail'); });
+  it('returns no-session error when session file is invalid JSON', () => {
+    const { tmpDir, sessionFile } = makeTmpProject(null);
+    writeFileSync(sessionFile, 'not-valid-json');
 
-    const res = fakeRes();
-    handler({}, res);
-    expect(res.status).toBe(200);
-    expect(res.json.error).toBe('No session state found');
-  });
-
-  it('reads sync reports from both sprint dirs', () => {
-    const sessionState = {
-      sprint_statuses: { 'SP-1': 'COMPLETE', 'SP-2': 'IN_PROGRESS' },
+    const ctx = {
+      SESSION_FILE: sessionFile,
+      resolveSessionFile: () => sessionFile,
+      PROJECT_ROOT: tmpDir,
     };
 
-    fs.existsSync.mockImplementation((fp) => {
-      if (fp.includes('session-state')) return true;
-      if (fp.includes('sprints') && fp.includes('SP-1')) return true;
-      if (fp.includes('phase-5') && fp.includes('SP-2')) return true;
-      return false;
-    });
-
-    fs.readFileSync.mockImplementation((fp) => {
-      if (fp.includes('session-state')) return JSON.stringify(sessionState);
-      return '# report';
-    });
-
+    routes = createDriftRoutes(ctx);
+    handler = routes['GET /api/drift'];
     const res = fakeRes();
     handler({}, res);
-    expect(detectDrift).toHaveBeenCalled();
     expect(res.status).toBe(200);
+    expect(res.json.error).toBe('No session state found');
+  });
+
+  it('reads sync reports from both sprints and phase-5 dirs', () => {
+    const sessionState = {
+      sprint_backlog: {
+        sprint_statuses: { 'SP-1': 'COMPLETE', 'SP-2': 'IN_PROGRESS' },
+      },
+    };
+
+    const { ctx } = makeTmpProject(sessionState, {
+      syncReports: {
+        'SP-1': { dir: 'sprints', content: '# SP-1 report' },
+        'SP-2': { dir: 'phase-5', content: '# SP-2 report' },
+      },
+    });
+
+    routes = createDriftRoutes(ctx);
+    handler = routes['GET /api/drift'];
+    const res = fakeRes();
+    handler({}, res);
+    expect(res.status).toBe(200);
+    expect(res.json.error).toBeUndefined();
+    expect(res.json).toHaveProperty('summary');
   });
 
   it('handles missing sprint_statuses gracefully', () => {
-    fs.existsSync.mockReturnValue(true);
-    fs.readFileSync.mockReturnValue(JSON.stringify({ mode: 'AUDIT' }));
+    const sessionState = { mode: 'AUDIT' };
+    const { ctx } = makeTmpProject(sessionState);
 
+    routes = createDriftRoutes(ctx);
+    handler = routes['GET /api/drift'];
     const res = fakeRes();
     handler({}, res);
     expect(res.status).toBe(200);

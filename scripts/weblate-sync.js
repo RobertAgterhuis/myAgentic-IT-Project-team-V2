@@ -153,11 +153,7 @@ async function push() {
   for (const component of COMPONENTS) {
     const source = readLocaleFile(SOURCE_LANG, component);
     try {
-      await weblateRequest(
-        'POST',
-        `translations/${WEBLATE_PROJECT}/${component}/en/file/`,
-        source
-      );
+      await weblateRequest('POST', `translations/${WEBLATE_PROJECT}/${component}/en/file/`, source);
       console.log(`  ✓ Pushed ${component} (${Object.keys(source).length} keys)`);
     } catch (err) {
       console.error(`  ✗ ${component}: ${err.message}`);

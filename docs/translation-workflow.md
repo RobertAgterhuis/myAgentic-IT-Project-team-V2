@@ -118,10 +118,10 @@ The job is defined in both `.github/workflows/ci.yml` and
 
 ## Troubleshooting
 
-| Issue                          | Resolution                                       |
-| ------------------------------ | ------------------------------------------------ |
-| Missing key in target locale   | Add key to en-US, push to Weblate, translate      |
-| Extra key in target locale     | Remove the extra key or add to en-US source       |
-| Placeholder mismatch           | Check original en-US string for `{placeholder}`   |
-| Weblate connection refused     | Ensure `docker compose -f docker-compose.weblate.yml up -d` |
-| API 403                        | Check `WEBLATE_TOKEN` is correct                  |
+| Issue                        | Resolution                                                  |
+| ---------------------------- | ----------------------------------------------------------- |
+| Missing key in target locale | Add key to en-US, push to Weblate, translate                |
+| Extra key in target locale   | Remove the extra key or add to en-US source                 |
+| Placeholder mismatch         | Check original en-US string for `{placeholder}`             |
+| Weblate connection refused   | Ensure `docker compose -f docker-compose.weblate.yml up -d` |
+| API 403                      | Check `WEBLATE_TOKEN` is correct                            |

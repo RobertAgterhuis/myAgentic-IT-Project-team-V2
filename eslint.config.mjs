@@ -70,6 +70,7 @@ export default [
     languageOptions: {
       globals: {
         ...globals.jest,
+        ...globals.browser,
         vi: 'readonly',
         describe: 'readonly',
         it: 'readonly',

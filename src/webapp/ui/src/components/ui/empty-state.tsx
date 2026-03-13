@@ -18,7 +18,7 @@ function EmptyState({ icon, title, description, action, className, ...props }: E
       {...props}
     >
       {icon && <div className="text-muted-foreground">{icon}</div>}
-      <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+      <p className="text-lg font-semibold text-foreground">{title}</p>
       {description && <p className="max-w-sm text-sm text-muted-foreground">{description}</p>}
       {action && (
         <Button variant="outline" onClick={action.onClick} className="mt-2">

@@ -50,6 +50,7 @@
   },
   "devDependencies": {
     "@axe-core/cli": "^4.10.3",
+    "@axe-core/playwright": "^4.11.1",
     "@eslint/js": "^8.57.1",
     "@playwright/test": "^1.58.2",
     "@types/jest": "^29.5.14",
@@ -84,11 +85,7 @@
     ],
     "testMatch": [
       "<rootDir>/tests/unit/email-templates.test.js",
-      "<rootDir>/tests/unit/landing-experiment.test.js",
-      "<rootDir>/tests/unit/landing-matomo.test.js",
-      "<rootDir>/tests/unit/landing-qa.test.js",
       "<rootDir>/tests/unit/matomo-analytics.test.js",
-      "<rootDir>/tests/unit/matomo-cors-fix.test.js",
       "<rootDir>/tests/unit/middleware.test.js",
       "<rootDir>/tests/unit/pilot-readiness.test.js",
       "<rootDir>/tests/unit/social-cards.test.js",

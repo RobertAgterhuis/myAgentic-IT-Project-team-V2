@@ -173,6 +173,11 @@ export default function QuestionnairesPage() {
     <div className="flex h-full" data-testid="questionnaires-page">
       {/* Sidebar */}
       <div className="w-72 shrink-0 border-r overflow-y-auto">
+        <div className="p-4 border-b">
+          <Heading level={1} className="text-lg">
+            Questionnaires
+          </Heading>
+        </div>
         <SidePanel
           sections={sections}
           activeItemId={selectedFile}
@@ -198,7 +203,7 @@ export default function QuestionnairesPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <Heading level={1}>{selected.agent || 'Questionnaire'}</Heading>
+                <Heading level={2}>{selected.agent || 'Questionnaire'}</Heading>
                 <Text muted>
                   {selected.phase} — v{selected.version}
                 </Text>

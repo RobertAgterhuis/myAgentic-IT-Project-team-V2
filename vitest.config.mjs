@@ -11,11 +11,7 @@ export default defineConfig({
     exclude: [
       '**/node_modules/**',
       'tests/unit/email-templates.test.js',
-      'tests/unit/landing-experiment.test.js',
-      'tests/unit/landing-matomo.test.js',
-      'tests/unit/landing-qa.test.js',
       'tests/unit/matomo-analytics.test.js',
-      'tests/unit/matomo-cors-fix.test.js',
       'tests/unit/middleware.test.js',
       'tests/unit/pilot-readiness.test.js',
       'tests/unit/social-cards.test.js',
@@ -35,6 +31,7 @@ export default defineConfig({
       exclude: [
         'src/webapp/**/*.test.js',
         'src/webapp/node_modules/**',
+        'src/webapp/ui/**',
         'src/webapp/start.ps1',
         'src/webapp/dashboard.js', // Browser-side IIFE (requires DOM/jsdom, not testable in Node)
       ],

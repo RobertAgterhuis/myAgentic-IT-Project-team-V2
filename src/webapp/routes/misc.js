@@ -359,27 +359,69 @@ module.exports = function createMiscRoutes(ctx) {
     json(res, 200, { entries, total: entries.length, limit });
   }
 
-  /* ── Static file serving ──────────────────────────────────────── */
+  /* ── Static file serving (React SPA from ui/dist/) ──────────── */
 
-  let cachedHtml = null;
+  const UI_DIST = path.join(WEBAPP_DIR, 'ui', 'dist');
+
+  const MIME_TYPES = {
+    '.html': 'text/html; charset=utf-8',
+    '.js': 'application/javascript; charset=utf-8',
+    '.css': 'text/css; charset=utf-8',
+    '.json': 'application/json; charset=utf-8',
+    '.svg': 'image/svg+xml',
+    '.png': 'image/png',
+    '.ico': 'image/x-icon',
+    '.woff': 'font/woff',
+    '.woff2': 'font/woff2',
+  };
+
+  let cachedSpaHtml = null;
   try {
-    const htmlPath = path.join(WEBAPP_DIR, 'index.html');
-    if (getStore().exists(htmlPath)) cachedHtml = Buffer.from(getStore().readFile(htmlPath));
+    const spaPath = path.join(UI_DIST, 'index.html');
+    if (getStore().exists(spaPath)) cachedSpaHtml = Buffer.from(getStore().readFile(spaPath));
   } catch {
-    /* index.html not found — static serving will return 404 */
+    /* React build not present — run `npm run build` in src/webapp/ui/ */
   }
 
-  function serveStatic(_req, res) {
-    if (!cachedHtml) {
-      res.writeHead(404);
+  function serveDistFile(pathname, res) {
+    try {
+      const filePath = safePath(UI_DIST, pathname.startsWith('/') ? pathname.slice(1) : pathname);
+      if (!getStore().exists(filePath)) return false;
+      const content = getStore().readFile(filePath);
+      const ext = path.extname(filePath).toLowerCase();
+      const mime = MIME_TYPES[ext] || 'application/octet-stream';
+      const isHashed = pathname.startsWith('/assets/');
+      setSecurityHeaders(res);
+      res.writeHead(200, {
+        'Content-Type': mime,
+        'Content-Length': Buffer.byteLength(content),
+        'Cache-Control': isHashed ? 'public, max-age=31536000, immutable' : 'public, max-age=3600',
+      });
+      res.end(content);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function serveStatic(req, res) {
+    const url = new URL(req.url, `http://${HOST}:${PORT}`);
+    const pathname = url.pathname;
+
+    // Try serving a real file from ui/dist/
+    if (serveDistFile(pathname, res)) return;
+
+    // SPA fallback — serve index.html for client-side routing
+    setSecurityHeaders(res);
+    if (!cachedSpaHtml) {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
       return res.end(S.NOT_FOUND);
     }
-    setSecurityHeaders(res);
     res.writeHead(200, {
       'Content-Type': 'text/html; charset=utf-8',
-      'Content-Length': cachedHtml.length,
+      'Content-Length': cachedSpaHtml.length,
     });
-    res.end(cachedHtml);
+    res.end(cachedSpaHtml);
   }
 
   return {

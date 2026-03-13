@@ -2,7 +2,7 @@
  * Questionnaires page tests — Issue #242 (S9G-35)
  */
 import { describe, it, expect } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import QuestionnairesPage from './questionnaires-page';
 import { RouterTestWrapper } from '@/test/router-test-wrapper';

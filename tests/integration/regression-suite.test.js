@@ -259,6 +259,8 @@ describe('Sprint 1 Regression: Security', () => {
 
   it('security headers are set on all responses', async () => {
     const res = await req('GET', '/');
+    // 200 when React build is present, 404 in CI (ui/dist/ not committed)
+    expect([200, 404]).toContain(res.status);
     expect(res.headers['x-content-type-options']).toBe('nosniff');
     expect(res.headers['x-frame-options']).toBe('SAMEORIGIN');
     expect(res.headers['content-security-policy']).toBeTruthy();
@@ -506,51 +508,12 @@ describe('Sprint 4 Regression: SSE & Metrics', () => {
  * ═══════════════════════════════════════════════════════════════════ */
 
 describe('Sprint 5 Regression: Accessibility', () => {
-  let htmlContent;
+  // Legacy index.html a11y tests removed — S9H migrated to React SPA.
+  // Accessibility is now tested via axe-core in tests/e2e/s9h-accessibility.spec.ts
 
-  beforeAll(() => {
-    const htmlPath = path.join(WEBAPP_DIR, 'index.html');
-    htmlContent = fs.readFileSync(htmlPath, 'utf8');
-  });
-
-  it('HTML has lang attribute on <html>', () => {
-    expect(htmlContent).toMatch(/<html[^>]+lang="en"/);
-  });
-
-  it('HTML has <meta charset="utf-8">', () => {
-    expect(htmlContent).toMatch(/<meta\s+charset="[uU][tT][fF]-8"/i);
-  });
-
-  it('HTML has viewport meta tag', () => {
-    expect(htmlContent).toMatch(/<meta\s+name="viewport"/);
-  });
-
-  it('skip-to-content link present', () => {
-    expect(htmlContent).toMatch(/class="skip-nav"/);
-  });
-
-  it('main landmark has id="main"', () => {
-    expect(htmlContent).toMatch(/id="main"/);
-  });
-
-  it('prefers-reduced-motion media query present', () => {
-    expect(htmlContent).toMatch(/prefers-reduced-motion/);
-  });
-
-  it('focus-visible styles defined', () => {
-    expect(htmlContent).toMatch(/focus-visible/);
-  });
-
-  it('aria-live region present for announcements', () => {
-    expect(htmlContent).toMatch(/aria-live/);
-  });
-
-  it('role="alert" used for error messages', () => {
-    expect(htmlContent).toMatch(/role="alert"/i);
-  });
-
-  it('tabindex management for modal dialogs', () => {
-    expect(htmlContent).toMatch(/tabindex/);
+  it('React SPA accessibility test suite exists', () => {
+    const specPath = path.join(__dirname, '..', 'e2e', 's9h-accessibility.spec.ts');
+    expect(fs.existsSync(specPath)).toBe(true);
   });
 });
 

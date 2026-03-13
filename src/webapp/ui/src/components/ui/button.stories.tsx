@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { Button } from './button';
-import { Loader2, Mail, Plus } from 'lucide-react';
+import { Mail, Plus } from 'lucide-react';
 
 const meta = {
   title: 'UI/Button',
@@ -15,6 +15,7 @@ const meta = {
       control: 'select',
       options: ['default', 'xs', 'sm', 'lg', 'icon'],
     },
+    loading: { control: 'boolean' },
   },
 } satisfies Meta<typeof Button>;
 
@@ -41,6 +42,18 @@ export const Ghost: Story = {
   args: { variant: 'ghost', children: 'Ghost' },
 };
 
+export const Link: Story = {
+  args: { variant: 'link', children: 'Link button' },
+};
+
+export const Small: Story = {
+  args: { size: 'sm', children: 'Small' },
+};
+
+export const Large: Story = {
+  args: { size: 'lg', children: 'Large' },
+};
+
 export const WithIcon: Story = {
   args: { children: undefined },
   render: () => (
@@ -51,12 +64,11 @@ export const WithIcon: Story = {
 };
 
 export const Loading: Story = {
-  args: { disabled: true, children: undefined },
-  render: () => (
-    <Button disabled>
-      <Loader2 className="animate-spin" /> Please wait
-    </Button>
-  ),
+  args: { loading: true, children: 'Please wait' },
+};
+
+export const LoadingDestructive: Story = {
+  args: { loading: true, variant: 'destructive', children: 'Deleting...' },
 };
 
 export const IconOnly: Story = {
@@ -66,4 +78,8 @@ export const IconOnly: Story = {
       <Plus />
     </Button>
   ),
+};
+
+export const Disabled: Story = {
+  args: { disabled: true, children: 'Disabled' },
 };

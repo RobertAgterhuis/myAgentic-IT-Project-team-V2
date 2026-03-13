@@ -25,4 +25,27 @@ describe('Button', () => {
     render(<Button variant="destructive">Delete</Button>);
     expect(screen.getByRole('button')).toHaveAttribute('data-variant', 'destructive');
   });
+
+  it('renders correct size data attribute', () => {
+    render(<Button size="lg">Large</Button>);
+    expect(screen.getByRole('button')).toHaveAttribute('data-size', 'lg');
+  });
+
+  it('is disabled and aria-busy when loading', () => {
+    render(<Button loading>Save</Button>);
+    const btn = screen.getByRole('button');
+    expect(btn).toBeDisabled();
+    expect(btn).toHaveAttribute('aria-busy', 'true');
+  });
+
+  it('does not fire onClick when loading', async () => {
+    const handleClick = vi.fn();
+    render(
+      <Button loading onClick={handleClick}>
+        Save
+      </Button>
+    );
+    await userEvent.click(screen.getByRole('button'));
+    expect(handleClick).not.toHaveBeenCalled();
+  });
 });

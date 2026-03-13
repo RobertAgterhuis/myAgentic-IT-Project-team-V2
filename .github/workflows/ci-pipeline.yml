@@ -69,14 +69,19 @@ jobs:
       - name: Run unit tests with coverage
         run: npm run test:coverage
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          files: ./coverage/coverage-final.json
-          flags: unittests
-          name: codecov-umbrella
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
+      # Codecov upload disabled — coverage thresholds are enforced natively by
+      # Vitest (vitest.config.mjs, 80 % global). The external codecov/patch
+      # check added friction without extra value.  Re-enable if granular
+      # per-file patch-coverage reporting is needed in the future.
+      #
+      # - name: Upload coverage to Codecov
+      #   uses: codecov/codecov-action@v4
+      #   with:
+      #     files: ./coverage/coverage-final.json
+      #     flags: unittests
+      #     name: codecov-umbrella
+      #     fail_ci_if_error: false
+      #     token: ${{ secrets.CODECOV_TOKEN }}
 
       # Coverage thresholds are enforced by Vitest in ci.yml
       # Root Jest tests cover documentation/landing/integration — no source code coverage expected

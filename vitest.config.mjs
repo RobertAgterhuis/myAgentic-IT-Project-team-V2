@@ -21,6 +21,7 @@ export default defineConfig({
       'tests/unit/social-cards.test.js',
       'tests/unit/translation-validation.test.js',
       'tests/unit/weblate-docker.test.js',
+      'tests/unit/weblate-sync.test.js',
       'tests/unit/weblate-trial.test.js',
       'tests/integration/health.integration.test.js',
       'tests/integration/server.integration.test.js',

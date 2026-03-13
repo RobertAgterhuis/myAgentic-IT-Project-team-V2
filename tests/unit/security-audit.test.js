@@ -152,11 +152,13 @@ describe('M5 Security Hardening', () => {
   describe('No dangerous patterns in source', () => {
     const srcDir = path.join(ROOT, 'src', 'webapp');
 
+    const SKIP_DIRS = new Set(['node_modules', 'dist', 'storybook-static']);
+
     function readAllJs(dir) {
       let content = '';
       for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
         const full = path.join(dir, entry.name);
-        if (entry.isDirectory() && !entry.name.startsWith('.')) {
+        if (entry.isDirectory() && !entry.name.startsWith('.') && !SKIP_DIRS.has(entry.name)) {
           content += readAllJs(full);
         } else if (entry.name.endsWith('.js') && !entry.name.endsWith('.test.js')) {
           content += fs.readFileSync(full, 'utf8') + '\n';

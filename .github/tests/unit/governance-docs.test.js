@@ -11,7 +11,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
-const DOCS_DIR = path.resolve(__dirname, '../../docs');
+const DOCS_DIR = path.resolve(__dirname, '../../../docs');
 
 /**
  * Read a markdown file and return its content.

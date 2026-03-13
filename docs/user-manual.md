@@ -328,7 +328,7 @@ repository as files.
 `CREATE TECH MyProject` to run only Phase 2.
 
 **Q: How do I reset the project?** A: Delete the session state file at
-`.github/docs/session/session-state.json` and start fresh.
+`docs/session/session-state.json` and start fresh.
 
 **Q: Can I run multiple projects simultaneously?** A: Not in the same
 repository. Each repository supports one active session.
@@ -384,7 +384,7 @@ session state.
 
 ### Decisions not saving
 
-- Check that `.github/docs/decisions.md` exists and is writable.
+- Check that `docs/decisions.md` exists and is writable.
 - Look for error messages in the browser console (F12 → Console tab).
 - The server creates backups before writing — check for `.bak` files if data
   seems lost.

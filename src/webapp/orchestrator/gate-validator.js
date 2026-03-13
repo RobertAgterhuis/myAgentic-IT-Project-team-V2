@@ -20,8 +20,8 @@ const path = require('path');
 
 // ─── Constants ───────────────────────────────────────────────
 
-const CONTRACTS_DIR = '.github/docs/contracts';
-const GUARDRAILS_DIR = '.github/docs/guardrails';
+const CONTRACTS_DIR = 'docs/contracts';
+const GUARDRAILS_DIR = 'docs/guardrails';
 
 /** Maps CRITIC states to the phase they validate */
 const CRITIC_TO_PHASE = {

@@ -34,7 +34,7 @@ const { VALIDATION: V, RESPONSES: R, STATIC: S } = require('../../../src/webapp/
 const WEBAPP_DIR = path.resolve(__dirname, '../../../src/webapp');
 const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
-const GITHUB_DOCS = path.join(PROJECT_ROOT, '.github', 'docs');
+const GITHUB_DOCS = path.join(PROJECT_ROOT, 'docs');
 const SESSION_DIR = path.join(GITHUB_DOCS, 'session');
 const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
 const DECISIONS_FILE = path.join(GITHUB_DOCS, 'decisions.md');
@@ -124,8 +124,8 @@ const SESSION_STATE = {
   completed_phases: ['ONBOARDING', 'PHASE-2', 'PHASE-3'],
   completed_agents: ['25-onboarding-agent', '05-software-architect'],
   phase_outputs: {
-    onboarding: '.github/docs/onboarding/onboarding-output.md',
-    'phase-2': { '05': '.github/docs/phase-2/05-software-architect.md' },
+    onboarding: 'docs/onboarding/onboarding-output.md',
+    'phase-2': { '05': 'docs/phase-2/05-software-architect.md' },
   },
   sprint_backlog: {},
 };

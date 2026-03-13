@@ -70,7 +70,7 @@ Decisions Manager web application.
 │  └─────────────────┘  └─────────────────┘           │
 │         ↕                                            │
 │  ┌─────────────────┐                                 │
-│  │ Filesystem       │ (.github/docs/, BusinessDocs/) │
+│  │ Filesystem       │ (docs/, BusinessDocs/) │
 │  └─────────────────┘                                 │
 └─────────────────────────────────────────────────────┘
 ```
@@ -619,7 +619,7 @@ Triggers a reevaluation of one or more scopes.
 
 **Response:** `{ "ok": true, "scope": "TECH" }`
 
-Writes a trigger file to `.github/docs/session/reevaluate-trigger.json`.
+Writes a trigger file to `docs/session/reevaluate-trigger.json`.
 
 ### Help
 
@@ -792,7 +792,7 @@ Lightweight health check (no JSON structure, fast response).
 
 ### session-state.json
 
-Location: `.github/docs/session/session-state.json`
+Location: `docs/session/session-state.json`
 
 ```json
 {
@@ -813,7 +813,7 @@ Location: `.github/docs/session/session-state.json`
 
 ### decisions.md
 
-Location: `.github/docs/decisions.md`
+Location: `docs/decisions.md`
 
 Markdown file with two main sections:
 
@@ -823,7 +823,7 @@ Markdown file with two main sections:
   applicability flag
 
 Per-technology decisions live in category files under
-`.github/docs/decisions/[stack].md`. Each category file has a header
+`docs/decisions/[stack].md`. Each category file has a header
 (`> Stack: … | Status: … | Applicable: …`) and a table of `DECIDED` items.
 
 Each row: `| ID | Priority | Scope | Decision/Question | Notes/Answer | Date |`
@@ -850,7 +850,7 @@ To determine infrastructure requirements. **Expected format:** Text description
 
 ### Analytics Events
 
-Location: `.github/docs/analytics-events.json`
+Location: `docs/analytics-events.json`
 
 JSON array of event objects:
 
@@ -866,7 +866,7 @@ JSON array of event objects:
 
 ### Audit Log
 
-Location: `.github/docs/audit/audit.jsonl`
+Location: `docs/audit/audit.jsonl`
 
 Append-only JSON Lines file:
 
@@ -883,7 +883,7 @@ Append-only JSON Lines file:
 
 ### Command Queue
 
-Location: `.github/docs/session/command-queue.json`
+Location: `docs/session/command-queue.json`
 
 JSON array of command entries:
 
@@ -1023,7 +1023,7 @@ docker compose -f docker-compose.weblate.yml --env-file .env.weblate up -d
 Port configurable via `WEBLATE_PORT` env var (default: 8081). Pilot translation
 strings in `locales/en-US/` (120 keys across 3 namespaces: ui-labels,
 validation-messages, doc-snippets). Vendor evaluation:
-`.github/docs/phase-5/sp-2-501-tms-vendor-scoring.md`.
+`docs/phase-5/sp-2-501-tms-vendor-scoring.md`.
 
 ---
 
@@ -1175,7 +1175,7 @@ uploaded with 30-day retention.
 
 **Accessibility Gate (Sprint 2):** Job 8 (accessibility-gate) is IMPLEMENTED in
 `.github/workflows/ci-pipeline.yml` per spec
-`.github/docs/phase-5/sp-1-203-accessibility-gate.md`. Runs axe-core WCAG 2.1
+`docs/phase-5/sp-1-203-accessibility-gate.md`. Runs axe-core WCAG 2.1
 A+AA scan + Lighthouse accessibility audit with a 90% score threshold. Triggers
 on `main` push and all PRs.
 
@@ -1276,7 +1276,7 @@ security scanning, and deployment for all PRs and pushes to `main`.
   - **Lighthouse**: Accessibility category audit (headless Chrome)
 - **Threshold:** Lighthouse score > 90, zero critical/serious axe violations
 - **Artifact:** `a11y-report.json` uploaded with 30-day retention
-- Specification: `.github/docs/phase-5/sp-1-203-accessibility-gate.md`
+- Specification: `docs/phase-5/sp-1-203-accessibility-gate.md`
 
 ### Environment
 
@@ -1394,7 +1394,7 @@ The server emits JSON-formatted log lines to stdout:
 ### Audit Trail
 
 All data mutations (questionnaire answers, decision changes) are logged to the
-append-only audit trail at `.github/docs/audit/audit.jsonl`. Query via
+append-only audit trail at `docs/audit/audit.jsonl`. Query via
 `GET /api/audit?limit=100`.
 
 ---
@@ -1424,7 +1424,7 @@ _Sprint reference: SP-R2-004-008_
 └────────────────────────────┬──────────────────────────────────┘
                              │
 ┌────────────────────────────▼──────────────────────────────────┐
-│  .github/docs/analytics-events.json                           │
+│  docs/analytics-events.json                           │
 │  [{ "event": "…", "properties": {}, "timestamp": "…" }, …]   │
 └───────────────────────────────────────────────────────────────┘
 ```
@@ -1500,7 +1500,7 @@ When opted out, `trackEvent()` returns immediately without queuing.
 
 | Property     | Value                                |
 | ------------ | ------------------------------------ |
-| File         | `.github/docs/analytics-events.json` |
+| File         | `docs/analytics-events.json` |
 | Format       | JSON array of event objects          |
 | Max events   | 5 000 (`ANALYTICS_MAX_EVENTS`)       |
 | Overflow     | Oldest events trimmed (FIFO)         |

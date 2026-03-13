@@ -36,7 +36,7 @@ function safeReaddir(store, dir) {
   }
 }
 
-/** Scan .github/docs/metrics/ for sprint KPI files. */
+/** Scan docs/metrics/ for sprint KPI files. */
 function scanMetricsDir(store, githubDocs) {
   const dir = path.join(githubDocs, 'metrics');
   return safeReaddir(store, dir)
@@ -44,7 +44,7 @@ function scanMetricsDir(store, githubDocs) {
     .map((e) => ({ path: path.join(dir, e), source: 'metrics' }));
 }
 
-/** Scan .github/docs/phase-5/sprint-SP-N/ for sprint KPI files. */
+/** Scan docs/phase-5/sprint-SP-N/ for sprint KPI files. */
 function scanPhase5Dir(store, githubDocs) {
   const dir = path.join(githubDocs, 'phase-5');
   const results = [];

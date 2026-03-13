@@ -19,7 +19,7 @@ description:
 
 ### Index file
 
-**Path:** `.github/docs/decisions.md`
+**Path:** `docs/decisions.md`
 
 The index file serves two purposes:
 
@@ -33,7 +33,7 @@ The index file is the Orchestrator's first read target at every Sprint Gate.
 
 ### Category files
 
-**Path:** `.github/docs/decisions/[stack].md`
+**Path:** `docs/decisions/[stack].md`
 
 Each category file groups decisions for one technology stack. File names are
 lowercase-kebab (e.g. `typescript-eslint.md`, `bicep-iac.md`).
@@ -82,13 +82,13 @@ item.
                                     │ reads / writes
                                     ▼
                     ┌───────────────────────────────┐
-                    │  .github/docs/decisions.md    │  ◄── index file
+                    │  docs/decisions.md    │  ◄── index file
                     │  (Open Questions + Registry)  │
                     └──────────┬────────────────────┘
                                │ Registry references
                                ▼
               ┌────────────────────────────────────┐
-              │  .github/docs/decisions/*.md        │  ◄── category files
+              │  docs/decisions/*.md        │  ◄── category files
               │  (ACTIVE / PARTIAL / DEFERRED)      │
               └──────────┬─────────────────────────┘
                          │
@@ -112,10 +112,10 @@ item.
 Executed before every sprint. Defined in the Orchestrator skill file (RULE
 ORC-06+).
 
-1. **Read index:** Extract all items from `.github/docs/decisions.md` with
+1. **Read index:** Extract all items from `docs/decisions.md` with
    status `OPEN` or `DECIDED`.
 2. **Scan category directory:** For each `.md` file in
-   `.github/docs/decisions/`, read the `> Status:` header line.
+   `docs/decisions/`, read the `> Status:` header line.
    - `DEFERRED` → **skip entirely**.
    - `ACTIVE` or `PARTIAL` → read all `DECIDED` rows. For `PARTIAL` files, also
      note individually deferred rows (informational only).
@@ -236,9 +236,9 @@ auto-activation.
 
 | Guardrail         | File                                                      | Scope                                                                                                                    |
 | ----------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **G-GLOB-58**     | `.github/docs/guardrails/00-global-guardrails.md`         | All Phase 5 agents must validate against `DECIDED` items. Skip DEFERRED for compliance but scan for activation triggers. |
-| **IMPL-GUARD-32** | `.github/docs/guardrails/06-implementation-guardrails.md` | Decision compliance triple-check: Implementation → Test → PR/Review. All three must independently verify.                |
-| **IMPL-GUARD-33** | `.github/docs/guardrails/06-implementation-guardrails.md` | HALT before introducing deferred technology. Escalate to Orchestrator for ORC-45 auto-activation.                        |
+| **G-GLOB-58**     | `docs/guardrails/00-global-guardrails.md`         | All Phase 5 agents must validate against `DECIDED` items. Skip DEFERRED for compliance but scan for activation triggers. |
+| **IMPL-GUARD-32** | `docs/guardrails/06-implementation-guardrails.md` | Decision compliance triple-check: Implementation → Test → PR/Review. All three must independently verify.                |
+| **IMPL-GUARD-33** | `docs/guardrails/06-implementation-guardrails.md` | HALT before introducing deferred technology. Escalate to Orchestrator for ORC-45 auto-activation.                        |
 
 ---
 
@@ -283,7 +283,7 @@ up at the next Sprint Gate automatically.
 ## 9. Reevaluate trigger
 
 When the web UI's Decisions tab writes
-`.github/docs/session/reevaluate-trigger.json` with `status: "PENDING"`, the
+`docs/session/reevaluate-trigger.json` with `status: "PENDING"`, the
 Orchestrator picks it up at the next Sprint Gate (Step 0) and invokes the
 Reevaluate Agent per ORC-28. This allows decision changes to trigger a formal
 re-evaluation cycle.

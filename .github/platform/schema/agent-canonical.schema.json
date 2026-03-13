@@ -106,14 +106,14 @@
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "^\\.github\\/docs\\/guardrails\\/.+\\.md$"
+              "pattern": "^docs\\/guardrails\\/.+\\.md$"
             }
           },
           "contracts": {
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "^\\.github\\/docs\\/contracts\\/.+\\.md$"
+              "pattern": "^docs\\/contracts\\/.+\\.md$"
             }
           },
           "dependencies": {

@@ -55,7 +55,7 @@ The Sprint Gate is the most important decision point in the system. It runs
 ### What happens at the gate
 
 1. **Decision check** — The Orchestrator reads all open decisions from
-   `.github/docs/decisions.md` and the decision category files.
+   `docs/decisions.md` and the decision category files.
    - `OPEN` + `HIGH` priority + scope matches this sprint → **gate blocks**
      until you answer.
    - `OPEN` + `MEDIUM`/`LOW` → reported as informational, no block.
@@ -88,7 +88,7 @@ sprint, you'll see:
 Decision ID: DEC-007
 Question: Which database engine for user storage?
 Scope: SP-1
-→ Answer via .github/docs/decisions.md or the web UI Decisions tab.
+→ Answer via docs/decisions.md or the web UI Decisions tab.
 → Type RESUME to restart the Sprint Gate.
 ```
 
@@ -195,7 +195,7 @@ Each published Issue includes:
 After the PR/Review Agent merges code, several things happen automatically:
 
 1. **KPI Agent** measures sprint metrics (velocity, defect rate, code coverage,
-   etc.) and writes a report to `.github/docs/metrics/sprint-[SP-N]-kpi.json`.
+   etc.) and writes a report to `docs/metrics/sprint-[SP-N]-kpi.json`.
 2. **Documentation Agent** updates `docs/user-manual.md`,
    `docs/technical-manual.md`, and `CHANGELOG.md` based on what was implemented.
 3. **GitHub Integration Agent** closes completed issues and updates the board.

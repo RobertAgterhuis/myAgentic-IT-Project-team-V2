@@ -24,9 +24,9 @@ usable assets.
 
 ## MANDATORY INPUT
 
-- `.github/docs/synthesis/final-report-marketing.md` or Phase 4 brand output
+- `docs/synthesis/final-report-marketing.md` or Phase 4 brand output
   (Brand Strategist deliverables)
-- `canva_api_token` from `.github/docs/session/session-state.json`
+- `canva_api_token` from `docs/session/session-state.json`
 - _(Optional)_ Growth Marketer (15) channel strategy output — for
   channel-specific asset dimensions and templates
 - _(Optional)_ CRO Specialist (16) conversion design output — for CTA placement
@@ -51,10 +51,10 @@ complete rules.
 ### Step 0: Token Verification
 
 ```
-Read canva_api_token from .github/docs/session/session-state.json
+Read canva_api_token from docs/session/session-state.json
 If token ABSENT or empty:
   → status: SKIPPED_NO_TOKEN
-  → write .github/docs/brand/brand-assets-report.md with status SKIPPED
+  → write docs/brand/brand-assets-report.md with status SKIPPED
   → notify Orchestrator: "Brand & Assets Agent SKIPPED — no Canva API token"
   → HALT own workflow; Storybook Agent receives empty asset input
 ```
@@ -128,13 +128,13 @@ Export per asset:
 Store export paths as:
 
 ```
-.github/docs/brand/assets/[asset-type]-[variant].png
-.github/docs/brand/assets/[asset-type]-[variant].svg
+docs/brand/assets/[asset-type]-[variant].png
+docs/brand/assets/[asset-type]-[variant].svg
 ```
 
 ### Step 5: Generate Design Token File
 
-Produce `.github/docs/brand/design-tokens.json` in W3C Design Token format:
+Produce `docs/brand/design-tokens.json` in W3C Design Token format:
 
 ```json
 {
@@ -194,7 +194,7 @@ For `INSUFFICIENT_DATA:` on a value: mark the token as
 
 ### Step 5b: Produce Brand Guidelines Document (MANDATORY)
 
-Produce `.github/docs/brand/brand-guidelines.md` — the **human-readable
+Produce `docs/brand/brand-guidelines.md` — the **human-readable
 handbook** for everyone who creates communications for this brand (developers,
 designers, copywriters). This is the bridge between token values (machines) and
 usage rules (humans).
@@ -229,9 +229,9 @@ specified fallback.
 
 | Variant         | File path                                  | Application       | Minimum size | Prohibited usage                |
 | --------------- | ------------------------------------------ | ----------------- | ------------ | ------------------------------- |
-| Primary (color) | .github/docs/brand/assets/logo-primary.png | Light background  | 120px wide   | Distort, rotate, change color   |
-| White           | .github/docs/brand/assets/logo-white.png   | Dark background   | 120px wide   | On light backgrounds            |
-| Icon            | .github/docs/brand/assets/logo-icon.png    | Favicon, app icon | 32px         | As replacement for the wordmark |
+| Primary (color) | docs/brand/assets/logo-primary.png | Light background  | 120px wide   | Distort, rotate, change color   |
+| White           | docs/brand/assets/logo-white.png   | Dark background   | 120px wide   | On light backgrounds            |
+| Icon            | docs/brand/assets/logo-icon.png    | Favicon, app icon | 32px         | As replacement for the wordmark |
 
 ## 4. Tone of Voice
 
@@ -260,7 +260,7 @@ output — use `INSUFFICIENT_DATA:` for every missing item.
 
 ### Step 6: Write Brand Assets Report
 
-Produce `.github/docs/brand/brand-assets-report.md`:
+Produce `docs/brand/brand-assets-report.md`:
 
 ```markdown
 # Brand Assets Report — [project name] — [date]
@@ -281,11 +281,11 @@ Produce `.github/docs/brand/brand-assets-report.md`:
 
 | Asset type  | Canva URL | Export path PNG               | Export path SVG               |
 | ----------- | --------- | ----------------------------- | ----------------------------- |
-| Social Card | [url]     | .github/docs/brand/assets/... | .github/docs/brand/assets/... |
+| Social Card | [url]     | docs/brand/assets/... | docs/brand/assets/... |
 
 ## Design Tokens
 
-- File: .github/docs/brand/design-tokens.json
+- File: docs/brand/design-tokens.json
 - Number of tokens: [n]
 - INSUFFICIENT_DATA items: [list or NONE]
 
@@ -300,11 +300,11 @@ Produce `.github/docs/brand/brand-assets-report.md`:
 
 | File                                        | Description                                                             |
 | ------------------------------------------- | ----------------------------------------------------------------------- |
-| `.github/docs/brand/design-tokens.json`     | W3C design tokens (colors, typography, spacing, radius)                 |
-| `.github/docs/brand/brand-guidelines.md`    | Human-readable brand handbook (colors, typography, logo, tone of voice) |
-| `.github/docs/brand/brand-assets-report.md` | Complete overview of brand kit, assets and token status                 |
-| `.github/docs/brand/assets/*.png`           | Exported PNG assets                                                     |
-| `.github/docs/brand/assets/*.svg`           | Exported SVG assets (where applicable)                                  |
+| `docs/brand/design-tokens.json`     | W3C design tokens (colors, typography, spacing, radius)                 |
+| `docs/brand/brand-guidelines.md`    | Human-readable brand handbook (colors, typography, logo, tone of voice) |
+| `docs/brand/brand-assets-report.md` | Complete overview of brand kit, assets and token status                 |
+| `docs/brand/assets/*.png`           | Exported PNG assets                                                     |
+| `docs/brand/assets/*.svg`           | Exported SVG assets (where applicable)                                  |
 
 ---
 
@@ -316,12 +316,12 @@ Produce `.github/docs/brand/brand-assets-report.md`:
 - [ ] canva_api_token verified (present or SKIPPED documented)
 - [ ] Brand guidelines extracted from Phase 4 output
 - [ ] Canva brand kit created or updated (or SKIPPED)
-- [ ] Assets generated and exported to .github/docs/brand/assets/ (or SKIPPED)
-- [ ] .github/docs/brand/design-tokens.json written and valid JSON
-- [ ] **.github/docs/brand/brand-guidelines.md written** (mandatory, also for
+- [ ] Assets generated and exported to docs/brand/assets/ (or SKIPPED)
+- [ ] docs/brand/design-tokens.json written and valid JSON
+- [ ] **docs/brand/brand-guidelines.md written** (mandatory, also for
       SKIPPED_NO_TOKEN)
 - [ ] All INSUFFICIENT_DATA items documented
-- [ ] .github/docs/brand/brand-assets-report.md written
+- [ ] docs/brand/brand-assets-report.md written
 - [ ] No open authentication escalations
 - [ ] Output complies with agent-handoff-contract.md
 ```

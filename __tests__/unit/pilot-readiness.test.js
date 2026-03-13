@@ -7,7 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const PHASE5 = path.join(__dirname, '..', '..', '.github', 'docs', 'phase-5');
+const PHASE5 = path.join(__dirname, '..', '..', 'docs', 'phase-5');
 const DOCS = path.join(__dirname, '..', '..', 'docs');
 
 describe('SP-2-202 — Pilot Materials Readiness', () => {

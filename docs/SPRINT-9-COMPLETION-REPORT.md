@@ -99,7 +99,7 @@ features:
 5. **PATCH /api/milestones/:id/archive** (SP-9.3)
    - Soft-delete: sets `archived: true`
    - Returns 200 OK with updated milestone
-   - Audit trail: records event in `.github/docs/audit/` with timestamp
+   - Audit trail: records event in `docs/audit/` with timestamp
 
 **Test Coverage**:
 
@@ -109,7 +109,7 @@ features:
 
 **API Documentation**:
 
-- Updated `.github/docs/api/milestones-api.md` with full reference
+- Updated `docs/api/milestones-api.md` with full reference
 - Includes data model, validation rules, error codes, examples
 
 ---
@@ -437,7 +437,7 @@ features:
 - `src/webapp/routes/milestones.js` - Backend API implementation
 - `src/webapp/dashboard.html` - Modal and filter UI
 - `src/webapp/dashboard.js` - Filter handlers and modal lifecycle
-- `.github/docs/api/milestones-api.md` - API documentation
+- `docs/api/milestones-api.md` - API documentation
 
 ### Created Files
 
@@ -448,7 +448,7 @@ features:
 ### Data Files
 
 - `.github/data/milestones.json` - Milestone storage (updated)
-- `.github/docs/audit/milestones-archive-*.jsonl` - Soft-delete audit trail
+- `docs/audit/milestones-archive-*.jsonl` - Soft-delete audit trail
 
 ---
 

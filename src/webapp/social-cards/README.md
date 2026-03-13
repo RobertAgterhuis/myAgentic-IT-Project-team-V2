@@ -14,7 +14,7 @@ Branded SVG cards for LinkedIn social media posts. Part of SP-2-SOC (#127).
 ## Brand Tokens
 
 All cards use the official design token palette from
-`.github/docs/brand/design-tokens.json`:
+`docs/brand/design-tokens.json`:
 
 - **Primary**: `#0A3A66` (backgrounds, borders)
 - **Secondary**: `#1B6B5E` (phase boxes, accents)

@@ -37,7 +37,7 @@ establish the product roadmap with release milestones.
 ### Step 0: Check for Questionnaire Input
 
 > **SCOPE CHANGE context:** If a SCOPE CHANGE is active for your dimension,
-> check `.github/docs/synthesis/scope-change-[N].md` for constraints before
+> check `docs/synthesis/scope-change-[N].md` for constraints before
 > proceeding.
 
 Before starting your analysis, check whether the Orchestrator has injected a
@@ -233,7 +233,7 @@ Additional as last Phase 1 agent:
 
 ## MANDATORY EXECUTION – PRODUCE RECOMMENDATIONS
 
-> Per `.github/docs/contracts/recommendations-output-contract.md`
+> Per `docs/contracts/recommendations-output-contract.md`
 
 ### Step A: Formulate Recommendations
 
@@ -263,7 +263,7 @@ Impact / Effort / Priority (P1/P2/P3) per recommendation.
 
 ## MANDATORY EXECUTION – PRODUCE SPRINT PLAN
 
-> Per `.github/docs/contracts/sprintplan-output-contract.md`
+> Per `docs/contracts/sprintplan-output-contract.md`
 
 ### Step E: Document Assumptions
 
@@ -285,7 +285,7 @@ output.
 
 > Execute this AFTER the analysis. Guardrails are forward-looking, testable
 > decision rules. Conform to
-> `.github/docs/contracts/guardrails-output-contract.md`
+> `docs/contracts/guardrails-output-contract.md`
 
 ### Step I: Identify Guardrails
 
@@ -318,7 +318,7 @@ reference to an analysis finding (GAP/RISK ID).
 
 ### Step L: Overlap Check
 
-Check overlap with existing guardrails in `.github/docs/guardrails/`. Document
+Check overlap with existing guardrails in `docs/guardrails/`. Document
 per guardrail: "New" / "Supplement to G-NNN" / "Conflict with G-NNN (resolution:
 [...])"
 
@@ -334,8 +334,8 @@ per guardrail: "New" / "Supplement to G-NNN" / "Conflict with G-NNN (resolution:
 
 ## GUARDRAILS
 
-- `.github/docs/guardrails/00-global-guardrails.md`
-- `.github/docs/guardrails/01-business-guardrails.md`
+- `docs/guardrails/00-global-guardrails.md`
+- `docs/guardrails/01-business-guardrails.md`
 
 ---
 
@@ -391,9 +391,9 @@ You do NOT define/analyze:
 - [ ] Phase 1 Closure: combined output complete for Critic Agent
 - [ ] All UNCERTAIN: items documented and escalated
 - [ ] All INSUFFICIENT_DATA: items documented and escalated
-- [ ] Output complies with contracts in /.github/docs/contracts/
-- [ ] Guardrails from /.github/docs/guardrails/ have been checked
-      (domain-specific: `.github/docs/guardrails/01-business-guardrails.md`)
+- [ ] Output complies with contracts in /docs/contracts/
+- [ ] Guardrails from /docs/guardrails/ have been checked
+      (domain-specific: `docs/guardrails/01-business-guardrails.md`)
 - [ ] Guardrails: all guardrails are formulated testably
 - [ ] Guardrails: all guardrails have violation action and verification method
 - [ ] Guardrails: all guardrails reference a GAP/RISK analysis finding

@@ -58,15 +58,15 @@ npm test -- tests/unit/agent-schema.test.js
     "tool.validation.contract"
   ],
   "guardrails": [
-    ".github/docs/guardrails/00-global-guardrails.md",
-    ".github/docs/guardrails/01-business-guardrails.md"
+    "docs/guardrails/00-global-guardrails.md",
+    "docs/guardrails/01-business-guardrails.md"
   ],
   "contracts": [
-    ".github/docs/contracts/analysis-output-contract.md",
-    ".github/docs/contracts/recommendations-output-contract.md",
-    ".github/docs/contracts/sprintplan-output-contract.md",
-    ".github/docs/contracts/guardrails-output-contract.md",
-    ".github/docs/contracts/agent-handoff-contract.md"
+    "docs/contracts/analysis-output-contract.md",
+    "docs/contracts/recommendations-output-contract.md",
+    "docs/contracts/sprintplan-output-contract.md",
+    "docs/contracts/guardrails-output-contract.md",
+    "docs/contracts/agent-handoff-contract.md"
   ],
   "dependencies": ["25"],
   "platformBindings": {

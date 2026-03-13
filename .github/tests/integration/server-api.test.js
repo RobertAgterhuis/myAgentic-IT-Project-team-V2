@@ -12,7 +12,7 @@ const { server, _cache } = require('../../../src/webapp/server');
 const WEBAPP_DIR = path.resolve(__dirname, '../../../src/webapp');
 const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
-const GITHUB_DOCS = path.join(PROJECT_ROOT, '.github', 'docs');
+const GITHUB_DOCS = path.join(PROJECT_ROOT, 'docs');
 const SESSION_DIR = path.join(GITHUB_DOCS, 'session');
 const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
 const DECISIONS_FILE = path.join(GITHUB_DOCS, 'decisions.md');
@@ -954,7 +954,7 @@ describe('GET /api/progress — rich session branches', () => {
       completed_agents: [],
       current_phase: 'PHASE-1',
       current_agent: '01-business-analyst',
-      phase_outputs: { onboarding: '.github/docs/onboarding/onboarding-output.md' },
+      phase_outputs: { onboarding: 'docs/onboarding/onboarding-output.md' },
     };
     const store = new InMemoryStore({ [SESSION_FILE]: JSON.stringify(session) });
     setStore(store);
@@ -1117,10 +1117,10 @@ describe('GET /api/progress — rich session branches', () => {
 
 describe('GET /api/export — phase output branches', () => {
   it('collects string phase outputs from files', async () => {
-    const outputPath = path.join(PROJECT_ROOT, '.github/docs/onboarding/onboarding-output.md');
+    const outputPath = path.join(PROJECT_ROOT, 'docs/onboarding/onboarding-output.md');
     const session = {
       ...SESSION_STATE,
-      phase_outputs: { onboarding: '.github/docs/onboarding/onboarding-output.md' },
+      phase_outputs: { onboarding: 'docs/onboarding/onboarding-output.md' },
     };
     const store = new InMemoryStore({
       [SESSION_FILE]: JSON.stringify(session),
@@ -1135,10 +1135,10 @@ describe('GET /api/export — phase output branches', () => {
   });
 
   it('collects object phase outputs from files', async () => {
-    const archFile = path.join(PROJECT_ROOT, '.github/docs/phase2/architect.md');
+    const archFile = path.join(PROJECT_ROOT, 'docs/phase2/architect.md');
     const session = {
       ...SESSION_STATE,
-      phase_outputs: { 'phase-2': { '05': '.github/docs/phase2/architect.md' } },
+      phase_outputs: { 'phase-2': { '05': 'docs/phase2/architect.md' } },
     };
     const store = new InMemoryStore({
       [SESSION_FILE]: JSON.stringify(session),

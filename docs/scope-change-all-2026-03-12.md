@@ -63,7 +63,7 @@ S0, S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, scope-change
 |---|-------|--------|----------|
 | 151 | S0-1: Move src/webapp/ to src/webapp/ | S0 | P0 |
 | 152 | S0-2: Move agents/ to agents/ | S0 | P0 |
-| 153 | S0-3: Merge .github/docs/ into root docs/ | S0 | P0 |
+| 153 | S0-3: Merge docs/ into root docs/ | S0 | P0 |
 | 154 | S0-4: Unify tests into tests/ | S0 | P0 |
 | 155 | S0-5: Single package.json + ESLint config | S0 | P0 |
 | 156 | S0-6: Gitignore runtime files + fix naming | S0 | P1 |

@@ -18,7 +18,7 @@ const {
 const WEBAPP_DIR = path.resolve(__dirname, '../../../src/webapp');
 const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
-const GITHUB_DOCS = path.join(PROJECT_ROOT, '.github', 'docs');
+const GITHUB_DOCS = path.join(PROJECT_ROOT, 'docs');
 const SESSION_DIR = path.join(GITHUB_DOCS, 'session');
 const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
 const DECISIONS_FILE = path.join(GITHUB_DOCS, 'decisions.md');

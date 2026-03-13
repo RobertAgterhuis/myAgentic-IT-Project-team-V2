@@ -67,7 +67,7 @@ checks:
 
 ### 5. Decision Register Compliance
 
-The Critic loads `.github/docs/decisions.md` and verifies no recommendation
+The Critic loads `docs/decisions.md` and verifies no recommendation
 contradicts a `DECIDED` item. Conflicts are flagged as
 `CRITIC_DECISION_CONFLICT`.
 
@@ -128,7 +128,7 @@ example:
 
 ### 6. Decision Register Compliance
 
-Like the Critic, the Risk Agent loads `.github/docs/decisions.md`. Any
+Like the Critic, the Risk Agent loads `docs/decisions.md`. Any
 recommendation that contradicts a `DECIDED` item automatically receives risk
 score `HIGH`.
 

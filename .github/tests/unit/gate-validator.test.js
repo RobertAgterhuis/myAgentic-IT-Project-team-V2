@@ -64,8 +64,8 @@ function buildCompliantDeliverable(overrides = {}) {
     '- [x] All required sections are filled (not empty, not placeholder)',
     '- [x] All UNCERTAIN: items are documented and escalated',
     '- [x] All INSUFFICIENT_DATA: items are documented and escalated',
-    '- [x] Output complies with the contract in /.github/docs/contracts/',
-    '- [x] Guardrails from /.github/docs/guardrails/ have been checked',
+    '- [x] Output complies with the contract in /docs/contracts/',
+    '- [x] Guardrails from /docs/guardrails/ have been checked',
     '- [x] Output is machine-readable and ready as input for the next agent',
     '- [x] No contradictory statements in this document',
     '- [x] All findings include a source reference',
@@ -506,7 +506,7 @@ describe('runGate', () => {
   });
 
   it('loads real contracts when available (AC-1)', () => {
-    const contractDir = path.join(__dirname, '..', '..', 'docs', 'contracts');
+    const contractDir = path.join(__dirname, '..', '..', '..', 'docs', 'contracts');
     const criticContract = path.join(contractDir, 'critic-output-contract.md');
     if (!fs.existsSync(criticContract)) return;
 
@@ -520,7 +520,7 @@ describe('runGate', () => {
   });
 
   it('loads real guardrails when available (AC-4)', () => {
-    const guardrailDir = path.join(__dirname, '..', '..', 'docs', 'guardrails');
+    const guardrailDir = path.join(__dirname, '..', '..', '..', 'docs', 'guardrails');
     const globalGuardrails = path.join(guardrailDir, '00-global-guardrails.md');
     if (!fs.existsSync(globalGuardrails)) return;
 

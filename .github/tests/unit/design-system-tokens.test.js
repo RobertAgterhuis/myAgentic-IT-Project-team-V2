@@ -5,7 +5,7 @@ const path = require('node:path');
 
 describe('Design system foundation tokens (FEAT-02-A)', () => {
   const cssPath = path.resolve(__dirname, '..', '..', '..', 'src', 'webapp', 'design-system.css');
-  const jsonPath = path.resolve(__dirname, '..', '..', 'docs', 'brand', 'design-tokens.json');
+  const jsonPath = path.resolve(__dirname, '..', '..', '..', 'docs', 'brand', 'design-tokens.json');
 
   it('defines required typography scale tokens in :root', () => {
     const css = fs.readFileSync(cssPath, 'utf8');

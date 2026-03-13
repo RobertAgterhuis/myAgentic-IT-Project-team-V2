@@ -113,8 +113,8 @@ and pipelines.
 hard constraint enforced by all agents at three checkpoints: before coding,
 during testing, at PR review. See [Decisions](decisions.md).
 
-**Decision Register** — Collection of decisions in `.github/docs/decisions.md`
-plus category files under `.github/docs/decisions/`.
+**Decision Register** — Collection of decisions in `docs/decisions.md`
+plus category files under `docs/decisions/`.
 
 **DEFERRED** (Decision Status) — Decision postponed until the technology is
 actually needed. Deferred categories are ignored by agents until auto-activated.
@@ -133,7 +133,7 @@ UNCHANGED.
 [Synthesis](synthesis.md#department-reports).
 
 **Design Tokens** — Machine-readable design system definitions (colors,
-typography, spacing) in `.github/docs/brand/design-tokens.json`. Converted to
+typography, spacing) in `docs/brand/design-tokens.json`. Converted to
 CSS/JS by the Storybook Agent.
 
 **DevOps Engineer** (Agent 07) — Phase 2 agent designing CI/CD pipelines and

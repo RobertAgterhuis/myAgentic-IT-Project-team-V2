@@ -9,7 +9,7 @@ contribute.
 
 ## Overview
 
-The synthesis stage produces **6 documents** in `.github/docs/synthesis/`:
+The synthesis stage produces **6 documents** in `docs/synthesis/`:
 
 | Document                      | File                           | Audience                                        |
 | ----------------------------- | ------------------------------ | ----------------------------------------------- |
@@ -132,10 +132,10 @@ usable digital assets.
 
 | Output                                       | Location                                    |
 | -------------------------------------------- | ------------------------------------------- |
-| Brand guidelines                             | `.github/docs/brand/brand-guidelines.md`    |
-| Design tokens                                | `.github/docs/brand/design-tokens.json`     |
-| Brand assets report                          | `.github/docs/brand/brand-assets-report.md` |
-| Visual assets (logos, social cards, banners) | `.github/docs/brand/assets/`                |
+| Brand guidelines                             | `docs/brand/brand-guidelines.md`    |
+| Design tokens                                | `docs/brand/design-tokens.json`     |
+| Brand assets report                          | `docs/brand/brand-assets-report.md` |
+| Visual assets (logos, social cards, banners) | `docs/brand/assets/`                |
 
 ### Canva Integration
 
@@ -173,7 +173,7 @@ component library that governs all UI implementation.
 
 | Output                  | Location                                        |
 | ----------------------- | ----------------------------------------------- |
-| Component inventory     | `.github/docs/storybook/component-inventory.md` |
+| Component inventory     | `docs/storybook/component-inventory.md` |
 | Design tokens (CSS)     | `src/tokens/tokens.css`                         |
 | Design tokens (JS)      | `src/tokens/tokens.js`                          |
 | Storybook configuration | `.storybook/` directory                         |
@@ -198,7 +198,7 @@ This means:
 
 The Storybook Agent uses this decision tree for design tokens:
 
-1. **Primary:** `.github/docs/brand/design-tokens.json` (from Brand & Assets
+1. **Primary:** `docs/brand/design-tokens.json` (from Brand & Assets
    Agent)
 2. **Fallback:** If design-tokens.json is missing or `SKIPPED_NO_TOKEN`, the
    Storybook Agent extracts tokens directly from Phase 4 Brand Strategist output

@@ -270,7 +270,7 @@ Command Center pipeline view is unaffected by conversation resets.
 For the full guide including all agents, FAQ, troubleshooting, and ground rules,
 see:
 
-**[`.github/docs/README.md`](.github/docs/README.md)**
+**[`docs/README.md`](docs/README.md)**
 
 ---
 

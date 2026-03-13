@@ -30,9 +30,9 @@ The system also supports **auditing existing software** as an alternative mode
 
 This is a **multi-agent, sequential system**. Each agent:
 
-- Has a fixed role (see `/.github/docs/playbooks/software-creation-playbook.md`)
-- Works within an **output contract** (see `/.github/docs/contracts/`)
-- Must comply with **guardrails** (see `/.github/docs/guardrails/`)
+- Has a fixed role (see `/docs/playbooks/software-creation-playbook.md`)
+- Works within an **output contract** (see `/docs/contracts/`)
+- Must comply with **guardrails** (see `/docs/guardrails/`)
 - Must NOT start without the output of the previous phase as input
 
 ### Phase Sequence (MANDATORY)
@@ -41,7 +41,7 @@ This is a **multi-agent, sequential system**. Each agent:
 === PRIMARY MODE: CREATE (New Software Solution) ===
 
 On command or automatically at the start of a new creation cycle:
-  CREATE [project] → Onboarding Agent → requirements intake → .github/docs/onboarding/onboarding-output.md → Orchestrator (full scope: all 4 phases)
+  CREATE [project] → Onboarding Agent → requirements intake → docs/onboarding/onboarding-output.md → Orchestrator (full scope: all 4 phases)
 
 Partial creation (per discipline, independently executable):
   CREATE BUSINESS [project]  → Onboarding (scope: business)   → Phase 1 → Critic/Risk → Synthesis (PARTIAL) → final-report-business.md
@@ -77,9 +77,9 @@ Phase 4 — Brand & Growth: Brand Strategist → Growth Marketer → CRO Special
   ↓ [CRITIC + RISK validation]
   ↓ [Questionnaire Agent: generate questionnaires for all INSUFFICIENT_DATA: items → BusinessDocs/Phase4-Marketing/Questionnaires/]
   ↓ [Questionnaire Agent: update official documents → BusinessDocs/OfficialDocuments/ (brand-brief.md, market-positioning.md)]
-  Brand & Assets Agent (Canva) → design tokens + brand assets (`.github/docs/brand/`)
-  Storybook Agent → component library + a11y baseline (`.github/docs/storybook/`)
-Synthesis Agent → Master Report + 4 Department Reports + Cross-Team Blocker Matrix (`.github/docs/synthesis/`)
+  Brand & Assets Agent (Canva) → design tokens + brand assets (`docs/brand/`)
+  Storybook Agent → component library + a11y baseline (`docs/storybook/`)
+Synthesis Agent → Master Report + 4 Department Reports + Cross-Team Blocker Matrix (`docs/synthesis/`)
   ↓ [All 6 synthesis documents APPROVED + BLOCKING items linked to sprint plan]
   GitHub Integration Agent → create/configure project `[GITHUB_PROJECT_NAME]` + publish all stories as Issues
   ↓
@@ -91,7 +91,7 @@ Phase 5 — Implementation (per sprint, repeatable):
 
 === SECONDARY MODE: AUDIT (Existing Software Analysis) ===
 
-AUDIT [project] → Onboarding Agent → intake validation → .github/docs/onboarding/onboarding-output.md → Orchestrator (full scope: all 4 phases, audit mode)
+AUDIT [project] → Onboarding Agent → intake validation → docs/onboarding/onboarding-output.md → Orchestrator (full scope: all 4 phases, audit mode)
 AUDIT BUSINESS|TECH|UX|MARKETING [project] → Partial audit per discipline
 AUDIT [DISC1] [DISC2] [project] → Combination audit
 AUDIT SYNTHESIS → Combines all available phase outputs
@@ -101,8 +101,8 @@ Note: AUDIT mode uses the same phase sequence but agents analyze existing softwa
 
 On command (any time):
   REEVALUATE [scope] → Reevaluate Agent → Critic + Risk validation → Re-evaluation Report → Orchestrator (Sprint Gate for IN_PROGRESS impacts)
-  Note: Also triggered automatically when the Questionnaire & Decisions Manager web UI writes `.github/docs/session/reevaluate-trigger.json` with `status: "PENDING"` (per RULE ORC-28)
-  Note: Decisions can be created and answered via the web UI (Decisions tab) — changes are written directly to `.github/docs/decisions.md` and picked up at Sprint Gate Step 0
+  Note: Also triggered automatically when the Questionnaire & Decisions Manager web UI writes `docs/session/reevaluate-trigger.json` with `status: "PENDING"` (per RULE ORC-28)
+  Note: Decisions can be created and answered via the web UI (Decisions tab) — changes are written directly to `docs/decisions.md` and picked up at Sprint Gate Step 0
 
 On command (any time, independent of running cycles):
   FEATURE [name]: [description] → Feature Agent → full cycle (Phase 1–4 + Synthesis + Sprint Plan + Phase 5)
@@ -111,7 +111,7 @@ On command (any time, independent of running cycles):
   SCOPE CHANGE [DIMENSION]: [description] → Scope Change Agent → backlog hold → invalidation marking → re-analysis (affected dimension only) → Critic + Risk → scope-change-delta → Sprint Gate reconciliation → Master Synthesis update
   DIMENSION values: BUSINESS | TECH | UX | MARKETING | ALL
   Use when: the fundamental premise/direction of the project has changed (not just a delta) — e.g. business model pivot, core architecture change, target audience change
-  Output: .github/docs/synthesis/scope-change-[N].md + updated sprint statuses
+  Output: docs/synthesis/scope-change-[N].md + updated sprint statuses
 
 Emergency protocol (critical production issues):
   HOTFIX [description] → Orchestrator validates urgency → Sprint Gate BYPASS → Implementation → Test (abbreviated regression) → PR/Review (secret scan mandatory) → merge → KPI → Documentation → GitHub Integration → Retrospective
@@ -164,7 +164,7 @@ Onboarding maintenance:
 4. At phase boundaries, the Orchestrator will instruct the user to start a
    **fresh Copilot Chat conversation**. All state is preserved in
    `session-state.json`.
-5. Refer to `/.github/docs/guardrails/00-global-guardrails.md` Section 6 for
+5. Refer to `/docs/guardrails/00-global-guardrails.md` Section 6 for
    full rules (G-GLOB-50 through G-GLOB-55).
 
 ### VERIFICATION PROTOCOL (MANDATORY BEFORE HANDOFF)
@@ -176,8 +176,8 @@ Every agent MUST produce a **Handoff Checklist** at the end of its output:
 - [ ] All required sections are filled (not empty, not placeholder)
 - [ ] All UNCERTAIN: items are documented and escalated
 - [ ] All INSUFFICIENT_DATA: items are documented and escalated
-- [ ] Output complies with the contract in /.github/docs/contracts/
-- [ ] Guardrails from /.github/docs/guardrails/ have been checked
+- [ ] Output complies with the contract in /docs/contracts/
+- [ ] Guardrails from /docs/guardrails/ have been checked
 - [ ] Output is machine-readable and ready as input for the next agent
 - [ ] No contradictory statements in this document
 - [ ] All findings include a source reference
@@ -216,7 +216,7 @@ Every agent MUST produce a **Handoff Checklist** at the end of its output:
 ## SKILLS, GUARDRAILS & CONTRACTS INDEX
 
 All agent skill files, guardrail files, and contract files are listed in:
-**`.github/docs/agent-index.md`**
+**`docs/agent-index.md`**
 
 Read that file when you need to look up a specific agent's skill file, a
 guardrail scope, or a contract path. The index is NOT loaded every turn — only
@@ -226,9 +226,9 @@ read it when needed.
 
 ## PLAYBOOK
 
-Full creation process: `.github/docs/playbooks/software-creation-playbook.md`
+Full creation process: `docs/playbooks/software-creation-playbook.md`
 Legacy audit process:
-`.github/docs/playbooks/commercial-software-audit-playbook.md` (preserved for
+`docs/playbooks/commercial-software-audit-playbook.md` (preserved for
 AUDIT mode)
 
 ---
@@ -240,7 +240,7 @@ The system is complete when:
 1. All four design/strategy phases have been completed
 2. All Critic + Risk validations have passed
 3. The Synthesis Agent has produced the following documents in
-   `.github/docs/synthesis/`:
+   `docs/synthesis/`:
    - `final-report-master.md` (Executive Summary, Solution Blueprint Heatmap,
      Risk Matrix, Roadmap, Guardrails, KPIs, Open Items)
    - `final-report-business.md`, `final-report-tech.md`, `final-report-ux.md`,
@@ -249,10 +249,10 @@ The system is complete when:
      BLOCKING or ADVISORY)
 4. Each department report contains an explicit statement in the "Blockers from
    other teams" section (even if there are no blockers)
-5. `.github/docs/brand/design-tokens.json` is present (or `SKIPPED_NO_TOKEN`
-   documented) AND `.github/docs/brand/brand-guidelines.md` is present with
+5. `docs/brand/design-tokens.json` is present (or `SKIPPED_NO_TOKEN`
+   documented) AND `docs/brand/brand-guidelines.md` is present with
    sections 1–6 (also when `SKIPPED_NO_TOKEN`)
-6. `.github/docs/storybook/component-inventory.md` is present with guardrail for
+6. `docs/storybook/component-inventory.md` is present with guardrail for
    Implementation Agent
 7. No open `UNCERTAIN:` or `INSUFFICIENT_DATA:` items without resolution —
    unresolvable items have a corresponding question in
@@ -268,5 +268,5 @@ The system is complete when:
     written (`sprint-[SP-N]-kpi.json`), PR merged, user-manual.md and
     technical-manual.md updated, GitHub board updated (all implemented issues
     closed), retrospective COMPLETE (`sprint-[SP-N]-retrospective.md`),
-    `.github/docs/retrospectives/velocity-log.json` updated, lessons-learned.md
+    `docs/retrospectives/velocity-log.json` updated, lessons-learned.md
     updated

@@ -37,7 +37,7 @@ but a change to the direction, model, or paradigm the project was built upon.
 | `DIMENSION` | `BUSINESS` / `TECH` / `UX` / `MARKETING` / `ALL`                                               |
 | description | What changed, why it changed, and what the new premise is. Be concrete: old state → new state. |
 
-**Output:** `.github/docs/synthesis/scope-change-[N].md` + updated sprint
+**Output:** `docs/synthesis/scope-change-[N].md` + updated sprint
 backlog statuses
 
 ---
@@ -131,7 +131,7 @@ For each section in the existing synthesis and phase outputs that is classified
    ```markdown
    > ⚠️ SCOPE_CHANGE_INVALIDATED: SC-[N] | Date: [ISO 8601] This section was
    > built on premise: "[old premise]" New premise: "[new premise]" — this
-   > section has been superseded. See .github/docs/synthesis/scope-change-[N].md
+   > section has been superseded. See docs/synthesis/scope-change-[N].md
    > for updated analysis.
    ```
 2. **Do NOT delete existing content** — the block above is prepended. History is
@@ -168,7 +168,7 @@ receives:
 | `ALL`       | All agents in order: BUSINESS → TECH → UX → MARKETING, each with Critic + Risk; after MARKETING: Brand Assets Agent (30) → Storybook Agent (31) |
 
 Each agent produces output to:
-`.github/docs/synthesis/scope-change-[N]/phase-[N]/[agent-file].md`
+`docs/synthesis/scope-change-[N]/phase-[N]/[agent-file].md`
 
 Instructions per agent are identical to the base analysis cycle, with one
 mandatory addition:
@@ -195,7 +195,7 @@ mandatory addition:
 ### Step 5: Scope Change Delta Report
 
 After all re-analysis agents and Critic + Risk validation have passed, produce
-`.github/docs/synthesis/scope-change-[N].md`:
+`docs/synthesis/scope-change-[N].md`:
 
 ```markdown
 # Scope Change Report — SC-[N]
@@ -280,7 +280,7 @@ Sprint Gate before any previously held sprint resumes.
 ### Step 8: Master Synthesis Update
 
 After Sprint Gate reconciliation is approved by the user, activate the Synthesis
-Agent to produce an updated `.github/docs/synthesis/final-report-master.md`:
+Agent to produce an updated `docs/synthesis/final-report-master.md`:
 
 - The master report gains a `## Scope Change History` section listing all SC-[N]
   events
@@ -325,7 +325,7 @@ the user with:
       history preserved)
 - [ ] All re-analysis agents ran per DIMENSION scope
 - [ ] Critic + Risk validation PASSED for all re-analyzed dimensions
-- [ ] .github/docs/synthesis/scope-change-[N].md is complete with all mandatory
+- [ ] docs/synthesis/scope-change-[N].md is complete with all mandatory
       sections
 - [ ] Official documents updated for all REQUIRED_BEFORE_SPRINT sections
 - [ ] Sprint Gate Reconciliation summary produced; ticket statuses updated

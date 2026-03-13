@@ -9,7 +9,7 @@ const { InMemoryStore, setStore } = require('../../../src/webapp/store');
 const { FileCache } = require('../../../src/webapp/cache');
 const { parseDecisions, addOpenQuestion, nextDecisionId, today } = require('../../../src/webapp/models');
 
-const DECISIONS_PATH = path.resolve('/fake/project/.github/docs/decisions.md');
+const DECISIONS_PATH = path.resolve('/fake/project/docs/decisions.md');
 
 // Must match the exact table format parseDecisions expects
 const DECISIONS_MD = `# Decisions & Open Questions

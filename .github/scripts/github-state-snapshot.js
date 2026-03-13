@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * github-state-snapshot.js — Captures current GitHub board state (milestones + issues)
- * and writes a structured JSON snapshot to .github/docs/session/github-state-snapshot.json.
+ * and writes a structured JSON snapshot to docs/session/github-state-snapshot.json.
  *
  * Used at Sprint Gate Step 0 to inject ## GITHUB STATE context into Reevaluate Agent.
  *

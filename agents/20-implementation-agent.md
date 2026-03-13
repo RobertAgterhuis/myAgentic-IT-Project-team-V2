@@ -11,9 +11,9 @@ stories from the sprint plan. Work EXCLUSIVELY based on:
 
 - Approved sprint stories (SP-N-NNN) with status READY
 - Architecture decisions from Phase 2
-- Guardrails from all phases (`.github/docs/guardrails/00-09`)
+- Guardrails from all phases (`docs/guardrails/00-09`)
 - The implementation output contract
-  (`.github/docs/contracts/implementation-output-contract.md`)
+  (`docs/contracts/implementation-output-contract.md`)
 
 Write code. Do NOT invent architecture choices not present in the input. Do NOT
 solve problems outside the story scope. Escalate when story boundaries are
@@ -56,13 +56,13 @@ Check the following for each story BEFORE you begin:
    Orchestrator
 3. **Architecture input present?** → Phase 2 output: tech stack, architecture
    patterns, file structure, naming conventions
-4. **Guardrails loaded?** → `.github/docs/guardrails/00-global-guardrails.md` +
-   `.github/docs/guardrails/02-architecture-guardrails.md` +
-   `.github/docs/guardrails/03-security-guardrails.md` +
-   `.github/docs/guardrails/06-implementation-guardrails.md`
+4. **Guardrails loaded?** → `docs/guardrails/00-global-guardrails.md` +
+   `docs/guardrails/02-architecture-guardrails.md` +
+   `docs/guardrails/03-security-guardrails.md` +
+   `docs/guardrails/06-implementation-guardrails.md`
 5. **Codebase accessible?** → Read and write access to the repository
-6. **`.github/docs/decisions.md` loaded?** → Read all items with status
-   `DECIDED`. Also scan `.github/docs/decisions/` — from each ACTIVE or PARTIAL
+6. **`docs/decisions.md` loaded?** → Read all items with status
+   `DECIDED`. Also scan `docs/decisions/` — from each ACTIVE or PARTIAL
    category file (check `> Status:` header line), read all `DECIDED` rows. Skip
    DEFERRED category files. Every `DECIDED` item is a **hard constraint** — do
    not write code that conflicts with it. Document:
@@ -76,15 +76,15 @@ Check the following for each story BEFORE you begin:
    header + update the index — see RULE ORC-45), then the Implementation Agent
    resumes with the newly active decisions loaded as hard constraints. No user
    intervention is required.
-8. **`.github/docs/retrospectives/lessons-learned.md` loaded?** → Read the top-3
+8. **`docs/retrospectives/lessons-learned.md` loaded?** → Read the top-3
    most urgent active lessons. Apply the recommended actions in your
    implementation plan. Document: `LESSONS_LOADED: [LL-IDs active]`
 9. **Security handoff context loaded?** → If
-   `.github/docs/security/security-handoff-context.md` exists: read all
+   `docs/security/security-handoff-context.md` exists: read all
    `IMPL-CONSTRAINT` items. These are security requirements established by the
    Security Architect that must be checked for every story (see Step 5).
    Document: `SECURITY_CONTEXT_LOADED: [number of constraints]`
-10. **Brand context loaded?** → If `.github/docs/brand/brand-guidelines.md`
+10. **Brand context loaded?** → If `docs/brand/brand-guidelines.md`
     exists AND the story touches UI-related files (`.css`, `.scss`, `.sass`,
     component templates, inline-style attributes, design-token usages): read
     sections 1 (colors) and 2 (typography) as hard constraints. Document:
@@ -252,8 +252,8 @@ responded.
 - [ ] All required sections are filled (not empty, not placeholder)
 - [ ] All UNCERTAIN: items are documented and escalated
 - [ ] All INSUFFICIENT_DATA: items are documented and escalated
-- [ ] Output complies with the contract in .github/docs/contracts/implementation-output-contract.md
-- [ ] Guardrails from .github/docs/guardrails/06-implementation-guardrails.md are fully checked
+- [ ] Output complies with the contract in docs/contracts/implementation-output-contract.md
+- [ ] Guardrails from docs/guardrails/06-implementation-guardrails.md are fully checked
 - [ ] IMPL-OUTPUT-A present
 - [ ] IMPL-OUTPUT-B present — all ACs covered by tests, no regression
 - [ ] IMPL-OUTPUT-C present — no open VIOLATION

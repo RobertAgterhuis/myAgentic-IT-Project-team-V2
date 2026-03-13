@@ -30,14 +30,14 @@ locations, and field descriptions.
 
 | Entity              | Type     | Location                                              | Schema Validator                  |
 | ------------------- | -------- | ----------------------------------------------------- | --------------------------------- |
-| Session State       | JSON     | `.github/docs/session/session-state.json`             | `schemas.validateSessionState()`  |
-| Command Queue       | JSON     | `.github/docs/session/command-queue.json`             | `schemas.validateCommandQueue()`  |
-| Decisions           | Markdown | `.github/docs/decisions.md`                           | `models.parseDecisions()`         |
+| Session State       | JSON     | `docs/session/session-state.json`             | `schemas.validateSessionState()`  |
+| Command Queue       | JSON     | `docs/session/command-queue.json`             | `schemas.validateCommandQueue()`  |
+| Decisions           | Markdown | `docs/decisions.md`                           | `models.parseDecisions()`         |
 | Questionnaires      | Markdown | `BusinessDocs/Phase[N]-*/Questionnaires/*.md`         | `models.parseQuestionnaire()`     |
 | Questionnaire Index | Markdown | `BusinessDocs/questionnaire-index.md`                 | `models.parseIndex()`             |
-| Analytics Events    | JSON     | `.github/docs/analytics-events.json`                  | Server-side event type validation |
-| Audit Log           | JSONL    | `.github/docs/audit/audit.jsonl`                      | `audit.js` internal validation    |
-| Reevaluate Trigger  | JSON     | `.github/docs/session/reevaluate-trigger.json`        | Inline validation in server.js    |
+| Analytics Events    | JSON     | `docs/analytics-events.json`                  | Server-side event type validation |
+| Audit Log           | JSONL    | `docs/audit/audit.jsonl`                      | `audit.js` internal validation    |
+| Reevaluate Trigger  | JSON     | `docs/session/reevaluate-trigger.json`        | Inline validation in server.js    |
 | Help Content        | Markdown | `.github/help/*.md`                                   | Filesystem scan, slug validation  |
 | Official Documents  | Markdown | `BusinessDocs/OfficialDocuments/*.md`                 | N/A (freeform content)            |
 | Document Registry   | Markdown | `BusinessDocs/OfficialDocuments/document-registry.md` | N/A                               |
@@ -48,7 +48,7 @@ locations, and field descriptions.
 
 ### 1. Session State
 
-**File:** `.github/docs/session/session-state.json` **Format:** JSON object
+**File:** `docs/session/session-state.json` **Format:** JSON object
 **Validator:** `schemas.validateSessionState()` (schemas.js)
 
 | Field              | Type     | Required | Description                                                                                                                                                                             |
@@ -70,7 +70,7 @@ locations, and field descriptions.
 
 ### 2. Command Queue
 
-**File:** `.github/docs/session/command-queue.json` **Format:** JSON array of
+**File:** `docs/session/command-queue.json` **Format:** JSON array of
 command entry objects **Validator:** `schemas.validateCommandQueue()` /
 `schemas.validateCommandEntry()` (schemas.js)
 
@@ -85,7 +85,7 @@ command entry objects **Validator:** `schemas.validateCommandQueue()` /
 
 ### 3. Decisions
 
-**File:** `.github/docs/decisions.md` **Format:** Markdown with three table
+**File:** `docs/decisions.md` **Format:** Markdown with three table
 sections **Parser:** `models.parseDecisions()` (models.js)
 
 **Returns:** `{ open: Decision[], decided: Decision[], deferred: Decision[] }`
@@ -178,7 +178,7 @@ required vs optional distribution.
 
 ### 6. Analytics Events
 
-**File:** `.github/docs/analytics-events.json` **Format:** JSON array
+**File:** `docs/analytics-events.json` **Format:** JSON array
 **Validation:** Server-side event type allowlist
 
 | Field        | Type   | Required | Description                          |
@@ -193,7 +193,7 @@ required vs optional distribution.
 
 ### 7. Audit Log
 
-**File:** `.github/docs/audit/audit.jsonl` **Format:** JSON Lines (one JSON
+**File:** `docs/audit/audit.jsonl` **Format:** JSON Lines (one JSON
 object per line) **Module:** `audit.js` (AuditTrail class)
 
 | Field         | Type   | Required | Description                                                        |
@@ -210,7 +210,7 @@ file renamed to `audit-[timestamp].jsonl`.
 
 ### 8. Reevaluate Trigger
 
-**File:** `.github/docs/session/reevaluate-trigger.json` **Format:** JSON object
+**File:** `docs/session/reevaluate-trigger.json` **Format:** JSON object
 **Created by:** `POST /api/reevaluate`
 
 | Field          | Type   | Required | Description                                                      |

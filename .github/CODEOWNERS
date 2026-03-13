@@ -9,4 +9,4 @@ src/webapp/ @RobertAgterhuis
 
 # Agent system
 agents/ @RobertAgterhuis
-.github/docs/ @RobertAgterhuis
+docs/ @RobertAgterhuis

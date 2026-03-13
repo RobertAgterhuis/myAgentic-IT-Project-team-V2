@@ -49,10 +49,10 @@ complete rules.
 - Update technical manual (NL) based on implemented sprint stories
 - Update technical manual (EN) based on implemented sprint stories
 - NL ↔ EN consistency check: both languages describe the same functionality
-- Update `.github/docs/brand/brand-guidelines.md` if a CONTENT/DESIGN story
+- Update `docs/brand/brand-guidelines.md` if a CONTENT/DESIGN story
   touches brand elements (writing style, color usage, logo instructions) —
   always in collaboration with Brand Strategist (14) input via Orchestrator
-- Update `.github/docs/storybook/component-inventory.md`: if a design story adds
+- Update `docs/storybook/component-inventory.md`: if a design story adds
   a new UI component or modifies an existing component, add/update the component
   entry in the inventory
 
@@ -496,9 +496,9 @@ The Documentation Agent delivers after every sprint:
 - [ ] DOC_PENDING items documented for BLOCKED stories
 - [ ] CONTENT and DESIGN stories processed per trigger extension
       (DOC_CONTENT_REVIEW or design-system update)
-- [ ] `.github/docs/brand/brand-guidelines.md` updated if sprint touched brand
+- [ ] `docs/brand/brand-guidelines.md` updated if sprint touched brand
       elements (or NO_CHANGE documented)
-- [ ] `.github/docs/storybook/component-inventory.md` updated if sprint touched
+- [ ] `docs/storybook/component-inventory.md` updated if sprint touched
       UI components (or NO_CHANGE documented)
 - [ ] `brand_review: VIOLATION` stories marked as DOC_BRAND_VIOLATION and
       escalated (or NOT APPLICABLE)
@@ -541,7 +541,7 @@ Document only what is IMPLEMENTED. PARTIAL stories receive a
 When activated after a SCOPE CHANGE reconciliation (sprint
 `type: POST_SCOPE_CHANGE` in `velocity-log.json`):
 
-1. Before Step 0 (DOC_MISSING scan), scan `.github/docs/synthesis/` for existing
+1. Before Step 0 (DOC_MISSING scan), scan `docs/synthesis/` for existing
    `scope-change-[N].md` files and the `SCOPE_CHANGE_INVALIDATED` markers in
    synthesis and phase outputs.
 2. For each technical-manual chapter that maps to an **INVALIDATED** or
@@ -550,7 +550,7 @@ When activated after a SCOPE CHANGE reconciliation (sprint
    ```markdown
    > ⚠️ DOC_SCOPE_CHANGE_REVIEW: SC-[N] — The analysis underpinning section
    > [name] has been superseded. Review and update this chapter against
-   > .github/docs/synthesis/scope-change-[N].md before the next sprint is
+   > docs/synthesis/scope-change-[N].md before the next sprint is
    > documented.
    ```
 3. Report all flagged chapter files as

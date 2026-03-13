@@ -24,7 +24,7 @@ Assess EXCLUSIVELY against:
 
 ### Step 0: Load Decision Register
 
-Load `.github/docs/decisions.md` and verify no recommendation contradicts a
+Load `docs/decisions.md` and verify no recommendation contradicts a
 DECIDED item. Flag any conflicts as `CRITIC_DECISION_CONFLICT`.
 
 ### Step 1: Receive Input
@@ -89,13 +89,13 @@ re-analysis — skip in normal cycles):**
       `INCOMPLETE: Senior Developer – insufficient codebase coverage`
 - [ ] **Brand & Assets deliverables present (Agent 30, only if MARKETING was in
       scope):**
-  - `.github/docs/brand/brand-guidelines.md` present with mandatory sections 1–6
+  - `docs/brand/brand-guidelines.md` present with mandatory sections 1–6
     (colors, typography, logo variants, tone of voice, forbidden combinations,
     INSUFFICIENT_DATA log); missing or empty =
     `INCOMPLETE: Brand & Assets Agent – brand-guidelines.md missing or incomplete`
-  - `.github/docs/brand/design-tokens.json` present and valid JSON; missing =
+  - `docs/brand/design-tokens.json` present and valid JSON; missing =
     `INCOMPLETE: Brand & Assets Agent – design-tokens.json missing`
-  - `.github/docs/brand/brand-assets-report.md` present with documented status
+  - `docs/brand/brand-assets-report.md` present with documented status
     (`COMPLETE` / `PARTIAL` / `SKIPPED_NO_TOKEN`); missing =
     `INCOMPLETE: Brand & Assets Agent – brand-assets-report.md missing`
   - With status `SKIPPED_NO_TOKEN`: all three above files are still mandatory;

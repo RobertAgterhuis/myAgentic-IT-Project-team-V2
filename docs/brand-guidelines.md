@@ -12,7 +12,7 @@ description:
 > **Version:** 1.0 | **Created:** 2026-03-08 | **Source:** Phase 3 UX Audit +
 > design-tokens.json **Application:** Questionnaire & Decisions Manager (Command
 > Center Web Application) **Token Source:**
-> `.github/docs/brand/design-tokens.json`
+> `docs/brand/design-tokens.json`
 
 ---
 
@@ -237,7 +237,7 @@ visualization (pipeline, progress bars).
 ## 6. Voice & Tone
 
 Full voice & tone guidelines are maintained in the companion document:
-**`.github/docs/brand/content-style-guide.md`**.
+**`docs/brand/content-style-guide.md`**.
 
 ### Summary
 

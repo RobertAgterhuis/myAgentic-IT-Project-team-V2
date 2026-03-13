@@ -52,7 +52,7 @@ Before any re-analysis takes place, determine WHAT changed relative to the
 previous analysis version:
 
 0. **Check reevaluate trigger (optional pre-step):** If
-   `.github/docs/session/reevaluate-trigger.json` exists with
+   `docs/session/reevaluate-trigger.json` exists with
    `status: "PENDING"`, read the `scope` field and use it as the scope parameter
    for this re-evaluation. This trigger is written by the Questionnaire Manager
    web UI (`src/webapp/`). The Orchestrator consumes and marks it as
@@ -68,7 +68,7 @@ previous analysis version:
    markdown; the Reevaluate Agent does not distinguish between them. 1b.
    **Consume GitHub State (MANDATORY):** The Orchestrator injects a
    `## GITHUB STATE` context block (generated from
-   `.github/docs/session/github-state-snapshot.json` at Sprint Gate Step 0a).
+   `docs/session/github-state-snapshot.json` at Sprint Gate Step 0a).
    The Reevaluate Agent MUST:
    - Read the injected `## GITHUB STATE` block for milestone statuses,
      open/closed issue counts, and label distribution.
@@ -101,7 +101,7 @@ previous analysis version:
      `github_sync.drift_findings[]`. Each drift item uses finding type `DRIFT`
      with severity from the drift report.
    - **Deferred technology activations** — check if the codebase now contains
-     files matching any DEFERRED decision category in `.github/docs/decisions/`
+     files matching any DEFERRED decision category in `docs/decisions/`
      (e.g., `Dockerfile` → `docker.md`, `*.bicep` → `bicep-iac.md`, `*.cs` →
      `dotnet.md`, `azure-pipelines.yml` → `azure-devops.md`, `vite.config.*` →
      `vite.md`, `next.config.*` → `nextjs.md`). For each match where the
@@ -160,7 +160,7 @@ Activate the relevant phase agents again per the scope:
 - Agents focus on changed and new findings; unchanged findings are carried over
   without repetition
 - Output per agent: complete new deliverable per contracts in
-  `.github/docs/contracts/`
+  `docs/contracts/`
 
 **Phase order within re-evaluation:**
 
@@ -273,11 +273,11 @@ Activate after completion:
 
 On `FAILED`: remediate per feedback, repeat validation.
 
-### Step 7b: Record Strategic Findings in `.github/docs/decisions.md` (MANDATORY)
+### Step 7b: Record Strategic Findings in `docs/decisions.md` (MANDATORY)
 
 After Critic + Risk PASSED: analyze the Re-evaluation Report for findings that
 imply permanent behavioral constraints for future agents or sprints. Write each
-such item as a new `DECIDED` entry to `.github/docs/decisions.md`.
+such item as a new `DECIDED` entry to `docs/decisions.md`.
 
 Triggers — write a `DECIDED` item when re-evaluation reveals:
 
@@ -289,7 +289,7 @@ Triggers — write a `DECIDED` item when re-evaluation reveals:
 - A compliance or security finding requires a process change → constraint for
   all Phase 5 agents
 
-Mandatory format (per `.github/docs/decisions.md` template):
+Mandatory format (per `docs/decisions.md` template):
 
 ```markdown
 ### DEC-[NNN] — Reevaluate: [brief description]
@@ -316,7 +316,7 @@ affect implementation:
   High or Critical: add a `SECURITY_REFRESH_REQUIRED` marker to the
   Re-evaluation Report and escalate to the Orchestrator with the instruction to
   have the Security Architect (Agent 08) update
-  `.github/docs/security/security-handoff-context.md` before the next Sprint
+  `docs/security/security-handoff-context.md` before the next Sprint
   Gate.
 - State explicitly in the Re-evaluation Report:
   `SECURITY_HANDOFF_STATUS: UPDATE_REQUIRED — [description of changed findings]`
@@ -336,14 +336,14 @@ affect visual identity, tone of voice, or color palette:
   `BRAND_REFRESH_REQUIRED` marker to the Re-evaluation Report and escalate to
   the Orchestrator with the instruction to have the Brand & Assets Agent
   (Agent 30) **run Step 5b only** again so that
-  `.github/docs/brand/brand-guidelines.md` is updated before the next Sprint
+  `docs/brand/brand-guidelines.md` is updated before the next Sprint
   Gate.
 - State explicitly in the Re-evaluation Report:
   `BRAND_HANDOFF_STATUS: UPDATE_REQUIRED — [description of changed brand findings]`
   or `BRAND_HANDOFF_STATUS: NO_CHANGE`.
 - If `BRAND_REFRESH_REQUIRED` is present: the Orchestrator **blocks the next
   Sprint Gate** until Agent 30 has completed Step 5b,
-  `.github/docs/brand/brand-guidelines.md` is updated, and the Storybook Agent
+  `docs/brand/brand-guidelines.md` is updated, and the Storybook Agent
   is notified to re-calibrate component usage-notes.
 
 ---
@@ -448,7 +448,7 @@ full workflow.
 - [ ] Recommendation-Delta is synchronized with the findings delta
 - [ ] Critic Agent: PASSED
 - [ ] Risk Agent: PASSED
-- [ ] Strategic findings processed in .github/docs/decisions.md as DECIDED items
+- [ ] Strategic findings processed in docs/decisions.md as DECIDED items
       (or NO_DECIDED_ITEMS documented)
 - [ ] SECURITY_HANDOFF_STATUS documented in Re-evaluation Report
       (UPDATE_REQUIRED or NO_CHANGE)

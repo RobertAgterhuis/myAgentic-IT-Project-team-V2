@@ -33,7 +33,7 @@ Work with the **output of the UX Researcher as mandatory input**.
 ### Step 0: Check for Questionnaire Input
 
 > **SCOPE CHANGE context:** If a SCOPE CHANGE is active for your dimension,
-> check `.github/docs/synthesis/scope-change-[N].md` for constraints before
+> check `docs/synthesis/scope-change-[N].md` for constraints before
 > proceeding.
 
 Before starting your analysis, check whether the Orchestrator has injected a
@@ -201,7 +201,7 @@ category. **Prohibition:** No estimates without explicit rationale.
 ## MANDATORY EXECUTION – PRODUCE RECOMMENDATIONS
 
 > Execute this AFTER the analysis steps, using your analysis output as the
-> basis. Conform to `.github/docs/contracts/recommendations-output-contract.md`
+> basis. Conform to `docs/contracts/recommendations-output-contract.md`
 
 ### Step A: Formulate Recommendations
 
@@ -261,7 +261,7 @@ Per recommendation:
 
 > Execute this AFTER the recommendations, based on the prioritized
 > recommendations. Conform to
-> `.github/docs/contracts/sprintplan-output-contract.md`
+> `docs/contracts/sprintplan-output-contract.md`
 
 ### Step E: Document Assumptions (MANDATORY BEFORE SPRINT PLAN)
 
@@ -378,7 +378,7 @@ at least one story with the corresponding `Recommendation reference`.
 
 > Execute this AFTER the analysis. Guardrails are forward-looking, testable
 > decision rules. Conform to
-> `.github/docs/contracts/guardrails-output-contract.md`
+> `docs/contracts/guardrails-output-contract.md`
 
 ### Step I: Identify Guardrails
 
@@ -412,7 +412,7 @@ ID).
 
 ### Step L: Overlap Check
 
-Check overlap with the existing guardrails in `.github/docs/guardrails/`.
+Check overlap with the existing guardrails in `docs/guardrails/`.
 Document per guardrail: "New" / "Addition to G-NNN" / "Conflict with G-NNN
 (resolution: [...])"
 
@@ -440,8 +440,8 @@ Document per guardrail: "New" / "Addition to G-NNN" / "Conflict with G-NNN
 
 ## GUARDRAILS
 
-- `.github/docs/guardrails/00-global-guardrails.md`
-- `.github/docs/guardrails/04-ux-guardrails.md` (G-UX-01, G-UX-02, G-UX-04,
+- `docs/guardrails/00-global-guardrails.md`
+- `docs/guardrails/04-ux-guardrails.md` (G-UX-01, G-UX-02, G-UX-04,
   G-UX-05, G-UX-07)
 
 ---

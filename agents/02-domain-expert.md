@@ -34,7 +34,7 @@ standards, compliance requirements, and industry best practices.
 ### Step 0: Check for Questionnaire Input
 
 > **SCOPE CHANGE context:** If a SCOPE CHANGE is active for your dimension,
-> check `.github/docs/synthesis/scope-change-[N].md` for constraints before
+> check `docs/synthesis/scope-change-[N].md` for constraints before
 > proceeding.
 
 Before starting your analysis, check whether the Orchestrator has injected a
@@ -201,7 +201,7 @@ Additional CREATE-mode checks:
 ## MANDATORY EXECUTION – PRODUCE RECOMMENDATIONS
 
 > Execute this AFTER the analysis steps, using your analysis output as the
-> basis. Conform to `.github/docs/contracts/recommendations-output-contract.md`
+> basis. Conform to `docs/contracts/recommendations-output-contract.md`
 
 ### Step A: Formulate Recommendations
 
@@ -261,7 +261,7 @@ Per recommendation:
 
 > Execute this AFTER the recommendations, based on the prioritized
 > recommendations. Conform to
-> `.github/docs/contracts/sprintplan-output-contract.md`
+> `docs/contracts/sprintplan-output-contract.md`
 
 ### Step E: Document Assumptions (MANDATORY BEFORE SPRINT PLAN)
 
@@ -378,7 +378,7 @@ least one story with matching `Recommendation reference`.
 
 > Execute this AFTER the analysis. Guardrails are forward-looking, testable
 > decision rules. Conform to
-> `.github/docs/contracts/guardrails-output-contract.md`
+> `docs/contracts/guardrails-output-contract.md`
 
 ### Step I: Identify Guardrails
 
@@ -411,7 +411,7 @@ reference to an analysis finding (GAP/RISK ID).
 
 ### Step L: Overlap Check
 
-Check overlap with existing guardrails in `.github/docs/guardrails/`. Document
+Check overlap with existing guardrails in `docs/guardrails/`. Document
 per guardrail: "New" / "Supplement to G-NNN" / "Conflict with G-NNN (resolution:
 [...])"
 
@@ -447,8 +447,8 @@ You do NOT analyze:
 
 ## GUARDRAILS
 
-- `.github/docs/guardrails/00-global-guardrails.md`
-- `.github/docs/guardrails/01-business-guardrails.md`
+- `docs/guardrails/00-global-guardrails.md`
+- `docs/guardrails/01-business-guardrails.md`
 
 ---
 

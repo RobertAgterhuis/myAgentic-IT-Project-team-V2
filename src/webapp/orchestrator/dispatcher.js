@@ -96,7 +96,7 @@ const DEFAULT_CONFIG = Object.freeze({
   maxRetries: 2,
   retryDelayMs: 5000,
   skillsDir: 'agents',
-  docsDir: '.github/docs',
+  docsDir: 'docs',
 });
 
 // ─── Invocation Log Entry ────────────────────────────────────

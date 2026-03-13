@@ -50,7 +50,7 @@ Protocol, Scope Discipline. See `.github/copilot-instructions.md` for the
 complete rules.
 
 **Domain-specific guardrails:**
-`.github/docs/guardrails/08-content-guardrails.md`
+`docs/guardrails/08-content-guardrails.md`
 
 ---
 
@@ -59,7 +59,7 @@ complete rules.
 ### Step 0: Check for Questionnaire Input
 
 > **SCOPE CHANGE context:** If a SCOPE CHANGE is active for your dimension,
-> check `.github/docs/synthesis/scope-change-[N].md` for constraints before
+> check `docs/synthesis/scope-change-[N].md` for constraints before
 > proceeding.
 
 Before starting your analysis, check whether the Orchestrator has injected a
@@ -293,7 +293,7 @@ Per gap:
 
 ## MANDATORY EXECUTION – PRODUCE RECOMMENDATIONS
 
-> Per `.github/docs/contracts/recommendations-output-contract.md`
+> Per `docs/contracts/recommendations-output-contract.md`
 
 ### Step A: Formulate Recommendations
 
@@ -327,7 +327,7 @@ error messages with recovery step: X%").
 
 ## MANDATORY EXECUTION – PRODUCE SPRINT PLAN
 
-> Per `.github/docs/contracts/sprintplan-output-contract.md`
+> Per `docs/contracts/sprintplan-output-contract.md`
 
 ### Step E: Document Assumptions
 
@@ -355,7 +355,7 @@ Localization Specialist starts.
 
 > Execute this AFTER the analysis. Guardrails are forward-looking, testable
 > decision rules. Conform to
-> `.github/docs/contracts/guardrails-output-contract.md`
+> `docs/contracts/guardrails-output-contract.md`
 
 ### Step I: Identify Guardrails
 
@@ -388,7 +388,7 @@ reference to an analysis finding (GAP/RISK ID).
 
 ### Step L: Overlap Check
 
-Check overlap with existing guardrails in `.github/docs/guardrails/`. Document
+Check overlap with existing guardrails in `docs/guardrails/`. Document
 per guardrail: "New" / "Supplement to G-NNN" / "Conflict with G-NNN (resolution:
 [...])"
 
@@ -404,8 +404,8 @@ per guardrail: "New" / "Supplement to G-NNN" / "Conflict with G-NNN (resolution:
 
 ## GUARDRAILS
 
-- `.github/docs/guardrails/00-global-guardrails.md`
-- `.github/docs/guardrails/04-ux-guardrails.md`
+- `docs/guardrails/00-global-guardrails.md`
+- `docs/guardrails/04-ux-guardrails.md`
 
 ---
 
@@ -459,7 +459,7 @@ per guardrail: "New" / "Supplement to G-NNN" / "Conflict with G-NNN (resolution:
       Guardrails ✓
 - [ ] All UNCERTAIN: items documented and escalated
 - [ ] All INSUFFICIENT_DATA: items documented and escalated
-- [ ] Output complies with contracts in /.github/docs/contracts/
+- [ ] Output complies with contracts in /docs/contracts/
 - [ ] All findings include a source reference
 - [ ] Questionnaire input check performed (context block consumed or documented
       as NOT_INJECTED)

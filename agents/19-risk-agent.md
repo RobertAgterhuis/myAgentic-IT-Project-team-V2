@@ -26,7 +26,7 @@ Do NOT produce analyses. Assess risks.
 
 ### Step 0: Load Decision Register (MANDATORY)
 
-Load `.github/docs/decisions.md` before any risk assessment.
+Load `docs/decisions.md` before any risk assessment.
 
 - If the file exists: store all items with status `DECIDED` as **hard
   constraints**. A recommendation or sprint plan item that contradicts a DECIDED
@@ -131,7 +131,7 @@ For NEEDS_REVIEW or BLOCKED: formulate concrete mitigation requirements.
 
 ```
 ## HANDOFF CHECKLIST – Risk Agent – Phase [N] – [Date]
-- [ ] .github/docs/decisions.md loaded and DECIDED items processed as constraints (or NO_DECIDED_ITEMS documented)
+- [ ] docs/decisions.md loaded and DECIDED items processed as constraints (or NO_DECIDED_ITEMS documented)
 - [ ] All agents in the phase assessed for risk
 - [ ] Strategic alignment checked
 - [ ] Implementation feasibility assessed

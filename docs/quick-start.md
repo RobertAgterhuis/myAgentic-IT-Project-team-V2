@@ -100,7 +100,7 @@ Both suites should report **0 failures**.
 
 - **[User Manual](user-manual.md)** — Comprehensive guide to all features
 - **[Technical Manual](technical-manual.md)** — Architecture and API reference
-- **[Operating Handbook](../.github/docs/operating-handbook.md)** — Monitoring,
+- **[Operating Handbook](../docs/operating-handbook.md)** — Monitoring,
   troubleshooting, recovery
 - **[Available Commands](../README.md#available-commands)** — All CREATE, AUDIT,
   FEATURE, and utility commands

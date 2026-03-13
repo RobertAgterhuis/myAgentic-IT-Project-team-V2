@@ -4,8 +4,8 @@
 
 Decisions are the single source of truth for every explicit choice that governs
 how the agentic team builds your software. They live in
-`.github/docs/decisions.md` (the **index file**) and in per-technology
-**category files** under `.github/docs/decisions/`. Every agent — from the
+`docs/decisions.md` (the **index file**) and in per-technology
+**category files** under `docs/decisions/`. Every agent — from the
 Implementation Agent writing code to the PR/Review Agent approving merges —
 reads these decisions and treats `DECIDED` items as **hard constraints**.
 
@@ -68,7 +68,7 @@ web UI.
 ## Decision categories (technology stacks)
 
 Decided items are organized by technology into separate files under
-`.github/docs/decisions/`. Each file has a header that includes its **Status**:
+`docs/decisions/`. Each file has a header that includes its **Status**:
 
 | Category status | Meaning                                                                                          |
 | --------------- | ------------------------------------------------------------------------------------------------ |
@@ -78,7 +78,7 @@ Decided items are organized by technology into separate files under
 
 ### Which categories exist?
 
-The **Category Registry** table in `.github/docs/decisions.md` lists all
+The **Category Registry** table in `docs/decisions.md` lists all
 categories with their file, decision count, and status. Categories cover stacks
 like Transformation, GitHub Actions, TypeScript/ESLint, Cross-cutting,
 Bicep/IaC, Azure DevOps, .NET, Docker, Vite, and NextJS (among others as the
@@ -221,6 +221,6 @@ You don't have to wait for the system to ask. Good moments to add decisions:
 
 | What                                                | Path                             |
 | --------------------------------------------------- | -------------------------------- |
-| Decision index (open questions + category registry) | `.github/docs/decisions.md`      |
-| Category files (per technology stack)               | `.github/docs/decisions/*.md`    |
+| Decision index (open questions + category registry) | `docs/decisions.md`      |
+| Category files (per technology stack)               | `docs/decisions/*.md`    |
 | Technical architecture reference                    | `docs/decisions-architecture.md` |

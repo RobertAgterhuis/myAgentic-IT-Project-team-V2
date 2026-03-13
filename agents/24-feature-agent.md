@@ -198,7 +198,7 @@ Phase 3: UX Researcher → UX Designer → UI Designer → Accessibility Special
   ↓ [CRITIC + RISK validation → save in phase-3/critic-risk-validation.md]
 Phase 4: Brand Strategist → Growth Marketer → CRO Specialist
   ↓ [CRITIC + RISK validation → save in phase-4/critic-risk-validation.md]
-  Brand & Assets Agent (30) — Step 5b (CONDITIONAL): if the feature touches UI components, visual identity, or tone-of-voice → update/create `.github/docs/brand/brand-guidelines.md` + `.github/docs/brand/design-tokens.json`; feature-specific brand notes to `Workitems/[FEATURENAME]/brand/feature-brand-notes.md`. With NO brand impact: document `BRAND_CONTEXT_N/A` in feature-brand-notes.md.
+  Brand & Assets Agent (30) — Step 5b (CONDITIONAL): if the feature touches UI components, visual identity, or tone-of-voice → update/create `docs/brand/brand-guidelines.md` + `docs/brand/design-tokens.json`; feature-specific brand notes to `Workitems/[FEATURENAME]/brand/feature-brand-notes.md`. With NO brand impact: document `BRAND_CONTEXT_N/A` in feature-brand-notes.md.
   Storybook Agent (31) — CONDITIONAL: only if Brand & Assets Agent reports brand changes → update component usage-notes per new or changed brand-guidelines.
   Synthesis Agent → synthesis/synthesis-report.md
 ```
@@ -224,7 +224,7 @@ Mandatory sections:
 
 ### Step 5: Sprint Plan for the Feature
 
-Produce per `.github/docs/contracts/sprintplan-output-contract.md`:
+Produce per `docs/contracts/sprintplan-output-contract.md`:
 
 - Output: `Workitems/[FEATURENAME]/sprintplan/sprintplan.md` + `sprintplan.json`
 - Sprint IDs use format: `FT-[FEATURENAME]-S[N]-[NNN]` (e.g.

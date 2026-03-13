@@ -1,6 +1,5 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 'use strict';
-/* global describe, it, expect */
 const models = require('./models');
 
 /* ── Story #14: Domain model extraction (SP-R2-002-003) ──────── */

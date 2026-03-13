@@ -9,9 +9,9 @@
  * - createAutoPersist: auto-save on transition/error
  */
 
-const path = require('path');
+const _path = require('path');
 const {
-  DEFAULT_SESSION_FILE,
+  _DEFAULT_SESSION_FILE,
   loadSessionState,
   saveSessionState,
   createAutoPersist,

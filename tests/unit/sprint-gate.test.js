@@ -1017,7 +1017,15 @@ describe('engine integration — sprintGate', () => {
   const path = require('path');
   const fs = require('fs');
   const { createEngine } = require('../../src/webapp/orchestrator/engine');
-  const FLOWS_PATH = path.join(__dirname, '..', '..', 'src', 'webapp', 'orchestrator', 'flows.yaml');
+  const FLOWS_PATH = path.join(
+    __dirname,
+    '..',
+    '..',
+    'src',
+    'webapp',
+    'orchestrator',
+    'flows.yaml'
+  );
   const FLOWS_CONTENT = fs.readFileSync(FLOWS_PATH, 'utf-8');
 
   function storeWithFlows(extraFiles = {}) {

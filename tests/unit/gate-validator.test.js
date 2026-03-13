@@ -27,7 +27,7 @@ const {
   runGate,
   CRITIC_TO_PHASE,
   PHASE_GUARDRAILS,
-  PHASE_CONTRACTS,
+  _PHASE_CONTRACTS,
   HANDOFF_CHECKLIST_COUNT,
 } = require('../../src/webapp/orchestrator/gate-validator');
 
@@ -561,7 +561,15 @@ describe('runGate', () => {
 describe('engine validateGate integration', () => {
   const { createEngine } = require('../../src/webapp/orchestrator/engine');
 
-  const FLOWS_PATH = path.join(__dirname, '..', '..', 'src', 'webapp', 'orchestrator', 'flows.yaml');
+  const FLOWS_PATH = path.join(
+    __dirname,
+    '..',
+    '..',
+    'src',
+    'webapp',
+    'orchestrator',
+    'flows.yaml'
+  );
   const FLOWS_CONTENT = fs.readFileSync(FLOWS_PATH, 'utf-8');
 
   function engineStore(extraFiles = {}) {

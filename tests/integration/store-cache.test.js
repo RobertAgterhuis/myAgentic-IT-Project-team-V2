@@ -6,7 +6,7 @@
  * any code that reads/writes files through the Store layer. */
 
 const path = require('path');
-const { InMemoryStore, setStore, getStore } = require('../../src/webapp/store');
+const { InMemoryStore, setStore, _getStore } = require('../../src/webapp/store');
 const { FileCache } = require('../../src/webapp/cache');
 
 describe('FileCache with InMemoryStore (mock-store injection)', () => {

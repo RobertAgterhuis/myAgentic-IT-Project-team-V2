@@ -1,13 +1,12 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 'use strict';
-/* global describe, it, expect, vi, beforeEach */
 
 /**
  * Tests for github-state-snapshot.js (INFRA-02-A)
  * and validateGithubSnapshot / github_sync validation in schemas.js (INFRA-02-D)
  */
 
-const path = require('path');
+const _path = require('path');
 
 /* ── Mock deps via _setDeps (dependency injection) ───────────── */
 

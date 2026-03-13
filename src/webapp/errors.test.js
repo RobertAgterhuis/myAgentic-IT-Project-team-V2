@@ -1,6 +1,5 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 'use strict';
-/* global describe, it, expect */
 const { ERROR_CATALOG, errorResponse, statusToCode } = require('./utils/errors');
 
 describe('errorResponse', () => {

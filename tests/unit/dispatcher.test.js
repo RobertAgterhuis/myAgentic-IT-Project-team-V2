@@ -17,7 +17,7 @@
 const {
   PHASE_AGENTS,
   PLATFORMS,
-  DEFAULT_CONFIG,
+  _DEFAULT_CONFIG,
   Dispatcher,
 } = require('../../src/webapp/orchestrator/dispatcher');
 const { STATES } = require('../../src/webapp/orchestrator/state-machine');

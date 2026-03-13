@@ -559,7 +559,7 @@ if (require.main === module) {
     /* gh CLI may not be available */
   }
   let _snapshotRunning = false;
-  function syncGitHubSnapshot() {
+  const syncGitHubSnapshot = function syncGitHubSnapshot() {
     if (!_snapshotScript || _snapshotRunning) return;
     _snapshotRunning = true;
     try {
@@ -571,13 +571,13 @@ if (require.main === module) {
     } finally {
       _snapshotRunning = false;
     }
-  }
+  };
   const snapshotTimer = setInterval(syncGitHubSnapshot, SNAPSHOT_SYNC_INTERVAL_MS);
   snapshotTimer.unref();
   // Run once at startup (deferred so server is listening first)
   setTimeout(syncGitHubSnapshot, 5000).unref();
 
-  function shutdown() {
+  const shutdown = function shutdown() {
     structuredLog('info', 'shutdown_initiated');
     clearInterval(metricsFlushTimer);
     clearInterval(snapshotTimer);
@@ -591,7 +591,7 @@ if (require.main === module) {
       process.exit(1);
     }, 5000);
     forceTimer.unref();
-  }
+  };
   process.on('SIGTERM', shutdown);
   process.on('SIGINT', shutdown);
   process.on('unhandledRejection', (reason) => {

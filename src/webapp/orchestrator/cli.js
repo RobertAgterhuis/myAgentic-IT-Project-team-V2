@@ -30,7 +30,7 @@
  */
 
 const { createEngine } = require('./engine');
-const { MODE_CONFIGS } = require('./state-machine');
+const { _MODE_CONFIGS } = require('./state-machine');
 
 // ─── Argument Parser ─────────────────────────────────────────
 

@@ -3,12 +3,12 @@
  * Pattern: test domain logic (parsing, transformation) in isolation.
  * Demonstrates testing markdown parsing and decision management. */
 
-const path = require('path');
+const _path = require('path');
 const {
   parseQuestionnaire,
-  parseDecisions,
+  _parseDecisions,
   nextDecisionId,
-  today,
+  _today,
   Q_ID_RE,
   DEC_ID_RE,
 } = require('../../src/webapp/models');

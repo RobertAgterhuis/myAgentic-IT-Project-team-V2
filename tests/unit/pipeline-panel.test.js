@@ -23,7 +23,15 @@ const { STATES } = require('../../src/webapp/orchestrator/state-machine');
 // ─── Test Helpers ────────────────────────────────────────────
 
 const INDEX_PATH = path.resolve(__dirname, '..', '..', 'src', 'webapp', 'index.html');
-const FLOWS_PATH = path.resolve(__dirname, '..', '..', 'src', 'webapp', 'orchestrator', 'flows.yaml');
+const FLOWS_PATH = path.resolve(
+  __dirname,
+  '..',
+  '..',
+  'src',
+  'webapp',
+  'orchestrator',
+  'flows.yaml'
+);
 const indexHtml = fs.readFileSync(INDEX_PATH, 'utf8');
 const flowsContent = fs.readFileSync(FLOWS_PATH, 'utf8');
 
@@ -166,7 +174,7 @@ describe('FEAT-05-F: Gate result display', () => {
     store._files[delPath] = '# Test deliverable\n## Analysis\nSome analysis\n';
 
     try {
-      const result = engine.validateGate([delPath]);
+      const _result = engine.validateGate([delPath]);
       const gateEvents = events.filter(
         (e) => e.type === 'orchestrator:gate_passed' || e.type === 'orchestrator:gate_failed'
       );
@@ -227,7 +235,7 @@ describe('FEAT-05-F: Platform selector', () => {
   });
 
   it('engine command endpoint accepts platform parameter', () => {
-    const { engine, events } = freshEngine();
+    const { engine, events: _events } = freshEngine();
     const status = engine.status();
     expect(status).toHaveProperty('state');
     expect(status).toHaveProperty('mode');

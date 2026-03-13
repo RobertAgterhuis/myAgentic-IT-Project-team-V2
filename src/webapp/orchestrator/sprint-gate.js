@@ -15,7 +15,7 @@
  * @module orchestrator/sprint-gate
  */
 
-const path = require('path');
+const _path = require('path');
 
 // ─── Constants ───────────────────────────────────────────────
 

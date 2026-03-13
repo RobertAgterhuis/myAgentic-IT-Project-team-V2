@@ -1,6 +1,5 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 'use strict';
-/* global describe, it, expect, beforeEach */
 const path = require('path');
 const { InMemoryStore, setStore } = require('./store');
 const { FileCache } = require('./cache');

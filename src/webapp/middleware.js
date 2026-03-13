@@ -208,7 +208,7 @@ const SECRET_PATTERNS = [
   { name: 'Azure Storage Key', re: /[A-Za-z0-9/+]{86}==/ },
   {
     name: 'Generic API Key',
-    re: /(?:api[_-]?key|apikey|secret[_-]?key)\s*[:=]\s*['"]?[A-Za-z0-9_\-]{20,}/i,
+    re: /(?:api[_-]?key|apikey|secret[_-]?key)\s*[:=]\s*['"]?[A-Za-z0-9_-]{20,}/i,
   },
   { name: 'Private Key', re: /-----BEGIN (?:RSA |EC |DSA )?PRIVATE KEY-----/ },
   { name: 'Bearer Token', re: /Bearer\s+[A-Za-z0-9\-._~+/]+=*/i },

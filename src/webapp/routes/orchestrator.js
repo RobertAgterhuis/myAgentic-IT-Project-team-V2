@@ -20,7 +20,7 @@
 const { getStore } = require('../store');
 const { createEngine } = require('../orchestrator/engine');
 const { errorResponse } = require('../utils/errors');
-const { structuredLog, json, parseBody, setSecurityHeaders } = require('../middleware');
+const { structuredLog, json, parseBody, _setSecurityHeaders } = require('../middleware');
 
 module.exports = function createOrchestratorRoutes(ctx) {
   const { sseNotify } = ctx;
@@ -110,7 +110,7 @@ module.exports = function createOrchestratorRoutes(ctx) {
       const mode = String(body.mode).slice(0, 50);
       const phases = Array.isArray(body.phases) ? body.phases.map((p) => String(p)) : undefined;
 
-      const engine = getEngine();
+      const _prevEngine = getEngine();
       // Force re-creation of engine with new mode
       _engine = null;
       const newEngine = getEngine();

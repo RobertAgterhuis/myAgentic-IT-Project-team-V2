@@ -14,13 +14,13 @@ const {
   jsonResult,
   errorResult,
   buildProgress,
-  discoverQuestionnaires,
+  _discoverQuestionnaires,
   readSessionState,
   readCommandQueue,
   readDecisions,
   safeWrite,
-  PROJECT_ROOT,
-  DOC_ROOT,
+  _PROJECT_ROOT,
+  _DOC_ROOT,
   BUSINESS_DOCS,
   SESSION_DIR,
   DECISIONS_PATH,
@@ -44,9 +44,9 @@ function parseToolResult(result) {
 /* Backup/restore: writeTemp saves pre-existing file content so that
    cleanupTemp restores it instead of deleting real project files.   */
 
-const TMP_SESSION_DIR = SESSION_DIR;
-const TMP_DECISIONS = DECISIONS_PATH;
-const TMP_BUSINESS = BUSINESS_DOCS;
+const _TMP_SESSION_DIR = SESSION_DIR;
+const _TMP_DECISIONS = DECISIONS_PATH;
+const _TMP_BUSINESS = BUSINESS_DOCS;
 const createdPaths = [];
 const originalContent = new Map();
 
@@ -626,7 +626,9 @@ describe('tool: get_help', () => {
   it('returns error when help directory does not exist', async () => {
     const helpDir = path.resolve(
       path.dirname(require.resolve('../../src/webapp/mcp-server')),
-      '../..', 'docs', 'help'
+      '../..',
+      'docs',
+      'help'
     );
     if (fs.existsSync(helpDir)) return; // skip if help dir exists
     const result = await callTool('get_help', {});
@@ -636,7 +638,9 @@ describe('tool: get_help', () => {
   it('returns error for unknown topic', async () => {
     const helpDir = path.resolve(
       path.dirname(require.resolve('../../src/webapp/mcp-server')),
-      '../..', 'docs', 'help'
+      '../..',
+      'docs',
+      'help'
     );
     if (!fs.existsSync(helpDir)) return; // skip if no help dir
     const result = await callTool('get_help', { topic: 'nonexistent_xyz_12345' });

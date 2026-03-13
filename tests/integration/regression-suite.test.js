@@ -16,17 +16,20 @@ const {
   sanitizeQID,
   detectSecrets,
   safePath,
-  setSecurityHeaders,
+  _setSecurityHeaders,
   recordMetric,
   computePercentiles,
-  sseNotify,
+  _sseNotify,
   _sseClients,
 } = require('../../src/webapp/server');
 const models = require('../../src/webapp/models');
 const schemas = require('../../src/webapp/schemas');
 const { FileCache } = require('../../src/webapp/cache');
 const { errorResponse, statusToCode } = require('../../src/webapp/utils/errors');
-const { formatSecretWarnings, attachSecretWarnings } = require('../../src/webapp/utils/secret-utils');
+const {
+  formatSecretWarnings,
+  attachSecretWarnings,
+} = require('../../src/webapp/utils/secret-utils');
 const { VALIDATION: V, RESPONSES: R, STATIC: S } = require('../../src/webapp/strings');
 
 /* ── Test Infrastructure ──────────────────────────────────────── */

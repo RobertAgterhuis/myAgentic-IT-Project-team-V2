@@ -16,13 +16,13 @@
 
 const { loadFlows } = require('./flow-loader');
 const {
-  STATES,
-  EVENTS,
+  _STATES,
+  _EVENTS,
   StateMachine,
-  buildTransitionMap,
+  _buildTransitionMap,
   createStateMachine,
-  createCombinationMachine,
-  createHotfixMachine,
+  _createCombinationMachine,
+  _createHotfixMachine,
 } = require('./state-machine');
 const { loadSessionState, saveSessionState, createAutoPersist } = require('./state-persistence');
 const { runGate } = require('./gate-validator');

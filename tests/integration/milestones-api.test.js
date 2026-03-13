@@ -298,7 +298,7 @@ describe('Milestones API (SP-9)', () => {
 
     it('prevents duplicate name with update', async () => {
       // Create two milestones
-      const res1 = await req('POST', '/api/milestones', {
+      const _res1 = await req('POST', '/api/milestones', {
         name: 'DUP-ORIGINAL',
         status: 'not started',
         progress: 0,

@@ -1,6 +1,5 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 'use strict';
-/* global describe, it, expect, beforeEach, afterEach */
 const { InMemoryStore, setStore, getStore } = require('./store');
 const { FileCache } = require('./cache');
 
@@ -64,7 +63,7 @@ describe('FileCache', () => {
 
     it('applies validator and returns errors', () => {
       store.writeFile('/tmp/v.json', '{"x":1}');
-      const validator = (d) => ({ valid: false, errors: ['x must be string'] });
+      const validator = (_d) => ({ valid: false, errors: ['x must be string'] });
       const { data, errors } = cache.readJSON('/tmp/v.json', validator);
       expect(data).toEqual({ x: 1 });
       expect(errors).toEqual(['x must be string']);

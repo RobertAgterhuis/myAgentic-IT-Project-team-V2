@@ -1,0 +1,174 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": "src/webapp/orchestrator/flows.yaml",
+  "generatedAt": "2026-03-13T10:00:00.000Z",
+  "states": [
+    "IDLE",
+    "ONBOARDING",
+    "PHASE_1",
+    "CRITIC_1",
+    "PHASE_2",
+    "CRITIC_2",
+    "PHASE_3",
+    "CRITIC_3",
+    "PHASE_4",
+    "CRITIC_4",
+    "SYNTHESIS",
+    "SPRINT_GATE",
+    "PHASE_5_EXECUTING",
+    "COMPLETED",
+    "ERROR"
+  ],
+  "fullFlow": [
+    "IDLE",
+    "ONBOARDING",
+    "PHASE_1",
+    "CRITIC_1",
+    "PHASE_2",
+    "CRITIC_2",
+    "PHASE_3",
+    "CRITIC_3",
+    "PHASE_4",
+    "CRITIC_4",
+    "SYNTHESIS",
+    "SPRINT_GATE",
+    "PHASE_5_EXECUTING",
+    "COMPLETED"
+  ],
+  "structuralStates": [
+    "IDLE",
+    "ONBOARDING",
+    "SYNTHESIS",
+    "SPRINT_GATE",
+    "PHASE_5_EXECUTING",
+    "COMPLETED"
+  ],
+  "modes": {
+    "CREATE": {
+      "label": "Full CREATE cycle",
+      "phases": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"],
+      "supportsPartial": true,
+      "supportsCombination": true
+    },
+    "AUDIT": {
+      "label": "Full AUDIT cycle",
+      "phases": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"],
+      "supportsPartial": true,
+      "supportsCombination": true
+    },
+    "CREATE_BUSINESS": {
+      "label": "Business-only CREATE",
+      "phases": ["PHASE_1"],
+      "supportsPartial": false,
+      "supportsCombination": false
+    },
+    "CREATE_TECH": {
+      "label": "Tech-only CREATE",
+      "phases": ["PHASE_2"],
+      "supportsPartial": false,
+      "supportsCombination": false
+    },
+    "CREATE_UX": {
+      "label": "UX-only CREATE",
+      "phases": ["PHASE_3"],
+      "supportsPartial": false,
+      "supportsCombination": false
+    },
+    "CREATE_MARKETING": {
+      "label": "Marketing-only CREATE",
+      "phases": ["PHASE_4"],
+      "supportsPartial": false,
+      "supportsCombination": false
+    },
+    "FEATURE": {
+      "label": "FEATURE full cycle",
+      "phases": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"],
+      "supportsPartial": false,
+      "supportsCombination": false
+    },
+    "SCOPE_CHANGE": {
+      "label": "Scope change re-analysis",
+      "phases": [],
+      "supportsPartial": false,
+      "supportsCombination": false
+    },
+    "HOTFIX": {
+      "label": "Emergency hotfix bypass",
+      "phases": [],
+      "supportsPartial": false,
+      "supportsCombination": false
+    }
+  },
+  "gates": [
+    {
+      "id": "gate.critic-risk-1",
+      "after": "PHASE_1",
+      "before": "PHASE_2",
+      "type": "CRITIC_RISK",
+      "conditions": [
+        "All PHASE_1 agent handoff checklists complete",
+        "Critic agent validation passed",
+        "Risk agent assessment completed",
+        "No unresolved BLOCKING items"
+      ]
+    },
+    {
+      "id": "gate.critic-risk-2",
+      "after": "PHASE_2",
+      "before": "PHASE_3",
+      "type": "CRITIC_RISK",
+      "conditions": [
+        "All PHASE_2 agent handoff checklists complete",
+        "Critic agent validation passed",
+        "Risk agent assessment completed",
+        "No unresolved BLOCKING items"
+      ]
+    },
+    {
+      "id": "gate.critic-risk-3",
+      "after": "PHASE_3",
+      "before": "PHASE_4",
+      "type": "CRITIC_RISK",
+      "conditions": [
+        "All PHASE_3 agent handoff checklists complete",
+        "Critic agent validation passed",
+        "Risk agent assessment completed",
+        "No unresolved BLOCKING items"
+      ]
+    },
+    {
+      "id": "gate.critic-risk-4",
+      "after": "PHASE_4",
+      "before": "SYNTHESIS",
+      "type": "CRITIC_RISK",
+      "conditions": [
+        "All PHASE_4 agent handoff checklists complete",
+        "Critic agent validation passed",
+        "Risk agent assessment completed",
+        "No unresolved BLOCKING items"
+      ]
+    },
+    {
+      "id": "gate.synthesis-approval",
+      "after": "SYNTHESIS",
+      "before": "SPRINT_GATE",
+      "type": "SYNTHESIS_APPROVAL",
+      "conditions": [
+        "All 6 synthesis documents approved",
+        "BLOCKING items linked to sprint plan",
+        "Cross-team blocker matrix complete"
+      ]
+    },
+    {
+      "id": "gate.sprint-gate",
+      "after": "SPRINT_GATE",
+      "before": "PHASE_5_EXECUTING",
+      "type": "SPRINT_GATE",
+      "conditions": [
+        "Definition of Ready check passed",
+        "Lessons-learned injection completed",
+        "Sprint backlog approved"
+      ]
+    }
+  ]
+}

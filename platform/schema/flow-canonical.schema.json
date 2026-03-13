@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myagentic-it.local/schema/flow-canonical.schema.json",
+  "title": "Canonical Flow Definition Schema",
+  "description": "Platform-neutral schema for phase sequences, gates, handoffs, and command modes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "source",
+    "generatedAt",
+    "states",
+    "fullFlow",
+    "structuralStates",
+    "modes",
+    "gates"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "states": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" }
+    },
+    "fullFlow": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" },
+      "description": "Ordered transition chain for a complete CREATE cycle."
+    },
+    "structuralStates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" },
+      "description": "States always included regardless of selected phases."
+    },
+    "modes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/modeDefinition"
+      }
+    },
+    "gates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/gateDefinition" },
+      "description": "Gate conditions between phases."
+    }
+  },
+  "$defs": {
+    "modeDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "phases"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "phases": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" }
+        },
+        "supportsPartial": { "type": "boolean" },
+        "supportsCombination": { "type": "boolean" }
+      }
+    },
+    "gateDefinition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "after", "before", "type", "conditions"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^gate\\.[a-z0-9-]+$" },
+        "after": { "type": "string", "description": "State that precedes this gate." },
+        "before": { "type": "string", "description": "State that follows this gate." },
+        "type": { "type": "string", "enum": ["CRITIC_RISK", "SPRINT_GATE", "SYNTHESIS_APPROVAL"] },
+        "conditions": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

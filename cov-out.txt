@@ -1,0 +1,129 @@
+
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90mD:/repositories/myAgentic-IT-Project-team-V2[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+{"timestamp":"2026-03-13T10:37:58.074Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.075Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.077Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.086Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.100Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.106Z","level":"warn","message":"orchestrator_advance_failed","error":"No valid transition from state \"ERROR\". State machine is stuck."}
+{"timestamp":"2026-03-13T10:37:58.114Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.117Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.125Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.139Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.140Z","level":"warn","message":"orchestrator_recover_failed","error":"Can only recover from ERROR state"}
+{"timestamp":"2026-03-13T10:37:58.141Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.141Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.149Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.149Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.155Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.156Z","level":"warn","message":"orchestrator_gate_result","verdict":"FAILED","phase":null,"violations":1}
+{"timestamp":"2026-03-13T10:37:58.159Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.178Z","level":"warn","message":"orchestrator_gate_result","verdict":"FAILED","phase":"PHASE_1","violations":1}
+{"timestamp":"2026-03-13T10:37:58.185Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.186Z","level":"info","message":"orchestrator_command","command":"CREATE","platform":"copilot","project":null,"resume":false,"state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.194Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.195Z","level":"info","message":"orchestrator_command","command":"CREATE_BUSINESS","platform":"copilot","project":null,"resume":false,"state":"IDLE","mode":"CREATE_BUSINESS"}
+{"timestamp":"2026-03-13T10:37:58.203Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.204Z","level":"info","message":"orchestrator_command","command":"CREATE","platform":"copilot","project":null,"resume":false,"state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.205Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.206Z","level":"info","message":"orchestrator_command","command":"AUDIT","platform":"copilot","project":null,"resume":false,"state":"IDLE","mode":"AUDIT"}
+{"timestamp":"2026-03-13T10:37:58.207Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.208Z","level":"info","message":"orchestrator_command","command":"FEATURE","platform":"copilot","project":null,"resume":false,"state":"IDLE","mode":"FEATURE"}
+{"timestamp":"2026-03-13T10:37:58.209Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.210Z","level":"info","message":"orchestrator_command","command":"SCOPE_CHANGE","platform":"copilot","project":null,"resume":false,"state":"IDLE","mode":"SCOPE_CHANGE"}
+{"timestamp":"2026-03-13T10:37:58.211Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.211Z","level":"info","message":"orchestrator_command","command":"HOTFIX","platform":"copilot","project":null,"resume":false,"state":"IDLE","mode":"HOTFIX"}
+{"timestamp":"2026-03-13T10:37:58.220Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.222Z","level":"info","message":"orchestrator_command","command":"CREATE_BUSINESS","platform":"copilot","project":null,"resume":false,"state":"IDLE","mode":"CREATE_BUSINESS"}
+{"timestamp":"2026-03-13T10:37:58.229Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.230Z","level":"info","message":"orchestrator_command","command":"CREATE_TECH","platform":"copilot","project":null,"resume":false,"state":"IDLE","mode":"CREATE_TECH"}
+{"timestamp":"2026-03-13T10:37:58.231Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.232Z","level":"info","message":"orchestrator_command","command":"CREATE_UX","platform":"copilot","project":null,"resume":false,"state":"IDLE","mode":"CREATE_UX"}
+{"timestamp":"2026-03-13T10:37:58.233Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.234Z","level":"info","message":"orchestrator_command","command":"CREATE_MARKETING","platform":"copilot","project":null,"resume":false,"state":"IDLE","mode":"CREATE_MARKETING"}
+{"timestamp":"2026-03-13T10:37:58.241Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.241Z","level":"info","message":"orchestrator_command","command":"REEVALUATE","platform":"copilot","project":null,"resume":true,"state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.242Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.243Z","level":"info","message":"orchestrator_command","command":"AUDIT","platform":"copilot","project":null,"resume":false,"state":"IDLE","mode":"AUDIT"}
+{"timestamp":"2026-03-13T10:37:58.250Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.251Z","level":"info","message":"orchestrator_command","command":"AUDIT","platform":"copilot","project":null,"resume":false,"state":"IDLE","mode":"AUDIT"}
+{"timestamp":"2026-03-13T10:37:58.258Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.259Z","level":"info","message":"orchestrator_command","command":"AUDIT","platform":"claude","project":null,"resume":false,"state":"IDLE","mode":"AUDIT"}
+{"timestamp":"2026-03-13T10:37:58.260Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.261Z","level":"info","message":"orchestrator_command","command":"AUDIT","platform":"codex","project":null,"resume":false,"state":"IDLE","mode":"AUDIT"}
+{"timestamp":"2026-03-13T10:37:58.269Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.269Z","level":"info","message":"orchestrator_command","command":"AUDIT","platform":"copilot","project":null,"resume":true,"state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.270Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.270Z","level":"info","message":"orchestrator_command","command":"CREATE","platform":"copilot","project":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx","resume":false,"state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.277Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.280Z","level":"warn","message":"orchestrator_sprint_gate","verdict":"NOT_READY","sprintId":"SP-1","blockers":6}
+{"timestamp":"2026-03-13T10:37:58.282Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.282Z","level":"warn","message":"orchestrator_sprint_gate","verdict":"NOT_READY","sprintId":"SP-3","blockers":6}
+{"timestamp":"2026-03-13T10:37:58.283Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.299Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+{"timestamp":"2026-03-13T10:37:58.301Z","level":"info","message":"orchestrator_engine_initialized","state":"IDLE","mode":"CREATE"}
+ [32mΓ£ô[39m src/webapp/routes/orchestrator.test.js [2m([22m[2m35 tests[22m[2m)[22m[32m 234[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m1 passed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[32m35 passed[39m[22m[90m (35)[39m
+[2m   Start at [22m 11:37:57
+[2m   Duration [22m 672ms[2m (transform 26ms, setup 0ms, import 70ms, tests 234ms, environment 0ms)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   16.64 |    14.13 |   15.51 |    17.7 |                   
+ webapp            |       4 |     1.93 |    5.12 |    4.41 |                   
+  audit.js         |       0 |        0 |       0 |       0 | 5-124             
+  cache.js         |       0 |        0 |       0 |       0 | 5-86              
+  ...t-detector.js |       0 |        0 |       0 |       0 | 18-389            
+  file-lock.js     |       0 |        0 |       0 |       0 | 3-32              
+  ...tend-utils.js |       0 |        0 |       0 |       0 | 18-204            
+  mcp-server.js    |       0 |        0 |       0 |       0 | 14-833            
+  middleware.js    |   35.71 |    16.66 |      40 |    40.2 | ...69-200,223-305 
+  models.js        |       0 |        0 |       0 |       0 | 5-802             
+  schemas.js       |       0 |        0 |       0 |       0 | 11-389            
+  server.js        |       0 |        0 |       0 |       0 | 7-608             
+  ...e-resolver.js |       0 |        0 |       0 |       0 | 3-53              
+  store.js         |   26.31 |    19.04 |   21.42 |   29.41 | 79-90,98-228,249  
+  strings.js       |       0 |      100 |       0 |       0 | 12-42             
+ ...p/orchestrator |    54.5 |    47.38 |   57.66 |   55.97 |                   
+  agent-schema.js  |       0 |        0 |       0 |       0 | 3-44              
+  cli.js           |       0 |        0 |       0 |       0 | 34-292            
+  dispatcher.js    |       0 |        0 |       0 |       0 | 20-338            
+  engine.js        |      95 |       68 |   94.44 |   96.55 | 232,268           
+  flow-loader.js   |   82.02 |    77.61 |      75 |   82.71 | ...55,163,170,173 
+  ...-validator.js |   35.93 |    28.08 |   34.48 |   37.64 | ...57,471,522-587 
+  sprint-gate.js   |   77.57 |    63.63 |   83.33 |    79.8 | ...62-563,598,606 
+  state-machine.js |   72.65 |    58.82 |   72.41 |   74.38 | ...64,373,443-478 
+  ...ersistence.js |   83.05 |       70 |     100 |   88.88 | ...,56,82,148,171 
+ webapp/routes     |    6.71 |     4.85 |    4.96 |    7.39 |                   
+  commands.js      |       0 |        0 |       0 |       0 | 11-179            
+  dashboard.js     |       0 |        0 |       0 |       0 | 20-353            
+  decisions.js     |       0 |        0 |       0 |       0 | 11-389            
+  drift.js         |       0 |        0 |       0 |       0 | 14-116            
+  ...-dashboard.js |       0 |        0 |       0 |       0 | 13-479            
+  milestones.js    |       0 |        0 |       0 |       0 | 19-691            
+  misc.js          |       0 |        0 |       0 |       0 | 12-404            
+  orchestrator.js  |   85.45 |    93.87 |     100 |   85.18 | ...54-255,281-282 
+  progress.js      |       0 |        0 |       0 |       0 | 11-237            
+  ...tionnaires.js |       0 |        0 |       0 |       0 | 11-194            
+  subscribe.js     |       0 |        0 |       0 |       0 | 12-182            
+ webapp/utils      |   33.33 |     37.5 |      25 |   38.46 |                   
+  errors.js        |   83.33 |       60 |      50 |   83.33 | 103               
+  secret-utils.js  |       0 |        0 |       0 |       0 | 14-38             
+-------------------|---------|----------|---------|---------|-------------------
+
+=============================== Coverage summary ===============================
+Statements   : 16.64% ( 683/4103 )
+Branches     : 14.13% ( 351/2484 )
+Functions    : 15.51% ( 108/696 )
+Lines        : 17.7% ( 653/3689 )
+================================================================================
+ERROR: Coverage for lines (17.7%) does not meet global threshold (80%)
+ERROR: Coverage for functions (15.51%) does not meet global threshold (80%)
+ERROR: Coverage for statements (16.64%) does not meet global threshold (80%)
+ERROR: Coverage for branches (14.13%) does not meet global threshold (80%)

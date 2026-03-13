@@ -1,0 +1,344 @@
+{
+  "schemaVersion": "1.0.0",
+  "source": "platform/schema/agent-canonical.schema.json#toolCatalog",
+  "generatedAt": "2026-03-13T10:00:00.000Z",
+  "tools": [
+    {
+      "id": "tool.files.read",
+      "description": "Read repository files with optional line ranges",
+      "category": "file-system",
+      "capabilities": { "readOnly": true, "supportsBackground": false, "supportsTimeout": true },
+      "parameters": [
+        {
+          "name": "filePath",
+          "type": "string",
+          "required": true,
+          "description": "Absolute path to file"
+        },
+        {
+          "name": "startLine",
+          "type": "number",
+          "required": false,
+          "description": "Start line (1-based)"
+        },
+        {
+          "name": "endLine",
+          "type": "number",
+          "required": false,
+          "description": "End line (1-based, inclusive)"
+        }
+      ],
+      "returnType": "string",
+      "sideEffects": [],
+      "platformBindings": {
+        "copilot": { "nativeName": "read_file" },
+        "claude": { "nativeName": "Read", "notes": "Uses View tool in Claude Code" },
+        "openai": { "nativeName": "read_file", "notes": "Codex sandbox file read" }
+      }
+    },
+    {
+      "id": "tool.files.write",
+      "description": "Write or update repository files",
+      "category": "file-system",
+      "capabilities": { "readOnly": false, "supportsBackground": false, "supportsTimeout": false },
+      "parameters": [
+        {
+          "name": "filePath",
+          "type": "string",
+          "required": true,
+          "description": "Absolute path to file"
+        },
+        { "name": "content", "type": "string", "required": true, "description": "Content to write" }
+      ],
+      "returnType": "void",
+      "sideEffects": ["filesystem.write"],
+      "platformBindings": {
+        "copilot": { "nativeName": "create_file" },
+        "claude": { "nativeName": "Write", "notes": "Uses Write tool in Claude Code" },
+        "openai": { "nativeName": "create_file", "notes": "Codex sandbox file write" }
+      }
+    },
+    {
+      "id": "tool.context.search",
+      "description": "Search repository context, symbols, and code patterns",
+      "category": "context",
+      "capabilities": { "readOnly": true, "supportsBackground": false, "supportsTimeout": true },
+      "parameters": [
+        {
+          "name": "query",
+          "type": "string",
+          "required": true,
+          "description": "Search query or regex pattern"
+        },
+        {
+          "name": "includePattern",
+          "type": "string",
+          "required": false,
+          "description": "File glob filter"
+        }
+      ],
+      "returnType": "array",
+      "sideEffects": [],
+      "platformBindings": {
+        "copilot": { "nativeName": "grep_search" },
+        "claude": { "nativeName": "Grep", "notes": "Uses Grep tool in Claude Code" },
+        "openai": { "nativeName": "grep_search" }
+      }
+    },
+    {
+      "id": "tool.validation.contract",
+      "description": "Validate outputs against output contracts defined in docs/contracts/",
+      "category": "validation",
+      "capabilities": { "readOnly": true, "supportsBackground": false, "supportsTimeout": false },
+      "parameters": [
+        {
+          "name": "contractPath",
+          "type": "string",
+          "required": true,
+          "description": "Path to contract file"
+        },
+        {
+          "name": "outputPath",
+          "type": "string",
+          "required": true,
+          "description": "Path to output to validate"
+        }
+      ],
+      "returnType": "object",
+      "sideEffects": [],
+      "platformBindings": {
+        "copilot": { "nativeName": "read_file", "notes": "Manual validation via file comparison" },
+        "claude": { "nativeName": "Read", "notes": "Manual validation via file comparison" },
+        "openai": { "nativeName": "read_file", "notes": "Manual validation via file comparison" }
+      }
+    },
+    {
+      "id": "tool.session.state",
+      "description": "Read and update session-state.json for orchestrator state tracking",
+      "category": "session",
+      "capabilities": { "readOnly": false, "supportsBackground": false, "supportsTimeout": false },
+      "parameters": [
+        { "name": "action", "type": "string", "required": true, "description": "read or update" },
+        {
+          "name": "patch",
+          "type": "object",
+          "required": false,
+          "description": "Partial state to merge (update only)"
+        }
+      ],
+      "returnType": "object",
+      "sideEffects": ["filesystem.write"],
+      "platformBindings": {
+        "copilot": { "nativeName": "create_file", "notes": "Read then write session-state.json" },
+        "claude": { "nativeName": "Write", "notes": "Read then write session-state.json" },
+        "openai": { "nativeName": "create_file", "notes": "Read then write session-state.json" }
+      }
+    },
+    {
+      "id": "tool.github.issue",
+      "description": "Create, update, or close GitHub issues",
+      "category": "github",
+      "capabilities": { "readOnly": false, "supportsBackground": false, "supportsTimeout": true },
+      "parameters": [
+        {
+          "name": "action",
+          "type": "string",
+          "required": true,
+          "description": "create, update, close, or list"
+        },
+        {
+          "name": "issueNumber",
+          "type": "number",
+          "required": false,
+          "description": "Issue number (update/close)"
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "description": "Issue title (create/update)"
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "required": false,
+          "description": "Issue body (create/update)"
+        },
+        { "name": "labels", "type": "array", "required": false, "description": "Labels to apply" }
+      ],
+      "returnType": "object",
+      "sideEffects": ["github.issue"],
+      "platformBindings": {
+        "copilot": { "nativeName": "mcp_github_create_issue", "notes": "Via GitHub MCP server" },
+        "claude": { "nativeName": "gh", "notes": "Via gh CLI in Claude Code" },
+        "openai": { "nativeName": "shell", "notes": "Via gh CLI in Codex sandbox" }
+      }
+    },
+    {
+      "id": "tool.queue.command",
+      "description": "Manage command queue and project status tracking",
+      "category": "orchestration",
+      "capabilities": { "readOnly": false, "supportsBackground": false, "supportsTimeout": false },
+      "parameters": [
+        {
+          "name": "action",
+          "type": "string",
+          "required": true,
+          "description": "enqueue, dequeue, or status"
+        },
+        {
+          "name": "command",
+          "type": "string",
+          "required": false,
+          "description": "Command to enqueue"
+        }
+      ],
+      "returnType": "object",
+      "sideEffects": ["filesystem.write"],
+      "platformBindings": {
+        "copilot": {
+          "nativeName": "mcp_agentic-it-pr_queue_command",
+          "notes": "Via project MCP server"
+        },
+        "claude": { "nativeName": "Write", "notes": "Direct file manipulation" },
+        "openai": { "nativeName": "create_file", "notes": "Direct file manipulation" }
+      }
+    },
+    {
+      "id": "tool.risk.assess",
+      "description": "Execute structured risk assessment workflow",
+      "category": "validation",
+      "capabilities": { "readOnly": true, "supportsBackground": false, "supportsTimeout": false },
+      "parameters": [
+        {
+          "name": "phaseOutput",
+          "type": "string",
+          "required": true,
+          "description": "Path to phase output to assess"
+        }
+      ],
+      "returnType": "object",
+      "sideEffects": [],
+      "platformBindings": {
+        "copilot": {
+          "nativeName": "read_file",
+          "notes": "Agent-driven assessment using file reads"
+        },
+        "claude": { "nativeName": "Read", "notes": "Agent-driven assessment using file reads" },
+        "openai": { "nativeName": "read_file", "notes": "Agent-driven assessment using file reads" }
+      }
+    },
+    {
+      "id": "tool.questionnaire.manage",
+      "description": "Generate and update questionnaires and customer answers",
+      "category": "orchestration",
+      "capabilities": { "readOnly": false, "supportsBackground": false, "supportsTimeout": false },
+      "parameters": [
+        {
+          "name": "action",
+          "type": "string",
+          "required": true,
+          "description": "generate, update, or list"
+        },
+        {
+          "name": "phase",
+          "type": "string",
+          "required": false,
+          "description": "Phase scope for questionnaire"
+        }
+      ],
+      "returnType": "object",
+      "sideEffects": ["filesystem.write"],
+      "platformBindings": {
+        "copilot": {
+          "nativeName": "create_file",
+          "notes": "Writes Markdown questionnaires to BusinessDocs/"
+        },
+        "claude": {
+          "nativeName": "Write",
+          "notes": "Writes Markdown questionnaires to BusinessDocs/"
+        },
+        "openai": {
+          "nativeName": "create_file",
+          "notes": "Writes Markdown questionnaires to BusinessDocs/"
+        }
+      }
+    },
+    {
+      "id": "tool.synthesis.compose",
+      "description": "Aggregate phase outputs into synthesis reports",
+      "category": "synthesis",
+      "capabilities": { "readOnly": false, "supportsBackground": false, "supportsTimeout": false },
+      "parameters": [
+        {
+          "name": "phases",
+          "type": "array",
+          "required": true,
+          "description": "Phase IDs to synthesize"
+        },
+        {
+          "name": "outputDir",
+          "type": "string",
+          "required": true,
+          "description": "Output directory for reports"
+        }
+      ],
+      "returnType": "object",
+      "sideEffects": ["filesystem.write"],
+      "platformBindings": {
+        "copilot": { "nativeName": "create_file", "notes": "Generates docs/synthesis/ reports" },
+        "claude": { "nativeName": "Write", "notes": "Generates docs/synthesis/ reports" },
+        "openai": { "nativeName": "create_file", "notes": "Generates docs/synthesis/ reports" }
+      }
+    },
+    {
+      "id": "tool.git.commit",
+      "description": "Commit source changes and documentation updates",
+      "category": "file-system",
+      "capabilities": { "readOnly": false, "supportsBackground": false, "supportsTimeout": true },
+      "parameters": [
+        { "name": "message", "type": "string", "required": true, "description": "Commit message" },
+        {
+          "name": "files",
+          "type": "array",
+          "required": false,
+          "description": "Specific files to stage (default: all)"
+        }
+      ],
+      "returnType": "string",
+      "sideEffects": ["git.commit"],
+      "platformBindings": {
+        "copilot": { "nativeName": "run_in_terminal", "notes": "Executes git add + git commit" },
+        "claude": { "nativeName": "Bash", "notes": "Executes git add + git commit" },
+        "openai": { "nativeName": "shell", "notes": "Executes git add + git commit in sandbox" }
+      }
+    },
+    {
+      "id": "tool.test.run",
+      "description": "Run automated tests and collect results",
+      "category": "testing",
+      "capabilities": { "readOnly": true, "supportsBackground": true, "supportsTimeout": true },
+      "parameters": [
+        {
+          "name": "pattern",
+          "type": "string",
+          "required": false,
+          "description": "Test file pattern or name"
+        },
+        {
+          "name": "coverage",
+          "type": "boolean",
+          "required": false,
+          "description": "Enable coverage reporting"
+        }
+      ],
+      "returnType": "object",
+      "sideEffects": [],
+      "platformBindings": {
+        "copilot": { "nativeName": "run_in_terminal", "notes": "Executes npm test or vitest" },
+        "claude": { "nativeName": "Bash", "notes": "Executes npm test or vitest" },
+        "openai": { "nativeName": "shell", "notes": "Executes npm test in Codex sandbox" }
+      }
+    }
+  ]
+}

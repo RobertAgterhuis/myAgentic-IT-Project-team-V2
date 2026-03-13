@@ -1,0 +1,62 @@
+name: Schema Validation & Transpiler
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "platform/schema/**"
+      - "agents/**"
+      - "scripts/generate-platform.js"
+  push:
+    branches: [main]
+    paths:
+      - "platform/schema/**"
+      - "agents/**"
+      - "scripts/generate-platform.js"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-and-generate:
+    name: Schema Validation + Drift Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate canonical schemas
+        run: |
+          npx vitest run tests/unit/agent-schema.test.js tests/unit/flow-schema.test.js tests/unit/tool-schema.test.js
+
+      - name: Run transpiler for all targets
+        run: node scripts/generate-platform.js all
+
+      - name: Check for drift (generated vs committed)
+        run: |
+          if [ -d "platform/generated" ]; then
+            # If generated/ is committed, check for drift
+            if git diff --quiet -- platform/generated/; then
+              echo "✓ No drift detected between canonical schemas and generated output"
+            else
+              echo "✗ Drift detected! Generated output differs from committed files."
+              echo "Run 'node scripts/generate-platform.js all' locally and commit the result."
+              git diff -- platform/generated/
+              exit 1
+            fi
+          else
+            echo "✓ Generated directory not committed (first run or gitignored)"
+          fi
+
+      - name: Run transpiler tests
+        run: npx vitest run tests/unit/transpiler.test.js

@@ -12,19 +12,35 @@ function fakeRes() {
   let _status, _body;
   const _headers = {};
   return {
-    setHeader(k, v) { _headers[k] = v; },
-    writeHead(s, h) { _status = s; if (h) Object.assign(_headers, h); },
-    end(data) { _body = data; },
-    get status() { return _status; },
-    get json() { return JSON.parse(_body); },
-    get headers() { return _headers; },
+    setHeader(k, v) {
+      _headers[k] = v;
+    },
+    writeHead(s, h) {
+      _status = s;
+      if (h) Object.assign(_headers, h);
+    },
+    end(data) {
+      _body = data;
+    },
+    get status() {
+      return _status;
+    },
+    get json() {
+      return JSON.parse(_body);
+    },
+    get headers() {
+      return _headers;
+    },
   };
 }
 
 let _tmpDirs = [];
 
 function makeTmpProject(sessionState, extras = {}) {
-  const tmpDir = path.join(os.tmpdir(), `drift-test-${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const tmpDir = path.join(
+    os.tmpdir(),
+    `drift-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
+  );
   _tmpDirs.push(tmpDir);
   const sessionDir = path.join(tmpDir, 'docs', 'session');
   mkdirSync(sessionDir, { recursive: true });
@@ -42,9 +58,10 @@ function makeTmpProject(sessionState, extras = {}) {
 
   if (extras.syncReports) {
     for (const [sprintId, report] of Object.entries(extras.syncReports)) {
-      const dir = report.dir === 'phase-5'
-        ? path.join(tmpDir, 'docs', 'phase-5', `sprint-${sprintId}`)
-        : path.join(tmpDir, 'docs', 'sprints', sprintId);
+      const dir =
+        report.dir === 'phase-5'
+          ? path.join(tmpDir, 'docs', 'phase-5', `sprint-${sprintId}`)
+          : path.join(tmpDir, 'docs', 'sprints', sprintId);
       mkdirSync(dir, { recursive: true });
       writeFileSync(path.join(dir, 'github-sync-report.md'), report.content);
     }
@@ -63,7 +80,8 @@ function makeTmpProject(sessionState, extras = {}) {
 function makeCtx(overrides = {}) {
   return {
     SESSION_FILE: '/nonexistent/docs/session/session-state.json',
-    resolveSessionFile: overrides.resolveSessionFile || (() => '/nonexistent/docs/session/session-state.json'),
+    resolveSessionFile:
+      overrides.resolveSessionFile || (() => '/nonexistent/docs/session/session-state.json'),
     PROJECT_ROOT: '/nonexistent',
     ...overrides,
   };
@@ -81,7 +99,11 @@ describe('drift routes', () => {
 
   afterEach(() => {
     for (const d of _tmpDirs) {
-      try { rmSync(d, { recursive: true, force: true }); } catch { /* ignore */ }
+      try {
+        rmSync(d, { recursive: true, force: true });
+      } catch {
+        /* ignore */
+      }
     }
     _tmpDirs = [];
   });
@@ -143,7 +165,7 @@ describe('drift routes', () => {
 
     expect(res.status).toBe(200);
     const body = res.json;
-    const missingSyncDrift = body.drifts.find(d => d.type === 'MISSING_SYNC_REPORT');
+    const missingSyncDrift = body.drifts.find((d) => d.type === 'MISSING_SYNC_REPORT');
     expect(missingSyncDrift).toBeDefined();
   });
 
@@ -224,6 +246,93 @@ describe('drift routes', () => {
     const sessionState = { mode: 'AUDIT' };
     const { ctx } = makeTmpProject(sessionState);
 
+    routes = createDriftRoutes(ctx);
+    handler = routes['GET /api/drift'];
+    const res = fakeRes();
+    handler({}, res);
+    expect(res.status).toBe(200);
+  });
+
+  it('returns no-session when resolveSessionFile returns null', () => {
+    const ctx = makeCtx({ resolveSessionFile: () => null });
+    routes = createDriftRoutes(ctx);
+    handler = routes['GET /api/drift'];
+    const res = fakeRes();
+    handler({}, res);
+    expect(res.status).toBe(200);
+    expect(res.json.error).toBe('No session state found');
+  });
+
+  it('returns no-session when resolveSessionFile returns empty string', () => {
+    const ctx = makeCtx({ resolveSessionFile: () => '' });
+    routes = createDriftRoutes(ctx);
+    handler = routes['GET /api/drift'];
+    const res = fakeRes();
+    handler({}, res);
+    expect(res.status).toBe(200);
+    expect(res.json.error).toBe('No session state found');
+  });
+
+  it('handles session with sprint_backlog but no path', () => {
+    const sessionState = {
+      sprint_backlog: {
+        sprint_statuses: { 'SP-1': 'COMPLETE' },
+      },
+    };
+    const { ctx } = makeTmpProject(sessionState);
+    routes = createDriftRoutes(ctx);
+    handler = routes['GET /api/drift'];
+    const res = fakeRes();
+    handler({}, res);
+    expect(res.status).toBe(200);
+    expect(res.json.error).toBeUndefined();
+  });
+
+  it('handles sprint_backlog.path pointing to nonexistent file', () => {
+    const sessionState = {
+      sprint_backlog: {
+        path: 'docs/no-such-plan.md',
+        sprint_statuses: {},
+      },
+    };
+    const { ctx } = makeTmpProject(sessionState);
+    routes = createDriftRoutes(ctx);
+    handler = routes['GET /api/drift'];
+    const res = fakeRes();
+    handler({}, res);
+    expect(res.status).toBe(200);
+  });
+
+  it('handles sync report only in phase-5 dir (not sprints dir)', () => {
+    const sessionState = {
+      sprint_backlog: {
+        sprint_statuses: { 'SP-3': 'COMPLETE' },
+      },
+    };
+    const { ctx } = makeTmpProject(sessionState, {
+      syncReports: {
+        'SP-3': { dir: 'phase-5', content: '# SP-3 phase-5 report' },
+      },
+    });
+    routes = createDriftRoutes(ctx);
+    handler = routes['GET /api/drift'];
+    const res = fakeRes();
+    handler({}, res);
+    expect(res.status).toBe(200);
+    // SP-3 should have a report found
+    const missing = res.json.drifts.find(
+      (d) => d.type === 'MISSING_SYNC_REPORT' && d.sprint === 'SP-3'
+    );
+    expect(missing).toBeUndefined();
+  });
+
+  it('handles sprint with neither sprints nor phase-5 report', () => {
+    const sessionState = {
+      sprint_backlog: {
+        sprint_statuses: { 'SP-99': 'IN_PROGRESS' },
+      },
+    };
+    const { ctx } = makeTmpProject(sessionState);
     routes = createDriftRoutes(ctx);
     handler = routes['GET /api/drift'];
     const res = fakeRes();

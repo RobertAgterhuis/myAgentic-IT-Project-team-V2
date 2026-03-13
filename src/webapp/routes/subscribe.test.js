@@ -8,11 +8,20 @@ import createSubscribeRoutes from './subscribe.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOCAL_SUBS_FILE = path.resolve(
-  __dirname, '..', '..', '..', 'BusinessDocs', 'local-subscriptions.json'
+  __dirname,
+  '..',
+  '..',
+  '..',
+  'BusinessDocs',
+  'local-subscriptions.json'
 );
 
 function cleanupSubsFile() {
-  try { unlinkSync(LOCAL_SUBS_FILE); } catch { /* ignore */ }
+  try {
+    unlinkSync(LOCAL_SUBS_FILE);
+  } catch {
+    /* ignore */
+  }
 }
 
 /* ── Helpers ────────────────────────────────────────────────────── */
@@ -21,12 +30,25 @@ function fakeRes() {
   let _status, _body;
   const _headers = {};
   return {
-    setHeader(k, v) { _headers[k] = v; },
-    writeHead(s, h) { _status = s; if (h) Object.assign(_headers, h); },
-    end(data) { _body = data; },
-    get status() { return _status; },
-    get json() { return JSON.parse(_body); },
-    get headers() { return _headers; },
+    setHeader(k, v) {
+      _headers[k] = v;
+    },
+    writeHead(s, h) {
+      _status = s;
+      if (h) Object.assign(_headers, h);
+    },
+    end(data) {
+      _body = data;
+    },
+    get status() {
+      return _status;
+    },
+    get json() {
+      return JSON.parse(_body);
+    },
+    get headers() {
+      return _headers;
+    },
   };
 }
 
@@ -84,10 +106,13 @@ describe('subscribe routes', () => {
 
   it('rejects invalid segment', async () => {
     const res = fakeRes();
-    await handler(fakeReq({
-      email: 'user@example.com',
-      metadata: { segment: 'invalid-segment' },
-    }), res);
+    await handler(
+      fakeReq({
+        email: 'user@example.com',
+        metadata: { segment: 'invalid-segment' },
+      }),
+      res
+    );
     expect(res.status).toBe(400);
     expect(res.json.message).toContain('Segment must be one of');
   });
@@ -96,10 +121,13 @@ describe('subscribe routes', () => {
     for (const segment of ['engineering-leaders', 'product-managers', 'developers', 'evaluators']) {
       cleanupSubsFile();
       const res = fakeRes();
-      await handler(fakeReq({
-        email: 'user@example.com',
-        metadata: { segment },
-      }), res);
+      await handler(
+        fakeReq({
+          email: 'user@example.com',
+          metadata: { segment },
+        }),
+        res
+      );
       expect(res.status).toBe(201);
     }
   });
@@ -129,10 +157,13 @@ describe('subscribe routes', () => {
 
   it('stores locally when no API key is configured', async () => {
     const res = fakeRes();
-    await handler(fakeReq({
-      email: 'test@example.com',
-      metadata: { segment: 'developers', source: 'landing' },
-    }), res);
+    await handler(
+      fakeReq({
+        email: 'test@example.com',
+        metadata: { segment: 'developers', source: 'landing' },
+      }),
+      res
+    );
 
     expect(res.status).toBe(201);
     expect(res.json.status).toBe('stored_locally');
@@ -140,15 +171,19 @@ describe('subscribe routes', () => {
   });
 
   it('returns 409 for duplicate local subscription', async () => {
-    writeFileSync(LOCAL_SUBS_FILE, JSON.stringify([
-      { email: 'dupe@example.com', segment: 'developers', source: 'landing' },
-    ]));
+    writeFileSync(
+      LOCAL_SUBS_FILE,
+      JSON.stringify([{ email: 'dupe@example.com', segment: 'developers', source: 'landing' }])
+    );
 
     const res = fakeRes();
-    await handler(fakeReq({
-      email: 'dupe@example.com',
-      metadata: { segment: 'developers' },
-    }), res);
+    await handler(
+      fakeReq({
+        email: 'dupe@example.com',
+        metadata: { segment: 'developers' },
+      }),
+      res
+    );
 
     expect(res.status).toBe(409);
     expect(res.json.error).toBe('already_subscribed');
@@ -157,10 +192,13 @@ describe('subscribe routes', () => {
   it('returns 201 even when existing subscriptions file is corrupt', async () => {
     writeFileSync(LOCAL_SUBS_FILE, 'not-json');
     const res = fakeRes();
-    await handler(fakeReq({
-      email: 'test@example.com',
-      metadata: { segment: 'developers' },
-    }), res);
+    await handler(
+      fakeReq({
+        email: 'test@example.com',
+        metadata: { segment: 'developers' },
+      }),
+      res
+    );
     expect(res.status).toBe(201);
     expect(res.json.status).toBe('stored_locally');
   });
@@ -173,10 +211,13 @@ describe('subscribe routes', () => {
     globalThis.fetch = mockFetch;
 
     const res = fakeRes();
-    await handler(fakeReq({
-      email: 'upstream@example.com',
-      metadata: { segment: 'developers' },
-    }), res);
+    await handler(
+      fakeReq({
+        email: 'upstream@example.com',
+        metadata: { segment: 'developers' },
+      }),
+      res
+    );
 
     expect(res.status).toBe(201);
     expect(res.json.status).toBe('pending_confirmation');
@@ -198,10 +239,13 @@ describe('subscribe routes', () => {
     globalThis.fetch = vi.fn().mockResolvedValue({ status: 409 });
 
     const res = fakeRes();
-    await handler(fakeReq({
-      email: 'dupe@example.com',
-      metadata: { segment: 'developers' },
-    }), res);
+    await handler(
+      fakeReq({
+        email: 'dupe@example.com',
+        metadata: { segment: 'developers' },
+      }),
+      res
+    );
 
     expect(res.status).toBe(409);
     expect(res.json.error).toBe('already_subscribed');
@@ -217,10 +261,13 @@ describe('subscribe routes', () => {
     });
 
     const res = fakeRes();
-    await handler(fakeReq({
-      email: 'user@example.com',
-      metadata: { segment: 'developers' },
-    }), res);
+    await handler(
+      fakeReq({
+        email: 'user@example.com',
+        metadata: { segment: 'developers' },
+      }),
+      res
+    );
 
     expect(res.status).toBe(502);
 
@@ -232,10 +279,13 @@ describe('subscribe routes', () => {
     globalThis.fetch = vi.fn().mockRejectedValue(new Error('network error'));
 
     const res = fakeRes();
-    await handler(fakeReq({
-      email: 'user@example.com',
-      metadata: { segment: 'developers' },
-    }), res);
+    await handler(
+      fakeReq({
+        email: 'user@example.com',
+        metadata: { segment: 'developers' },
+      }),
+      res
+    );
 
     expect(res.status).toBe(502);
 
@@ -255,12 +305,80 @@ describe('subscribe routes', () => {
   it('truncates overly long source to 100 chars', async () => {
     const longSource = 'x'.repeat(200);
     const res = fakeRes();
-    await handler(fakeReq({
-      email: 'test@example.com',
-      metadata: { segment: 'developers', source: longSource },
-    }), res);
+    await handler(
+      fakeReq({
+        email: 'test@example.com',
+        metadata: { segment: 'developers', source: longSource },
+      }),
+      res
+    );
     expect(res.status).toBe(201);
     const written = JSON.parse(readFileSync(LOCAL_SUBS_FILE, 'utf-8'));
     expect(written[0].source.length).toBe(100);
+  });
+
+  it('uses fallback when metadata segment is non-string', async () => {
+    const res = fakeRes();
+    await handler(fakeReq({ email: 'test@example.com', metadata: { segment: 123 } }), res);
+    expect(res.status).toBe(201);
+    const written = JSON.parse(readFileSync(LOCAL_SUBS_FILE, 'utf-8'));
+    expect(written[0].segment).toBe('evaluators');
+  });
+
+  it('uses fallback when metadata source is non-string', async () => {
+    const res = fakeRes();
+    await handler(fakeReq({ email: 'test@example.com', metadata: { source: true } }), res);
+    expect(res.status).toBe(201);
+    const written = JSON.parse(readFileSync(LOCAL_SUBS_FILE, 'utf-8'));
+    expect(written[0].source).toBe('direct');
+  });
+
+  it('uses fallback when metadata is null', async () => {
+    const res = fakeRes();
+    await handler(fakeReq({ email: 'test@example.com', metadata: null }), res);
+    expect(res.status).toBe(201);
+    const written = JSON.parse(readFileSync(LOCAL_SUBS_FILE, 'utf-8'));
+    expect(written[0].segment).toBe('evaluators');
+    expect(written[0].source).toBe('direct');
+  });
+
+  it('returns 413 for payload exceeding 1 MB', async () => {
+    // middleware.js MAX_BODY = 1_048_576 bytes
+    const bigBody = Buffer.alloc(1_048_577, 0x41); // 1 byte over limit
+    const req = {
+      headers: { 'content-type': 'application/json', host: 'localhost:3000' },
+      destroy() {},
+      on(event, cb) {
+        if (event === 'data') cb(bigBody);
+        if (event === 'end') cb();
+        if (event === 'error') {
+          /* store for potential use */
+        }
+      },
+    };
+    const res = fakeRes();
+    await handler(req, res);
+    expect(res.status).toBe(413);
+    expect(res.json.code).toBe('PAYLOAD_TOO_LARGE');
+  });
+
+  it('handles upstream text() rejection gracefully', async () => {
+    process.env.BUTTONDOWN_API_KEY = 'test-key-abc';
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      status: 500,
+      text: () => Promise.reject(new Error('text failed')),
+    });
+
+    const res = fakeRes();
+    await handler(
+      fakeReq({
+        email: 'user@example.com',
+        metadata: { segment: 'developers' },
+      }),
+      res
+    );
+
+    expect(res.status).toBe(502);
+    delete globalThis.fetch;
   });
 });

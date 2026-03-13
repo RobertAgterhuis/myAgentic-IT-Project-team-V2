@@ -11,11 +11,22 @@ function fakeRes() {
   let _status, _body;
   const _headers = {};
   return {
-    setHeader(k, v) { _headers[k] = v; },
-    writeHead(s, h) { _status = s; if (h) Object.assign(_headers, h); },
-    end(data) { _body = data; },
-    get status() { return _status; },
-    get json() { return JSON.parse(_body); },
+    setHeader(k, v) {
+      _headers[k] = v;
+    },
+    writeHead(s, h) {
+      _status = s;
+      if (h) Object.assign(_headers, h);
+    },
+    end(data) {
+      _body = data;
+    },
+    get status() {
+      return _status;
+    },
+    get json() {
+      return JSON.parse(_body);
+    },
   };
 }
 
@@ -33,7 +44,7 @@ function makeCtx(overrides = {}) {
       startedAt: Date.now(),
     },
     _audit: {
-      read: (limit) => overrides.auditEntries || [],
+      read: (_limit) => overrides.auditEntries || [],
     },
     _cache: {},
     ...overrides,
@@ -126,18 +137,22 @@ describe('dashboard routes', () => {
     });
 
     it('uses default response time when array is empty', async () => {
-      routes = createDashboardRoutes(makeCtx({
-        _metrics: { requestCount: 0, errorCount: 0, responseTimes: [], startedAt: Date.now() },
-      }));
+      routes = createDashboardRoutes(
+        makeCtx({
+          _metrics: { requestCount: 0, errorCount: 0, responseTimes: [], startedAt: Date.now() },
+        })
+      );
       const res = fakeRes();
       await routes['GET /api/dashboard/metrics'](fakeReq(), res);
       expect(res.json.data.response_time.value).toBe('142');
     });
 
     it('marks response time as warning when >= 200ms', async () => {
-      routes = createDashboardRoutes(makeCtx({
-        _metrics: { requestCount: 1, errorCount: 0, responseTimes: [300], startedAt: Date.now() },
-      }));
+      routes = createDashboardRoutes(
+        makeCtx({
+          _metrics: { requestCount: 1, errorCount: 0, responseTimes: [300], startedAt: Date.now() },
+        })
+      );
       const res = fakeRes();
       await routes['GET /api/dashboard/metrics'](fakeReq(), res);
       expect(res.json.data.response_time.status).toBe('warning');
@@ -159,8 +174,22 @@ describe('dashboard routes', () => {
 
     it('maps audit entries to activity items', async () => {
       const auditEntries = [
-        { operation: 'create', entity_type: 'milestone', user: 'alice', summary: 'Added M1', entity_id: 'm1', timestamp: '2026-01-01T00:00:00Z' },
-        { operation: 'update', entity_type: 'questionnaire', user: 'bob', summary: 'Updated Q1', entity_id: 'q1', timestamp: '2026-01-02T00:00:00Z' },
+        {
+          operation: 'create',
+          entity_type: 'milestone',
+          user: 'alice',
+          summary: 'Added M1',
+          entity_id: 'm1',
+          timestamp: '2026-01-01T00:00:00Z',
+        },
+        {
+          operation: 'update',
+          entity_type: 'questionnaire',
+          user: 'bob',
+          summary: 'Updated Q1',
+          entity_id: 'q1',
+          timestamp: '2026-01-02T00:00:00Z',
+        },
       ];
       routes = createDashboardRoutes(makeCtx({ auditEntries }));
       const res = fakeRes();
@@ -176,8 +205,20 @@ describe('dashboard routes', () => {
 
     it('normalizes system/webapp users to null', async () => {
       const auditEntries = [
-        { operation: 'create', entity_type: 'milestone', user: 'system', summary: 'auto', timestamp: '2026-01-01T00:00:00Z' },
-        { operation: 'create', entity_type: 'milestone', user: 'webapp', summary: 'auto', timestamp: '2026-01-01T01:00:00Z' },
+        {
+          operation: 'create',
+          entity_type: 'milestone',
+          user: 'system',
+          summary: 'auto',
+          timestamp: '2026-01-01T00:00:00Z',
+        },
+        {
+          operation: 'create',
+          entity_type: 'milestone',
+          user: 'webapp',
+          summary: 'auto',
+          timestamp: '2026-01-01T01:00:00Z',
+        },
       ];
       routes = createDashboardRoutes(makeCtx({ auditEntries }));
       const res = fakeRes();
@@ -189,7 +230,13 @@ describe('dashboard routes', () => {
 
     it('maps delete operations to deployment type', async () => {
       const auditEntries = [
-        { operation: 'delete', entity_type: 'template', user: 'alice', summary: 'Removed T1', timestamp: '2026-01-01T00:00:00Z' },
+        {
+          operation: 'delete',
+          entity_type: 'template',
+          user: 'alice',
+          summary: 'Removed T1',
+          timestamp: '2026-01-01T00:00:00Z',
+        },
       ];
       routes = createDashboardRoutes(makeCtx({ auditEntries }));
       const res = fakeRes();
@@ -199,8 +246,11 @@ describe('dashboard routes', () => {
 
     it('limits activity to 12 items', async () => {
       const auditEntries = Array.from({ length: 20 }, (_, i) => ({
-        operation: 'update', entity_type: 'milestone', user: `user${i}`,
-        summary: `Change ${i}`, timestamp: `2026-01-${String(i + 1).padStart(2, '0')}T00:00:00Z`,
+        operation: 'update',
+        entity_type: 'milestone',
+        user: `user${i}`,
+        summary: `Change ${i}`,
+        timestamp: `2026-01-${String(i + 1).padStart(2, '0')}T00:00:00Z`,
       }));
       routes = createDashboardRoutes(makeCtx({ auditEntries }));
       const res = fakeRes();
@@ -304,6 +354,145 @@ describe('dashboard routes', () => {
       expect(res.status).toBe(200);
       expect(res.json.data.sprint_progress.value).toBe('0%');
       rmSync(tmpDir, { recursive: true, force: true });
+    });
+
+    it('handles milestones with null/undefined status', async () => {
+      const tmpDir = path.join(os.tmpdir(), `dashboard-test-${Date.now()}`);
+      mkdirSync(path.join(tmpDir, 'data'), { recursive: true });
+      writeFileSync(
+        path.join(tmpDir, 'data', 'milestones.json'),
+        JSON.stringify([
+          { name: 'M1', status: null, archived: false },
+          { name: 'M2', archived: false },
+        ])
+      );
+      routes = createDashboardRoutes(makeCtx({ PROJECT_ROOT: tmpDir }));
+      const res = fakeRes();
+      await routes['GET /api/dashboard/stats'](fakeReq(), res);
+      expect(res.json.data.sprint_progress.value).toBe('0%');
+      rmSync(tmpDir, { recursive: true, force: true });
+    });
+
+    it('counts audit contributors when _audit is present', async () => {
+      const tmpDir = path.join(os.tmpdir(), `dashboard-test-${Date.now()}`);
+      mkdirSync(tmpDir, { recursive: true });
+      routes = createDashboardRoutes(
+        makeCtx({
+          PROJECT_ROOT: tmpDir,
+          auditEntries: [
+            {
+              user: 'alice',
+              entity_type: 'milestone',
+              operation: 'create',
+              timestamp: new Date().toISOString(),
+            },
+            {
+              user: 'bob',
+              entity_type: 'milestone',
+              operation: 'update',
+              timestamp: new Date().toISOString(),
+            },
+            {
+              user: 'webapp',
+              entity_type: 'milestone',
+              operation: 'create',
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        })
+      );
+      const res = fakeRes();
+      await routes['GET /api/dashboard/stats'](fakeReq(), res);
+      expect(parseInt(res.json.data.team_members.value, 10)).toBeGreaterThanOrEqual(2);
+      rmSync(tmpDir, { recursive: true, force: true });
+    });
+
+    it('shows GITHUB_STARS when env is non-numeric', async () => {
+      process.env.GITHUB_STARS = 'not-a-number';
+      routes = createDashboardRoutes(makeCtx());
+      const res = fakeRes();
+      await routes['GET /api/dashboard/stats'](fakeReq(), res);
+      expect(res.json.data.github_stars.value).toBe('—');
+    });
+  });
+
+  describe('GET /api/dashboard/metrics (edge cases)', () => {
+    it('marks error rate as warning when >= 5%', async () => {
+      routes = createDashboardRoutes(
+        makeCtx({
+          _metrics: {
+            requestCount: 100,
+            errorCount: 6,
+            responseTimes: [50],
+            startedAt: Date.now(),
+          },
+        })
+      );
+      const res = fakeRes();
+      await routes['GET /api/dashboard/metrics'](fakeReq(), res);
+      expect(res.json.data.error_rate.status).toBe('warning');
+    });
+
+    it('handles _metrics with responseTimes as non-array', async () => {
+      routes = createDashboardRoutes(
+        makeCtx({
+          _metrics: { requestCount: 10, errorCount: 0, responseTimes: null, startedAt: Date.now() },
+        })
+      );
+      const res = fakeRes();
+      await routes['GET /api/dashboard/metrics'](fakeReq(), res);
+      expect(res.status).toBe(200);
+      expect(res.json.data.response_time.value).toBe('142');
+    });
+  });
+
+  describe('GET /api/dashboard/activity (edge cases)', () => {
+    it('maps audit entries with missing fields gracefully', async () => {
+      routes = createDashboardRoutes(
+        makeCtx({
+          auditEntries: [
+            { user: null, entity_type: null, operation: null, entity_id: null, summary: null },
+          ],
+        })
+      );
+      const res = fakeRes();
+      await routes['GET /api/dashboard/activity'](fakeReq(), res);
+      expect(res.status).toBe(200);
+      expect(res.json.data.length).toBe(1);
+      expect(res.json.data[0].user).toBeNull();
+    });
+
+    it('maps create operation to milestone_created type', async () => {
+      routes = createDashboardRoutes(
+        makeCtx({
+          auditEntries: [
+            {
+              user: 'alice',
+              entity_type: 'milestone',
+              operation: 'create',
+              entity_id: 'm-1',
+              summary: 'Created M1',
+              timestamp: new Date().toISOString(),
+            },
+          ],
+        })
+      );
+      const res = fakeRes();
+      await routes['GET /api/dashboard/activity'](fakeReq(), res);
+      expect(res.json.data[0].type).toBe('milestone_created');
+      expect(res.json.data[0].metadata).toEqual({ id: 'm-1' });
+    });
+
+    it('returns _audit.read non-array result as empty', async () => {
+      routes = createDashboardRoutes(
+        makeCtx({
+          _audit: { read: () => 'not-an-array' },
+        })
+      );
+      const res = fakeRes();
+      await routes['GET /api/dashboard/activity'](fakeReq(), res);
+      expect(res.status).toBe(200);
+      expect(res.json.data[0].action).toContain('No audit events');
     });
   });
 });

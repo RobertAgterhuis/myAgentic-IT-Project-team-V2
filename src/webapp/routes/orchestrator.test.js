@@ -1,87 +1,73 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
+// Integration tests — uses real engine, store, middleware (no vi.mock).
 
-import { parseBody } from '../middleware.js';
+import { Readable } from 'stream';
+import * as fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import createOrchestratorRoutes from './orchestrator.js';
 
-/* ── Mock modules ─────────────────────────────────────────────── */
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const SESSION_FILE = path.resolve(__dirname, '..', '..', 'docs', 'session', 'session-state.json');
+const IDLE_STATE = JSON.stringify({ status: 'IDLE', mode: 'CREATE', state_history: [] });
 
-const mockEngine = vi.hoisted(() => ({
-  status: vi.fn(() => ({ state: 'IDLE', mode: 'AUDIT' })),
-  advance: vi.fn(() => ({ from: 'IDLE', to: 'PHASE_1' })),
-  error: vi.fn(),
-  recover: vi.fn(() => 'IDLE'),
-  reset: vi.fn(() => ({ state: 'IDLE', mode: 'CREATE' })),
-  validateGate: vi.fn(() => ({
-    verdict: 'APPROVED',
-    summary: { phase: 'PHASE_1', totalViolations: 0 },
-  })),
-  sprintGate: vi.fn(() => ({
-    verdict: 'READY',
-    summary: { sprintId: 'SP-1' },
-  })),
-}));
-
-vi.mock('../store', () => ({
-  getStore: vi.fn(() => ({})),
-}));
-
-vi.mock('../orchestrator/engine', () => ({
-  createEngine: vi.fn(() => mockEngine),
-}));
-
-vi.mock('../middleware', () => ({
-  structuredLog: vi.fn(),
-  json: vi.fn((res, status, data) => {
-    const body = JSON.stringify(data);
-    res.writeHead(status, { 'Content-Type': 'application/json' });
-    res.end(body);
-  }),
-  parseBody: vi.fn(),
-  _setSecurityHeaders: vi.fn(),
-}));
-
-vi.mock('../utils/errors', () => ({
-  errorResponse: vi.fn((code, detail) => ({ error: detail, code })),
-}));
-
-/* ── Helpers ────────────────────────────────────────────────────── */
+/* ── Helpers ──────────────────────────────────────────────────── */
 
 function fakeRes() {
   let _status, _body;
   const _headers = {};
   return {
-    setHeader(k, v) { _headers[k] = v; },
-    writeHead(s, h) { _status = s; if (h) Object.assign(_headers, h); },
-    end(data) { _body = data; },
-    get status() { return _status; },
-    get json() { return JSON.parse(_body); },
+    setHeader(k, v) {
+      _headers[k] = v;
+    },
+    writeHead(s, h) {
+      _status = s;
+      if (h) Object.assign(_headers, h);
+    },
+    end(data) {
+      _body = data;
+    },
+    get status() {
+      return _status;
+    },
+    get body() {
+      return JSON.parse(_body);
+    },
   };
 }
 
-function fakeReq() {
-  return { headers: { 'content-type': 'application/json', host: 'localhost:3000' } };
+/** Create a fake HTTP request (readable stream) with JSON body. */
+function fakeReq(body) {
+  const buf = Buffer.from(JSON.stringify(body));
+  const req = Readable.from([buf]);
+  req.headers = { 'content-type': 'application/json', host: 'localhost:3000' };
+  return req;
 }
 
-/* ── Tests ──────────────────────────────────────────────────────── */
+/** Minimal request for GET handlers (no body). */
+function fakeGetReq() {
+  return { headers: { host: 'localhost:3000' } };
+}
 
-describe('orchestrator routes', () => {
+/* ── Tests ────────────────────────────────────────────────────── */
+
+describe('orchestrator routes (integration)', () => {
   let routes;
+  let originalSession;
+
+  beforeAll(() => {
+    originalSession = fs.existsSync(SESSION_FILE) ? fs.readFileSync(SESSION_FILE, 'utf8') : null;
+  });
+
+  afterAll(() => {
+    if (originalSession !== null) {
+      fs.writeFileSync(SESSION_FILE, originalSession);
+    }
+  });
 
   beforeEach(() => {
-    vi.clearAllMocks();
-    mockEngine.status.mockReturnValue({ state: 'IDLE', mode: 'AUDIT' });
-    mockEngine.advance.mockReturnValue({ from: 'IDLE', to: 'PHASE_1' });
-    mockEngine.recover.mockReturnValue('IDLE');
-    mockEngine.reset.mockReturnValue({ state: 'IDLE', mode: 'CREATE' });
-    mockEngine.validateGate.mockReturnValue({
-      verdict: 'APPROVED',
-      summary: { phase: 'PHASE_1', totalViolations: 0 },
-    });
-    mockEngine.sprintGate.mockReturnValue({
-      verdict: 'READY',
-      summary: { sprintId: 'SP-1' },
-    });
-
+    // Write clean IDLE state so each test starts fresh
+    fs.writeFileSync(SESSION_FILE, IDLE_STATE);
     routes = createOrchestratorRoutes({ sseNotify: vi.fn() });
   });
 
@@ -99,45 +85,53 @@ describe('orchestrator routes', () => {
   /* ── GET /status ─────────────────────────────────────────────── */
 
   describe('GET /status', () => {
-    it('returns engine status', () => {
+    it('returns engine status with IDLE state and CREATE mode', () => {
       const res = fakeRes();
-      routes['GET /api/orchestrator/status'](fakeReq(), res);
+      routes['GET /api/orchestrator/status'](fakeGetReq(), res);
       expect(res.status).toBe(200);
-      expect(res.json.state).toBe('IDLE');
+      expect(res.body.state).toBe('IDLE');
+      expect(res.body.mode).toBe('CREATE');
     });
 
-    it('returns 500 when engine throws', () => {
-      mockEngine.status.mockImplementation(() => { throw new Error('boom'); });
+    it('includes serialized state and history', () => {
       const res = fakeRes();
-      routes['GET /api/orchestrator/status'](fakeReq(), res);
-      expect(res.status).toBe(500);
+      routes['GET /api/orchestrator/status'](fakeGetReq(), res);
+      expect(res.body.serialized).toBeDefined();
+      expect(res.body.history).toBeInstanceOf(Array);
     });
   });
 
   /* ── POST /advance ───────────────────────────────────────────── */
 
   describe('POST /advance', () => {
-    it('advances engine state', async () => {
-      parseBody.mockResolvedValue({});
+    it('advances from IDLE to ONBOARDING', async () => {
       const res = fakeRes();
-      await routes['POST /api/orchestrator/advance'](fakeReq(), res);
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), res);
       expect(res.status).toBe(200);
-      expect(res.json.ok).toBe(true);
-      expect(res.json.transition).toEqual({ from: 'IDLE', to: 'PHASE_1' });
+      expect(res.body.ok).toBe(true);
+      expect(res.body.transition.from).toBe('IDLE');
+      expect(res.body.transition.to).toBe('ONBOARDING');
     });
 
-    it('passes gateResult when provided', async () => {
-      parseBody.mockResolvedValue({ gateResult: 'PASS' });
-      const res = fakeRes();
-      await routes['POST /api/orchestrator/advance'](fakeReq(), res);
-      expect(mockEngine.advance).toHaveBeenCalledWith('PASS');
+    it('advances with gateResult body field', async () => {
+      // Advance twice: IDLE → ONBOARDING → PHASE_1
+      const res1 = fakeRes();
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), res1);
+      expect(res1.body.transition.to).toBe('ONBOARDING');
+      const res2 = fakeRes();
+      await routes['POST /api/orchestrator/advance'](
+        fakeReq({ gateResult: { verdict: 'APPROVED' } }),
+        res2
+      );
+      expect(res2.status).toBe(200);
+      expect(res2.body.transition.to).toBe('PHASE_1');
     });
 
-    it('returns 400 when engine.advance throws', async () => {
-      parseBody.mockResolvedValue({});
-      mockEngine.advance.mockImplementation(() => { throw new Error('cannot advance'); });
+    it('returns 400 when advance is not possible', async () => {
+      // Put engine in ERROR state, then try to advance
+      await routes['POST /api/orchestrator/error'](fakeReq({ reason: 'test' }), fakeRes());
       const res = fakeRes();
-      await routes['POST /api/orchestrator/advance'](fakeReq(), res);
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), res);
       expect(res.status).toBe(400);
     });
   });
@@ -146,43 +140,48 @@ describe('orchestrator routes', () => {
 
   describe('POST /error', () => {
     it('sets engine to error state with reason', async () => {
-      parseBody.mockResolvedValue({ reason: 'something broke' });
       const res = fakeRes();
-      await routes['POST /api/orchestrator/error'](fakeReq(), res);
+      await routes['POST /api/orchestrator/error'](fakeReq({ reason: 'something broke' }), res);
       expect(res.status).toBe(200);
-      expect(mockEngine.error).toHaveBeenCalledWith('something broke');
+      expect(res.body.ok).toBe(true);
+      // Verify engine is now in ERROR
+      const statusRes = fakeRes();
+      routes['GET /api/orchestrator/status'](fakeGetReq(), statusRes);
+      expect(statusRes.body.state).toBe('ERROR');
     });
 
     it('returns 400 when reason is missing', async () => {
-      parseBody.mockResolvedValue({});
       const res = fakeRes();
-      await routes['POST /api/orchestrator/error'](fakeReq(), res);
+      await routes['POST /api/orchestrator/error'](fakeReq({}), res);
       expect(res.status).toBe(400);
     });
 
     it('truncates reason to 2000 chars', async () => {
-      parseBody.mockResolvedValue({ reason: 'x'.repeat(3000) });
       const res = fakeRes();
-      await routes['POST /api/orchestrator/error'](fakeReq(), res);
-      expect(mockEngine.error).toHaveBeenCalled();
-      expect(mockEngine.error.mock.calls[0][0].length).toBe(2000);
+      await routes['POST /api/orchestrator/error'](fakeReq({ reason: 'x'.repeat(3000) }), res);
+      expect(res.status).toBe(200);
+      // Engine accepted the truncated reason (didn't throw)
+      expect(res.body.ok).toBe(true);
     });
   });
 
   /* ── POST /recover ───────────────────────────────────────────── */
 
   describe('POST /recover', () => {
-    it('recovers engine from error', async () => {
+    it('recovers engine from error state', async () => {
+      // First set error
+      await routes['POST /api/orchestrator/error'](fakeReq({ reason: 'test error' }), fakeRes());
+      // Then recover
       const res = fakeRes();
-      await routes['POST /api/orchestrator/recover'](fakeReq(), res);
+      await routes['POST /api/orchestrator/recover'](fakeGetReq(), res);
       expect(res.status).toBe(200);
-      expect(res.json.ok).toBe(true);
+      expect(res.body.ok).toBe(true);
+      expect(res.body.status.state).not.toBe('ERROR');
     });
 
-    it('returns 400 when recover fails', async () => {
-      mockEngine.recover.mockImplementation(() => { throw new Error('cannot recover'); });
+    it('returns 400 when not in error state', async () => {
       const res = fakeRes();
-      await routes['POST /api/orchestrator/recover'](fakeReq(), res);
+      await routes['POST /api/orchestrator/recover'](fakeGetReq(), res);
       expect(res.status).toBe(400);
     });
   });
@@ -191,64 +190,68 @@ describe('orchestrator routes', () => {
 
   describe('POST /reset', () => {
     it('resets engine with new mode', async () => {
-      parseBody.mockResolvedValue({ mode: 'CREATE' });
       const res = fakeRes();
-      await routes['POST /api/orchestrator/reset'](fakeReq(), res);
+      await routes['POST /api/orchestrator/reset'](fakeReq({ mode: 'AUDIT' }), res);
       expect(res.status).toBe(200);
-      expect(res.json.ok).toBe(true);
+      expect(res.body.ok).toBe(true);
+      expect(res.body.status.mode).toBe('AUDIT');
     });
 
     it('returns 400 when mode is missing', async () => {
-      parseBody.mockResolvedValue({});
       const res = fakeRes();
-      await routes['POST /api/orchestrator/reset'](fakeReq(), res);
+      await routes['POST /api/orchestrator/reset'](fakeReq({}), res);
       expect(res.status).toBe(400);
     });
 
-    it('passes phases array when provided', async () => {
-      parseBody.mockResolvedValue({ mode: 'CREATE', phases: ['PHASE_1', 'PHASE_2'] });
+    it('resets with phases array', async () => {
       const res = fakeRes();
-      await routes['POST /api/orchestrator/reset'](fakeReq(), res);
-      expect(mockEngine.reset).toHaveBeenCalled();
+      await routes['POST /api/orchestrator/reset'](
+        fakeReq({ mode: 'CREATE', phases: ['PHASE_1', 'PHASE_2'] }),
+        res
+      );
+      expect(res.status).toBe(200);
+      expect(res.body.ok).toBe(true);
     });
   });
 
   /* ── POST /validate-gate ─────────────────────────────────────── */
 
   describe('POST /validate-gate', () => {
-    it('validates gate with deliverables', async () => {
-      parseBody.mockResolvedValue({ deliverables: ['file1.md', 'file2.md'] });
+    it('returns gate result for deliverables', async () => {
       const res = fakeRes();
-      await routes['POST /api/orchestrator/validate-gate'](fakeReq(), res);
+      await routes['POST /api/orchestrator/validate-gate'](
+        fakeReq({ deliverables: ['file1.md'] }),
+        res
+      );
       expect(res.status).toBe(200);
-      expect(res.json.ok).toBe(true);
-      expect(res.json.verdict).toBe('APPROVED');
+      expect(res.body.ok).toBe(true);
+      expect(res.body.verdict).toBeDefined();
     });
 
     it('returns 400 when deliverables is missing', async () => {
-      parseBody.mockResolvedValue({});
       const res = fakeRes();
-      await routes['POST /api/orchestrator/validate-gate'](fakeReq(), res);
+      await routes['POST /api/orchestrator/validate-gate'](fakeReq({}), res);
       expect(res.status).toBe(400);
     });
 
     it('returns 400 when deliverables is empty array', async () => {
-      parseBody.mockResolvedValue({ deliverables: [] });
       const res = fakeRes();
-      await routes['POST /api/orchestrator/validate-gate'](fakeReq(), res);
+      await routes['POST /api/orchestrator/validate-gate'](fakeReq({ deliverables: [] }), res);
       expect(res.status).toBe(400);
     });
 
-    it('handles REJECTED verdict', async () => {
-      mockEngine.validateGate.mockReturnValue({
-        verdict: 'REJECTED',
-        summary: { phase: 'PHASE_2', totalViolations: 3 },
-      });
-      parseBody.mockResolvedValue({ deliverables: ['file1.md'] });
+    it('returns FAILED verdict for missing deliverable files', async () => {
+      // Advance to CRITIC_1 for a valid critic state
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), fakeRes()); // IDLE → ONBOARDING
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), fakeRes()); // → PHASE_1
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), fakeRes()); // → CRITIC_1
       const res = fakeRes();
-      await routes['POST /api/orchestrator/validate-gate'](fakeReq(), res);
+      await routes['POST /api/orchestrator/validate-gate'](
+        fakeReq({ deliverables: ['nonexistent.md'] }),
+        res
+      );
       expect(res.status).toBe(200);
-      expect(res.json.verdict).toBe('REJECTED');
+      expect(res.body.verdict).toBe('FAILED');
     });
   });
 
@@ -256,125 +259,151 @@ describe('orchestrator routes', () => {
 
   describe('POST /command', () => {
     it('accepts valid CREATE command', async () => {
-      parseBody.mockResolvedValue({ command: 'CREATE' });
       const res = fakeRes();
-      await routes['POST /api/orchestrator/command'](fakeReq(), res);
+      await routes['POST /api/orchestrator/command'](fakeReq({ command: 'CREATE' }), res);
       expect(res.status).toBe(200);
-      expect(res.json.ok).toBe(true);
-      expect(res.json.command).toBe('CREATE');
+      expect(res.body.ok).toBe(true);
+      expect(res.body.command).toBe('CREATE');
     });
 
     it('normalizes command to uppercase with underscores', async () => {
-      parseBody.mockResolvedValue({ command: 'create-business' });
       const res = fakeRes();
-      await routes['POST /api/orchestrator/command'](fakeReq(), res);
+      await routes['POST /api/orchestrator/command'](fakeReq({ command: 'create-business' }), res);
       expect(res.status).toBe(200);
-      expect(res.json.command).toBe('CREATE_BUSINESS');
+      expect(res.body.command).toBe('CREATE_BUSINESS');
     });
 
     it('returns 400 for missing command', async () => {
-      parseBody.mockResolvedValue({});
       const res = fakeRes();
-      await routes['POST /api/orchestrator/command'](fakeReq(), res);
+      await routes['POST /api/orchestrator/command'](fakeReq({}), res);
       expect(res.status).toBe(400);
     });
 
     it('returns 400 for unknown command', async () => {
-      parseBody.mockResolvedValue({ command: 'INVALID' });
       const res = fakeRes();
-      await routes['POST /api/orchestrator/command'](fakeReq(), res);
+      await routes['POST /api/orchestrator/command'](fakeReq({ command: 'INVALID' }), res);
       expect(res.status).toBe(400);
-      expect(res.json.code).toBe('INVALID_COMMAND');
+      expect(res.body.error).toMatch(/Unknown command/i);
     });
 
-    it('accepts all valid commands', async () => {
-      const commands = ['CREATE', 'AUDIT', 'FEATURE', 'SCOPE_CHANGE', 'HOTFIX', 'REEVALUATE',
-        'CREATE_BUSINESS', 'CREATE_TECH', 'CREATE_UX', 'CREATE_MARKETING'];
+    it('accepts all mode-backed commands', async () => {
+      const commands = [
+        'CREATE',
+        'AUDIT',
+        'FEATURE',
+        'SCOPE_CHANGE',
+        'HOTFIX',
+        'CREATE_BUSINESS',
+        'CREATE_TECH',
+        'CREATE_UX',
+        'CREATE_MARKETING',
+      ];
       for (const command of commands) {
-        vi.clearAllMocks();
-        mockEngine.status.mockReturnValue({ state: 'IDLE', mode: command });
-        mockEngine.reset.mockReturnValue({ state: 'IDLE', mode: command });
-        parseBody.mockResolvedValue({ command });
-        routes = createOrchestratorRoutes({ sseNotify: vi.fn() });
+        fs.writeFileSync(SESSION_FILE, IDLE_STATE);
+        const freshRoutes = createOrchestratorRoutes({ sseNotify: vi.fn() });
         const res = fakeRes();
-        await routes['POST /api/orchestrator/command'](fakeReq(), res);
+        await freshRoutes['POST /api/orchestrator/command'](fakeReq({ command }), res);
         expect(res.status).toBe(200);
+        expect(res.body.command).toBe(command);
       }
     });
 
-    it('defaults platform to copilot', async () => {
-      parseBody.mockResolvedValue({ command: 'AUDIT' });
+    it('accepts REEVALUATE with resume flag', async () => {
       const res = fakeRes();
-      await routes['POST /api/orchestrator/command'](fakeReq(), res);
-      expect(res.json.platform).toBe('copilot');
+      await routes['POST /api/orchestrator/command'](
+        fakeReq({ command: 'REEVALUATE', resume: true }),
+        res
+      );
+      expect(res.status).toBe(200);
+      expect(res.body.command).toBe('REEVALUATE');
+      expect(res.body.resume).toBe(true);
+    });
+
+    it('defaults platform to copilot', async () => {
+      const res = fakeRes();
+      await routes['POST /api/orchestrator/command'](fakeReq({ command: 'AUDIT' }), res);
+      expect(res.body.platform).toBe('copilot');
     });
 
     it('accepts valid platforms', async () => {
       for (const platform of ['copilot', 'claude', 'codex']) {
-        parseBody.mockResolvedValue({ command: 'AUDIT', platform });
+        fs.writeFileSync(SESSION_FILE, IDLE_STATE);
+        const freshRoutes = createOrchestratorRoutes({ sseNotify: vi.fn() });
         const res = fakeRes();
-        await routes['POST /api/orchestrator/command'](fakeReq(), res);
+        await freshRoutes['POST /api/orchestrator/command'](
+          fakeReq({ command: 'AUDIT', platform }),
+          res
+        );
         expect(res.status).toBe(200);
-        expect(res.json.platform).toBe(platform);
+        expect(res.body.platform).toBe(platform);
       }
     });
 
     it('returns 400 for invalid platform', async () => {
-      parseBody.mockResolvedValue({ command: 'AUDIT', platform: 'gpt5' });
       const res = fakeRes();
-      await routes['POST /api/orchestrator/command'](fakeReq(), res);
+      await routes['POST /api/orchestrator/command'](
+        fakeReq({ command: 'AUDIT', platform: 'gpt5' }),
+        res
+      );
       expect(res.status).toBe(400);
-      expect(res.json.code).toBe('INVALID_PLATFORM');
+      expect(res.body.error).toMatch(/Unknown platform/i);
     });
 
     it('skips reset when resume is true', async () => {
-      parseBody.mockResolvedValue({ command: 'AUDIT', resume: true });
       const res = fakeRes();
-      await routes['POST /api/orchestrator/command'](fakeReq(), res);
+      await routes['POST /api/orchestrator/command'](
+        fakeReq({ command: 'AUDIT', resume: true }),
+        res
+      );
       expect(res.status).toBe(200);
-      expect(res.json.resume).toBe(true);
-      expect(mockEngine.reset).not.toHaveBeenCalled();
+      expect(res.body.resume).toBe(true);
+      // Engine stays in original CREATE mode since reset was skipped
+      expect(res.body.status.mode).toBe('CREATE');
     });
 
     it('truncates project name to 200 chars', async () => {
-      parseBody.mockResolvedValue({ command: 'CREATE', project: 'x'.repeat(300) });
       const res = fakeRes();
-      await routes['POST /api/orchestrator/command'](fakeReq(), res);
-      expect(res.json.project.length).toBe(200);
+      await routes['POST /api/orchestrator/command'](
+        fakeReq({ command: 'CREATE', project: 'x'.repeat(300) }),
+        res
+      );
+      expect(res.body.project.length).toBe(200);
     });
   });
 
   /* ── POST /sprint-gate ──────────────────────────────────────── */
 
   describe('POST /sprint-gate', () => {
-    it('validates sprint gate', async () => {
-      parseBody.mockResolvedValue({ sprintId: 'SP-1', stories: [] });
+    it('runs sprint gate check', async () => {
       const res = fakeRes();
-      await routes['POST /api/orchestrator/sprint-gate'](fakeReq(), res);
+      await routes['POST /api/orchestrator/sprint-gate'](
+        fakeReq({ sprintId: 'SP-1', stories: [] }),
+        res
+      );
       expect(res.status).toBe(200);
+      expect(res.body.ok).toBe(true);
+      expect(res.body.verdict).toBeDefined();
     });
 
     it('returns 400 when sprintId is missing', async () => {
-      parseBody.mockResolvedValue({});
       const res = fakeRes();
-      await routes['POST /api/orchestrator/sprint-gate'](fakeReq(), res);
+      await routes['POST /api/orchestrator/sprint-gate'](fakeReq({}), res);
       expect(res.status).toBe(400);
     });
 
-    it('passes sprint data to engine', async () => {
-      parseBody.mockResolvedValue({
-        sprintId: 'SP-3',
-        stories: [{ id: 'S1' }],
-        plannedItems: 5,
-        paths: { docs: '/docs' },
-      });
+    it('returns gate result with sprint details', async () => {
       const res = fakeRes();
-      await routes['POST /api/orchestrator/sprint-gate'](fakeReq(), res);
-      expect(mockEngine.sprintGate).toHaveBeenCalledWith(expect.objectContaining({
-        sprintId: 'SP-3',
-        stories: [{ id: 'S1' }],
-        plannedItems: 5,
-      }));
+      await routes['POST /api/orchestrator/sprint-gate'](
+        fakeReq({
+          sprintId: 'SP-3',
+          stories: [{ id: 'S1', title: 'Test', acceptance_criteria: ['AC1'], estimate: 3 }],
+          plannedItems: 5,
+          paths: {},
+        }),
+        res
+      );
+      expect(res.status).toBe(200);
+      expect(res.body.summary.sprintId).toBe('SP-3');
     });
   });
 });

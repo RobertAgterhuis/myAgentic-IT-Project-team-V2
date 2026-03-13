@@ -131,7 +131,9 @@ describe('resolveSessionFile', () => {
   it('handles store.stat throwing gracefully', () => {
     const store = {
       exists: (fp) => [FILE_A, FILE_B].includes(fp),
-      stat: () => { throw new Error('stat failed'); },
+      stat: () => {
+        throw new Error('stat failed');
+      },
     };
     const cache = makeCache({
       [FILE_A]: JSON.stringify({}),

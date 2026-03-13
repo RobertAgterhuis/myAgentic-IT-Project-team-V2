@@ -1111,6 +1111,34 @@ describe('GET /api/progress — rich session branches', () => {
     const onb = r.json.phases.find((p) => p.key === 'ONBOARDING');
     expect(onb.agents[0].status).toBe('pending');
   });
+
+  it('covers || fallbacks when session lacks optional array/object fields', async () => {
+    // Minimal session: no completed_phases, completed_agents, current_phase,
+    // current_agent, phase_outputs, blockers, current_step, open_human_escalations.
+    // This forces every || [] / || null / || {} fallback in buildPhaseProgress
+    // and buildSessionSummary.
+    const session = {
+      session_id: 'minimal-session',
+      cycle_type: 'FULL_CREATE',
+      status: 'IN_PROGRESS',
+      initiated_at: '2025-01-01T00:00:00Z',
+      last_updated: '2025-01-02T00:00:00Z',
+    };
+    const store = new InMemoryStore({ [SESSION_FILE]: JSON.stringify(session) });
+    setStore(store);
+    _cache.invalidateAll();
+
+    const r = await req('GET', '/api/progress');
+    expect(r.status).toBe(200);
+    expect(r.json.active).toBe(true);
+    expect(r.json.session.current_phase).toBeNull();
+    expect(r.json.session.current_agent).toBeNull();
+    expect(r.json.session.current_step).toBeNull();
+    expect(r.json.session.blockers).toEqual([]);
+    expect(r.json.session.open_human_escalations).toEqual([]);
+    // All phases should be pending since no completed_phases
+    r.json.phases.forEach((p) => expect(p.status).toBe('pending'));
+  });
 });
 
 /* ── Branch coverage: Export with phase outputs ──────────────── */

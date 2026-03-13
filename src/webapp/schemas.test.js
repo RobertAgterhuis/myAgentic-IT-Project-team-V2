@@ -11,6 +11,8 @@ const {
   validateDecisionMutation,
   validateQuestionnaireUpdate,
   validateProjectBrief,
+  validateDriftReport,
+  validateGithubSnapshot,
   VALID_ANALYTICS_EVENTS,
 } = require('./schemas');
 
@@ -56,6 +58,43 @@ describe('validateSessionState', () => {
     const r = validateSessionState({ ...valid, completed_phases: 'not-array' });
     expect(r.valid).toBe(false);
     expect(r.errors).toContain('completed_phases must be an array');
+  });
+
+  it('validates completed_agents is array', () => {
+    const r = validateSessionState({ ...valid, completed_agents: 'not-array' });
+    expect(r.valid).toBe(false);
+    expect(r.errors).toContain('completed_agents must be an array');
+  });
+
+  it('validates github_sync must be an object', () => {
+    const r = validateSessionState({ ...valid, github_sync: 'bad' });
+    expect(r.valid).toBe(false);
+    expect(r.errors).toContain('github_sync must be an object');
+  });
+
+  it('validates github_sync array is not valid', () => {
+    const r = validateSessionState({ ...valid, github_sync: [] });
+    expect(r.valid).toBe(false);
+    expect(r.errors).toContain('github_sync must be an object');
+  });
+
+  it('validates github_sync nested fields', () => {
+    const r = validateSessionState({
+      ...valid,
+      github_sync: {
+        milestones_open: 'wrong',
+        milestones_closed: 'wrong',
+        issues_open: 'wrong',
+        issues_closed: 'wrong',
+        drift_findings: 'wrong',
+      },
+    });
+    expect(r.valid).toBe(false);
+    expect(r.errors).toContain('github_sync.milestones_open must be a number');
+    expect(r.errors).toContain('github_sync.milestones_closed must be a number');
+    expect(r.errors).toContain('github_sync.issues_open must be a number');
+    expect(r.errors).toContain('github_sync.issues_closed must be a number');
+    expect(r.errors).toContain('github_sync.drift_findings must be an array');
   });
 });
 
@@ -374,5 +413,129 @@ describe('validateProjectBrief', () => {
 
   it('accepts content at exactly 50000 chars', () => {
     expect(validateProjectBrief('x'.repeat(50000)).valid).toBe(true);
+  });
+});
+
+describe('validateDriftReport', () => {
+  const validDrift = {
+    id: 'DRIFT-001',
+    type: 'SPRINT_STATUS_MISMATCH',
+    severity: 'CRITICAL',
+    sprint: 'M1-S1',
+    expected: 'complete',
+    actual: 'in_progress',
+    recommendation: 'Align sprint status',
+  };
+
+  const validReport = {
+    generated_at: '2026-01-01T00:00:00Z',
+    summary: { total_drifts: 1, critical: 1, warning: 0, info: 0 },
+    drifts: [validDrift],
+    in_sync: { sprints: ['M1-S2'], stories: 10 },
+  };
+
+  it('accepts a valid drift report', () => {
+    expect(validateDriftReport(validReport).valid).toBe(true);
+  });
+
+  it('rejects non-object input', () => {
+    expect(validateDriftReport(null).valid).toBe(false);
+    expect(validateDriftReport('string').valid).toBe(false);
+    expect(validateDriftReport([]).valid).toBe(false);
+  });
+
+  it('rejects missing summary', () => {
+    const r = validateDriftReport({ ...validReport, summary: null });
+    expect(r.valid).toBe(false);
+    expect(r.errors.some((e) => e.includes('summary'))).toBe(true);
+  });
+
+  it('rejects non-number summary fields', () => {
+    const r = validateDriftReport({
+      ...validReport,
+      summary: { total_drifts: 'one', critical: 0, warning: 0, info: 0 },
+    });
+    expect(r.valid).toBe(false);
+  });
+
+  it('rejects non-array drifts', () => {
+    const r = validateDriftReport({ ...validReport, drifts: 'bad' });
+    expect(r.valid).toBe(false);
+  });
+
+  it('rejects non-object drift entry', () => {
+    const r = validateDriftReport({ ...validReport, drifts: ['bad'] });
+    expect(r.valid).toBe(false);
+  });
+
+  it('rejects drift entry with invalid type/severity', () => {
+    const r = validateDriftReport({
+      ...validReport,
+      drifts: [{ ...validDrift, type: 'UNKNOWN', severity: 'extreme' }],
+    });
+    expect(r.valid).toBe(false);
+  });
+
+  it('rejects missing in_sync', () => {
+    const r = validateDriftReport({ ...validReport, in_sync: null });
+    expect(r.valid).toBe(false);
+  });
+
+  it('rejects in_sync with non-array sprints', () => {
+    const r = validateDriftReport({
+      ...validReport,
+      in_sync: { sprints: 'bad', stories: 10 },
+    });
+    expect(r.valid).toBe(false);
+  });
+
+  it('rejects in_sync with non-number stories', () => {
+    const r = validateDriftReport({
+      ...validReport,
+      in_sync: { sprints: [], stories: 'ten' },
+    });
+    expect(r.valid).toBe(false);
+  });
+});
+
+describe('validateGithubSnapshot', () => {
+  const validSnapshot = {
+    repo: 'owner/repo',
+    captured_at: '2026-01-01T00:00:00Z',
+    summary: { milestones_open: 1, milestones_closed: 2, issues_open: 5, issues_closed: 10 },
+    milestones: [{ title: 'M1' }],
+    issues: [{ number: 1 }],
+  };
+
+  it('accepts a valid snapshot', () => {
+    expect(validateGithubSnapshot(validSnapshot).valid).toBe(true);
+  });
+
+  it('rejects non-object input', () => {
+    expect(validateGithubSnapshot(null).valid).toBe(false);
+    expect(validateGithubSnapshot([]).valid).toBe(false);
+  });
+
+  it('rejects missing summary', () => {
+    const r = validateGithubSnapshot({ ...validSnapshot, summary: null });
+    expect(r.valid).toBe(false);
+  });
+
+  it('rejects non-number summary fields', () => {
+    const r = validateGithubSnapshot({
+      ...validSnapshot,
+      summary: { milestones_open: 'x', milestones_closed: 0, issues_open: 0, issues_closed: 0 },
+    });
+    expect(r.valid).toBe(false);
+  });
+
+  it('rejects non-array milestones', () => {
+    const r = validateGithubSnapshot({ ...validSnapshot, milestones: 'bad' });
+    expect(r.valid).toBe(false);
+  });
+
+  it('rejects non-array issues', () => {
+    const r = validateGithubSnapshot({ ...validSnapshot, issues: 'bad' });
+    expect(r.valid).toBe(false);
   });
 });

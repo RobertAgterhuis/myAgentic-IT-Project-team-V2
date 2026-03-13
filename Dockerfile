@@ -1,3 +1,22 @@
+## ── Stage 1: Build React UI ──────────────────────────────────
+FROM node:20-alpine AS ui-builder
+
+WORKDIR /build
+
+# Install UI dependencies (cached layer)
+COPY src/webapp/ui/package.json src/webapp/ui/package-lock.json src/webapp/ui/
+RUN cd src/webapp/ui && npm ci
+
+# Copy UI source + design tokens + build script
+COPY src/webapp/ui/ src/webapp/ui/
+COPY docs/brand/design-tokens.json docs/brand/design-tokens.json
+COPY scripts/build-tokens.mjs scripts/build-tokens.mjs
+
+# Generate design tokens → src/webapp/ui/src/tokens.css, then build
+RUN node scripts/build-tokens.mjs
+RUN cd src/webapp/ui && npm run build
+
+## ── Stage 2: Production server ───────────────────────────────
 FROM node:20-alpine AS base
 
 WORKDIR /app
@@ -9,6 +28,9 @@ RUN npm ci --omit=dev --ignore-scripts
 
 # Copy the repository content required by the webapp.
 COPY . .
+
+# Copy the built React UI from stage 1
+COPY --from=ui-builder /build/src/webapp/ui/dist src/webapp/ui/dist
 
 # SEC-2: Run as non-root user (node user provided by base image)
 RUN chown -R node:node /app

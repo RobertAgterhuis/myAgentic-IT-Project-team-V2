@@ -1,7 +1,7 @@
 /**
  * Tests: API client utility
  */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { apiGet, apiPost, apiPut, apiPatch, apiDelete, ApiError } from '@/lib/api-client';
 
 describe('api-client', () => {

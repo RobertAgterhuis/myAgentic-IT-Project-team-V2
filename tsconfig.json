@@ -18,12 +18,7 @@
     "declarationDir": "./dist/types",
     "typeRoots": ["./node_modules/@types", "./src/webapp/types"]
   },
-  "include": [
-    "src/**/*.js",
-    "src/**/*.ts",
-    "scripts/**/*.js",
-    "src/webapp/types/**/*.d.ts"
-  ],
+  "include": ["src/**/*.js", "src/**/*.ts", "scripts/**/*.js", "src/webapp/types/**/*.d.ts"],
   "exclude": [
     "node_modules",
     "coverage",

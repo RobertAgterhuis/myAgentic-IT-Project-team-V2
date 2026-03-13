@@ -108,10 +108,10 @@ This is the reproducible sequence from code-complete to published release.
 - [ ] All Go/No-Go MUST-PASS criteria met (Section 3.1)
 - [ ] Sprint branch squash-merged to `main` via PR
 - [ ] `main` branch is clean: `git status` shows no uncommitted changes
-- [ ] Version bumped in `package.json` (root) and `.github/package.json`
+- [ ] Version bumped in `package.json`
 - [ ] `CHANGELOG.md` updated with release notes
-- [ ] All tests pass: `npm test` (root) + `cd .github && npm test`
-- [ ] Linting passes: `npm run lint` (root) + `cd .github && npm run lint`
+- [ ] All tests pass: `npm run test:all`
+- [ ] Linting passes: `npm run lint`
 - [ ] Secret scan: no credentials, tokens, or API keys in tracked files
 - [ ] README claims verified against truth-source checklist
 - [ ] Known issues documented in release notes

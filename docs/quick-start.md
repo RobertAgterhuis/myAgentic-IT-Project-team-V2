@@ -22,7 +22,6 @@ minutes.
 git clone https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2.git
 cd myAgentic-IT-Project-team-V2
 npm install
-cd .github && npm install && cd ..
 ```
 
 ## Step 2: Start the Command Center
@@ -89,7 +88,7 @@ When agents need your input:
 ```bash
 # Run test suites to confirm everything works
 npm test                      # Root suite (363 tests)
-cd .github && npm test        # .github/ suite (809 tests)
+npm run test:vitest      # Vitest suite (1239 tests)
 ```
 
 Both suites should report **0 failures**.

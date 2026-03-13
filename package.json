@@ -4,16 +4,24 @@
   "description": "Agentic SDLC Platform - Multi-agent software development system",
   "main": "src/webapp/server.js",
   "scripts": {
+    "prepare": "node .github/scripts/install-hooks.js",
+    "start": "node src/webapp/server.js",
+    "start:mcp": "node src/webapp/mcp-server.js",
     "test": "jest --passWithNoTests",
     "test:coverage": "jest --coverage --passWithNoTests",
     "test:integration": "jest --testMatch='**/*.integration.test.js' --passWithNoTests",
     "test:smoke": "jest --testMatch='**/*.smoke.test.js' --passWithNoTests",
+    "test:vitest": "vitest run",
+    "test:vitest:watch": "vitest",
+    "test:vitest:coverage": "vitest run --coverage",
+    "test:all": "vitest run && jest --passWithNoTests",
     "lint": "eslint . --ext .js,.ts,.jsx,.tsx --max-warnings=0",
     "lint:fix": "eslint . --ext .js,.ts,.jsx,.tsx --fix",
     "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
     "build": "echo 'No build step required — server runs native Node.js'",
-    "start": "node src/webapp/server.js"
+    "audit:github": "node .github/scripts/github-config-audit.js",
+    "snapshot:github": "node .github/scripts/github-state-snapshot.js"
   },
   "repository": {
     "type": "git",
@@ -28,18 +36,23 @@
   ],
   "author": "Robert Agterhuis",
   "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "devDependencies": {
     "@types/jest": "^29.5.14",
     "@types/node": "^20.19.37",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
+    "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^8.57.1",
     "eslint-config-prettier": "^9.1.2",
     "eslint-plugin-prettier": "^5.5.5",
     "jest": "^29.7.0",
     "jsdom": "^28.1.0",
     "prettier": "^3.8.1",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   },
   "jest": {
     "testEnvironment": "node",

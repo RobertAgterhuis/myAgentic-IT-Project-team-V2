@@ -112,7 +112,7 @@
 
 - Finding: Distributed tracing is not present; no OpenTelemetry or equivalent
   trace context pipeline is defined.
-- Source: dependency/config scan (`.github/package.json`, workflows)
+- Source: dependency/config scan (`package.json`, workflows)
 - Impact: Medium
 
 - Finding: Alerting and on-call escalation are not automated; no
@@ -218,7 +218,7 @@
 - Risk score: High
 - Mitigation options: lockfile-based `npm ci --omit=dev` in container build;
   SBOM generation.
-- Source: `Dockerfile`, `.github/package-lock.json` presence
+- Source: `Dockerfile`, `package-lock.json` presence
 
 ### 3.4 RISK-704 – Observability blind spots for incident response
 
@@ -229,7 +229,7 @@
 - Risk score: High
 - Mitigation options: OpenTelemetry baseline; alert rules on
   health/error-rate/startup failures.
-- Source: `.github/package.json`, workflows/docs absence
+- Source: `package.json`, workflows/docs absence
 
 ### 3.5 RISK-705 – DR confidence gap
 

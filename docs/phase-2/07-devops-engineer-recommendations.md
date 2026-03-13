@@ -84,7 +84,7 @@ analysis:
 - Rationale: Reduces runtime drift and strengthens supply-chain traceability.
 - Dependencies: None
 - Owner: Senior Developer + DevOps Engineer
-- Evidence source: `Dockerfile`, `.github/package-lock.json`
+- Evidence source: `Dockerfile`, `package-lock.json`
 - SMART success criteria:
   - 100% release builds use lockfile-strict install.
   - Dependency drift incidents attributable to container build policy: 0.

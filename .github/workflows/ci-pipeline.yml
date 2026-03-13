@@ -78,7 +78,7 @@ jobs:
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
 
-      # Coverage thresholds are enforced by Vitest in ci.yml (source code lives in .github/)
+      # Coverage thresholds are enforced by Vitest in ci.yml
       # Root Jest tests cover documentation/landing/integration — no source code coverage expected
 
   # Job 3: Security Scanning (Secret Detection + SAST)
@@ -252,7 +252,7 @@ jobs:
         run: npm ci
 
       - name: Install webapp dependencies
-        run: npm --prefix .github install --omit=dev
+        run: npm ci --omit=dev
 
       - name: Start application
         run: node src/webapp/server.js &

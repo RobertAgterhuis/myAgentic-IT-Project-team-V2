@@ -124,11 +124,10 @@ Chat — the Orchestrator will re-create it from the last known phase outputs.
 ```bash
 # Ensure dependencies are installed for both workspaces
 npm install
-cd .github && npm install
 
 # Run tests
-cd .. && npm test          # Root (Jest)
-cd .github && npm test     # .github/ (Vitest)
+npm test               # Root (Jest)
+npm run test:vitest   # Vitest (1239 tests)
 ```
 
 If `contrast.test.js` fails, verify that `docs/brand/design-tokens.json`
@@ -226,7 +225,7 @@ To manually scan:
 
 ```bash
 # Check for vulnerabilities
-cd .github && npm audit
+npm audit
 
 # Update dependencies
 npm update

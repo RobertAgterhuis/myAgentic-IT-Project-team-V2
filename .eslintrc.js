@@ -40,5 +40,15 @@ module.exports = {
         '@typescript-eslint/no-var-requires': 'off',
       },
     },
+    {
+      files: ['src/webapp/**/*.js'],
+      excludedFiles: ['**/*.test.js'],
+      rules: {
+        complexity: ['error', { max: 8 }],
+        eqeqeq: ['error', 'always'],
+        'no-eval': 'error',
+        'no-implied-eval': 'error',
+      },
+    },
   ],
 };

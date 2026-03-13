@@ -33,7 +33,7 @@
 
 - Finding: Public GitHub distribution is intended under MIT, so license
   compliance and attribution obligations still apply.
-- Source: `README.md`, `LICENSE`, `.github/package.json`
+- Source: `README.md`, `LICENSE`, `package.json`
 - Impact: High
 
 - Finding: Security and Data agents identified unresolved classification and
@@ -83,7 +83,7 @@
 ### 1.3 Open source license policy and checks
 
 - Finding: Project top-level license is MIT and package metadata is MIT.
-- Source: `LICENSE`, `.github/package.json`
+- Source: `LICENSE`, `package.json`
 - Impact: High
 
 - Finding: `LICENSE_CHECK` items from Software Architect were forwarded and
@@ -95,7 +95,7 @@
 
 - Finding: Current dependency set appears permissive-license oriented, but
   SPDX/license evidence file is not yet generated in repo artifacts.
-- Source: `.github/package.json`, docs scan (no generated license inventory
+- Source: `package.json`, docs scan (no generated license inventory
   file)
 - Impact: Medium
 

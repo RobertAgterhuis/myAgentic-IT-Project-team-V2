@@ -20,7 +20,7 @@
 - [ ] `npm audit` shows no critical/high vulnerabilities
 - [ ] Secret scan passes (`detectSecrets()` on all staged files)
 - [ ] CHANGELOG.md updated with all changes since last release
-- [ ] Version bumped in `package.json` (root) and `.github/package.json`
+- [ ] Version bumped in `package.json` (root) and `package.json`
 - [ ] All `UNCERTAIN:` and `INSUFFICIENT_DATA:` items resolved or documented
 - [ ] GA go/no-go criteria checked (see `docs/ga-definition.md`
       Section 3)

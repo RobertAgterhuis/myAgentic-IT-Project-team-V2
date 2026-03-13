@@ -50,7 +50,7 @@
 - Finding: ESLint already enforces complexity (`max: 8`), no-unused-vars,
   no-var, prefer-const, and strict equality, providing a good baseline but
   without import/order and file-size controls.
-- Source: `.github/eslint.config.mjs`
+- Source: `.eslintrc.js`
 - Impact: High
 
 - Finding: Structured logging utility exists and already avoids uncontrolled
@@ -113,7 +113,7 @@
 - Finding: Vitest and coverage-v8 are configured with baseline thresholds
   (70/50/70/70), which is below the architecture target trajectory for critical
   modules.
-- Source: `.github/vitest.config.mjs`,
+- Source: `vitest.config.mjs`,
   `docs/phase-2/05-software-architect-analysis.md`
 - Impact: High
 
@@ -127,7 +127,7 @@
 - Finding: E2E testing strategy for browser-level Command Center flows is not
   defined.
 - Source: `docs/phase-2/05-software-architect-analysis.md`,
-  `.github/vitest.config.mjs`
+  `vitest.config.mjs`
 - Impact: High
 
 - Finding: Performance test strategy is proposed by Agent 05 but not yet
@@ -145,7 +145,7 @@
 
 - Finding: Existing complexity lint cap (8) is positive, but no max file length
   or function length standards are codified.
-- Source: `.github/eslint.config.mjs`
+- Source: `.eslintrc.js`
 - Impact: Medium
 
 - Finding: Current architecture can drift into route-heavy monolithic handlers
@@ -166,7 +166,7 @@
 - Finding: CI gate policy for technical debt trend metrics (complexity trend,
   flaky tests, coverage drift) is missing.
 - Source: `docs/phase-2/05-software-architect-guardrails.md`,
-  `.github/vitest.config.mjs`
+  `vitest.config.mjs`
 - Impact: High
 
 ## 2. Requirements Gaps (CREATE mode)
@@ -196,7 +196,7 @@
 
 - Description: Unit/integration tooling exists, but e2e strategy and security
   test plan are undefined.
-- Source: `.github/vitest.config.mjs`,
+- Source: `vitest.config.mjs`,
   `docs/phase-2/05-software-architect-analysis.md`
 - Risk if unresolved: Critical workflow regressions and security issues may
   bypass CI.
@@ -216,7 +216,7 @@
 
 - Description: Complexity threshold exists, but file/function size, duplication
   threshold, and mandatory docs are not defined.
-- Source: `.github/eslint.config.mjs`
+- Source: `.eslintrc.js`
 - Risk if unresolved: Technical debt accumulation and declining velocity.
 - Priority: High
 
@@ -224,7 +224,7 @@
 
 - Description: CI policy does not enforce coverage uplift path, flaky-test
   control, or technical debt register updates.
-- Source: `.github/vitest.config.mjs`,
+- Source: `vitest.config.mjs`,
   `docs/phase-2/05-software-architect-guardrails.md`
 - Risk if unresolved: Quality regressions become normalized.
 - Priority: Medium
@@ -252,7 +252,7 @@
 - Risk score: High
 - Mitigation options: adopt e2e framework with 3 critical path suites; add smoke
   run on PR.
-- Source: `.github/vitest.config.mjs`, GAP-603
+- Source: `vitest.config.mjs`, GAP-603
 
 ### 3.3 RISK-603 – Security regressions due to undefined SAST/DAST baseline
 
@@ -286,14 +286,14 @@
 - Risk score: High
 - Mitigation options: codify thresholds; enforce in lint/review; track debt in
   sprint retro artifacts.
-- Source: GAP-605, `.github/eslint.config.mjs`
+- Source: GAP-605, `.eslintrc.js`
 
 ## 4. KPI Baseline
 
 | KPI                                                       | Current value         | Source                      | Measurement method                                  |
 | --------------------------------------------------------- | --------------------- | --------------------------- | --------------------------------------------------- |
-| Lint complexity cap compliance                            | Configured (`max: 8`) | `.github/eslint.config.mjs` | ESLint CI run with complexity rule violations count |
-| Coverage thresholds (statements/branches/functions/lines) | 70 / 50 / 70 / 70     | `.github/vitest.config.mjs` | Vitest coverage report (`coverage-summary.json`)    |
+| Lint complexity cap compliance                            | Configured (`max: 8`) | `.eslintrc.js` | ESLint CI run with complexity rule violations count |
+| Coverage thresholds (statements/branches/functions/lines) | 70 / 50 / 70 / 70     | `vitest.config.mjs` | Vitest coverage report (`coverage-summary.json`)    |
 | Runtime dependencies count                                | 0                     | `package.json`              | Count keys in `dependencies` object during CI       |
 | E2E critical user flow coverage                           | INSUFFICIENT_DATA     | no e2e suite found          | Presence of e2e test files + execution in CI        |
 | SAST scan pass rate                                       | INSUFFICIENT_DATA     | no tool selected            | % of PRs passing defined SAST gate                  |
@@ -379,7 +379,7 @@
       "id": "CS-603",
       "topic": "Lint baseline",
       "finding": "Lint rules enforce complexity and core JS hygiene but lack import/order and size constraints.",
-      "source": ".github/eslint.config.mjs",
+      "source": ".eslintrc.js",
       "impact": "High",
       "design_decision_id": null
     },
@@ -387,7 +387,7 @@
       "id": "CS-604",
       "topic": "Test baseline",
       "finding": "Vitest coverage gates are configured but currently low relative to critical-module goals.",
-      "source": ".github/vitest.config.mjs",
+      "source": "vitest.config.mjs",
       "impact": "High",
       "design_decision_id": null
     },
@@ -421,7 +421,7 @@
       "id": "GAP-603",
       "title": "Test strategy incomplete for E2E and security",
       "description": "Unit/integration are present; e2e and security testing strategy is undefined.",
-      "source": ".github/vitest.config.mjs",
+      "source": "vitest.config.mjs",
       "risk_if_unresolved": "Critical regressions may bypass CI.",
       "priority": "Critical"
     },
@@ -437,7 +437,7 @@
       "id": "GAP-605",
       "title": "Maintainability thresholds incomplete",
       "description": "Missing max file/function/duplication/documentation standards.",
-      "source": ".github/eslint.config.mjs",
+      "source": ".eslintrc.js",
       "risk_if_unresolved": "Tech debt grows and delivery slows.",
       "priority": "High"
     }
@@ -469,7 +469,7 @@
         "Cover top 3 user flows",
         "Run smoke e2e on PR"
       ],
-      "source": ".github/vitest.config.mjs; GAP-603"
+      "source": "vitest.config.mjs; GAP-603"
     },
     {
       "id": "RISK-603",
@@ -511,21 +511,21 @@
         "Track debt metrics each sprint",
         "Raise coverage targets on critical modules"
       ],
-      "source": ".github/eslint.config.mjs; GAP-605"
+      "source": ".eslintrc.js; GAP-605"
     }
   ],
   "kpi_baseline": [
     {
       "kpi": "Lint complexity cap compliance",
       "value": "Configured max=8",
-      "source": ".github/eslint.config.mjs",
+      "source": ".eslintrc.js",
       "measurement_method": "Count complexity lint errors per CI run",
       "data_status": "Available"
     },
     {
       "kpi": "Coverage threshold profile",
       "value": "70/50/70/70",
-      "source": ".github/vitest.config.mjs",
+      "source": "vitest.config.mjs",
       "measurement_method": "Read Vitest coverage summary artifacts",
       "data_status": "Available"
     },

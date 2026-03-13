@@ -30,11 +30,11 @@ come from an automated or verifiable source:
 | Claim                     | Source of Truth                        | How to Verify                          |
 | ------------------------- | -------------------------------------- | -------------------------------------- |
 | Test count (root)         | `npm test` output                      | Run `npm test` from project root       |
-| Test count (.github/)     | `npm test` output                      | Run `cd .github && npm test`           |
+| Test count (vitest)       | `npm run test:vitest` output           | Run `npm run test:vitest`              |
 | Total test count          | Sum of root + .github/                 | Badges updated from CI or manual count |
 | Coverage threshold        | vitest.config.mjs / jest.config        | Read coverage thresholds from config   |
 | ESLint version (root)     | `npx eslint --version`                 | Check root package.json                |
-| ESLint version (.github/) | `npx eslint --version`                 | Check .github/package.json             |
+| ESLint version (.github/) | `npx eslint --version`                 | Check package.json             |
 | Agent count               | Count skill files in `agents/` | `ls agents/*.md \| wc -l`      |
 | Build status              | CI pipeline badge                      | Linked to GitHub Actions               |
 

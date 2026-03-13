@@ -1102,7 +1102,7 @@ npx vitest run tests/unit # Only unit tests
 
 ### Coverage Thresholds
 
-Configured in `.github/vitest.config.mjs`:
+Configured in `vitest.config.mjs`:
 
 - Statements: ≥ 70%
 - Branches: ≥ 70%

@@ -188,7 +188,7 @@ coordination), Legal Counsel (interpretation)
 - [x] **Copyright notice present** in LICENSE → ✅ COMPLIANT ("Copyright (c)
       [Year] [Your Name or Organization]")
 - [x] **package.json license field** set to `"license": "MIT"` → ✅ COMPLIANT
-      (`.github/package.json` line 4)
+      (`package.json` line 4)
 - [ ] **Attribution for third-party dependencies** → ❌ GAP (Phase 2-33
       GAP-3303: No NOTICE file or SPDX inventory)
 - [ ] **CI license gate** (prevent non-permissive license intake) → ❌ GAP

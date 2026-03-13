@@ -273,7 +273,7 @@ main project cycle.
 | `tests/integration/` | Integration tests     |
 | `webapp/*.test.js`   | Webapp-specific tests |
 
-Run with: `cd .github && npm test`
+Run with: `npm run test:vitest`
 
 ---
 

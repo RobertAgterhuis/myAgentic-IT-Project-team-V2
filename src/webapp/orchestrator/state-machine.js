@@ -133,6 +133,9 @@ const EVENTS = Object.freeze({
   CRASH_RECOVERY: 'crash_recovery',
 });
 
+// ─── Valid State Set (for validation) ─────────────────────────
+const VALID_STATES = new Set(Object.values(STATES));
+
 // ─── State Machine Class ─────────────────────────────────────
 
 class StateMachine {
@@ -152,6 +155,8 @@ class StateMachine {
     this._onError = onError || (() => {});
     this._history = [];
     this._gateResults = new Map();
+    this._transitioning = false;
+    this._startedAt = new Date().toISOString();
 
     this._transitionMap = StateMachine._buildTransitions(mode, phases);
     this._state = this._recoverOrInit(sessionState);
@@ -170,7 +175,18 @@ class StateMachine {
   /** @private Restore from session or start at IDLE */
   _recoverOrInit(sessionState) {
     if (sessionState && sessionState.status && sessionState.status !== STATES.IDLE) {
-      this._history = sessionState.state_history || [];
+      // Validate the persisted state is a known state
+      if (!VALID_STATES.has(sessionState.status)) {
+        this._emit(EVENTS.ERROR, {
+          from: 'UNKNOWN',
+          reason: `Corrupt session state: unknown status "${sessionState.status}"`,
+        });
+        return STATES.IDLE;
+      }
+      this._history = Array.isArray(sessionState.state_history) ? sessionState.state_history : [];
+      if (sessionState.started_at) {
+        this._startedAt = sessionState.started_at;
+      }
       this._emit(EVENTS.CRASH_RECOVERY, {
         recoveredState: sessionState.status,
         timestamp: new Date().toISOString(),
@@ -200,6 +216,16 @@ class StateMachine {
     return this._transitionMap.get(this._state) || null;
   }
 
+  /** @returns {string} ISO timestamp when the machine was started/recovered */
+  get startedAt() {
+    return this._startedAt;
+  }
+
+  /** @returns {number} Elapsed milliseconds since machine was started */
+  get elapsedMs() {
+    return Date.now() - new Date(this._startedAt).getTime();
+  }
+
   /**
    * Check if a transition to the given state is valid.
    * @param {string} targetState
@@ -219,6 +245,20 @@ class StateMachine {
    * @throws {Error} If no valid transition exists or gate fails
    */
   advance(gateResult) {
+    // Prevent concurrent transitions
+    if (this._transitioning) {
+      throw new Error('Transition already in progress — concurrent advance() blocked');
+    }
+    this._transitioning = true;
+    try {
+      return this._doAdvance(gateResult);
+    } finally {
+      this._transitioning = false;
+    }
+  }
+
+  /** @private Performs the actual transition (called inside lock) */
+  _doAdvance(gateResult) {
     const next = this._transitionMap.get(this._state);
     if (!next) {
       const err = new Error(
@@ -259,6 +299,38 @@ class StateMachine {
     this._emit(EVENTS.TRANSITION, { from, to: next, timestamp });
 
     return { from, to: next, timestamp };
+  }
+
+  /**
+   * Get metadata about all states in the current flow.
+   * Returns each state with status (completed/current/pending) and agent info.
+   * @returns {Array<{state: string, status: string, timestamp?: string}>}
+   */
+  stateMetadata() {
+    const flow = [];
+    let cursor = 'IDLE';
+    while (cursor) {
+      flow.push(cursor);
+      cursor = this._transitionMap.get(cursor) || null;
+    }
+
+    const completedTransitions = new Map();
+    for (const h of this._history) {
+      if (h.to !== STATES.ERROR) {
+        completedTransitions.set(h.from, h.timestamp);
+      }
+    }
+
+    return flow.map((s) => {
+      if (s === this._state) {
+        return { state: s, status: 'current' };
+      }
+      const ts = completedTransitions.get(s);
+      if (ts) {
+        return { state: s, status: 'completed', timestamp: ts };
+      }
+      return { state: s, status: 'pending' };
+    });
   }
 
   /**
@@ -317,6 +389,7 @@ class StateMachine {
       mode: this._mode,
       state_history: this._history,
       gate_results: Object.fromEntries(this._gateResults),
+      started_at: this._startedAt,
       last_updated: new Date().toISOString(),
     };
   }
@@ -409,6 +482,7 @@ module.exports = {
   STATES,
   EVENTS,
   MODE_CONFIGS,
+  VALID_STATES,
   StateMachine,
   buildTransitionMap,
   createStateMachine,

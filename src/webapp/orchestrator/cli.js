@@ -18,7 +18,9 @@
  *   scope_change [project]    Start a SCOPE CHANGE re-analysis
  *   hotfix [project]          Start an emergency HOTFIX
  *   reevaluate [project]      Start a REEVALUATE cycle
- *   status                    Show current engine status
+ *   status                    Show current engine status (phase, agent, elapsed time)
+ *   stop                      Stop the running pipeline
+ *   gate-check                Run sprint gate readiness check
  *
  * Options:
  *   --platform <name>   AI platform: copilot | claude | codex (default: copilot)
@@ -48,6 +50,8 @@ const COMMAND_ALIASES = Object.freeze({
   hotfix: 'HOTFIX',
   reevaluate: 'REEVALUATE',
   status: '_STATUS',
+  stop: '_STOP',
+  gate_check: '_GATE_CHECK',
 });
 
 /**
@@ -119,15 +123,13 @@ function parseArgs(argv) {
   // First positional is the command, second (optional) is the project name
   const rawCmd = positional[0] ? positional[0].toLowerCase().replace(/[\s-]+/g, '_') : null;
 
-  if (rawCmd && rawCmd !== '_status') {
+  if (rawCmd) {
     const mapped = COMMAND_ALIASES[rawCmd];
     if (!mapped) {
       result.error = `Unknown command: "${positional[0]}". Valid commands: ${Object.keys(COMMAND_ALIASES).join(', ')}`;
       return result;
     }
     result.command = mapped;
-  } else if (rawCmd === 'status' || rawCmd === '_status') {
-    result.command = '_STATUS';
   }
 
   if (positional.length > 1) {
@@ -156,7 +158,9 @@ Commands:
   scope_change [project]      Start a SCOPE CHANGE re-analysis
   hotfix [project]            Start an emergency HOTFIX
   reevaluate [project]        Start a REEVALUATE cycle
-  status                      Show current engine status
+  status                      Show current engine status (phase, agent, elapsed time)
+  stop                        Stop the running pipeline
+  gate-check                  Run sprint gate readiness check
 
 Options:
   --platform <name>   AI platform: copilot | claude | codex  (default: copilot)
@@ -184,6 +188,19 @@ function executeCommand(engine, parsed, deps = {}) {
     const st = engine.status();
     write(JSON.stringify(st, null, 2) + '\n');
     return { ok: true, status: st };
+  }
+
+  if (parsed.command === '_STOP') {
+    const st = engine.stop();
+    write(JSON.stringify({ ok: true, stopped: true, status: st }, null, 2) + '\n');
+    return { ok: true, status: st };
+  }
+
+  if (parsed.command === '_GATE_CHECK') {
+    const sprintId = parsed.project || 'SP-1';
+    const result = engine.sprintGate({ sprintId, stories: [] });
+    write(JSON.stringify({ ok: true, gateCheck: result }, null, 2) + '\n');
+    return { ok: true, gateCheck: result };
   }
 
   // Reset the engine to the requested mode (starts fresh or resumes)

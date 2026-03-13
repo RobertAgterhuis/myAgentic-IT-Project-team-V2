@@ -1,0 +1,3 @@
+# Runtime-generated session files (written by the orchestrator engine)
+src/docs/session/session-state.json
+src/docs/session/run-history.json

@@ -547,3 +547,109 @@ describe('AC-5: command endpoint (engine-level)', () => {
     expect(st.mode).toBe('CREATE');
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+// #174: stop, gate-check, elapsed time in status
+// ─────────────────────────────────────────────────────────────
+describe('#174: stop command', () => {
+  describe('parseArgs', () => {
+    it('parses "stop" command', () => {
+      const result = parseArgs(['stop']);
+      expect(result.command).toBe('_STOP');
+      expect(result.error).toBeNull();
+    });
+  });
+
+  describe('executeCommand', () => {
+    it('stops a running pipeline and returns stopped status', () => {
+      const { engine } = freshEngine();
+      engine.advance(); // IDLE → ONBOARDING
+      const out = capture();
+      const parsed = parseArgs(['stop']);
+      const result = executeCommand(engine, parsed, { write: out.write });
+      expect(result.ok).toBe(true);
+      expect(result.status.state).toBe('ERROR');
+      const output = JSON.parse(out.text());
+      expect(output.stopped).toBe(true);
+    });
+  });
+
+  describe('run()', () => {
+    it('stops engine via run()', () => {
+      const { engine } = freshEngine();
+      engine.advance(); // IDLE → ONBOARDING
+      const out = capture();
+      const result = run(['stop'], { write: out.write, engine });
+      expect(result.ok).toBe(true);
+      expect(result.status.state).toBe('ERROR');
+    });
+  });
+});
+
+describe('#174: gate-check command', () => {
+  describe('parseArgs', () => {
+    it('parses "gate-check" command (hyphenated)', () => {
+      const result = parseArgs(['gate-check']);
+      expect(result.command).toBe('_GATE_CHECK');
+      expect(result.error).toBeNull();
+    });
+
+    it('parses "gate_check" command (underscored)', () => {
+      const result = parseArgs(['gate_check']);
+      expect(result.command).toBe('_GATE_CHECK');
+    });
+  });
+
+  describe('executeCommand', () => {
+    it('runs sprint gate check and returns result', () => {
+      const { engine } = freshEngine();
+      const out = capture();
+      const parsed = parseArgs(['gate-check']);
+      const result = executeCommand(engine, parsed, { write: out.write });
+      expect(result.ok).toBe(true);
+      expect(result.gateCheck).toBeDefined();
+      expect(result.gateCheck.verdict).toBeDefined();
+      const output = JSON.parse(out.text());
+      expect(output.gateCheck.verdict).toBeDefined();
+    });
+
+    it('uses project name as sprintId', () => {
+      const { engine } = freshEngine();
+      const out = capture();
+      const parsed = parseArgs(['gate-check', 'SP-5']);
+      const result = executeCommand(engine, parsed, { write: out.write });
+      expect(result.ok).toBe(true);
+      expect(result.gateCheck.summary.sprintId).toBe('SP-5');
+    });
+  });
+});
+
+describe('#174: status output includes elapsed time and phase metadata', () => {
+  it('status() includes elapsedMs field', () => {
+    const { engine } = freshEngine();
+    const st = engine.status();
+    expect(typeof st.elapsedMs).toBe('number');
+    expect(st.elapsedMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it('status() includes phaseMetadata array', () => {
+    const { engine } = freshEngine();
+    engine.advance(); // IDLE → ONBOARDING
+    const st = engine.status();
+    expect(Array.isArray(st.phaseMetadata)).toBe(true);
+    expect(st.phaseMetadata.length).toBeGreaterThan(0);
+    const current = st.phaseMetadata.find((p) => p.status === 'current');
+    expect(current).toBeDefined();
+    expect(current.state).toBe('ONBOARDING');
+  });
+
+  it('CLI status command outputs elapsed time', () => {
+    const { engine } = freshEngine();
+    const out = capture();
+    const parsed = parseArgs(['status']);
+    executeCommand(engine, parsed, { write: out.write });
+    const output = JSON.parse(out.text());
+    expect(typeof output.elapsedMs).toBe('number');
+    expect(output.phaseMetadata).toBeDefined();
+  });
+});

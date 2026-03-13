@@ -15,6 +15,8 @@ const {
   loadSessionState,
   saveSessionState,
   createAutoPersist,
+  saveRunHistory,
+  loadRunHistory,
 } = require('../../src/webapp/orchestrator/state-persistence');
 
 // ─── Test Helpers ────────────────────────────────────────────
@@ -211,5 +213,77 @@ describe('createAutoPersist', () => {
     // Should not throw
     callbacks.onTransition({});
     expect(store._files['/auto.json']).toBeUndefined();
+  });
+});
+
+// ─── saveRunHistory ──────────────────────────────────────────
+
+describe('saveRunHistory', () => {
+  it('creates a new history file with one entry', () => {
+    const store = createMockStore({});
+    const entry = { mode: 'CREATE', status: 'COMPLETED', started_at: 't1', ended_at: 't2' };
+    saveRunHistory(store, entry, '/hist.json');
+    const data = JSON.parse(store._files['/hist.json']);
+    expect(data).toHaveLength(1);
+    expect(data[0].mode).toBe('CREATE');
+  });
+
+  it('appends to existing history', () => {
+    const store = createMockStore({
+      '/hist.json': JSON.stringify([{ mode: 'AUDIT', status: 'COMPLETED' }]),
+    });
+    saveRunHistory(store, { mode: 'CREATE', status: 'STOPPED' }, '/hist.json');
+    const data = JSON.parse(store._files['/hist.json']);
+    expect(data).toHaveLength(2);
+    expect(data[1].status).toBe('STOPPED');
+  });
+
+  it('caps history at 50 entries (FIFO)', () => {
+    const existing = Array.from({ length: 50 }, (_, i) => ({ id: i }));
+    const store = createMockStore({ '/hist.json': JSON.stringify(existing) });
+    saveRunHistory(store, { id: 50 }, '/hist.json');
+    const data = JSON.parse(store._files['/hist.json']);
+    expect(data).toHaveLength(50);
+    expect(data[0].id).toBe(1); // oldest dropped
+    expect(data[49].id).toBe(50);
+  });
+
+  it('recovers from corrupt JSON in existing file', () => {
+    const store = createMockStore({ '/hist.json': '{bad' });
+    saveRunHistory(store, { mode: 'CREATE' }, '/hist.json');
+    const data = JSON.parse(store._files['/hist.json']);
+    expect(data).toHaveLength(1);
+  });
+
+  it('recovers when existing file is not an array', () => {
+    const store = createMockStore({ '/hist.json': JSON.stringify({ notArray: true }) });
+    saveRunHistory(store, { mode: 'CREATE' }, '/hist.json');
+    const data = JSON.parse(store._files['/hist.json']);
+    expect(data).toHaveLength(1);
+  });
+});
+
+// ─── loadRunHistory ──────────────────────────────────────────
+
+describe('loadRunHistory', () => {
+  it('returns empty array when file does not exist', () => {
+    const store = createMockStore({});
+    expect(loadRunHistory(store, '/hist.json')).toEqual([]);
+  });
+
+  it('loads valid history', () => {
+    const runs = [{ mode: 'CREATE' }, { mode: 'AUDIT' }];
+    const store = createMockStore({ '/hist.json': JSON.stringify(runs) });
+    expect(loadRunHistory(store, '/hist.json')).toHaveLength(2);
+  });
+
+  it('returns empty array for corrupt JSON', () => {
+    const store = createMockStore({ '/hist.json': 'invalid' });
+    expect(loadRunHistory(store, '/hist.json')).toEqual([]);
+  });
+
+  it('returns empty array when file contains non-array', () => {
+    const store = createMockStore({ '/hist.json': JSON.stringify({ obj: true }) });
+    expect(loadRunHistory(store, '/hist.json')).toEqual([]);
   });
 });

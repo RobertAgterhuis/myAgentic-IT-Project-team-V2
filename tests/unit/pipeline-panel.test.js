@@ -138,7 +138,7 @@ describe('FEAT-05-F: State machine metadata', () => {
   });
 
   it('renders completed states with checkmark icon', () => {
-    expect(indexHtml).toContain(".sm-node.sm-completed::after { content: '\\2713'");
+    expect(indexHtml).toMatch(/\.sm-node\.sm-completed::after\s*\{[^}]*content:\s*'\\2713'/);
   });
 });
 
@@ -358,7 +358,7 @@ describe('FEAT-05-F: Mobile responsive layout', () => {
 
   it('has responsive CSS for flow nodes', () => {
     // Verify the .sm-node responsive rule exists within a max-width:700px media query
-    expect(indexHtml).toContain('.sm-node { min-width: 72px;');
+    expect(indexHtml).toMatch(/\.sm-node\s*\{[^}]*min-width:\s*72px/);
   });
 
   it('flow container is horizontally scrollable', () => {

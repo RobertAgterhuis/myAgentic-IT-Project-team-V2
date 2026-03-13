@@ -18,6 +18,7 @@ const {
   STATES,
   EVENTS,
   MODE_CONFIGS,
+  VALID_STATES,
   StateMachine,
   buildTransitionMap,
   createStateMachine,
@@ -593,5 +594,200 @@ describe('StateMachine — edge cases', () => {
   it('null session state initializes to IDLE', () => {
     const sm = createStateMachine('CREATE', null);
     expect(sm.state).toBe('IDLE');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// #170 Hardening: VALID_STATES set
+// ─────────────────────────────────────────────────────────────
+describe('VALID_STATES — validation set', () => {
+  it('contains all STATES values', () => {
+    for (const s of Object.values(STATES)) {
+      expect(VALID_STATES.has(s)).toBe(true);
+    }
+  });
+
+  it('does not contain unknown strings', () => {
+    expect(VALID_STATES.has('BOGUS')).toBe(false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// #170 Hardening: corrupt session state
+// ─────────────────────────────────────────────────────────────
+describe('StateMachine — corrupt session state recovery', () => {
+  it('falls back to IDLE on unknown status', () => {
+    const errors = [];
+    const sm = createStateMachine(
+      'CREATE',
+      { status: 'TOTALLY_BOGUS' },
+      {
+        onError: (e) => errors.push(e),
+      }
+    );
+    expect(sm.state).toBe('IDLE');
+    expect(errors.some((e) => /Corrupt session state/.test(e.reason))).toBe(true);
+  });
+
+  it('handles non-array state_history gracefully', () => {
+    const sm = createStateMachine('CREATE', {
+      status: 'PHASE_2',
+      state_history: 'not-an-array',
+    });
+    expect(sm.state).toBe('PHASE_2');
+    expect(sm.history).toEqual([]);
+  });
+
+  it('handles null state_history gracefully', () => {
+    const sm = createStateMachine('CREATE', {
+      status: 'PHASE_1',
+      state_history: null,
+    });
+    expect(sm.state).toBe('PHASE_1');
+    expect(sm.history).toEqual([]);
+  });
+
+  it('preserves started_at from session state', () => {
+    const sm = createStateMachine('CREATE', {
+      status: 'PHASE_2',
+      started_at: '2025-06-01T00:00:00Z',
+    });
+    expect(sm.startedAt).toBe('2025-06-01T00:00:00Z');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// #170 Hardening: concurrent advance protection
+// ─────────────────────────────────────────────────────────────
+describe('StateMachine — concurrent advance protection', () => {
+  it('blocks re-entrant advance() calls', () => {
+    // Simulate re-entrancy by calling advance() inside onTransition
+    let caughtError;
+    const sm = createStateMachine('CREATE', null, {
+      onTransition: () => {
+        try {
+          sm.advance(); // re-entrant call
+        } catch (err) {
+          caughtError = err;
+        }
+      },
+    });
+    sm.advance(); // IDLE → ONBOARDING — triggers callback which tries another advance
+    expect(caughtError).toBeDefined();
+    expect(caughtError.message).toMatch(/concurrent advance\(\) blocked/);
+  });
+
+  it('unlocks after a failed advance', () => {
+    const sm = createStateMachine('CREATE');
+    while (sm.nextState) sm.advance();
+    // Now at COMPLETED — advance throws
+    expect(() => sm.advance()).toThrow(/Pipeline is complete/);
+    // Machine should not be permanently locked — if we recover or reset it should work
+    // (there's no next state, but the lock is released)
+    expect(() => sm.advance()).toThrow(/Pipeline is complete/);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// #170 Hardening: elapsed time & startedAt
+// ─────────────────────────────────────────────────────────────
+describe('StateMachine — elapsed time tracking', () => {
+  it('startedAt returns an ISO timestamp', () => {
+    const sm = createStateMachine('CREATE');
+    expect(sm.startedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+
+  it('elapsedMs returns a positive number', () => {
+    const sm = createStateMachine('CREATE');
+    expect(sm.elapsedMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it('serialize() includes started_at', () => {
+    const sm = createStateMachine('CREATE');
+    const data = sm.serialize();
+    expect(data.started_at).toBeDefined();
+    expect(typeof data.started_at).toBe('string');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// #170 Hardening: stateMetadata()
+// ─────────────────────────────────────────────────────────────
+describe('StateMachine — stateMetadata()', () => {
+  it('returns all states in flow with their status', () => {
+    const sm = createStateMachine('CREATE');
+    sm.advance(); // → ONBOARDING
+    sm.advance(); // → PHASE_1
+    const meta = sm.stateMetadata();
+
+    expect(meta.length).toBeGreaterThan(0);
+
+    const idle = meta.find((m) => m.state === 'IDLE');
+    expect(idle.status).toBe('completed');
+
+    const onb = meta.find((m) => m.state === 'ONBOARDING');
+    expect(onb.status).toBe('completed');
+
+    const p1 = meta.find((m) => m.state === 'PHASE_1');
+    expect(p1.status).toBe('current');
+
+    const p2 = meta.find((m) => m.state === 'PHASE_2');
+    expect(p2.status).toBe('pending');
+  });
+
+  it('marks completed state with a timestamp', () => {
+    const sm = createStateMachine('CREATE');
+    sm.advance();
+    const meta = sm.stateMetadata();
+    const idle = meta.find((m) => m.state === 'IDLE');
+    expect(idle.timestamp).toBeDefined();
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// #170 Hardening: serialization round-trip
+// ─────────────────────────────────────────────────────────────
+describe('StateMachine — full serialization round-trip', () => {
+  it('serialize → JSON → new machine restores same state', () => {
+    const sm1 = createStateMachine('CREATE');
+    sm1.advance(); // → ONBOARDING
+    sm1.advance(); // → PHASE_1
+    while (sm1.state !== 'CRITIC_1') sm1.advance();
+    sm1.advance({ verdict: 'APPROVED' }); // → PHASE_2
+
+    const json = JSON.stringify(sm1.serialize());
+    const restored = JSON.parse(json);
+
+    const sm2 = createStateMachine('CREATE', restored);
+    expect(sm2.state).toBe(sm1.state);
+    expect(sm2.mode).toBe(sm1.mode);
+    expect(sm2.history.length).toBe(sm1.history.length);
+    // Can continue advancing
+    const next = sm2.advance();
+    expect(next.from).toBe('PHASE_2');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// #170 Hardening: recover edge cases
+// ─────────────────────────────────────────────────────────────
+describe('StateMachine — recover edge cases', () => {
+  it('recover finds from-branch when to is ERROR', () => {
+    const sm = createStateMachine('CREATE');
+    sm.advance(); // → ONBOARDING
+    sm.error('fail');
+    // History: [{IDLE→ONBOARDING}, {ONBOARDING→ERROR}]
+    // Last entry: to=ERROR, so check from=ONBOARDING
+    const recovered = sm.recover();
+    expect(recovered).toBe('ONBOARDING');
+  });
+
+  it('recover falls back to IDLE when all history entries are ERROR', () => {
+    const sm = new StateMachine({ mode: 'CREATE' });
+    // Force ERROR state + all-ERROR history
+    sm._state = STATES.ERROR;
+    sm._history = [{ from: STATES.ERROR, to: STATES.ERROR, timestamp: new Date().toISOString() }];
+    const recovered = sm.recover();
+    expect(recovered).toBe('IDLE');
   });
 });

@@ -254,13 +254,16 @@ class Dispatcher {
    * @param {string} state
    * @param {object} contextOptions - Options for buildContext
    * @param {object} [agentConfigs] - Map of agentId → config overrides
-   * @returns {Promise<{completed: string[], failed: string[], results: object[]}>}
+   * @param {object} [dispatchOptions] - { onFailure: 'continue'|'abort'|'escalate' }
+   * @returns {Promise<{completed: string[], failed: string[], results: object[], escalated: boolean}>}
    */
-  async dispatchState(state, contextOptions = {}, agentConfigs = {}) {
+  async dispatchState(state, contextOptions = {}, agentConfigs = {}, dispatchOptions = {}) {
+    const { onFailure = 'continue' } = dispatchOptions;
     const agents = this.getAgentsForState(state);
     const completed = [];
     const failed = [];
     const results = [];
+    let escalated = false;
 
     for (const agent of agents) {
       const context = this.buildContext(agent.id, contextOptions);
@@ -278,10 +281,17 @@ class Dispatcher {
         }
       } else {
         failed.push(agent.id);
+        if (onFailure === 'abort') {
+          break;
+        }
+        if (onFailure === 'escalate') {
+          escalated = true;
+          break;
+        }
       }
     }
 
-    return { completed, failed, results };
+    return { completed, failed, results, escalated };
   }
 
   // ─── Internal ────────────────────────────────────────────

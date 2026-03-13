@@ -16,6 +16,7 @@ const path = require('path');
 // Default session-state.json location
 const DEFAULT_SESSION_DIR = path.resolve(__dirname, '..', '..', 'docs', 'session');
 const DEFAULT_SESSION_FILE = path.join(DEFAULT_SESSION_DIR, 'session-state.json');
+const DEFAULT_HISTORY_FILE = path.join(DEFAULT_SESSION_DIR, 'run-history.json');
 
 /**
  * @typedef {object} PersistedState
@@ -125,9 +126,58 @@ function createAutoPersist(store, getStateMachine, filePath, onPersist) {
   };
 }
 
+/**
+ * Append a completed/stopped run to the run history log.
+ * Keeps at most 50 entries (FIFO).
+ *
+ * @param {object} store
+ * @param {object} runEntry - { mode, status, started_at, ended_at, state_history, gate_results }
+ * @param {string} [filePath]
+ */
+function saveRunHistory(store, runEntry, filePath) {
+  const target = filePath || DEFAULT_HISTORY_FILE;
+  const dir = path.dirname(target);
+  store.mkdirp(dir);
+
+  let runs = [];
+  if (store.exists(target)) {
+    try {
+      runs = JSON.parse(store.readFile(target));
+      if (!Array.isArray(runs)) runs = [];
+    } catch {
+      runs = [];
+    }
+  }
+
+  runs.push(runEntry);
+  if (runs.length > 50) runs = runs.slice(runs.length - 50);
+
+  store.writeFile(target, JSON.stringify(runs, null, 2));
+}
+
+/**
+ * Load the run history log.
+ * @param {object} store
+ * @param {string} [filePath]
+ * @returns {Array<object>}
+ */
+function loadRunHistory(store, filePath) {
+  const target = filePath || DEFAULT_HISTORY_FILE;
+  if (!store.exists(target)) return [];
+  try {
+    const data = JSON.parse(store.readFile(target));
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}
+
 module.exports = {
   DEFAULT_SESSION_FILE,
+  DEFAULT_HISTORY_FILE,
   loadSessionState,
   saveSessionState,
   createAutoPersist,
+  saveRunHistory,
+  loadRunHistory,
 };

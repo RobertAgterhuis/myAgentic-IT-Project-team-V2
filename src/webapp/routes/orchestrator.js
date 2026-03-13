@@ -230,6 +230,32 @@ module.exports = function createOrchestratorRoutes(ctx) {
     }
   }
 
+  // ── GET /api/orchestrator/run-history ────────────────────────
+
+  function handleRunHistory(_req, res) {
+    try {
+      const engine = getEngine();
+      const runs = engine.runHistory();
+      return json(res, 200, { ok: true, runs });
+    } catch (err) {
+      structuredLog('error', 'orchestrator_run_history_error', { error: err.message });
+      return json(res, 500, errorResponse('RUN_HISTORY_ERROR', err.message));
+    }
+  }
+
+  // ── POST /api/orchestrator/stop ─────────────────────────────
+
+  async function handleStop(_req, res) {
+    try {
+      const engine = getEngine();
+      const st = engine.stop();
+      return json(res, 200, { ok: true, stopped: true, status: st });
+    } catch (err) {
+      structuredLog('error', 'orchestrator_stop_failed', { error: err.message });
+      return json(res, 500, errorResponse('STOP_FAILED', err.message));
+    }
+  }
+
   // ── POST /api/orchestrator/sprint-gate ────────────────────
 
   async function handleSprintGate(req, res) {
@@ -259,10 +285,12 @@ module.exports = function createOrchestratorRoutes(ctx) {
 
   return {
     'GET /api/orchestrator/status': handleStatus,
+    'GET /api/orchestrator/run-history': handleRunHistory,
     'POST /api/orchestrator/advance': handleAdvance,
     'POST /api/orchestrator/error': handleError,
     'POST /api/orchestrator/recover': handleRecover,
     'POST /api/orchestrator/reset': handleReset,
+    'POST /api/orchestrator/stop': handleStop,
     'POST /api/orchestrator/validate-gate': handleValidateGate,
     'POST /api/orchestrator/command': handleCommand,
     'POST /api/orchestrator/sprint-gate': handleSprintGate,

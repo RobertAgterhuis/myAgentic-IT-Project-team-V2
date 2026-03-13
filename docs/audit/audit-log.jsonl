@@ -2213,3 +2213,107 @@
 {"timestamp":"2026-03-13T10:19:14.085Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
 {"timestamp":"2026-03-13T10:19:14.086Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
 {"timestamp":"2026-03-13T10:19:14.097Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:09:55.283Z","operation":"update","entity_type":"questionnaire","entity_id":"Q-05-001","user":"webapp","summary":"Updated 1 answer(s) in Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md"}
+{"timestamp":"2026-03-13T11:09:55.287Z","operation":"update","entity_type":"questionnaire","entity_id":"Q-05-001","user":"webapp","summary":"Updated 1 answer(s) in Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md"}
+{"timestamp":"2026-03-13T11:09:55.289Z","operation":"update","entity_type":"reevaluate-trigger","entity_id":null,"user":"system","summary":"File written: docs/session/reevaluate-trigger.json"}
+{"timestamp":"2026-03-13T11:09:55.290Z","operation":"update","entity_type":"reevaluate-trigger","entity_id":null,"user":"system","summary":"File written: docs/session/reevaluate-trigger.json"}
+{"timestamp":"2026-03-13T11:09:55.293Z","operation":"create","entity_type":"decision","entity_id":"DEC-101","user":"webapp","summary":"Decision create: DEC-101"}
+{"timestamp":"2026-03-13T11:09:55.294Z","operation":"create","entity_type":"decision","entity_id":"DEC-101","user":"webapp","summary":"Decision create: DEC-101"}
+{"timestamp":"2026-03-13T11:09:55.295Z","operation":"update","entity_type":"decision","entity_id":"DEC-R2-010","user":"webapp","summary":"Decision answer: DEC-R2-010"}
+{"timestamp":"2026-03-13T11:09:55.297Z","operation":"update","entity_type":"decision","entity_id":"DEC-R2-010","user":"webapp","summary":"Decision decide: DEC-R2-010"}
+{"timestamp":"2026-03-13T11:09:55.298Z","operation":"update","entity_type":"decision","entity_id":"DEC-R2-010","user":"webapp","summary":"Decision defer: DEC-R2-010"}
+{"timestamp":"2026-03-13T11:09:55.299Z","operation":"update","entity_type":"decision","entity_id":"DEC-R2-010","user":"webapp","summary":"Decision expire: DEC-R2-010"}
+{"timestamp":"2026-03-13T11:09:55.300Z","operation":"update","entity_type":"decision","entity_id":"DEC-R2-010","user":"webapp","summary":"Decision reopen: DEC-R2-010"}
+{"timestamp":"2026-03-13T11:09:55.301Z","operation":"update","entity_type":"decision","entity_id":"DEC-R2-010","user":"webapp","summary":"Decision edit: DEC-R2-010"}
+{"timestamp":"2026-03-13T11:09:55.306Z","operation":"create","entity_type":"decision","entity_id":"DEC-101","user":"webapp","summary":"Decision create: DEC-101"}
+{"timestamp":"2026-03-13T11:09:55.307Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:09:55.309Z","operation":"update","entity_type":"project-brief","entity_id":null,"user":"system","summary":"File written: BusinessDocs/project-brief.md"}
+{"timestamp":"2026-03-13T11:09:55.309Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:09:55.310Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:09:55.311Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:09:55.312Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:09:55.315Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:09:55.788Z","operation":"update","entity_type":"questionnaire-index","entity_id":null,"user":"system","summary":"File written: BusinessDocs/questionnaire-index.md"}
+{"timestamp":"2026-03-13T11:09:57.333Z","operation":"update","entity_type":"analytics-events","entity_id":null,"user":"system","summary":"File written: docs/analytics-events.json"}
+{"timestamp":"2026-03-13T11:09:57.337Z","operation":"update","entity_type":"analytics-events","entity_id":null,"user":"system","summary":"File written: docs/analytics-events.json"}
+{"timestamp":"2026-03-13T11:09:57.351Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:09:57.352Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:09:57.353Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:09:57.355Z","operation":"update","entity_type":"analytics-events","entity_id":null,"user":"system","summary":"File written: docs/analytics-events.json"}
+{"timestamp":"2026-03-13T11:09:57.356Z","operation":"update","entity_type":"analytics-events","entity_id":null,"user":"system","summary":"File written: docs/analytics-events.json"}
+{"timestamp":"2026-03-13T11:09:57.375Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:09:57.376Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:10:00.271Z","operation":"SAVE_ANSWERS","entity_type":"questionnaire","entity_id":"BusinessDocs/Phase1-Business/Questionnaires/save-test-questionnaire.md","user":"mcp","summary":"Updated 0 of 1 answers"}
+{"timestamp":"2026-03-13T11:10:00.274Z","operation":"QUEUE_COMMAND","entity_type":"command","entity_id":"CREATE TestProject","user":"mcp","summary":"CREATE TestProject"}
+{"timestamp":"2026-03-13T11:10:00.283Z","operation":"QUEUE_COMMAND","entity_type":"command","entity_id":"CREATE","user":"mcp","summary":"CREATE"}
+{"timestamp":"2026-03-13T11:10:00.286Z","operation":"QUEUE_COMMAND","entity_type":"command","entity_id":"AUDIT","user":"mcp","summary":"AUDIT"}
+{"timestamp":"2026-03-13T11:10:00.287Z","operation":"QUEUE_COMMAND","entity_type":"command","entity_id":"REEVALUATE","user":"mcp","summary":"REEVALUATE"}
+{"timestamp":"2026-03-13T11:10:00.288Z","operation":"QUEUE_COMMAND","entity_type":"command","entity_id":"FEATURE","user":"mcp","summary":"FEATURE"}
+{"timestamp":"2026-03-13T11:10:00.288Z","operation":"QUEUE_COMMAND","entity_type":"command","entity_id":"SCOPE CHANGE","user":"mcp","summary":"SCOPE CHANGE"}
+{"timestamp":"2026-03-13T11:10:00.289Z","operation":"QUEUE_COMMAND","entity_type":"command","entity_id":"HOTFIX","user":"mcp","summary":"HOTFIX"}
+{"timestamp":"2026-03-13T11:10:00.290Z","operation":"QUEUE_COMMAND","entity_type":"command","entity_id":"REFRESH ONBOARDING","user":"mcp","summary":"REFRESH ONBOARDING"}
+{"timestamp":"2026-03-13T11:10:00.297Z","operation":"QUEUE_COMMAND","entity_type":"command","entity_id":"CREATE BriefTest","user":"mcp","summary":"CREATE BriefTest"}
+{"timestamp":"2026-03-13T11:10:00.787Z","operation":"update","entity_type":"questionnaire","entity_id":"Q-05-001","user":"webapp","summary":"Updated 1 answer(s) in Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md"}
+{"timestamp":"2026-03-13T11:10:00.798Z","operation":"update","entity_type":"analytics-events","entity_id":null,"user":"system","summary":"File written: docs/analytics-events.json"}
+{"timestamp":"2026-03-13T11:10:00.804Z","operation":"update","entity_type":"questionnaire","entity_id":"Q-05-001","user":"webapp","summary":"Updated 1 answer(s) in Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md"}
+{"timestamp":"2026-03-13T11:10:00.806Z","operation":"create","entity_type":"decision","entity_id":"DEC-103","user":"webapp","summary":"Decision create: DEC-103"}
+{"timestamp":"2026-03-13T11:10:00.807Z","operation":"update","entity_type":"decision","entity_id":"DEC-103","user":"webapp","summary":"Decision answer: DEC-103"}
+{"timestamp":"2026-03-13T11:10:00.808Z","operation":"update","entity_type":"decision","entity_id":"DEC-103","user":"webapp","summary":"Decision decide: DEC-103"}
+{"timestamp":"2026-03-13T11:10:00.812Z","operation":"update","entity_type":"questionnaire","entity_id":"Q-05-001","user":"webapp","summary":"Updated 1 answer(s) in Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md"}
+{"timestamp":"2026-03-13T11:10:00.833Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:10:00.835Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:10:00.836Z","operation":"update","entity_type":"reevaluate-trigger","entity_id":null,"user":"system","summary":"File written: docs/session/reevaluate-trigger.json"}
+{"timestamp":"2026-03-13T11:10:01.008Z","operation":"update","entity_type":"questionnaire","entity_id":"Q-05-001","user":"webapp","summary":"Updated 1 answer(s) in Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md"}
+{"timestamp":"2026-03-13T11:10:01.010Z","operation":"update","entity_type":"questionnaire","entity_id":"Q-05-001,Q-05-002","user":"webapp","summary":"Updated 2 answer(s) in Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md"}
+{"timestamp":"2026-03-13T11:10:01.013Z","operation":"update","entity_type":"questionnaire","entity_id":"Q-05-001","user":"webapp","summary":"Updated 1 answer(s) in Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md"}
+{"timestamp":"2026-03-13T11:10:01.014Z","operation":"update","entity_type":"questionnaire","entity_id":"Q-05-001","user":"webapp","summary":"Updated 1 answer(s) in Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md"}
+{"timestamp":"2026-03-13T11:10:01.018Z","operation":"create","entity_type":"decision","entity_id":"DEC-101","user":"webapp","summary":"Decision create: DEC-101"}
+{"timestamp":"2026-03-13T11:10:01.020Z","operation":"update","entity_type":"decision","entity_id":"DEC-101","user":"webapp","summary":"Decision answer: DEC-101"}
+{"timestamp":"2026-03-13T11:10:01.021Z","operation":"update","entity_type":"decision","entity_id":"DEC-101","user":"webapp","summary":"Decision decide: DEC-101"}
+{"timestamp":"2026-03-13T11:10:01.022Z","operation":"create","entity_type":"decision","entity_id":"DEC-101","user":"webapp","summary":"Decision create: DEC-101"}
+{"timestamp":"2026-03-13T11:10:01.023Z","operation":"update","entity_type":"decision","entity_id":"DEC-101","user":"webapp","summary":"Decision defer: DEC-101"}
+{"timestamp":"2026-03-13T11:10:01.025Z","operation":"update","entity_type":"decision","entity_id":"DEC-101","user":"webapp","summary":"Decision reopen: DEC-101"}
+{"timestamp":"2026-03-13T11:10:01.026Z","operation":"create","entity_type":"decision","entity_id":"DEC-101","user":"webapp","summary":"Decision create: DEC-101"}
+{"timestamp":"2026-03-13T11:10:01.028Z","operation":"update","entity_type":"decision","entity_id":"DEC-R2-001","user":"webapp","summary":"Decision edit: DEC-R2-001"}
+{"timestamp":"2026-03-13T11:10:01.029Z","operation":"update","entity_type":"decision","entity_id":"DEC-R2-001","user":"webapp","summary":"Decision expire: DEC-R2-001"}
+{"timestamp":"2026-03-13T11:10:01.032Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:10:01.033Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:10:01.035Z","operation":"update","entity_type":"project-brief","entity_id":null,"user":"system","summary":"File written: BusinessDocs/project-brief.md"}
+{"timestamp":"2026-03-13T11:10:01.035Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:10:01.038Z","operation":"update","entity_type":"analytics-events","entity_id":null,"user":"system","summary":"File written: docs/analytics-events.json"}
+{"timestamp":"2026-03-13T11:10:01.039Z","operation":"update","entity_type":"analytics-events","entity_id":null,"user":"system","summary":"File written: docs/analytics-events.json"}
+{"timestamp":"2026-03-13T11:10:01.040Z","operation":"update","entity_type":"reevaluate-trigger","entity_id":null,"user":"system","summary":"File written: docs/session/reevaluate-trigger.json"}
+{"timestamp":"2026-03-13T11:10:01.041Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:10:01.051Z","operation":"update","entity_type":"questionnaire","entity_id":"Q-05-001","user":"webapp","summary":"Updated 1 answer(s) in Phase2-Tech/Questionnaires/05-software-architect-questionnaire.md"}
+{"timestamp":"2026-03-13T11:10:01.051Z","operation":"create","entity_type":"decision","entity_id":"DEC-101","user":"webapp","summary":"Decision create: DEC-101"}
+{"timestamp":"2026-03-13T11:10:01.052Z","operation":"create","entity_type":"decision","entity_id":"DEC-101","user":"webapp","summary":"Decision create: DEC-101"}
+{"timestamp":"2026-03-13T11:10:01.053Z","operation":"update","entity_type":"reevaluate-trigger","entity_id":null,"user":"system","summary":"File written: docs/session/reevaluate-trigger.json"}
+{"timestamp":"2026-03-13T11:10:01.592Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-d6040c","user":"webapp","summary":"Created milestone milestone-20260313-d6040c"}
+{"timestamp":"2026-03-13T11:10:01.598Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-2eeb04","user":"webapp","summary":"Created milestone milestone-20260313-2eeb04"}
+{"timestamp":"2026-03-13T11:10:01.600Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-0a1152","user":"webapp","summary":"Created milestone milestone-20260313-0a1152"}
+{"timestamp":"2026-03-13T11:10:01.601Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-8a39f9","user":"webapp","summary":"Created milestone milestone-20260313-8a39f9"}
+{"timestamp":"2026-03-13T11:10:01.603Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-3c38e1","user":"webapp","summary":"Created milestone milestone-20260313-3c38e1"}
+{"timestamp":"2026-03-13T11:10:01.605Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-de6218","user":"webapp","summary":"Created milestone milestone-20260313-de6218"}
+{"timestamp":"2026-03-13T11:10:01.606Z","operation":"archive","entity_type":"milestone","entity_id":"milestone-20260313-de6218","user":"webapp","summary":"Archived milestone milestone-20260313-de6218"}
+{"timestamp":"2026-03-13T11:10:01.607Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-c93136","user":"webapp","summary":"Created milestone milestone-20260313-c93136"}
+{"timestamp":"2026-03-13T11:10:01.610Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-8020e1","user":"webapp","summary":"Created milestone milestone-20260313-8020e1"}
+{"timestamp":"2026-03-13T11:10:01.611Z","operation":"update","entity_type":"milestone","entity_id":"milestone-20260313-8020e1","user":"webapp","summary":"Updated milestone milestone-20260313-8020e1"}
+{"timestamp":"2026-03-13T11:10:01.612Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-c05961","user":"webapp","summary":"Created milestone milestone-20260313-c05961"}
+{"timestamp":"2026-03-13T11:10:01.612Z","operation":"update","entity_type":"milestone","entity_id":"milestone-20260313-c05961","user":"webapp","summary":"Updated milestone milestone-20260313-c05961"}
+{"timestamp":"2026-03-13T11:10:01.613Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-27a916","user":"webapp","summary":"Created milestone milestone-20260313-27a916"}
+{"timestamp":"2026-03-13T11:10:01.614Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-18c589","user":"webapp","summary":"Created milestone milestone-20260313-18c589"}
+{"timestamp":"2026-03-13T11:10:01.615Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-41ec6a","user":"webapp","summary":"Created milestone milestone-20260313-41ec6a"}
+{"timestamp":"2026-03-13T11:10:01.617Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-1cc4c4","user":"webapp","summary":"Created milestone milestone-20260313-1cc4c4"}
+{"timestamp":"2026-03-13T11:10:01.618Z","operation":"update","entity_type":"milestone","entity_id":"milestone-20260313-1cc4c4","user":"webapp","summary":"Updated milestone milestone-20260313-1cc4c4"}
+{"timestamp":"2026-03-13T11:10:01.619Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-6a5b00","user":"webapp","summary":"Created milestone milestone-20260313-6a5b00"}
+{"timestamp":"2026-03-13T11:10:01.619Z","operation":"archive","entity_type":"milestone","entity_id":"milestone-20260313-6a5b00","user":"webapp","summary":"Archived milestone milestone-20260313-6a5b00"}
+{"timestamp":"2026-03-13T11:10:01.620Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-616ab8","user":"webapp","summary":"Created milestone milestone-20260313-616ab8"}
+{"timestamp":"2026-03-13T11:10:01.621Z","operation":"archive","entity_type":"milestone","entity_id":"milestone-20260313-616ab8","user":"webapp","summary":"Archived milestone milestone-20260313-616ab8"}
+{"timestamp":"2026-03-13T11:10:01.623Z","operation":"create","entity_type":"milestone","entity_id":"milestone-20260313-d24a5d","user":"webapp","summary":"Created milestone milestone-20260313-d24a5d"}
+{"timestamp":"2026-03-13T11:10:01.624Z","operation":"archive","entity_type":"milestone","entity_id":"milestone-20260313-d24a5d","user":"webapp","summary":"Archived milestone milestone-20260313-d24a5d"}
+{"timestamp":"2026-03-13T11:10:01.625Z","operation":"update","entity_type":"milestone","entity_id":"milestone-20260313-d24a5d","user":"webapp","summary":"Updated milestone milestone-20260313-d24a5d"}
+{"timestamp":"2026-03-13T11:10:02.370Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:10:02.373Z","operation":"update","entity_type":"project-brief","entity_id":null,"user":"system","summary":"File written: BusinessDocs/project-brief.md"}
+{"timestamp":"2026-03-13T11:10:02.373Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:10:02.375Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}
+{"timestamp":"2026-03-13T11:10:02.386Z","operation":"update","entity_type":"command-queue","entity_id":null,"user":"system","summary":"File written: docs/session/command-queue.json"}

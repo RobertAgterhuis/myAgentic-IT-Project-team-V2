@@ -163,32 +163,49 @@ async function push() {
   console.log('\nPush complete.');
 }
 
+// ── Exports (for testing) ────────────────────────────────────────
+
+module.exports = {
+  readLocaleFile,
+  writeLocaleFile,
+  validate,
+  pull,
+  push,
+  LOCALES_DIR,
+  SOURCE_LANG,
+  TARGET_LANGS,
+  COMPONENTS,
+};
+
 // ── Main ─────────────────────────────────────────────────────────
 
-const command = process.argv[2];
+/* istanbul ignore next — CLI entry point */
+if (require.main === module) {
+  const command = process.argv[2];
 
-switch (command) {
-  case 'validate':
-    validate();
-    break;
-  case 'pull':
-    pull().catch((err) => {
-      console.error('Pull failed:', err.message);
-      process.exit(1);
-    });
-    break;
-  case 'push':
-    push().catch((err) => {
-      console.error('Push failed:', err.message);
-      process.exit(1);
-    });
-    break;
-  default:
-    console.log('Usage: node scripts/weblate-sync.js <validate|pull|push>');
-    console.log('');
-    console.log('Commands:');
-    console.log('  validate  Check locale file consistency (offline)');
-    console.log('  pull      Pull translations from Weblate → locales/');
-    console.log('  push      Push source strings from locales/ → Weblate');
-    process.exit(command ? 1 : 0);
+  switch (command) {
+    case 'validate':
+      validate();
+      break;
+    case 'pull':
+      pull().catch((err) => {
+        console.error('Pull failed:', err.message);
+        process.exit(1);
+      });
+      break;
+    case 'push':
+      push().catch((err) => {
+        console.error('Push failed:', err.message);
+        process.exit(1);
+      });
+      break;
+    default:
+      console.log('Usage: node scripts/weblate-sync.js <validate|pull|push>');
+      console.log('');
+      console.log('Commands:');
+      console.log('  validate  Check locale file consistency (offline)');
+      console.log('  pull      Pull translations from Weblate → locales/');
+      console.log('  push      Push source strings from locales/ → Weblate');
+      process.exit(command ? 1 : 0);
+  }
 }

@@ -10,3 +10,5 @@ src/webapp/ @RobertAgterhuis
 # Agent system
 agents/ @RobertAgterhuis
 docs/ @RobertAgterhuis
+platform/ @RobertAgterhuis
+scripts/ @RobertAgterhuis

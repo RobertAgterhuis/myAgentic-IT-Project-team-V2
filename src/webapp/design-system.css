@@ -17,7 +17,7 @@
    index.html <style> block with enterprise-grade component styling, layout patterns,
    utilities, and accessibility features.
    
-   Design Token Source: .github/docs/brand/design-tokens.json (8/8 categories)
+   Design Token Source: docs/brand/design-tokens.json (8/8 categories)
    Token Consumer: CSS Custom Properties (--primary, --space-*, --radius-*)
    Theme Support: Light (default) + Dark (@media prefers-color-scheme: dark)
    

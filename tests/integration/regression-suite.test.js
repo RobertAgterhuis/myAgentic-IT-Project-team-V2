@@ -259,6 +259,8 @@ describe('Sprint 1 Regression: Security', () => {
 
   it('security headers are set on all responses', async () => {
     const res = await req('GET', '/');
+    // 200 when React build is present, 404 in CI (ui/dist/ not committed)
+    expect([200, 404]).toContain(res.status);
     expect(res.headers['x-content-type-options']).toBe('nosniff');
     expect(res.headers['x-frame-options']).toBe('SAMEORIGIN');
     expect(res.headers['content-security-policy']).toBeTruthy();

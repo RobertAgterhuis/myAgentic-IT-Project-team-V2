@@ -412,11 +412,11 @@ module.exports = function createMiscRoutes(ctx) {
     if (serveDistFile(pathname, res)) return;
 
     // SPA fallback — serve index.html for client-side routing
+    setSecurityHeaders(res);
     if (!cachedSpaHtml) {
-      res.writeHead(404);
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
       return res.end(S.NOT_FOUND);
     }
-    setSecurityHeaders(res);
     res.writeHead(200, {
       'Content-Type': 'text/html; charset=utf-8',
       'Content-Length': cachedSpaHtml.length,

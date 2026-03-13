@@ -25,6 +25,8 @@ const {
   loadGuardrailRules,
   validateDocument,
   runGate,
+  CriticValidator,
+  RiskValidator,
   CRITIC_TO_PHASE,
   PHASE_GUARDRAILS,
   _PHASE_CONTRACTS,
@@ -677,5 +679,110 @@ describe('engine validateGate integration', () => {
     // Attempting to advance with failed gate should throw
     expect(() => engine.advance(gateResult)).toThrow(/Gate failed/);
     expect(engine.status().state).toBe('CRITIC_1');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// #172: CriticValidator class wrapper
+// ─────────────────────────────────────────────────────────────
+describe('CriticValidator', () => {
+  it('throws without store', () => {
+    expect(() => new CriticValidator()).toThrow(/requires a store/);
+  });
+
+  it('validates deliverables and returns verdict', () => {
+    const store = createMockStore({
+      'deliverable.md': buildCompliantDeliverable(),
+    });
+    const cv = new CriticValidator(store);
+    const result = cv.validate('CRITIC_1', ['deliverable.md']);
+    expect(result.verdict).toBe('APPROVED');
+    expect(result.summary.criticState).toBe('CRITIC_1');
+  });
+
+  it('returns FAILED for missing deliverables', () => {
+    const store = createMockStore();
+    const cv = new CriticValidator(store);
+    const result = cv.validate('CRITIC_2', ['missing.md']);
+    expect(result.verdict).toBe('FAILED');
+  });
+
+  it('returns FAILED for unknown critic state', () => {
+    const store = createMockStore();
+    const cv = new CriticValidator(store);
+    const result = cv.validate('CRITIC_99', []);
+    expect(result.verdict).toBe('FAILED');
+  });
+
+  it('accepts custom contractsDir and guardrailsDir', () => {
+    const store = createMockStore({
+      'deliverable.md': buildCompliantDeliverable(),
+    });
+    const cv = new CriticValidator(store, {
+      contractsDir: 'custom/contracts',
+      guardrailsDir: 'custom/guardrails',
+    });
+    const result = cv.validate('CRITIC_1', ['deliverable.md']);
+    expect(result.verdict).toBe('APPROVED');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// #172: RiskValidator class wrapper
+// ─────────────────────────────────────────────────────────────
+describe('RiskValidator', () => {
+  it('throws without store', () => {
+    expect(() => new RiskValidator()).toThrow(/requires a store/);
+  });
+
+  it('validates deliverables and returns risks array', () => {
+    const content = buildCompliantDeliverable({
+      sections: [
+        '# Analysis',
+        '## Findings',
+        'SECURITY_FLAG: SQL injection risk in auth module',
+        'UNCERTAIN: Revenue projections may be off',
+      ],
+    });
+    const store = createMockStore({ 'del.md': content });
+    const rv = new RiskValidator(store);
+    const result = rv.validate('CRITIC_1', ['del.md']);
+    expect(result.risks.length).toBeGreaterThan(0);
+    expect(result.risks.some((r) => r.type === 'security')).toBe(true);
+    expect(result.risks.some((r) => r.type === 'uncertainty')).toBe(true);
+    expect(result.summary.riskItemCount).toBeGreaterThan(0);
+  });
+
+  it('returns empty risks for deliverable without risk tags in body', () => {
+    // Build a deliverable specifically without UNCERTAIN/SECURITY_FLAG in body
+    // (handoff checklist mentions UNCERTAIN: as instructions, but those are expected)
+    const content = [
+      '# Analysis',
+      '## Findings',
+      'Revenue model is subscription-based. Source: requirements.md L12.',
+      '## HANDOFF CHECKLIST',
+      '- [x] All required sections are filled',
+      '- [x] All tagged items are documented',
+      '- [x] All data items are documented',
+      '- [x] Output complies with the contract',
+      '- [x] Guardrails have been checked',
+      '- [x] Output is machine-readable',
+      '- [x] No contradictory statements',
+      '- [x] All findings include a source reference',
+      '- [x] Deliverable written to file per protocol',
+    ].join('\n');
+    const store = createMockStore({ 'clean.md': content });
+    const rv = new RiskValidator(store);
+    const result = rv.validate('CRITIC_1', ['clean.md']);
+    expect(result.risks).toEqual([]);
+    expect(result.summary.riskItemCount).toBe(0);
+  });
+
+  it('skips missing deliverable files for risk extraction', () => {
+    const store = createMockStore();
+    const rv = new RiskValidator(store);
+    const result = rv.validate('CRITIC_1', ['missing.md']);
+    expect(result.verdict).toBe('FAILED');
+    expect(result.risks).toEqual([]);
   });
 });

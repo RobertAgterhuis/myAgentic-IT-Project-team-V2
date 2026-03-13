@@ -507,6 +507,92 @@ function runGate(store, options) {
   };
 }
 
+// ─── Class Wrappers ──────────────────────────────────────────
+
+/**
+ * CriticValidator — validates deliverables against contracts & handoff checklist.
+ * Wraps runGate with critic-specific defaults.
+ */
+class CriticValidator {
+  /**
+   * @param {object} store - File store
+   * @param {object} [options] - { contractsDir, guardrailsDir }
+   */
+  constructor(store, options = {}) {
+    if (!store) throw new Error('CriticValidator requires a store');
+    this._store = store;
+    this._contractsDir = options.contractsDir || CONTRACTS_DIR;
+    this._guardrailsDir = options.guardrailsDir || GUARDRAILS_DIR;
+  }
+
+  /**
+   * Validate deliverables for a specific critic gate.
+   * @param {string} criticState - e.g. 'CRITIC_1'
+   * @param {string[]} deliverables - Paths to deliverable files
+   * @returns {{verdict: string, violations: Array, questionnaireRequests: Array, summary: object}}
+   */
+  validate(criticState, deliverables) {
+    return runGate(this._store, {
+      criticState,
+      deliverables,
+      contractsDir: this._contractsDir,
+      guardrailsDir: this._guardrailsDir,
+    });
+  }
+}
+
+/**
+ * RiskValidator — validates deliverables with focus on risk-related tags.
+ * Wraps runGate and extends with risk-specific analysis.
+ */
+class RiskValidator {
+  /**
+   * @param {object} store - File store
+   * @param {object} [options] - { contractsDir, guardrailsDir }
+   */
+  constructor(store, options = {}) {
+    if (!store) throw new Error('RiskValidator requires a store');
+    this._store = store;
+    this._contractsDir = options.contractsDir || CONTRACTS_DIR;
+    this._guardrailsDir = options.guardrailsDir || GUARDRAILS_DIR;
+  }
+
+  /**
+   * Validate deliverables for risk assessment.
+   * @param {string} criticState - e.g. 'CRITIC_1'
+   * @param {string[]} deliverables - Paths to deliverable files
+   * @returns {{verdict: string, violations: Array, risks: Array, summary: object}}
+   */
+  validate(criticState, deliverables) {
+    const result = runGate(this._store, {
+      criticState,
+      deliverables,
+      contractsDir: this._contractsDir,
+      guardrailsDir: this._guardrailsDir,
+    });
+
+    // Extract risk-specific items from tags
+    const risks = [];
+    for (const del of deliverables) {
+      if (!this._store.exists(del)) continue;
+      const content = this._store.readFile(del);
+      const securityFlags = extractTaggedItems(content, 'SECURITY_FLAG:');
+      const uncertainItems = extractTaggedItems(content, 'UNCERTAIN:');
+      risks.push(
+        ...securityFlags.map((s) => ({ ...s, deliverable: del, type: 'security' })),
+        ...uncertainItems.map((u) => ({ ...u, deliverable: del, type: 'uncertainty' }))
+      );
+    }
+
+    return {
+      verdict: result.verdict,
+      violations: result.violations,
+      risks,
+      summary: { ...result.summary, riskItemCount: risks.length },
+    };
+  }
+}
+
 module.exports = {
   CRITIC_TO_PHASE,
   PHASE_GUARDRAILS,
@@ -522,4 +608,6 @@ module.exports = {
   loadGuardrailRules,
   validateDocument,
   runGate,
+  CriticValidator,
+  RiskValidator,
 };

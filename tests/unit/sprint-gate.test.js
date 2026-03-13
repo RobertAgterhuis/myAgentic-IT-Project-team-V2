@@ -1090,3 +1090,86 @@ describe('engine integration — sprintGate', () => {
     expect(blockedEvent.data.blockerCount).toBeGreaterThan(0);
   });
 });
+
+// ═════════════════════════════════════════════════════════════
+// #173 Hardening: edge-case coverage
+// ═════════════════════════════════════════════════════════════
+
+describe('parseBlockerMatrix — table end on non-pipe line', () => {
+  test('stops parsing when table ends with non-pipe content', () => {
+    const md = [
+      '| Blocker ID | Source -> Target | Description | Classification | Resolution Status | Source |',
+      '| --- | --- | --- | --- | --- | --- |',
+      '| BLK-001 | A → B | Desc | BLOCKING | OPEN | test |',
+      '',
+      'Some paragraph text after the table.',
+      '| BLK-002 | C → D | Desc2 | ADVISORY | OPEN | test |',
+    ].join('\n');
+    const result = parseBlockerMatrix(md);
+    // Should only parse BLK-001 since table ended at empty line
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe('BLK-001');
+  });
+});
+
+describe('loadDecisionsAndTriggers — decision parsing edge cases', () => {
+  test('ignores unknown ## heading in decisions file', () => {
+    const decisionsContent = [
+      '## Random Section', // unknown heading before any section — covers L77-79
+      '',
+      'Some text.',
+      '',
+      '## Open Questions',
+      '',
+      '| ID | Priority | Scope | Question | Answer | Date |',
+      '| --- | --- | --- | --- | --- | --- |',
+      '| Q-01 | HIGH | Tech | What DB? | PostgreSQL | 2026-01-01 |',
+      '',
+      '## Uncategorized Decisions',
+      '',
+      '| ID | Priority | Scope | Decision | Notes | Date |',
+      '| --- | --- | --- | --- | --- | --- |',
+      '| DEC-01 | HIGH | Tech | Use REST | n/a | 2026-01-01 |',
+    ].join('\n');
+    const store = createMockStore({
+      [DECISIONS_PATH]: decisionsContent,
+    });
+    const result = loadDecisionsAndTriggers(store, 'SP-5');
+    expect(result.blockingQuestions).toHaveLength(0); // Q-01 scope is Tech, not SP-5/All
+    expect(result.decisions).toHaveLength(1);
+  });
+
+  test('handles decisions file with only categories section', () => {
+    const decisionsContent = [
+      '## Decision Categories',
+      '',
+      '| Stack | File | Count | Status | Applicable |',
+      '| --- | --- | --- | --- | --- |',
+      '| Backend | [file](path) | 3 | ACTIVE | Yes |',
+    ].join('\n');
+    const store = createMockStore({
+      [DECISIONS_PATH]: decisionsContent,
+    });
+    const result = loadDecisionsAndTriggers(store, 'SP-5');
+    expect(result.activeCategories).toHaveLength(1);
+    expect(result.activeCategories[0].stack).toBe('Backend');
+    expect(result.activeCategories[0].status).toBe('ACTIVE');
+  });
+});
+
+describe('checkBlockers — blocker classification edge', () => {
+  test('non-BLOCKING non-ADVISORY items are not listed in openBlockers or advisories', () => {
+    const md = [
+      '| Blocker ID | Source -> Target | Description | Classification | Resolution Status | Source |',
+      '| --- | --- | --- | --- | --- | --- |',
+      '| BLK-001 | A → B | Some note | INFO | OPEN | test |',
+    ].join('\n');
+    const store = createMockStore({
+      [BLOCKER_MATRIX_PATH]: md,
+    });
+    const result = checkBlockers(store);
+    expect(result.clear).toBe(true);
+    expect(result.openBlockers).toHaveLength(0);
+    expect(result.advisories).toHaveLength(0);
+  });
+});

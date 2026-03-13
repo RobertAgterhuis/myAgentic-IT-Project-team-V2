@@ -73,12 +73,14 @@ describe('orchestrator routes (integration)', () => {
     routes = createOrchestratorRoutes({ sseNotify: vi.fn() });
   });
 
-  it('exports all 8 route handlers', () => {
+  it('exports all 10 route handlers', () => {
     expect(routes['GET /api/orchestrator/status']).toBeTypeOf('function');
+    expect(routes['GET /api/orchestrator/run-history']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/advance']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/error']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/recover']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/reset']).toBeTypeOf('function');
+    expect(routes['POST /api/orchestrator/stop']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/validate-gate']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/command']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/sprint-gate']).toBeTypeOf('function');
@@ -406,6 +408,45 @@ describe('orchestrator routes (integration)', () => {
       );
       expect(res.status).toBe(200);
       expect(res.body.summary.sprintId).toBe('SP-3');
+    });
+  });
+
+  /* ── POST /stop ─────────────────────────────────────────────── */
+
+  describe('POST /stop', () => {
+    it('stops the engine and returns stopped status', async () => {
+      // Advance to ONBOARDING first
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), fakeRes());
+      const res = fakeRes();
+      await routes['POST /api/orchestrator/stop'](fakeGetReq(), res);
+      expect(res.status).toBe(200);
+      expect(res.body.ok).toBe(true);
+      expect(res.body.stopped).toBe(true);
+      expect(res.body.status.state).toBe('ERROR');
+    });
+  });
+
+  /* ── GET /run-history ────────────────────────────────────────── */
+
+  describe('GET /run-history', () => {
+    it('returns runs array with ok flag', () => {
+      const res = fakeRes();
+      routes['GET /api/orchestrator/run-history'](fakeGetReq(), res);
+      expect(res.status).toBe(200);
+      expect(res.body.ok).toBe(true);
+      expect(Array.isArray(res.body.runs)).toBe(true);
+    });
+  });
+
+  /* ── Status includes elapsed time ───────────────────────────── */
+
+  describe('GET /status (enhanced)', () => {
+    it('includes elapsedMs and phaseMetadata', () => {
+      const res = fakeRes();
+      routes['GET /api/orchestrator/status'](fakeGetReq(), res);
+      expect(res.status).toBe(200);
+      expect(typeof res.body.elapsedMs).toBe('number');
+      expect(Array.isArray(res.body.phaseMetadata)).toBe(true);
     });
   });
 });

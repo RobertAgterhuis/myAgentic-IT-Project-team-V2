@@ -24,7 +24,13 @@ const {
   _createCombinationMachine,
   _createHotfixMachine,
 } = require('./state-machine');
-const { loadSessionState, saveSessionState, createAutoPersist } = require('./state-persistence');
+const {
+  loadSessionState,
+  saveSessionState,
+  createAutoPersist,
+  saveRunHistory,
+  loadRunHistory,
+} = require('./state-persistence');
 const { runGate } = require('./gate-validator');
 const { runSprintGate } = require('./sprint-gate');
 
@@ -138,8 +144,39 @@ function createEngine(options) {
       mode: machine.mode,
       nextState: machine.nextState,
       history: machine.history,
+      elapsedMs: machine.elapsedMs,
+      phaseMetadata: machine.stateMetadata(),
       serialized: machine.serialize(),
     };
+  }
+
+  /**
+   * Stop the running pipeline. Sets the machine to ERROR with a USER_STOPPED reason.
+   * @returns {object} Updated engine status
+   */
+  function stop() {
+    archiveCurrentRun('STOPPED');
+    machine.error('USER_STOPPED');
+    sseForward('orchestrator:stopped', { state: machine.state, mode: machine.mode });
+    return status();
+  }
+
+  /** Archive the current run into run-history.json (if non-trivial). */
+  function archiveCurrentRun(endStatus) {
+    if (machine.history.length === 0) return; // nothing to archive
+    const serialized = machine.serialize();
+    saveRunHistory(
+      store,
+      {
+        mode: serialized.mode,
+        status: endStatus,
+        started_at: serialized.started_at || serialized.last_updated,
+        ended_at: new Date().toISOString(),
+        state_history: serialized.state_history,
+        gate_results: serialized.gate_results,
+      },
+      sessionPath ? sessionPath.replace(/session-state\.json$/, 'run-history.json') : undefined
+    );
   }
 
   /**
@@ -151,6 +188,7 @@ function createEngine(options) {
    * @returns {object} New engine status
    */
   function reset(newMode, phases) {
+    archiveCurrentRun('RESET');
     if (phases && phases.length > 0) {
       machine = new StateMachine({
         mode: newMode,
@@ -246,6 +284,17 @@ function createEngine(options) {
     return result;
   }
 
+  /**
+   * Load historical run records.
+   * @returns {Array<object>}
+   */
+  function runHistory() {
+    return loadRunHistory(
+      store,
+      sessionPath ? sessionPath.replace(/session-state\.json$/, 'run-history.json') : undefined
+    );
+  }
+
   return {
     machine,
     flows,
@@ -253,9 +302,11 @@ function createEngine(options) {
     error,
     recover,
     status,
+    stop,
     reset,
     validateGate,
     sprintGate,
+    runHistory,
   };
 }
 

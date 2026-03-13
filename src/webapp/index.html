@@ -918,6 +918,15 @@
     .sm-activity-entry { display: flex; gap: 8px; align-items: baseline; padding: 3px 0; font-size: .82rem; border-bottom: 1px solid var(--border); }
     .sm-activity-entry .sm-ts { color: var(--fg-muted); min-width: 48px; text-align: right; font-variant-numeric: tabular-nums; }
     .sm-empty { color: var(--fg-muted); font-style: italic; padding: 16px; text-align: center; }
+    .sm-run-history { padding: 8px 0; }
+    .sm-run-history-list { max-height: 200px; overflow-y: auto; }
+    .sm-run-entry { display: flex; gap: 8px; align-items: baseline; padding: 4px 0; font-size: .82rem; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .sm-run-entry:hover { background: color-mix(in srgb, var(--accent) 6%, var(--bg-card)); }
+    .sm-run-entry .sm-run-mode { font-weight: 600; min-width: 80px; }
+    .sm-run-entry .sm-run-status { padding: 1px 6px; border-radius: var(--radius); font-size: .72rem; }
+    .sm-run-entry .sm-run-status.sm-run-completed { background: var(--success); color: #fff; }
+    .sm-run-entry .sm-run-status.sm-run-stopped { background: var(--danger); color: #fff; }
+    .sm-run-entry .sm-run-status.sm-run-reset { background: var(--warning); color: #000; }
     @keyframes smPulse { 0%,100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent); } }
     @media (max-width: 700px) {
       .sm-toolbar { gap: 4px; }
@@ -1180,6 +1189,12 @@
       <h3>Agent Activity</h3>
       <div class="sm-activity-log" id="smActivityLog">
         <div class="sm-empty">No activity recorded yet.</div>
+      </div>
+    </div>
+    <div class="sm-run-history" id="smRunHistory">
+      <h3>Previous Runs</h3>
+      <div class="sm-run-history-list" id="smRunHistoryList">
+        <div class="sm-empty">No previous runs.</div>
       </div>
     </div>
   </div>

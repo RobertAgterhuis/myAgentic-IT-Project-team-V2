@@ -14,7 +14,7 @@ const {
   today,
 } = require('../../src/webapp/models');
 
-const DECISIONS_PATH = path.resolve('/fake/project/docs/decisions.md');
+const DECISIONS_PATH = path.resolve('/fake/project/BusinessDocs/decisions.md');
 
 // Must match the exact table format parseDecisions expects
 const DECISIONS_MD = `# Decisions & Open Questions

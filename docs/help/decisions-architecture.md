@@ -19,7 +19,7 @@ description:
 
 ### Index file
 
-**Path:** `docs/decisions.md`
+**Path:** `BusinessDocs/decisions.md`
 
 The index file serves two purposes:
 
@@ -33,7 +33,7 @@ The index file is the Orchestrator's first read target at every Sprint Gate.
 
 ### Category files
 
-**Path:** `docs/decisions/[stack].md`
+**Path:** `BusinessDocs/decisions/[stack].md`
 
 Each category file groups decisions for one technology stack. File names are
 lowercase-kebab (e.g. `typescript-eslint.md`, `bicep-iac.md`).
@@ -82,13 +82,13 @@ item.
                                     │ reads / writes
                                     ▼
                     ┌───────────────────────────────┐
-                    │  docs/decisions.md    │  ◄── index file
+                    │  BusinessDocs/decisions.md    │  ◄── index file
                     │  (Open Questions + Registry)  │
                     └──────────┬────────────────────┘
                                │ Registry references
                                ▼
               ┌────────────────────────────────────┐
-              │  docs/decisions/*.md        │  ◄── category files
+              │  BusinessDocs/decisions/*.md        │  ◄── category files
               │  (ACTIVE / PARTIAL / DEFERRED)      │
               └──────────┬─────────────────────────┘
                          │
@@ -112,10 +112,10 @@ item.
 Executed before every sprint. Defined in the Orchestrator skill file (RULE
 ORC-06+).
 
-1. **Read index:** Extract all items from `docs/decisions.md` with
+1. **Read index:** Extract all items from `BusinessDocs/decisions.md` with
    status `OPEN` or `DECIDED`.
 2. **Scan category directory:** For each `.md` file in
-   `docs/decisions/`, read the `> Status:` header line.
+   `BusinessDocs/decisions/`, read the `> Status:` header line.
    - `DEFERRED` → **skip entirely**.
    - `ACTIVE` or `PARTIAL` → read all `DECIDED` rows. For `PARTIAL` files, also
      note individually deferred rows (informational only).
@@ -283,7 +283,7 @@ up at the next Sprint Gate automatically.
 ## 9. Reevaluate trigger
 
 When the web UI's Decisions tab writes
-`docs/session/reevaluate-trigger.json` with `status: "PENDING"`, the
+`BusinessDocs/session/reevaluate-trigger.json` with `status: "PENDING"`, the
 Orchestrator picks it up at the next Sprint Gate (Step 0) and invokes the
 Reevaluate Agent per ORC-28. This allows decision changes to trigger a formal
 re-evaluation cycle.

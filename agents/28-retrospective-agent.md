@@ -33,9 +33,9 @@ complete rules.
 
 | File                                                 | Type                             | Description                                   |
 | ---------------------------------------------------- | -------------------------------- | --------------------------------------------- |
-| `docs/retrospectives/sprint-[SP-N]-retrospective.md` | Per sprint, immutable            | Full retrospective for this sprint            |
-| `docs/retrospectives/lessons-learned.md`             | Cumulative, extended each sprint | All active lessons learned across all sprints |
-| `docs/retrospectives/velocity-log.json`              | Cumulative, machine-readable     | Velocity data per sprint for Orchestrator     |
+| `BusinessDocs/retrospectives/sprint-[SP-N]-retrospective.md` | Per sprint, immutable            | Full retrospective for this sprint            |
+| `BusinessDocs/retrospectives/lessons-learned.md`             | Cumulative, extended each sprint | All active lessons learned across all sprints |
+| `BusinessDocs/retrospectives/velocity-log.json`              | Cumulative, machine-readable     | Velocity data per sprint for Orchestrator     |
 
 ---
 
@@ -48,11 +48,11 @@ Read the following files as input:
 | Source                   | Path                                                   | What is read                                      |
 | ------------------------ | ------------------------------------------------------ | ------------------------------------------------- |
 | Sprint Completion Report | Output PR/Review Agent sprint SP-N                     | Stories, statuses, KPI measurement                |
-| KPI Report sprint SP-N   | `docs/metrics/sprint-[SP-N]-kpi.json`                  | Realized KPI values                               |
+| KPI Report sprint SP-N   | `BusinessDocs/metrics/sprint-[SP-N]-kpi.json`                  | Realized KPI values                               |
 | Sprint plan SP-N         | Sprint plan output                                     | Planned story points, stories                     |
-| Previous retrospective   | `docs/retrospectives/sprint-[SP-N-1]-retrospective.md` | Previously detected patterns                      |
-| Current lessons-learned  | `docs/retrospectives/lessons-learned.md`               | Active lessons (or: file does not yet exist)      |
-| Velocity log             | `docs/retrospectives/velocity-log.json`                | Historical velocity (or: file does not yet exist) |
+| Previous retrospective   | `BusinessDocs/retrospectives/sprint-[SP-N-1]-retrospective.md` | Previously detected patterns                      |
+| Current lessons-learned  | `BusinessDocs/retrospectives/lessons-learned.md`               | Active lessons (or: file does not yet exist)      |
+| Velocity log             | `BusinessDocs/retrospectives/velocity-log.json`                | Historical velocity (or: file does not yet exist) |
 
 ---
 
@@ -152,7 +152,7 @@ Analyze the quality of sprint execution:
 ### Step 5: Generate Lessons Learned
 
 **Step 5a: Retrieve LESSON_CANDIDATEs (MANDATORY)** Check
-`docs/retrospectives/lessons-learned.md` for items with
+`BusinessDocs/retrospectives/lessons-learned.md` for items with
 `Status: CANDIDATE` for the current sprint. Process each candidate item:
 
 1. Assess whether the candidate is valid and concrete enough as a definitive
@@ -193,7 +193,7 @@ Categories:
 
 ### Step 6: Update Lessons-Learned Cumulatively
 
-Update `docs/retrospectives/lessons-learned.md`:
+Update `BusinessDocs/retrospectives/lessons-learned.md`:
 
 1. Mark lessons that were **not effective** as `STATUS: REVISED` and update them
 2. Add new lessons with status `STATUS: ACTIVE`
@@ -237,7 +237,7 @@ _Last update: SP-N — [date]_
 ### Step 7: Write Sprint Retrospective Document
 
 Write the complete retrospective document to
-`docs/retrospectives/sprint-[SP-N]-retrospective.md`. This file is
+`BusinessDocs/retrospectives/sprint-[SP-N]-retrospective.md`. This file is
 **immutable** after writing.
 
 Mandatory sections:
@@ -255,8 +255,8 @@ Mandatory sections:
 
 The Orchestrator reads at every sprint start:
 
-- `docs/retrospectives/lessons-learned.md` — top-3 active lessons
-- `docs/retrospectives/velocity-log.json` — for Story Point adjustment
+- `BusinessDocs/retrospectives/lessons-learned.md` — top-3 active lessons
+- `BusinessDocs/retrospectives/velocity-log.json` — for Story Point adjustment
 
 And injects as context into the following agents:
 

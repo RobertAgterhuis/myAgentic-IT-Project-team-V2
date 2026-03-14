@@ -9,7 +9,7 @@
 | **Owner**         | Robert Agterhuis                                                                       |
 | **Audit Finding** | F-03 (CRITICAL) — Privacy/compliance operations are not finished                       |
 | **Issue**         | #139                                                                                   |
-| **Depends on**    | `docs/phase-5/ga-definition.md` (deployment profile), `docs/security/security-design.md` (data-at-rest) |
+| **Depends on**    | `BusinessDocs/phase-5/ga-definition.md` (deployment profile), `docs/security/security-design.md` (data-at-rest) |
 
 ---
 
@@ -22,10 +22,10 @@ All data stored by the Agentic SDLC Platform in the v1 GA
 
 | Data Element        | Format | Location                                | Contains PII | Retention                     |
 | ------------------- | ------ | --------------------------------------- | ------------ | ----------------------------- |
-| Session state       | JSON   | `docs/session/session-state.json`       | No           | Project lifetime              |
-| Session audit trail | JSON   | `docs/session/session-state-audit.json` | No           | Project lifetime              |
-| Command queue       | JSON   | `docs/session/command-queue.json`       | No           | Overwritten per command cycle |
-| Reevaluate trigger  | JSON   | `docs/session/reevaluate-trigger.json`  | No           | Transient (consumed on read)  |
+| Session state       | JSON   | `BusinessDocs/session/session-state.json`       | No           | Project lifetime              |
+| Session audit trail | JSON   | `BusinessDocs/session/session-state-audit.json` | No           | Project lifetime              |
+| Command queue       | JSON   | `BusinessDocs/session/command-queue.json`       | No           | Overwritten per command cycle |
+| Reevaluate trigger  | JSON   | `BusinessDocs/session/reevaluate-trigger.json`  | No           | Transient (consumed on read)  |
 
 ### 1.2 Business/Project Data
 
@@ -34,18 +34,18 @@ All data stored by the Agentic SDLC Platform in the v1 GA
 | Questionnaire answers | Markdown | `BusinessDocs/Phase*/Questionnaires/` | Potentially (business context) | Project lifetime |
 | Questionnaire index   | Markdown | `BusinessDocs/questionnaire-index.md` | No                             | Project lifetime |
 | Official documents    | Markdown | `BusinessDocs/OfficialDocuments/`     | Potentially (business context) | Project lifetime |
-| Decisions log         | Markdown | `docs/decisions.md`                   | No                             | Project lifetime |
-| Decision records      | Markdown | `docs/decisions/`                     | No                             | Project lifetime |
+| Decisions log         | Markdown | `BusinessDocs/decisions.md`                   | No                             | Project lifetime |
+| Decision records      | Markdown | `BusinessDocs/decisions/`                     | No                             | Project lifetime |
 
 ### 1.3 Phase Deliverables
 
 | Data Element         | Format         | Location                | Contains PII | Retention        |
 | -------------------- | -------------- | ----------------------- | ------------ | ---------------- |
 | Phase 1–4 analyses   | Markdown       | `docs/phase-{1,2,3,4}/` | No           | Project lifetime |
-| Synthesis reports    | Markdown       | `docs/synthesis/`       | No           | Project lifetime |
-| Sprint plans/reports | Markdown       | `docs/phase-5/`         | No           | Project lifetime |
-| Brand assets         | JSON, Markdown | `docs/brand/`           | No           | Project lifetime |
-| Storybook inventory  | Markdown       | `docs/storybook/`       | No           | Project lifetime |
+| Synthesis reports    | Markdown       | `BusinessDocs/synthesis/`       | No           | Project lifetime |
+| Sprint plans/reports | Markdown       | `BusinessDocs/phase-5/`         | No           | Project lifetime |
+| Brand assets         | JSON, Markdown | `BusinessDocs/brand/`           | No           | Project lifetime |
+| Storybook inventory  | Markdown       | `BusinessDocs/storybook/`       | No           | Project lifetime |
 
 ### 1.4 Analytics Data
 
@@ -54,7 +54,7 @@ All data stored by the Agentic SDLC Platform in the v1 GA
 | Matomo analytics DB    | MariaDB | Docker volume (`matomo-db`) | Potentially (IP if configured) | Container lifetime               |
 | Matomo configuration   | PHP/env | Docker volume               | No                             | Container lifetime               |
 | Local analytics events | JSON    | `src/webapp/` (runtime)     | No                             | In-memory only; reset on restart |
-| Metrics snapshot       | JSON    | `docs/session/` (runtime)   | No                             | Overwritten per collection cycle |
+| Metrics snapshot       | JSON    | `BusinessDocs/session/` (runtime)   | No                             | Overwritten per collection cycle |
 
 ### 1.5 Operational Data
 
@@ -112,7 +112,7 @@ To export all data stored by the platform:
 
 1. **Project data:** Copy the entire repository directory (includes all
    Markdown, JSON, and configuration files)
-2. **Session state:** The file `docs/session/session-state.json`
+2. **Session state:** The file `BusinessDocs/session/session-state.json`
    contains the complete session state
 3. **Questionnaire answers:** All files under `BusinessDocs/` contain business
    input data
@@ -133,9 +133,9 @@ To delete all data associated with the platform:
 2. **Session data only:** Delete session files while preserving deliverables
 
    ```bash
-   rm docs/session/session-state.json
-   rm docs/session/session-state-audit.json
-   rm docs/session/command-queue.json
+   rm BusinessDocs/session/session-state.json
+   rm BusinessDocs/session/session-state-audit.json
+   rm BusinessDocs/session/command-queue.json
    ```
 
 3. **Analytics data:** Remove Docker volumes

@@ -3,7 +3,7 @@
 **Module**: `routes/milestones.js`  
 **Base URI**: `http://127.0.0.1:3000/api/milestones`  
 **Data Storage**: `data/milestones.json` (file-based)  
-**Audit Trail**: `docs/audit/*.jsonl` (event logs)
+**Audit Trail**: `BusinessDocs/audit/*.jsonl` (event logs)
 
 ---
 
@@ -455,7 +455,7 @@ All error responses follow this format:
 
 ## Audit Trail
 
-Every milestone change is logged to `docs/audit/milestones.jsonl` for
+Every milestone change is logged to `BusinessDocs/audit/milestones.jsonl` for
 compliance and audit purposes.
 
 **Audit Entry Format**:

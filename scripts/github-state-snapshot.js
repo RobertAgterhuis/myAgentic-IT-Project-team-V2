@@ -21,7 +21,13 @@ const _fs = require('fs');
 
 const OWNER = 'RobertAgterhuis';
 const REPO = 'myAgentic-IT-Project-team-V2';
-const OUTPUT_FILE = path.resolve(__dirname, '..', 'docs', 'session', 'github-state-snapshot.json');
+const OUTPUT_FILE = path.resolve(
+  __dirname,
+  '..',
+  'BusinessDocs',
+  'session',
+  'github-state-snapshot.json'
+);
 
 const toStdout = process.argv.includes('--stdout');
 

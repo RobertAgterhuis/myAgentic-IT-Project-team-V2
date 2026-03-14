@@ -131,7 +131,7 @@ a detail, but the direction itself.
    additional scope-change-specific checks.
 
 6. **Delta Report** — A scope change report is produced at
-   `docs/synthesis/scope-change-[N].md` with invalidated findings, new
+   `BusinessDocs/synthesis/scope-change-[N].md` with invalidated findings, new
    findings, sprint reconciliation, and updated guardrails.
 
 7. **Sprint Reconciliation** — Held tickets are either REQUEUED (still valid),
@@ -204,7 +204,7 @@ Key differences from a normal sprint:
 - **A LESSON_CANDIDATE is always generated** — every hotfix produces a learning
   entry
 - If the hotfix implies a structural constraint, a `DECIDED` item is added to
-  `docs/decisions.md`
+  `BusinessDocs/decisions.md`
 
 ### Concurrency with Active Sprints
 

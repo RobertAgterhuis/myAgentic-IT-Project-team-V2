@@ -17,11 +17,10 @@ const { detectDrift } = require('../drift-detector');
 const { json } = require('../middleware');
 
 module.exports = function createDriftRoutes(ctx) {
-  const { SESSION_FILE, resolveSessionFile, PROJECT_ROOT } = ctx;
+  const { SESSION_FILE, resolveSessionFile, PROJECT_ROOT, BUSINESS_DOCS } = ctx;
 
-  const GITHUB_DOCS = path.join(PROJECT_ROOT, 'docs');
-  const SPRINTS_DIR = path.join(GITHUB_DOCS, 'sprints');
-  const PHASE5_DIR = path.join(GITHUB_DOCS, 'phase-5');
+  const SPRINTS_DIR = path.join(BUSINESS_DOCS, 'sprints');
+  const PHASE5_DIR = path.join(BUSINESS_DOCS, 'phase-5');
 
   /**
    * Read session-state.json safely.
@@ -57,7 +56,7 @@ module.exports = function createDriftRoutes(ctx) {
 
   /**
    * Discover and read all available GitHub sync reports.
-   * Searches both docs/sprints/SP-N/ and docs/phase-5/sprint-SP-N/ directories.
+   * Searches both BusinessDocs/sprints/SP-N/ and BusinessDocs/phase-5/sprint-SP-N/ directories.
    * @param {object} sprintStatuses - Map of sprint ID → status.
    * @returns {Record<string, string|null>}
    */
@@ -66,7 +65,7 @@ module.exports = function createDriftRoutes(ctx) {
     for (const sprintId of Object.keys(sprintStatuses)) {
       reports[sprintId] = null;
 
-      // Try: docs/sprints/SP-N/github-sync-report.md
+      // Try: BusinessDocs/sprints/SP-N/github-sync-report.md
       const path1 = path.join(SPRINTS_DIR, sprintId, 'github-sync-report.md');
       if (fs.existsSync(path1)) {
         try {
@@ -77,7 +76,7 @@ module.exports = function createDriftRoutes(ctx) {
         }
       }
 
-      // Try: docs/phase-5/sprint-SP-N/github-sync-report.md
+      // Try: BusinessDocs/phase-5/sprint-SP-N/github-sync-report.md
       const path2 = path.join(PHASE5_DIR, `sprint-${sprintId}`, 'github-sync-report.md');
       if (fs.existsSync(path2)) {
         try {

@@ -9,7 +9,7 @@
 | **Owner**         | Robert Agterhuis                                                            |
 | **Audit Finding** | F-02 (CRITICAL) — Security hardening beyond localhost is not fully designed |
 | **Issue**         | #138                                                                        |
-| **Depends on**    | `docs/phase-5/ga-definition.md` (F-01 — deployment profiles)                |
+| **Depends on**    | `BusinessDocs/phase-5/ga-definition.md` (F-01 — deployment profiles)                |
 
 ---
 

@@ -120,7 +120,7 @@ explicit blocker citation from a phase agent.
 ### G-QST-10 – Decision Immutability via Web UI
 
 **Rule:** Decisions created or answered through the Questionnaire & Decisions
-Manager web UI are written directly to `docs/decisions.md`. Once a
+Manager web UI are written directly to `BusinessDocs/decisions.md`. Once a
 decision has status `DECIDED`, it is IMMUTABLE — no agent may modify, override,
 or revoke it. This applies regardless of whether the decision was entered via
 direct file edit or the web UI.  

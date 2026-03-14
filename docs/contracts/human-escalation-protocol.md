@@ -171,7 +171,7 @@ Every escalation is permanently logged in:
 }
 ```
 
-Location: `docs/session/escalation-log.json` For feature cycles: also
+Location: `BusinessDocs/session/escalation-log.json` For feature cycles: also
 `Workitems/[FEATURENAME]/session/escalation-log.json`
 
 ---

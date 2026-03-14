@@ -84,7 +84,7 @@ or new CREATE cycle. Non-technical stakeholders can use the Questionnaire &
 Decisions Manager web UI: `node src/webapp/server.js` →
 http://127.0.0.1:3000 Decisions can also be created and answered from the
 **Decisions** tab in the web UI — changes are written directly to
-`docs/decisions.md`.
+`BusinessDocs/decisions.md`.
 
 ---
 
@@ -268,9 +268,9 @@ decisions management)
 After Critic + Risk validation:
 
 1. **Brand & Assets Agent** (skill: `30-brand-assets-agent.md`) — design
-   tokens + brand assets (`docs/brand/`)
+   tokens + brand assets (`BusinessDocs/brand/`)
 2. **Storybook Agent** (skill: `31-storybook-agent.md`) — component library +
-   a11y baseline (`docs/storybook/`)
+   a11y baseline (`BusinessDocs/storybook/`)
 
 ---
 
@@ -316,9 +316,9 @@ Phase 5. It gates entry into implementation and recurs between sprints.
 ### Inputs
 
 - Synthesis outputs (all 6 documents APPROVED)
-- `docs/decisions.md` (decided items since last gate)
-- `docs/session/reevaluate-trigger.json` (if `status: "PENDING"`)
-- `docs/session/github-state-snapshot.json` (captured at Sprint Gate
+- `BusinessDocs/decisions.md` (decided items since last gate)
+- `BusinessDocs/session/reevaluate-trigger.json` (if `status: "PENDING"`)
+- `BusinessDocs/session/github-state-snapshot.json` (captured at Sprint Gate
   Step 0)
 - Sprint Completion Report from previous sprint (if not first sprint)
 - Lessons learned from previous sprint (if not first sprint)
@@ -473,7 +473,7 @@ Use when: business model pivot, core architecture change, target audience shift
 
 Agent: `37-scope-change-agent.md` → Backlog Hold → Invalidation marking →
 Re-analysis → Critic + Risk → Sprint Gate Reconciliation → Master Synthesis
-update Output: `docs/synthesis/scope-change-[N].md` + updated sprint
+update Output: `BusinessDocs/synthesis/scope-change-[N].md` + updated sprint
 statuses
 
 ### FEATURE [name]: [description]

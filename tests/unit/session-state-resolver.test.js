@@ -22,7 +22,7 @@ function makeCache(readMap = {}) {
   };
 }
 
-const DIR = '/docs/session';
+const DIR = '/BusinessDocs/session';
 const FILE_A = path.join(DIR, 'session-state.json');
 const FILE_B = path.join(DIR, 'session-state-audit.json');
 

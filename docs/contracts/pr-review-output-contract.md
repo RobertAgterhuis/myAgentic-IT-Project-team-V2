@@ -18,7 +18,7 @@ report, gating the merge of all stories in the sprint.
 
 **Location:**
 
-- `docs/phase-5/sprint-[SP-N]/sprint-completion-report.md`
+- `BusinessDocs/phase-5/sprint-[SP-N]/sprint-completion-report.md`
 - `docs/security/sprint-[SP-N]-secret-scan.md`
 
 **Format:** Markdown

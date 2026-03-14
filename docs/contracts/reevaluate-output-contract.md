@@ -23,13 +23,13 @@ Orchestrator):
 - Previous phase outputs (analysis findings per scope)
 - Questionnaire answers (injected as `## QUESTIONNAIRE INPUT` context block)
 - **GitHub state snapshot** (`## GITHUB STATE` context block, generated from
-  `docs/session/github-state-snapshot.json` at Sprint Gate Step 0a) —
+  `BusinessDocs/session/github-state-snapshot.json` at Sprint Gate Step 0a) —
   provides milestone statuses, open/closed issue counts, and label distribution
 - **GitHub sync metadata** (`session-state.json` → `github_sync`) — provides
   `last_synced`, counters, and `drift_findings[]`
-- Reevaluate trigger file (`docs/session/reevaluate-trigger.json`, when
+- Reevaluate trigger file (`BusinessDocs/session/reevaluate-trigger.json`, when
   present)
-- Decisions file (`docs/decisions.md`)
+- Decisions file (`BusinessDocs/decisions.md`)
 
 ---
 

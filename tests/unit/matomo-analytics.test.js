@@ -128,7 +128,7 @@ describe('SP-2-MAT: Nginx reverse proxy configuration', () => {
 
 /* ── Cookieless tracking configuration ───────────────────────── */
 describe('SP-2-MAT: Cookieless tracking mode (GDPR)', () => {
-  const specPath = path.join(ROOT, 'docs/phase-5/sp-2-mat-matomo-deployment.md');
+  const specPath = path.join(ROOT, 'BusinessDocs/phase-5/sp-2-mat-matomo-deployment.md');
   let specContent;
 
   beforeAll(() => {

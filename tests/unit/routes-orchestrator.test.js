@@ -12,8 +12,7 @@ const SESSION_FILE = path.resolve(
   __dirname,
   '..',
   '..',
-  'src',
-  'docs',
+  'BusinessDocs',
   'session',
   'session-state.json'
 );

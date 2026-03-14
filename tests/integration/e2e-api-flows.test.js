@@ -16,10 +16,9 @@ const { server, _cache } = require('../../src/webapp/server');
 const WEBAPP_DIR = path.resolve(__dirname, '../../src/webapp');
 const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
-const GITHUB_DOCS = path.join(PROJECT_ROOT, 'docs');
-const SESSION_DIR = path.join(GITHUB_DOCS, 'session');
+const SESSION_DIR = path.join(BUSINESS_DOCS, 'session');
 const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
-const DECISIONS_FILE = path.join(GITHUB_DOCS, 'decisions.md');
+const DECISIONS_FILE = path.join(BUSINESS_DOCS, 'decisions.md');
 const HELP_DIR = path.join(PROJECT_ROOT, 'docs', 'help');
 
 let baseUrl;

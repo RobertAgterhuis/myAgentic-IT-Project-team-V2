@@ -36,7 +36,7 @@ function safeReaddir(store, dir) {
   }
 }
 
-/** Scan docs/metrics/ for sprint KPI files. */
+/** Scan BusinessDocs/metrics/ for sprint KPI files. */
 function scanMetricsDir(store, githubDocs) {
   const dir = path.join(githubDocs, 'metrics');
   return safeReaddir(store, dir)
@@ -44,7 +44,7 @@ function scanMetricsDir(store, githubDocs) {
     .map((e) => ({ path: path.join(dir, e), source: 'metrics' }));
 }
 
-/** Scan docs/phase-5/sprint-SP-N/ for sprint KPI files. */
+/** Scan BusinessDocs/phase-5/sprint-SP-N/ for sprint KPI files. */
 function scanPhase5Dir(store, githubDocs) {
   const dir = path.join(githubDocs, 'phase-5');
   const results = [];
@@ -372,8 +372,8 @@ function buildHeatmapData(velocity, kpis) {
 /* ── Route factory ─────────────────────────────────────────────── */
 
 module.exports = function createMetricsDashboardRoutes(ctx) {
-  const { _cache, GITHUB_DOCS } = ctx;
-  const VELOCITY_FILE = path.join(GITHUB_DOCS, 'retrospectives', 'velocity-log.json');
+  const { _cache, BUSINESS_DOCS } = ctx;
+  const VELOCITY_FILE = path.join(BUSINESS_DOCS, 'retrospectives', 'velocity-log.json');
 
   function readVelocity(store) {
     if (!store.exists(VELOCITY_FILE)) return { sprints: [] };
@@ -385,7 +385,7 @@ module.exports = function createMetricsDashboardRoutes(ctx) {
   }
 
   function collectKpis(store) {
-    const files = [...scanMetricsDir(store, GITHUB_DOCS), ...scanPhase5Dir(store, GITHUB_DOCS)];
+    const files = [...scanMetricsDir(store, BUSINESS_DOCS), ...scanPhase5Dir(store, BUSINESS_DOCS)];
     const map = new Map();
     for (const { path: fp, source } of files) {
       try {

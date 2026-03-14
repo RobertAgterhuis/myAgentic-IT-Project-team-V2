@@ -163,15 +163,15 @@ describe('Dispatcher — buildContext', () => {
 
   it('loads predecessor outputs from store', () => {
     const store = createMockStore({
-      '/docs/phase-1/01.md': 'business analyst output',
-      '/docs/phase-1/02.md': 'domain expert output',
+      '/BusinessDocs/phase-1/01.md': 'business analyst output',
+      '/BusinessDocs/phase-1/02.md': 'domain expert output',
     });
     const d = new Dispatcher({ store });
     const ctx = d.buildContext('03', {
-      predecessorPaths: ['/docs/phase-1/01.md', '/docs/phase-1/02.md'],
+      predecessorPaths: ['/BusinessDocs/phase-1/01.md', '/BusinessDocs/phase-1/02.md'],
     });
-    expect(ctx.predecessorOutputs['/docs/phase-1/01.md']).toBe('business analyst output');
-    expect(ctx.predecessorOutputs['/docs/phase-1/02.md']).toBe('domain expert output');
+    expect(ctx.predecessorOutputs['/BusinessDocs/phase-1/01.md']).toBe('business analyst output');
+    expect(ctx.predecessorOutputs['/BusinessDocs/phase-1/02.md']).toBe('domain expert output');
   });
 
   it('skips missing predecessor files', () => {

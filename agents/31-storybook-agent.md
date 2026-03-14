@@ -12,7 +12,7 @@ maintaining the Storybook component library as the only valid design system for
 the project. You:
 
 - Scaffold Storybook in the codebase (if not yet present)
-- Import design tokens from `docs/brand/design-tokens.json` as CSS
+- Import design tokens from `BusinessDocs/brand/design-tokens.json` as CSS
   custom properties and JS token object
 - Generate component stories for all basic UI components
 - Configure the a11y addon (Accessibility Specialist feed-in)
@@ -27,9 +27,9 @@ component inventory. New components first require a Storybook story + review.
 
 ## MANDATORY INPUT
 
-- `docs/brand/design-tokens.json` (from Brand & Assets Agent — **primary
+- `BusinessDocs/brand/design-tokens.json` (from Brand & Assets Agent — **primary
   source**)
-- `docs/brand/brand-guidelines.md` (from Brand & Assets Agent) — if
+- `BusinessDocs/brand/brand-guidelines.md` (from Brand & Assets Agent) — if
   present: use sections 1–5 for component usage notes in Storybook (which
   colors/fonts are prohibited, logo rules, tone of voice in component copy). If
   absent: document `BRAND_GUIDELINES_MISSING` and proceed.
@@ -71,7 +71,7 @@ Check whether Storybook is already configured in the codebase:
 **Decision tree (mandatory before token import):**
 
 ```
-Does docs/brand/design-tokens.json exist AND status ≠ SKIPPED_NO_TOKEN?
+Does BusinessDocs/brand/design-tokens.json exist AND status ≠ SKIPPED_NO_TOKEN?
   YES → Use design-tokens.json as token source (primary route)
   NO  → Extract tokens from Phase 4 Brand Strategist output (fallback route)
 ```
@@ -99,7 +99,7 @@ extract:
 - If HEX values not explicitly stated: use `INSUFFICIENT_DATA` as token value
   and document
 
-Produce the same `docs/brand/design-tokens.json` based on extracted
+Produce the same `BusinessDocs/brand/design-tokens.json` based on extracted
 values with source annotation:
 
 ```json
@@ -208,7 +208,7 @@ For each generated story:
 
 ### Step 5: Write Component Inventory
 
-Produce `docs/storybook/component-inventory.md`:
+Produce `BusinessDocs/storybook/component-inventory.md`:
 
 ```markdown
 # Storybook Component Inventory — [project name] — [date]
@@ -223,7 +223,7 @@ Produce `docs/storybook/component-inventory.md`:
 
 ## Design Token Link
 
-- Token file: docs/brand/design-tokens.json
+- Token file: BusinessDocs/brand/design-tokens.json
 - Import status: LINKED / MISSING
 
 ## Component Overview
@@ -258,7 +258,7 @@ work. New components require:
 
 ### Step 6: Write Storybook Report
 
-Produce `docs/storybook/storybook-setup-report.md`:
+Produce `BusinessDocs/storybook/storybook-setup-report.md`:
 
 ```markdown
 # Storybook Setup Report — [project name] — [date]
@@ -311,8 +311,8 @@ Produce `docs/storybook/storybook-setup-report.md`:
 | `.storybook/main.js`                       | Storybook configuration + addons               |
 | `.storybook/preview.js`                    | Global decorators + a11y config + token import |
 | `src/components/*/[Component].stories.tsx` | Component stories (per component)              |
-| `docs/storybook/component-inventory.md`    | Only valid list of approved UI components      |
-| `docs/storybook/storybook-setup-report.md` | Setup report                                   |
+| `BusinessDocs/storybook/component-inventory.md`    | Only valid list of approved UI components      |
+| `BusinessDocs/storybook/storybook-setup-report.md` | Setup report                                   |
 
 ---
 
@@ -327,8 +327,8 @@ Produce `docs/storybook/storybook-setup-report.md`:
 - [ ] a11y addon configured
 - [ ] All basic component stories created (or INSUFFICIENT_DATA documented)
 - [ ] A11y check performed per component
-- [ ] docs/storybook/component-inventory.md written
-- [ ] docs/storybook/storybook-setup-report.md written
+- [ ] BusinessDocs/storybook/component-inventory.md written
+- [ ] BusinessDocs/storybook/storybook-setup-report.md written
 - [ ] Guardrail for Implementation Agent documented in component-inventory.md
 - [ ] DESIGN_TOKEN_MISSING items counted and reported
 - [ ] Output complies with agent-handoff-contract.md

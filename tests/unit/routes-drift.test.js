@@ -42,7 +42,7 @@ function makeTmpProject(sessionState, extras = {}) {
     `drift-test-${Date.now()}-${Math.random().toString(36).slice(2)}`
   );
   _tmpDirs.push(tmpDir);
-  const sessionDir = path.join(tmpDir, 'docs', 'session');
+  const sessionDir = path.join(tmpDir, 'BusinessDocs', 'session');
   mkdirSync(sessionDir, { recursive: true });
 
   const sessionFile = path.join(sessionDir, 'session-state.json');
@@ -60,8 +60,8 @@ function makeTmpProject(sessionState, extras = {}) {
     for (const [sprintId, report] of Object.entries(extras.syncReports)) {
       const dir =
         report.dir === 'phase-5'
-          ? path.join(tmpDir, 'docs', 'phase-5', `sprint-${sprintId}`)
-          : path.join(tmpDir, 'docs', 'sprints', sprintId);
+          ? path.join(tmpDir, 'BusinessDocs', 'phase-5', `sprint-${sprintId}`)
+          : path.join(tmpDir, 'BusinessDocs', 'sprints', sprintId);
       mkdirSync(dir, { recursive: true });
       writeFileSync(path.join(dir, 'github-sync-report.md'), report.content);
     }
@@ -71,6 +71,7 @@ function makeTmpProject(sessionState, extras = {}) {
     SESSION_FILE: sessionFile,
     resolveSessionFile: () => sessionFile,
     PROJECT_ROOT: tmpDir,
+    BUSINESS_DOCS: path.join(tmpDir, 'BusinessDocs'),
     ...(extras.ctxOverrides || {}),
   };
 
@@ -79,10 +80,12 @@ function makeTmpProject(sessionState, extras = {}) {
 
 function makeCtx(overrides = {}) {
   return {
-    SESSION_FILE: '/nonexistent/docs/session/session-state.json',
+    SESSION_FILE: '/nonexistent/BusinessDocs/session/session-state.json',
     resolveSessionFile:
-      overrides.resolveSessionFile || (() => '/nonexistent/docs/session/session-state.json'),
+      overrides.resolveSessionFile ||
+      (() => '/nonexistent/BusinessDocs/session/session-state.json'),
     PROJECT_ROOT: '/nonexistent',
+    BUSINESS_DOCS: '/nonexistent/BusinessDocs',
     ...overrides,
   };
 }
@@ -123,13 +126,13 @@ describe('drift routes', () => {
   it('returns drift report when session state exists', () => {
     const sessionState = {
       sprint_backlog: {
-        path: 'docs/sprint-plan.md',
+        path: 'BusinessDocs/sprint-plan.md',
         sprint_statuses: { 'SP-1': 'COMPLETE', 'SP-2': 'IN_PROGRESS' },
       },
     };
 
     const { ctx } = makeTmpProject(sessionState, {
-      sprintPlan: { path: 'docs/sprint-plan.md', content: '# Sprint Plan' },
+      sprintPlan: { path: 'BusinessDocs/sprint-plan.md', content: '# Sprint Plan' },
       syncReports: {
         'SP-1': { dir: 'sprints', content: '# Sync Report' },
       },
@@ -173,7 +176,7 @@ describe('drift routes', () => {
     const sessionState = { sprint_backlog: { sprint_statuses: {} } };
     const { tmpDir } = makeTmpProject(sessionState);
 
-    const altSessionDir = path.join(tmpDir, 'docs', 'session');
+    const altSessionDir = path.join(tmpDir, 'BusinessDocs', 'session');
     const altSessionFile = path.join(altSessionDir, 'session-state-audit.json');
     writeFileSync(altSessionFile, JSON.stringify(sessionState));
 
@@ -181,6 +184,7 @@ describe('drift routes', () => {
       SESSION_FILE: altSessionFile,
       resolveSessionFile: () => altSessionFile,
       PROJECT_ROOT: tmpDir,
+      BUSINESS_DOCS: path.join(tmpDir, 'BusinessDocs'),
     };
 
     routes = createDriftRoutes(ctx);
@@ -209,6 +213,7 @@ describe('drift routes', () => {
       SESSION_FILE: sessionFile,
       resolveSessionFile: () => sessionFile,
       PROJECT_ROOT: tmpDir,
+      BUSINESS_DOCS: path.join(tmpDir, 'BusinessDocs'),
     };
 
     routes = createDriftRoutes(ctx);
@@ -291,7 +296,7 @@ describe('drift routes', () => {
   it('handles sprint_backlog.path pointing to nonexistent file', () => {
     const sessionState = {
       sprint_backlog: {
-        path: 'docs/no-such-plan.md',
+        path: 'BusinessDocs/no-such-plan.md',
         sprint_statuses: {},
       },
     };

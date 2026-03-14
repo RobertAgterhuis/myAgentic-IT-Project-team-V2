@@ -42,7 +42,7 @@ Orchestrator.
 
 ## OUTPUT PER STORY (MANDATORY)
 
-**Output file path:** `docs/phase-5/sprint-[SP-N]/impl-[STORY-ID].md`
+**Output file path:** `BusinessDocs/phase-5/sprint-[SP-N]/impl-[STORY-ID].md`
 
 ### A. Code Changes
 

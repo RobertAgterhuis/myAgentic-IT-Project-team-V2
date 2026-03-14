@@ -181,11 +181,11 @@ function buildStory(overrides = {}) {
 
 describe('sprint-gate constants', () => {
   test('exports expected default paths', () => {
-    expect(DECISIONS_PATH).toBe('docs/decisions.md');
-    expect(LESSONS_LEARNED_PATH).toBe('docs/retrospectives/lessons-learned.md');
-    expect(VELOCITY_LOG_PATH).toBe('docs/retrospectives/velocity-log.json');
-    expect(BLOCKER_MATRIX_PATH).toBe('docs/synthesis/cross-team-blocker-matrix.md');
-    expect(REEVALUATE_TRIGGER_PATH).toBe('docs/session/reevaluate-trigger.json');
+    expect(DECISIONS_PATH).toBe('BusinessDocs/decisions.md');
+    expect(LESSONS_LEARNED_PATH).toBe('BusinessDocs/retrospectives/lessons-learned.md');
+    expect(VELOCITY_LOG_PATH).toBe('BusinessDocs/retrospectives/velocity-log.json');
+    expect(BLOCKER_MATRIX_PATH).toBe('BusinessDocs/synthesis/cross-team-blocker-matrix.md');
+    expect(REEVALUATE_TRIGGER_PATH).toBe('BusinessDocs/session/reevaluate-trigger.json');
   });
 
   test('exports velocity window and capacity threshold', () => {

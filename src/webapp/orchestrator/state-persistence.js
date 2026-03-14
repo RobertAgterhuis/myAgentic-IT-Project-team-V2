@@ -14,7 +14,7 @@
 const path = require('path');
 
 // Default session-state.json location
-const DEFAULT_SESSION_DIR = path.resolve(__dirname, '..', '..', 'docs', 'session');
+const DEFAULT_SESSION_DIR = path.resolve(__dirname, '..', '..', '..', 'BusinessDocs', 'session');
 const DEFAULT_SESSION_FILE = path.join(DEFAULT_SESSION_DIR, 'session-state.json');
 const DEFAULT_HISTORY_FILE = path.join(DEFAULT_SESSION_DIR, 'run-history.json');
 

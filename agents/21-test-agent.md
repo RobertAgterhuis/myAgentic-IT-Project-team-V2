@@ -120,8 +120,8 @@ Validate the IMPL-OUTPUT-C from the Implementation Agent:
 Validate that the implementation respects all active `DECIDED` items from the
 decisions system:
 
-1. **Load decisions:** Read `docs/decisions.md` for uncategorized
-   DECIDED items. Scan `docs/decisions/` — from each ACTIVE or PARTIAL
+1. **Load decisions:** Read `BusinessDocs/decisions.md` for uncategorized
+   DECIDED items. Scan `BusinessDocs/decisions/` — from each ACTIVE or PARTIAL
    category file (check `> Status:` header line), read all `DECIDED` rows.
    **Skip DEFERRED category files entirely.**
 2. **Filter:** Keep only decisions whose scope overlaps with the current story's
@@ -144,7 +144,7 @@ decisions system:
 6. **Deferred technology detection:** Check whether the implementation
    introduces files matching a DEFERRED category (e.g., `Dockerfile` →
    `docker.md`, `*.bicep` → `bicep-iac.md`, `*.cs` → `dotnet.md`). For each
-   match, read `docs/decisions/[category].md` and check the `> Status:`
+   match, read `BusinessDocs/decisions/[category].md` and check the `> Status:`
    header. If `DEFERRED`: report
    `DEFERRED_TECH_DETECTED: [category] — implementation introduces [technology] but decisions are deferred.`
    Escalate to Orchestrator — the Orchestrator will **auto-activate** the
@@ -258,7 +258,7 @@ Use CRITICAL_FINDING if during testing you discover a new security or data
 problem.
 
 **On PERSISTENT_FAILURE or CRITICAL_FINDING: mandatorily write a
-LESSON_CANDIDATE** to `docs/retrospectives/lessons-learned.md` per RULE
+LESSON_CANDIDATE** to `BusinessDocs/retrospectives/lessons-learned.md` per RULE
 ORC-22 (Orchestrator skill, `00-orchestrator.md`). Use type `PERSISTENT_FAILURE`
 or `CRITICAL_FINDING`, category `QUALITY` or `BLOCKER`. If the failure is
 brand-related (e.g. a passed brand-guardrail test that finds a UI component not

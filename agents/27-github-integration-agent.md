@@ -11,7 +11,7 @@ The GitHub Integration Agent establishes a direct link between the sprint plan
 and GitHub. It:
 
 1. Reads `GITHUB_PROJECT_NAME` from the session state
-   (`docs/session/session-state.json`)
+   (`BusinessDocs/session/session-state.json`)
 2. Verifies and configures the GitHub Project `[GITHUB_PROJECT_NAME]` as a
    Kanban board
 3. Publishes all sprint stories as GitHub Issues to the project
@@ -41,7 +41,7 @@ complete rules.
 
 | Requirement                                              | Source                                                         |
 | -------------------------------------------------------- | -------------------------------------------------------------- |
-| GitHub repository URL of the project being audited       | Onboarding Output (`docs/onboarding/onboarding-output.md`)     |
+| GitHub repository URL of the project being audited       | Onboarding Output (`BusinessDocs/onboarding/onboarding-output.md`)     |
 | GitHub Personal Access Token or OAuth scope              | `GITHUB_TOKEN` — from environment or Human Escalation Protocol |
 | Sprint plan (all stories with ID, title, type, priority) | `docs/contracts/sprintplan-output-contract.md` output          |
 | Synthesis Final Report (for project description)         | Synthesis output                                               |
@@ -56,7 +56,7 @@ without valid authentication.
 
 ### 1a. Check whether project exists
 
-Read `GITHUB_PROJECT_NAME` from `docs/session/session-state.json`. If
+Read `GITHUB_PROJECT_NAME` from `BusinessDocs/session/session-state.json`. If
 this field is empty or absent: escalate immediately via Human Escalation
 Protocol type `SCOPE_DECISION` asking what the project name should be.
 
@@ -186,7 +186,7 @@ On duplicate: update labels and milestone, do NOT create a new issue.
 ## STEP 5: GENERATE GITHUB ACTIONS WORKFLOW
 
 **Determine filename (MANDATORY before generation):** Read `GITHUB_PROJECT_NAME`
-from `docs/session/session-state.json`. Slugify the name to
+from `BusinessDocs/session/session-state.json`. Slugify the name to
 lowercase-kebab-case (spaces → hyphens, only a-z and 0-9 and hyphens). Use this
 slug as the filename:
 

@@ -16,7 +16,7 @@ work.
 
 ## OUTPUT FILE
 
-**Location:** `docs/phase-5/sprint-[SP-N]/test-[STORY-ID].md`
+**Location:** `BusinessDocs/phase-5/sprint-[SP-N]/test-[STORY-ID].md`
 **Format:** Markdown
 
 ---

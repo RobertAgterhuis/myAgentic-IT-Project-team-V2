@@ -1,0 +1,194 @@
+{
+  "schemaVersion": "1.0.0",
+  "name": "sdlc",
+  "version": "1.0.0",
+  "displayName": "Software Development Lifecycle",
+  "description": "End-to-end new software solution creation through a structured multi-agent process across four phases: Requirements & Strategy, Architecture & Design, Experience Design, and Brand & Growth.",
+  "flowsFile": "flows.yaml",
+  "agentsDir": "agents",
+  "contractsDir": "contracts",
+  "guardrailsDir": "guardrails",
+  "playbooksDir": "playbooks",
+  "decisionsDir": "decisions",
+  "decisionIndexSeed": "decisions/_index-seed.md",
+  "decisionCategories": [
+    {
+      "file": "transformation.md",
+      "name": "Transformation",
+      "count": 15,
+      "defaultStatus": "ACTIVE"
+    },
+    { "file": "reevaluation.md", "name": "Reevaluation", "count": 15, "defaultStatus": "ACTIVE" },
+    {
+      "file": "github-actions.md",
+      "name": "GitHub Actions",
+      "count": 24,
+      "defaultStatus": "ACTIVE"
+    },
+    {
+      "file": "typescript-eslint.md",
+      "name": "TypeScript / ESLint",
+      "count": 24,
+      "defaultStatus": "ACTIVE"
+    },
+    { "file": "cross-cutting.md", "name": "Cross-cutting", "count": 10, "defaultStatus": "ACTIVE" },
+    { "file": "bicep-iac.md", "name": "Bicep / IaC", "count": 29, "defaultStatus": "DEFERRED" },
+    { "file": "azure-devops.md", "name": "Azure DevOps", "count": 19, "defaultStatus": "DEFERRED" },
+    { "file": "dotnet.md", "name": ".NET / C#", "count": 19, "defaultStatus": "DEFERRED" },
+    { "file": "docker.md", "name": "Docker", "count": 20, "defaultStatus": "DEFERRED" },
+    { "file": "vite.md", "name": "Vite", "count": 11, "defaultStatus": "DEFERRED" },
+    { "file": "nextjs.md", "name": "NextJS", "count": 13, "defaultStatus": "DEFERRED" },
+    {
+      "file": "microsoft-graph.md",
+      "name": "Microsoft Graph",
+      "count": 7,
+      "defaultStatus": "DEFERRED"
+    },
+    { "file": "entra-id.md", "name": "Entra ID", "count": 7, "defaultStatus": "DEFERRED" },
+    { "file": "exchange.md", "name": "Exchange", "count": 5, "defaultStatus": "DEFERRED" },
+    { "file": "purview.md", "name": "Purview", "count": 5, "defaultStatus": "DEFERRED" },
+    { "file": "teams.md", "name": "Teams", "count": 6, "defaultStatus": "DEFERRED" },
+    { "file": "sharepoint.md", "name": "SharePoint", "count": 5, "defaultStatus": "DEFERRED" },
+    { "file": "lighthouse.md", "name": "Lighthouse", "count": 5, "defaultStatus": "DEFERRED" },
+    { "file": "playwright.md", "name": "Playwright", "count": 6, "defaultStatus": "DEFERRED" },
+    { "file": "powershell.md", "name": "PowerShell", "count": 6, "defaultStatus": "DEFERRED" }
+  ],
+  "phaseAgents": {
+    "ONBOARDING": [{ "id": "25", "name": "Onboarding Agent" }],
+    "PHASE_1": [
+      { "id": "01", "name": "Business Analyst" },
+      { "id": "02", "name": "Domain Expert" },
+      { "id": "03", "name": "Sales Strategist" },
+      { "id": "04", "name": "Financial Analyst" },
+      { "id": "34", "name": "Product Manager" }
+    ],
+    "CRITIC_1": [
+      { "id": "18", "name": "Critic Agent" },
+      { "id": "19", "name": "Risk Agent" }
+    ],
+    "PHASE_2": [
+      { "id": "05", "name": "Software Architect" },
+      { "id": "06", "name": "Senior Developer" },
+      { "id": "07", "name": "DevOps Engineer" },
+      { "id": "08", "name": "Security Architect" },
+      { "id": "09", "name": "Data Architect" },
+      { "id": "33", "name": "Legal Counsel" }
+    ],
+    "CRITIC_2": [
+      { "id": "18", "name": "Critic Agent" },
+      { "id": "19", "name": "Risk Agent" }
+    ],
+    "PHASE_3": [
+      { "id": "10", "name": "UX Researcher" },
+      { "id": "11", "name": "UX Designer" },
+      { "id": "12", "name": "UI Designer" },
+      { "id": "13", "name": "Accessibility Specialist" },
+      { "id": "32", "name": "Content Strategist" },
+      { "id": "35", "name": "Localization Specialist" }
+    ],
+    "CRITIC_3": [
+      { "id": "18", "name": "Critic Agent" },
+      { "id": "19", "name": "Risk Agent" }
+    ],
+    "PHASE_4": [
+      { "id": "14", "name": "Brand Strategist" },
+      { "id": "15", "name": "Growth Marketer" },
+      { "id": "16", "name": "CRO Specialist" }
+    ],
+    "CRITIC_4": [
+      { "id": "18", "name": "Critic Agent" },
+      { "id": "19", "name": "Risk Agent" }
+    ],
+    "SYNTHESIS": [{ "id": "17", "name": "Synthesis Agent" }],
+    "SPRINT_GATE": [{ "id": "00", "name": "Orchestrator (Sprint Gate)" }],
+    "PHASE_5_EXECUTING": [
+      { "id": "20", "name": "Implementation Agent" },
+      { "id": "21", "name": "Test Agent" },
+      { "id": "22", "name": "PR/Review Agent" },
+      { "id": "29", "name": "KPI Agent" },
+      { "id": "26", "name": "Documentation Agent" },
+      { "id": "27", "name": "GitHub Integration Agent" },
+      { "id": "28", "name": "Retrospective Agent" }
+    ]
+  },
+  "phaseContracts": {
+    "PHASE_1": [
+      "analysis-output-contract.md",
+      "recommendations-output-contract.md",
+      "sprintplan-output-contract.md",
+      "guardrails-output-contract.md"
+    ],
+    "PHASE_2": [
+      "analysis-output-contract.md",
+      "recommendations-output-contract.md",
+      "sprintplan-output-contract.md",
+      "guardrails-output-contract.md"
+    ],
+    "PHASE_3": [
+      "analysis-output-contract.md",
+      "recommendations-output-contract.md",
+      "sprintplan-output-contract.md",
+      "guardrails-output-contract.md"
+    ],
+    "PHASE_4": [
+      "analysis-output-contract.md",
+      "recommendations-output-contract.md",
+      "sprintplan-output-contract.md",
+      "guardrails-output-contract.md"
+    ]
+  },
+  "phaseGuardrails": {
+    "PHASE_1": ["00-global-guardrails.md", "01-business-guardrails.md"],
+    "PHASE_2": [
+      "00-global-guardrails.md",
+      "02-architecture-guardrails.md",
+      "03-security-guardrails.md"
+    ],
+    "PHASE_3": ["00-global-guardrails.md", "04-ux-guardrails.md", "08-content-guardrails.md"],
+    "PHASE_4": ["00-global-guardrails.md", "05-marketing-guardrails.md"]
+  },
+  "criticToPhase": {
+    "CRITIC_1": "PHASE_1",
+    "CRITIC_2": "PHASE_2",
+    "CRITIC_3": "PHASE_3",
+    "CRITIC_4": "PHASE_4"
+  },
+  "modes": {
+    "CREATE": {
+      "phases": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"],
+      "label": "Full CREATE cycle"
+    },
+    "AUDIT": {
+      "phases": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"],
+      "label": "Full AUDIT cycle"
+    },
+    "CREATE_BUSINESS": {
+      "phases": ["PHASE_1"],
+      "label": "Business-only CREATE"
+    },
+    "CREATE_TECH": {
+      "phases": ["PHASE_2"],
+      "label": "Tech-only CREATE"
+    },
+    "CREATE_UX": {
+      "phases": ["PHASE_3"],
+      "label": "UX-only CREATE"
+    },
+    "CREATE_MARKETING": {
+      "phases": ["PHASE_4"],
+      "label": "Marketing-only CREATE"
+    },
+    "FEATURE": {
+      "phases": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"],
+      "label": "FEATURE full cycle"
+    },
+    "SCOPE_CHANGE": {
+      "phases": [],
+      "label": "Scope change re-analysis"
+    },
+    "HOTFIX": {
+      "phases": [],
+      "label": "Emergency HOTFIX"
+    }
+  }
+}

@@ -18,11 +18,12 @@
 
 const path = require('path');
 const fs = require('fs');
-const { createEngine } = require('../../src/webapp/orchestrator/engine');
+const { createEngine } = require('../../platform/engine/engine');
+const { listTemplates } = require('../../platform/engine/template-loader');
 
 // ─── Test Helpers ────────────────────────────────────────────
 
-const FLOWS_PATH = path.join(__dirname, '..', '..', 'src', 'webapp', 'orchestrator', 'flows.yaml');
+const FLOWS_PATH = path.join(__dirname, '..', '..', 'platform', 'engine', 'flows.yaml');
 const FLOWS_CONTENT = fs.readFileSync(FLOWS_PATH, 'utf-8');
 
 function createMockStore(files = {}) {
@@ -176,3 +177,61 @@ describe('orchestrator routes — engine API', () => {
     });
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+// S6 — Template selection UX
+// ─────────────────────────────────────────────────────────────
+describe('orchestrator routes — template selection (S6)', () => {
+  describe('listTemplates integration', () => {
+    it('returns an array of template metadata', () => {
+      const templates = listTemplates();
+      expect(Array.isArray(templates)).toBe(true);
+      expect(templates.length).toBeGreaterThanOrEqual(1);
+      const sdlc = templates.find((t) => t.name === 'sdlc');
+      expect(sdlc).toBeDefined();
+      expect(sdlc.valid).toBe(true);
+      expect(sdlc.displayName).toBeTruthy();
+      expect(sdlc.version).toBeTruthy();
+    });
+  });
+
+  describe('engine with template selection', () => {
+    it('creates engine with sdlc template', () => {
+      const { engine } = freshEngineWithTemplate('sdlc');
+      const st = engine.status();
+      expect(st.state).toBe('IDLE');
+      expect(st.templateName).toBe('sdlc');
+    });
+
+    it('engine reset preserves template context', () => {
+      const { engine } = freshEngineWithTemplate('sdlc');
+      engine.advance(); // IDLE → ONBOARDING
+      const result = engine.reset('AUDIT');
+      expect(result.state).toBe('IDLE');
+      expect(result.mode).toBe('AUDIT');
+    });
+
+    it('engine without explicit template loads default sdlc', () => {
+      const store = createMockStore({ [FLOWS_PATH]: FLOWS_CONTENT });
+      const engine = createEngine({ store, flowsPath: FLOWS_PATH });
+      const st = engine.status();
+      expect(st.state).toBe('IDLE');
+      expect(st.templateName).toBe('sdlc');
+    });
+  });
+});
+
+function freshEngineWithTemplate(templateName) {
+  const sessionPath = '/test/route-session.json';
+  const store = createMockStore({ [FLOWS_PATH]: FLOWS_CONTENT });
+  const events = [];
+  const sseNotify = (type, data) => events.push({ type, data });
+  const engine = createEngine({
+    store,
+    flowsPath: FLOWS_PATH,
+    sessionPath,
+    sseNotify,
+    templateName,
+  });
+  return { engine, store, events, sessionPath };
+}

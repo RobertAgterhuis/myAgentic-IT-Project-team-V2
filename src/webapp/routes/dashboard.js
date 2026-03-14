@@ -222,7 +222,9 @@ function computeActivityFeed(ctx) {
  */
 function computeQuickStats(ctx) {
   const repoRoot = getRepoRoot(ctx);
-  const milestonesPath = path.join(repoRoot, 'data', 'milestones.json');
+  const milestonesPath = ctx?.BUSINESS_DOCS
+    ? path.join(ctx.BUSINESS_DOCS, 'milestones.json')
+    : path.join(repoRoot, 'BusinessDocs', 'milestones.json');
   const milestones = safeReadJson(milestonesPath, []).filter((m) => !m.archived);
   const completeCount = milestones.filter(
     (m) => String(m.status || '').toLowerCase() === 'complete'

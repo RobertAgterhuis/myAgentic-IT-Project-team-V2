@@ -29,6 +29,12 @@ jobs:
           node -c src/webapp/cache.js
           node -c src/webapp/schemas.js
           node -c src/webapp/mcp-server.js
+          node -c platform/engine/engine.js
+          node -c platform/engine/dispatcher.js
+          node -c platform/engine/state-machine.js
+          node -c platform/engine/gate-validator.js
+          node -c platform/engine/sprint-gate.js
+          node -c platform/engine/template-loader.js
 
   test:
     name: Tests

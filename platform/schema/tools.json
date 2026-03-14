@@ -87,7 +87,7 @@
     },
     {
       "id": "tool.validation.contract",
-      "description": "Validate outputs against output contracts defined in docs/contracts/",
+      "description": "Validate outputs against output contracts defined in templates/sdlc/contracts/",
       "category": "validation",
       "capabilities": { "readOnly": true, "supportsBackground": false, "supportsTimeout": false },
       "parameters": [

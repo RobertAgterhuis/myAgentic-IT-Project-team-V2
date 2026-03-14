@@ -32,6 +32,9 @@ COPY . .
 # Copy the built React UI from stage 1
 COPY --from=ui-builder /build/src/webapp/ui/dist src/webapp/ui/dist
 
+# Ensure BusinessDocs/ exists even on a clean slate (volume mount target)
+RUN mkdir -p /app/BusinessDocs && chown node:node /app/BusinessDocs
+
 # SEC-2: Run as non-root user (node user provided by base image)
 RUN chown -R node:node /app
 USER node

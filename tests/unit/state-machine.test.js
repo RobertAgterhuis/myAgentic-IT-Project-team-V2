@@ -24,7 +24,7 @@ const {
   createStateMachine,
   createCombinationMachine,
   createHotfixMachine,
-} = require('../../src/webapp/orchestrator/state-machine');
+} = require('../../platform/engine/state-machine');
 
 // ─────────────────────────────────────────────────────────────
 // AC-2: State definitions
@@ -789,5 +789,55 @@ describe('StateMachine — recover edge cases', () => {
     sm._history = [{ from: STATES.ERROR, to: STATES.ERROR, timestamp: new Date().toISOString() }];
     const recovered = sm.recover();
     expect(recovered).toBe('IDLE');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// S5: modeConfigs injection from template manifest
+// ─────────────────────────────────────────────────────────────
+describe('StateMachine — modeConfigs injection (S5)', () => {
+  const customModes = {
+    CUSTOM: { phases: ['PHASE_2', 'PHASE_3'], label: 'Custom mode' },
+    CREATE: { phases: ['PHASE_1'], label: 'Overridden CREATE' },
+  };
+
+  it('uses injected modeConfigs for a custom mode', () => {
+    const sm = new StateMachine({ mode: 'CUSTOM', modeConfigs: customModes });
+    expect(sm.state).toBe('IDLE');
+    sm.advance(); // IDLE → ONBOARDING
+    sm.advance(); // ONBOARDING → PHASE_2
+    expect(sm.state).toBe('PHASE_2');
+  });
+
+  it('rejects unknown mode even with custom modeConfigs', () => {
+    expect(() => new StateMachine({ mode: 'UNKNOWN', modeConfigs: customModes })).toThrow(
+      /Unknown mode: UNKNOWN/
+    );
+  });
+
+  it('overrides built-in CREATE mode via injected modeConfigs', () => {
+    const sm = new StateMachine({ mode: 'CREATE', modeConfigs: customModes });
+    sm.advance(); // IDLE → ONBOARDING
+    sm.advance(); // ONBOARDING → PHASE_1
+    sm.advance(); // PHASE_1 → CRITIC_1
+    expect(sm.state).toBe('CRITIC_1');
+    sm.advance({ verdict: 'APPROVED' }); // CRITIC_1 → SYNTHESIS
+    expect(sm.state).toBe('SYNTHESIS');
+  });
+
+  it('falls back to default MODE_CONFIGS when not injected', () => {
+    const sm = new StateMachine({ mode: 'CREATE' });
+    expect(sm.state).toBe('IDLE');
+    sm.advance(); // IDLE → ONBOARDING
+    sm.advance(); // ONBOARDING → PHASE_1 (full 4-phase flow)
+    expect(sm.state).toBe('PHASE_1');
+  });
+
+  it('createStateMachine forwards modeConfigs', () => {
+    const sm = createStateMachine('CUSTOM', null, { modeConfigs: customModes });
+    expect(sm.state).toBe('IDLE');
+    sm.advance();
+    sm.advance();
+    expect(sm.state).toBe('PHASE_2');
   });
 });

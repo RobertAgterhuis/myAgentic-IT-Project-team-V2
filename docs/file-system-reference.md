@@ -20,9 +20,8 @@ description:
 myAgentic-IT-Project-team/
 ├── .github/                    ← CI workflows, issue templates, Copilot instructions
 ├── .husky/                     ← Git hooks (pre-commit)
-├── agents/                     ← Agent skill files (38 agents)
-├── BusinessDocs/               ← Project-specific business data (session, decisions, phases, brand, synthesis, metrics, retrospectives)
-├── data/                       ← Runtime data (milestones.json)
+├── templates/                  ← Template packs (SDLC agents, contracts, guardrails, playbooks)
+├── BusinessDocs/               ← Project-specific business data (session, decisions, phases, brand, synthesis, metrics, retrospectives, milestones)
 ├── docs/                       ← Infrastructure docs (contracts, guardrails, playbooks, templates, help, api, security)
 ├── infra/                      ← Docker files, Compose configs, Nginx configs
 ├── platform/                   ← Platform schema definitions (agents, flows, tools)
@@ -64,7 +63,7 @@ GitHub issue templates for bugs, features, stories, and tasks.
 
 ---
 
-## `agents/` — Agent skill files
+## `templates/sdlc/agents/` — Agent skill files
 
 | File pattern                                                | Purpose                             | Modified by             |
 | ----------------------------------------------------------- | ----------------------------------- | ----------------------- |
@@ -98,23 +97,27 @@ system itself.
 
 ### Root files
 
-| Path                       | Purpose                                            | Written by          | Safe to edit? |
-| -------------------------- | -------------------------------------------------- | ------------------- | ------------- |
-| `_config.yml`              | Jekyll / GitHub Pages config                       | System maintainers  | Yes           |
-| `agent-index.md`           | Lookup table for all skills, guardrails, contracts | System maintainers  | No            |
-| `contributing.md`          | Developer contribution guide                       | System maintainers  | Yes           |
-| `data-dictionary.md`       | Data entity catalog                                | System maintainers  | Yes           |
-| `domain-glossary.md`       | Domain terminology reference                       | System maintainers  | Yes           |
-| `file-system-reference.md` | This file                                          | System maintainers  | Yes           |
-| `index.md`                 | GitHub Pages landing page                          | System maintainers  | Yes           |
-| `mode-guide.md`            | CREATE vs AUDIT mode guidance                      | System maintainers  | No            |
-| `privacy-policy.md`        | Privacy policy                                     | System maintainers  | Yes           |
-| `quick-start.md`           | Getting started guide                              | System maintainers  | Yes           |
-| `README.md`                | Overview of the docs/ structure                    | System maintainers  | No            |
-| `technical-manual.md`      | API reference + architecture                       | Documentation Agent | After sprint  |
-| `user-manual.md`           | User guide                                         | Documentation Agent | After sprint  |
+| Path                         | Purpose                                            | Written by          | Safe to edit? |
+| ---------------------------- | -------------------------------------------------- | ------------------- | ------------- |
+| `_config.yml`                | Jekyll / GitHub Pages config                       | System maintainers  | Yes           |
+| `agent-index.md`             | Lookup table for all skills, guardrails, contracts | System maintainers  | No            |
+| `contributing.md`            | Developer contribution guide                       | System maintainers  | Yes           |
+| `data-dictionary.md`         | Data entity catalog                                | System maintainers  | Yes           |
+| `domain-glossary.md`         | Domain terminology reference                       | System maintainers  | Yes           |
+| `file-system-reference.md`   | This file                                          | System maintainers  | Yes           |
+| `ga-definition.md`           | GA readiness criteria & deployment profiles        | System maintainers  | Yes           |
+| `index.md`                   | GitHub Pages landing page                          | System maintainers  | Yes           |
+| `mode-guide.md`              | CREATE vs AUDIT mode guidance                      | System maintainers  | No            |
+| `operating-handbook.md`      | Day-to-day operational procedures                  | System maintainers  | Yes           |
+| `pilot-participant-guide.md` | Pilot evaluation guide for participants            | System maintainers  | Yes           |
+| `privacy-policy.md`          | Privacy policy                                     | System maintainers  | Yes           |
+| `quick-start.md`             | Getting started guide                              | System maintainers  | Yes           |
+| `README.md`                  | Overview of the docs/ structure                    | System maintainers  | No            |
+| `release-checklist.md`       | Pre-release verification checklist                 | System maintainers  | Yes           |
+| `technical-manual.md`        | API reference + architecture                       | Documentation Agent | After sprint  |
+| `user-manual.md`             | User guide                                         | Documentation Agent | After sprint  |
 
-### Contracts — `docs/contracts/`
+### Contracts — `templates/sdlc/contracts/`
 
 25 contract files defining the input/output format for every agent type. These
 are **agent-facing specifications** — they tell each agent what to produce and
@@ -144,7 +147,7 @@ Key contracts:
 This is your primary communication channel with the agent team. See
 `docs/help/decisions.md` for details.
 
-### Guardrails — `docs/guardrails/`
+### Guardrails — `templates/sdlc/guardrails/`
 
 11 guardrail files that define rules agents must follow:
 
@@ -163,12 +166,12 @@ This is your primary communication channel with the agent team. See
 
 **Do not modify** unless you're changing system rules.
 
-### Templates — `docs/templates/`
+### Output templates — `templates/sdlc/output-templates/`
 
 Template files used by agents to format their outputs (analysis,
 recommendations, sprint plan, guardrails). **Do not modify.**
 
-### Playbooks — `docs/playbooks/`
+### Playbooks — `templates/sdlc/playbooks/`
 
 | File                                    | Purpose                  |
 | --------------------------------------- | ------------------------ |
@@ -177,6 +180,19 @@ recommendations, sprint plan, guardrails). **Do not modify.**
 
 Agent-facing process definitions. **Do not modify** unless changing the system
 flow.
+
+### Decision seeds — `templates/sdlc/decisions/`
+
+Seed copies of all 20 decision category files plus the index template. These are
+platform knowledge — the Orchestrator copies them to `BusinessDocs/decisions/`
+when starting a fresh cycle (non-destructive: existing files are never
+overwritten). **Do not modify** category seeds unless changing the decision
+framework itself.
+
+| File              | Purpose                                 |
+| ----------------- | --------------------------------------- |
+| `_index-seed.md`  | Seed for `BusinessDocs/decisions.md`    |
+| `*.md` (20 files) | Seed category files (technology stacks) |
 
 ### Help — `docs/help/`
 
@@ -236,13 +252,19 @@ Populated by Agent 30 during solution creation. Empty in a fresh checkout.
 | `BusinessDocs/phase-4/` | Phase 4 (Brand & Growth) analysis outputs                 |
 | `BusinessDocs/phase-5/` | Phase 5 (Implementation) sprint plans, completion reports |
 
-### Security — `docs/security/`
+### Security — `docs/security/` (platform governance)
 
-| File                          | Purpose                                     | Written by                   |
-| ----------------------------- | ------------------------------------------- | ---------------------------- |
-| `data-inventory.md`           | Data classification and inventory           | Security Architect (Phase 2) |
-| `security-design.md`          | Security architecture design                | Security Architect (Phase 2) |
-| `security-handoff-context.md` | Security constraints for all Phase 5 agents | Security Architect (Phase 2) |
+| File                 | Purpose                           | Written by         |
+| -------------------- | --------------------------------- | ------------------ |
+| `data-inventory.md`  | Data classification and inventory | System maintainers |
+| `security-design.md` | Security architecture design      | System maintainers |
+
+### Security — `BusinessDocs/security/` (project-specific)
+
+| File                           | Purpose                                     | Written by                    |
+| ------------------------------ | ------------------------------------------- | ----------------------------- |
+| `security-handoff-context.md`  | Security constraints for all Phase 5 agents | Security Architect (Agent 08) |
+| `sprint-[SP-N]-secret-scan.md` | Per-sprint secret scan report               | GitHub Integration Agent (CI) |
 
 ### Storybook — `BusinessDocs/storybook/`
 
@@ -370,7 +392,7 @@ i18n translation files: `en-US/`, `de-DE/`, `fr-FR/` — each with
 11 route modules (commands, dashboard, decisions, drift, metrics-dashboard,
 milestones, misc, orchestrator, progress, questionnaires, subscribe).
 
-### Orchestrator engine — `src/webapp/orchestrator/`
+### Orchestrator engine — `platform/engine/`
 
 12 modules: agent-schema, cli, dispatcher, engine, flow-loader, flow-schema,
 flows.yaml, gate-validator, sprint-gate, state-machine, state-persistence,
@@ -444,7 +466,6 @@ Quick smoke tests (landing page, create pipeline).
 
 | Directory   | Purpose                                               |
 | ----------- | ----------------------------------------------------- |
-| `data/`     | Runtime data (`milestones.json`)                      |
 | `platform/` | Platform schema definitions (`platform/schema/`)      |
 | `scripts/`  | Build and maintenance scripts (7 files)               |
 | `.husky/`   | Git hooks (pre-commit: lint-staged + fast unit tests) |
@@ -454,11 +475,12 @@ Quick smoke tests (landing page, create pipeline).
 
 ## What's safe to delete?
 
-| Path                                               | Safe to delete? | Consequence                                       |
-| -------------------------------------------------- | --------------- | ------------------------------------------------- |
-| `BusinessDocs/session/session-state.json`          | Yes             | Loses current progress; can start fresh           |
-| `BusinessDocs/session/command-queue.json`          | Yes             | Loses queued (unconsumed) command                 |
-| `BusinessDocs/session/reevaluate-trigger.json`     | Yes             | Cancels pending reevaluation                      |
-| `BusinessDocs/` contents                           | With caution    | Loses all phase outputs and questionnaire answers |
-| `BusinessDocs/synthesis/` contents                 | With caution    | Must re-run Synthesis Agent                       |
-| Anything in `agents/`, `contracts/`, `guardrails/` | **No**          | Breaks agent behavior                             |
+| Path                                                                                            | Safe to delete? | Consequence                                       |
+| ----------------------------------------------------------------------------------------------- | --------------- | ------------------------------------------------- |
+| `BusinessDocs/session/session-state.json`                                                       | Yes             | Loses current progress; can start fresh           |
+| `BusinessDocs/session/command-queue.json`                                                       | Yes             | Loses queued (unconsumed) command                 |
+| `BusinessDocs/session/reevaluate-trigger.json`                                                  | Yes             | Cancels pending reevaluation                      |
+| `BusinessDocs/` contents                                                                        | With caution    | Loses all phase outputs and questionnaire answers |
+| `BusinessDocs/synthesis/` contents                                                              | With caution    | Must re-run Synthesis Agent                       |
+| Anything in `templates/sdlc/agents/`, `templates/sdlc/contracts/`, `templates/sdlc/guardrails/` | **No**          | Breaks agent behavior                             |
+| `templates/sdlc/decisions/`                                                                     | **No**          | Breaks decision seeding for new projects          |

@@ -19,8 +19,8 @@ const {
   PLATFORMS,
   _DEFAULT_CONFIG,
   Dispatcher,
-} = require('../../src/webapp/orchestrator/dispatcher');
-const { STATES } = require('../../src/webapp/orchestrator/state-machine');
+} = require('../../platform/engine/dispatcher');
+const { STATES } = require('../../platform/engine/state-machine');
 
 // ─── Test Helpers ────────────────────────────────────────────
 
@@ -576,5 +576,48 @@ describe('Dispatcher — Unknown error fallback', () => {
     expect(result.success).toBe(false);
     // Error message is empty string, which is falsy
     expect(typeof result.error).toBe('string');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// S5: phaseAgents injection from template manifest
+// ─────────────────────────────────────────────────────────────
+describe('Dispatcher — phaseAgents injection (S5)', () => {
+  const customAgents = {
+    ONBOARDING: [{ id: '99', name: 'Custom Onboarding' }],
+    PHASE_1: [{ id: '50', name: 'Custom Analyst' }],
+  };
+
+  it('uses injected phaseAgents when provided', () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      phaseAgents: customAgents,
+    });
+    expect(d.getAgentsForState('ONBOARDING')).toEqual(customAgents.ONBOARDING);
+    expect(d.getAgentsForState('PHASE_1')).toEqual(customAgents.PHASE_1);
+  });
+
+  it('returns empty array for states not in injected phaseAgents', () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      phaseAgents: customAgents,
+    });
+    expect(d.getAgentsForState('PHASE_2')).toEqual([]);
+  });
+
+  it('falls back to hardcoded PHASE_AGENTS when not injected', () => {
+    const d = new Dispatcher({ store: createMockStore() });
+    expect(d.getAgentsForState(STATES.ONBOARDING)).toEqual(PHASE_AGENTS[STATES.ONBOARDING]);
+  });
+
+  it('dispatches using injected agents', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      phaseAgents: customAgents,
+      invoker: createSuccessInvoker('/out.md'),
+    });
+    const result = await d.dispatchState('PHASE_1', {});
+    expect(result.completed).toEqual(['50']);
+    expect(result.failed).toEqual([]);
   });
 });

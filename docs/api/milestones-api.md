@@ -2,7 +2,7 @@
 
 **Module**: `routes/milestones.js`  
 **Base URI**: `http://127.0.0.1:3000/api/milestones`  
-**Data Storage**: `data/milestones.json` (file-based)  
+**Data Storage**: `BusinessDocs/milestones.json` (file-based)  
 **Audit Trail**: `BusinessDocs/audit/*.jsonl` (event logs)
 
 ---
@@ -134,7 +134,7 @@ Content-Type: application/json
 - Milestone ID auto-generated
 - Timestamps auto-set to current UTC time
 - Audit event: `milestone_created` logged with all field changes
-- Entry written to `data/milestones.json`
+- Entry written to `BusinessDocs/milestones.json`
 
 ---
 
@@ -335,7 +335,7 @@ Content-Type: application/json
 
 - Auto-update: `updated_at` timestamp
 - Audit event: `milestone_updated` with before/after values
-- Entry updated in `data/milestones.json`
+- Entry updated in `BusinessDocs/milestones.json`
 
 **Examples**:
 
@@ -405,7 +405,7 @@ PATCH /api/milestones/milestone-20260309-002/archive HTTP/1.1
 - Preserves all data for audit/recovery
 - Auto-update: `updated_at` timestamp
 - Audit event: `milestone_archived` with timestamp
-- Entry updated in `data/milestones.json`
+- Entry updated in `BusinessDocs/milestones.json`
 
 **Recovery**:
 

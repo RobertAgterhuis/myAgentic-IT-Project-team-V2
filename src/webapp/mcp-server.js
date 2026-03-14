@@ -34,9 +34,9 @@ const PROJECT_ROOT = path.resolve(__dirname, '../..');
 const DOC_ROOT = path.join(PROJECT_ROOT, 'docs');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
 const HELP_DIR = path.join(PROJECT_ROOT, 'docs', 'help');
-const SESSION_DIR = path.join(DOC_ROOT, 'session');
-const DECISIONS_PATH = path.join(DOC_ROOT, 'decisions.md');
-const AUDIT_DIR = path.join(DOC_ROOT, 'audit');
+const SESSION_DIR = path.join(BUSINESS_DOCS, 'session');
+const DECISIONS_PATH = path.join(BUSINESS_DOCS, 'decisions.md');
+const AUDIT_DIR = path.join(BUSINESS_DOCS, 'audit');
 
 /* ── Shared instances ───────────────────────────────────────────── */
 const store = new FileStore();

@@ -63,7 +63,7 @@ Prohibited usage:
 
 ## 3. Color System
 
-Token source: `docs/brand/design-tokens.json` (`colors` object).
+Token source: `src/webapp/brand/design-tokens.json` (`colors` object).
 
 Core palette:
 
@@ -99,7 +99,7 @@ Usage guidelines:
 
 ## 4. Typography
 
-Token source: `docs/brand/design-tokens.json` (`typography` object).
+Token source: `src/webapp/brand/design-tokens.json` (`typography` object).
 
 Font families:
 

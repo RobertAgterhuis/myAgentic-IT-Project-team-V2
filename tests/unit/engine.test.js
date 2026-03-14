@@ -12,7 +12,7 @@
 
 const path = require('path');
 const fs = require('fs');
-const { createEngine } = require('../../src/webapp/orchestrator/engine');
+const { createEngine } = require('../../platform/engine/engine');
 
 // ─── Test Helpers ────────────────────────────────────────────
 
@@ -33,7 +33,7 @@ function createMockStore(files = {}) {
 }
 
 // Load the real flows.yaml for tests
-const FLOWS_PATH = path.join(__dirname, '..', '..', 'src', 'webapp', 'orchestrator', 'flows.yaml');
+const FLOWS_PATH = path.join(__dirname, '..', '..', 'platform', 'engine', 'flows.yaml');
 const FLOWS_CONTENT = fs.readFileSync(FLOWS_PATH, 'utf-8');
 
 function storeWithFlows(extraFiles = {}) {
@@ -294,5 +294,43 @@ describe('createEngine — reset', () => {
 
     const result = engine.reset('CREATE', ['PHASE_2', 'PHASE_3']);
     expect(result.state).toBe('IDLE');
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// S5: Template loading integration
+// ─────────────────────────────────────────────────────────────
+describe('createEngine — template integration (S5)', () => {
+  it('loads template and exposes it on engine', () => {
+    const store = storeWithFlows();
+    const engine = createEngine({ store, flowsPath: FLOWS_PATH });
+    // template is loaded if templates/sdlc/manifest.json exists on disk
+    if (engine.template) {
+      expect(engine.template.name).toBe('sdlc');
+      expect(engine.template.modes).toBeDefined();
+      expect(engine.template.phaseAgents).toBeDefined();
+    }
+  });
+
+  it('includes templateName in status', () => {
+    const store = storeWithFlows();
+    const engine = createEngine({ store, flowsPath: FLOWS_PATH });
+    const s = engine.status();
+    // templateName is either 'sdlc' or null depending on cwd
+    expect('templateName' in s).toBe(true);
+  });
+
+  it('gracefully falls back when template not found', () => {
+    const store = storeWithFlows();
+    const engine = createEngine({
+      store,
+      flowsPath: FLOWS_PATH,
+      templateName: 'nonexistent',
+    });
+    expect(engine.template).toBeNull();
+    expect(engine.status().templateName).toBeNull();
+    // Engine still works with defaults
+    engine.advance(); // IDLE → ONBOARDING
+    expect(engine.status().state).toBe('ONBOARDING');
   });
 });

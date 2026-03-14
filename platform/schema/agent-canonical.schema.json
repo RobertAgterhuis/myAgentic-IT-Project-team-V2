@@ -92,7 +92,7 @@
             "minItems": 1,
             "items": {
               "type": "string",
-              "pattern": "^agents\\/.+\\.md$"
+              "pattern": "^(templates\\/[a-z0-9-]+\\/)?agents\\/.+\\.md$"
             }
           },
           "tools": {
@@ -106,14 +106,14 @@
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "^docs\\/guardrails\\/.+\\.md$"
+              "pattern": "^(templates\\/[a-z0-9-]+\\/)?guardrails\\/.+\\.md$"
             }
           },
           "contracts": {
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "^docs\\/contracts\\/.+\\.md$"
+              "pattern": "^(templates\\/[a-z0-9-]+\\/)?contracts\\/.+\\.md$"
             }
           },
           "dependencies": {

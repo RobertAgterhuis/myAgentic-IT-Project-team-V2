@@ -287,9 +287,9 @@ dimension, and updates the Master Synthesis. Output:
 ```text
 .github/
   copilot-instructions.md     ← System instructions for the Orchestrator
-  skills/                     ← One skill file per agent (00-orchestrator.md … 37-scope-change-agent.md)
 
-docs/
+templates/sdlc/
+  agents/                     ← One skill file per agent (00-orchestrator.md … 37-scope-change-agent.md)
   contracts/                  ← Output contracts per deliverable type (what each agent MUST produce)
   guardrails/                 ← Guardrail files 00–09 (per domain: business, security, UX, questionnaires…)
   playbooks/                  ← Process playbooks (software-creation-playbook.md + commercial-software-audit-playbook.md)
@@ -352,12 +352,12 @@ Each decision or question gets a unique ID (`DEC-NNN`), a scope (e.g. `Phase 2`,
 
 ## Contracts and guardrails — what are those?
 
-**Contracts** (`docs/contracts/`) define what each agent is required to
+**Contracts** (`templates/sdlc/contracts/`) define what each agent is required to
 produce. If an agent does not fully fulfill its contract, the Critic Agent sends
 it back. As a user you don't need to read the contracts, but they explain why an
 agent sometimes returns "BLOCKED".
 
-**Guardrails** (`docs/guardrails/00–09`) are testable, binding decision
+**Guardrails** (`templates/sdlc/guardrails/00–09`) are testable, binding decision
 rules per domain. They prevent agents from repeating the same category of errors
 across sprints. When a violation occurs you will see
 `GUARDRAIL_VIOLATION: G-XXX-NNN` in the output, with a mandatory remediation
@@ -423,7 +423,7 @@ take similar effort to analysis phases. For AUDIT mode with a large monorepo
 
 ## Agents overview
 
-All skill files are in `agents/`. The numbering follows the execution
+All skill files are in `templates/sdlc/agents/`. The numbering follows the execution
 order:
 
 | No   | Agent                        | Category                            |

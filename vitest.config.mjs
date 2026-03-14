@@ -26,11 +26,12 @@ export default defineConfig({
     ],
     coverage: {
       provider: 'v8',
-      include: ['src/webapp/**/*.js'],
+      include: ['src/webapp/**/*.js', 'platform/engine/**/*.js'],
       exclude: [
         'src/webapp/node_modules/**',
         'src/webapp/ui/**',
         'src/webapp/start.ps1',
+        'platform/engine/flows.yaml',
       ],
       reporter: ['text', 'text-summary', 'json-summary', 'json'],
       reportsDirectory: 'coverage',

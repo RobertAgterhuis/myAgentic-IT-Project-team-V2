@@ -234,11 +234,11 @@ auto-activation.
 
 ## 5. Guardrail references
 
-| Guardrail         | File                                              | Scope                                                                                                                    |
-| ----------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **G-GLOB-58**     | `docs/guardrails/00-global-guardrails.md`         | All Phase 5 agents must validate against `DECIDED` items. Skip DEFERRED for compliance but scan for activation triggers. |
-| **IMPL-GUARD-32** | `docs/guardrails/06-implementation-guardrails.md` | Decision compliance triple-check: Implementation → Test → PR/Review. All three must independently verify.                |
-| **IMPL-GUARD-33** | `docs/guardrails/06-implementation-guardrails.md` | HALT before introducing deferred technology. Escalate to Orchestrator for ORC-45 auto-activation.                        |
+| Guardrail         | File                                                        | Scope                                                                                                                    |
+| ----------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **G-GLOB-58**     | `templates/sdlc/guardrails/00-global-guardrails.md`         | All Phase 5 agents must validate against `DECIDED` items. Skip DEFERRED for compliance but scan for activation triggers. |
+| **IMPL-GUARD-32** | `templates/sdlc/guardrails/06-implementation-guardrails.md` | Decision compliance triple-check: Implementation → Test → PR/Review. All three must independently verify.                |
+| **IMPL-GUARD-33** | `templates/sdlc/guardrails/06-implementation-guardrails.md` | HALT before introducing deferred technology. Escalate to Orchestrator for ORC-45 auto-activation.                        |
 
 ---
 
@@ -280,7 +280,34 @@ up at the next Sprint Gate automatically.
 
 ---
 
-## 9. Reevaluate trigger
+## 9. Decision seeding from template
+
+Decision category files and the index are **platform knowledge** — they define
+the 245 pre-built decisions and auto-activation mechanism. To ensure they survive
+a `BusinessDocs/` deletion, seed copies live in `templates/sdlc/decisions/`.
+
+When the Orchestrator starts a **fresh cycle** (not a resume), it calls
+`seedDecisions()` from the template loader. This function:
+
+1. Reads the `decisionsDir` and `decisionIndexSeed` paths from the template
+   manifest.
+2. Checks whether `BusinessDocs/decisions/` already exists — if so, **no-op**
+   (never overwrites existing project data).
+3. Creates `BusinessDocs/decisions/` and copies all `.md` category seed files.
+4. Copies the index seed (`_index-seed.md`) to `BusinessDocs/decisions.md` if it
+   doesn't already exist.
+
+Seed files live at:
+
+| Path                                                                  | Purpose             |
+| --------------------------------------------------------------------- | ------------------- |
+| `templates/sdlc/decisions/*.md`                                       | Category file seeds |
+| `templates/sdlc/decisions/_index-seed.md`                             | Index file seed     |
+| `templates/sdlc/manifest.json` — `decisionsDir` / `decisionIndexSeed` | Manifest entries    |
+
+---
+
+## 10. Reevaluate trigger
 
 When the web UI's Decisions tab writes
 `BusinessDocs/session/reevaluate-trigger.json` with `status: "PENDING"`, the

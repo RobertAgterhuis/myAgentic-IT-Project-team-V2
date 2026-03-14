@@ -17,7 +17,7 @@ const {
   createAutoPersist,
   saveRunHistory,
   loadRunHistory,
-} = require('../../src/webapp/orchestrator/state-persistence');
+} = require('../../platform/engine/state-persistence');
 
 // ─── Test Helpers ────────────────────────────────────────────
 

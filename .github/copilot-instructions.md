@@ -30,9 +30,9 @@ The system also supports **auditing existing software** as an alternative mode
 
 This is a **multi-agent, sequential system**. Each agent:
 
-- Has a fixed role (see `/docs/playbooks/software-creation-playbook.md`)
-- Works within an **output contract** (see `/docs/contracts/`)
-- Must comply with **guardrails** (see `/docs/guardrails/`)
+- Has a fixed role (see `/templates/sdlc/playbooks/software-creation-playbook.md`)
+- Works within an **output contract** (see `/templates/sdlc/contracts/`)
+- Must comply with **guardrails** (see `/templates/sdlc/guardrails/`)
 - Must NOT start without the output of the previous phase as input
 
 ### Phase Sequence (MANDATORY)
@@ -164,7 +164,7 @@ Onboarding maintenance:
 4. At phase boundaries, the Orchestrator will instruct the user to start a
    **fresh Copilot Chat conversation**. All state is preserved in
    `session-state.json`.
-5. Refer to `/docs/guardrails/00-global-guardrails.md` Section 6 for
+5. Refer to `/templates/sdlc/guardrails/00-global-guardrails.md` Section 6 for
    full rules (G-GLOB-50 through G-GLOB-55).
 
 ### VERIFICATION PROTOCOL (MANDATORY BEFORE HANDOFF)
@@ -176,8 +176,8 @@ Every agent MUST produce a **Handoff Checklist** at the end of its output:
 - [ ] All required sections are filled (not empty, not placeholder)
 - [ ] All UNCERTAIN: items are documented and escalated
 - [ ] All INSUFFICIENT_DATA: items are documented and escalated
-- [ ] Output complies with the contract in /docs/contracts/
-- [ ] Guardrails from /docs/guardrails/ have been checked
+- [ ] Output complies with the contract in /templates/sdlc/contracts/
+- [ ] Guardrails from /templates/sdlc/guardrails/ have been checked
 - [ ] Output is machine-readable and ready as input for the next agent
 - [ ] No contradictory statements in this document
 - [ ] All findings include a source reference
@@ -226,9 +226,9 @@ read it when needed.
 
 ## PLAYBOOK
 
-Full creation process: `docs/playbooks/software-creation-playbook.md`
+Full creation process: `templates/sdlc/playbooks/software-creation-playbook.md`
 Legacy audit process:
-`docs/playbooks/commercial-software-audit-playbook.md` (preserved for
+`templates/sdlc/playbooks/commercial-software-audit-playbook.md` (preserved for
 AUDIT mode)
 
 ---

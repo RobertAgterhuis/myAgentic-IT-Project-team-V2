@@ -31,7 +31,7 @@ const {
   PHASE_GUARDRAILS,
   _PHASE_CONTRACTS,
   HANDOFF_CHECKLIST_COUNT,
-} = require('../../src/webapp/orchestrator/gate-validator');
+} = require('../../platform/engine/gate-validator');
 
 // ─── Test Helpers ────────────────────────────────────────────
 
@@ -66,8 +66,8 @@ function buildCompliantDeliverable(overrides = {}) {
     '- [x] All required sections are filled (not empty, not placeholder)',
     '- [x] All UNCERTAIN: items are documented and escalated',
     '- [x] All INSUFFICIENT_DATA: items are documented and escalated',
-    '- [x] Output complies with the contract in /docs/contracts/',
-    '- [x] Guardrails from /docs/guardrails/ have been checked',
+    '- [x] Output complies with the contract in /templates/sdlc/contracts/',
+    '- [x] Guardrails from /templates/sdlc/guardrails/ have been checked',
     '- [x] Output is machine-readable and ready as input for the next agent',
     '- [x] No contradictory statements in this document',
     '- [x] All findings include a source reference',
@@ -561,17 +561,9 @@ describe('runGate', () => {
 // Engine integration — validateGate with SSE (AC-7)
 // ─────────────────────────────────────────────────────────────
 describe('engine validateGate integration', () => {
-  const { createEngine } = require('../../src/webapp/orchestrator/engine');
+  const { createEngine } = require('../../platform/engine/engine');
 
-  const FLOWS_PATH = path.join(
-    __dirname,
-    '..',
-    '..',
-    'src',
-    'webapp',
-    'orchestrator',
-    'flows.yaml'
-  );
+  const FLOWS_PATH = path.join(__dirname, '..', '..', 'platform', 'engine', 'flows.yaml');
   const FLOWS_CONTENT = fs.readFileSync(FLOWS_PATH, 'utf-8');
 
   function engineStore(extraFiles = {}) {
@@ -784,5 +776,74 @@ describe('RiskValidator', () => {
     const result = rv.validate('CRITIC_1', ['missing.md']);
     expect(result.verdict).toBe('FAILED');
     expect(result.risks).toEqual([]);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// S5: Template config injection (criticToPhase, phaseContracts, phaseGuardrails)
+// ─────────────────────────────────────────────────────────────
+describe('runGate — template config injection (S5)', () => {
+  it('uses injected criticToPhase mapping', () => {
+    const store = createMockStore({
+      'deliverable.md': buildCompliantDeliverable(),
+    });
+    const customCtp = { CRITIC_1: 'PHASE_2', CRITIC_5: 'PHASE_1' };
+    const result = runGate(store, {
+      criticState: 'CRITIC_5',
+      deliverables: ['deliverable.md'],
+      criticToPhase: customCtp,
+    });
+    expect(result.summary.phase).toBe('PHASE_1');
+  });
+
+  it('uses injected phaseContracts', () => {
+    const store = createMockStore({
+      'deliverable.md': buildCompliantDeliverable(),
+    });
+    const customPc = { PHASE_1: ['custom-contract.md'] };
+    const result = runGate(store, {
+      criticState: 'CRITIC_1',
+      deliverables: ['deliverable.md'],
+      phaseContracts: customPc,
+    });
+    // Should use the custom contracts (no files exist → 0 required sections)
+    expect(result.summary.contractSectionsLoaded).toBe(0);
+  });
+
+  it('uses injected phaseGuardrails', () => {
+    const store = createMockStore({
+      'deliverable.md': buildCompliantDeliverable(),
+    });
+    const customPg = { PHASE_1: ['custom-guardrail.md'] };
+    const result = runGate(store, {
+      criticState: 'CRITIC_1',
+      deliverables: ['deliverable.md'],
+      phaseGuardrails: customPg,
+    });
+    expect(result.summary.guardrailRulesLoaded).toBe(0);
+  });
+
+  it('falls back to hardcoded mappings when injection is omitted', () => {
+    const store = createMockStore({
+      'deliverable.md': buildCompliantDeliverable(),
+    });
+    const result = runGate(store, {
+      criticState: 'CRITIC_1',
+      deliverables: ['deliverable.md'],
+    });
+    expect(result.summary.phase).toBe('PHASE_1');
+  });
+});
+
+describe('CriticValidator — template config injection (S5)', () => {
+  it('forwards injected criticToPhase to runGate', () => {
+    const store = createMockStore({
+      'deliverable.md': buildCompliantDeliverable(),
+    });
+    const cv = new CriticValidator(store, {
+      criticToPhase: { CRITIC_7: 'PHASE_1' },
+    });
+    const result = cv.validate('CRITIC_7', ['deliverable.md']);
+    expect(result.summary.phase).toBe('PHASE_1');
   });
 });

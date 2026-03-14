@@ -40,12 +40,12 @@ myAgentic-IT-Project-team/
 
 ## `.github/` — CI & repository configuration
 
-| File                      | Purpose                                     |
-| ------------------------- | ------------------------------------------- |
-| `CODEOWNERS`              | Code ownership rules for PR reviews         |
-| `copilot-instructions.md` | Copilot agent instructions for this repo    |
-| `dependabot.yml`          | Dependabot configuration                    |
-| `PULL_REQUEST_TEMPLATE.md`| PR template                                 |
+| File                       | Purpose                                  |
+| -------------------------- | ---------------------------------------- |
+| `CODEOWNERS`               | Code ownership rules for PR reviews      |
+| `copilot-instructions.md`  | Copilot agent instructions for this repo |
+| `dependabot.yml`           | Dependabot configuration                 |
+| `PULL_REQUEST_TEMPLATE.md` | PR template                              |
 
 ### Issue templates — `.github/ISSUE_TEMPLATE/`
 
@@ -53,14 +53,14 @@ GitHub issue templates for bugs, features, stories, and tasks.
 
 ### Workflows — `.github/workflows/`
 
-| File                             | Purpose                                              |
-| -------------------------------- | ---------------------------------------------------- |
-| `ci.yml`                         | Vitest + npm audit + typecheck                       |
-| `ci-pipeline.yml`               | Jest + ESLint + Prettier                             |
-| `generate-and-validate.yml`     | Platform schema generation + validation              |
-| `my-agentic-team-board-sync.yml`| GitHub Project board synchronization                 |
-| `release.yml`                    | Release workflow                                     |
-| `storybook.yml`                  | Storybook build + deploy                             |
+| File                             | Purpose                                 |
+| -------------------------------- | --------------------------------------- |
+| `ci.yml`                         | Vitest + npm audit + typecheck          |
+| `ci-pipeline.yml`                | Jest + ESLint + Prettier                |
+| `generate-and-validate.yml`      | Platform schema generation + validation |
+| `my-agentic-team-board-sync.yml` | GitHub Project board synchronization    |
+| `release.yml`                    | Release workflow                        |
+| `storybook.yml`                  | Storybook build + deploy                |
 
 ---
 
@@ -78,16 +78,16 @@ system itself.
 
 ## `infra/` — Docker & container infrastructure
 
-| File                             | Purpose                                              | Modified by      |
-| -------------------------------- | ---------------------------------------------------- | ---------------- |
-| `Dockerfile`                     | Multi-stage production build (Node.js + React UI)    | DevOps / SWE     |
-| `Dockerfile.storybook`           | Storybook design system build (nginx)                | DevOps / SWE     |
-| `docker-compose.yml`             | Base webapp service definition                       | DevOps / SWE     |
-| `docker-compose.webapp.yml`      | End-user compose (webapp only, port 3000)            | DevOps / SWE     |
-| `docker-compose.dev.yml`         | Full-stack developer compose (all 7 services)        | DevOps / SWE     |
-| `docker-compose.analytics.yml`   | Matomo analytics stack (3 services, port 8080)       | DevOps / SWE     |
-| `docker-compose.weblate.yml`     | Weblate TMS stack (3 services, port 8081)            | DevOps / SWE     |
-| `matomo-nginx.conf`              | Nginx reverse proxy config for Matomo FPM            | DevOps / SWE     |
+| File                           | Purpose                                           | Modified by  |
+| ------------------------------ | ------------------------------------------------- | ------------ |
+| `Dockerfile`                   | Multi-stage production build (Node.js + React UI) | DevOps / SWE |
+| `Dockerfile.storybook`         | Storybook design system build (nginx)             | DevOps / SWE |
+| `docker-compose.yml`           | Base webapp service definition                    | DevOps / SWE |
+| `docker-compose.webapp.yml`    | End-user compose (webapp only, port 3000)         | DevOps / SWE |
+| `docker-compose.dev.yml`       | Full-stack developer compose (all 7 services)     | DevOps / SWE |
+| `docker-compose.analytics.yml` | Matomo analytics stack (3 services, port 8080)    | DevOps / SWE |
+| `docker-compose.weblate.yml`   | Weblate TMS stack (3 services, port 8081)         | DevOps / SWE |
+| `matomo-nginx.conf`            | Nginx reverse proxy config for Matomo FPM         | DevOps / SWE |
 
 > **Note:** `.dockerignore` remains in the repository root (Docker reads it from
 > the build context root).
@@ -98,21 +98,21 @@ system itself.
 
 ### Root files
 
-| Path                      | Purpose                                            | Written by         | Safe to edit? |
-| ------------------------- | -------------------------------------------------- | ------------------ | ------------- |
-| `_config.yml`             | Jekyll / GitHub Pages config                       | System maintainers | Yes           |
-| `agent-index.md`          | Lookup table for all skills, guardrails, contracts | System maintainers | No            |
-| `contributing.md`         | Developer contribution guide                       | System maintainers | Yes           |
-| `data-dictionary.md`      | Data entity catalog                                | System maintainers | Yes           |
-| `domain-glossary.md`      | Domain terminology reference                       | System maintainers | Yes           |
-| `file-system-reference.md`| This file                                          | System maintainers | Yes           |
-| `index.md`                | GitHub Pages landing page                          | System maintainers | Yes           |
-| `mode-guide.md`           | CREATE vs AUDIT mode guidance                      | System maintainers | No            |
-| `privacy-policy.md`       | Privacy policy                                     | System maintainers | Yes           |
-| `quick-start.md`          | Getting started guide                              | System maintainers | Yes           |
-| `README.md`               | Overview of the docs/ structure                    | System maintainers | No            |
-| `technical-manual.md`     | API reference + architecture                       | Documentation Agent | After sprint  |
-| `user-manual.md`          | User guide                                         | Documentation Agent | After sprint  |
+| Path                       | Purpose                                            | Written by          | Safe to edit? |
+| -------------------------- | -------------------------------------------------- | ------------------- | ------------- |
+| `_config.yml`              | Jekyll / GitHub Pages config                       | System maintainers  | Yes           |
+| `agent-index.md`           | Lookup table for all skills, guardrails, contracts | System maintainers  | No            |
+| `contributing.md`          | Developer contribution guide                       | System maintainers  | Yes           |
+| `data-dictionary.md`       | Data entity catalog                                | System maintainers  | Yes           |
+| `domain-glossary.md`       | Domain terminology reference                       | System maintainers  | Yes           |
+| `file-system-reference.md` | This file                                          | System maintainers  | Yes           |
+| `index.md`                 | GitHub Pages landing page                          | System maintainers  | Yes           |
+| `mode-guide.md`            | CREATE vs AUDIT mode guidance                      | System maintainers  | No            |
+| `privacy-policy.md`        | Privacy policy                                     | System maintainers  | Yes           |
+| `quick-start.md`           | Getting started guide                              | System maintainers  | Yes           |
+| `README.md`                | Overview of the docs/ structure                    | System maintainers  | No            |
+| `technical-manual.md`      | API reference + architecture                       | Documentation Agent | After sprint  |
+| `user-manual.md`           | User guide                                         | Documentation Agent | After sprint  |
 
 ### Contracts — `docs/contracts/`
 
@@ -122,24 +122,24 @@ what to expect as input.
 
 Key contracts:
 
-| File                                 | Defines                                          |
-| ------------------------------------ | ------------------------------------------------ |
-| `session-state-contract.md`          | Session state format, lifecycle, state machine   |
-| `human-escalation-protocol.md`       | How agents ask you questions                     |
-| `implementation-output-contract.md`  | What the Implementation Agent produces           |
-| `test-output-contract.md`            | Test report format                               |
-| `pr-review-output-contract.md`       | PR review and sprint completion format           |
-| `tooling-contract.md`               | Required tools and verification                  |
+| File                                | Defines                                        |
+| ----------------------------------- | ---------------------------------------------- |
+| `session-state-contract.md`         | Session state format, lifecycle, state machine |
+| `human-escalation-protocol.md`      | How agents ask you questions                   |
+| `implementation-output-contract.md` | What the Implementation Agent produces         |
+| `test-output-contract.md`           | Test report format                             |
+| `pr-review-output-contract.md`      | PR review and sprint completion format         |
+| `tooling-contract.md`               | Required tools and verification                |
 
 **Do not modify** contracts unless you're changing agent behavior.
 
 ### Decisions — `BusinessDocs/decisions/`
 
-| Path                          | Purpose                               | Written by                  | Safe to edit?                          |
-| ----------------------------- | ------------------------------------- | --------------------------- | -------------------------------------- |
-| `BusinessDocs/decisions.md`   | Decision index (open questions + registry)| You + web UI + Orchestrator | **Yes**                            |
-| `BusinessDocs/decisions/*.md` | Category files (technology stacks)    | You + web UI + Orchestrator | **Yes** (header status, decision rows) |
-| `BusinessDocs/analytics-events.json` | Event tracking definitions     | System maintainers          | No                                     |
+| Path                                 | Purpose                                    | Written by                  | Safe to edit?                          |
+| ------------------------------------ | ------------------------------------------ | --------------------------- | -------------------------------------- |
+| `BusinessDocs/decisions.md`          | Decision index (open questions + registry) | You + web UI + Orchestrator | **Yes**                                |
+| `BusinessDocs/decisions/*.md`        | Category files (technology stacks)         | You + web UI + Orchestrator | **Yes** (header status, decision rows) |
+| `BusinessDocs/analytics-events.json` | Event tracking definitions                 | System maintainers          | No                                     |
 
 This is your primary communication channel with the agent team. See
 `docs/help/decisions.md` for details.
@@ -212,34 +212,34 @@ effect via the decision system or reevaluation.
 
 ### GitHub integration — `docs/github/`
 
-| File                     | Purpose                              |
-| ------------------------ | ------------------------------------ |
-| `project-board-setup.md` | Board configuration guide            |
-| `sync-report-*.md`      | Board sync reports (timestamped)     |
+| File                     | Purpose                          |
+| ------------------------ | -------------------------------- |
+| `project-board-setup.md` | Board configuration guide        |
+| `sync-report-*.md`       | Board sync reports (timestamped) |
 
 ### Onboarding — `BusinessDocs/onboarding/`
 
-| File                    | Purpose                       | Written by      |
-| ----------------------- | ----------------------------- | --------------- |
-| `onboarding-output.md`  | Onboarding intake + scan data | Onboarding Agent|
+| File                   | Purpose                       | Written by       |
+| ---------------------- | ----------------------------- | ---------------- |
+| `onboarding-output.md` | Onboarding intake + scan data | Onboarding Agent |
 
 ### Phase outputs — `BusinessDocs/phase-1/` through `BusinessDocs/phase-5/`
 
-| Directory       | Purpose                                                  |
-| --------------- | -------------------------------------------------------- |
-| `BusinessDocs/phase-1/` | Phase 1 (Requirements & Strategy) analysis outputs       |
-| `BusinessDocs/phase-2/` | Phase 2 (Architecture & Design) analysis outputs         |
-| `BusinessDocs/phase-3/` | Phase 3 (Experience Design) analysis outputs             |
-| `BusinessDocs/phase-4/` | Phase 4 (Brand & Growth) analysis outputs                |
-| `BusinessDocs/phase-5/` | Phase 5 (Implementation) sprint plans, completion reports|
+| Directory               | Purpose                                                   |
+| ----------------------- | --------------------------------------------------------- |
+| `BusinessDocs/phase-1/` | Phase 1 (Requirements & Strategy) analysis outputs        |
+| `BusinessDocs/phase-2/` | Phase 2 (Architecture & Design) analysis outputs          |
+| `BusinessDocs/phase-3/` | Phase 3 (Experience Design) analysis outputs              |
+| `BusinessDocs/phase-4/` | Phase 4 (Brand & Growth) analysis outputs                 |
+| `BusinessDocs/phase-5/` | Phase 5 (Implementation) sprint plans, completion reports |
 
 ### Security — `docs/security/`
 
-| File                           | Purpose                                     | Written by                   |
-| ------------------------------ | ------------------------------------------- | ---------------------------- |
-| `data-inventory.md`            | Data classification and inventory           | Security Architect (Phase 2) |
-| `security-design.md`           | Security architecture design                | Security Architect (Phase 2) |
-| `security-handoff-context.md`  | Security constraints for all Phase 5 agents | Security Architect (Phase 2) |
+| File                          | Purpose                                     | Written by                   |
+| ----------------------------- | ------------------------------------------- | ---------------------------- |
+| `data-inventory.md`           | Data classification and inventory           | Security Architect (Phase 2) |
+| `security-design.md`          | Security architecture design                | Security Architect (Phase 2) |
+| `security-handoff-context.md` | Security constraints for all Phase 5 agents | Security Architect (Phase 2) |
 
 ### Storybook — `BusinessDocs/storybook/`
 
@@ -273,11 +273,11 @@ Auto-generated. **Do not modify.**
 
 ### Metrics — `BusinessDocs/metrics/`
 
-| File                          | Purpose                           | Written by |
-| ----------------------------- | --------------------------------- | ---------- |
-| `runtime-metrics.json`        | Runtime metrics data              | Server     |
-| `sprint-[SP-N]-kpi-log.md`   | KPI log per sprint (markdown)     | KPI Agent  |
-| `sprint-[SP-N]-kpi-final.json`| KPI final measurements per sprint| KPI Agent  |
+| File                           | Purpose                           | Written by |
+| ------------------------------ | --------------------------------- | ---------- |
+| `runtime-metrics.json`         | Runtime metrics data              | Server     |
+| `sprint-[SP-N]-kpi-log.md`     | KPI log per sprint (markdown)     | KPI Agent  |
+| `sprint-[SP-N]-kpi-final.json` | KPI final measurements per sprint | KPI Agent  |
 
 ### Retrospectives — `BusinessDocs/retrospectives/`
 
@@ -341,21 +341,21 @@ main project cycle.
 
 ### Root modules
 
-| File                       | Purpose                        |
-| -------------------------- | ------------------------------ |
-| `server.js`                | Express server (API + static)  |
-| `mcp-server.js`            | MCP server for Copilot         |
-| `store.js`                 | State management               |
-| `schemas.js`               | Validation schemas             |
-| `models.js`                | Data models                    |
-| `audit.js`                 | Audit logging                  |
-| `cache.js`                 | Server-side caching            |
-| `drift-detector.js`        | Configuration drift detection  |
-| `file-lock.js`             | File locking utility           |
-| `middleware.js`            | Express middleware             |
-| `session-state-resolver.js`| Session state resolution       |
-| `strings.js`               | UI string constants            |
-| `start.ps1`                | PowerShell startup script      |
+| File                        | Purpose                       |
+| --------------------------- | ----------------------------- |
+| `server.js`                 | Express server (API + static) |
+| `mcp-server.js`             | MCP server for Copilot        |
+| `store.js`                  | State management              |
+| `schemas.js`                | Validation schemas            |
+| `models.js`                 | Data models                   |
+| `audit.js`                  | Audit logging                 |
+| `cache.js`                  | Server-side caching           |
+| `drift-detector.js`         | Configuration drift detection |
+| `file-lock.js`              | File locking utility          |
+| `middleware.js`             | Express middleware            |
+| `session-state-resolver.js` | Session state resolution      |
+| `strings.js`                | UI string constants           |
+| `start.ps1`                 | PowerShell startup script     |
 
 ### Locales — `src/webapp/locales/`
 
@@ -375,13 +375,13 @@ tool-schema.
 
 ### Other subdirectories
 
-| Directory              | Purpose                                          |
-| ---------------------- | ------------------------------------------------ |
-| `email-templates/`     | Email HTML templates (7 templates)               |
-| `social-cards/`        | OG/Twitter social card templates                 |
-| `types/`               | TypeScript type definitions                      |
-| `utils/`               | Utilities (errors.js, secret-utils.js)           |
-| `ui/`                  | Vite + React frontend (see below)                |
+| Directory          | Purpose                                |
+| ------------------ | -------------------------------------- |
+| `email-templates/` | Email HTML templates (7 templates)     |
+| `social-cards/`    | OG/Twitter social card templates       |
+| `types/`           | TypeScript type definitions            |
+| `utils/`           | Utilities (errors.js, secret-utils.js) |
+| `ui/`              | Vite + React frontend (see below)      |
 
 ### Frontend — `src/webapp/ui/`
 
@@ -412,15 +412,15 @@ All unit tests live here. Run with Vitest (`npm run test:vitest`) or Jest
 
 Key test files:
 
-| File pattern            | What it tests                          |
-| ----------------------- | -------------------------------------- |
-| `routes-*.test.js`      | Route handler tests (6 route modules)  |
-| `server.test.js`        | Server startup and configuration       |
-| `schemas.test.js`       | Schema validation                      |
-| `models.test.js`        | Data model logic                       |
-| `engine.test.js`        | Orchestrator engine                    |
-| `state-*.test.js`       | State machine and persistence          |
-| `governance-docs.test.js`| Governance document structure         |
+| File pattern              | What it tests                         |
+| ------------------------- | ------------------------------------- |
+| `routes-*.test.js`        | Route handler tests (6 route modules) |
+| `server.test.js`          | Server startup and configuration      |
+| `schemas.test.js`         | Schema validation                     |
+| `models.test.js`          | Data model logic                      |
+| `engine.test.js`          | Orchestrator engine                   |
+| `state-*.test.js`         | State machine and persistence         |
+| `governance-docs.test.js` | Governance document structure         |
 
 ### Integration tests — `tests/integration/` (10 files)
 
@@ -439,13 +439,13 @@ Quick smoke tests (landing page, create pipeline).
 
 ## Other root directories
 
-| Directory    | Purpose                                                    |
-| ------------ | ---------------------------------------------------------- |
-| `data/`      | Runtime data (`milestones.json`)                           |
-| `platform/`  | Platform schema definitions (`platform/schema/`)           |
-| `scripts/`   | Build and maintenance scripts (7 files)                    |
-| `.husky/`    | Git hooks (pre-commit: lint-staged + fast unit tests)      |
-| `.vscode/`   | VS Code workspace settings                                 |
+| Directory   | Purpose                                               |
+| ----------- | ----------------------------------------------------- |
+| `data/`     | Runtime data (`milestones.json`)                      |
+| `platform/` | Platform schema definitions (`platform/schema/`)      |
+| `scripts/`  | Build and maintenance scripts (7 files)               |
+| `.husky/`   | Git hooks (pre-commit: lint-staged + fast unit tests) |
+| `.vscode/`  | VS Code workspace settings                            |
 
 ---
 
@@ -453,9 +453,9 @@ Quick smoke tests (landing page, create pipeline).
 
 | Path                                               | Safe to delete? | Consequence                                       |
 | -------------------------------------------------- | --------------- | ------------------------------------------------- |
-| `BusinessDocs/session/session-state.json`                  | Yes             | Loses current progress; can start fresh           |
-| `BusinessDocs/session/command-queue.json`                  | Yes             | Loses queued (unconsumed) command                 |
-| `BusinessDocs/session/reevaluate-trigger.json`             | Yes             | Cancels pending reevaluation                      |
+| `BusinessDocs/session/session-state.json`          | Yes             | Loses current progress; can start fresh           |
+| `BusinessDocs/session/command-queue.json`          | Yes             | Loses queued (unconsumed) command                 |
+| `BusinessDocs/session/reevaluate-trigger.json`     | Yes             | Cancels pending reevaluation                      |
 | `BusinessDocs/` contents                           | With caution    | Loses all phase outputs and questionnaire answers |
-| `BusinessDocs/synthesis/` contents                         | With caution    | Must re-run Synthesis Agent                       |
+| `BusinessDocs/synthesis/` contents                 | With caution    | Must re-run Synthesis Agent                       |
 | Anything in `agents/`, `contracts/`, `guardrails/` | **No**          | Breaks agent behavior                             |

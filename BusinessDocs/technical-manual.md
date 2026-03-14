@@ -980,10 +980,10 @@ npx pm2 status
 Privacy-first analytics via self-hosted Matomo, defined in
 `infra/docker-compose.analytics.yml` (3-service stack):
 
-| Service    | Image               | Purpose                                     |
-| ---------- | ------------------- | ------------------------------------------- |
-| matomo     | matomo:5-fpm-alpine | Matomo PHP-FPM application                  |
-| matomo-db  | mariadb:11          | Persistent analytics database               |
+| Service    | Image               | Purpose                                           |
+| ---------- | ------------------- | ------------------------------------------------- |
+| matomo     | matomo:5-fpm-alpine | Matomo PHP-FPM application                        |
+| matomo-db  | mariadb:11          | Persistent analytics database                     |
 | matomo-web | nginx:alpine        | Reverse proxy (config: `infra/matomo-nginx.conf`) |
 
 ```bash

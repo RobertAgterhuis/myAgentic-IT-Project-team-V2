@@ -4,12 +4,7 @@
   "project_name": "MYAGENTIC-IT-PROJECT-TEAM-V2",
   "mode": "CREATE",
   "cycle_type": "FULL_CREATE",
-  "scope": [
-    "BUSINESS",
-    "TECH",
-    "UX",
-    "MARKETING"
-  ],
+  "scope": ["BUSINESS", "TECH", "UX", "MARKETING"],
   "project_type": "greenfield",
   "feature_name": null,
   "github_project_name": "Agentic SDLC Platform Task",
@@ -168,44 +163,17 @@
         "sprint_gate_verdict": "APPROVED",
         "ready_items": 9,
         "conditional_items": 1,
-        "new_issues_created": [
-          123,
-          124,
-          125,
-          126,
-          128,
-          129
-        ],
-        "existing_issues": [
-          107,
-          110,
-          115,
-          117
-        ],
+        "new_issues_created": [123, 124, 125, 126, 128, 129],
+        "existing_issues": [107, 110, 115, 117],
         "backlog_items": [
           "SP-2-SOC (#127) — non-blocking; requires complete working solution before social publication"
         ],
         "tracks": {
-          "tech": [
-            "SP-2-CI7 (#123)",
-            "SP-2-CI8 (#124)",
-            "SP-2-MAT (#125)"
-          ],
-          "business": [
-            "SP-2-201-P (#107)",
-            "SP-2-202 (#110)"
-          ],
-          "ux": [
-            "SP-2-501 (#117)"
-          ],
-          "marketing": [
-            "SP-2-201 (#115)",
-            "SP-2-BTN (#126)",
-            "SP-2-LND (#128)"
-          ],
-          "docs": [
-            "SP-2-DOC (#129)"
-          ]
+          "tech": ["SP-2-CI7 (#123)", "SP-2-CI8 (#124)", "SP-2-MAT (#125)"],
+          "business": ["SP-2-201-P (#107)", "SP-2-202 (#110)"],
+          "ux": ["SP-2-501 (#117)"],
+          "marketing": ["SP-2-201 (#115)", "SP-2-BTN (#126)", "SP-2-LND (#128)"],
+          "docs": ["SP-2-DOC (#129)"]
         },
         "execution_start": "2026-03-25",
         "checkpoint_1": "2026-03-28",
@@ -216,41 +184,16 @@
         "due_date": "2026-04-21",
         "total_issues": 7,
         "sprint_gate_verdict": "APPROVED",
-        "new_issues_created": [
-          134,
-          133,
-          135
-        ],
-        "carryover_issues": [
-          107,
-          110,
-          115
-        ],
-        "blocker_issues": [
-          131
-        ],
+        "new_issues_created": [134, 133, 135],
+        "carryover_issues": [107, 110, 115],
+        "blocker_issues": [131],
         "tracks": {
-          "tech": [
-            "SP-3-MAT-FIX (#131)",
-            "SP-3-GH-DISC (#134)"
-          ],
-          "business": [
-            "SP-3-201-P (#107)",
-            "SP-3-202 (#110)"
-          ],
-          "marketing": [
-            "SP-3-201-M (#115)",
-            "SP-3-DEVTO (#133)"
-          ],
-          "process": [
-            "SP-3-VELOC (#135)"
-          ]
+          "tech": ["SP-3-MAT-FIX (#131)", "SP-3-GH-DISC (#134)"],
+          "business": ["SP-3-201-P (#107)", "SP-3-202 (#110)"],
+          "marketing": ["SP-3-201-M (#115)", "SP-3-DEVTO (#133)"],
+          "process": ["SP-3-VELOC (#135)"]
         },
-        "lessons_injected": [
-          "L12",
-          "L10",
-          "L7"
-        ],
+        "lessons_injected": ["L12", "L10", "L7"],
         "retro_actions_mapped": 8,
         "execution_start": "2026-04-08",
         "checkpoint_1": "2026-04-11",
@@ -262,48 +205,21 @@
         "due_date": "2026-03-17",
         "total_issues": 8,
         "sprint_gate_verdict": "APPROVED",
-        "new_issues_created": [
-          137,
-          138,
-          139,
-          140,
-          141,
-          142,
-          143,
-          144
-        ],
+        "new_issues_created": [137, 138, 139, 140, 141, 142, 143, 144],
         "carryover_issues": [],
         "blocker_issues": [],
         "tracks": {
-          "governance": [
-            "SP-4-GA-DEF (#137)",
-            "SP-4-PR (#143)"
-          ],
-          "security": [
-            "SP-4-SEC (#138)",
-            "SP-4-PRIV (#139)"
-          ],
-          "documentation": [
-            "SP-4-CLAIMS (#140)",
-            "SP-4-TRUTH (#142)",
-            "SP-4-DOCS (#144)"
-          ],
-          "release": [
-            "SP-4-REL (#141)"
-          ]
+          "governance": ["SP-4-GA-DEF (#137)", "SP-4-PR (#143)"],
+          "security": ["SP-4-SEC (#138)", "SP-4-PRIV (#139)"],
+          "documentation": ["SP-4-CLAIMS (#140)", "SP-4-TRUTH (#142)", "SP-4-DOCS (#144)"],
+          "release": ["SP-4-REL (#141)"]
         },
         "source": "External GA Audit Report 2026-03-12",
         "audit_score": "8.4/10",
         "audit_findings_total": 12,
         "findings_addressed_sprint_4": 8,
-        "findings_deferred": [
-          "F-06",
-          "F-09",
-          "F-11"
-        ],
-        "findings_already_addressed": [
-          "F-10"
-        ],
+        "findings_deferred": ["F-06", "F-09", "F-11"],
+        "findings_already_addressed": ["F-10"],
         "execution_start": "2026-03-12",
         "velocity_target_pct": 87
       }
@@ -391,10 +307,7 @@
         "SP-11-613",
         "SP-1-203"
       ],
-      "deferred_items": [
-        "SP-2-201",
-        "SP-2-501"
-      ],
+      "deferred_items": ["SP-2-201", "SP-2-501"],
       "in_progress_items": [],
       "sprint_velocity_pct": 87,
       "items_complete": 13,
@@ -416,35 +329,21 @@
       "sprint_2_close_date": "2026-04-01",
       "sprint_2_velocity_pct": 80,
       "sprint_2_items_complete": 8,
-      "sprint_2_items_deferred": [
-        "SP-2-201-P",
-        "SP-2-202"
-      ],
+      "sprint_2_items_deferred": ["SP-2-201-P", "SP-2-202"],
       "sprint_3_plan": "docs/phase-5/sprint-3-plan.md",
       "sprint_3_kpi_log": "docs/metrics/sprint-3-kpi-log.md",
       "sprint_3_formally_closed": true,
       "sprint_3_close_date": "2026-03-12",
       "sprint_3_velocity_pct": 86,
       "sprint_3_items_complete": 6,
-      "sprint_3_items_deferred": [
-        "SP-3-DEVTO"
-      ],
+      "sprint_3_items_deferred": ["SP-3-DEVTO"],
       "sprint_3_pr": "#136",
       "sprint_3_merge_commit": "e11141b",
       "sprint_4_plan": "docs/phase-5/sprint-4-plan.md",
       "sprint_4_ga_audit_response": "docs/phase-5/ga-audit-response.md",
       "sprint_4_milestone_id": 26,
       "sprint_4_branch": "feature/sprint-4-implementation",
-      "sprint_4_issues": [
-        137,
-        138,
-        139,
-        140,
-        141,
-        142,
-        143,
-        144
-      ],
+      "sprint_4_issues": [137, 138, 139, 140, 141, 142, 143, 144],
       "sprint_4_total_acs": 59,
       "sprint_4_ga_definition": "docs/phase-5/ga-definition.md",
       "sprint_4_completion_report": "docs/phase-5/sprint-4-completion-report.md",
@@ -459,15 +358,7 @@
       "sprint_5_plan": "docs/phase-5/sprint-5-plan.md",
       "sprint_5_milestone_id": 27,
       "sprint_5_branch": "feature/sprint-5-implementation",
-      "sprint_5_issues": [
-        80,
-        81,
-        68,
-        36,
-        133,
-        146,
-        147
-      ],
+      "sprint_5_issues": [80, 81, 68, 36, 133, 146, 147],
       "sprint_5_total_acs": 41,
       "sprint_5_theme": "Orchestrator Foundation + Audit Closure",
       "sprint_5_completion_report": "docs/phase-5/sprint-5-completion-report.md",
@@ -476,14 +367,8 @@
       "sprint_5_close_date": "2026-03-20",
       "sprint_5_velocity_pct": 86,
       "sprint_5_items_complete": 6,
-      "sprint_5_items_deferred": [
-        "SP-5-DEVTO"
-      ],
-      "sprint_5_ga_findings_closed": [
-        "F-06",
-        "F-09",
-        "F-11"
-      ],
+      "sprint_5_items_deferred": ["SP-5-DEVTO"],
+      "sprint_5_ga_findings_closed": ["F-06", "F-09", "F-11"],
       "sprint_5_all_ga_findings_resolved": true,
       "sprint_5_pr": 148,
       "ga_decisions": {
@@ -537,9 +422,7 @@
     "answered": 9,
     "open": 0,
     "coverage_pct": 100,
-    "context_blocks_prepared": [
-      "Business Analyst"
-    ],
+    "context_blocks_prepared": ["Business Analyst"],
     "questionnaire_index_path": "BusinessDocs/Phase1-Business/Questionnaires/phase1-business-questionnaire-answers.md",
     "last_loaded_at": "2026-03-09T21:10:00Z"
   },

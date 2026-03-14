@@ -337,14 +337,14 @@ Each decision or question gets a unique ID (`DEC-NNN`), a scope (e.g. `Phase 2`,
 
 ## Ground rules
 
-| Rule                              | What it means                                                                                                                                       |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Anti-hallucination**            | Agents never fabricate facts. Uncertain claims get the prefix `UNCERTAIN:`                                                                          |
-| **Source citation required**      | Every finding references a file, line number, or document                                                                                           |
-| **Phase order is mandatory**      | An agent may never start without the output of the previous phase as input                                                                          |
-| **Handoff Checklist**             | Every agent verifies its own output completely before handoff — no partials                                                                         |
-| **Immutable sprint files**        | `sprint-[SP-N]-*.md` and `sprint-[SP-N]-*.json` are never overwritten after creation                                                                |
-| **Secret scan as merge gate**     | PR/Review Agent blocks the merge if secrets are found (TruffleHog)                                                                                  |
+| Rule                              | What it means                                                                                                                                               |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Anti-hallucination**            | Agents never fabricate facts. Uncertain claims get the prefix `UNCERTAIN:`                                                                                  |
+| **Source citation required**      | Every finding references a file, line number, or document                                                                                                   |
+| **Phase order is mandatory**      | An agent may never start without the output of the previous phase as input                                                                                  |
+| **Handoff Checklist**             | Every agent verifies its own output completely before handoff — no partials                                                                                 |
+| **Immutable sprint files**        | `sprint-[SP-N]-*.md` and `sprint-[SP-N]-*.json` are never overwritten after creation                                                                        |
+| **Secret scan as merge gate**     | PR/Review Agent blocks the merge if secrets are found (TruffleHog)                                                                                          |
 | **Storybook as design system**    | Implementation Agent only uses components from `BusinessDocs/storybook/component-inventory.md`. New components require a Storybook story + a11y check first |
 | **decisions.md is authoritative** | Decisions in `BusinessDocs/decisions.md` always override agent assumptions; HIGH-priority open questions block sprint start                                 |
 

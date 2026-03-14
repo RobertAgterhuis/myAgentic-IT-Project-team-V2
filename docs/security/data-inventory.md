@@ -1,14 +1,14 @@
 # Data Inventory — Agentic SDLC Platform
 
-| Field             | Value                                                                                  |
-| ----------------- | -------------------------------------------------------------------------------------- |
-| **Document**      | Data Inventory and Retention Model                                                     |
-| **Version**       | 1.0                                                                                    |
-| **Status**        | DRAFT                                                                                  |
-| **Created**       | 2026-03-12                                                                             |
-| **Owner**         | Robert Agterhuis                                                                       |
-| **Audit Finding** | F-03 (CRITICAL) — Privacy/compliance operations are not finished                       |
-| **Issue**         | #139                                                                                   |
+| Field             | Value                                                                                                           |
+| ----------------- | --------------------------------------------------------------------------------------------------------------- |
+| **Document**      | Data Inventory and Retention Model                                                                              |
+| **Version**       | 1.0                                                                                                             |
+| **Status**        | DRAFT                                                                                                           |
+| **Created**       | 2026-03-12                                                                                                      |
+| **Owner**         | Robert Agterhuis                                                                                                |
+| **Audit Finding** | F-03 (CRITICAL) — Privacy/compliance operations are not finished                                                |
+| **Issue**         | #139                                                                                                            |
 | **Depends on**    | `BusinessDocs/phase-5/ga-definition.md` (deployment profile), `docs/security/security-design.md` (data-at-rest) |
 
 ---
@@ -20,8 +20,8 @@ All data stored by the Agentic SDLC Platform in the v1 GA
 
 ### 1.1 Session Data
 
-| Data Element        | Format | Location                                | Contains PII | Retention                     |
-| ------------------- | ------ | --------------------------------------- | ------------ | ----------------------------- |
+| Data Element        | Format | Location                                        | Contains PII | Retention                     |
+| ------------------- | ------ | ----------------------------------------------- | ------------ | ----------------------------- |
 | Session state       | JSON   | `BusinessDocs/session/session-state.json`       | No           | Project lifetime              |
 | Session audit trail | JSON   | `BusinessDocs/session/session-state-audit.json` | No           | Project lifetime              |
 | Command queue       | JSON   | `BusinessDocs/session/command-queue.json`       | No           | Overwritten per command cycle |
@@ -34,27 +34,27 @@ All data stored by the Agentic SDLC Platform in the v1 GA
 | Questionnaire answers | Markdown | `BusinessDocs/Phase*/Questionnaires/` | Potentially (business context) | Project lifetime |
 | Questionnaire index   | Markdown | `BusinessDocs/questionnaire-index.md` | No                             | Project lifetime |
 | Official documents    | Markdown | `BusinessDocs/OfficialDocuments/`     | Potentially (business context) | Project lifetime |
-| Decisions log         | Markdown | `BusinessDocs/decisions.md`                   | No                             | Project lifetime |
-| Decision records      | Markdown | `BusinessDocs/decisions/`                     | No                             | Project lifetime |
+| Decisions log         | Markdown | `BusinessDocs/decisions.md`           | No                             | Project lifetime |
+| Decision records      | Markdown | `BusinessDocs/decisions/`             | No                             | Project lifetime |
 
 ### 1.3 Phase Deliverables
 
-| Data Element         | Format         | Location                | Contains PII | Retention        |
-| -------------------- | -------------- | ----------------------- | ------------ | ---------------- |
-| Phase 1–4 analyses   | Markdown       | `docs/phase-{1,2,3,4}/` | No           | Project lifetime |
-| Synthesis reports    | Markdown       | `BusinessDocs/synthesis/`       | No           | Project lifetime |
-| Sprint plans/reports | Markdown       | `BusinessDocs/phase-5/`         | No           | Project lifetime |
-| Brand assets         | JSON, Markdown | `BusinessDocs/brand/`           | No           | Project lifetime |
-| Storybook inventory  | Markdown       | `BusinessDocs/storybook/`       | No           | Project lifetime |
+| Data Element         | Format         | Location                  | Contains PII | Retention        |
+| -------------------- | -------------- | ------------------------- | ------------ | ---------------- |
+| Phase 1–4 analyses   | Markdown       | `docs/phase-{1,2,3,4}/`   | No           | Project lifetime |
+| Synthesis reports    | Markdown       | `BusinessDocs/synthesis/` | No           | Project lifetime |
+| Sprint plans/reports | Markdown       | `BusinessDocs/phase-5/`   | No           | Project lifetime |
+| Brand assets         | JSON, Markdown | `BusinessDocs/brand/`     | No           | Project lifetime |
+| Storybook inventory  | Markdown       | `BusinessDocs/storybook/` | No           | Project lifetime |
 
 ### 1.4 Analytics Data
 
-| Data Element           | Format  | Location                    | Contains PII                   | Retention                        |
-| ---------------------- | ------- | --------------------------- | ------------------------------ | -------------------------------- |
-| Matomo analytics DB    | MariaDB | Docker volume (`matomo-db`) | Potentially (IP if configured) | Container lifetime               |
-| Matomo configuration   | PHP/env | Docker volume               | No                             | Container lifetime               |
-| Local analytics events | JSON    | `src/webapp/` (runtime)     | No                             | In-memory only; reset on restart |
-| Metrics snapshot       | JSON    | `BusinessDocs/session/` (runtime)   | No                             | Overwritten per collection cycle |
+| Data Element           | Format  | Location                          | Contains PII                   | Retention                        |
+| ---------------------- | ------- | --------------------------------- | ------------------------------ | -------------------------------- |
+| Matomo analytics DB    | MariaDB | Docker volume (`matomo-db`)       | Potentially (IP if configured) | Container lifetime               |
+| Matomo configuration   | PHP/env | Docker volume                     | No                             | Container lifetime               |
+| Local analytics events | JSON    | `src/webapp/` (runtime)           | No                             | In-memory only; reset on restart |
+| Metrics snapshot       | JSON    | `BusinessDocs/session/` (runtime) | No                             | Overwritten per collection cycle |
 
 ### 1.5 Operational Data
 

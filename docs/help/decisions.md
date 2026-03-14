@@ -219,8 +219,8 @@ You don't have to wait for the system to ask. Good moments to add decisions:
 
 ## File locations
 
-| What                                                | Path                             |
-| --------------------------------------------------- | -------------------------------- |
-| Decision index (open questions + category registry) | `BusinessDocs/decisions.md`              |
-| Category files (per technology stack)               | `BusinessDocs/decisions/*.md`            |
+| What                                                | Path                                  |
+| --------------------------------------------------- | ------------------------------------- |
+| Decision index (open questions + category registry) | `BusinessDocs/decisions.md`           |
+| Category files (per technology stack)               | `BusinessDocs/decisions/*.md`         |
 | Technical architecture reference                    | `docs/help/decisions-architecture.md` |

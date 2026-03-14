@@ -227,8 +227,8 @@ specified fallback.
 
 ## 3. Logo Usage
 
-| Variant         | File path                          | Application       | Minimum size | Prohibited usage                |
-| --------------- | ---------------------------------- | ----------------- | ------------ | ------------------------------- |
+| Variant         | File path                                  | Application       | Minimum size | Prohibited usage                |
+| --------------- | ------------------------------------------ | ----------------- | ------------ | ------------------------------- |
 | Primary (color) | BusinessDocs/brand/assets/logo-primary.png | Light background  | 120px wide   | Distort, rotate, change color   |
 | White           | BusinessDocs/brand/assets/logo-white.png   | Dark background   | 120px wide   | On light backgrounds            |
 | Icon            | BusinessDocs/brand/assets/logo-icon.png    | Favicon, app icon | 32px         | As replacement for the wordmark |
@@ -279,8 +279,8 @@ Produce `BusinessDocs/brand/brand-assets-report.md`:
 
 ## Generated Assets
 
-| Asset type  | Canva URL | Export path PNG       | Export path SVG       |
-| ----------- | --------- | --------------------- | --------------------- |
+| Asset type  | Canva URL | Export path PNG               | Export path SVG               |
+| ----------- | --------- | ----------------------------- | ----------------------------- |
 | Social Card | [url]     | BusinessDocs/brand/assets/... | BusinessDocs/brand/assets/... |
 
 ## Design Tokens
@@ -298,8 +298,8 @@ Produce `BusinessDocs/brand/brand-assets-report.md`:
 
 ## OUTPUT FILES
 
-| File                                | Description                                                             |
-| ----------------------------------- | ----------------------------------------------------------------------- |
+| File                                        | Description                                                             |
+| ------------------------------------------- | ----------------------------------------------------------------------- |
 | `BusinessDocs/brand/design-tokens.json`     | W3C design tokens (colors, typography, spacing, radius)                 |
 | `BusinessDocs/brand/brand-guidelines.md`    | Human-readable brand handbook (colors, typography, logo, tone of voice) |
 | `BusinessDocs/brand/brand-assets-report.md` | Complete overview of brand kit, assets and token status                 |

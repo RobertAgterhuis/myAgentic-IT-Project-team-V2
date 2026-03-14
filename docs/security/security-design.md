@@ -9,7 +9,7 @@
 | **Owner**         | Robert Agterhuis                                                            |
 | **Audit Finding** | F-02 (CRITICAL) — Security hardening beyond localhost is not fully designed |
 | **Issue**         | #138                                                                        |
-| **Depends on**    | `BusinessDocs/phase-5/ga-definition.md` (F-01 — deployment profiles)                |
+| **Depends on**    | `BusinessDocs/phase-5/ga-definition.md` (F-01 — deployment profiles)        |
 
 ---
 
@@ -129,7 +129,7 @@ Docker).
 | ------------------------------------ | -------------- | ----------------------------------------------------------------------------------------- |
 | Large request payload fills disk     | LOW            | Input length validation (`assertString` maxLen); file-backed store is operator-controlled |
 | SSE connection exhaustion            | LOW            | Localhost only; single operator won't exhaust connections                                 |
-| Docker container resource exhaustion | LOW            | `infra/docker-compose.yml` sets resource limits (512M memory, 1 CPU)              |
+| Docker container resource exhaustion | LOW            | `infra/docker-compose.yml` sets resource limits (512M memory, 1 CPU)                      |
 
 #### E — Elevation of Privilege
 

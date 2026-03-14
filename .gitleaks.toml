@@ -79,17 +79,15 @@ description = "Global allowlist — minimized per S2-3"
 paths = [
   '''\.gitleaks\.toml$''',
   '''\.github/workflows/.*\.yml$''',
-  '''package-lock\.json$'''
+  '''package-lock\.json$''',
+  '''\.env\.example$''',
+  '''\.env\.weblate\.example$'''
 ]
 
 regexes = [
   '''example\.com''',
   '''placeholder''',
   '''your-.*-here''',
-  '''INSERT_.*_HERE'''
+  '''INSERT_.*_HERE''',
+  '''changeme'''
 ]
-
-[[rules]]
-id = "config-example-file"
-description = "Example configuration files (allowed)"
-path = '''(\.example|\.sample|\.template)'''

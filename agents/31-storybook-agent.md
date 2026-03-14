@@ -304,13 +304,13 @@ Produce `BusinessDocs/storybook/storybook-setup-report.md`:
 
 ## OUTPUT FILES
 
-| File                                       | Description                                    |
-| ------------------------------------------ | ---------------------------------------------- |
-| `src/tokens/tokens.css`                    | CSS custom properties from design tokens       |
-| `src/tokens/tokens.js`                     | JavaScript token object                        |
-| `.storybook/main.js`                       | Storybook configuration + addons               |
-| `.storybook/preview.js`                    | Global decorators + a11y config + token import |
-| `src/components/*/[Component].stories.tsx` | Component stories (per component)              |
+| File                                               | Description                                    |
+| -------------------------------------------------- | ---------------------------------------------- |
+| `src/tokens/tokens.css`                            | CSS custom properties from design tokens       |
+| `src/tokens/tokens.js`                             | JavaScript token object                        |
+| `.storybook/main.js`                               | Storybook configuration + addons               |
+| `.storybook/preview.js`                            | Global decorators + a11y config + token import |
+| `src/components/*/[Component].stories.tsx`         | Component stories (per component)              |
 | `BusinessDocs/storybook/component-inventory.md`    | Only valid list of approved UI components      |
 | `BusinessDocs/storybook/storybook-setup-report.md` | Setup report                                   |
 

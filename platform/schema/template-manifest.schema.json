@@ -1,0 +1,171 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myagentic-it.local/schema/template-manifest.schema.json",
+  "title": "Template Manifest Schema",
+  "description": "Defines the structure of a template pack manifest. Each template provides agents, contracts, guardrails, playbooks, and flow definitions for a specific domain.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "name",
+    "version",
+    "description",
+    "flowsFile",
+    "agentsDir",
+    "contractsDir",
+    "guardrailsDir",
+    "phaseAgents",
+    "phaseContracts",
+    "phaseGuardrails",
+    "criticToPhase",
+    "modes"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Schema version for this manifest format."
+    },
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]*$",
+      "minLength": 1,
+      "description": "Machine-readable template identifier (e.g. 'sdlc')."
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Semantic version of the template pack."
+    },
+    "displayName": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Human-readable template name for UI display."
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Short description of what this template is for."
+    },
+    "flowsFile": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to flows.yaml relative to the template root."
+    },
+    "agentsDir": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to agents directory relative to the template root."
+    },
+    "contractsDir": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to contracts directory relative to the template root."
+    },
+    "guardrailsDir": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to guardrails directory relative to the template root."
+    },
+    "playbooksDir": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to playbooks directory relative to the template root."
+    },
+    "decisionCategories": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["file", "name", "count", "defaultStatus"],
+        "properties": {
+          "file": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Filename of the decision category (relative to template decisions dir)."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "defaultStatus": {
+            "type": "string",
+            "enum": ["ACTIVE", "DEFERRED"]
+          }
+        }
+      },
+      "description": "Decision category templates this template provides."
+    },
+    "phaseAgents": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "name"],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[0-9]{2}$"
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "description": "Maps state names to ordered lists of agents to invoke."
+    },
+    "phaseContracts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 }
+      },
+      "description": "Maps phase names to applicable contract filenames."
+    },
+    "phaseGuardrails": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": { "type": "string", "minLength": 1 }
+      },
+      "description": "Maps phase names to applicable guardrail filenames."
+    },
+    "criticToPhase": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[A-Z][A-Z0-9_]+$"
+      },
+      "description": "Maps CRITIC state names to the phase they validate."
+    },
+    "modes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["phases", "label"],
+        "properties": {
+          "phases": {
+            "type": "array",
+            "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" }
+          },
+          "label": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      },
+      "description": "Command mode definitions (CREATE, AUDIT, etc.)."
+    }
+  }
+}

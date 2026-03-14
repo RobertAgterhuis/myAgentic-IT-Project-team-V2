@@ -10,8 +10,11 @@ if [ "$branch" = "main" ]; then
   exit 1
 fi
 
-# Run lint-staged (ESLint on staged files)
+# Run lint-staged (ESLint + Prettier on staged files)
 npx lint-staged
+
+# TypeScript type check
+npx tsc --noEmit
 
 # Run fast unit tests (schemas + middleware — lightweight, <5s)
 npx vitest run tests/unit/schemas.test.js tests/unit/middleware.test.js --reporter=dot

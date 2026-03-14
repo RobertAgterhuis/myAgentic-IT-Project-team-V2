@@ -12,10 +12,25 @@
   "decisionsDir": "decisions",
   "decisionIndexSeed": "decisions/_index-seed.md",
   "decisionCategories": [
-    { "file": "transformation.md", "name": "Transformation", "count": 15, "defaultStatus": "ACTIVE" },
+    {
+      "file": "transformation.md",
+      "name": "Transformation",
+      "count": 15,
+      "defaultStatus": "ACTIVE"
+    },
     { "file": "reevaluation.md", "name": "Reevaluation", "count": 15, "defaultStatus": "ACTIVE" },
-    { "file": "github-actions.md", "name": "GitHub Actions", "count": 24, "defaultStatus": "ACTIVE" },
-    { "file": "typescript-eslint.md", "name": "TypeScript / ESLint", "count": 24, "defaultStatus": "ACTIVE" },
+    {
+      "file": "github-actions.md",
+      "name": "GitHub Actions",
+      "count": 24,
+      "defaultStatus": "ACTIVE"
+    },
+    {
+      "file": "typescript-eslint.md",
+      "name": "TypeScript / ESLint",
+      "count": 24,
+      "defaultStatus": "ACTIVE"
+    },
     { "file": "cross-cutting.md", "name": "Cross-cutting", "count": 10, "defaultStatus": "ACTIVE" },
     { "file": "bicep-iac.md", "name": "Bicep / IaC", "count": 29, "defaultStatus": "DEFERRED" },
     { "file": "azure-devops.md", "name": "Azure DevOps", "count": 19, "defaultStatus": "DEFERRED" },
@@ -23,7 +38,12 @@
     { "file": "docker.md", "name": "Docker", "count": 20, "defaultStatus": "DEFERRED" },
     { "file": "vite.md", "name": "Vite", "count": 11, "defaultStatus": "DEFERRED" },
     { "file": "nextjs.md", "name": "NextJS", "count": 13, "defaultStatus": "DEFERRED" },
-    { "file": "microsoft-graph.md", "name": "Microsoft Graph", "count": 7, "defaultStatus": "DEFERRED" },
+    {
+      "file": "microsoft-graph.md",
+      "name": "Microsoft Graph",
+      "count": 7,
+      "defaultStatus": "DEFERRED"
+    },
     { "file": "entra-id.md", "name": "Entra ID", "count": 7, "defaultStatus": "DEFERRED" },
     { "file": "exchange.md", "name": "Exchange", "count": 5, "defaultStatus": "DEFERRED" },
     { "file": "purview.md", "name": "Purview", "count": 5, "defaultStatus": "DEFERRED" },
@@ -34,9 +54,7 @@
     { "file": "powershell.md", "name": "PowerShell", "count": 6, "defaultStatus": "DEFERRED" }
   ],
   "phaseAgents": {
-    "ONBOARDING": [
-      { "id": "25", "name": "Onboarding Agent" }
-    ],
+    "ONBOARDING": [{ "id": "25", "name": "Onboarding Agent" }],
     "PHASE_1": [
       { "id": "01", "name": "Business Analyst" },
       { "id": "02", "name": "Domain Expert" },
@@ -81,12 +99,8 @@
       { "id": "18", "name": "Critic Agent" },
       { "id": "19", "name": "Risk Agent" }
     ],
-    "SYNTHESIS": [
-      { "id": "17", "name": "Synthesis Agent" }
-    ],
-    "SPRINT_GATE": [
-      { "id": "00", "name": "Orchestrator (Sprint Gate)" }
-    ],
+    "SYNTHESIS": [{ "id": "17", "name": "Synthesis Agent" }],
+    "SPRINT_GATE": [{ "id": "00", "name": "Orchestrator (Sprint Gate)" }],
     "PHASE_5_EXECUTING": [
       { "id": "20", "name": "Implementation Agent" },
       { "id": "21", "name": "Test Agent" },
@@ -125,7 +139,11 @@
   },
   "phaseGuardrails": {
     "PHASE_1": ["00-global-guardrails.md", "01-business-guardrails.md"],
-    "PHASE_2": ["00-global-guardrails.md", "02-architecture-guardrails.md", "03-security-guardrails.md"],
+    "PHASE_2": [
+      "00-global-guardrails.md",
+      "02-architecture-guardrails.md",
+      "03-security-guardrails.md"
+    ],
     "PHASE_3": ["00-global-guardrails.md", "04-ux-guardrails.md", "08-content-guardrails.md"],
     "PHASE_4": ["00-global-guardrails.md", "05-marketing-guardrails.md"]
   },

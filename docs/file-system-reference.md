@@ -97,25 +97,25 @@ system itself.
 
 ### Root files
 
-| Path                       | Purpose                                            | Written by          | Safe to edit? |
-| -------------------------- | -------------------------------------------------- | ------------------- | ------------- |
-| `_config.yml`              | Jekyll / GitHub Pages config                       | System maintainers  | Yes           |
-| `agent-index.md`           | Lookup table for all skills, guardrails, contracts | System maintainers  | No            |
-| `contributing.md`          | Developer contribution guide                       | System maintainers  | Yes           |
-| `data-dictionary.md`       | Data entity catalog                                | System maintainers  | Yes           |
-| `domain-glossary.md`       | Domain terminology reference                       | System maintainers  | Yes           |
-| `file-system-reference.md` | This file                                          | System maintainers  | Yes           |
-| `ga-definition.md`        | GA readiness criteria & deployment profiles        | System maintainers  | Yes           |
-| `index.md`                 | GitHub Pages landing page                          | System maintainers  | Yes           |
-| `mode-guide.md`            | CREATE vs AUDIT mode guidance                      | System maintainers  | No            |
-| `operating-handbook.md`    | Day-to-day operational procedures                  | System maintainers  | Yes           |
-| `pilot-participant-guide.md` | Pilot evaluation guide for participants          | System maintainers  | Yes           |
-| `privacy-policy.md`        | Privacy policy                                     | System maintainers  | Yes           |
-| `quick-start.md`           | Getting started guide                              | System maintainers  | Yes           |
-| `README.md`                | Overview of the docs/ structure                    | System maintainers  | No            |
-| `release-checklist.md`     | Pre-release verification checklist                 | System maintainers  | Yes           |
-| `technical-manual.md`      | API reference + architecture                       | Documentation Agent | After sprint  |
-| `user-manual.md`           | User guide                                         | Documentation Agent | After sprint  |
+| Path                         | Purpose                                            | Written by          | Safe to edit? |
+| ---------------------------- | -------------------------------------------------- | ------------------- | ------------- |
+| `_config.yml`                | Jekyll / GitHub Pages config                       | System maintainers  | Yes           |
+| `agent-index.md`             | Lookup table for all skills, guardrails, contracts | System maintainers  | No            |
+| `contributing.md`            | Developer contribution guide                       | System maintainers  | Yes           |
+| `data-dictionary.md`         | Data entity catalog                                | System maintainers  | Yes           |
+| `domain-glossary.md`         | Domain terminology reference                       | System maintainers  | Yes           |
+| `file-system-reference.md`   | This file                                          | System maintainers  | Yes           |
+| `ga-definition.md`           | GA readiness criteria & deployment profiles        | System maintainers  | Yes           |
+| `index.md`                   | GitHub Pages landing page                          | System maintainers  | Yes           |
+| `mode-guide.md`              | CREATE vs AUDIT mode guidance                      | System maintainers  | No            |
+| `operating-handbook.md`      | Day-to-day operational procedures                  | System maintainers  | Yes           |
+| `pilot-participant-guide.md` | Pilot evaluation guide for participants            | System maintainers  | Yes           |
+| `privacy-policy.md`          | Privacy policy                                     | System maintainers  | Yes           |
+| `quick-start.md`             | Getting started guide                              | System maintainers  | Yes           |
+| `README.md`                  | Overview of the docs/ structure                    | System maintainers  | No            |
+| `release-checklist.md`       | Pre-release verification checklist                 | System maintainers  | Yes           |
+| `technical-manual.md`        | API reference + architecture                       | Documentation Agent | After sprint  |
+| `user-manual.md`             | User guide                                         | Documentation Agent | After sprint  |
 
 ### Contracts — `templates/sdlc/contracts/`
 
@@ -189,10 +189,10 @@ when starting a fresh cycle (non-destructive: existing files are never
 overwritten). **Do not modify** category seeds unless changing the decision
 framework itself.
 
-| File                 | Purpose                                |
-| -------------------- | -------------------------------------- |
-| `_index-seed.md`     | Seed for `BusinessDocs/decisions.md`   |
-| `*.md` (20 files)    | Seed category files (technology stacks)|
+| File              | Purpose                                 |
+| ----------------- | --------------------------------------- |
+| `_index-seed.md`  | Seed for `BusinessDocs/decisions.md`    |
+| `*.md` (20 files) | Seed category files (technology stacks) |
 
 ### Help — `docs/help/`
 
@@ -254,17 +254,17 @@ Populated by Agent 30 during solution creation. Empty in a fresh checkout.
 
 ### Security — `docs/security/` (platform governance)
 
-| File                          | Purpose                                     | Written by                   |
-| ----------------------------- | ------------------------------------------- | ---------------------------- |
-| `data-inventory.md`           | Data classification and inventory           | System maintainers           |
-| `security-design.md`          | Security architecture design                | System maintainers           |
+| File                 | Purpose                           | Written by         |
+| -------------------- | --------------------------------- | ------------------ |
+| `data-inventory.md`  | Data classification and inventory | System maintainers |
+| `security-design.md` | Security architecture design      | System maintainers |
 
 ### Security — `BusinessDocs/security/` (project-specific)
 
-| File                                     | Purpose                                     | Written by                       |
-| ---------------------------------------- | ------------------------------------------- | -------------------------------- |
-| `security-handoff-context.md`            | Security constraints for all Phase 5 agents | Security Architect (Agent 08)    |
-| `sprint-[SP-N]-secret-scan.md`           | Per-sprint secret scan report               | GitHub Integration Agent (CI)    |
+| File                           | Purpose                                     | Written by                    |
+| ------------------------------ | ------------------------------------------- | ----------------------------- |
+| `security-handoff-context.md`  | Security constraints for all Phase 5 agents | Security Architect (Agent 08) |
+| `sprint-[SP-N]-secret-scan.md` | Per-sprint secret scan report               | GitHub Integration Agent (CI) |
 
 ### Storybook — `BusinessDocs/storybook/`
 
@@ -475,12 +475,12 @@ Quick smoke tests (landing page, create pipeline).
 
 ## What's safe to delete?
 
-| Path                                               | Safe to delete? | Consequence                                       |
-| -------------------------------------------------- | --------------- | ------------------------------------------------- |
-| `BusinessDocs/session/session-state.json`          | Yes             | Loses current progress; can start fresh           |
-| `BusinessDocs/session/command-queue.json`          | Yes             | Loses queued (unconsumed) command                 |
-| `BusinessDocs/session/reevaluate-trigger.json`     | Yes             | Cancels pending reevaluation                      |
-| `BusinessDocs/` contents                           | With caution    | Loses all phase outputs and questionnaire answers |
-| `BusinessDocs/synthesis/` contents                 | With caution    | Must re-run Synthesis Agent                       |
-| Anything in `templates/sdlc/agents/`, `templates/sdlc/contracts/`, `templates/sdlc/guardrails/` | **No** | Breaks agent behavior |
-| `templates/sdlc/decisions/`                        | **No**          | Breaks decision seeding for new projects          |
+| Path                                                                                            | Safe to delete? | Consequence                                       |
+| ----------------------------------------------------------------------------------------------- | --------------- | ------------------------------------------------- |
+| `BusinessDocs/session/session-state.json`                                                       | Yes             | Loses current progress; can start fresh           |
+| `BusinessDocs/session/command-queue.json`                                                       | Yes             | Loses queued (unconsumed) command                 |
+| `BusinessDocs/session/reevaluate-trigger.json`                                                  | Yes             | Cancels pending reevaluation                      |
+| `BusinessDocs/` contents                                                                        | With caution    | Loses all phase outputs and questionnaire answers |
+| `BusinessDocs/synthesis/` contents                                                              | With caution    | Must re-run Synthesis Agent                       |
+| Anything in `templates/sdlc/agents/`, `templates/sdlc/contracts/`, `templates/sdlc/guardrails/` | **No**          | Breaks agent behavior                             |
+| `templates/sdlc/decisions/`                                                                     | **No**          | Breaks decision seeding for new projects          |

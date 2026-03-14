@@ -43,7 +43,7 @@ complete rules.
 | -------------------------------------------------------- | ------------------------------------------------------------------ |
 | GitHub repository URL of the project being audited       | Onboarding Output (`BusinessDocs/onboarding/onboarding-output.md`) |
 | GitHub Personal Access Token or OAuth scope              | `GITHUB_TOKEN` — from environment or Human Escalation Protocol     |
-| Sprint plan (all stories with ID, title, type, priority) | `templates/sdlc/contracts/sprintplan-output-contract.md` output              |
+| Sprint plan (all stories with ID, title, type, priority) | `templates/sdlc/contracts/sprintplan-output-contract.md` output    |
 | Synthesis Final Report (for project description)         | Synthesis output                                                   |
 
 If the GitHub repository URL or token is missing: escalate via Human Escalation

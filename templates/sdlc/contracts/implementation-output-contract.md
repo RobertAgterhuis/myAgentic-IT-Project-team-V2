@@ -28,7 +28,7 @@ place.
 | sprint_status           | Sprint story column "sprint_status" — MUST be `IN_PROGRESS`           | YES      |
 | Architecture decisions  | Phase 2 output (Software Architect + Senior Developer)                | YES      |
 | Tech stack definition   | Phase 2 output                                                        | YES      |
-| Guardrails (all phases) | `templates/sdlc/guardrails/00-09`                                               | YES      |
+| Guardrails (all phases) | `templates/sdlc/guardrails/00-09`                                     | YES      |
 | Acceptance criteria     | Sprint story column "Acceptance Criteria"                             | YES      |
 | Blocker status          | Sprint story column "Blocker" — MUST be `NONE` or INTERNALLY resolved | YES      |
 | Codebase access         | Git repository (read + write)                                         | YES      |

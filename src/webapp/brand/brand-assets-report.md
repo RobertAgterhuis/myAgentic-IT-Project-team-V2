@@ -6,12 +6,12 @@ Phase: Post-Phase-4 (Brand & Assets)
 
 ## 1. Asset Inventory
 
-| Asset                                 | Path                                | Status                                  |
-| ------------------------------------- | ----------------------------------- | --------------------------------------- |
+| Asset                                 | Path                                  | Status                                  |
+| ------------------------------------- | ------------------------------------- | --------------------------------------- |
 | Design tokens                         | `src/webapp/brand/design-tokens.json` | Created (v2.0.0)                        |
-| Brand guidelines                      | `docs/brand/brand-guidelines.md`    | Created (6 mandatory sections complete) |
-| Brand assets report                   | `docs/brand/brand-assets-report.md` | Created                                 |
-| Supporting style guide (pre-existing) | `docs/brand/content-style-guide.md` | Referenced                              |
+| Brand guidelines                      | `docs/brand/brand-guidelines.md`      | Created (6 mandatory sections complete) |
+| Brand assets report                   | `docs/brand/brand-assets-report.md`   | Created                                 |
+| Supporting style guide (pre-existing) | `docs/brand/content-style-guide.md`   | Referenced                              |
 
 ## 2. Design Token Summary
 

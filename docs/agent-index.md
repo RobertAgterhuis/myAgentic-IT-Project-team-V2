@@ -10,8 +10,8 @@
 
 Each agent has a dedicated skill file:
 
-| #   | Agent                          | Skill file                              |
-| --- | ------------------------------ | --------------------------------------- |
+| #   | Agent                          | Skill file                                             |
+| --- | ------------------------------ | ------------------------------------------------------ |
 | 00  | Orchestrator                   | `templates/sdlc/agents/00-orchestrator.md`             |
 | 01  | Business Analyst               | `templates/sdlc/agents/01-business-analyst.md`         |
 | 02  | Domain Expert                  | `templates/sdlc/agents/02-domain-expert.md`            |
@@ -55,8 +55,8 @@ Each agent has a dedicated skill file:
 
 ## GUARDRAILS REFERENCE
 
-| Scope                         | Guardrail file                                    |
-| ----------------------------- | ------------------------------------------------- |
+| Scope                         | Guardrail file                                              |
+| ----------------------------- | ----------------------------------------------------------- |
 | Global                        | `templates/sdlc/guardrails/00-global-guardrails.md`         |
 | Business                      | `templates/sdlc/guardrails/01-business-guardrails.md`       |
 | Architecture                  | `templates/sdlc/guardrails/02-architecture-guardrails.md`   |
@@ -72,8 +72,8 @@ Each agent has a dedicated skill file:
 
 ## CONTRACTS REFERENCE
 
-| Contract                  | File                                                   |
-| ------------------------- | ------------------------------------------------------ |
+| Contract                  | File                                                             |
+| ------------------------- | ---------------------------------------------------------------- |
 | Analysis output           | `templates/sdlc/contracts/analysis-output-contract.md`           |
 | Recommendations output    | `templates/sdlc/contracts/recommendations-output-contract.md`    |
 | Sprint plan output        | `templates/sdlc/contracts/sprintplan-output-contract.md`         |

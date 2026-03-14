@@ -54,7 +54,7 @@
 > manually via the web UI.
 
 | Stack               | File                                                   | Count | Status   | Applicable |
-| -------------------- | ------------------------------------------------------ | ----- | -------- | ---------- |
+| ------------------- | ------------------------------------------------------ | ----- | -------- | ---------- |
 | Transformation      | [transformation.md](decisions/transformation.md)       | 15    | ACTIVE   | YES        |
 | Reevaluation        | [reevaluation.md](decisions/reevaluation.md)           | 0     | ACTIVE   | YES        |
 | GitHub Actions      | [github-actions.md](decisions/github-actions.md)       | 24    | ACTIVE   | PARTIAL    |
@@ -64,7 +64,7 @@
 | Azure DevOps        | [azure-devops.md](decisions/azure-devops.md)           | 19    | DEFERRED | PENDING    |
 | .NET / C#           | [dotnet.md](decisions/dotnet.md)                       | 19    | DEFERRED | PENDING    |
 | Docker              | [docker.md](decisions/docker.md)                       | 20    | DEFERRED | PENDING    |
-| Vite                | [vite.md](decisions/vite.md)                            | 11    | DEFERRED | PENDING    |
+| Vite                | [vite.md](decisions/vite.md)                           | 11    | DEFERRED | PENDING    |
 | NextJS              | [nextjs.md](decisions/nextjs.md)                       | 13    | DEFERRED | PENDING    |
 | Microsoft Graph     | [microsoft-graph.md](decisions/microsoft-graph.md)     | 7     | DEFERRED | PENDING    |
 | Entra ID            | [entra-id.md](decisions/entra-id.md)                   | 7     | DEFERRED | PENDING    |

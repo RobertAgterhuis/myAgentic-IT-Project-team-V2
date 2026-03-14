@@ -39,7 +39,7 @@
 | G-GLOB-21 | An agent may NOT hand off the task if one or more checkboxes are not checked.                                                                                                                                                                                                     |
 | G-GLOB-22 | The checklist must contain machine-readable checkboxes (markdown `- [ ]` / `- [x]` format).                                                                                                                                                                                       |
 | G-GLOB-23 | Perform a **self-check**: read your own output from beginning to end and verify internal consistency before delivery.                                                                                                                                                             |
-| G-GLOB-24 | Explicitly verify that the output schema matches the relevant contract in `/templates/sdlc/contracts/`.                                                                                                                                                                                     |
+| G-GLOB-24 | Explicitly verify that the output schema matches the relevant contract in `/templates/sdlc/contracts/`.                                                                                                                                                                           |
 
 ## 4. SCOPE DISCIPLINE
 

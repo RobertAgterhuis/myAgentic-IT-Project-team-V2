@@ -106,14 +106,14 @@
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "^(templates\\/[a-z0-9-]+\\/)?docs\\/guardrails\\/.+\\.md$"
+              "pattern": "^(templates\\/[a-z0-9-]+\\/)?guardrails\\/.+\\.md$"
             }
           },
           "contracts": {
             "type": "array",
             "items": {
               "type": "string",
-              "pattern": "^(templates\\/[a-z0-9-]+\\/)?docs\\/contracts\\/.+\\.md$"
+              "pattern": "^(templates\\/[a-z0-9-]+\\/)?contracts\\/.+\\.md$"
             }
           },
           "dependencies": {

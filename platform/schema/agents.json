@@ -67,11 +67,11 @@
         "tool.github.issue",
         "tool.queue.command"
       ],
-      "guardrails": ["docs/guardrails/00-global-guardrails.md"],
+      "guardrails": ["templates/sdlc/guardrails/00-global-guardrails.md"],
       "contracts": [
-        "docs/contracts/session-state-contract.md",
-        "docs/contracts/tooling-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/session-state-contract.md",
+        "templates/sdlc/contracts/tooling-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": [],
       "platformBindings": {
@@ -99,15 +99,15 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/01-business-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/01-business-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["25"],
       "platformBindings": {
@@ -135,15 +135,15 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/01-business-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/01-business-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["01"],
       "platformBindings": {
@@ -171,15 +171,15 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/01-business-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/01-business-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["02"],
       "platformBindings": {
@@ -207,15 +207,15 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/01-business-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/01-business-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["03"],
       "platformBindings": {
@@ -243,17 +243,17 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/02-architecture-guardrails.md",
-        "docs/guardrails/03-security-guardrails.md",
-        "docs/guardrails/07-legal-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/02-architecture-guardrails.md",
+        "templates/sdlc/guardrails/03-security-guardrails.md",
+        "templates/sdlc/guardrails/07-legal-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["19"],
       "platformBindings": {
@@ -281,17 +281,17 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/02-architecture-guardrails.md",
-        "docs/guardrails/03-security-guardrails.md",
-        "docs/guardrails/07-legal-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/02-architecture-guardrails.md",
+        "templates/sdlc/guardrails/03-security-guardrails.md",
+        "templates/sdlc/guardrails/07-legal-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["05"],
       "platformBindings": {
@@ -319,17 +319,17 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/02-architecture-guardrails.md",
-        "docs/guardrails/03-security-guardrails.md",
-        "docs/guardrails/07-legal-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/02-architecture-guardrails.md",
+        "templates/sdlc/guardrails/03-security-guardrails.md",
+        "templates/sdlc/guardrails/07-legal-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["06"],
       "platformBindings": {
@@ -357,17 +357,17 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/02-architecture-guardrails.md",
-        "docs/guardrails/03-security-guardrails.md",
-        "docs/guardrails/07-legal-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/02-architecture-guardrails.md",
+        "templates/sdlc/guardrails/03-security-guardrails.md",
+        "templates/sdlc/guardrails/07-legal-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["07"],
       "platformBindings": {
@@ -395,17 +395,17 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/02-architecture-guardrails.md",
-        "docs/guardrails/03-security-guardrails.md",
-        "docs/guardrails/07-legal-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/02-architecture-guardrails.md",
+        "templates/sdlc/guardrails/03-security-guardrails.md",
+        "templates/sdlc/guardrails/07-legal-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["08"],
       "platformBindings": {
@@ -433,16 +433,16 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/04-ux-guardrails.md",
-        "docs/guardrails/08-content-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/04-ux-guardrails.md",
+        "templates/sdlc/guardrails/08-content-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["19"],
       "platformBindings": {
@@ -470,16 +470,16 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/04-ux-guardrails.md",
-        "docs/guardrails/08-content-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/04-ux-guardrails.md",
+        "templates/sdlc/guardrails/08-content-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["10"],
       "platformBindings": {
@@ -507,16 +507,16 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/04-ux-guardrails.md",
-        "docs/guardrails/08-content-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/04-ux-guardrails.md",
+        "templates/sdlc/guardrails/08-content-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["11"],
       "platformBindings": {
@@ -544,16 +544,16 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/04-ux-guardrails.md",
-        "docs/guardrails/08-content-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/04-ux-guardrails.md",
+        "templates/sdlc/guardrails/08-content-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["12"],
       "platformBindings": {
@@ -581,16 +581,16 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/05-marketing-guardrails.md",
-        "docs/guardrails/08-content-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/05-marketing-guardrails.md",
+        "templates/sdlc/guardrails/08-content-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["19"],
       "platformBindings": {
@@ -618,16 +618,16 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/05-marketing-guardrails.md",
-        "docs/guardrails/08-content-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/05-marketing-guardrails.md",
+        "templates/sdlc/guardrails/08-content-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["14"],
       "platformBindings": {
@@ -655,16 +655,16 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/05-marketing-guardrails.md",
-        "docs/guardrails/08-content-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/05-marketing-guardrails.md",
+        "templates/sdlc/guardrails/08-content-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["15"],
       "platformBindings": {
@@ -691,10 +691,10 @@
         "tool.context.search",
         "tool.synthesis.compose"
       ],
-      "guardrails": ["docs/guardrails/00-global-guardrails.md"],
+      "guardrails": ["templates/sdlc/guardrails/00-global-guardrails.md"],
       "contracts": [
-        "docs/contracts/synthesis-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/synthesis-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["31"],
       "platformBindings": {
@@ -722,10 +722,10 @@
         "tool.validation.contract",
         "tool.risk.assess"
       ],
-      "guardrails": ["docs/guardrails/00-global-guardrails.md"],
+      "guardrails": ["templates/sdlc/guardrails/00-global-guardrails.md"],
       "contracts": [
-        "docs/contracts/critic-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/critic-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["34"],
       "platformBindings": {
@@ -753,10 +753,10 @@
         "tool.validation.contract",
         "tool.risk.assess"
       ],
-      "guardrails": ["docs/guardrails/00-global-guardrails.md"],
+      "guardrails": ["templates/sdlc/guardrails/00-global-guardrails.md"],
       "contracts": [
-        "docs/contracts/risk-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/risk-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["18"],
       "platformBindings": {
@@ -786,12 +786,12 @@
         "tool.github.issue"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/06-implementation-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/06-implementation-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/implementation-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/implementation-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["27"],
       "platformBindings": {
@@ -821,12 +821,12 @@
         "tool.github.issue"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/06-implementation-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/06-implementation-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/test-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/test-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["20"],
       "platformBindings": {
@@ -856,12 +856,12 @@
         "tool.github.issue"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/06-implementation-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/06-implementation-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/pr-review-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/pr-review-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["21"],
       "platformBindings": {
@@ -888,10 +888,10 @@
         "tool.context.search",
         "tool.validation.contract"
       ],
-      "guardrails": ["docs/guardrails/00-global-guardrails.md"],
+      "guardrails": ["templates/sdlc/guardrails/00-global-guardrails.md"],
       "contracts": [
-        "docs/contracts/reevaluate-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/reevaluate-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": [],
       "platformBindings": {
@@ -918,10 +918,10 @@
         "tool.context.search",
         "tool.validation.contract"
       ],
-      "guardrails": ["docs/guardrails/00-global-guardrails.md"],
+      "guardrails": ["templates/sdlc/guardrails/00-global-guardrails.md"],
       "contracts": [
-        "docs/contracts/feature-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/feature-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": [],
       "platformBindings": {
@@ -948,11 +948,11 @@
         "tool.context.search",
         "tool.validation.contract"
       ],
-      "guardrails": ["docs/guardrails/00-global-guardrails.md"],
+      "guardrails": ["templates/sdlc/guardrails/00-global-guardrails.md"],
       "contracts": [
-        "docs/contracts/onboarding-output-contract.md",
-        "docs/contracts/session-state-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/onboarding-output-contract.md",
+        "templates/sdlc/contracts/session-state-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": [],
       "platformBindings": {
@@ -982,12 +982,12 @@
         "tool.github.issue"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/06-implementation-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/06-implementation-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/documentation-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/documentation-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["29"],
       "platformBindings": {
@@ -1017,12 +1017,12 @@
         "tool.github.issue"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/06-implementation-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/06-implementation-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/github-integration-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/github-integration-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["17"],
       "platformBindings": {
@@ -1052,12 +1052,12 @@
         "tool.github.issue"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/06-implementation-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/06-implementation-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/retrospective-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/retrospective-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["27"],
       "platformBindings": {
@@ -1087,12 +1087,12 @@
         "tool.github.issue"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/06-implementation-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/06-implementation-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/kpi-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/kpi-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["22"],
       "platformBindings": {
@@ -1120,13 +1120,13 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/05-marketing-guardrails.md",
-        "docs/guardrails/08-content-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/05-marketing-guardrails.md",
+        "templates/sdlc/guardrails/08-content-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/brand-assets-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/brand-assets-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["19"],
       "platformBindings": {
@@ -1154,13 +1154,13 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/05-marketing-guardrails.md",
-        "docs/guardrails/08-content-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/05-marketing-guardrails.md",
+        "templates/sdlc/guardrails/08-content-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/storybook-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/storybook-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["30"],
       "platformBindings": {
@@ -1188,16 +1188,16 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/04-ux-guardrails.md",
-        "docs/guardrails/08-content-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/04-ux-guardrails.md",
+        "templates/sdlc/guardrails/08-content-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["13"],
       "platformBindings": {
@@ -1225,17 +1225,17 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/02-architecture-guardrails.md",
-        "docs/guardrails/03-security-guardrails.md",
-        "docs/guardrails/07-legal-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/02-architecture-guardrails.md",
+        "templates/sdlc/guardrails/03-security-guardrails.md",
+        "templates/sdlc/guardrails/07-legal-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["09"],
       "platformBindings": {
@@ -1263,15 +1263,15 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/01-business-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/01-business-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["04"],
       "platformBindings": {
@@ -1299,16 +1299,16 @@
         "tool.validation.contract"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/04-ux-guardrails.md",
-        "docs/guardrails/08-content-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/04-ux-guardrails.md",
+        "templates/sdlc/guardrails/08-content-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/analysis-output-contract.md",
-        "docs/contracts/recommendations-output-contract.md",
-        "docs/contracts/sprintplan-output-contract.md",
-        "docs/contracts/guardrails-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/analysis-output-contract.md",
+        "templates/sdlc/contracts/recommendations-output-contract.md",
+        "templates/sdlc/contracts/sprintplan-output-contract.md",
+        "templates/sdlc/contracts/guardrails-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": ["32"],
       "platformBindings": {
@@ -1336,12 +1336,12 @@
         "tool.questionnaire.manage"
       ],
       "guardrails": [
-        "docs/guardrails/00-global-guardrails.md",
-        "docs/guardrails/09-questionnaire-guardrails.md"
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/09-questionnaire-guardrails.md"
       ],
       "contracts": [
-        "docs/contracts/questionnaire-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/questionnaire-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": [],
       "platformBindings": {
@@ -1368,10 +1368,10 @@
         "tool.context.search",
         "tool.validation.contract"
       ],
-      "guardrails": ["docs/guardrails/00-global-guardrails.md"],
+      "guardrails": ["templates/sdlc/guardrails/00-global-guardrails.md"],
       "contracts": [
-        "docs/contracts/scope-change-output-contract.md",
-        "docs/contracts/agent-handoff-contract.md"
+        "templates/sdlc/contracts/scope-change-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": [],
       "platformBindings": {

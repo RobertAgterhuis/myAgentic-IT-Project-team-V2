@@ -19,6 +19,7 @@
 
 const { getStore } = require('../store');
 const { createEngine } = require('../../../platform/engine/engine');
+const { listTemplates } = require('../../../platform/engine/template-loader');
 const { errorResponse } = require('../utils/errors');
 const { structuredLog, json, parseBody, _setSecurityHeaders } = require('../middleware');
 
@@ -27,19 +28,34 @@ module.exports = function createOrchestratorRoutes(ctx) {
 
   // Lazy-initialized engine (created on first request)
   let _engine = null;
+  let _templateName = undefined;
 
   function getEngine() {
     if (!_engine) {
       _engine = createEngine({
         store: getStore(),
         sseNotify,
+        templateName: _templateName,
       });
       structuredLog('info', 'orchestrator_engine_initialized', {
         state: _engine.status().state,
         mode: _engine.status().mode,
+        templateName: _engine.status().templateName,
       });
     }
     return _engine;
+  }
+
+  // ── GET /api/orchestrator/templates ───────────────────────
+
+  function handleTemplates(_req, res) {
+    try {
+      const templates = listTemplates();
+      return json(res, 200, { ok: true, templates });
+    } catch (err) {
+      structuredLog('error', 'orchestrator_templates_error', { error: err.message });
+      return json(res, 500, errorResponse('TEMPLATE_ERROR', err.message));
+    }
   }
 
   // ── GET /api/orchestrator/status ──────────────────────────
@@ -109,9 +125,12 @@ module.exports = function createOrchestratorRoutes(ctx) {
       }
       const mode = String(body.mode).slice(0, 50);
       const phases = Array.isArray(body.phases) ? body.phases.map((p) => String(p)) : undefined;
+      const template = body.template ? String(body.template).slice(0, 100) : undefined;
 
-      const _prevEngine = getEngine();
-      // Force re-creation of engine with new mode
+      // Force re-creation of engine (possibly with new template)
+      if (template) {
+        _templateName = template;
+      }
       _engine = null;
       const newEngine = getEngine();
       const result = newEngine.reset(mode, phases);
@@ -199,7 +218,13 @@ module.exports = function createOrchestratorRoutes(ctx) {
 
       const resume = Boolean(body.resume);
       const project = body.project ? String(body.project).slice(0, 200) : null;
+      const template = body.template ? String(body.template).slice(0, 100) : undefined;
 
+      // Apply template selection when starting fresh
+      if (template && !resume) {
+        _templateName = template;
+        _engine = null;
+      }
       const engine = getEngine();
 
       if (!resume) {
@@ -285,6 +310,7 @@ module.exports = function createOrchestratorRoutes(ctx) {
 
   return {
     'GET /api/orchestrator/status': handleStatus,
+    'GET /api/orchestrator/templates': handleTemplates,
     'GET /api/orchestrator/run-history': handleRunHistory,
     'POST /api/orchestrator/advance': handleAdvance,
     'POST /api/orchestrator/error': handleError,

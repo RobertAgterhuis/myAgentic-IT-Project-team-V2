@@ -1,7 +1,7 @@
 ---
 layout: default
 title: File System Reference
-nav_order: 8
+nav_order: 10
 description:
   Complete map of the repository — what each directory and key file does, which
   agents write where, and what's safe to modify.

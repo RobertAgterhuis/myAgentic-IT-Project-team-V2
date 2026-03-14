@@ -1,3 +1,10 @@
+---
+title: Security Design
+parent: Security
+nav_order: 1
+description: Security architecture, threat model, and middleware controls.
+---
+
 # Security Design — Agentic SDLC Platform
 
 | Field             | Value                                                                       |
@@ -231,9 +238,9 @@ networking but creates a potential exposure if the host machine is on a network.
 | Control                   | Implementation                                                                                 | File                           |
 | ------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------ |
 | Security response headers | `setSecurityHeaders()` — CSP, X-Frame-Options, COOP, COEP, Referrer-Policy, Permissions-Policy | `src/webapp/middleware.js:48`  |
-| Path traversal prevention | `safePath()` — resolves and validates paths stay within base directory                         | `src/webapp/middleware.js:70`  |
+| Path traversal prevention | `safePath()` — resolves and validates paths stay within base directory                         | `src/webapp/middleware.js:72`  |
 | Input sanitization        | `sanitizeMarkdown()`, `sanitizeQID()`, `assertString()`                                        | `src/webapp/middleware.js`     |
-| Secret detection          | `detectSecrets()` — regex-based scan for API keys, tokens, passwords in user input             | `src/webapp/middleware.js:222` |
+| Secret detection          | `detectSecrets()` — regex-based scan for API keys, tokens, passwords in user input             | `src/webapp/middleware.js:224` |
 | File locking              | `withFileLock()` — prevents concurrent write corruption                                        | `src/webapp/file-lock.js`      |
 | Audit trail               | `AuditTrail` class — logs all state mutations with timestamp                                   | `src/webapp/audit.js`          |
 | Structured logging        | `structuredLog()` — JSON format with level, event, details                                     | `src/webapp/middleware.js`     |

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "M0",
+    "name": "M0: Repo Restructuring (AUDIT)",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-01-15",
+    "archived": false
+  },
+  {
+    "id": "M1",
+    "name": "M1: Sprint 2 Completion",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-01-20",
+    "archived": false
+  },
+  {
+    "id": "M2",
+    "name": "M2: Pipeline Hardening (AUDIT)",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-01-25",
+    "archived": false
+  },
+  {
+    "id": "M3",
+    "name": "M3: Code Orchestrator (FEAT-05)",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-02-01",
+    "archived": false
+  },
+  {
+    "id": "M4",
+    "name": "M4: Canonical Schema (FEAT-03)",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-02-05",
+    "archived": false
+  },
+  {
+    "id": "M5",
+    "name": "M5: Security + TypeScript (AUDIT)",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-02-10",
+    "archived": false
+  },
+  {
+    "id": "M6",
+    "name": "M6: v1.0 GA",
+    "status": "in progress",
+    "progress": 57,
+    "completion": "2026-06-01",
+    "archived": false
+  },
+  {
+    "id": "M7",
+    "name": "M7: Tool Abstraction (FEAT-04)",
+    "status": "not started",
+    "progress": 0,
+    "completion": "2026-06-15",
+    "archived": false
+  },
+  {
+    "id": "M8",
+    "name": "M8: Claude + OpenAI (FEAT-06/07)",
+    "status": "not started",
+    "progress": 0,
+    "completion": "2026-07-01",
+    "archived": false
+  },
+  {
+    "id": "M9",
+    "name": "M9: Enterprise UI (FEAT-02)",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-03-01",
+    "archived": false
+  },
+  {
+    "id": "M10",
+    "name": "M10: MCP + Context (FEAT-08/09)",
+    "status": "not started",
+    "progress": 0,
+    "completion": "2026-07-15",
+    "archived": false
+  },
+  {
+    "id": "M11",
+    "name": "M11: Docs→BusinessDocs Restructure (BLOCKING)",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-03-10",
+    "archived": false
+  },
+  {
+    "id": "M12",
+    "name": "M12: Docker/Infra Restructure",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-03-12",
+    "archived": false
+  },
+  {
+    "id": "M13",
+    "name": "M13: Platform Brand Separation",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-03-14",
+    "archived": false
+  },
+  {
+    "id": "M14",
+    "name": "M14: Platform Engine & Template Separation",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-03-14",
+    "archived": false
+  }
+]

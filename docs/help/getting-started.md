@@ -1,3 +1,10 @@
+---
+title: Getting Started
+parent: Help
+nav_order: 1
+description: First steps with the Command Center web application.
+---
+
 # Getting Started
 
 ## What is this system?

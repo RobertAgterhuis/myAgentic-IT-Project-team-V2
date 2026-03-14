@@ -1,3 +1,10 @@
+---
+title: Translation Workflow
+parent: Help
+nav_order: 15
+description: Internationalization workflow with Weblate integration.
+---
+
 # Translation Workflow
 
 > **Owner**: Content Strategist + Localization Specialist

@@ -19,6 +19,8 @@ const VALIDATION = {
   MISSING_ID_OR_ANSWER: 'Missing id or answer',
   MISSING_ID: 'Missing id',
   INVALID_DEC_ID: 'Invalid decision ID format',
+  MISSING_LESSON_ID: 'Missing lessonId',
+  INVALID_LESSON_ID: 'Invalid lesson ID format (expected L followed by digits)',
   invalidQID: (id) => `Invalid Q-ID: ${id}`,
   invalidStatus: (s) => `Invalid status: ${s}`,
 };

@@ -1,3 +1,10 @@
+---
+title: Keyboard Shortcuts
+parent: Help
+nav_order: 14
+description: Keyboard shortcuts for the Command Center web application.
+---
+
 # Keyboard Shortcuts
 
 | Shortcut               | Action                                                                         |

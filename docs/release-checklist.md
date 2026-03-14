@@ -1,3 +1,9 @@
+---
+title: Release Checklist
+nav_order: 15
+description: Pre-release verification checklist for every version bump.
+---
+
 # Release Checklist
 
 | Field             | Value                                      |
@@ -12,15 +18,13 @@
 
 ## Pre-Release
 
-- [ ] All tests pass: root (`npm test` — 363 Jest) + .github/ (`npm test` — 809
-      Vitest)
-- [ ] ESLint clean: both root (ESLint 8) and .github/ (ESLint 10) report 0
-      errors
-- [ ] Coverage thresholds met (`npm run test:coverage` — 70% minimum)
+- [ ] All tests pass: `npm test` (1370 Vitest tests)
+- [ ] ESLint clean: `npm run lint` reports 0 errors
+- [ ] Coverage thresholds met (`npm run test:vitest:coverage` — 88%+ statements)
 - [ ] `npm audit` shows no critical/high vulnerabilities
 - [ ] Secret scan passes (`detectSecrets()` on all staged files)
 - [ ] CHANGELOG.md updated with all changes since last release
-- [ ] Version bumped in `package.json` (root) and `package.json`
+- [ ] Version bumped in `package.json`
 - [ ] All `UNCERTAIN:` and `INSUFFICIENT_DATA:` items resolved or documented
 - [ ] GA go/no-go criteria checked (see `docs/phase-5/ga-definition.md`
       Section 3)

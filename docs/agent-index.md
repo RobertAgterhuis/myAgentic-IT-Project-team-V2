@@ -1,3 +1,9 @@
+---
+title: Agent Index
+nav_order: 16
+description: Lookup table for all agent skill files, guardrail scopes, and contract paths.
+---
+
 # Agent, Guardrails & Contracts Index
 
 > This file is referenced from `copilot-instructions.md` and contains the full

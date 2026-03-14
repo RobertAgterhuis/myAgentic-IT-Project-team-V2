@@ -174,6 +174,22 @@ export interface ActivateCategoryResponse extends OkResponse {
 }
 
 /* ──────────────────────────────────────────────
+ * Lesson Promotion
+ * ────────────────────────────────────────────── */
+
+export interface PromoteLessonPayload {
+  lessonId: string;
+  priority?: DecisionPriority;
+  scope?: string;
+}
+
+export interface PromoteLessonResponse extends OkResponse {
+  id: string;
+  lessonId: string;
+  action: 'promoted';
+}
+
+/* ──────────────────────────────────────────────
  * Milestones
  * ────────────────────────────────────────────── */
 

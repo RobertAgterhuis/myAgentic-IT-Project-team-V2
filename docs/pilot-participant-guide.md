@@ -1,3 +1,9 @@
+---
+title: Pilot Participant Guide
+nav_order: 17
+description: Orientation guide for pilot participants evaluating the platform.
+---
+
 # Pilot Participant Guide — Start Here
 
 **Sprint:** S1 | **Issue:** #163 | **Version:** 1.0

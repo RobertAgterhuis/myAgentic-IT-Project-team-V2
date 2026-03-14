@@ -1,3 +1,9 @@
+---
+title: Domain Glossary
+nav_order: 11
+description: Protocol markers, output types, orchestration states, and domain terms used across the platform.
+---
+
 # Domain Glossary
 
 Canonical terminology for workflow states, protocol markers, and orchestration

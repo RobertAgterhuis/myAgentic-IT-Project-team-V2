@@ -1,3 +1,10 @@
+---
+title: Troubleshooting
+parent: Help
+nav_order: 16
+description: Common problems, session recovery, and manual state repair.
+---
+
 # Troubleshooting & Session Recovery
 
 ## Session states — what they mean
@@ -185,9 +192,8 @@ the agent. Type `CONTINUE` and the Orchestrator will detect the gap.
 ### Tests fail after pulling updates
 
 ```bash
-cd .github
 npm install          # Update dev dependencies
-npm test             # Re-run tests
+npm test             # Re-run Vitest suite (1370 tests)
 npm run lint         # Check for lint issues
 ```
 

@@ -1,3 +1,10 @@
+---
+title: Onboarding
+parent: Help
+nav_order: 5
+description: How the Onboarding Agent gathers project requirements.
+---
+
 # Onboarding
 
 ## What is onboarding?

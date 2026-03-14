@@ -1,3 +1,10 @@
+---
+title: Glossary
+parent: Help
+nav_order: 13
+description: Alphabetical glossary of all platform terms, statuses, and concepts.
+---
+
 # Glossary
 
 Quick reference for terms, flags, statuses, and concepts used throughout the

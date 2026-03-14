@@ -1,3 +1,10 @@
+---
+title: Pipeline & Progress
+parent: Help
+nav_order: 6
+description: Understanding the phase pipeline and progress tracking.
+---
+
 # Pipeline & Progress
 
 ## Pipeline visualization

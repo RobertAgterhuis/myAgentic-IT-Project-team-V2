@@ -1,3 +1,10 @@
+---
+title: Commands
+parent: Help
+nav_order: 2
+description: Complete reference of all CLI commands (CREATE, AUDIT, FEATURE, SCOPE CHANGE, HOTFIX, etc.).
+---
+
 # Commands Reference
 
 ## Create Commands

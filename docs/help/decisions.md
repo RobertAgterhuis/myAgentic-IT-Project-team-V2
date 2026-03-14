@@ -1,3 +1,10 @@
+---
+title: Decisions
+parent: Help
+nav_order: 9
+description: Complete guide to the decision system — creating, answering, and enforcing decisions.
+---
+
 # Decisions — Complete Guide
 
 ## What are decisions?
@@ -79,10 +86,11 @@ Decided items are organized by technology into separate files under
 ### Which categories exist?
 
 The **Category Registry** table in `BusinessDocs/decisions.md` lists all
-categories with their file, decision count, and status. Categories cover stacks
-like Transformation, GitHub Actions, TypeScript/ESLint, Cross-cutting,
-Bicep/IaC, Azure DevOps, .NET, Docker, Vite, and NextJS (among others as the
-project evolves).
+categories with their file, decision count, and status. There are currently 20
+categories covering stacks like Transformation, Reevaluation, GitHub Actions,
+TypeScript/ESLint, Cross-cutting, Bicep/IaC, Azure DevOps, .NET, Docker, Vite,
+Next.js, Entra ID, Exchange, Microsoft Graph, PowerShell, Purview, SharePoint,
+Teams, Lighthouse, and Playwright.
 
 ### Deferred categories — automatic activation
 
@@ -199,6 +207,36 @@ or status.
 In the Category Registry section of the Decisions tab, click the **Activate**
 button next to a deferred category. This changes its status to `ACTIVE`
 immediately.
+
+### Promoting a lesson to a decision
+
+Lessons in `BusinessDocs/retrospectives/lessons-learned.md` can be flagged with
+`PROMOTE_TO_DECISION` in the Action column. These lessons are detected
+automatically during the Sprint Gate (Step 2: Lessons-Learned Injection) and
+reported as promotion candidates.
+
+To promote a flagged lesson:
+
+1. Call `POST /api/decisions/promote-lesson` with `{ "lessonId": "L5" }`.
+2. Optionally specify `priority` (`HIGH`, `MEDIUM`, `LOW`) and `scope`.
+3. The system creates a `DECIDED` entry in `decisions.md` with a source
+   reference back to the lesson.
+4. The lesson's status in `lessons-learned.md` is updated from
+   `PROMOTE_TO_DECISION` to `PROMOTED`.
+
+Example lessons-learned.md row before promotion:
+
+```
+| L5 | Split large stories early | VELOCITY | Tech | PROMOTE_TO_DECISION |
+```
+
+After promotion, the lesson row becomes:
+
+```
+| L5 | Split large stories early | VELOCITY | Tech | PROMOTED |
+```
+
+And a new decision appears in `decisions.md` with notes referencing `L5`.
 
 ---
 

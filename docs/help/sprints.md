@@ -1,3 +1,10 @@
+---
+title: Sprints
+parent: Help
+nav_order: 7
+description: Sprint lifecycle, Sprint Gate, and Phase 5 implementation flow.
+---
+
 # Sprints & Implementation (Phase 5)
 
 ## What is Phase 5?

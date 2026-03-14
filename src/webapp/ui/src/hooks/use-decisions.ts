@@ -13,6 +13,8 @@ import type {
   DecisionMutationResponse,
   ActivateCategoryPayload,
   ActivateCategoryResponse,
+  PromoteLessonPayload,
+  PromoteLessonResponse,
 } from '@/lib/api-types';
 
 /** Fetch all decisions (open, decided, deferred + categories). */
@@ -107,6 +109,21 @@ export function useActivateCategory() {
 
     onSuccess: (data) => {
       showToast.success(`Category "${data.name}" activated`);
+      qc.invalidateQueries({ queryKey: queryKeys.decisions.all });
+    },
+  });
+}
+
+/** Promote a lesson flagged with PROMOTE_TO_DECISION to a decision. */
+export function usePromoteLesson() {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: PromoteLessonPayload) =>
+      apiPost<PromoteLessonResponse>('/decisions/promote-lesson', payload),
+
+    onSuccess: (data) => {
+      showToast.success(`Lesson ${data.lessonId} promoted to decision ${data.id}`);
       qc.invalidateQueries({ queryKey: queryKeys.decisions.all });
     },
   });

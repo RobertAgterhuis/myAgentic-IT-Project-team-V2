@@ -1,7 +1,8 @@
 ---
 layout: default
 title: Decisions Architecture
-nav_order: 7
+parent: Help
+nav_order: 10
 description:
   Internal architecture of the decision system — file layout, data flow, agent
   interactions, and enforcement mechanisms.
@@ -69,6 +70,15 @@ item.
 | `docker.md`            | Docker / containers            | DEFERRED          |
 | `vite.md`              | Vite build tooling             | DEFERRED          |
 | `nextjs.md`            | Next.js framework              | DEFERRED          |
+| `entra-id.md`          | Microsoft Entra ID             | DEFERRED          |
+| `exchange.md`          | Exchange / mail                | DEFERRED          |
+| `microsoft-graph.md`   | Microsoft Graph API            | DEFERRED          |
+| `powershell.md`        | PowerShell scripting           | DEFERRED          |
+| `purview.md`           | Microsoft Purview              | DEFERRED          |
+| `sharepoint.md`        | SharePoint                     | DEFERRED          |
+| `teams.md`             | Microsoft Teams                | DEFERRED          |
+| `lighthouse.md`        | Lighthouse audits              | DEFERRED          |
+| `playwright.md`        | Playwright E2E testing         | DEFERRED          |
 
 ---
 
@@ -283,7 +293,7 @@ up at the next Sprint Gate automatically.
 ## 9. Decision seeding from template
 
 Decision category files and the index are **platform knowledge** — they define
-the 245 pre-built decisions and auto-activation mechanism. To ensure they survive
+the 238 pre-built decisions and auto-activation mechanism. To ensure they survive
 a `BusinessDocs/` deletion, seed copies live in `templates/sdlc/decisions/`.
 
 When the Orchestrator starts a **fresh cycle** (not a resume), it calls

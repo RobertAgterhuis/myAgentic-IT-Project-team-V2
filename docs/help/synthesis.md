@@ -1,3 +1,10 @@
+---
+title: Synthesis
+parent: Help
+nav_order: 11
+description: Final reports, Brand & Assets Agent, and Storybook Agent deliverables.
+---
+
 # Synthesis — Final Reports, Brand & Storybook
 
 After all four design phases complete and pass Critic + Risk validation, the
@@ -174,8 +181,7 @@ component library that governs all UI implementation.
 | Output                  | Location                                        |
 | ----------------------- | ----------------------------------------------- |
 | Component inventory     | `BusinessDocs/storybook/component-inventory.md` |
-| Design tokens (CSS)     | `src/tokens/tokens.css`                         |
-| Design tokens (JS)      | `src/tokens/tokens.js`                          |
+| Design tokens (CSS)     | `src/webapp/ui/src/tokens.css`                  |
 | Storybook configuration | `.storybook/` directory                         |
 | Component stories       | Per-component `.stories.js` files               |
 

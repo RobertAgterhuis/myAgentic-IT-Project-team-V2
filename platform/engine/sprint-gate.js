@@ -16,6 +16,7 @@
  */
 
 const _path = require('path');
+const { findPromotionCandidates } = require('../../src/webapp/lesson-promotion');
 
 // ─── Constants ───────────────────────────────────────────────
 
@@ -343,17 +344,19 @@ function parseLessonsLearned(content) {
 
 /**
  * Step 2: Load and inject lessons learned.
+ * Also detects lessons flagged with PROMOTE_TO_DECISION.
  * @param {object} store
  * @param {string} [lessonsPath]
- * @returns {{ lessons: Array, count: number }}
+ * @returns {{ lessons: Array, count: number, promotionCandidates: Array }}
  */
 function loadLessonsLearned(store, lessonsPath) {
   const fp = lessonsPath || LESSONS_LEARNED_PATH;
-  if (!store.exists(fp)) return { lessons: [], count: 0 };
+  if (!store.exists(fp)) return { lessons: [], count: 0, promotionCandidates: [] };
 
   const content = store.readFile(fp);
   const lessons = parseLessonsLearned(content);
-  return { lessons, count: lessons.length };
+  const promotionCandidates = findPromotionCandidates(content);
+  return { lessons, count: lessons.length, promotionCandidates };
 }
 
 // ─── Step 3: Velocity-Based Capacity Check ───────────────────
@@ -651,6 +654,7 @@ function runSprintGate(store, options) {
     step2_lessonsLearned: {
       lessons: step2.lessons,
       count: step2.count,
+      promotionCandidates: step2.promotionCandidates,
     },
     step3_velocityCapacity: {
       withinCapacity: step3.withinCapacity,
@@ -673,6 +677,7 @@ function runSprintGate(store, options) {
     totalBlockers: allBlockers.length,
     storyCount: stories.length,
     lessonsInjected: step2.count,
+    promotionCandidates: step2.promotionCandidates.length,
     velocityRatio: step3.ratio,
     openBlockerCount: step4.openBlockers.length,
     advisoryCount: step4.advisories.length,
@@ -698,6 +703,7 @@ module.exports = {
   checkDefinitionOfReady,
   parseLessonsLearned,
   loadLessonsLearned,
+  findPromotionCandidates,
   parseVelocityLog,
   checkVelocityCapacity,
   checkBlockers,

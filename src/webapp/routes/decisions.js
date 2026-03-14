@@ -25,6 +25,11 @@ const {
   sanitizeQID,
   checkSecretsInBody,
 } = require('../middleware');
+const {
+  findPromotionCandidates,
+  markLessonPromoted,
+  buildDecisionFromLesson,
+} = require('../lesson-promotion');
 
 module.exports = function createDecisionRoutes(ctx) {
   const { _cache, safeWriteSync, sseNotify, DECISIONS_FILE, DECISIONS_DIR } = ctx;
@@ -386,9 +391,93 @@ module.exports = function createDecisionRoutes(ctx) {
     });
   }
 
+  /* ── Promote Lesson API ────────────────────────────────────── */
+
+  const LESSONS_FILE = path.join(
+    path.dirname(DECISIONS_FILE),
+    'retrospectives',
+    'lessons-learned.md'
+  );
+
+  async function apiPostPromoteLesson(req, res) {
+    const body = await parseBody(req);
+    if (!body.lessonId || typeof body.lessonId !== 'string') {
+      return json(res, 400, errorResponse('VALIDATION_ERROR', V.MISSING_LESSON_ID));
+    }
+
+    const lessonId = sanitizeMarkdown(body.lessonId.trim());
+    if (!/^L\d+$/.test(lessonId)) {
+      return json(res, 400, errorResponse('VALIDATION_ERROR', V.INVALID_LESSON_ID));
+    }
+
+    const store = getStore();
+    if (!store.exists(LESSONS_FILE)) {
+      return json(res, 404, errorResponse('LESSONS_NOT_FOUND', 'lessons-learned.md not found'));
+    }
+    if (!store.exists(DECISIONS_FILE)) {
+      return json(res, 404, errorResponse('DECISIONS_NOT_FOUND', 'decisions.md not found'));
+    }
+
+    const priority = body.priority || 'MEDIUM';
+    const scope = sanitizeMarkdown(body.scope || 'All');
+
+    const lessonsContent = store.readFile(LESSONS_FILE);
+    const candidates = findPromotionCandidates(lessonsContent);
+    const lesson = candidates.find((c) => c.id === lessonId);
+    if (!lesson) {
+      return json(
+        res,
+        404,
+        errorResponse(
+          'LESSON_NOT_FOUND',
+          `Lesson ${lessonId} not found or not flagged for promotion`
+        )
+      );
+    }
+
+    return withFileLock(DECISIONS_FILE, () => {
+      let decContent = store.readFile(DECISIONS_FILE);
+      const { decision, notes } = buildDecisionFromLesson(lesson);
+      const id = models.nextDecisionId(decContent, 'DEC-');
+      decContent = models.addOperationalDecision(decContent, {
+        id,
+        priority,
+        scope,
+        decision,
+        notes,
+        date: models.today(),
+      });
+      decContent = models.appendAuditTrail(decContent, 'promote-lesson', id);
+      safeWriteSync(DECISIONS_FILE, decContent, undefined, {
+        operation: 'create',
+        entityType: 'decision',
+        entityId: id,
+        user: 'webapp',
+        summary: `Decision promoted from lesson ${lessonId}: ${id}`,
+      });
+
+      // Mark the lesson as PROMOTED in lessons-learned.md
+      withFileLock(LESSONS_FILE, () => {
+        const currentLessons = store.readFile(LESSONS_FILE);
+        const updatedLessons = markLessonPromoted(currentLessons, lessonId);
+        safeWriteSync(LESSONS_FILE, updatedLessons, undefined, {
+          operation: 'update',
+          entityType: 'lesson',
+          entityId: lessonId,
+          user: 'webapp',
+          summary: `Lesson ${lessonId} promoted to decision ${id}`,
+        });
+      });
+
+      sseNotify('decision_update', { action: 'promote-lesson', id, lessonId });
+      return json(res, 200, { ok: true, id, lessonId, action: 'promoted' });
+    });
+  }
+
   return {
     'GET /api/decisions': apiGetDecisions,
     'POST /api/decisions': apiPostDecision,
     'POST /api/decisions/activate-category': apiPostActivateCategory,
+    'POST /api/decisions/promote-lesson': apiPostPromoteLesson,
   };
 };

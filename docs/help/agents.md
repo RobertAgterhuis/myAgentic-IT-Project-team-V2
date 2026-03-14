@@ -1,3 +1,10 @@
+---
+title: Agents
+parent: Help
+nav_order: 4
+description: Overview of all domain agents, their roles, and how they collaborate.
+---
+
 # Agents
 
 ## Overview

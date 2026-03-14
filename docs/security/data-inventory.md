@@ -44,7 +44,7 @@ All data stored by the Agentic SDLC Platform in the v1 GA
 | Phase 1–4 analyses   | Markdown       | `docs/phase-{1,2,3,4}/`   | No           | Project lifetime |
 | Synthesis reports    | Markdown       | `BusinessDocs/synthesis/` | No           | Project lifetime |
 | Sprint plans/reports | Markdown       | `BusinessDocs/phase-5/`   | No           | Project lifetime |
-| Brand assets         | JSON, Markdown | `BusinessDocs/brand/`     | No           | Project lifetime |
+| Brand assets         | JSON, Markdown | `src/webapp/brand/`       | No           | Project lifetime |
 | Storybook inventory  | Markdown       | `BusinessDocs/storybook/` | No           | Project lifetime |
 
 ### 1.4 Analytics Data

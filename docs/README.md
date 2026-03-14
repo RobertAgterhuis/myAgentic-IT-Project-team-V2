@@ -301,8 +301,8 @@ docs/
   synthesis/                  ← Final-report-master + 4 department reports + blocker-matrix
   mode-guide.md               ← Dual-mode operation guide (CREATE vs AUDIT)
   brand/
-    design-tokens.json        ← W3C design tokens (colors, typography, spacing) from Canva or derived
-    brand-guidelines.md       ← Brand guidelines (colors, logo, tone of voice) — used by Implementation Agent
+    design-tokens.json        ← W3C design tokens (colors, typography, spacing) — solution output from Canva or derived
+    brand-guidelines.md       ← Brand guidelines for the solution — used by Implementation Agent
     assets/                   ← Exported PNG/SVG brand assets (logo, banners, social cards)
   storybook/
     component-inventory.md    ← The only valid list of approved UI components (hard guardrail)

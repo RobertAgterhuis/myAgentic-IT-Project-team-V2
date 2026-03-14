@@ -92,7 +92,7 @@ After a full `CREATE` cycle, the system produces:
 | UX Report           | `BusinessDocs/synthesis/final-report-ux.md`           | Personas, journeys, wireframes, design system, a11y, content, i18n |
 | Marketing Report    | `BusinessDocs/synthesis/final-report-marketing.md`    | Brand identity, growth strategy, conversion design                 |
 | Blocker Matrix      | `BusinessDocs/synthesis/cross-team-blocker-matrix.md` | Cross-team dependencies (BLOCKING or ADVISORY)                     |
-| Design Tokens       | `BusinessDocs/brand/design-tokens.json`               | Brand colors, typography, spacing                                  |
+| Design Tokens       | `src/webapp/brand/design-tokens.json`                 | Brand colors, typography, spacing (platform)                       |
 | Component Inventory | `BusinessDocs/storybook/component-inventory.md`       | UI component library specification                                 |
 | Sprint Plan         | Generated per synthesis                               | Implementable sprint stories with estimates                        |
 | Questionnaires      | `BusinessDocs/[Phase]/Questionnaires/`                | Questions for missing information                                  |

@@ -10,7 +10,7 @@ COPY src/webapp/ui/package.json src/webapp/ui/package-lock.json ./
 RUN npm ci --ignore-scripts
 
 # Copy source and build tokens + storybook
-COPY BusinessDocs/brand/design-tokens.json /tokens/design-tokens.json
+COPY src/webapp/brand/design-tokens.json /tokens/design-tokens.json
 COPY scripts/build-tokens.mjs /scripts/build-tokens.mjs
 COPY src/webapp/ui/ ./
 

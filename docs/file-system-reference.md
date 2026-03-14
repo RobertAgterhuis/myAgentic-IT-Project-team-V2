@@ -199,7 +199,9 @@ Agent. Includes `decisions-architecture.md` (decision system technical reference
 | ------------------- | ------------------------ |
 | `milestones-api.md` | Milestones API reference |
 
-### Brand assets — `BusinessDocs/brand/`
+### Platform brand assets — `src/webapp/brand/`
+
+These are the **platform's own** brand assets, used by the build pipeline.
 
 | File                     | Purpose                                        | Written by                                        |
 | ------------------------ | ---------------------------------------------- | ------------------------------------------------- |
@@ -207,8 +209,9 @@ Agent. Includes `decisions-architecture.md` (decision system technical reference
 | `content-style-guide.md` | Tone of voice, writing rules                   | Content Strategist (Phase 3)                      |
 | `design-tokens.json`     | Machine-readable design tokens                 | Brand & Assets Agent (Canva or manual)            |
 
-Generated after Phase 4. **Safe to review and suggest changes** — changes take
-effect via the decision system or reevaluation.
+### Solution brand assets — `BusinessDocs/brand/`
+
+Populated by Agent 30 during solution creation. Empty in a fresh checkout.
 
 ### GitHub integration — `docs/github/`
 

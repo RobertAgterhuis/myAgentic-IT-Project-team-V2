@@ -133,7 +133,8 @@ UNCHANGED.
 [Synthesis](synthesis.md#department-reports).
 
 **Design Tokens** — Machine-readable design system definitions (colors,
-typography, spacing) in `BusinessDocs/brand/design-tokens.json`. Converted to
+typography, spacing) in `src/webapp/brand/design-tokens.json` (platform) or
+`BusinessDocs/brand/design-tokens.json` (solution output). Converted to
 CSS/JS by the Storybook Agent.
 
 **DevOps Engineer** (Agent 07) — Phase 2 agent designing CI/CD pipelines and

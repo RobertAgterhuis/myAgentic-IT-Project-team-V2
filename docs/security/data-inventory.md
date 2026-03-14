@@ -9,7 +9,7 @@
 | **Owner**         | Robert Agterhuis                                                                                                |
 | **Audit Finding** | F-03 (CRITICAL) — Privacy/compliance operations are not finished                                                |
 | **Issue**         | #139                                                                                                            |
-| **Depends on**    | `BusinessDocs/phase-5/ga-definition.md` (deployment profile), `docs/security/security-design.md` (data-at-rest) |
+| **Depends on**    | `docs/ga-definition.md` (deployment profile), `docs/security/security-design.md` (data-at-rest)                 |
 
 ---
 

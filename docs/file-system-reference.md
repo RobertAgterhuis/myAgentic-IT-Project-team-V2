@@ -106,11 +106,15 @@ system itself.
 | `data-dictionary.md`       | Data entity catalog                                | System maintainers  | Yes           |
 | `domain-glossary.md`       | Domain terminology reference                       | System maintainers  | Yes           |
 | `file-system-reference.md` | This file                                          | System maintainers  | Yes           |
+| `ga-definition.md`        | GA readiness criteria & deployment profiles        | System maintainers  | Yes           |
 | `index.md`                 | GitHub Pages landing page                          | System maintainers  | Yes           |
 | `mode-guide.md`            | CREATE vs AUDIT mode guidance                      | System maintainers  | No            |
+| `operating-handbook.md`    | Day-to-day operational procedures                  | System maintainers  | Yes           |
+| `pilot-participant-guide.md` | Pilot evaluation guide for participants          | System maintainers  | Yes           |
 | `privacy-policy.md`        | Privacy policy                                     | System maintainers  | Yes           |
 | `quick-start.md`           | Getting started guide                              | System maintainers  | Yes           |
 | `README.md`                | Overview of the docs/ structure                    | System maintainers  | No            |
+| `release-checklist.md`     | Pre-release verification checklist                 | System maintainers  | Yes           |
 | `technical-manual.md`      | API reference + architecture                       | Documentation Agent | After sprint  |
 | `user-manual.md`           | User guide                                         | Documentation Agent | After sprint  |
 

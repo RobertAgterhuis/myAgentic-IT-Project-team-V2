@@ -8,7 +8,8 @@ const fs = require('fs');
 const path = require('path');
 
 const PHASE5 = path.join(__dirname, '..', '..', 'BusinessDocs', 'phase-5');
-const DOCS = path.join(__dirname, '..', '..', 'BusinessDocs');
+const DOCS = path.join(__dirname, '..', '..', 'docs');
+const PILOT_GUIDE = path.join(__dirname, '..', '..', 'docs');
 
 describe('SP-2-202 — Pilot Materials Readiness', () => {
   describe('Pilot package — all 5 documents exist', () => {
@@ -33,12 +34,12 @@ describe('SP-2-202 — Pilot Materials Readiness', () => {
     });
 
     test('participant guide exists', () => {
-      expect(fs.existsSync(path.join(PHASE5, 'pilot-participant-guide.md'))).toBe(true);
+      expect(fs.existsSync(path.join(PILOT_GUIDE, 'pilot-participant-guide.md'))).toBe(true);
     });
   });
 
   describe('Participant guide — S1-6 validation', () => {
-    const guide = fs.readFileSync(path.join(PHASE5, 'pilot-participant-guide.md'), 'utf8');
+    const guide = fs.readFileSync(path.join(PILOT_GUIDE, 'pilot-participant-guide.md'), 'utf8');
 
     test('defines at least 3 pilot scenarios', () => {
       expect(guide).toContain('Scenario A');

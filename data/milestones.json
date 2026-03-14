@@ -36,5 +36,23 @@
       { "id": "M11-9", "title": "Update copilot-instructions + scripts + fix state-persistence bug", "status": "planned", "points": 2, "issue": 261 },
       { "id": "M11-10", "title": "Update file-system-reference + milestones.json + final verification", "status": "planned", "points": 2, "issue": 262 }
     ]
+  },
+  {
+    "id": "M12",
+    "name": "M12: Docker/Infra Restructure",
+    "status": "planned",
+    "branch": "feature/m12-docker-infra",
+    "created_at": "2026-03-15",
+    "github_milestone_number": 40,
+    "total_points": 20,
+    "stories": [
+      { "id": "M12-0", "title": "Create infra/ directory and move Docker files", "status": "planned", "points": 2, "issue": 264 },
+      { "id": "M12-1", "title": "Fix Dockerfile paths for M11 BusinessDocs migration", "status": "planned", "points": 2, "issue": 265 },
+      { "id": "M12-2", "title": "Create docker-compose.webapp.yml (end-user)", "status": "planned", "points": 3, "issue": 266 },
+      { "id": "M12-3", "title": "Create docker-compose.dev.yml (full-stack developer)", "status": "planned", "points": 5, "issue": 267 },
+      { "id": "M12-4", "title": "Update documentation references to Docker files", "status": "planned", "points": 3, "issue": 268 },
+      { "id": "M12-5", "title": "Update CI workflows for infra/ paths", "status": "planned", "points": 2, "issue": 269 },
+      { "id": "M12-6", "title": "Smoke test — build and run all compose profiles", "status": "planned", "points": 3, "issue": 270 }
+    ]
   }
 ]

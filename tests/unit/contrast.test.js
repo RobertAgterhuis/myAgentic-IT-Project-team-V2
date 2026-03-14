@@ -32,7 +32,7 @@ function contrastRatio(hex1, hex2) {
 
 /* ── Load tokens ─────────────────────────────────────── */
 
-const tokensPath = path.join(__dirname, '..', '..', 'BusinessDocs', 'brand', 'design-tokens.json');
+const tokensPath = path.join(__dirname, '..', '..', 'src', 'webapp', 'brand', 'design-tokens.json');
 const tokens = JSON.parse(fs.readFileSync(tokensPath, 'utf8'));
 const light = tokens.color.light;
 const dark = tokens.color.dark;

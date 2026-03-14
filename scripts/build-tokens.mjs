@@ -1,7 +1,7 @@
 /**
  * Design Tokens Build Pipeline
  *
- * Reads docs/brand/design-tokens.json (the single source of truth)
+ * Reads src/webapp/brand/design-tokens.json (the single source of truth)
  * and generates the Tailwind v4 CSS @theme block used by the React UI.
  *
  * Usage: node scripts/build-tokens.mjs
@@ -13,7 +13,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const TOKENS_PATH = resolve(ROOT, 'BusinessDocs', 'brand', 'design-tokens.json');
+const TOKENS_PATH = resolve(ROOT, 'src', 'webapp', 'brand', 'design-tokens.json');
 const CSS_OUT = resolve(ROOT, 'src', 'webapp', 'ui', 'src', 'tokens.css');
 
 const tokens = JSON.parse(readFileSync(TOKENS_PATH, 'utf-8'));
@@ -47,7 +47,7 @@ function hexToHsl(hex) {
 
 const lines = [
   '/* AUTO-GENERATED — do not edit manually. */',
-  `/* Source: docs/brand/design-tokens.json (v${tokens.version}) */`,
+  `/* Source: src/webapp/brand/design-tokens.json (v${tokens.version}) */`,
   `/* Generated: ${new Date().toISOString().split('T')[0]} */`,
   '',
   '@theme {',

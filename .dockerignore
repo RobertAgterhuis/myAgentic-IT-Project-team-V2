@@ -17,10 +17,8 @@ hooks/
 *.md
 !README.md
 
-# BusinessDocs — exclude everything except brand assets needed by the build
-BusinessDocs/**
-!BusinessDocs/brand/
-!BusinessDocs/brand/design-tokens.json
+# BusinessDocs — exclude from Docker build context (solution output only)
+BusinessDocs/
 
 # Local logs/temp
 *.log

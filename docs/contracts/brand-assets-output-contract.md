@@ -16,11 +16,15 @@ PR/Review Agent's brand compliance checks.
 
 ## OUTPUT FILES
 
-**Location:**
+**Location (solution output):**
 
 - `BusinessDocs/brand/design-tokens.json`
 - `BusinessDocs/brand/brand-guidelines.md`
 - `BusinessDocs/brand/brand-assets-report.md`
+
+> **Note:** The platform's own brand assets live in `src/webapp/brand/`. This
+> contract defines the output the Brand & Assets Agent produces for the
+> **solution being created**.
 
 **Format:** JSON + Markdown
 

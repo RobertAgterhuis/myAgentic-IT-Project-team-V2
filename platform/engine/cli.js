@@ -281,7 +281,7 @@ function run(argv, deps = {}) {
 // ── Auto-run when executed directly ──────────────────────────
 /* c8 ignore start */
 if (require.main === module) {
-  const { getStore } = require('../store');
+  const { getStore } = require('../../src/webapp/store');
   const result = run(process.argv.slice(2), { store: getStore() });
   if (!result.ok) {
     process.exitCode = 1;

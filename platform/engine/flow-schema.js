@@ -11,16 +11,8 @@ const path = require('node:path');
 const Ajv2020 = require('ajv/dist/2020');
 const addFormats = require('ajv-formats');
 
-const SCHEMA_PATH = path.resolve(
-  __dirname,
-  '..',
-  '..',
-  '..',
-  'platform',
-  'schema',
-  'flow-canonical.schema.json'
-);
-const FLOWS_PATH = path.resolve(__dirname, '..', '..', '..', 'platform', 'schema', 'flows.json');
+const SCHEMA_PATH = path.resolve(__dirname, '..', 'schema', 'flow-canonical.schema.json');
+const FLOWS_PATH = path.resolve(__dirname, '..', 'schema', 'flows.json');
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));

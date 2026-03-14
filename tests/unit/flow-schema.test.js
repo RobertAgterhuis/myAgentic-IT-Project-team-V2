@@ -6,7 +6,7 @@ const {
   validateCanonicalFlows,
   SCHEMA_PATH,
   FLOWS_PATH,
-} = require('../../src/webapp/orchestrator/flow-schema');
+} = require('../../platform/engine/flow-schema');
 
 describe('Canonical flow schema validation (S4-2)', () => {
   it('loads schema and flows files', () => {

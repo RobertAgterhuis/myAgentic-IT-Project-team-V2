@@ -5,16 +5,8 @@ const path = require('node:path');
 const Ajv2020 = require('ajv/dist/2020');
 const addFormats = require('ajv-formats');
 
-const SCHEMA_PATH = path.resolve(
-  __dirname,
-  '..',
-  '..',
-  '..',
-  'platform',
-  'schema',
-  'agent-canonical.schema.json'
-);
-const AGENTS_PATH = path.resolve(__dirname, '..', '..', '..', 'platform', 'schema', 'agents.json');
+const SCHEMA_PATH = path.resolve(__dirname, '..', 'schema', 'agent-canonical.schema.json');
+const AGENTS_PATH = path.resolve(__dirname, '..', 'schema', 'agents.json');
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));

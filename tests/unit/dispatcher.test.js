@@ -19,8 +19,8 @@ const {
   PLATFORMS,
   _DEFAULT_CONFIG,
   Dispatcher,
-} = require('../../src/webapp/orchestrator/dispatcher');
-const { STATES } = require('../../src/webapp/orchestrator/state-machine');
+} = require('../../platform/engine/dispatcher');
+const { STATES } = require('../../platform/engine/state-machine');
 
 // ─── Test Helpers ────────────────────────────────────────────
 

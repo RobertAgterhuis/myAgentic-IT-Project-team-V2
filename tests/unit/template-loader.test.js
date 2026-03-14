@@ -379,7 +379,7 @@ describe('SDLC manifest consistency with current engine', () => {
   test('phaseAgents matches current dispatcher PHASE_AGENTS', () => {
     // Verify the SDLC manifest has the same agent registrations as the
     // current hardcoded PHASE_AGENTS in dispatcher.js
-    const { PHASE_AGENTS } = require('../../src/webapp/orchestrator/dispatcher');
+    const { PHASE_AGENTS } = require('../../platform/engine/dispatcher');
     for (const [state, agents] of Object.entries(PHASE_AGENTS)) {
       expect(manifest.phaseAgents[state]).toBeDefined();
       expect(manifest.phaseAgents[state]).toHaveLength(agents.length);
@@ -401,7 +401,7 @@ describe('SDLC manifest consistency with current engine', () => {
   });
 
   test('modes matches current state-machine MODE_CONFIGS', () => {
-    const { MODE_CONFIGS } = require('../../src/webapp/orchestrator/state-machine');
+    const { MODE_CONFIGS } = require('../../platform/engine/state-machine');
     for (const [mode, config] of Object.entries(MODE_CONFIGS)) {
       expect(manifest.modes[mode]).toBeDefined();
       expect(manifest.modes[mode].phases).toEqual(config.phases);

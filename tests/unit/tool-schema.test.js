@@ -7,7 +7,7 @@ const {
   SCHEMA_PATH,
   TOOLS_PATH,
   AGENTS_PATH,
-} = require('../../src/webapp/orchestrator/tool-schema');
+} = require('../../platform/engine/tool-schema');
 
 describe('Canonical tool schema validation (S4-3)', () => {
   it('loads schema, tools and agents files', () => {

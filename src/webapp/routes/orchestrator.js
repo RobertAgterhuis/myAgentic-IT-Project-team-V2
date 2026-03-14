@@ -18,7 +18,7 @@
  */
 
 const { getStore } = require('../store');
-const { createEngine } = require('../orchestrator/engine');
+const { createEngine } = require('../../../platform/engine/engine');
 const { errorResponse } = require('../utils/errors');
 const { structuredLog, json, parseBody, _setSecurityHeaders } = require('../middleware');
 

@@ -18,21 +18,52 @@ description:
 
 ```
 myAgentic-IT-Project-team/
-├── .github/                    ← System internals (agents, docs, webapp, CI)
+├── .github/                    ← CI workflows, issue templates, Copilot instructions
+├── .husky/                     ← Git hooks (pre-commit)
+├── agents/                     ← Agent skill files (38 agents)
 ├── BusinessDocs/               ← User-facing project data (briefs, questionnaires, official docs)
-├── docs/                       ← Public documentation (GitHub Pages, manuals)
+├── data/                       ← Runtime data (milestones.json)
+├── docs/                       ← Documentation, contracts, guardrails, session state
+├── platform/                   ← Platform schema definitions (agents, flows, tools)
+├── scripts/                    ← Build & maintenance scripts
+├── src/                        ← Application source code
+├── tests/                      ← All test files (unit, integration, e2e, smoke)
 ├── Workitems/                  ← Feature-specific workspaces (created by FEATURE command)
 ├── CONTRIBUTING.md             ← Contribution guidelines
 ├── LICENSE                     ← License file
-├── Readme.md                   ← Project README
+├── README.md                   ← Project README
 └── SECURITY.md                 ← Security policy
 ```
 
 ---
 
-## `.github/` — System internals
+## `.github/` — CI & repository configuration
 
-### Agent skill files — `agents/`
+| File                      | Purpose                                     |
+| ------------------------- | ------------------------------------------- |
+| `CODEOWNERS`              | Code ownership rules for PR reviews         |
+| `copilot-instructions.md` | Copilot agent instructions for this repo    |
+| `dependabot.yml`          | Dependabot configuration                    |
+| `PULL_REQUEST_TEMPLATE.md`| PR template                                 |
+
+### Issue templates — `.github/ISSUE_TEMPLATE/`
+
+GitHub issue templates for bugs, features, stories, and tasks.
+
+### Workflows — `.github/workflows/`
+
+| File                             | Purpose                                              |
+| -------------------------------- | ---------------------------------------------------- |
+| `ci.yml`                         | Vitest + npm audit + typecheck                       |
+| `ci-pipeline.yml`               | Jest + ESLint + Prettier                             |
+| `generate-and-validate.yml`     | Platform schema generation + validation              |
+| `my-agentic-team-board-sync.yml`| GitHub Project board synchronization                 |
+| `release.yml`                    | Release workflow                                     |
+| `storybook.yml`                  | Storybook build + deploy                             |
+
+---
+
+## `agents/` — Agent skill files
 
 | File pattern                                                | Purpose                             | Modified by             |
 | ----------------------------------------------------------- | ----------------------------------- | ----------------------- |
@@ -42,14 +73,29 @@ myAgentic-IT-Project-team/
 These files define agent behavior. **Do not modify** unless you're changing the
 system itself.
 
-### System documentation — `docs/`
+---
 
-| Path                    | Purpose                                            | Written by         | Safe to edit? |
-| ----------------------- | -------------------------------------------------- | ------------------ | ------------- |
-| `agent-index.md`        | Lookup table for all skills, guardrails, contracts | System maintainers | No            |
-| `mode-guide.md`         | CREATE vs AUDIT mode guidance                      | System maintainers | No            |
-| `README.md`             | Overview of the docs/ structure                    | System maintainers | No            |
-| `analytics-events.json` | Event tracking definitions                         | System maintainers | No            |
+## `docs/` — Documentation & system configuration
+
+### Root files
+
+| Path                      | Purpose                                            | Written by         | Safe to edit? |
+| ------------------------- | -------------------------------------------------- | ------------------ | ------------- |
+| `_config.yml`             | Jekyll / GitHub Pages config                       | System maintainers | Yes           |
+| `agent-index.md`          | Lookup table for all skills, guardrails, contracts | System maintainers | No            |
+| `analytics-events.json`   | Event tracking definitions                         | System maintainers | No            |
+| `contributing.md`         | Developer contribution guide                       | System maintainers | Yes           |
+| `data-dictionary.md`      | Data entity catalog                                | System maintainers | Yes           |
+| `decisions.md`            | Decision index — open questions + category registry| You + web UI       | **Yes**       |
+| `domain-glossary.md`      | Domain terminology reference                       | System maintainers | Yes           |
+| `file-system-reference.md`| This file                                          | System maintainers | Yes           |
+| `index.md`                | GitHub Pages landing page                          | System maintainers | Yes           |
+| `mode-guide.md`           | CREATE vs AUDIT mode guidance                      | System maintainers | No            |
+| `privacy-policy.md`       | Privacy policy                                     | System maintainers | Yes           |
+| `quick-start.md`          | Getting started guide                              | System maintainers | Yes           |
+| `README.md`               | Overview of the docs/ structure                    | System maintainers | No            |
+| `technical-manual.md`     | API reference + architecture                       | Documentation Agent | After sprint  |
+| `user-manual.md`          | User guide                                         | Documentation Agent | After sprint  |
 
 ### Contracts — `docs/contracts/`
 
@@ -57,19 +103,31 @@ system itself.
 are **agent-facing specifications** — they tell each agent what to produce and
 what to expect as input.
 
-Key contracts: | File | Defines | |------|---------| |
-`session-state-contract.md` | Session state format, lifecycle, state machine | |
-`human-escalation-protocol.md` | How agents ask you questions | |
-`implementation-output-contract.md` | What the Implementation Agent produces | |
-`test-output-contract.md` | Test report format | |
-`pr-review-output-contract.md` | PR review and sprint completion format | |
-`tooling-contract.md` | Required tools and verification |
+Key contracts:
+
+| File                                 | Defines                                          |
+| ------------------------------------ | ------------------------------------------------ |
+| `session-state-contract.md`          | Session state format, lifecycle, state machine   |
+| `human-escalation-protocol.md`       | How agents ask you questions                     |
+| `implementation-output-contract.md`  | What the Implementation Agent produces           |
+| `test-output-contract.md`            | Test report format                               |
+| `pr-review-output-contract.md`       | PR review and sprint completion format           |
+| `tooling-contract.md`               | Required tools and verification                  |
 
 **Do not modify** contracts unless you're changing agent behavior.
 
+### Decisions — `docs/decisions/`
+
+| Path             | Purpose                               | Written by                  | Safe to edit?                          |
+| ---------------- | ------------------------------------- | --------------------------- | -------------------------------------- |
+| `decisions/*.md` | Category files (technology stacks)    | You + web UI + Orchestrator | **Yes** (header status, decision rows) |
+
+This is your primary communication channel with the agent team. See
+`docs/help/decisions.md` for details.
+
 ### Guardrails — `docs/guardrails/`
 
-10 guardrail files that define rules agents must follow:
+11 guardrail files that define rules agents must follow:
 
 | File                              | Scope                        |
 | --------------------------------- | ---------------------------- |
@@ -88,7 +146,7 @@ Key contracts: | File | Defines | |------|---------| |
 
 ### Templates — `docs/templates/`
 
-4 template files used by agents to format their outputs (analysis,
+Template files used by agents to format their outputs (analysis,
 recommendations, sprint plan, guardrails). **Do not modify.**
 
 ### Playbooks — `docs/playbooks/`
@@ -101,15 +159,11 @@ recommendations, sprint plan, guardrails). **Do not modify.**
 Agent-facing process definitions. **Do not modify** unless changing the system
 flow.
 
-### Decisions — `docs/decisions.md` + `docs/decisions/`
+### Help — `docs/help/`
 
-| Path             | Purpose                                         | Written by                  | Safe to edit?                          |
-| ---------------- | ----------------------------------------------- | --------------------------- | -------------------------------------- |
-| `decisions.md`   | Index file — open questions + category registry | You + web UI + Orchestrator | **Yes**                                |
-| `decisions/*.md` | Category files (11 technology stacks)           | You + web UI + Orchestrator | **Yes** (header status, decision rows) |
-
-This is your primary communication channel with the agent team. See the
-[Decisions help file](docs/help/decisions.md) for details.
+16 help pages for the web UI (commands, decisions, agents, sprints, keyboard
+shortcuts, troubleshooting, etc.). Written by System maintainers + Documentation
+Agent. Includes `decisions-architecture.md` (decision system technical reference).
 
 ### Session state — `docs/session/`
 
@@ -119,6 +173,12 @@ This is your primary communication channel with the agent team. See the
 | `command-queue.json`      | Queued command from web UI       | Web UI Command Center           | Transient — auto-consumed         |
 | `reevaluate-trigger.json` | Reevaluation trigger from web UI | Web UI Decisions tab            | Transient — auto-consumed         |
 | `README.md`               | Explains the session directory   | —                               | No                                |
+
+### API — `docs/api/`
+
+| File                | Purpose                  |
+| ------------------- | ------------------------ |
+| `milestones-api.md` | Milestones API reference |
 
 ### Brand assets — `docs/brand/`
 
@@ -130,6 +190,37 @@ This is your primary communication channel with the agent team. See the
 
 Generated after Phase 4. **Safe to review and suggest changes** — changes take
 effect via the decision system or reevaluation.
+
+### GitHub integration — `docs/github/`
+
+| File                     | Purpose                              |
+| ------------------------ | ------------------------------------ |
+| `project-board-setup.md` | Board configuration guide            |
+| `sync-report-*.md`      | Board sync reports (timestamped)     |
+
+### Onboarding — `docs/onboarding/`
+
+| File                    | Purpose                       | Written by      |
+| ----------------------- | ----------------------------- | --------------- |
+| `onboarding-output.md`  | Onboarding intake + scan data | Onboarding Agent|
+
+### Phase outputs — `docs/phase-1/` through `docs/phase-5/`
+
+| Directory       | Purpose                                                  |
+| --------------- | -------------------------------------------------------- |
+| `docs/phase-1/` | Phase 1 (Requirements & Strategy) analysis outputs       |
+| `docs/phase-2/` | Phase 2 (Architecture & Design) analysis outputs         |
+| `docs/phase-3/` | Phase 3 (Experience Design) analysis outputs             |
+| `docs/phase-4/` | Phase 4 (Brand & Growth) analysis outputs                |
+| `docs/phase-5/` | Phase 5 (Implementation) sprint plans, completion reports|
+
+### Security — `docs/security/`
+
+| File                           | Purpose                                     | Written by                   |
+| ------------------------------ | ------------------------------------------- | ---------------------------- |
+| `data-inventory.md`            | Data classification and inventory           | Security Architect (Phase 2) |
+| `security-design.md`           | Security architecture design                | Security Architect (Phase 2) |
+| `security-handoff-context.md`  | Security constraints for all Phase 5 agents | Security Architect (Phase 2) |
 
 ### Storybook — `docs/storybook/`
 
@@ -153,13 +244,6 @@ Generated after Phase 4, before Synthesis.
 You must **APPROVE** all 6 before Phase 5 starts. These are read-only after
 approval.
 
-### Security — `docs/security/`
-
-| File                           | Purpose                                     | Written by                   |
-| ------------------------------ | ------------------------------------------- | ---------------------------- |
-| `security-handoff-context.md`  | Security constraints for all Phase 5 agents | Security Architect (Phase 2) |
-| `sprint-[SP-N]-secret-scan.md` | Secret scan results per sprint              | PR/Review Agent              |
-
 ### Audit trail — `docs/audit/`
 
 | File              | Purpose                               |
@@ -168,20 +252,21 @@ approval.
 
 Auto-generated. **Do not modify.**
 
-### Retrospectives — `docs/retrospectives/` (created in Phase 5)
+### Metrics — `docs/metrics/`
+
+| File                          | Purpose                           | Written by |
+| ----------------------------- | --------------------------------- | ---------- |
+| `runtime-metrics.json`        | Runtime metrics data              | Server     |
+| `sprint-[SP-N]-kpi-log.md`   | KPI log per sprint (markdown)     | KPI Agent  |
+| `sprint-[SP-N]-kpi-final.json`| KPI final measurements per sprint| KPI Agent  |
+
+### Retrospectives — `docs/retrospectives/`
 
 | File                             | Purpose                                             | Written by          |
 | -------------------------------- | --------------------------------------------------- | ------------------- |
 | `sprint-[SP-N]-retrospective.md` | Per-sprint retrospective (immutable)                | Retrospective Agent |
 | `lessons-learned.md`             | Cumulative lessons, top-3 injected into next sprint | Retrospective Agent |
 | `velocity-log.json`              | Machine-readable velocity data                      | Retrospective Agent |
-
-### Metrics — `docs/metrics/` (created in Phase 5)
-
-| File                     | Purpose                       | Written by |
-| ------------------------ | ----------------------------- | ---------- |
-| `sprint-[SP-N]-kpi.json` | KPI measurements per sprint   | KPI Agent  |
-| `kpi-trend.md`           | Trend analysis across sprints | KPI Agent  |
 
 ---
 
@@ -212,21 +297,6 @@ BusinessDocs/Phase[N]-[Discipline]/
 
 ---
 
-## `docs/` — Public documentation
-
-| File                        | Purpose                             | Written by                    | Safe to edit? |
-| --------------------------- | ----------------------------------- | ----------------------------- | ------------- |
-| `index.md`                  | GitHub Pages landing page           | System maintainers            | Yes           |
-| `user-manual.md`            | User guide                          | Documentation Agent (Phase 5) | After sprint  |
-| `technical-manual.md`       | API reference + architecture        | Documentation Agent (Phase 5) | After sprint  |
-| `contributing.md`           | Developer contribution guide        | System maintainers            | Yes           |
-| `data-dictionary.md`        | Data entity catalog                 | System maintainers            | Yes           |
-| `brand-guidelines.md`       | Public copy of brand guide          | Documentation Agent           | After sprint  |
-| `decisions-architecture.md` | Decision system technical reference | System maintainers            | Yes           |
-| `file-system-reference.md`  | This file                           | System maintainers            | Yes           |
-
----
-
 ## `Workitems/` — Feature workspaces (on demand)
 
 Created by the `FEATURE [name]` command. Each feature gets an isolated
@@ -250,38 +320,113 @@ main project cycle.
 
 ## `src/webapp/` — Web UI application
 
-| File                | Purpose                                                                      |
-| ------------------- | ---------------------------------------------------------------------------- |
-| `server.js`         | Express server (API + static files)                                          |
-| `mcp-server.js`     | MCP server for Copilot integration                                           |
-| `store.js`          | State management                                                             |
-| `schemas.js`        | Validation schemas                                                           |
-| `models.js`         | Data models                                                                  |
-| `audit.js`          | Audit logging                                                                |
-| `cache.js`          | Server-side caching                                                          |
-| `strings.js`        | UI string constants                                                          |
-| `start.ps1`         | PowerShell startup script                                                    |
-| `utils/`            | Utility modules                                                              |
+### Root modules
 
-### Tests: `tests/` + `src/webapp/*.test.js`
+| File                       | Purpose                        |
+| -------------------------- | ------------------------------ |
+| `server.js`                | Express server (API + static)  |
+| `mcp-server.js`            | MCP server for Copilot         |
+| `store.js`                 | State management               |
+| `schemas.js`               | Validation schemas             |
+| `models.js`                | Data models                    |
+| `audit.js`                 | Audit logging                  |
+| `cache.js`                 | Server-side caching            |
+| `drift-detector.js`        | Configuration drift detection  |
+| `file-lock.js`             | File locking utility           |
+| `middleware.js`            | Express middleware             |
+| `session-state-resolver.js`| Session state resolution       |
+| `strings.js`               | UI string constants            |
+| `start.ps1`                | PowerShell startup script      |
 
-| Path                 | Purpose               |
-| -------------------- | --------------------- |
-| `tests/unit/`        | Unit tests            |
-| `tests/integration/` | Integration tests     |
-| `webapp/*.test.js`   | Webapp-specific tests |
+### Locales — `src/webapp/locales/`
 
-Run with: `npm run test:vitest`
+i18n translation files: `en-US/`, `de-DE/`, `fr-FR/` — each with
+`ui-labels.json`, `validation-messages.json`, `doc-snippets.json`.
+
+### Routes — `src/webapp/routes/`
+
+11 route modules (commands, dashboard, decisions, drift, metrics-dashboard,
+milestones, misc, orchestrator, progress, questionnaires, subscribe).
+
+### Orchestrator engine — `src/webapp/orchestrator/`
+
+12 modules: agent-schema, cli, dispatcher, engine, flow-loader, flow-schema,
+flows.yaml, gate-validator, sprint-gate, state-machine, state-persistence,
+tool-schema.
+
+### Other subdirectories
+
+| Directory              | Purpose                                          |
+| ---------------------- | ------------------------------------------------ |
+| `email-templates/`     | Email HTML templates (7 templates)               |
+| `social-cards/`        | OG/Twitter social card templates                 |
+| `types/`               | TypeScript type definitions                      |
+| `utils/`               | Utilities (errors.js, secret-utils.js)           |
+| `ui/`                  | Vite + React frontend (see below)                |
+
+### Frontend — `src/webapp/ui/`
+
+Vite-based React application with Storybook. Key structure:
+
+```
+src/webapp/ui/
+├── src/
+│   ├── components/     ← UI components (layout, help-panel, ui/)
+│   ├── hooks/          ← React hooks (18 files)
+│   ├── lib/            ← Library utilities (9 files)
+│   ├── pages/          ← Page components (command-center, dashboard, decisions, metrics, pipeline, questionnaires)
+│   ├── stores/         ← State stores (3 files)
+│   └── test/           ← UI test setup (5 files)
+├── .storybook/         ← Storybook config
+├── dist/               ← Production build output
+└── storybook-static/   ← Storybook static build
+```
 
 ---
 
-## CI/CD — `.github/workflows/`
+## `tests/` — All tests
 
-| File                             | Purpose                              |
-| -------------------------------- | ------------------------------------ |
-| `ci.yml`                         | Continuous integration (lint + test) |
-| `release.yml`                    | Release workflow                     |
-| `my-agentic-team-board-sync.yml` | GitHub Project board synchronization |
+### Unit tests — `tests/unit/` (48 files)
+
+All unit tests live here. Run with Vitest (`npm run test:vitest`) or Jest
+(`npx jest --ci` for the Jest subset).
+
+Key test files:
+
+| File pattern            | What it tests                          |
+| ----------------------- | -------------------------------------- |
+| `routes-*.test.js`      | Route handler tests (6 route modules)  |
+| `server.test.js`        | Server startup and configuration       |
+| `schemas.test.js`       | Schema validation                      |
+| `models.test.js`        | Data model logic                       |
+| `engine.test.js`        | Orchestrator engine                    |
+| `state-*.test.js`       | State machine and persistence          |
+| `governance-docs.test.js`| Governance document structure         |
+
+### Integration tests — `tests/integration/` (10 files)
+
+API integration tests, store-cache tests, observability tests, regression suite.
+
+### E2E tests — `tests/e2e/` (6 files)
+
+Playwright browser tests (dashboard, decisions, metrics, questionnaires,
+accessibility).
+
+### Smoke tests — `tests/smoke/` (2 files)
+
+Quick smoke tests (landing page, create pipeline).
+
+---
+
+## Other root directories
+
+| Directory    | Purpose                                                    |
+| ------------ | ---------------------------------------------------------- |
+| `data/`      | Runtime data (`milestones.json`)                           |
+| `platform/`  | Platform schema definitions (`platform/schema/`)           |
+| `scripts/`   | Build and maintenance scripts (7 files)                    |
+| `.husky/`    | Git hooks (pre-commit: lint-staged + fast unit tests)      |
+| `.vscode/`   | VS Code workspace settings                                 |
 
 ---
 
@@ -289,10 +434,9 @@ Run with: `npm run test:vitest`
 
 | Path                                               | Safe to delete? | Consequence                                       |
 | -------------------------------------------------- | --------------- | ------------------------------------------------- |
-| `session-state.json`                               | Yes             | Loses current progress; can start fresh           |
-| `command-queue.json`                               | Yes             | Loses queued (unconsumed) command                 |
-| `reevaluate-trigger.json`                          | Yes             | Cancels pending reevaluation                      |
+| `docs/session/session-state.json`                  | Yes             | Loses current progress; can start fresh           |
+| `docs/session/command-queue.json`                  | Yes             | Loses queued (unconsumed) command                 |
+| `docs/session/reevaluate-trigger.json`             | Yes             | Cancels pending reevaluation                      |
 | `BusinessDocs/` contents                           | With caution    | Loses all phase outputs and questionnaire answers |
 | `docs/synthesis/` contents                         | With caution    | Must re-run Synthesis Agent                       |
 | Anything in `agents/`, `contracts/`, `guardrails/` | **No**          | Breaks agent behavior                             |
-| `session-state-*-archived.json`                    | Yes             | Old session archives, safe to clean up            |

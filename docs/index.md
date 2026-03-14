@@ -24,7 +24,7 @@ implementation.
 | [Technical Manual](technical-manual) | Architecture, API reference, data model, configuration, security     |
 | [Data Dictionary](data-dictionary)   | Entity catalog, field schemas, ER diagram, validation rules          |
 | [Contributing Guide](contributing)   | Development setup, coding standards, PR process                      |
-| [Brand Guidelines](brand-guidelines) | Colors, typography, design tokens, voice & tone                      |
+| [Brand Guidelines](brand/brand-guidelines) | Colors, typography, design tokens, voice & tone                      |
 
 ---
 

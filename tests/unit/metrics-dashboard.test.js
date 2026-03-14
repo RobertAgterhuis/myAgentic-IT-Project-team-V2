@@ -1,9 +1,9 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 'use strict';
 const path = require('path');
-const { InMemoryStore, setStore } = require('./store');
-const { FileCache } = require('./cache');
-const createMetricsDashboardRoutes = require('./routes/metrics-dashboard');
+const { InMemoryStore, setStore } = require('../../src/webapp/store');
+const { FileCache } = require('../../src/webapp/cache');
+const createMetricsDashboardRoutes = require('../../src/webapp/routes/metrics-dashboard');
 
 /* ── Test data ─────────────────────────────────────────────────── */
 

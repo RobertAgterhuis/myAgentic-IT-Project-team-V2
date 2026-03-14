@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 'use strict';
-const { InMemoryStore, setStore, getStore } = require('./store');
-const { FileCache } = require('./cache');
+const { InMemoryStore, setStore, getStore } = require('../../src/webapp/store');
+const { FileCache } = require('../../src/webapp/cache');
 
 /* ── Story #16: File cache with mtime invalidation (SP-R2-002-004) ── */
 

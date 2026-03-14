@@ -4,7 +4,7 @@
 import path from 'path';
 import os from 'os';
 import { mkdirSync, writeFileSync, rmSync } from 'fs';
-import createDriftRoutes from './drift.js';
+import createDriftRoutes from '../../src/webapp/routes/drift.js';
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 

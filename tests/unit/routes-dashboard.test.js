@@ -3,7 +3,7 @@
 import { mkdirSync, writeFileSync, rmSync } from 'fs';
 import path from 'path';
 import os from 'os';
-import createDashboardRoutes from './dashboard.js';
+import createDashboardRoutes from '../../src/webapp/routes/dashboard.js';
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 

@@ -2,7 +2,7 @@
 'use strict';
 
 const path = require('path');
-const { resolveSessionFile } = require('./session-state-resolver');
+const { resolveSessionFile } = require('../../src/webapp/session-state-resolver');
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 

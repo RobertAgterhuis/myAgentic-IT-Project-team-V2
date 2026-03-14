@@ -14,7 +14,7 @@ const {
   validateDriftReport,
   validateGithubSnapshot,
   VALID_ANALYTICS_EVENTS,
-} = require('./schemas');
+} = require('../../src/webapp/schemas');
 
 /* ── Story #17: JSON schema validation (SP-R2-002-005) ──────── */
 

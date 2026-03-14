@@ -103,7 +103,7 @@ experience possible" for the DevOps Engineer and team.
 | Type                                   | Present | Path / Source                                                          |
 | -------------------------------------- | ------- | ---------------------------------------------------------------------- |
 | Existing product / competitor analysis | No      | NONE                                                                   |
-| Brand guidelines                       | Partial | docs/brand-guidelines.md (detected)                                    |
+| Brand guidelines                       | Partial | docs/brand/brand-guidelines.md (detected)                              |
 | User research                          | No      | NONE                                                                   |
 | Business requirements document         | Yes     | BusinessDocs/project-brief.md                                          |
 | Reference codebase (optional)          | **Yes** | d:\repositories\myAgentic-IT-Project-team-V2 (existing implementation) |
@@ -115,7 +115,7 @@ experience possible" for the DevOps Engineer and team.
 | Product vision       | Yes     | BusinessDocs/project-brief.md      |
 | User stories / epics | Partial | Detected in docs/SPRINT-9-\* files |
 | KPI definitions      | No      | NONE                               |
-| Brand guidelines     | Partial | docs/brand-guidelines.md           |
+| Brand guidelines     | Partial | docs/brand/brand-guidelines.md     |
 
 ---
 
@@ -173,7 +173,7 @@ myAgentic-IT-Project-team-V2/
 │   └── project-brief.md                  (Project requirements)
 ├── coverage/                             (Test coverage reports)
 ├── docs/
-│   ├── brand-guidelines.md
+│   ├── brand/brand-guidelines.md
 │   ├── technical-manual.md
 │   ├── user-manual.md
 │   ├── SPRINT-9-*                        (Sprint completion/test plan documents)

@@ -19,5 +19,3 @@
 | DEC-CAT-705 | LOW      | Phase 5 (Historical Tracking)   | Store Lighthouse CI results in LHCI server or flat files for trend analysis                   | Enables performance regression detection over time                       | 2026-03-18 |
 
 ---
-
-_Category created: 2026-03-18 | Implementation Agent | Sprint 5 SP-5-CAT_

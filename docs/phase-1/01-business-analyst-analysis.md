@@ -41,7 +41,7 @@ per onboarding)
 | **Budget constraints**     | ✗ Absent        | onboarding                                     | INSUFFICIENT_DATA:                                                |
 | **Timeline constraints**   | ✗ Absent        | onboarding                                     | INSUFFICIENT_DATA:                                                |
 | **Technology preferences** | ✓ Explicit      | project-brief + onboarding                     | GitHub Copilot, Claude, Codex, MCP, VS Code                       |
-| **Brand guidelines**       | Partial         | `docs/brand-guidelines.md`                     | Detected in codebase                                              |
+| **Brand guidelines**       | Partial         | `docs/brand/brand-guidelines.md`               | Detected in codebase                                              |
 | **Existing documentation** | ✓ Comprehensive | README.md, technical-manual.md, user-manual.md | High quality (576 tests, 95%+ coverage)                           |
 | **Financial data**         | ✗ Absent        | NONE                                           | INSUFFICIENT_DATA: — open source, no revenue model                |
 

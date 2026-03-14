@@ -4,12 +4,11 @@
 import path from 'path';
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'fs';
 import { fileURLToPath } from 'url';
-import createSubscribeRoutes from './subscribe.js';
+import createSubscribeRoutes from '../../src/webapp/routes/subscribe.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOCAL_SUBS_FILE = path.resolve(
   __dirname,
-  '..',
   '..',
   '..',
   'BusinessDocs',

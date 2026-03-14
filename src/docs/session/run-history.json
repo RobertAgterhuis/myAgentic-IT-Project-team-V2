@@ -1,0 +1,58 @@
+[
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-13T21:30:52.677Z",
+    "ended_at": "2026-03-13T21:30:52.678Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-13T21:30:52.677Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-13T21:32:09.058Z",
+    "ended_at": "2026-03-13T21:32:09.059Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-13T21:32:09.058Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-14T05:00:46.312Z",
+    "ended_at": "2026-03-14T05:00:46.313Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-14T05:00:46.312Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-14T05:10:34.140Z",
+    "ended_at": "2026-03-14T05:10:34.141Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-14T05:10:34.140Z"
+      }
+    ],
+    "gate_results": {}
+  }
+]

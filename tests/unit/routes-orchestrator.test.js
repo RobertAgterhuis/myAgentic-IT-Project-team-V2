@@ -5,10 +5,18 @@ import { Readable } from 'stream';
 import * as fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import createOrchestratorRoutes from './orchestrator.js';
+import createOrchestratorRoutes from '../../src/webapp/routes/orchestrator.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const SESSION_FILE = path.resolve(__dirname, '..', '..', 'docs', 'session', 'session-state.json');
+const SESSION_FILE = path.resolve(
+  __dirname,
+  '..',
+  '..',
+  'src',
+  'docs',
+  'session',
+  'session-state.json'
+);
 const IDLE_STATE = JSON.stringify({ status: 'IDLE', mode: 'CREATE', state_history: [] });
 
 /* ── Helpers ──────────────────────────────────────────────────── */

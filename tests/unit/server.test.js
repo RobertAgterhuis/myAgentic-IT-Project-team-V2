@@ -8,7 +8,7 @@ const {
   safePath,
   setSecurityHeaders,
   withFileLock,
-} = require('./server');
+} = require('../../src/webapp/server');
 
 /* ── Story #1: Content Sanitization (IMPL-CONSTRAINT-002) ─────── */
 describe('sanitizeMarkdown', () => {

@@ -830,7 +830,7 @@ Each row: `| ID | Priority | Scope | Decision/Question | Notes/Answer | Date |`
 
 > **For the full file architecture, data flow, deferred activation sequence
 > (ORC-45), and triple-check enforcement chain, see
-> [`docs/decisions-architecture.md`](../decisions-architecture.md).**
+> [`docs/help/decisions-architecture.md`](../help/decisions-architecture.md).**
 
 ### Questionnaires
 

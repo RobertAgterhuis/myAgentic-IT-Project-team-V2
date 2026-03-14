@@ -9,7 +9,7 @@
 | **Owner**         | Robert Agterhuis                                                                       |
 | **Audit Finding** | F-03 (CRITICAL) — Privacy/compliance operations are not finished                       |
 | **Issue**         | #139                                                                                   |
-| **Depends on**    | `docs/ga-definition.md` (deployment profile), `docs/security-design.md` (data-at-rest) |
+| **Depends on**    | `docs/phase-5/ga-definition.md` (deployment profile), `docs/security/security-design.md` (data-at-rest) |
 
 ---
 
@@ -165,7 +165,7 @@ directly edit any file to correct inaccurate data.
 | **Recipients**                        | None — all data stays on local machine (v1 GA)                                          |
 | **Transfers to third countries**      | None (v1 GA)                                                                            |
 | **Retention periods**                 | See Section 2.1 Retention Classes                                                       |
-| **Technical/organizational measures** | See `docs/security-design.md`                                                           |
+| **Technical/organizational measures** | See `docs/security/security-design.md`                                                  |
 | **Data protection impact assessment** | Not required for v1 GA (single operator, localhost only, no sensitive categories)       |
 | **Legal basis**                       | Legitimate interest (operator managing their own software project)                      |
 

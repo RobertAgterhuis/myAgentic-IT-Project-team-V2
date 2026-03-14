@@ -5,7 +5,6 @@ export default defineConfig({
     globals: true,
     fileParallelism: false,
     include: [
-      'src/webapp/**/*.test.js',
       'tests/**/*.test.js',
     ],
     exclude: [
@@ -23,17 +22,15 @@ export default defineConfig({
       'tests/integration/server.integration.test.js',
       'tests/integration/subscribe.integration.test.js',
       'tests/smoke/landing.smoke.test.js',
-      'tests/example.test.js',
+      'tests/unit/example.test.js',
     ],
     coverage: {
       provider: 'v8',
       include: ['src/webapp/**/*.js'],
       exclude: [
-        'src/webapp/**/*.test.js',
         'src/webapp/node_modules/**',
         'src/webapp/ui/**',
         'src/webapp/start.ps1',
-        'src/webapp/dashboard.js', // Browser-side IIFE (requires DOM/jsdom, not testable in Node)
       ],
       reporter: ['text', 'text-summary', 'json-summary', 'json'],
       reportsDirectory: 'coverage',

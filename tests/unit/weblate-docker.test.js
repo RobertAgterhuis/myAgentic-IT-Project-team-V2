@@ -122,7 +122,7 @@ describe('SP-2-501: Weblate environment template', () => {
 
 /* ── Locale file readiness validation ────────────────────────── */
 describe('SP-2-501: Locale file readiness for Weblate import', () => {
-  const localeDir = path.join(ROOT, 'locales/en-US');
+  const localeDir = path.join(ROOT, 'src/webapp/locales/en-US');
 
   it('should have en-US locale directory', () => {
     expect(fs.existsSync(localeDir)).toBe(true);

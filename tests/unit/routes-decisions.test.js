@@ -4,7 +4,7 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from 'vites
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import createDecisionRoutes from './decisions.js';
+import createDecisionRoutes from '../../src/webapp/routes/decisions.js';
 
 /* ── Temp dir for isolation (real FileStore, real withFileLock) ── */
 

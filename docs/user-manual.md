@@ -146,7 +146,7 @@ Decisions you create here become hard constraints that all agents follow.
 > and Sprint Gate blocking rules, see
 > [`docs/help/decisions.md`](docs/help/decisions.md).**  
 > **For technical architecture (file layout, data flow, enforcement chain), see
-> [`docs/decisions-architecture.md`](decisions-architecture.md).**
+> [`docs/help/decisions-architecture.md`](help/decisions-architecture.md).**
 
 ### Decision Types
 

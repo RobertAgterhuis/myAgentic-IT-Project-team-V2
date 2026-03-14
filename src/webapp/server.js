@@ -328,7 +328,7 @@ function serveLocaleFile(pathname, res) {
   try {
     const store = getStore();
     const localePath = safePath(
-      path.join(PROJECT_ROOT, 'locales'),
+      path.join(WEBAPP_DIR, 'locales'),
       pathname.replace(/^\/locales\//, '')
     );
     const localeContent = store.readFile(localePath);

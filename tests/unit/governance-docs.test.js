@@ -41,7 +41,7 @@ describe('ga-definition.md — structure validation', () => {
   let headings;
 
   beforeAll(() => {
-    content = readDoc('ga-definition.md');
+    content = readDoc('phase-5/ga-definition.md');
     headings = extractH2Headings(content);
   });
 
@@ -92,7 +92,7 @@ describe('data-inventory.md — structure validation', () => {
   let headings;
 
   beforeAll(() => {
-    content = readDoc('data-inventory.md');
+    content = readDoc('security/data-inventory.md');
     headings = extractH2Headings(content);
   });
 
@@ -140,7 +140,7 @@ describe('security-design.md — structure validation', () => {
   let headings;
 
   beforeAll(() => {
-    content = readDoc('security-design.md');
+    content = readDoc('security/security-design.md');
     headings = extractH2Headings(content);
   });
 

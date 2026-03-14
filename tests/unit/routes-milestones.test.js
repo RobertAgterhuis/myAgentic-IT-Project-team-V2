@@ -3,7 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import createMilestoneRoutes from './milestones.js';
+import createMilestoneRoutes from '../../src/webapp/routes/milestones.js';
 
 /* ── Temp dir for isolation (real FileStore, real withFileLock) ── */
 

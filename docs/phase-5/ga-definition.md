@@ -83,8 +83,8 @@ has a measurable threshold.
 | G3  | Test suite passes                               | 0 failures across both Jest and Vitest                         | `npm test` (root) + `npm test` (.github/) exit code 0   |
 | G4  | Evidence consistency verified                   | 0 discrepancies between README and actual metrics              | Manual review against truth-source checklist            |
 | G5  | First release published                         | GitHub Releases shows ≥1 release with tag, notes, known issues | Release exists on GitHub Releases page                  |
-| G6  | Security design documented                      | `docs/security-design.md` exists with 3 deployment profiles    | File exists and reviewed                                |
-| G7  | Privacy model documented                        | `docs/data-inventory.md` + `docs/privacy-policy.md` exist      | Files exist and reviewed                                |
+| G6  | Security design documented                      | `docs/security/security-design.md` exists with 3 deployment profiles | File exists and reviewed                                |
+| G7  | Privacy model documented                        | `docs/security/data-inventory.md` + `docs/privacy-policy.md` exist | Files exist and reviewed                                |
 | G8  | Operator can complete quick-start in ≤5 minutes | Clone → install → first run → health check                     | Manual walkthrough validation                           |
 | G9  | No secret/credential leaks in repository        | 0 findings                                                     | GitHub secret scanning + manual `grep` for patterns     |
 

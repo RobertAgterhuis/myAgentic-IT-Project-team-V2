@@ -8,9 +8,9 @@ const {
   parseSyncReport,
   SEVERITY,
   DRIFT_TYPE,
-} = require('./drift-detector');
+} = require('../../src/webapp/drift-detector');
 
-const { validateDriftReport } = require('./schemas');
+const { validateDriftReport } = require('../../src/webapp/schemas');
 
 /* ── Fixtures ─────────────────────────────────────────────────── */
 

@@ -22,7 +22,7 @@
 - [ ] CHANGELOG.md updated with all changes since last release
 - [ ] Version bumped in `package.json` (root) and `package.json`
 - [ ] All `UNCERTAIN:` and `INSUFFICIENT_DATA:` items resolved or documented
-- [ ] GA go/no-go criteria checked (see `docs/ga-definition.md`
+- [ ] GA go/no-go criteria checked (see `docs/phase-5/ga-definition.md`
       Section 3)
 
 ## Release

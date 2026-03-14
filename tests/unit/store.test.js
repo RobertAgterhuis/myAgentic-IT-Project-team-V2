@@ -10,7 +10,7 @@ const {
   setStore,
   BACKUPS_DIR_NAME,
   MAX_BACKUPS_PER_FILE,
-} = require('./store');
+} = require('../../src/webapp/store');
 
 /* ── Story #12: Store interface (SP-R2-002-001) ─────────────── */
 

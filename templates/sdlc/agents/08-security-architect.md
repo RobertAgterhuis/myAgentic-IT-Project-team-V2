@@ -222,7 +222,7 @@ available) or Low/Medium/High/Critical with rationale.
 
 ### Step 7b: Produce Security Handoff Context (MANDATORY)
 
-Write `docs/security/security-handoff-context.md`. This file is the
+Write `BusinessDocs/security/security-handoff-context.md`. This file is the
 **bridge between Phase 2 findings and Phase 5 implementation**. The
 Implementation Agent loads it mandatorily for every story (Step 1 item 8).
 
@@ -522,7 +522,7 @@ per guardrail: "New" / "Supplement to G-NNN" / "Conflict with G-NNN (resolution:
 - [ ] Secrets management strategy concrete (tool + rotation + injection)
 - [ ] Secure SDLC tools selected with pass/fail criteria
 - [ ] Security requirements defined per component
-- [ ] `docs/security/security-handoff-context.md` present with IMPL-CONSTRAINTs for all High/Critical items
+- [ ] `BusinessDocs/security/security-handoff-context.md` present with IMPL-CONSTRAINTs for all High/Critical items
 **AUDIT-specific:**
 - [ ] Compliance framework established with source reference
 - [ ] OWASP Top 10: all 10 categories assessed
@@ -532,7 +532,7 @@ per guardrail: "New" / "Supplement to G-NNN" / "Conflict with G-NNN (resolution:
 - [ ] Pentest status documented
 - [ ] All findings scored (CVSS or priority)
 - [ ] CRITICAL_FINDING items marked and escalated
-- [ ] `docs/security/security-handoff-context.md` present with IMPL-CONSTRAINTs for all High/Critical findings
+- [ ] `BusinessDocs/security/security-handoff-context.md` present with IMPL-CONSTRAINTs for all High/Critical findings
 **Both modes:**
 - [ ] JSON export present and valid
 - [ ] Self-check performed

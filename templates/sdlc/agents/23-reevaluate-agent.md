@@ -316,7 +316,7 @@ affect implementation:
   High or Critical: add a `SECURITY_REFRESH_REQUIRED` marker to the
   Re-evaluation Report and escalate to the Orchestrator with the instruction to
   have the Security Architect (Agent 08) update
-  `docs/security/security-handoff-context.md` before the next Sprint
+  `BusinessDocs/security/security-handoff-context.md` before the next Sprint
   Gate.
 - State explicitly in the Re-evaluation Report:
   `SECURITY_HANDOFF_STATUS: UPDATE_REQUIRED — [description of changed findings]`

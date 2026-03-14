@@ -948,7 +948,7 @@ complete?"
 1. Receive Sprint Completion Report JSON
 2. Check: all stories IMPLEMENTED or escalated?
 3. Check: **secret scan PASSED**
-   (`docs/security/sprint-[SP-N]-secret-scan.md` present and status
+   (`BusinessDocs/security/sprint-[SP-N]-secret-scan.md` present and status
    CLEAN)?
    - On SECRET_SCAN_FAIL: **BLOCK merge immediately**, escalate to Security
      Architect + user via Human Escalation Protocol type `SECURITY_DECISION`

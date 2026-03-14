@@ -80,7 +80,7 @@ Check the following for each story BEFORE you begin:
    most urgent active lessons. Apply the recommended actions in your
    implementation plan. Document: `LESSONS_LOADED: [LL-IDs active]`
 9. **Security handoff context loaded?** → If
-   `docs/security/security-handoff-context.md` exists: read all
+   `BusinessDocs/security/security-handoff-context.md` exists: read all
    `IMPL-CONSTRAINT` items. These are security requirements established by the
    Security Architect that must be checked for every story (see Step 5).
    Document: `SECURITY_CONTEXT_LOADED: [number of constraints]`

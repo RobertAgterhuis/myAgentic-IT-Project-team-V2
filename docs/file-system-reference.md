@@ -253,13 +253,19 @@ Populated by Agent 30 during solution creation. Empty in a fresh checkout.
 | `BusinessDocs/phase-4/` | Phase 4 (Brand & Growth) analysis outputs                 |
 | `BusinessDocs/phase-5/` | Phase 5 (Implementation) sprint plans, completion reports |
 
-### Security — `docs/security/`
+### Security — `docs/security/` (platform governance)
 
 | File                          | Purpose                                     | Written by                   |
 | ----------------------------- | ------------------------------------------- | ---------------------------- |
-| `data-inventory.md`           | Data classification and inventory           | Security Architect (Phase 2) |
-| `security-design.md`          | Security architecture design                | Security Architect (Phase 2) |
-| `security-handoff-context.md` | Security constraints for all Phase 5 agents | Security Architect (Phase 2) |
+| `data-inventory.md`           | Data classification and inventory           | System maintainers           |
+| `security-design.md`          | Security architecture design                | System maintainers           |
+
+### Security — `BusinessDocs/security/` (project-specific)
+
+| File                                     | Purpose                                     | Written by                       |
+| ---------------------------------------- | ------------------------------------------- | -------------------------------- |
+| `security-handoff-context.md`            | Security constraints for all Phase 5 agents | Security Architect (Agent 08)    |
+| `sprint-[SP-N]-secret-scan.md`           | Per-sprint secret scan report               | GitHub Integration Agent (CI)    |
 
 ### Storybook — `BusinessDocs/storybook/`
 

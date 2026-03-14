@@ -238,11 +238,11 @@ jobs:
         if: always()
         run: |
           STATUS="${{ steps.trufflehog.outcome == 'success' && 'CLEAN' || 'FAIL' }}"
-          mkdir -p docs/security
-          echo "# Secret Scan Report" > docs/security/sprint-secret-scan.md
-          echo "PR: ${{ github.event.pull_request.number }}" >> docs/security/sprint-secret-scan.md
-          echo "Status: $STATUS" >> docs/security/sprint-secret-scan.md
-          echo "Run: ${{ github.run_id }}" >> docs/security/sprint-secret-scan.md
+          mkdir -p BusinessDocs/security
+          echo "# Secret Scan Report" > BusinessDocs/security/sprint-secret-scan.md
+          echo "PR: ${{ github.event.pull_request.number }}" >> BusinessDocs/security/sprint-secret-scan.md
+          echo "Status: $STATUS" >> BusinessDocs/security/sprint-secret-scan.md
+          echo "Run: ${{ github.run_id }}" >> BusinessDocs/security/sprint-secret-scan.md
 
       - name: Fail build on detected secrets
         if: steps.trufflehog.outcome == 'failure'

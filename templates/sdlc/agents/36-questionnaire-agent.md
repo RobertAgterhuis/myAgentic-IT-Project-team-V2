@@ -40,8 +40,8 @@ Protocol, Scope Discipline. See `.github/copilot-instructions.md` for the
 complete rules.
 
 **Domain-specific guardrails:**
-`docs/guardrails/09-questionnaire-guardrails.md`  
-**Output contract:** `docs/contracts/questionnaire-output-contract.md`
+`templates/sdlc/guardrails/09-questionnaire-guardrails.md`  
+**Output contract:** `templates/sdlc/contracts/questionnaire-output-contract.md`
 
 ---
 
@@ -687,8 +687,8 @@ of answer loading):
 
 ## OUTPUT CHECKLIST (MANDATORY)
 
-Full schema: `docs/contracts/questionnaire-output-contract.md`  
-Guardrails: `docs/guardrails/09-questionnaire-guardrails.md`
+Full schema: `templates/sdlc/contracts/questionnaire-output-contract.md`  
+Guardrails: `templates/sdlc/guardrails/09-questionnaire-guardrails.md`
 
 ```markdown
 ## HANDOFF CHECKLIST — Questionnaire Agent — [Workflow] — [Date]
@@ -729,7 +729,7 @@ Guardrails: `docs/guardrails/09-questionnaire-guardrails.md`
 ### Universal
 
 - [ ] Output complies with
-      docs/contracts/questionnaire-output-contract.md
+      templates/sdlc/contracts/questionnaire-output-contract.md
 - [ ] No G-QST-01 through G-QST-12 violations unresolved, plus G-QST-13
 - [ ] No analysis or recommendations added to outputs (G-QST-13)
 - [ ] Output complies with agent-handoff-contract.md

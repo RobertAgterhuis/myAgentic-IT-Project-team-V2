@@ -160,7 +160,7 @@ Activate the relevant phase agents again per the scope:
 - Agents focus on changed and new findings; unchanged findings are carried over
   without repetition
 - Output per agent: complete new deliverable per contracts in
-  `docs/contracts/`
+  `templates/sdlc/contracts/`
 
 **Phase order within re-evaluation:**
 

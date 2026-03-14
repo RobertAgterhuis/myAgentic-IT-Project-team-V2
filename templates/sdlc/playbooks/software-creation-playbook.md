@@ -382,9 +382,9 @@ guardrail validation, and Sprint Completion Reports per sprint.
 - Architecture decisions from Phase 2 (Software Architect + Senior Developer
   output)
 - Design system from Phase 3 (UI Designer + Storybook Agent output)
-- Guardrails (`docs/guardrails/00–09`)
+- Guardrails (`templates/sdlc/guardrails/00–09`)
 - Implementation Output Contract
-  (`docs/contracts/implementation-output-contract.md`)
+  (`templates/sdlc/contracts/implementation-output-contract.md`)
 
 **HALT:** Phase 5 NEVER starts without a fully APPROVED Synthesis Final Report
 and validated sprint plans (Critic + Risk PASSED per phase).

@@ -274,8 +274,8 @@ in the Storybook inventory or signals a color conflict), use category
 - [ ] All required sections are filled (not empty, not placeholder)
 - [ ] All UNCERTAIN: items are documented and escalated
 - [ ] All INSUFFICIENT_DATA: items are documented and escalated
-- [ ] Output complies with the contract in docs/contracts/implementation-output-contract.md
-- [ ] Guardrails from docs/guardrails/06-implementation-guardrails.md are confirmed
+- [ ] Output complies with the contract in templates/sdlc/contracts/implementation-output-contract.md
+- [ ] Guardrails from templates/sdlc/guardrails/06-implementation-guardrails.md are confirmed
 - [ ] Regression check: PASSED for all stories
 - [ ] All ACs: PASSED for all stories
 - [ ] Coverage delta: ≥ 0% for all stories

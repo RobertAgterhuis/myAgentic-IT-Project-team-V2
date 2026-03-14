@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "source": "src/webapp/orchestrator/flows.yaml",
+  "source": "platform/engine/flows.yaml",
   "generatedAt": "2026-03-13T10:00:00.000Z",
   "states": [
     "IDLE",

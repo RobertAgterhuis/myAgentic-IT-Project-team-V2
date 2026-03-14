@@ -1,7 +1,7 @@
 # Analysis Template
 
 > Use this template for the analysis deliverable of each agent. See
-> `docs/contracts/analysis-output-contract.md` for the full
+> `templates/sdlc/contracts/analysis-output-contract.md` for the full
 > requirements.
 
 ---

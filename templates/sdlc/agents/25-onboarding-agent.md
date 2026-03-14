@@ -164,7 +164,7 @@ Identify and catalog all available input sources based on mode.
 #### Shared: Tooling & GitHub (both modes)
 
 ```markdown
-### Tooling (per docs/contracts/tooling-contract.md)
+### Tooling (per templates/sdlc/contracts/tooling-contract.md)
 
 | Tool                     | Available | Version          |
 | ------------------------ | --------- | ---------------- |
@@ -344,7 +344,7 @@ is expected.
 ### Step 4: Tooling Verification
 
 Verify the availability of tools per
-`docs/contracts/tooling-contract.md`:
+`templates/sdlc/contracts/tooling-contract.md`:
 
 - Perform an availability check per tool
 - Document versions

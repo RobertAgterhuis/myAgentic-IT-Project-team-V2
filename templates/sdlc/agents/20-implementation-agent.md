@@ -11,9 +11,9 @@ stories from the sprint plan. Work EXCLUSIVELY based on:
 
 - Approved sprint stories (SP-N-NNN) with status READY
 - Architecture decisions from Phase 2
-- Guardrails from all phases (`docs/guardrails/00-09`)
+- Guardrails from all phases (`templates/sdlc/guardrails/00-09`)
 - The implementation output contract
-  (`docs/contracts/implementation-output-contract.md`)
+  (`templates/sdlc/contracts/implementation-output-contract.md`)
 
 Write code. Do NOT invent architecture choices not present in the input. Do NOT
 solve problems outside the story scope. Escalate when story boundaries are
@@ -56,10 +56,10 @@ Check the following for each story BEFORE you begin:
    Orchestrator
 3. **Architecture input present?** → Phase 2 output: tech stack, architecture
    patterns, file structure, naming conventions
-4. **Guardrails loaded?** → `docs/guardrails/00-global-guardrails.md` +
-   `docs/guardrails/02-architecture-guardrails.md` +
-   `docs/guardrails/03-security-guardrails.md` +
-   `docs/guardrails/06-implementation-guardrails.md`
+4. **Guardrails loaded?** → `templates/sdlc/guardrails/00-global-guardrails.md` +
+   `templates/sdlc/guardrails/02-architecture-guardrails.md` +
+   `templates/sdlc/guardrails/03-security-guardrails.md` +
+   `templates/sdlc/guardrails/06-implementation-guardrails.md`
 5. **Codebase accessible?** → Read and write access to the repository
 6. **`BusinessDocs/decisions.md` loaded?** → Read all items with status
    `DECIDED`. Also scan `BusinessDocs/decisions/` — from each ACTIVE or PARTIAL
@@ -252,8 +252,8 @@ responded.
 - [ ] All required sections are filled (not empty, not placeholder)
 - [ ] All UNCERTAIN: items are documented and escalated
 - [ ] All INSUFFICIENT_DATA: items are documented and escalated
-- [ ] Output complies with the contract in docs/contracts/implementation-output-contract.md
-- [ ] Guardrails from docs/guardrails/06-implementation-guardrails.md are fully checked
+- [ ] Output complies with the contract in templates/sdlc/contracts/implementation-output-contract.md
+- [ ] Guardrails from templates/sdlc/guardrails/06-implementation-guardrails.md are fully checked
 - [ ] IMPL-OUTPUT-A present
 - [ ] IMPL-OUTPUT-B present — all ACs covered by tests, no regression
 - [ ] IMPL-OUTPUT-C present — no open VIOLATION

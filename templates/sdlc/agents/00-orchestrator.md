@@ -199,10 +199,10 @@ Critic + Risk PASSED:
 1. Collect all `QUESTIONNAIRE_REQUEST` items from phase agent handoff checklists
 2. Activate Questionnaire Agent (generation workflow) — produces questionnaire
    files in `BusinessDocs/[PHASE]/Questionnaires/`; validate output against
-   `docs/contracts/questionnaire-output-contract.md`
+   `templates/sdlc/contracts/questionnaire-output-contract.md`
 3. Activate Questionnaire Agent (document generation workflow) — updates the 2
    official documents for this phase in `BusinessDocs/OfficialDocuments/`;
-   validate against `docs/contracts/questionnaire-output-contract.md`
+   validate against `templates/sdlc/contracts/questionnaire-output-contract.md`
 4. The presence of open questionnaires (`BusinessDocs/questionnaire-index.md`
    entries with `OPEN` status) NEVER blocks the cycle from proceeding. They are
    informational and become input for the next REEVALUATE or new cycle.
@@ -218,7 +218,7 @@ Critic + Risk PASSED:
 
 **RULE ORC-26: Official document completeness gate (Synthesis)** Before
 activating the Synthesis Agent, the Orchestrator MUST verify against
-`docs/contracts/questionnaire-output-contract.md`:
+`templates/sdlc/contracts/questionnaire-output-contract.md`:
 
 - `BusinessDocs/OfficialDocuments/document-registry.md` exists with all 8 rows
 - All 8 official documents exist (completeness may be < 100% when questionnaires
@@ -411,7 +411,7 @@ Excluded directories: `.github/`, `build/`, `out/`, `dist/`, `coverage/`,
 **RULE ORC-09:** At every session start, the Orchestrator checks whether
 `BusinessDocs/session/session-state.json` exists with `status ≠ COMPLETE`. If
 yes: present the resumable session to the user per
-`docs/contracts/session-state-contract.md` and wait for choice RESUME or
+`templates/sdlc/contracts/session-state-contract.md` and wait for choice RESUME or
 RESET.
 
 **Corruption handling (ORC-09):** If `session-state.json` exists but cannot be
@@ -651,7 +651,7 @@ diagram above.
 **RULE ORC-35: Agent Output Contract Validation (MANDATORY on every handoff)**
 When an agent completes and hands off output, the Orchestrator MUST validate the
 output against the agent's output contract (if one exists in
-`docs/contracts/`). The validation process:
+`templates/sdlc/contracts/`). The validation process:
 
 1. **Check output file exists.** The agent's declared output path (from STATE
    UPDATE) must exist and be non-empty.
@@ -711,7 +711,7 @@ contract validation retries):
    validate format only (not content).
 
 **RULE ORC-10:** Every `HALT`-type escalation (per
-`docs/contracts/human-escalation-protocol.md`) sets the global status to
+`templates/sdlc/contracts/human-escalation-protocol.md`) sets the global status to
 `AWAITING_HUMAN`. No agent may start a new step until the response is processed
 and the status is reset.
 
@@ -1312,7 +1312,7 @@ CREATE|AUDIT [DISC1] [DISC2] [project]
 | Official document MISSING entirely before Synthesis                              | Return to Questionnaire Agent for initial scaffold; document as `QUESTIONNAIRE_SCAFFOLD_REQUIRED`                                                                                                                                                                                                                                                                                                                |
 | `ONBOARDING_BLOCKED` in Onboarding Output                                        | HALT all agents; document blockage; use Human Escalation Protocol type `ONBOARDING_BLOCKED`; wait for input                                                                                                                                                                                                                                                                                                      |
 | `TOOLING_GAP` (Category C) detected                                              | Document; BLOCK Phase 5 only; Phases 1–4 may continue; add to synthesis input                                                                                                                                                                                                                                                                                                                                    |
-| Open Human Escalation `HALT`-type present                                        | Set status to `AWAITING_HUMAN`; ask question per `docs/contracts/human-escalation-protocol.md`; NO further agent activity until response received                                                                                                                                                                                                                                                                |
+| Open Human Escalation `HALT`-type present                                        | Set status to `AWAITING_HUMAN`; ask question per `templates/sdlc/contracts/human-escalation-protocol.md`; NO further agent activity until response received                                                                                                                                                                                                                                                                |
 | Open Human Escalation `PAUSE`-type present                                       | Pause dependent step; parallel steps without dependency may continue; ask question per escalation protocol                                                                                                                                                                                                                                                                                                       |
 | Documentation Agent `DOC_INCONSISTENCY` present                                  | Escalate via Human Escalation Protocol type `OTHER`; wait for decision; PR may still be merged                                                                                                                                                                                                                                                                                                                   |
 | Documentation Agent `DOC_PENDING` items present                                  | Add to blocker register with reference to blocked story; include in next sprint documentation pass                                                                                                                                                                                                                                                                                                               |

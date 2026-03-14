@@ -1,7 +1,7 @@
 # Recommendations Template
 
 > Use this template for the recommendations deliverable of each agent. See
-> `docs/contracts/recommendations-output-contract.md` for the full
+> `templates/sdlc/contracts/recommendations-output-contract.md` for the full
 > requirements.
 
 ---

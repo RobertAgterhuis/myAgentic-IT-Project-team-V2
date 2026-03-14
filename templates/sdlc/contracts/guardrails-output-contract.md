@@ -120,7 +120,7 @@ in CI", "Code review checklist item", "Manual audit at every sprint review"]
 - [ ] All guardrails have a rationale with source reference
 - [ ] All guardrails have a verification method
 - [ ] Overview table is complete
-- [ ] No duplicates with existing guardrails in /docs/guardrails/
+- [ ] No duplicates with existing guardrails in /templates/sdlc/guardrails/
 - [ ] All INSUFFICIENT_DATA: items tagged with QUESTIONNAIRE_REQUEST in handoff
       message
 - [ ] If cycle_type is SCOPE_CHANGE: `## Scope Change Impact` section present as

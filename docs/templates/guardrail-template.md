@@ -1,7 +1,7 @@
 # Guardrail Template
 
 > Use this template for the guardrail deliverable of each agent. See
-> `docs/contracts/guardrails-output-contract.md` for the full
+> `templates/sdlc/contracts/guardrails-output-contract.md` for the full
 > requirements.
 
 ---
@@ -113,7 +113,7 @@ audit at sprint review", "Automated linting rule"]
 - [ ] All guardrails have a rationale referencing an analysis finding
 - [ ] All guardrails have a concrete verification method
 - [ ] Overview table is complete and consistent with individual guardrails
-- [ ] No duplicates with existing guardrails in `/docs/guardrails/`
+- [ ] No duplicates with existing guardrails in `/templates/sdlc/guardrails/`
 - [ ] JSON export present and syntactically valid
 - [ ] Self-review performed
 

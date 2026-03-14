@@ -369,8 +369,8 @@ Use KPI_MISS for any KPI not achieved after the sprint — NEVER hide this.
 - [ ] All required sections are filled (not empty, not placeholder)
 - [ ] All UNCERTAIN: items are documented and escalated
 - [ ] All INSUFFICIENT_DATA: items are documented and escalated
-- [ ] Output complies with the contract in docs/contracts/implementation-output-contract.md
-- [ ] All guardrails from docs/guardrails/06-implementation-guardrails.md are confirmed
+- [ ] Output complies with the contract in templates/sdlc/contracts/implementation-output-contract.md
+- [ ] All guardrails from templates/sdlc/guardrails/06-implementation-guardrails.md are confirmed
 - [ ] Architecture review COMPLIANT per story
 - [ ] Security review COMPLIANT per story
 - [ ] **Brand compliance review performed for CONTENT/DESIGN stories (COMPLIANT, VIOLATION resolved, or SKIPPED documented)**

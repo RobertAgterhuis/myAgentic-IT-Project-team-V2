@@ -12,44 +12,44 @@ Each agent has a dedicated skill file:
 
 | #   | Agent                          | Skill file                              |
 | --- | ------------------------------ | --------------------------------------- |
-| 00  | Orchestrator                   | `agents/00-orchestrator.md`             |
-| 01  | Business Analyst               | `agents/01-business-analyst.md`         |
-| 02  | Domain Expert                  | `agents/02-domain-expert.md`            |
-| 03  | Sales Strategist               | `agents/03-sales-strategist.md`         |
-| 04  | Financial Analyst              | `agents/04-financial-analyst.md`        |
-| 05  | Software Architect             | `agents/05-software-architect.md`       |
-| 06  | Senior Developer               | `agents/06-senior-developer.md`         |
-| 07  | DevOps Engineer                | `agents/07-devops-engineer.md`          |
-| 08  | Security Architect             | `agents/08-security-architect.md`       |
-| 09  | Data Architect                 | `agents/09-data-architect.md`           |
-| 10  | UX Researcher                  | `agents/10-ux-researcher.md`            |
-| 11  | UX Designer                    | `agents/11-ux-designer.md`              |
-| 12  | UI Designer                    | `agents/12-ui-designer.md`              |
-| 13  | Accessibility Specialist       | `agents/13-accessibility-specialist.md` |
-| 14  | Brand Strategist               | `agents/14-brand-strategist.md`         |
-| 15  | Growth Marketer                | `agents/15-growth-marketer.md`          |
-| 16  | CRO Specialist                 | `agents/16-cro-specialist.md`           |
-| 17  | Synthesis Agent                | `agents/17-synthesis-agent.md`          |
-| 18  | Critic Agent                   | `agents/18-critic-agent.md`             |
-| 19  | Risk Agent                     | `agents/19-risk-agent.md`               |
-| 20  | Implementation Agent           | `agents/20-implementation-agent.md`     |
-| 21  | Test Agent                     | `agents/21-test-agent.md`               |
-| 22  | PR/Review Agent                | `agents/22-pr-review-agent.md`          |
-| 23  | Reevaluate Agent               | `agents/23-reevaluate-agent.md`         |
-| 24  | Feature Agent                  | `agents/24-feature-agent.md`            |
-| 25  | Onboarding Agent               | `agents/25-onboarding-agent.md`         |
-| 26  | Documentation Agent            | `agents/26-documentation-agent.md`      |
-| 27  | GitHub Integration Agent       | `agents/27-github-integration-agent.md` |
-| 28  | Sprint Retrospective Agent     | `agents/28-retrospective-agent.md`      |
-| 29  | KPI/Metrics Agent              | `agents/29-kpi-agent.md`                |
-| 30  | Brand & Assets Agent (Canva)   | `agents/30-brand-assets-agent.md`       |
-| 31  | Storybook Agent                | `agents/31-storybook-agent.md`          |
-| 32  | Content Strategist / UX Writer | `agents/32-content-strategist.md`       |
-| 33  | Legal / Privacy Counsel        | `agents/33-legal-counsel.md`            |
-| 34  | Product Manager                | `agents/34-product-manager.md`          |
-| 35  | Localization Specialist        | `agents/35-localization-specialist.md`  |
-| 36  | Questionnaire Agent            | `agents/36-questionnaire-agent.md`      |
-| 37  | Scope Change Agent             | `agents/37-scope-change-agent.md`       |
+| 00  | Orchestrator                   | `templates/sdlc/agents/00-orchestrator.md`             |
+| 01  | Business Analyst               | `templates/sdlc/agents/01-business-analyst.md`         |
+| 02  | Domain Expert                  | `templates/sdlc/agents/02-domain-expert.md`            |
+| 03  | Sales Strategist               | `templates/sdlc/agents/03-sales-strategist.md`         |
+| 04  | Financial Analyst              | `templates/sdlc/agents/04-financial-analyst.md`        |
+| 05  | Software Architect             | `templates/sdlc/agents/05-software-architect.md`       |
+| 06  | Senior Developer               | `templates/sdlc/agents/06-senior-developer.md`         |
+| 07  | DevOps Engineer                | `templates/sdlc/agents/07-devops-engineer.md`          |
+| 08  | Security Architect             | `templates/sdlc/agents/08-security-architect.md`       |
+| 09  | Data Architect                 | `templates/sdlc/agents/09-data-architect.md`           |
+| 10  | UX Researcher                  | `templates/sdlc/agents/10-ux-researcher.md`            |
+| 11  | UX Designer                    | `templates/sdlc/agents/11-ux-designer.md`              |
+| 12  | UI Designer                    | `templates/sdlc/agents/12-ui-designer.md`              |
+| 13  | Accessibility Specialist       | `templates/sdlc/agents/13-accessibility-specialist.md` |
+| 14  | Brand Strategist               | `templates/sdlc/agents/14-brand-strategist.md`         |
+| 15  | Growth Marketer                | `templates/sdlc/agents/15-growth-marketer.md`          |
+| 16  | CRO Specialist                 | `templates/sdlc/agents/16-cro-specialist.md`           |
+| 17  | Synthesis Agent                | `templates/sdlc/agents/17-synthesis-agent.md`          |
+| 18  | Critic Agent                   | `templates/sdlc/agents/18-critic-agent.md`             |
+| 19  | Risk Agent                     | `templates/sdlc/agents/19-risk-agent.md`               |
+| 20  | Implementation Agent           | `templates/sdlc/agents/20-implementation-agent.md`     |
+| 21  | Test Agent                     | `templates/sdlc/agents/21-test-agent.md`               |
+| 22  | PR/Review Agent                | `templates/sdlc/agents/22-pr-review-agent.md`          |
+| 23  | Reevaluate Agent               | `templates/sdlc/agents/23-reevaluate-agent.md`         |
+| 24  | Feature Agent                  | `templates/sdlc/agents/24-feature-agent.md`            |
+| 25  | Onboarding Agent               | `templates/sdlc/agents/25-onboarding-agent.md`         |
+| 26  | Documentation Agent            | `templates/sdlc/agents/26-documentation-agent.md`      |
+| 27  | GitHub Integration Agent       | `templates/sdlc/agents/27-github-integration-agent.md` |
+| 28  | Sprint Retrospective Agent     | `templates/sdlc/agents/28-retrospective-agent.md`      |
+| 29  | KPI/Metrics Agent              | `templates/sdlc/agents/29-kpi-agent.md`                |
+| 30  | Brand & Assets Agent (Canva)   | `templates/sdlc/agents/30-brand-assets-agent.md`       |
+| 31  | Storybook Agent                | `templates/sdlc/agents/31-storybook-agent.md`          |
+| 32  | Content Strategist / UX Writer | `templates/sdlc/agents/32-content-strategist.md`       |
+| 33  | Legal / Privacy Counsel        | `templates/sdlc/agents/33-legal-counsel.md`            |
+| 34  | Product Manager                | `templates/sdlc/agents/34-product-manager.md`          |
+| 35  | Localization Specialist        | `templates/sdlc/agents/35-localization-specialist.md`  |
+| 36  | Questionnaire Agent            | `templates/sdlc/agents/36-questionnaire-agent.md`      |
+| 37  | Scope Change Agent             | `templates/sdlc/agents/37-scope-change-agent.md`       |
 
 ---
 
@@ -57,16 +57,16 @@ Each agent has a dedicated skill file:
 
 | Scope                         | Guardrail file                                    |
 | ----------------------------- | ------------------------------------------------- |
-| Global                        | `docs/guardrails/00-global-guardrails.md`         |
-| Business                      | `docs/guardrails/01-business-guardrails.md`       |
-| Architecture                  | `docs/guardrails/02-architecture-guardrails.md`   |
-| Security                      | `docs/guardrails/03-security-guardrails.md`       |
-| UX                            | `docs/guardrails/04-ux-guardrails.md`             |
-| Marketing                     | `docs/guardrails/05-marketing-guardrails.md`      |
-| Implementation                | `docs/guardrails/06-implementation-guardrails.md` |
-| Legal & Privacy               | `docs/guardrails/07-legal-guardrails.md`          |
-| Content & Localization        | `docs/guardrails/08-content-guardrails.md`        |
-| Questionnaire & Official Docs | `docs/guardrails/09-questionnaire-guardrails.md`  |
+| Global                        | `templates/sdlc/guardrails/00-global-guardrails.md`         |
+| Business                      | `templates/sdlc/guardrails/01-business-guardrails.md`       |
+| Architecture                  | `templates/sdlc/guardrails/02-architecture-guardrails.md`   |
+| Security                      | `templates/sdlc/guardrails/03-security-guardrails.md`       |
+| UX                            | `templates/sdlc/guardrails/04-ux-guardrails.md`             |
+| Marketing                     | `templates/sdlc/guardrails/05-marketing-guardrails.md`      |
+| Implementation                | `templates/sdlc/guardrails/06-implementation-guardrails.md` |
+| Legal & Privacy               | `templates/sdlc/guardrails/07-legal-guardrails.md`          |
+| Content & Localization        | `templates/sdlc/guardrails/08-content-guardrails.md`        |
+| Questionnaire & Official Docs | `templates/sdlc/guardrails/09-questionnaire-guardrails.md`  |
 
 ---
 
@@ -74,28 +74,28 @@ Each agent has a dedicated skill file:
 
 | Contract                  | File                                                   |
 | ------------------------- | ------------------------------------------------------ |
-| Analysis output           | `docs/contracts/analysis-output-contract.md`           |
-| Recommendations output    | `docs/contracts/recommendations-output-contract.md`    |
-| Sprint plan output        | `docs/contracts/sprintplan-output-contract.md`         |
-| Guardrails output         | `docs/contracts/guardrails-output-contract.md`         |
-| Agent Handoff             | `docs/contracts/agent-handoff-contract.md`             |
-| Implementation output     | `docs/contracts/implementation-output-contract.md`     |
-| Questionnaire output      | `docs/contracts/questionnaire-output-contract.md`      |
-| Feature output            | `docs/contracts/feature-output-contract.md`            |
-| Tooling                   | `docs/contracts/tooling-contract.md`                   |
-| Session State             | `docs/contracts/session-state-contract.md`             |
-| Human Escalation          | `docs/contracts/human-escalation-protocol.md`          |
-| Critic output             | `docs/contracts/critic-output-contract.md`             |
-| Risk output               | `docs/contracts/risk-output-contract.md`               |
-| Synthesis output          | `docs/contracts/synthesis-output-contract.md`          |
-| Test output               | `docs/contracts/test-output-contract.md`               |
-| PR / Review output        | `docs/contracts/pr-review-output-contract.md`          |
-| KPI output                | `docs/contracts/kpi-output-contract.md`                |
-| Documentation output      | `docs/contracts/documentation-output-contract.md`      |
-| GitHub Integration output | `docs/contracts/github-integration-output-contract.md` |
-| Retrospective output      | `docs/contracts/retrospective-output-contract.md`      |
-| Reevaluate output         | `docs/contracts/reevaluate-output-contract.md`         |
-| Onboarding output         | `docs/contracts/onboarding-output-contract.md`         |
-| Brand Assets output       | `docs/contracts/brand-assets-output-contract.md`       |
-| Storybook output          | `docs/contracts/storybook-output-contract.md`          |
-| Scope Change output       | `docs/contracts/scope-change-output-contract.md`       |
+| Analysis output           | `templates/sdlc/contracts/analysis-output-contract.md`           |
+| Recommendations output    | `templates/sdlc/contracts/recommendations-output-contract.md`    |
+| Sprint plan output        | `templates/sdlc/contracts/sprintplan-output-contract.md`         |
+| Guardrails output         | `templates/sdlc/contracts/guardrails-output-contract.md`         |
+| Agent Handoff             | `templates/sdlc/contracts/agent-handoff-contract.md`             |
+| Implementation output     | `templates/sdlc/contracts/implementation-output-contract.md`     |
+| Questionnaire output      | `templates/sdlc/contracts/questionnaire-output-contract.md`      |
+| Feature output            | `templates/sdlc/contracts/feature-output-contract.md`            |
+| Tooling                   | `templates/sdlc/contracts/tooling-contract.md`                   |
+| Session State             | `templates/sdlc/contracts/session-state-contract.md`             |
+| Human Escalation          | `templates/sdlc/contracts/human-escalation-protocol.md`          |
+| Critic output             | `templates/sdlc/contracts/critic-output-contract.md`             |
+| Risk output               | `templates/sdlc/contracts/risk-output-contract.md`               |
+| Synthesis output          | `templates/sdlc/contracts/synthesis-output-contract.md`          |
+| Test output               | `templates/sdlc/contracts/test-output-contract.md`               |
+| PR / Review output        | `templates/sdlc/contracts/pr-review-output-contract.md`          |
+| KPI output                | `templates/sdlc/contracts/kpi-output-contract.md`                |
+| Documentation output      | `templates/sdlc/contracts/documentation-output-contract.md`      |
+| GitHub Integration output | `templates/sdlc/contracts/github-integration-output-contract.md` |
+| Retrospective output      | `templates/sdlc/contracts/retrospective-output-contract.md`      |
+| Reevaluate output         | `templates/sdlc/contracts/reevaluate-output-contract.md`         |
+| Onboarding output         | `templates/sdlc/contracts/onboarding-output-contract.md`         |
+| Brand Assets output       | `templates/sdlc/contracts/brand-assets-output-contract.md`       |
+| Storybook output          | `templates/sdlc/contracts/storybook-output-contract.md`          |
+| Scope Change output       | `templates/sdlc/contracts/scope-change-output-contract.md`       |

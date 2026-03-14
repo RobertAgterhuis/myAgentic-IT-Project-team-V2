@@ -224,7 +224,7 @@ Mandatory sections:
 
 ### Step 5: Sprint Plan for the Feature
 
-Produce per `docs/contracts/sprintplan-output-contract.md`:
+Produce per `templates/sdlc/contracts/sprintplan-output-contract.md`:
 
 - Output: `Workitems/[FEATURENAME]/sprintplan/sprintplan.md` + `sprintplan.json`
 - Sprint IDs use format: `FT-[FEATURENAME]-S[N]-[NNN]` (e.g.

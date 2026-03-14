@@ -114,7 +114,7 @@ system itself.
 | `technical-manual.md`      | API reference + architecture                       | Documentation Agent | After sprint  |
 | `user-manual.md`           | User guide                                         | Documentation Agent | After sprint  |
 
-### Contracts — `docs/contracts/`
+### Contracts — `templates/sdlc/contracts/`
 
 25 contract files defining the input/output format for every agent type. These
 are **agent-facing specifications** — they tell each agent what to produce and
@@ -144,7 +144,7 @@ Key contracts:
 This is your primary communication channel with the agent team. See
 `docs/help/decisions.md` for details.
 
-### Guardrails — `docs/guardrails/`
+### Guardrails — `templates/sdlc/guardrails/`
 
 11 guardrail files that define rules agents must follow:
 
@@ -168,7 +168,7 @@ This is your primary communication channel with the agent team. See
 Template files used by agents to format their outputs (analysis,
 recommendations, sprint plan, guardrails). **Do not modify.**
 
-### Playbooks — `docs/playbooks/`
+### Playbooks — `templates/sdlc/playbooks/`
 
 | File                                    | Purpose                  |
 | --------------------------------------- | ------------------------ |
@@ -370,7 +370,7 @@ i18n translation files: `en-US/`, `de-DE/`, `fr-FR/` — each with
 11 route modules (commands, dashboard, decisions, drift, metrics-dashboard,
 milestones, misc, orchestrator, progress, questionnaires, subscribe).
 
-### Orchestrator engine — `src/webapp/orchestrator/`
+### Orchestrator engine — `platform/engine/`
 
 12 modules: agent-schema, cli, dispatcher, engine, flow-loader, flow-schema,
 flows.yaml, gate-validator, sprint-gate, state-machine, state-persistence,

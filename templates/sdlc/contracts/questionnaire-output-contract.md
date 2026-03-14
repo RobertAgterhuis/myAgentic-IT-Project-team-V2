@@ -290,7 +290,7 @@ context block — they document `NOT_INJECTED` in their Step 0.
 
 The Questionnaire Agent MUST update `questionnaire_answer_summary` in the
 session state after answer loading (see
-`docs/contracts/session-state-contract.md`).
+`templates/sdlc/contracts/session-state-contract.md`).
 
 ### VALIDATION CRITERIA
 
@@ -444,7 +444,7 @@ Registry is INVALID if:
 
 - [ ] No data fabricated — sources cited or INSUFFICIENT_DATA: used
 - [ ] Output complies with
-      docs/guardrails/09-questionnaire-guardrails.md
+      templates/sdlc/guardrails/09-questionnaire-guardrails.md
 - STATUS: READY / BLOCKED
 ```
 

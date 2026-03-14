@@ -1,7 +1,7 @@
 # Sprint Plan Template
 
 > Use this template for the sprint plan deliverable of each agent. See
-> `docs/contracts/sprintplan-output-contract.md` for the full
+> `templates/sdlc/contracts/sprintplan-output-contract.md` for the full
 > requirements.
 
 ---

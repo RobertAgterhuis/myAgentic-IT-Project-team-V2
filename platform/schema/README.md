@@ -50,9 +50,9 @@ and framework extraction.
 
 Validators:
 
-- `src/webapp/orchestrator/agent-schema.js` — Agent schema validation
-- `src/webapp/orchestrator/flow-schema.js` — Flow schema validation
-- `src/webapp/orchestrator/tool-schema.js` — Tool schema validation (+ cross-reference check)
+- `platform/engine/agent-schema.js` — Agent schema validation
+- `platform/engine/flow-schema.js` — Flow schema validation
+- `platform/engine/tool-schema.js` — Tool schema validation (+ cross-reference check)
 
 Unit tests:
 
@@ -95,15 +95,15 @@ npx vitest run tests/unit/agent-schema.test.js tests/unit/flow-schema.test.js te
     "tool.validation.contract"
   ],
   "guardrails": [
-    "docs/guardrails/00-global-guardrails.md",
-    "docs/guardrails/01-business-guardrails.md"
+    "templates/sdlc/guardrails/00-global-guardrails.md",
+    "templates/sdlc/guardrails/01-business-guardrails.md"
   ],
   "contracts": [
-    "docs/contracts/analysis-output-contract.md",
-    "docs/contracts/recommendations-output-contract.md",
-    "docs/contracts/sprintplan-output-contract.md",
-    "docs/contracts/guardrails-output-contract.md",
-    "docs/contracts/agent-handoff-contract.md"
+    "templates/sdlc/contracts/analysis-output-contract.md",
+    "templates/sdlc/contracts/recommendations-output-contract.md",
+    "templates/sdlc/contracts/sprintplan-output-contract.md",
+    "templates/sdlc/contracts/guardrails-output-contract.md",
+    "templates/sdlc/contracts/agent-handoff-contract.md"
   ],
   "dependencies": ["25"],
   "platformBindings": {

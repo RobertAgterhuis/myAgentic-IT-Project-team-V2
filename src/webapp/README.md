@@ -38,7 +38,7 @@ PORT=8080 node src/webapp/server.js
 | **Reevaluate**         | Saves all pending changes, writes `docs/session/reevaluate-trigger.json`, and prompts you to type `REEVALUATE [SCOPE]` in the Copilot chat |
 | **Export**             | Export all questionnaire data as JSON for external processing                                                                              |
 | **Help**               | Built-in help system with topic navigation (F1 or ? to toggle)                                                                             |
-| **Contract-compliant** | Reads/writes the exact markdown format defined in `docs/contracts/questionnaire-output-contract.md`                                        |
+| **Contract-compliant** | Reads/writes the exact markdown format defined in `templates/sdlc/contracts/questionnaire-output-contract.md`                                        |
 | **Index rebuild**      | Automatically updates `BusinessDocs/questionnaire-index.md` after every save (debounced)                                                   |
 
 ## Architecture

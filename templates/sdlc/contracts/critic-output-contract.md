@@ -41,7 +41,7 @@ For each agent output in the phase:
 - **Completeness Check:** Are all required fields filled (no placeholders, no
   empty sections)?
 - **Guardrail Compliance:** Does the output comply with applicable guardrails
-  from `/docs/guardrails/`?
+  from `/templates/sdlc/guardrails/`?
 - **Cross-Reference Check:** Are there contradictions between this output and
   other outputs in the same phase?
 

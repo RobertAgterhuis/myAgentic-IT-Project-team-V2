@@ -353,9 +353,9 @@ Completion Reports per sprint.
 - Approved sprint plans from all 4 phases (produced by the specialist agents)
 - Codebase (read + write access)
 - Architecture decisions Phase 2 (Software Architect + Senior Developer output)
-- Guardrails (`docs/guardrails/00–09`)
+- Guardrails (`templates/sdlc/guardrails/00–09`)
 - Implementation Output Contract
-  (`docs/contracts/implementation-output-contract.md`)
+  (`templates/sdlc/contracts/implementation-output-contract.md`)
 
 **HALT:** Phase 5 NEVER starts without a fully APPROVED Synthesis Final Report
 and validated sprint plans (Critic + Risk PASSED per phase).

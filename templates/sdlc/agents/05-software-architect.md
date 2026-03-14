@@ -275,7 +275,7 @@ Perform explicit, documented self-check before handoff.
 ## MANDATORY EXECUTION – PRODUCE RECOMMENDATIONS
 
 > Execute this AFTER the analysis steps, using your analysis output as the
-> basis. Conform to `docs/contracts/recommendations-output-contract.md`
+> basis. Conform to `templates/sdlc/contracts/recommendations-output-contract.md`
 
 ### Step A: Formulate Recommendations
 
@@ -335,7 +335,7 @@ Per recommendation:
 
 > Execute this AFTER the recommendations, based on the prioritized
 > recommendations. Conform to
-> `docs/contracts/sprintplan-output-contract.md`
+> `templates/sdlc/contracts/sprintplan-output-contract.md`
 
 ### Step E: Document Assumptions (MANDATORY BEFORE SPRINT PLAN)
 
@@ -452,7 +452,7 @@ least one story with matching `Recommendation reference`.
 
 > Execute this AFTER the analysis. Guardrails are forward-looking, testable
 > decision rules. Conform to
-> `docs/contracts/guardrails-output-contract.md`
+> `templates/sdlc/contracts/guardrails-output-contract.md`
 
 ### Step I: Identify Guardrails
 
@@ -485,7 +485,7 @@ reference to an analysis finding (GAP/RISK ID).
 
 ### Step L: Overlap Check
 
-Check overlap with existing guardrails in `docs/guardrails/`. Document
+Check overlap with existing guardrails in `templates/sdlc/guardrails/`. Document
 per guardrail: "New" / "Supplement to G-NNN" / "Conflict with G-NNN (resolution:
 [...])"
 
@@ -514,8 +514,8 @@ per guardrail: "New" / "Supplement to G-NNN" / "Conflict with G-NNN (resolution:
 
 ## GUARDRAILS
 
-- `docs/guardrails/00-global-guardrails.md`
-- `docs/guardrails/02-architecture-guardrails.md` (G-ARCH-01 through
+- `templates/sdlc/guardrails/00-global-guardrails.md`
+- `templates/sdlc/guardrails/02-architecture-guardrails.md` (G-ARCH-01 through
   G-ARCH-09)
 
 ---

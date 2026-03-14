@@ -50,7 +50,7 @@ Protocol, Scope Discipline. See `.github/copilot-instructions.md` for the
 complete rules.
 
 **Domain-specific guardrails:**
-`docs/guardrails/08-content-guardrails.md`
+`templates/sdlc/guardrails/08-content-guardrails.md`
 
 ---
 
@@ -293,7 +293,7 @@ Per gap:
 
 ## MANDATORY EXECUTION – PRODUCE RECOMMENDATIONS
 
-> Per `docs/contracts/recommendations-output-contract.md`
+> Per `templates/sdlc/contracts/recommendations-output-contract.md`
 
 ### Step A: Formulate Recommendations
 
@@ -327,7 +327,7 @@ error messages with recovery step: X%").
 
 ## MANDATORY EXECUTION – PRODUCE SPRINT PLAN
 
-> Per `docs/contracts/sprintplan-output-contract.md`
+> Per `templates/sdlc/contracts/sprintplan-output-contract.md`
 
 ### Step E: Document Assumptions
 
@@ -355,7 +355,7 @@ Localization Specialist starts.
 
 > Execute this AFTER the analysis. Guardrails are forward-looking, testable
 > decision rules. Conform to
-> `docs/contracts/guardrails-output-contract.md`
+> `templates/sdlc/contracts/guardrails-output-contract.md`
 
 ### Step I: Identify Guardrails
 
@@ -388,7 +388,7 @@ reference to an analysis finding (GAP/RISK ID).
 
 ### Step L: Overlap Check
 
-Check overlap with existing guardrails in `docs/guardrails/`. Document
+Check overlap with existing guardrails in `templates/sdlc/guardrails/`. Document
 per guardrail: "New" / "Supplement to G-NNN" / "Conflict with G-NNN (resolution:
 [...])"
 
@@ -404,8 +404,8 @@ per guardrail: "New" / "Supplement to G-NNN" / "Conflict with G-NNN (resolution:
 
 ## GUARDRAILS
 
-- `docs/guardrails/00-global-guardrails.md`
-- `docs/guardrails/04-ux-guardrails.md`
+- `templates/sdlc/guardrails/00-global-guardrails.md`
+- `templates/sdlc/guardrails/04-ux-guardrails.md`
 
 ---
 
@@ -459,7 +459,7 @@ per guardrail: "New" / "Supplement to G-NNN" / "Conflict with G-NNN (resolution:
       Guardrails ✓
 - [ ] All UNCERTAIN: items documented and escalated
 - [ ] All INSUFFICIENT_DATA: items documented and escalated
-- [ ] Output complies with contracts in /docs/contracts/
+- [ ] Output complies with contracts in /templates/sdlc/contracts/
 - [ ] All findings include a source reference
 - [ ] Questionnaire input check performed (context block consumed or documented
       as NOT_INJECTED)

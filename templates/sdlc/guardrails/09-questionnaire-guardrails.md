@@ -171,7 +171,7 @@ Before handing off to the Orchestrator, the Questionnaire Agent MUST verify:
 **Questionnaire Generation workflow:**
 
 - All generated questionnaire files are valid per
-  `docs/contracts/questionnaire-output-contract.md`
+  `templates/sdlc/contracts/questionnaire-output-contract.md`
 - No G-QST-01/04/07/09 violations in generated files
 - questionnaire-index.md is updated
 

@@ -352,12 +352,12 @@ Each decision or question gets a unique ID (`DEC-NNN`), a scope (e.g. `Phase 2`,
 
 ## Contracts and guardrails — what are those?
 
-**Contracts** (`docs/contracts/`) define what each agent is required to
+**Contracts** (`templates/sdlc/contracts/`) define what each agent is required to
 produce. If an agent does not fully fulfill its contract, the Critic Agent sends
 it back. As a user you don't need to read the contracts, but they explain why an
 agent sometimes returns "BLOCKED".
 
-**Guardrails** (`docs/guardrails/00–09`) are testable, binding decision
+**Guardrails** (`templates/sdlc/guardrails/00–09`) are testable, binding decision
 rules per domain. They prevent agents from repeating the same category of errors
 across sprints. When a violation occurs you will see
 `GUARDRAIL_VIOLATION: G-XXX-NNN` in the output, with a mandatory remediation

@@ -11,7 +11,7 @@ let tmpRoot, DATA_DIR, MILESTONES_FILE, TEMPLATES_FILE;
 
 beforeAll(() => {
   tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'milestones-test-'));
-  DATA_DIR = path.join(tmpRoot, 'data');
+  DATA_DIR = path.join(tmpRoot, 'BusinessDocs');
   MILESTONES_FILE = path.join(DATA_DIR, 'milestones.json');
   TEMPLATES_FILE = path.join(DATA_DIR, 'milestone-templates.json');
 });
@@ -25,6 +25,7 @@ afterAll(() => {
 function makeCtx() {
   return {
     PROJECT_ROOT: tmpRoot,
+    BUSINESS_DOCS: path.join(tmpRoot, 'BusinessDocs'),
     _cache: {
       read: (fp) => fs.readFileSync(fp, 'utf8'),
     },

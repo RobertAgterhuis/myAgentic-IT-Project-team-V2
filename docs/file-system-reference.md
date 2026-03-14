@@ -21,8 +21,7 @@ myAgentic-IT-Project-team/
 ├── .github/                    ← CI workflows, issue templates, Copilot instructions
 ├── .husky/                     ← Git hooks (pre-commit)
 ├── templates/                  ← Template packs (SDLC agents, contracts, guardrails, playbooks)
-├── BusinessDocs/               ← Project-specific business data (session, decisions, phases, brand, synthesis, metrics, retrospectives)
-├── data/                       ← Runtime data (milestones.json)
+├── BusinessDocs/               ← Project-specific business data (session, decisions, phases, brand, synthesis, metrics, retrospectives, milestones)
 ├── docs/                       ← Infrastructure docs (contracts, guardrails, playbooks, templates, help, api, security)
 ├── infra/                      ← Docker files, Compose configs, Nginx configs
 ├── platform/                   ← Platform schema definitions (agents, flows, tools)
@@ -467,7 +466,6 @@ Quick smoke tests (landing page, create pipeline).
 
 | Directory   | Purpose                                               |
 | ----------- | ----------------------------------------------------- |
-| `data/`     | Runtime data (`milestones.json`)                      |
 | `platform/` | Platform schema definitions (`platform/schema/`)      |
 | `scripts/`  | Build and maintenance scripts (7 files)               |
 | `.husky/`   | Git hooks (pre-commit: lint-staged + fast unit tests) |

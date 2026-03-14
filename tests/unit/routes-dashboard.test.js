@@ -291,16 +291,21 @@ describe('dashboard routes', () => {
 
     it('computes sprint progress from milestones file', async () => {
       const tmpDir = path.join(os.tmpdir(), `dashboard-test-${Date.now()}`);
-      mkdirSync(path.join(tmpDir, 'data'), { recursive: true });
+      mkdirSync(path.join(tmpDir, 'BusinessDocs'), { recursive: true });
       const milestones = [
         { name: 'M1', status: 'complete', archived: false },
         { name: 'M2', status: 'in progress', archived: false },
         { name: 'M3', status: 'complete', archived: false },
         { name: 'M-old', status: 'complete', archived: true },
       ];
-      writeFileSync(path.join(tmpDir, 'data', 'milestones.json'), JSON.stringify(milestones));
+      writeFileSync(
+        path.join(tmpDir, 'BusinessDocs', 'milestones.json'),
+        JSON.stringify(milestones)
+      );
 
-      routes = createDashboardRoutes(makeCtx({ PROJECT_ROOT: tmpDir }));
+      routes = createDashboardRoutes(
+        makeCtx({ PROJECT_ROOT: tmpDir, BUSINESS_DOCS: path.join(tmpDir, 'BusinessDocs') })
+      );
       const res = fakeRes();
       await routes['GET /api/dashboard/stats'](fakeReq(), res);
       // 2 complete out of 3 active = 67%
@@ -345,10 +350,12 @@ describe('dashboard routes', () => {
 
     it('returns 0% when milestones file is invalid JSON', async () => {
       const tmpDir = path.join(os.tmpdir(), `dashboard-test-${Date.now()}`);
-      mkdirSync(path.join(tmpDir, 'data'), { recursive: true });
-      writeFileSync(path.join(tmpDir, 'data', 'milestones.json'), 'not-json');
+      mkdirSync(path.join(tmpDir, 'BusinessDocs'), { recursive: true });
+      writeFileSync(path.join(tmpDir, 'BusinessDocs', 'milestones.json'), 'not-json');
 
-      routes = createDashboardRoutes(makeCtx({ PROJECT_ROOT: tmpDir }));
+      routes = createDashboardRoutes(
+        makeCtx({ PROJECT_ROOT: tmpDir, BUSINESS_DOCS: path.join(tmpDir, 'BusinessDocs') })
+      );
       const res = fakeRes();
       await routes['GET /api/dashboard/stats'](fakeReq(), res);
       expect(res.status).toBe(200);
@@ -358,15 +365,17 @@ describe('dashboard routes', () => {
 
     it('handles milestones with null/undefined status', async () => {
       const tmpDir = path.join(os.tmpdir(), `dashboard-test-${Date.now()}`);
-      mkdirSync(path.join(tmpDir, 'data'), { recursive: true });
+      mkdirSync(path.join(tmpDir, 'BusinessDocs'), { recursive: true });
       writeFileSync(
-        path.join(tmpDir, 'data', 'milestones.json'),
+        path.join(tmpDir, 'BusinessDocs', 'milestones.json'),
         JSON.stringify([
           { name: 'M1', status: null, archived: false },
           { name: 'M2', archived: false },
         ])
       );
-      routes = createDashboardRoutes(makeCtx({ PROJECT_ROOT: tmpDir }));
+      routes = createDashboardRoutes(
+        makeCtx({ PROJECT_ROOT: tmpDir, BUSINESS_DOCS: path.join(tmpDir, 'BusinessDocs') })
+      );
       const res = fakeRes();
       await routes['GET /api/dashboard/stats'](fakeReq(), res);
       expect(res.json.data.sprint_progress.value).toBe('0%');

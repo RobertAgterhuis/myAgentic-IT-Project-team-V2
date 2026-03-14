@@ -24,7 +24,7 @@ const { getStore } = require('../store');
 const VALID_STATUSES = ['not started', 'in progress', 'complete', 'blocked'];
 
 function getPaths(ctx) {
-  const dataDir = path.join(ctx.PROJECT_ROOT, 'data');
+  const dataDir = ctx.BUSINESS_DOCS || path.join(ctx.PROJECT_ROOT, 'BusinessDocs');
   return {
     dataDir,
     milestonesFile: path.join(dataDir, 'milestones.json'),

@@ -1,8 +1,8 @@
 services:
   command-center:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: infra/Dockerfile
     container_name: myagentic-command-center
     ports:
       - "127.0.0.1:3000:3000"

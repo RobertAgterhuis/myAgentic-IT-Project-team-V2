@@ -129,7 +129,7 @@ Docker).
 | ------------------------------------ | -------------- | ----------------------------------------------------------------------------------------- |
 | Large request payload fills disk     | LOW            | Input length validation (`assertString` maxLen); file-backed store is operator-controlled |
 | SSE connection exhaustion            | LOW            | Localhost only; single operator won't exhaust connections                                 |
-| Docker container resource exhaustion | LOW            | `docker-compose.yml` does not set resource limits; add as post-GA hardening               |
+| Docker container resource exhaustion | LOW            | `infra/docker-compose.yml` sets resource limits (512M memory, 1 CPU)              |
 
 #### E — Elevation of Privilege
 
@@ -202,7 +202,7 @@ _\* LOW assumes `.env` is gitignored and Docker is not exposed to network._
 
 ### Current State
 
-The `Dockerfile` and `docker-compose.yml` set `HOST=0.0.0.0`, which exposes the
+The `infra/Dockerfile` and `infra/docker-compose.yml` set `HOST=0.0.0.0`, which exposes the
 server to all network interfaces. This is by design for Docker container
 networking but creates a potential exposure if the host machine is on a network.
 
@@ -219,8 +219,8 @@ networking but creates a potential exposure if the host machine is on a network.
 
 ### Future Hardening (Post-GA)
 
-- Run container as non-root user (`USER node` in Dockerfile)
-- Add resource limits in docker-compose.yml
+- Run container as non-root user (`USER node` in Dockerfile) — ✅ implemented
+- Add resource limits in docker-compose.yml — ✅ implemented
 - Add health check endpoint for container orchestration
 - Separate network segments for app and database containers
 

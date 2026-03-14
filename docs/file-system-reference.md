@@ -24,6 +24,7 @@ myAgentic-IT-Project-team/
 ├── BusinessDocs/               ← Project-specific business data (session, decisions, phases, brand, synthesis, metrics, retrospectives)
 ├── data/                       ← Runtime data (milestones.json)
 ├── docs/                       ← Infrastructure docs (contracts, guardrails, playbooks, templates, help, api, security)
+├── infra/                      ← Docker files, Compose configs, Nginx configs
 ├── platform/                   ← Platform schema definitions (agents, flows, tools)
 ├── scripts/                    ← Build & maintenance scripts
 ├── src/                        ← Application source code
@@ -72,6 +73,24 @@ GitHub issue templates for bugs, features, stories, and tasks.
 
 These files define agent behavior. **Do not modify** unless you're changing the
 system itself.
+
+---
+
+## `infra/` — Docker & container infrastructure
+
+| File                             | Purpose                                              | Modified by      |
+| -------------------------------- | ---------------------------------------------------- | ---------------- |
+| `Dockerfile`                     | Multi-stage production build (Node.js + React UI)    | DevOps / SWE     |
+| `Dockerfile.storybook`           | Storybook design system build (nginx)                | DevOps / SWE     |
+| `docker-compose.yml`             | Base webapp service definition                       | DevOps / SWE     |
+| `docker-compose.webapp.yml`      | End-user compose (webapp only, port 3000)            | DevOps / SWE     |
+| `docker-compose.dev.yml`         | Full-stack developer compose (all 7 services)        | DevOps / SWE     |
+| `docker-compose.analytics.yml`   | Matomo analytics stack (3 services, port 8080)       | DevOps / SWE     |
+| `docker-compose.weblate.yml`     | Weblate TMS stack (3 services, port 8081)            | DevOps / SWE     |
+| `matomo-nginx.conf`              | Nginx reverse proxy config for Matomo FPM            | DevOps / SWE     |
+
+> **Note:** `.dockerignore` remains in the repository root (Docker reads it from
+> the build context root).
 
 ---
 

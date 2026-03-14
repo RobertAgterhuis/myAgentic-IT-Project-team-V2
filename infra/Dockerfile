@@ -9,7 +9,7 @@ RUN cd src/webapp/ui && npm ci
 
 # Copy UI source + design tokens + build script
 COPY src/webapp/ui/ src/webapp/ui/
-COPY docs/brand/design-tokens.json docs/brand/design-tokens.json
+COPY BusinessDocs/brand/design-tokens.json BusinessDocs/brand/design-tokens.json
 COPY scripts/build-tokens.mjs scripts/build-tokens.mjs
 
 # Generate design tokens → src/webapp/ui/src/tokens.css, then build

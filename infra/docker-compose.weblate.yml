@@ -6,7 +6,7 @@
 # Usage:
 #   1. Copy .env.weblate.example to .env.weblate
 #   2. Set WEBLATE_ADMIN_PASSWORD and POSTGRES_PASSWORD
-#   3. docker compose -f docker-compose.weblate.yml up -d
+#   3. docker compose -f infra/docker-compose.weblate.yml --env-file .env.weblate up -d
 #   4. Access Weblate at http://localhost:${WEBLATE_PORT:-8081}
 #
 # Documentation: docs/phase-5/sp-2-501-weblate-trial-notes.md

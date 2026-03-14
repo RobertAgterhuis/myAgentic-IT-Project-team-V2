@@ -1,5 +1,5 @@
 # Dockerfile.storybook — Serves the design system separately from the main webapp
-# Build: docker build -f Dockerfile.storybook -t agentic-sdlc-storybook .
+# Build: docker build -f infra/Dockerfile.storybook -t agentic-sdlc-storybook .
 # Run:   docker run -p 8080:80 agentic-sdlc-storybook
 
 FROM node:20-alpine AS builder
@@ -10,7 +10,7 @@ COPY src/webapp/ui/package.json src/webapp/ui/package-lock.json ./
 RUN npm ci --ignore-scripts
 
 # Copy source and build tokens + storybook
-COPY docs/brand/design-tokens.json /tokens/design-tokens.json
+COPY BusinessDocs/brand/design-tokens.json /tokens/design-tokens.json
 COPY scripts/build-tokens.mjs /scripts/build-tokens.mjs
 COPY src/webapp/ui/ ./
 

@@ -11,7 +11,6 @@ dist
 build
 
 # Documentation and non-runtime files
-agents/
 word/
 hooks/
 *.md

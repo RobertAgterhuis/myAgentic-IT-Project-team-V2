@@ -5,13 +5,13 @@ on:
     branches: [main]
     paths:
       - "platform/schema/**"
-      - "agents/**"
+      - "templates/sdlc/agents/**"
       - "scripts/generate-platform.js"
   push:
     branches: [main]
     paths:
       - "platform/schema/**"
-      - "agents/**"
+      - "templates/sdlc/agents/**"
       - "scripts/generate-platform.js"
 
 permissions:

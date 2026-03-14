@@ -4,13 +4,13 @@ on:
   pull_request:
     paths:
       - "src/webapp/ui/**"
-      - "docs/brand/design-tokens.json"
+      - "src/webapp/brand/design-tokens.json"
       - "scripts/build-tokens.mjs"
   push:
     branches: [main]
     paths:
       - "src/webapp/ui/**"
-      - "docs/brand/design-tokens.json"
+      - "src/webapp/brand/design-tokens.json"
       - "scripts/build-tokens.mjs"
 
 jobs:

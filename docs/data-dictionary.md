@@ -32,12 +32,12 @@ locations, and field descriptions.
 | ------------------- | -------- | ----------------------------------------------------- | --------------------------------- |
 | Session State       | JSON     | `docs/session/session-state.json`                     | `schemas.validateSessionState()`  |
 | Command Queue       | JSON     | `docs/session/command-queue.json`                     | `schemas.validateCommandQueue()`  |
-| Decisions           | Markdown | `docs/decisions.md`                                   | `models.parseDecisions()`         |
+| Decisions           | Markdown | `BusinessDocs/decisions.md`                           | `models.parseDecisions()`         |
 | Questionnaires      | Markdown | `BusinessDocs/Phase[N]-*/Questionnaires/*.md`         | `models.parseQuestionnaire()`     |
 | Questionnaire Index | Markdown | `BusinessDocs/questionnaire-index.md`                 | `models.parseIndex()`             |
-| Analytics Events    | JSON     | `docs/analytics-events.json`                          | Server-side event type validation |
-| Audit Log           | JSONL    | `docs/audit/audit.jsonl`                              | `audit.js` internal validation    |
-| Reevaluate Trigger  | JSON     | `docs/session/reevaluate-trigger.json`                | Inline validation in server.js    |
+| Analytics Events    | JSON     | `BusinessDocs/analytics-events.json`                  | Server-side event type validation |
+| Audit Log           | JSONL    | `BusinessDocs/audit/audit-log.jsonl`                  | `audit.js` internal validation    |
+| Reevaluate Trigger  | JSON     | `BusinessDocs/session/reevaluate-trigger.json`        | Inline validation in server.js    |
 | Help Content        | Markdown | `docs/help/*.md`                                      | Filesystem scan, slug validation  |
 | Official Documents  | Markdown | `BusinessDocs/OfficialDocuments/*.md`                 | N/A (freeform content)            |
 | Document Registry   | Markdown | `BusinessDocs/OfficialDocuments/document-registry.md` | N/A                               |
@@ -193,7 +193,7 @@ required vs optional distribution.
 
 ### 7. Audit Log
 
-**File:** `docs/audit/audit.jsonl` **Format:** JSON Lines (one JSON
+**File:** `BusinessDocs/audit/audit-log.jsonl` **Format:** JSON Lines (one JSON
 object per line) **Module:** `audit.js` (AuditTrail class)
 
 | Field         | Type   | Required | Description                                                        |

@@ -167,7 +167,7 @@ This is your primary communication channel with the agent team. See
 
 **Do not modify** unless you're changing system rules.
 
-### Templates — `docs/templates/`
+### Output templates — `templates/sdlc/output-templates/`
 
 Template files used by agents to format their outputs (analysis,
 recommendations, sprint plan, guardrails). **Do not modify.**

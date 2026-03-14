@@ -619,7 +619,7 @@ Triggers a reevaluation of one or more scopes.
 
 **Response:** `{ "ok": true, "scope": "TECH" }`
 
-Writes a trigger file to `docs/session/reevaluate-trigger.json`.
+Writes a trigger file to `BusinessDocs/session/reevaluate-trigger.json`.
 
 ### Help
 
@@ -792,7 +792,7 @@ Lightweight health check (no JSON structure, fast response).
 
 ### session-state.json
 
-Location: `docs/session/session-state.json`
+Location: `BusinessDocs/session/session-state.json`
 
 ```json
 {
@@ -866,7 +866,7 @@ JSON array of event objects:
 
 ### Audit Log
 
-Location: `docs/audit/audit.jsonl`
+Location: `BusinessDocs/audit/audit-log.jsonl`
 
 Append-only JSON Lines file:
 
@@ -883,7 +883,7 @@ Append-only JSON Lines file:
 
 ### Command Queue
 
-Location: `docs/session/command-queue.json`
+Location: `BusinessDocs/session/command-queue.json`
 
 JSON array of command entries:
 
@@ -1391,7 +1391,7 @@ The server emits JSON-formatted log lines to stdout:
 ### Audit Trail
 
 All data mutations (questionnaire answers, decision changes) are logged to the
-append-only audit trail at `docs/audit/audit.jsonl`. Query via
+append-only audit trail at `BusinessDocs/audit/audit-log.jsonl`. Query via
 `GET /api/audit?limit=100`.
 
 ---

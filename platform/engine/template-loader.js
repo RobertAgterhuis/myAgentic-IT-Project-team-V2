@@ -270,7 +270,7 @@ function listTemplates(templatesDir) {
  * decisions directory into the target project directory. Only seeds when the
  * target decisions directory does not already exist (never overwrites).
  *
- * @param {string} [templateName] - Template to seed from. Defaults to 'sdlc'.
+ * @param {string} templateName - Template to seed from (e.g. 'sdlc').
  * @param {string} targetDir - Absolute path to the project root (e.g. BusinessDocs/).
  * @param {string} [templatesDir] - Override templates base directory.
  * @returns {{ seeded: boolean, files: string[], indexFile: string|null }}

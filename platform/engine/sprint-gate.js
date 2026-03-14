@@ -158,9 +158,11 @@ function loadReevaluateTrigger(store, triggerPath) {
  * @param {object} store
  * @param {string} sprintScope - e.g. 'SP-5' or 'Phase 5'
  * @param {object} [paths]
+ * @param {object} [templateConfig]
+ * @param {Array<{file: string, name: string, defaultStatus: string}>} [templateConfig.decisionCategories] - Template-defined categories
  * @returns {{ decisions: Array, blockingQuestions: Array, reevaluate: object, activeCategories: Array }}
  */
-function loadDecisionsAndTriggers(store, sprintScope, paths = {}) {
+function loadDecisionsAndTriggers(store, sprintScope, paths = {}, templateConfig = {}) {
   const decisionsPath = paths.decisionsPath || DECISIONS_PATH;
   const triggerPath = paths.triggerPath || REEVALUATE_TRIGGER_PATH;
 
@@ -179,7 +181,20 @@ function loadDecisionsAndTriggers(store, sprintScope, paths = {}) {
 
   const reevaluate = loadReevaluateTrigger(store, triggerPath);
 
-  const activeCategories = decisions.categories.filter((c) => c.status === 'ACTIVE');
+  // Merge template-defined categories with parsed categories from the markdown.
+  // Template categories provide the authoritative defaultStatus when present.
+  let activeCategories;
+  if (
+    templateConfig.decisionCategories &&
+    Array.isArray(templateConfig.decisionCategories) &&
+    templateConfig.decisionCategories.length > 0
+  ) {
+    activeCategories = templateConfig.decisionCategories.filter(
+      (c) => c.defaultStatus === 'ACTIVE'
+    );
+  } else {
+    activeCategories = decisions.categories.filter((c) => c.status === 'ACTIVE');
+  }
 
   return {
     decisions: decisions.decided,
@@ -557,7 +572,7 @@ function checkBlockers(store, blockerPath) {
  * @returns {{verdict: string, blockers: Array, steps: object, summary: object}}
  */
 function runSprintGate(store, options) {
-  const { sprintId, stories = [], plannedItems, paths = {} } = options;
+  const { sprintId, stories = [], plannedItems, paths = {}, templateConfig = {} } = options;
 
   if (!sprintId) {
     return {
@@ -575,7 +590,7 @@ function runSprintGate(store, options) {
   }
 
   // Step 0: Decisions & reevaluate triggers
-  const step0 = loadDecisionsAndTriggers(store, sprintId, paths);
+  const step0 = loadDecisionsAndTriggers(store, sprintId, paths, templateConfig);
 
   // Step 1: Definition of Ready
   const step1 = checkDefinitionOfReady(stories);

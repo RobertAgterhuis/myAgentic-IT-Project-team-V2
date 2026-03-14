@@ -157,6 +157,69 @@ describe('parseDecisions', () => {
   });
 });
 
+/* ── parseDecisions — data-driven indexSections (S7) ──────────── */
+
+describe('parseDecisions — custom indexSections (S7)', () => {
+  const customContent = [
+    '## Open Questions',
+    '',
+    '| ID | Priority | Scope | Question | Answer | Date |',
+    '|-----|----------|-------|----------|--------|------|',
+    '| DEC-OPEN-001 | HIGH | Tech | Should we use Redis? | | 2026-03-01 |',
+    '',
+    '---',
+    '',
+    '### Transformation Decisions',
+    '',
+    '| ID | Priority | Scope | Decision | Notes | Date |',
+    '|-----|----------|-------|----------|-------|------|',
+    '| DEC-T-001 | HIGH | Arch | Migrate to monorepo | Approved | 2026-03-01 |',
+    '',
+    '### Reevaluation Decisions',
+    '',
+    '| ID | Priority | Scope | Decision | Notes | Date |',
+    '|-----|----------|-------|----------|-------|------|',
+    '| DEC-R2-001 | MEDIUM | UX | Revisit nav | Pending | 2026-03-01 |',
+    '',
+    '### Operational Decisions',
+    '',
+    '| ID | Priority | Scope | Decision | Notes | Date |',
+    '|-----|----------|-------|----------|-------|------|',
+    '| DEC-001 | LOW | Infra | Use localhost only | note | 2026-03-01 |',
+    '',
+    '---',
+  ].join('\n');
+
+  it('parses default index sections (Transformation + Reevaluation)', () => {
+    const { decided } = models.parseDecisions(customContent);
+    expect(decided).toHaveLength(3);
+    expect(decided.map((d) => d.id)).toEqual(['DEC-T-001', 'DEC-R2-001', 'DEC-001']);
+  });
+
+  it('accepts custom indexSections from template', () => {
+    const customSections = [{ heading: 'Transformation Decisions', idPattern: 'DEC-T-[\\d]+' }];
+    const { decided } = models.parseDecisions(customContent, { indexSections: customSections });
+    // Only Transformation + Operational (default catch-all), NOT Reevaluation
+    expect(decided).toHaveLength(2);
+    expect(decided.map((d) => d.id)).toEqual(['DEC-T-001', 'DEC-001']);
+  });
+
+  it('accepts empty indexSections to skip named subsections', () => {
+    const { decided } = models.parseDecisions(customContent, { indexSections: [] });
+    // Only Operational decisions (default catch-all)
+    expect(decided).toHaveLength(1);
+    expect(decided[0].id).toBe('DEC-001');
+  });
+
+  it('exports DEFAULT_INDEX_SECTIONS', () => {
+    expect(models.DEFAULT_INDEX_SECTIONS).toBeDefined();
+    expect(Array.isArray(models.DEFAULT_INDEX_SECTIONS)).toBe(true);
+    expect(models.DEFAULT_INDEX_SECTIONS.length).toBe(2);
+    expect(models.DEFAULT_INDEX_SECTIONS[0].heading).toBe('Transformation Decisions');
+    expect(models.DEFAULT_INDEX_SECTIONS[1].heading).toBe('Reevaluation Decisions');
+  });
+});
+
 /* ── Decision mutation functions ───────────────────────────────── */
 
 describe('nextDecisionId', () => {

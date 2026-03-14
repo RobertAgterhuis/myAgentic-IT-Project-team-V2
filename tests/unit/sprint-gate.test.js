@@ -1149,6 +1149,73 @@ describe('loadDecisionsAndTriggers — decision parsing edge cases', () => {
   });
 });
 
+/* ── loadDecisionsAndTriggers — templateConfig injection (S7) ── */
+
+describe('loadDecisionsAndTriggers — templateConfig injection (S7)', () => {
+  test('uses template decisionCategories for activeCategories when provided', () => {
+    const decisionsContent = [
+      '## Decision Categories',
+      '',
+      '| Stack | File | Count | Status | Applicable |',
+      '| --- | --- | --- | --- | --- |',
+      '| Backend | [file](path) | 3 | ACTIVE | Yes |',
+      '| Frontend | [file](path) | 5 | DEFERRED | No |',
+    ].join('\n');
+    const store = createMockStore({
+      [DECISIONS_PATH]: decisionsContent,
+    });
+    const templateConfig = {
+      decisionCategories: [
+        { file: 'back.md', name: 'Backend', defaultStatus: 'DEFERRED' },
+        { file: 'front.md', name: 'Frontend', defaultStatus: 'ACTIVE' },
+      ],
+    };
+    const result = loadDecisionsAndTriggers(store, 'SP-5', {}, templateConfig);
+    // Template says Frontend is ACTIVE (overriding the markdown's DEFERRED)
+    expect(result.activeCategories).toHaveLength(1);
+    expect(result.activeCategories[0].name).toBe('Frontend');
+  });
+
+  test('falls back to markdown categories when templateConfig is empty', () => {
+    const decisionsContent = [
+      '## Decision Categories',
+      '',
+      '| Stack | File | Count | Status | Applicable |',
+      '| --- | --- | --- | --- | --- |',
+      '| Backend | [file](path) | 3 | ACTIVE | Yes |',
+    ].join('\n');
+    const store = createMockStore({
+      [DECISIONS_PATH]: decisionsContent,
+    });
+    const result = loadDecisionsAndTriggers(store, 'SP-5', {}, {});
+    expect(result.activeCategories).toHaveLength(1);
+    expect(result.activeCategories[0].stack).toBe('Backend');
+  });
+
+  test('runSprintGate passes templateConfig to step 0', () => {
+    const decisionsContent = [
+      '## Open Questions',
+      '',
+      '| ID | Priority | Scope | Question | Answer | Date |',
+      '| --- | --- | --- | --- | --- | --- |',
+    ].join('\n');
+    const store = createMockStore({
+      [DECISIONS_PATH]: decisionsContent,
+    });
+    const result = runSprintGate(store, {
+      sprintId: 'SP-1',
+      stories: [
+        { title: 'S', acceptanceCriteria: ['AC'], estimate: 3, dependenciesResolved: true },
+      ],
+      templateConfig: {
+        decisionCategories: [{ file: 'a.md', name: 'Alpha', defaultStatus: 'ACTIVE' }],
+      },
+    });
+    expect(result.steps.step0_decisions.activeCategories).toHaveLength(1);
+    expect(result.steps.step0_decisions.activeCategories[0].name).toBe('Alpha');
+  });
+});
+
 describe('checkBlockers — blocker classification edge', () => {
   test('non-BLOCKING non-ADVISORY items are not listed in openBlockers or advisories', () => {
     const md = [

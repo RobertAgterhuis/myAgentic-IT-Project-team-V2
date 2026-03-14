@@ -295,6 +295,9 @@ function createEngine(options) {
    * @returns {{verdict: string, blockers: Array, steps: object, summary: object}}
    */
   function sprintGate(opts = {}) {
+    if (template && template.decisionCategories && !opts.templateConfig) {
+      opts = { ...opts, templateConfig: { decisionCategories: template.decisionCategories } };
+    }
     const result = runSprintGate(store, opts);
 
     if (result.verdict === 'READY') {

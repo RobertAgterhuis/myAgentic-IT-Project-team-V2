@@ -256,12 +256,26 @@ function parseDecisionTable(content, sectionRegex, rowRegex, mapRow) {
 }
 
 /**
+ * Default index subsections parsed from decisions.md.
+ * Each entry defines a heading and a regex for matching decision IDs.
+ * Templates can override this via `decisionCategories[].indexSection`.
+ */
+const DEFAULT_INDEX_SECTIONS = [
+  { heading: 'Transformation Decisions', idPattern: 'DEC-T-[\\d]+' },
+  { heading: 'Reevaluation Decisions', idPattern: 'DEC-R2-[\\d]+' },
+];
+
+/**
  * Parse the decisions markdown into structured open, decided, and deferred lists.
  * @param {string} content - Full decisions.md content.
+ * @param {object} [options]
+ * @param {Array<{heading: string, idPattern: string}>} [options.indexSections] - Override subsection definitions.
  * @returns {{ open: object[], decided: object[], deferred: object[] }}
  */
-function parseDecisions(content) {
+function parseDecisions(content, options = {}) {
   if (!content) return { open: [], decided: [], deferred: [] };
+
+  const sections = options.indexSections || DEFAULT_INDEX_SECTIONS;
 
   const open = parseDecisionTable(
     content,
@@ -282,11 +296,17 @@ function parseDecisions(content) {
           }
   );
 
-  const trans = parseDecisionTable(
-    content,
-    /### Transformation Decisions[^\n]*\n([\s\S]*?)(?=\n### |\n---|\n## )/,
-    /\|\s*(DEC-T-[\d]+)\s*\|\s*(HIGH|MEDIUM|LOW)\s*\|\s*([^|]*)\|\s*([^|]*)\|\s*([^|]*)\|\s*([\d-]*)\s*\|/g,
-    (m) => ({
+  // Parse template-defined index subsections (data-driven)
+  const sectionDecided = [];
+  for (const sec of sections) {
+    const heading = sec.heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const sectionRx = new RegExp(`### ${heading}[^\\n]*\\n([\\s\\S]*?)(?=\\n### |\\n---|\\n## )`);
+    const idPat = sec.idPattern || 'DEC-[\\w-]+';
+    const rowRx = new RegExp(
+      `\\|\\s*(${idPat})\\s*\\|\\s*(HIGH|MEDIUM|LOW)\\s*\\|\\s*([^|]*)\\|\\s*([^|]*)\\|\\s*([^|]*)\\|\\s*([\\d-]*)\\s*\\|`,
+      'g'
+    );
+    const items = parseDecisionTable(content, sectionRx, rowRx, (m) => ({
       id: m[1],
       type: 'DECIDED',
       status: 'DECIDED',
@@ -295,24 +315,9 @@ function parseDecisions(content) {
       decision: m[4].trim(),
       notes: m[5].trim(),
       date: m[6].trim(),
-    })
-  );
-
-  const reev = parseDecisionTable(
-    content,
-    /### Reevaluation Decisions[^\n]*\n([\s\S]*?)(?=\n### |\n---|\n## )/,
-    /\|\s*(DEC-R2-[\d]+)\s*\|\s*(HIGH|MEDIUM|LOW)\s*\|\s*([^|]*)\|\s*([^|]*)\|\s*([^|]*)\|\s*([\d-]*)\s*\|/g,
-    (m) => ({
-      id: m[1],
-      type: 'DECIDED',
-      status: 'DECIDED',
-      priority: m[2],
-      scope: m[3].trim(),
-      decision: m[4].trim(),
-      notes: m[5].trim(),
-      date: m[6].trim(),
-    })
-  );
+    }));
+    sectionDecided.push(...items);
+  }
 
   const ops = parseDecisionTable(
     content,
@@ -348,7 +353,7 @@ function parseDecisions(content) {
     })
   );
 
-  return { open, decided: [...trans, ...reev, ...ops], deferred };
+  return { open, decided: [...sectionDecided, ...ops], deferred };
 }
 
 /* ── Category file parsers (multi-file decisions) ─────────────── */
@@ -814,6 +819,7 @@ module.exports = {
   updateAnswerInContent,
 
   // Decisions
+  DEFAULT_INDEX_SECTIONS,
   parseDecisions,
   parseCategoryHeader,
   parseCategoryDecisions,

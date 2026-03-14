@@ -58,7 +58,7 @@
       "name": "Orchestrator",
       "role": "Orchestrator specialist role",
       "phase": "ORCHESTRATION",
-      "skillFiles": ["agents/00-orchestrator.md"],
+      "skillFiles": ["templates/sdlc/agents/00-orchestrator.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -91,7 +91,7 @@
       "name": "Business Analyst",
       "role": "Business Analyst specialist role",
       "phase": "PHASE_1",
-      "skillFiles": ["agents/01-business-analyst.md"],
+      "skillFiles": ["templates/sdlc/agents/01-business-analyst.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -127,7 +127,7 @@
       "name": "Domain Expert",
       "role": "Domain Expert specialist role",
       "phase": "PHASE_1",
-      "skillFiles": ["agents/02-domain-expert.md"],
+      "skillFiles": ["templates/sdlc/agents/02-domain-expert.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -163,7 +163,7 @@
       "name": "Sales Strategist",
       "role": "Sales Strategist specialist role",
       "phase": "PHASE_1",
-      "skillFiles": ["agents/03-sales-strategist.md"],
+      "skillFiles": ["templates/sdlc/agents/03-sales-strategist.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -199,7 +199,7 @@
       "name": "Financial Analyst",
       "role": "Financial Analyst specialist role",
       "phase": "PHASE_1",
-      "skillFiles": ["agents/04-financial-analyst.md"],
+      "skillFiles": ["templates/sdlc/agents/04-financial-analyst.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -235,7 +235,7 @@
       "name": "Software Architect",
       "role": "Software Architect specialist role",
       "phase": "PHASE_2",
-      "skillFiles": ["agents/05-software-architect.md"],
+      "skillFiles": ["templates/sdlc/agents/05-software-architect.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -273,7 +273,7 @@
       "name": "Senior Developer",
       "role": "Senior Developer specialist role",
       "phase": "PHASE_2",
-      "skillFiles": ["agents/06-senior-developer.md"],
+      "skillFiles": ["templates/sdlc/agents/06-senior-developer.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -311,7 +311,7 @@
       "name": "DevOps Engineer",
       "role": "DevOps Engineer specialist role",
       "phase": "PHASE_2",
-      "skillFiles": ["agents/07-devops-engineer.md"],
+      "skillFiles": ["templates/sdlc/agents/07-devops-engineer.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -349,7 +349,7 @@
       "name": "Security Architect",
       "role": "Security Architect specialist role",
       "phase": "PHASE_2",
-      "skillFiles": ["agents/08-security-architect.md"],
+      "skillFiles": ["templates/sdlc/agents/08-security-architect.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -387,7 +387,7 @@
       "name": "Data Architect",
       "role": "Data Architect specialist role",
       "phase": "PHASE_2",
-      "skillFiles": ["agents/09-data-architect.md"],
+      "skillFiles": ["templates/sdlc/agents/09-data-architect.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -425,7 +425,7 @@
       "name": "UX Researcher",
       "role": "UX Researcher specialist role",
       "phase": "PHASE_3",
-      "skillFiles": ["agents/10-ux-researcher.md"],
+      "skillFiles": ["templates/sdlc/agents/10-ux-researcher.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -462,7 +462,7 @@
       "name": "UX Designer",
       "role": "UX Designer specialist role",
       "phase": "PHASE_3",
-      "skillFiles": ["agents/11-ux-designer.md"],
+      "skillFiles": ["templates/sdlc/agents/11-ux-designer.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -499,7 +499,7 @@
       "name": "UI Designer",
       "role": "UI Designer specialist role",
       "phase": "PHASE_3",
-      "skillFiles": ["agents/12-ui-designer.md"],
+      "skillFiles": ["templates/sdlc/agents/12-ui-designer.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -536,7 +536,7 @@
       "name": "Accessibility Specialist",
       "role": "Accessibility Specialist specialist role",
       "phase": "PHASE_3",
-      "skillFiles": ["agents/13-accessibility-specialist.md"],
+      "skillFiles": ["templates/sdlc/agents/13-accessibility-specialist.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -573,7 +573,7 @@
       "name": "Brand Strategist",
       "role": "Brand Strategist specialist role",
       "phase": "PHASE_4",
-      "skillFiles": ["agents/14-brand-strategist.md"],
+      "skillFiles": ["templates/sdlc/agents/14-brand-strategist.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -610,7 +610,7 @@
       "name": "Growth Marketer",
       "role": "Growth Marketer specialist role",
       "phase": "PHASE_4",
-      "skillFiles": ["agents/15-growth-marketer.md"],
+      "skillFiles": ["templates/sdlc/agents/15-growth-marketer.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -647,7 +647,7 @@
       "name": "CRO Specialist",
       "role": "CRO Specialist specialist role",
       "phase": "PHASE_4",
-      "skillFiles": ["agents/16-cro-specialist.md"],
+      "skillFiles": ["templates/sdlc/agents/16-cro-specialist.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -684,7 +684,7 @@
       "name": "Synthesis Agent",
       "role": "Synthesis Agent specialist role",
       "phase": "SYNTHESIS",
-      "skillFiles": ["agents/17-synthesis-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/17-synthesis-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -714,7 +714,7 @@
       "name": "Critic Agent",
       "role": "Critic Agent specialist role",
       "phase": "CRITIC_RISK",
-      "skillFiles": ["agents/18-critic-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/18-critic-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -745,7 +745,7 @@
       "name": "Risk Agent",
       "role": "Risk Agent specialist role",
       "phase": "CRITIC_RISK",
-      "skillFiles": ["agents/19-risk-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/19-risk-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -776,7 +776,7 @@
       "name": "Implementation Agent",
       "role": "Implementation Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": ["agents/20-implementation-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/20-implementation-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -811,7 +811,7 @@
       "name": "Test Agent",
       "role": "Test Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": ["agents/21-test-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/21-test-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -846,7 +846,7 @@
       "name": "PR/Review Agent",
       "role": "PR/Review Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": ["agents/22-pr-review-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/22-pr-review-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -881,7 +881,7 @@
       "name": "Reevaluate Agent",
       "role": "Reevaluate Agent specialist role",
       "phase": "REEVALUATE",
-      "skillFiles": ["agents/23-reevaluate-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/23-reevaluate-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -911,7 +911,7 @@
       "name": "Feature Agent",
       "role": "Feature Agent specialist role",
       "phase": "FEATURE",
-      "skillFiles": ["agents/24-feature-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/24-feature-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -941,7 +941,7 @@
       "name": "Onboarding Agent",
       "role": "Onboarding Agent specialist role",
       "phase": "ONBOARDING",
-      "skillFiles": ["agents/25-onboarding-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/25-onboarding-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -972,7 +972,7 @@
       "name": "Documentation Agent",
       "role": "Documentation Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": ["agents/26-documentation-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/26-documentation-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1007,7 +1007,7 @@
       "name": "GitHub Integration Agent",
       "role": "GitHub Integration Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": ["agents/27-github-integration-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/27-github-integration-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1042,7 +1042,7 @@
       "name": "Sprint Retrospective Agent",
       "role": "Sprint Retrospective Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": ["agents/28-retrospective-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/28-retrospective-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1077,7 +1077,7 @@
       "name": "KPI/Metrics Agent",
       "role": "KPI/Metrics Agent specialist role",
       "phase": "PHASE_5",
-      "skillFiles": ["agents/29-kpi-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/29-kpi-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1112,7 +1112,7 @@
       "name": "Brand & Assets Agent (Canva)",
       "role": "Brand & Assets Agent (Canva) specialist role",
       "phase": "PHASE_4",
-      "skillFiles": ["agents/30-brand-assets-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/30-brand-assets-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1146,7 +1146,7 @@
       "name": "Storybook Agent",
       "role": "Storybook Agent specialist role",
       "phase": "PHASE_4",
-      "skillFiles": ["agents/31-storybook-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/31-storybook-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1180,7 +1180,7 @@
       "name": "Content Strategist / UX Writer",
       "role": "Content Strategist / UX Writer specialist role",
       "phase": "PHASE_3",
-      "skillFiles": ["agents/32-content-strategist.md"],
+      "skillFiles": ["templates/sdlc/agents/32-content-strategist.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1217,7 +1217,7 @@
       "name": "Legal / Privacy Counsel",
       "role": "Legal / Privacy Counsel specialist role",
       "phase": "PHASE_2",
-      "skillFiles": ["agents/33-legal-counsel.md"],
+      "skillFiles": ["templates/sdlc/agents/33-legal-counsel.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1255,7 +1255,7 @@
       "name": "Product Manager",
       "role": "Product Manager specialist role",
       "phase": "PHASE_1",
-      "skillFiles": ["agents/34-product-manager.md"],
+      "skillFiles": ["templates/sdlc/agents/34-product-manager.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1291,7 +1291,7 @@
       "name": "Localization Specialist",
       "role": "Localization Specialist specialist role",
       "phase": "PHASE_3",
-      "skillFiles": ["agents/35-localization-specialist.md"],
+      "skillFiles": ["templates/sdlc/agents/35-localization-specialist.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1328,7 +1328,7 @@
       "name": "Questionnaire Agent",
       "role": "Questionnaire Agent specialist role",
       "phase": "QUESTIONNAIRE",
-      "skillFiles": ["agents/36-questionnaire-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/36-questionnaire-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",
@@ -1361,7 +1361,7 @@
       "name": "Scope Change Agent",
       "role": "Scope Change Agent specialist role",
       "phase": "SCOPE_CHANGE",
-      "skillFiles": ["agents/37-scope-change-agent.md"],
+      "skillFiles": ["templates/sdlc/agents/37-scope-change-agent.md"],
       "tools": [
         "tool.files.read",
         "tool.files.write",

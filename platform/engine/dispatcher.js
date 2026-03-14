@@ -95,7 +95,7 @@ const DEFAULT_CONFIG = Object.freeze({
   timeoutMs: 300000, // 5 minutes default
   maxRetries: 2,
   retryDelayMs: 5000,
-  skillsDir: 'agents',
+  skillsDir: 'templates/sdlc/agents',
   docsDir: 'docs',
 });
 

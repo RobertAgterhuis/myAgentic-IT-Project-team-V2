@@ -1,3 +1,10 @@
+---
+title: Milestones API
+parent: API Reference
+nav_order: 1
+description: REST API reference for project milestone CRUD operations.
+---
+
 # Milestones REST API Reference
 
 **Module**: `routes/milestones.js`  
@@ -441,21 +448,20 @@ All error responses follow this format:
 
 **HTTP Status Codes**:
 
-| Status | Meaning         | Cause                                                  |
-| ------ | --------------- | ------------------------------------------------------ |
-| 200    | OK              | Successful GET request                                 |
-| 201    | Created         | Successful POST request                                |
-| 400    | Bad Request     | Invalid JSON, missing required field, validation error |
-| 404    | Not Found       | Milestone ID does not exist                            |
-| 409    | Conflict        | Duplicate milestone name                               |
-| 500    | Server Error    | Unexpected error (file I/O, parsing, etc.)             |
-| 501    | Not Implemented | Endpoint not yet implemented (SP-9.2, SP-9.3)          |
+| Status | Meaning      | Cause                                                  |
+| ------ | ------------ | ------------------------------------------------------ |
+| 200    | OK           | Successful GET request                                 |
+| 201    | Created      | Successful POST request                                |
+| 400    | Bad Request  | Invalid JSON, missing required field, validation error |
+| 404    | Not Found    | Milestone ID does not exist                            |
+| 409    | Conflict     | Duplicate milestone name                               |
+| 500    | Server Error | Unexpected error (file I/O, parsing, etc.)             |
 
 ---
 
 ## Audit Trail
 
-Every milestone change is logged to `BusinessDocs/audit/milestones.jsonl` for
+Every milestone change is logged to `BusinessDocs/audit/audit-log.jsonl` for
 compliance and audit purposes.
 
 **Audit Entry Format**:

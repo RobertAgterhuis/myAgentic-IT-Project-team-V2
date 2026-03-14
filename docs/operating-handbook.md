@@ -1,3 +1,9 @@
+---
+title: Operating Handbook
+nav_order: 13
+description: Day-to-day operational procedures for running the Agentic SDLC Platform.
+---
+
 # Operating Handbook — Agentic SDLC Platform
 
 | Field             | Value                                       |
@@ -122,15 +128,14 @@ Chat — the Orchestrator will re-create it from the last known phase outputs.
 ### Tests fail on fresh clone
 
 ```bash
-# Ensure dependencies are installed for both workspaces
+# Ensure dependencies are installed
 npm install
 
 # Run tests
-npm test               # Root (Jest)
-npm run test:vitest   # Vitest (1239 tests)
+npm test               # Vitest (1370 tests)
 ```
 
-If `contrast.test.js` fails, verify that `docs/brand/design-tokens.json`
+If `contrast.test.js` fails, verify that `src/webapp/brand/design-tokens.json`
 contains the `color.light` and `color.dark` sections.
 
 ### Docker containers won't start

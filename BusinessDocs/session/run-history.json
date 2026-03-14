@@ -1,0 +1,100 @@
+[
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-14T19:11:20.422Z",
+    "ended_at": "2026-03-14T19:11:20.423Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-14T19:11:20.422Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-14T19:11:47.960Z",
+    "ended_at": "2026-03-14T19:11:47.960Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-14T19:11:47.960Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-14T19:12:05.640Z",
+    "ended_at": "2026-03-14T19:12:05.641Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-14T19:12:05.640Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-14T19:27:37.450Z",
+    "ended_at": "2026-03-14T19:27:37.451Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-14T19:27:37.450Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-14T19:37:02.485Z",
+    "ended_at": "2026-03-14T19:37:02.486Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-14T19:37:02.485Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-14T19:50:28.788Z",
+    "ended_at": "2026-03-14T19:50:28.789Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-14T19:50:28.788Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-14T19:51:57.342Z",
+    "ended_at": "2026-03-14T19:51:57.343Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-14T19:51:57.342Z"
+      }
+    ],
+    "gate_results": {}
+  }
+]

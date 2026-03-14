@@ -1,3 +1,9 @@
+---
+title: About
+nav_exclude: true
+description: Repository overview page.
+---
+
 # myAgentic-IT-Project-team – End-to-End Software Solution Creation & Audit
 
 A **multi-agent system** for creating complete, production-ready software

@@ -1,3 +1,9 @@
+---
+title: GA Definition
+nav_order: 14
+description: General Availability definition and deployment profile for v1.0.
+---
+
 # GA Definition — Agentic SDLC Platform v1.0
 
 | Field             | Value                                                                          |

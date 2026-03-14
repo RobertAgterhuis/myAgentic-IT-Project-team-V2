@@ -1,3 +1,9 @@
+---
+title: Privacy Policy
+nav_order: 18
+description: Privacy policy for the localhost single-operator deployment.
+---
+
 # Privacy Policy — Agentic SDLC Platform
 
 **Effective Date:** 2026-03-12  

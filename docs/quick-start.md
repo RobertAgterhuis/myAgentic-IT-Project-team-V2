@@ -1,3 +1,9 @@
+---
+title: Quick Start
+nav_order: 5
+description: Get the Agentic SDLC Platform running and create your first project in under 5 minutes.
+---
+
 # Quick Start Guide
 
 Get the Agentic SDLC Platform running and create your first project in under 5

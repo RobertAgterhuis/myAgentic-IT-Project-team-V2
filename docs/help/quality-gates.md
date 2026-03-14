@@ -1,3 +1,10 @@
+---
+title: Quality Gates
+parent: Help
+nav_order: 12
+description: Critic + Risk validation process and quality gate criteria.
+---
+
 # Quality Gates — Critic + Risk Validation
 
 Every phase in this system must pass **two independent quality gates** before

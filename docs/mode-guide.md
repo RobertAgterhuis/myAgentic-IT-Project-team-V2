@@ -1,3 +1,9 @@
+---
+title: Mode Guide
+nav_order: 12
+description: Differences between CREATE mode (new software) and AUDIT mode (existing software analysis).
+---
+
 # Mode Guide: CREATE vs AUDIT
 
 > This guide explains how to use the system in its two operating modes.  

@@ -1,3 +1,10 @@
+---
+title: Data Inventory
+parent: Security
+nav_order: 2
+description: Data categories, retention model, and PII inventory.
+---
+
 # Data Inventory — Agentic SDLC Platform
 
 | Field             | Value                                                                                           |
@@ -39,13 +46,13 @@ All data stored by the Agentic SDLC Platform in the v1 GA
 
 ### 1.3 Phase Deliverables
 
-| Data Element         | Format         | Location                  | Contains PII | Retention        |
-| -------------------- | -------------- | ------------------------- | ------------ | ---------------- |
-| Phase 1–4 analyses   | Markdown       | `docs/phase-{1,2,3,4}/`   | No           | Project lifetime |
-| Synthesis reports    | Markdown       | `BusinessDocs/synthesis/` | No           | Project lifetime |
-| Sprint plans/reports | Markdown       | `BusinessDocs/phase-5/`   | No           | Project lifetime |
-| Brand assets         | JSON, Markdown | `src/webapp/brand/`       | No           | Project lifetime |
-| Storybook inventory  | Markdown       | `BusinessDocs/storybook/` | No           | Project lifetime |
+| Data Element         | Format         | Location                    | Contains PII | Retention        |
+| -------------------- | -------------- | --------------------------- | ------------ | ---------------- |
+| Phase 1–4 analyses   | Markdown       | `BusinessDocs/Phase{1-4}*/` | No           | Project lifetime |
+| Synthesis reports    | Markdown       | `BusinessDocs/synthesis/`   | No           | Project lifetime |
+| Sprint plans/reports | Markdown       | `BusinessDocs/phase-5/`     | No           | Project lifetime |
+| Brand assets         | JSON, Markdown | `src/webapp/brand/`         | No           | Project lifetime |
+| Storybook inventory  | Markdown       | `BusinessDocs/storybook/`   | No           | Project lifetime |
 
 ### 1.4 Analytics Data
 

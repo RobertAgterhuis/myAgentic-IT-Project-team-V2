@@ -1,3 +1,10 @@
+---
+title: Advanced Commands
+parent: Help
+nav_order: 3
+description: Deep-dive into FEATURE, SCOPE CHANGE, and HOTFIX commands.
+---
+
 # Advanced Commands — FEATURE, SCOPE CHANGE & HOTFIX
 
 The [Commands Reference](commands.md) lists every command. This page goes deeper

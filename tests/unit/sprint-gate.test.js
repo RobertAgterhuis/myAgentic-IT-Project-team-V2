@@ -506,6 +506,40 @@ describe('loadLessonsLearned', () => {
     const result = loadLessonsLearned(store, customPath);
     expect(result.count).toBe(1);
   });
+
+  test('returns promotionCandidates for PROMOTE_TO_DECISION flagged lessons', () => {
+    const md = [
+      '# Lessons Learned',
+      '',
+      '## Sprint 4 Lessons',
+      '',
+      '| ID | Lesson | Type | Applies To | Sprint N Action |',
+      '| --- | --- | --- | --- | --- |',
+      '| L1 | Write tests first | Process | All | Monitor |',
+      '| L2 | Split large stories | VELOCITY | Tech | PROMOTE_TO_DECISION |',
+    ].join('\n');
+    const store = createMockStore({ [LESSONS_LEARNED_PATH]: md });
+    const result = loadLessonsLearned(store);
+    expect(result.promotionCandidates).toHaveLength(1);
+    expect(result.promotionCandidates[0].id).toBe('L2');
+    expect(result.promotionCandidates[0].lesson).toBe('Split large stories');
+  });
+
+  test('returns empty promotionCandidates when no flagged lessons', () => {
+    const store = createMockStore({
+      [LESSONS_LEARNED_PATH]: buildLessonsLearnedMd({
+        sprintLessons: [{ id: 'L1', lesson: 'Normal lesson', type: 'Process', appliesTo: 'All' }],
+      }),
+    });
+    const result = loadLessonsLearned(store);
+    expect(result.promotionCandidates).toHaveLength(0);
+  });
+
+  test('returns empty promotionCandidates when file does not exist', () => {
+    const store = createMockStore({});
+    const result = loadLessonsLearned(store);
+    expect(result.promotionCandidates).toHaveLength(0);
+  });
 });
 
 // ═════════════════════════════════════════════════════════════
@@ -1003,6 +1037,28 @@ describe('runSprintGate', () => {
     expect(rules).toContain('BLOCKING_QUESTION');
     expect(rules).toContain('MISSING_AC');
     expect(rules).toContain('OPEN_BLOCKER');
+  });
+
+  test('includes promotionCandidates in step2 output', () => {
+    const lessonsWithPromotion = [
+      '# Lessons Learned',
+      '',
+      '## Sprint 4 Lessons',
+      '',
+      '| ID | Lesson | Type | Applies To | Sprint N Action |',
+      '| --- | --- | --- | --- | --- |',
+      '| L1 | Write tests first | Process | All | Monitor |',
+      '| L2 | Split large stories | VELOCITY | Tech | PROMOTE_TO_DECISION |',
+      '| L3 | Review deps weekly | Planning | All | PROMOTE_TO_DECISION |',
+    ].join('\n');
+    const store = buildFullStore({ lessons: lessonsWithPromotion });
+    const result = runSprintGate(store, {
+      sprintId: 'SP-5',
+      stories: [buildStory()],
+    });
+    expect(result.steps.step2_lessonsLearned.promotionCandidates).toHaveLength(2);
+    expect(result.steps.step2_lessonsLearned.promotionCandidates[0].id).toBe('L2');
+    expect(result.summary.promotionCandidates).toBe(2);
   });
 });
 

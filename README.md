@@ -4,8 +4,8 @@
 [![codecov](https://codecov.io/gh/RobertAgterhuis/myAgentic-IT-Project-team-V2/branch/main/graph/badge.svg)](https://codecov.io/gh/RobertAgterhuis/myAgentic-IT-Project-team-V2)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js ≥ 18](https://img.shields.io/badge/Node.js-%E2%89%A518-green.svg)](https://nodejs.org/)
-[![Tests: 1172 passing](https://img.shields.io/badge/Tests-1172%20passing-brightgreen.svg)](#testing)
-[![Coverage: 70%+ enforced](https://img.shields.io/badge/Coverage-70%25%2B%20enforced-brightgreen.svg)](#testing)
+[![Tests: 1370 passing](https://img.shields.io/badge/Tests-1370%20passing-brightgreen.svg)](#testing)
+[![Coverage: 88%+ enforced](https://img.shields.io/badge/Coverage-88%25%2B%20enforced-brightgreen.svg)](#testing)
 [![ESLint: 0 errors](https://img.shields.io/badge/ESLint-0%20errors-brightgreen.svg)](#code-quality)
 
 A **multi-agent system** of 38 specialized AI agents that creates complete,
@@ -44,16 +44,16 @@ implementation (human-in-the-loop, CONTINUE-to-proceed).
 
 ## Technology Stack
 
-| Layer      | Technology                                                                                                       |
-| ---------- | ---------------------------------------------------------------------------------------------------------------- |
-| Runtime    | Node.js ≥ 18 (zero external dependencies for web UI)                                                             |
-| Server     | Native `http` module, localhost only (127.0.0.1:3000)                                                            |
-| MCP Server | [Model Context Protocol](https://modelcontextprotocol.io/) via stdio transport                                   |
-| Data       | File-based JSON/Markdown storage with atomic writes                                                              |
-| Testing    | [Jest 29](https://jestjs.io/) (root, 363 tests) + [Vitest 4](https://vitest.dev/) (.github/, 809 tests)          |
-| Linting    | [ESLint 8](https://eslint.org/) (root, legacy config) + [ESLint 10](https://eslint.org/) (.github/, flat config) |
-| AI Agents  | [GitHub Copilot](https://github.com/features/copilot) agents in VS Code, Visual Studio, JetBrains                |
-| License    | MIT                                                                                                              |
+| Layer      | Technology                                                                                        |
+| ---------- | ------------------------------------------------------------------------------------------------- |
+| Runtime    | Node.js ≥ 18 (zero external dependencies for web UI)                                              |
+| Server     | Native `http` module, localhost only (127.0.0.1:3000)                                             |
+| MCP Server | [Model Context Protocol](https://modelcontextprotocol.io/) via stdio transport                    |
+| Data       | File-based JSON/Markdown storage with atomic writes                                               |
+| Testing    | [Vitest 4](https://vitest.dev/) (1370 tests across 47 files)                                      |
+| Linting    | [ESLint](https://eslint.org/) (flat config, `eslint.config.mjs`)                                  |
+| AI Agents  | [GitHub Copilot](https://github.com/features/copilot) agents in VS Code, Visual Studio, JetBrains |
+| License    | MIT                                                                                               |
 
 ---
 
@@ -206,7 +206,7 @@ templates/sdlc/
   playbooks/                  ← Process playbooks (CREATE + AUDIT)
 
 src/webapp/
-  server.js                   ← Express server entrypoint
+  server.js                   ← Native http server entrypoint
   routes/                     ← API route handlers
   ui/                         ← React single-page web UI
   brand/                      ← Design tokens + brand guidelines
@@ -281,49 +281,38 @@ see:
 
 ## Testing
 
-The project has **two separate test suites** (root and `.github/`):
-
 ```bash
-# Root test suite (Jest 29 — 363 tests)
-npm test
-
-# .github/ test suite (Vitest 4 — 809 tests)
-cd .github
-npm install   # first time only
+# Run all tests
 npm test
 
 # Run with coverage report
-npm run test:coverage
+npm run test:vitest:coverage
 
 # Watch mode (re-run on file changes)
-npm run test:watch
+npm run test:vitest:watch
 ```
 
-The test suite includes **1172 tests** across 45 files (17 Jest + 28 Vitest)
-with statement coverage enforced at 70%:
+The test suite includes **1370 tests** across 47 files (Vitest) with
+statement coverage at **88%+**:
 
-- **Root (`tests/`)** — 363 Jest tests: API endpoints, SSE, store caching,
-  decisions round-trip, path traversal, concurrent requests
-- **`tests/`** — 809 Vitest tests: unit (models, sanitization, cache,
-  schemas, audit trail, file locking, MCP server) + integration (API, store,
-  regression suite, WCAG contrast)
-- Coverage thresholds enforced at 70% (statements, branches, functions, lines)
+- **Unit tests (`tests/unit/`)** — Models, sanitization, cache, schemas,
+  audit trail, file locking, MCP server, engine, state machine, validators
+- **Integration tests (`tests/integration/`)** — API endpoints, store,
+  regression suite
+- **E2E tests (`tests/e2e/`)** — Playwright browser tests
+- **Smoke tests (`tests/smoke/`)** — Quick sanity checks
 
 ## Code Quality
 
 ```bash
-cd .github
 npm run lint
 ```
 
-Two ESLint configurations:
+Single ESLint flat config (`eslint.config.mjs`) with rules including
+`complexity` max 8, `no-unused-vars`, `no-var`, `prefer-const`, `eqeqeq`,
+`no-eval`, `no-implied-eval`.
 
-- **Root** — ESLint 8 (legacy `.eslintrc` format)
-- **`.github/`** — ESLint 10 (flat config, 7 rules: `complexity` max 8,
-  `no-unused-vars`, `no-var`, `prefer-const`, `eqeqeq`, `no-eval`,
-  `no-implied-eval`)
-
-Current status: **0 errors, 0 warnings** in both configs.
+Current status: **0 errors, 0 warnings**.
 
 ---
 

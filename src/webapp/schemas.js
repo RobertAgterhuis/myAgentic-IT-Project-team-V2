@@ -242,6 +242,7 @@ const VALID_MUTATION_ACTIONS = [
   'create',
   'reopen',
   'edit',
+  'promote-lesson',
 ];
 
 /**

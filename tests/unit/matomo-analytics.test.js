@@ -13,7 +13,7 @@ const ROOT = path.resolve(__dirname, '../..');
 
 /* ── Docker Compose stack validation ──────────────────────────── */
 describe('SP-2-MAT: Docker Compose analytics stack', () => {
-  const composePath = path.join(ROOT, 'docker-compose.analytics.yml');
+  const composePath = path.join(ROOT, 'infra', 'docker-compose.analytics.yml');
   let composeContent;
 
   beforeAll(() => {
@@ -88,7 +88,7 @@ describe('SP-2-MAT: Docker Compose analytics stack', () => {
 
 /* ── Nginx reverse proxy validation ──────────────────────────── */
 describe('SP-2-MAT: Nginx reverse proxy configuration', () => {
-  const nginxPath = path.join(ROOT, 'matomo-nginx.conf');
+  const nginxPath = path.join(ROOT, 'infra', 'matomo-nginx.conf');
   let nginxContent;
 
   beforeAll(() => {
@@ -209,7 +209,7 @@ describe('SP-2-MAT: Tracking script format', () => {
 
 /* ── Port allocation validation ──────────────────────────────── */
 describe('SP-2-MAT: Port allocation isolation', () => {
-  const analyticsCompose = path.join(ROOT, 'docker-compose.analytics.yml');
+  const analyticsCompose = path.join(ROOT, 'infra', 'docker-compose.analytics.yml');
 
   it('should allocate Matomo on port 8080 (non-conflicting)', () => {
     const content = fs.readFileSync(analyticsCompose, 'utf-8');

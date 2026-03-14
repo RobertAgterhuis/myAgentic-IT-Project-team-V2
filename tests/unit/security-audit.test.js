@@ -10,7 +10,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 
 describe('M5 Security Hardening', () => {
   describe('Dockerfile', () => {
-    const dockerfile = fs.readFileSync(path.join(ROOT, 'Dockerfile'), 'utf8');
+    const dockerfile = fs.readFileSync(path.join(ROOT, 'infra', 'Dockerfile'), 'utf8');
 
     it('runs as non-root user', () => {
       expect(dockerfile).toContain('USER node');
@@ -30,7 +30,7 @@ describe('M5 Security Hardening', () => {
   });
 
   describe('docker-compose.yml', () => {
-    const compose = fs.readFileSync(path.join(ROOT, 'docker-compose.yml'), 'utf8');
+    const compose = fs.readFileSync(path.join(ROOT, 'infra', 'docker-compose.yml'), 'utf8');
 
     it('binds port to localhost only', () => {
       expect(compose).toContain('127.0.0.1:3000:3000');

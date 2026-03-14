@@ -439,7 +439,7 @@ support and Outlook compatibility.
 ## Analytics (Matomo)
 
 Self-hosted privacy-first analytics via Matomo. Runs as a separate Docker stack
-(`docker-compose.analytics.yml`). Cookieless tracking mode preserves user
+(`infra/docker-compose.analytics.yml`). Cookieless tracking mode preserves user
 privacy while providing actionable metrics.
 
 See the [Technical Manual](technical-manual.md#analytics-stack-matomo) for setup
@@ -460,4 +460,4 @@ across three namespaces:
 Available locales: **en-US** (source), **fr-FR** (French), **de-DE** (German).
 Planned: ja-JP, zh-CN. Total: 127 keys × 3 locales = 381 translated strings.
 
-See `docker-compose.weblate.yml` for the translation management setup.
+See `infra/docker-compose.weblate.yml` for the translation management setup.

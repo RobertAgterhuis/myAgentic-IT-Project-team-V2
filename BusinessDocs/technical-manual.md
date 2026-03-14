@@ -941,17 +941,14 @@ The platform runs as a 7-container Docker stack (app + analytics + i18n):
 # Create .env with local credentials (see .env.example)
 # MATOMO_DB_PASSWORD, MATOMO_DB_ROOT_PASSWORD, WEBLATE_ADMIN_PASSWORD, WEBLATE_DB_PASSWORD
 
-# Start all services
-docker compose -f docker-compose.yml \
-  -f docker-compose.analytics.yml \
-  -f docker-compose.weblate.yml \
-  up --build -d
+# Start all services (full-stack developer mode)
+docker compose -f infra/docker-compose.dev.yml up --build -d
+
+# Or webapp only (end-users)
+docker compose -f infra/docker-compose.webapp.yml up --build -d
 
 # Verify all containers are healthy
-docker compose -f docker-compose.yml \
-  -f docker-compose.analytics.yml \
-  -f docker-compose.weblate.yml \
-  ps
+docker compose -f infra/docker-compose.dev.yml ps
 ```
 
 | Service                              | Port | Purpose                 |
@@ -981,20 +978,20 @@ npx pm2 status
 ### Analytics Stack (Matomo)
 
 Privacy-first analytics via self-hosted Matomo, defined in
-`docker-compose.analytics.yml` (3-service stack):
+`infra/docker-compose.analytics.yml` (3-service stack):
 
 | Service    | Image               | Purpose                                     |
 | ---------- | ------------------- | ------------------------------------------- |
 | matomo     | matomo:5-fpm-alpine | Matomo PHP-FPM application                  |
 | matomo-db  | mariadb:11          | Persistent analytics database               |
-| matomo-web | nginx:alpine        | Reverse proxy (config: `matomo-nginx.conf`) |
+| matomo-web | nginx:alpine        | Reverse proxy (config: `infra/matomo-nginx.conf`) |
 
 ```bash
 # Start analytics stack (requires .env with MATOMO_DB_PASSWORD + MATOMO_DB_ROOT_PASSWORD)
-docker compose -f docker-compose.analytics.yml up -d
+docker compose -f infra/docker-compose.analytics.yml up -d
 
 # Verify health
-docker compose -f docker-compose.analytics.yml ps
+docker compose -f infra/docker-compose.analytics.yml ps
 ```
 
 Port configurable via `MATOMO_PORT` env var (default: 8080). Cookieless tracking
@@ -1002,7 +999,7 @@ mode configured post-install per `sp-2-mat-matomo-deployment.md`.
 
 ### Translation Management (Weblate)
 
-Self-hosted Weblate TMS for i18n, defined in `docker-compose.weblate.yml`
+Self-hosted Weblate TMS for i18n, defined in `infra/docker-compose.weblate.yml`
 (3-service stack):
 
 | Service       | Image               | Purpose                           |
@@ -1017,7 +1014,7 @@ cp .env.weblate.example .env.weblate
 # Edit .env.weblate: set WEBLATE_ADMIN_PASSWORD + WEBLATE_DB_PASSWORD
 
 # Start Weblate stack
-docker compose -f docker-compose.weblate.yml --env-file .env.weblate up -d
+docker compose -f infra/docker-compose.weblate.yml --env-file .env.weblate up -d
 ```
 
 Port configurable via `WEBLATE_PORT` env var (default: 8081). Pilot translation

@@ -287,9 +287,9 @@ dimension, and updates the Master Synthesis. Output:
 ```text
 .github/
   copilot-instructions.md     ← System instructions for the Orchestrator
-  skills/                     ← One skill file per agent (00-orchestrator.md … 37-scope-change-agent.md)
 
-docs/
+templates/sdlc/
+  agents/                     ← One skill file per agent (00-orchestrator.md … 37-scope-change-agent.md)
   contracts/                  ← Output contracts per deliverable type (what each agent MUST produce)
   guardrails/                 ← Guardrail files 00–09 (per domain: business, security, UX, questionnaires…)
   playbooks/                  ← Process playbooks (software-creation-playbook.md + commercial-software-audit-playbook.md)
@@ -423,7 +423,7 @@ take similar effort to analysis phases. For AUDIT mode with a large monorepo
 
 ## Agents overview
 
-All skill files are in `agents/`. The numbering follows the execution
+All skill files are in `templates/sdlc/agents/`. The numbering follows the execution
 order:
 
 | No   | Agent                        | Category                            |

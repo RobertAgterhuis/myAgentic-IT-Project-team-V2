@@ -87,7 +87,7 @@ npx vitest run tests/unit/agent-schema.test.js tests/unit/flow-schema.test.js te
   "name": "Business Analyst",
   "role": "Business Analyst specialist role",
   "phase": "PHASE_1",
-  "skillFiles": ["agents/01-business-analyst.md"],
+  "skillFiles": ["templates/sdlc/agents/01-business-analyst.md"],
   "tools": [
     "tool.files.read",
     "tool.files.write",

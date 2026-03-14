@@ -20,7 +20,7 @@ description:
 myAgentic-IT-Project-team/
 ├── .github/                    ← CI workflows, issue templates, Copilot instructions
 ├── .husky/                     ← Git hooks (pre-commit)
-├── agents/                     ← Agent skill files (38 agents)
+├── templates/                  ← Template packs (SDLC agents, contracts, guardrails, playbooks)
 ├── BusinessDocs/               ← Project-specific business data (session, decisions, phases, brand, synthesis, metrics, retrospectives)
 ├── data/                       ← Runtime data (milestones.json)
 ├── docs/                       ← Infrastructure docs (contracts, guardrails, playbooks, templates, help, api, security)
@@ -64,7 +64,7 @@ GitHub issue templates for bugs, features, stories, and tasks.
 
 ---
 
-## `agents/` — Agent skill files
+## `templates/sdlc/agents/` — Agent skill files
 
 | File pattern                                                | Purpose                             | Modified by             |
 | ----------------------------------------------------------- | ----------------------------------- | ----------------------- |
@@ -461,4 +461,4 @@ Quick smoke tests (landing page, create pipeline).
 | `BusinessDocs/session/reevaluate-trigger.json`     | Yes             | Cancels pending reevaluation                      |
 | `BusinessDocs/` contents                           | With caution    | Loses all phase outputs and questionnaire answers |
 | `BusinessDocs/synthesis/` contents                 | With caution    | Must re-run Synthesis Agent                       |
-| Anything in `agents/`, `contracts/`, `guardrails/` | **No**          | Breaks agent behavior                             |
+| Anything in `templates/sdlc/agents/`, `templates/sdlc/contracts/`, `templates/sdlc/guardrails/` | **No** | Breaks agent behavior |

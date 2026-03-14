@@ -62,8 +62,8 @@ src/webapp/           ← Web application (the code you'll work with most)
   utils/secret-utils.js   ← Secret pattern detection + warning formatting
   index.html              ← Single-page web UI (HTML/CSS/JS, no build step)
 
-agents/           ← Agent skill files (38 agents)
-docs/             ← Contracts, guardrails, playbooks, templates
+templates/sdlc/   ← Template pack (agents, contracts, guardrails, playbooks)
+platform/engine/  ← Domain-agnostic pipeline engine
 
 tests/
   unit/                   ← Unit tests (models, cache, schemas, sanitization, etc.)

@@ -193,31 +193,32 @@ appears automatically in the Copilot tools panel.
   mcp.json                    ← MCP server configuration for VS Code
 .github/
   copilot-instructions.md     ← System instructions (Orchestrator entry point)
-  package.json                ← Dev dependencies and npm scripts
-  vitest.config.mjs           ← Test configuration
-  eslint.config.mjs           ← Lint configuration
-  skills/                     ← 38 agent skill files (00-orchestrator … 37-scope-change-agent)
-  docs/
-    contracts/                ← Output contracts per deliverable type
-    guardrails/               ← Domain guardrails (00-global … 09-questionnaire)
-    playbooks/                ← Process playbooks (CREATE + AUDIT)
-    templates/                ← Markdown templates for agent outputs
-    onboarding/               ← Onboarding Agent output (generated at first run)
-    session/                  ← Session state (generated at runtime)
-    synthesis/                ← Final reports + blocker matrix (generated post-Phase 4)
-    brand/                    ← Design tokens + brand assets (generated post-Phase 4)
-    storybook/                ← Component inventory (generated post-Phase 4)
-    decisions.md              ← YOUR decisions & open questions (edit this directly)
-    mode-guide.md             ← CREATE vs AUDIT mode guide
-    README.md                 ← Full documentation hub
-  webapp/                     ← Command Center web UI + MCP server
-  help/                       ← Help content files for the web UI
-  tests/
-    unit/                     ← Unit tests (models, cache, schemas, sanitization, etc.)
-    integration/              ← Integration tests (API, SSE, store, regression suite)
+  workflows/                  ← CI/CD pipeline definitions
 
+platform/
+  engine/                     ← Domain-agnostic pipeline engine (state machine, dispatcher, gate validator)
+  schema/                     ← Canonical schema definitions (agents, flows, tools)
+
+templates/sdlc/
+  agents/                     ← 38 agent skill files (00-orchestrator … 37-scope-change-agent)
+  contracts/                  ← Output contracts per deliverable type
+  guardrails/                 ← Domain guardrails (00-global … 09-questionnaire)
+  playbooks/                  ← Process playbooks (CREATE + AUDIT)
+
+src/webapp/
+  server.js                   ← Express server entrypoint
+  routes/                     ← API route handlers
+  ui/                         ← React single-page web UI
+  brand/                      ← Design tokens + brand guidelines
+
+tests/
+  unit/                       ← Unit tests (models, cache, schemas, engine, etc.)
+  integration/                ← Integration tests (API, SSE, store, regression)
+
+infra/                        ← Docker files, Compose configs, Nginx configs
+scripts/                      ← Build & maintenance scripts
+docs/                         ← GitHub Pages site: user manual, technical manual, data dictionary
 BusinessDocs/                 ← Questionnaires + official business documents (generated per phase)
-docs/                         ← GitHub Pages site: user manual, technical manual, data dictionary, brand guidelines
 Workitems/                    ← Isolated workspaces per FEATURE command (generated on demand)
 ```
 

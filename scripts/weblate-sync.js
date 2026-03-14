@@ -19,7 +19,7 @@ const path = require('path');
 const https = require('https');
 const http = require('http');
 
-const LOCALES_DIR = path.resolve(__dirname, '..', 'locales');
+const LOCALES_DIR = path.resolve(__dirname, '..', 'src', 'webapp', 'locales');
 const SOURCE_LANG = 'en-US';
 const TARGET_LANGS = ['fr-FR', 'de-DE'];
 const COMPONENTS = ['ui-labels', 'validation-messages', 'doc-snippets'];

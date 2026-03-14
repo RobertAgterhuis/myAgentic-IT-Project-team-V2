@@ -5,8 +5,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const LOCALES_DIR = path.join(__dirname, '..', '..', 'locales', 'en-US');
-const COMPOSE_FILE = path.join(__dirname, '..', '..', 'docker-compose.weblate.yml');
+const LOCALES_DIR = path.join(__dirname, '..', '..', 'src', 'webapp', 'locales', 'en-US');
+const COMPOSE_FILE = path.join(__dirname, '..', '..', 'infra', 'docker-compose.weblate.yml');
 const ENV_EXAMPLE = path.join(__dirname, '..', '..', '.env.weblate.example');
 
 // --- Locale string files ---

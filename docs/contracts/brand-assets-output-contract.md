@@ -18,9 +18,9 @@ PR/Review Agent's brand compliance checks.
 
 **Location:**
 
-- `docs/brand/design-tokens.json`
-- `docs/brand/brand-guidelines.md`
-- `docs/brand/brand-assets-report.md`
+- `BusinessDocs/brand/design-tokens.json`
+- `BusinessDocs/brand/brand-guidelines.md`
+- `BusinessDocs/brand/brand-assets-report.md`
 
 **Format:** JSON + Markdown
 

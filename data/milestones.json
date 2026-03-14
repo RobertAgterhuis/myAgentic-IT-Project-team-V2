@@ -13,5 +13,154 @@
       { "id": "S5-5", "title": "Security CI Gate", "status": "done" },
       { "id": "S5-6", "title": "Audit Report + Tests", "status": "done" }
     ]
+  },
+  {
+    "id": "M11",
+    "name": "M11: Docs→BusinessDocs Restructure (BLOCKING)",
+    "status": "planned",
+    "branch": "feature/m11-docs-restructure",
+    "created_at": "2026-03-14",
+    "blocking": ["M6", "M7", "M8", "M9", "M10"],
+    "github_milestone_number": 39,
+    "total_points": 27,
+    "stories": [
+      {
+        "id": "M11-0",
+        "title": "Introduce BUSINESS_OUTPUT constant + config layer",
+        "status": "planned",
+        "points": 3,
+        "issue": 252
+      },
+      {
+        "id": "M11-1",
+        "title": "Physical move — session, decisions, audit",
+        "status": "planned",
+        "points": 2,
+        "issue": 253
+      },
+      {
+        "id": "M11-2",
+        "title": "Physical move — brand, storybook, synthesis",
+        "status": "planned",
+        "points": 2,
+        "issue": 254
+      },
+      {
+        "id": "M11-3",
+        "title": "Physical move — metrics, retrospectives, onboarding",
+        "status": "planned",
+        "points": 2,
+        "issue": 255
+      },
+      {
+        "id": "M11-4",
+        "title": "Physical move — phase folders (1-5)",
+        "status": "planned",
+        "points": 2,
+        "issue": 256
+      },
+      {
+        "id": "M11-5",
+        "title": "Physical move — remaining project-specific files",
+        "status": "planned",
+        "points": 1,
+        "issue": 257
+      },
+      {
+        "id": "M11-6",
+        "title": "Update test files (~25 path references)",
+        "status": "planned",
+        "points": 3,
+        "issue": 258
+      },
+      {
+        "id": "M11-7",
+        "title": "Update agent files (~203 path references)",
+        "status": "planned",
+        "points": 5,
+        "issue": 259
+      },
+      {
+        "id": "M11-8",
+        "title": "Update contracts, guardrails, playbooks (~56 refs)",
+        "status": "planned",
+        "points": 3,
+        "issue": 260
+      },
+      {
+        "id": "M11-9",
+        "title": "Update copilot-instructions + scripts + fix state-persistence bug",
+        "status": "planned",
+        "points": 2,
+        "issue": 261
+      },
+      {
+        "id": "M11-10",
+        "title": "Update file-system-reference + milestones.json + final verification",
+        "status": "planned",
+        "points": 2,
+        "issue": 262
+      }
+    ]
+  },
+  {
+    "id": "M12",
+    "name": "M12: Docker/Infra Restructure",
+    "status": "done",
+    "branch": "feature/m12-docker-infra",
+    "created_at": "2026-03-14",
+    "github_milestone_number": 40,
+    "total_points": 20,
+    "stories": [
+      {
+        "id": "M12-0",
+        "title": "Create infra/ directory and move Docker files",
+        "status": "done",
+        "points": 2,
+        "issue": 264
+      },
+      {
+        "id": "M12-1",
+        "title": "Fix Dockerfile paths for M11 BusinessDocs migration",
+        "status": "done",
+        "points": 2,
+        "issue": 265
+      },
+      {
+        "id": "M12-2",
+        "title": "Create docker-compose.webapp.yml (end-user)",
+        "status": "done",
+        "points": 3,
+        "issue": 266
+      },
+      {
+        "id": "M12-3",
+        "title": "Create docker-compose.dev.yml (full-stack developer)",
+        "status": "done",
+        "points": 5,
+        "issue": 267
+      },
+      {
+        "id": "M12-4",
+        "title": "Update documentation references to Docker files",
+        "status": "done",
+        "points": 3,
+        "issue": 268
+      },
+      {
+        "id": "M12-5",
+        "title": "Update CI workflows for infra/ paths",
+        "status": "done",
+        "points": 2,
+        "issue": 269
+      },
+      {
+        "id": "M12-6",
+        "title": "Smoke test — build and run all compose profiles",
+        "status": "done",
+        "points": 3,
+        "issue": 270
+      }
+    ]
   }
 ]

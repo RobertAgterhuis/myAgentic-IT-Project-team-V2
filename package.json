@@ -97,7 +97,7 @@
       "<rootDir>/tests/integration/server.integration.test.js",
       "<rootDir>/tests/integration/subscribe.integration.test.js",
       "<rootDir>/tests/smoke/landing.smoke.test.js",
-      "<rootDir>/tests/example.test.js"
+      "<rootDir>/tests/unit/example.test.js"
     ],
     "testPathIgnorePatterns": [
       "/node_modules/",

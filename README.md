@@ -84,7 +84,11 @@ Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser.
 Containerized run (TECH-08):
 
 ```bash
-docker compose up --build
+# Webapp only (end-users)
+docker compose -f infra/docker-compose.webapp.yml up --build
+
+# Full stack (developers — includes analytics + translations)
+docker compose -f infra/docker-compose.dev.yml up --build
 ```
 
 Then open [http://127.0.0.1:3000](http://127.0.0.1:3000).

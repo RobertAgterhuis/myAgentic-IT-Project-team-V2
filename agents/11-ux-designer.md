@@ -33,7 +33,7 @@ Work with the **output of the UX Researcher as mandatory input**.
 ### Step 0: Check for Questionnaire Input
 
 > **SCOPE CHANGE context:** If a SCOPE CHANGE is active for your dimension,
-> check `docs/synthesis/scope-change-[N].md` for constraints before
+> check `BusinessDocs/synthesis/scope-change-[N].md` for constraints before
 > proceeding.
 
 Before starting your analysis, check whether the Orchestrator has injected a

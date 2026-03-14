@@ -18,8 +18,8 @@ specifications, accessibility baselines, and implementation guardrails.
 
 **Location:**
 
-- `docs/storybook/component-inventory.md`
-- `docs/storybook/storybook-setup-report.md`
+- `BusinessDocs/storybook/component-inventory.md`
+- `BusinessDocs/storybook/storybook-setup-report.md`
 
 **Format:** Markdown
 

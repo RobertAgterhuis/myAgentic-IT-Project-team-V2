@@ -95,22 +95,7 @@ export default [
     },
   },
 
-  /* ── Browser frontend files ─────────────────────────────────── */
-  {
-    files: [
-      'src/webapp/dashboard.js',
-      'src/webapp/frontend-utils.js',
-      'src/webapp/frontend-utils.test.js',
-    ],
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-      },
-    },
-    rules: {
-      'no-console': 'off',
-    },
-  },
+
 
   /* ── Webapp source (non-test): security rules ───────────────── */
   {

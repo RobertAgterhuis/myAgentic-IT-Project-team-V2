@@ -36,7 +36,7 @@ Work with the **output of UX Researcher + UX Designer as mandatory input**.
 ### Step 0: Check for Questionnaire Input
 
 > **SCOPE CHANGE context:** If a SCOPE CHANGE is active for your dimension,
-> check `docs/synthesis/scope-change-[N].md` for constraints before
+> check `BusinessDocs/synthesis/scope-change-[N].md` for constraints before
 > proceeding.
 
 Before starting your analysis, check whether the Orchestrator has injected a
@@ -68,7 +68,7 @@ Do NOT delay or block your work based on the absence of questionnaire input.
   - Motion tokens: duration, easing curves (aligned with UX Designer
     microinteractions)
 - **Token format:** JSON structure compatible with
-  `docs/brand/design-tokens.json`
+  `BusinessDocs/brand/design-tokens.json`
 - Mark all color/typography values as `PLACEHOLDER:` — final values come from
   Brand Strategist (Phase 4)
 - Define token naming convention (semantic naming, not visual: `color-primary`
@@ -90,7 +90,7 @@ If design system is present:
 ### Step 2: Component Specifications / Visual Consistency Audit
 
 **CREATE mode:** Define component specifications aligned with Storybook Agent
-inventory (`docs/storybook/component-inventory.md`):
+inventory (`BusinessDocs/storybook/component-inventory.md`):
 
 - Per component:
   - Component name (aligned with Storybook naming)

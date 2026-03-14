@@ -40,16 +40,16 @@ const WEBAPP_DIR = __dirname;
 const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
 const GITHUB_DOCS = path.join(PROJECT_ROOT, 'docs');
-const SESSION_DIR = path.join(GITHUB_DOCS, 'session');
+const SESSION_DIR = path.join(BUSINESS_DOCS, 'session');
 const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
 const SESSION_AUDIT_FILE = path.join(SESSION_DIR, 'session-state-audit.json');
 const Q_INDEX_FILE = path.join(BUSINESS_DOCS, 'questionnaire-index.md');
-const DECISIONS_FILE = path.join(GITHUB_DOCS, 'decisions.md');
-const DECISIONS_DIR = path.join(GITHUB_DOCS, 'decisions');
+const DECISIONS_FILE = path.join(BUSINESS_DOCS, 'decisions.md');
+const DECISIONS_DIR = path.join(BUSINESS_DOCS, 'decisions');
 const COMMAND_QUEUE = path.join(SESSION_DIR, 'command-queue.json');
 const HELP_DIR = path.join(PROJECT_ROOT, 'docs', 'help');
-const ANALYTICS_FILE = path.join(GITHUB_DOCS, 'analytics-events.json');
-const METRICS_FILE = path.join(GITHUB_DOCS, 'metrics', 'runtime-metrics.json');
+const ANALYTICS_FILE = path.join(BUSINESS_DOCS, 'analytics-events.json');
+const METRICS_FILE = path.join(BUSINESS_DOCS, 'metrics', 'runtime-metrics.json');
 const SSE_HEARTBEAT_MS = 30000;
 const ANALYTICS_MAX_EVENTS = 5000;
 const METRICS_FLUSH_INTERVAL_MS = 60000;
@@ -68,7 +68,7 @@ const _metrics = {
   perEndpoint: {},
 };
 const METRICS_MAX_SAMPLES = 1000;
-const AUDIT_DIR = path.join(GITHUB_DOCS, 'audit');
+const AUDIT_DIR = path.join(BUSINESS_DOCS, 'audit');
 const _audit = new AuditTrail({ logDir: AUDIT_DIR });
 
 /* ── Metrics persistence (TECH-05) ────────────────────────────── */
@@ -328,7 +328,7 @@ function serveLocaleFile(pathname, res) {
   try {
     const store = getStore();
     const localePath = safePath(
-      path.join(PROJECT_ROOT, 'locales'),
+      path.join(WEBAPP_DIR, 'locales'),
       pathname.replace(/^\/locales\//, '')
     );
     const localeContent = store.readFile(localePath);

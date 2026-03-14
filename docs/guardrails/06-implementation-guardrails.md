@@ -196,8 +196,8 @@ changes require `SCOPE_EXTENSION:` + Orchestrator approval.
 
 **IMPL-GUARD-32 (CRITICAL):** Decision Compliance — Before handoff, the
 Implementation Agent MUST verify that its code changes do not contradict any
-active `DECIDED` item. Read `docs/decisions.md` (uncategorized) and all
-ACTIVE/PARTIAL category files in `docs/decisions/`. Skip DEFERRED
+active `DECIDED` item. Read `BusinessDocs/decisions.md` (uncategorized) and all
+ACTIVE/PARTIAL category files in `BusinessDocs/decisions/`. Skip DEFERRED
 category files. For each applicable decision, confirm compliance. On violation:
 `DEC-VIOLATION: [DEC-ID] — [description]`, remediate before handoff. The Test
 Agent (Step 6b) and PR/Review Agent (Step 2g) independently verify this —
@@ -205,7 +205,7 @@ violations caught at review are treated as Implementation Agent failures.
 
 **IMPL-GUARD-33 (CRITICAL):** Deferred Technology Introduction — When a story
 requires introducing a technology that matches a DEFERRED decision category in
-`docs/decisions/` (Docker, Bicep/IaC, .NET, Azure DevOps, Vite, NextJS),
+`BusinessDocs/decisions/` (Docker, Bicep/IaC, .NET, Azure DevOps, Vite, NextJS),
 the Implementation Agent MUST **HALT** before writing code and escalate:
 `DEFERRED_TECH_REQUIRED: [category]`. The Orchestrator will **auto-activate**
 the category (RULE ORC-45) by editing the file headers and index, then resume

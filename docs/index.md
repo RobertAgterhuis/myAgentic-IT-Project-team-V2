@@ -18,13 +18,13 @@ implementation.
 
 ## Documentation
 
-| Document                             | Description                                                          |
-| ------------------------------------ | -------------------------------------------------------------------- |
-| [User Manual](user-manual)           | Getting started, Command Center, questionnaires, decisions, commands |
-| [Technical Manual](technical-manual) | Architecture, API reference, data model, configuration, security     |
-| [Data Dictionary](data-dictionary)   | Entity catalog, field schemas, ER diagram, validation rules          |
-| [Contributing Guide](contributing)   | Development setup, coding standards, PR process                      |
-| [Brand Guidelines](brand-guidelines) | Colors, typography, design tokens, voice & tone                      |
+| Document                                   | Description                                                          |
+| ------------------------------------------ | -------------------------------------------------------------------- |
+| [User Manual](user-manual)                 | Getting started, Command Center, questionnaires, decisions, commands |
+| [Technical Manual](technical-manual)       | Architecture, API reference, data model, configuration, security     |
+| [Data Dictionary](data-dictionary)         | Entity catalog, field schemas, ER diagram, validation rules          |
+| [Contributing Guide](contributing)         | Development setup, coding standards, PR process                      |
+| [Brand Guidelines](brand/brand-guidelines) | Colors, typography, design tokens, voice & tone                      |
 
 ---
 

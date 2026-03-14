@@ -18,14 +18,14 @@ implementation roadmap.
 reports that identify gaps, risks, and improvement opportunities across all
 disciplines.
 
-| Report                           | File                                          | Target audience                                 |
-| -------------------------------- | --------------------------------------------- | ----------------------------------------------- |
-| Master Report                    | `docs/synthesis/final-report-master.md`       | Board, management, governance                   |
-| Business & Strategy Report       | `docs/synthesis/final-report-business.md`     | Business Analyst, Sales, Finance, Domain owners |
-| Technology & Architecture Report | `docs/synthesis/final-report-tech.md`         | Engineering, DevOps, Security, Data teams       |
-| UX & Product Report              | `docs/synthesis/final-report-ux.md`           | UX/UI designers, Product owners, Accessibility  |
-| Brand & Marketing Report         | `docs/synthesis/final-report-marketing.md`    | Marketing, Growth, CRO teams                    |
-| Cross-Team Blocker Matrix        | `docs/synthesis/cross-team-blocker-matrix.md` | All teams + Orchestrator                        |
+| Report                           | File                                                  | Target audience                                 |
+| -------------------------------- | ----------------------------------------------------- | ----------------------------------------------- |
+| Master Report                    | `BusinessDocs/synthesis/final-report-master.md`       | Board, management, governance                   |
+| Business & Strategy Report       | `BusinessDocs/synthesis/final-report-business.md`     | Business Analyst, Sales, Finance, Domain owners |
+| Technology & Architecture Report | `BusinessDocs/synthesis/final-report-tech.md`         | Engineering, DevOps, Security, Data teams       |
+| UX & Product Report              | `BusinessDocs/synthesis/final-report-ux.md`           | UX/UI designers, Product owners, Accessibility  |
+| Brand & Marketing Report         | `BusinessDocs/synthesis/final-report-marketing.md`    | Marketing, Growth, CRO teams                    |
+| Cross-Team Blocker Matrix        | `BusinessDocs/synthesis/cross-team-blocker-matrix.md` | All teams + Orchestrator                        |
 
 Each department report is fully self-contained for the relevant team AND
 contains a mandatory section with blockers from other teams, so each department
@@ -52,11 +52,11 @@ If any of these is missing in a full run: `BLOCKED` – escalate to Orchestrator
 
 If MARKETING was in scope, additionally load before Step 2:
 
-- `docs/brand/brand-guidelines.md` — verify all UI-related and
+- `BusinessDocs/brand/brand-guidelines.md` — verify all UI-related and
   communication-related recommendations and roadmap items against this. A
   recommendation that conflicts with brand constraints =
   `BLOCKED_BY_BRAND: [section + rule]`.
-- `docs/brand/design-tokens.json` — reference point for technical brand
+- `BusinessDocs/brand/design-tokens.json` — reference point for technical brand
   implementation recommendations.
 
 If either is missing while MARKETING was in scope:
@@ -103,16 +103,16 @@ output(s):
 
 Load the following before any substantive analysis:
 
-**1. Decision Register (`docs/decisions.md`)** This file contains
+**1. Decision Register (`BusinessDocs/decisions.md`)** This file contains
 `DECIDED` items that are **hard constraints** for all recommendations and
 roadmap items produced by the Synthesis Agent.
 
-- If `docs/decisions.md` exists: process every `DECIDED` item as a
+- If `BusinessDocs/decisions.md` exists: process every `DECIDED` item as a
   non-negotiable guardrail. Do NOT produce any recommendation or roadmap item
   that contradicts or ignores a DECIDED item.
 - If a recommendation from phase output conflicts with a DECIDED item: mark the
   recommendation as `BLOCKED_BY: DEC-[NNN]` and explain why.
-- If `docs/decisions.md` does not exist: document
+- If `BusinessDocs/decisions.md` does not exist: document
   `NO_DECIDED_ITEMS: file not present` and continue.
 
 **2. Official Business Documents (`BusinessDocs/OfficialDocuments/`)** _(if
@@ -130,7 +130,7 @@ present)_ If `BusinessDocs/OfficialDocuments/document-registry.md` exists:
   `OFFICIAL_DOCS_N/A: questionnaire cycle not yet run` and continue
 
 **3. Existing Scope Change Reports** _(if present)_ Scan
-`docs/synthesis/` for any `scope-change-[N].md` files:
+`BusinessDocs/synthesis/` for any `scope-change-[N].md` files:
 
 - If one or more exist: load all in order (SC-1, SC-2, ...). The Master Report
   MUST include a `## Scope Change History` section listing each SC-[N] event
@@ -249,7 +249,7 @@ Classify each dependency as:
   requirement
 
 Produce the **Cross-Team Blocker Matrix**
-(`docs/synthesis/cross-team-blocker-matrix.md`) in this format:
+(`BusinessDocs/synthesis/cross-team-blocker-matrix.md`) in this format:
 
 ```markdown
 # Cross-Team Blocker Matrix — [project name] — [date]
@@ -379,7 +379,7 @@ Verify:
 5. Does every department report contain an explicit statement in section 5 (even
    if there are no blockers)?
 6. Have all recommendations and roadmap items been verified against
-   `docs/decisions.md`? No recommendation may contradict a DECIDED item
+   `BusinessDocs/decisions.md`? No recommendation may contradict a DECIDED item
    — mark conflicts as `BLOCKED_BY: DEC-[NNN]`.
 
 ---
@@ -387,24 +387,24 @@ Verify:
 ## HANDOFF CHECKLIST — Synthesis Agent — [Date]
 
 - [ ] Mode indicator documented (CREATE or AUDIT)
-- [ ] `docs/decisions.md` loaded as guardrail (Step 0) — all
+- [ ] `BusinessDocs/decisions.md` loaded as guardrail (Step 0) — all
       recommendations verified or file absence documented
 - [ ] `BusinessDocs/OfficialDocuments/` checked (Step 0) — official documents
       loaded as context or `OFFICIAL_DOCS_N/A` documented
-- [ ] `docs/synthesis/scope-change-[N].md` scanned (Step 0) — Scope
+- [ ] `BusinessDocs/synthesis/scope-change-[N].md` scanned (Step 0) — Scope
       Change History section present in master report if any SC-[N] files exist,
       or `SCOPE_CHANGE_HISTORY_N/A` documented
-- [ ] `docs/synthesis/final-report-master.md` present (Executive
+- [ ] `BusinessDocs/synthesis/final-report-master.md` present (Executive
       Summary, Heatmap, Risk Matrix, Roadmap, Guardrails, KPIs, Open Items)
-- [ ] `docs/synthesis/final-report-business.md` present and complete
+- [ ] `BusinessDocs/synthesis/final-report-business.md` present and complete
       (sections 1–8)
-- [ ] `docs/synthesis/final-report-tech.md` present and complete
+- [ ] `BusinessDocs/synthesis/final-report-tech.md` present and complete
       (sections 1–8)
-- [ ] `docs/synthesis/final-report-ux.md` present and complete (sections
+- [ ] `BusinessDocs/synthesis/final-report-ux.md` present and complete (sections
       1–8)
-- [ ] `docs/synthesis/final-report-marketing.md` present and complete
+- [ ] `BusinessDocs/synthesis/final-report-marketing.md` present and complete
       (sections 1–8)
-- [ ] `docs/synthesis/cross-team-blocker-matrix.md` present with all
+- [ ] `BusinessDocs/synthesis/cross-team-blocker-matrix.md` present with all
       BLOCKING and ADVISORY dependencies
 - [ ] Each department report section 5 contains an explicit statement (even "no
       blockers")

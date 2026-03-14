@@ -19,10 +19,10 @@ cannot be altered after creation.
 
 **Location:**
 
-- `docs/retrospectives/sprint-[SP-N]-retrospective.md` (immutable once
+- `BusinessDocs/retrospectives/sprint-[SP-N]-retrospective.md` (immutable once
   written)
-- `docs/metrics/velocity-log.json` (updated)
-- `docs/retrospectives/lessons-learned.md` (updated)
+- `BusinessDocs/metrics/velocity-log.json` (updated)
+- `BusinessDocs/retrospectives/lessons-learned.md` (updated)
 
 **Format:** Markdown + JSON
 

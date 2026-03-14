@@ -17,8 +17,8 @@ session state.
 
 ## OUTPUT FILES
 
-**Location:** `docs/onboarding/onboarding-output.md` +
-`docs/session/session-state.json` **Format:** Markdown + JSON
+**Location:** `BusinessDocs/onboarding/onboarding-output.md` +
+`BusinessDocs/session/session-state.json` **Format:** Markdown + JSON
 
 ---
 

@@ -6,56 +6,56 @@
 
 ## RULE INDEX
 
-| Rule    | Description                                                                                                                                   |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| ORC-01  | Phase sequence enforcement                                                                                                                    |
-| ORC-02  | Agent handoff ordering                                                                                                                        |
-| ORC-03  | Sprint closed loop                                                                                                                            |
-| ORC-04  | Cross-track blocker prevention                                                                                                                |
-| ORC-05  | Missing story_type routing                                                                                                                    |
-| ORC-06  | Backlog sprint protection                                                                                                                     |
-| ORC-07  | All-backlog handling                                                                                                                          |
-| ORC-08  | Onboarding gate                                                                                                                               |
-| ORC-09  | Session recovery                                                                                                                              |
-| ORC-10  | HALT escalation                                                                                                                               |
-| ORC-11  | Documentation intermediary                                                                                                                    |
-| ORC-12  | GitHub Integration scope                                                                                                                      |
-| ORC-13  | GitHub publication gate                                                                                                                       |
-| ORC-14  | Definition of Ready enforcement                                                                                                               |
-| ORC-15  | Retrospective gate                                                                                                                            |
-| ORC-16  | Partial cycle support                                                                                                                         |
-| ORC-17  | Onboarding for partial cycle                                                                                                                  |
-| ORC-18  | Storybook guard for Phase 5                                                                                                                   |
-| ORC-19  | Storybook always leading                                                                                                                      |
-| ORC-20  | Combination cycle rules                                                                                                                       |
-| ORC-21  | Breaking change documentation                                                                                                                 |
-| ORC-22  | LESSON_CANDIDATE recording                                                                                                                    |
-| ORC-23  | HOTFIX protocol                                                                                                                               |
-| ORC-23b | HOTFIX concurrency with active sprint                                                                                                         |
-| ORC-24  | Onboarding refresh                                                                                                                            |
-| ORC-25  | Questionnaire lifecycle                                                                                                                       |
-| ORC-26  | Official document completeness gate                                                                                                           |
-| ORC-27  | SCOPE CHANGE lifecycle                                                                                                                        |
-| ORC-28  | Web UI integration                                                                                                                            |
-| ORC-29  | Command Queue integration                                                                                                                     |
-| ORC-30  | Checkpoint-and-Yield protocol                                                                                                                 |
-| ORC-31  | Project Brief File protocol                                                                                                                   |
-| ORC-32  | Conversation Memory Management                                                                                                                |
-| ORC-33  | Session Recovery Protocol                                                                                                                     |
-| ORC-34  | Parallel-Safe Agent Pairs                                                                                                                     |
-| ORC-35  | Agent Output Contract Validation                                                                                                              |
-| ORC-36  | INSUFFICIENT_DATA Propagation                                                                                                                 |
-| ORC-37  | Phase Agent Persistent Failure                                                                                                                |
-| ORC-38  | Phase 5 eligibility for PARTIAL/COMBO                                                                                                         |
-| ORC-39  | Session-state REEVALUATE transitions                                                                                                          |
-| ORC-40  | SCOPE CHANGE + FEATURE interaction                                                                                                            |
-| ORC-41  | Maximum sprint duration                                                                                                                       |
-| ORC-42  | Scope change history bounds                                                                                                                   |
-| ORC-43  | Sprint capacity ownership                                                                                                                     |
-| ORC-44  | HOTFIX + SCOPE CHANGE concurrency                                                                                                             |
-| ORC-46  | Immediate session-state initialization on command                                                                                             |
-| ORC-47  | Session-state git persistence — every write to session-state.json MUST be followed by `git add docs/session/session-state.json && git commit` |
-| ORC-48  | GitHub issue closure enforcement — REJECT GitHub Integration Agent handoff if any IMPLEMENTED story's issue is not confirmed closed via API   |
+| Rule    | Description                                                                                                                                           |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ORC-01  | Phase sequence enforcement                                                                                                                            |
+| ORC-02  | Agent handoff ordering                                                                                                                                |
+| ORC-03  | Sprint closed loop                                                                                                                                    |
+| ORC-04  | Cross-track blocker prevention                                                                                                                        |
+| ORC-05  | Missing story_type routing                                                                                                                            |
+| ORC-06  | Backlog sprint protection                                                                                                                             |
+| ORC-07  | All-backlog handling                                                                                                                                  |
+| ORC-08  | Onboarding gate                                                                                                                                       |
+| ORC-09  | Session recovery                                                                                                                                      |
+| ORC-10  | HALT escalation                                                                                                                                       |
+| ORC-11  | Documentation intermediary                                                                                                                            |
+| ORC-12  | GitHub Integration scope                                                                                                                              |
+| ORC-13  | GitHub publication gate                                                                                                                               |
+| ORC-14  | Definition of Ready enforcement                                                                                                                       |
+| ORC-15  | Retrospective gate                                                                                                                                    |
+| ORC-16  | Partial cycle support                                                                                                                                 |
+| ORC-17  | Onboarding for partial cycle                                                                                                                          |
+| ORC-18  | Storybook guard for Phase 5                                                                                                                           |
+| ORC-19  | Storybook always leading                                                                                                                              |
+| ORC-20  | Combination cycle rules                                                                                                                               |
+| ORC-21  | Breaking change documentation                                                                                                                         |
+| ORC-22  | LESSON_CANDIDATE recording                                                                                                                            |
+| ORC-23  | HOTFIX protocol                                                                                                                                       |
+| ORC-23b | HOTFIX concurrency with active sprint                                                                                                                 |
+| ORC-24  | Onboarding refresh                                                                                                                                    |
+| ORC-25  | Questionnaire lifecycle                                                                                                                               |
+| ORC-26  | Official document completeness gate                                                                                                                   |
+| ORC-27  | SCOPE CHANGE lifecycle                                                                                                                                |
+| ORC-28  | Web UI integration                                                                                                                                    |
+| ORC-29  | Command Queue integration                                                                                                                             |
+| ORC-30  | Checkpoint-and-Yield protocol                                                                                                                         |
+| ORC-31  | Project Brief File protocol                                                                                                                           |
+| ORC-32  | Conversation Memory Management                                                                                                                        |
+| ORC-33  | Session Recovery Protocol                                                                                                                             |
+| ORC-34  | Parallel-Safe Agent Pairs                                                                                                                             |
+| ORC-35  | Agent Output Contract Validation                                                                                                                      |
+| ORC-36  | INSUFFICIENT_DATA Propagation                                                                                                                         |
+| ORC-37  | Phase Agent Persistent Failure                                                                                                                        |
+| ORC-38  | Phase 5 eligibility for PARTIAL/COMBO                                                                                                                 |
+| ORC-39  | Session-state REEVALUATE transitions                                                                                                                  |
+| ORC-40  | SCOPE CHANGE + FEATURE interaction                                                                                                                    |
+| ORC-41  | Maximum sprint duration                                                                                                                               |
+| ORC-42  | Scope change history bounds                                                                                                                           |
+| ORC-43  | Sprint capacity ownership                                                                                                                             |
+| ORC-44  | HOTFIX + SCOPE CHANGE concurrency                                                                                                                     |
+| ORC-46  | Immediate session-state initialization on command                                                                                                     |
+| ORC-47  | Session-state git persistence — every write to session-state.json MUST be followed by `git add BusinessDocs/session/session-state.json && git commit` |
+| ORC-48  | GitHub issue closure enforcement — REJECT GitHub Integration Agent handoff if any IMPLEMENTED story's issue is not confirmed closed via API           |
 
 ---
 
@@ -78,9 +78,9 @@ not a specialist.
 ## STRICT PHASE SEQUENCE (ENFORCE AND MONITOR)
 
 ```
-Orchestrator receives command → IMMEDIATELY creates docs/session/session-state.json (status: ONBOARDING, current_agent: 25-onboarding-agent) per ORC-46 → COMMITS to git per ORC-47
+Orchestrator receives command → IMMEDIATELY creates BusinessDocs/session/session-state.json (status: ONBOARDING, current_agent: 25-onboarding-agent) per ORC-46 → COMMITS to git per ORC-47
   ↓
-Onboarding Agent → docs/onboarding/onboarding-output.md + UPDATES session-state.json (status: ONBOARDING_COMPLETE)
+Onboarding Agent → BusinessDocs/onboarding/onboarding-output.md + UPDATES session-state.json (status: ONBOARDING_COMPLETE)
   ↓ [Required: ONBOARDING_COMPLETE — no open ONBOARDING_BLOCKED items]
   ↓ [Questionnaire Agent: load existing answers from BusinessDocs/ → inject as context blocks per phase agent]
 Phase 1 — Requirements & Strategy: Business Analyst → Domain Expert → Sales Strategist → Financial Analyst → Product Manager (34)
@@ -99,11 +99,11 @@ Phase 4 — Brand & Growth: Brand Strategist → Growth Marketer → CRO Special
   ↓ [Required: Critic Agent validation + Risk Agent validation]
   ↓ [Questionnaire Agent: generate questionnaires for all QUESTIONNAIRE_REQUEST items → BusinessDocs/Phase4-Marketing/Questionnaires/]
   ↓ [Questionnaire Agent: update official documents → BusinessDocs/OfficialDocuments/ (brand-brief.md, market-positioning.md)]
-  Brand & Assets Agent (Canva) → design tokens + brand assets (`docs/brand/`)
-  ↓ [Required: docs/brand/design-tokens.json present OR status SKIPPED_NO_TOKEN documented]
-  Storybook Agent → component library + a11y baseline (`docs/storybook/`)
-  ↓ [Required: docs/storybook/component-inventory.md present]
-Synthesis Agent → Master Report + 4 Department Reports + Cross-Team Blocker Matrix (6 files in `docs/synthesis/`)
+  Brand & Assets Agent (Canva) → design tokens + brand assets (`BusinessDocs/brand/`)
+  ↓ [Required: BusinessDocs/brand/design-tokens.json present OR status SKIPPED_NO_TOKEN documented]
+  Storybook Agent → component library + a11y baseline (`BusinessDocs/storybook/`)
+  ↓ [Required: BusinessDocs/storybook/component-inventory.md present]
+Synthesis Agent → Master Report + 4 Department Reports + Cross-Team Blocker Matrix (6 files in `BusinessDocs/synthesis/`)
   ↓ [Required: all 6 synthesis documents APPROVED + all BLOCKING items linked to sprint plan]
   GitHub Integration Agent → configure project `[GITHUB_PROJECT_NAME]` + publish all stories as Issues
   ↓
@@ -131,14 +131,14 @@ via `CREATE SYNTHESIS` / `AUDIT SYNTHESIS`.
 
 **RULE ORC-18:** In Phase 5, the Implementation Agent MUST NOT create or use UI
 components that are not documented in
-`docs/storybook/component-inventory.md`. Stories for new UI components
+`BusinessDocs/storybook/component-inventory.md`. Stories for new UI components
 must be created and approved by the Storybook Agent before implementation. The
 PR/Review Agent verifies this on every PR.
 
 **RULE ORC-19:** Storybook is **always** the leading design system, regardless
 of whether the Canva API is available. When `SKIPPED_NO_TOKEN`, the Storybook
 Agent independently extracts tokens from the Phase 4 Brand Strategist output and
-still produces `docs/brand/design-tokens.json`. The Storybook Agent is
+still produces `BusinessDocs/brand/design-tokens.json`. The Storybook Agent is
 never skipped.
 
 **RULE ORC-20:** For a combination cycle (`CREATE [DISC1] [DISC2] [project]` or
@@ -159,7 +159,7 @@ never skipped.
    `cycle_type: "COMBO_CREATE"` or `"COMBO_AUDIT"`.
 
 **RULE ORC-21:** Every deliberate revert of a breaking change MUST be documented
-in `docs/decisions.md` as a new `DECIDED` item. This applies regardless
+in `BusinessDocs/decisions.md` as a new `DECIDED` item. This applies regardless
 of which agent performs or detects the revert (PR/Review Agent, Implementation
 Agent, or the Orchestrator itself).
 
@@ -258,7 +258,7 @@ activating the Synthesis Agent, the Orchestrator MUST verify against
    rule 3)
 
 **RULE ORC-22:** Significant mid-sprint events MUST be immediately recorded as
-`LESSON_CANDIDATE` in `docs/retrospectives/lessons-learned.md`,
+`LESSON_CANDIDATE` in `BusinessDocs/retrospectives/lessons-learned.md`,
 regardless of whether the sprint is still running. The Retrospective Agent
 formalizes all candidates at the end of the sprint.
 
@@ -336,9 +336,9 @@ HOTFIX [description]
 HOTFIX bookkeeping (mandatory):
 
 - Sprint ID: `HOTFIX-[N]` (numbered separately from regular sprints)
-- Recorded in `docs/retrospectives/velocity-log.json` as a separate
+- Recorded in `BusinessDocs/retrospectives/velocity-log.json` as a separate
   entry with `"type": "HOTFIX"`
-- A `DECIDED` item in `docs/decisions.md` if the hotfix implies a
+- A `DECIDED` item in `BusinessDocs/decisions.md` if the hotfix implies a
   structural constraint (per RULE ORC-21)
 - Orchestrator informs the running regular sprint (if any) about impact and any
   necessary story adjustments
@@ -374,7 +374,7 @@ An Onboarding Refresh:
 - Re-runs Step 3 (Codebase Scan) and Step 4 (Tooling Verification) of the
   Onboarding Agent
 - Overwrites only the scan fields in
-  `docs/onboarding/onboarding-output.md`; intake answers are preserved
+  `BusinessDocs/onboarding/onboarding-output.md`; intake answers are preserved
 - Updates `last_updated` in `session-state.json`
 - Does NOT block the running sprint
 
@@ -386,18 +386,18 @@ Excluded directories: `.github/`, `build/`, `out/`, `dist/`, `coverage/`,
 1. Check status: `COMPLETE` / `PARTIAL` / `SKIPPED_NO_TOKEN`
 2. On `SKIPPED_NO_TOKEN`: document in Orchestrator Log; instruct Storybook Agent
    to derive tokens from Phase 4 output; **Storybook Agent is always activated**
-3. On `COMPLETE` or `PARTIAL`: verify `docs/brand/design-tokens.json` is
+3. On `COMPLETE` or `PARTIAL`: verify `BusinessDocs/brand/design-tokens.json` is
    present and valid JSON
-4. Verify: `docs/brand/brand-assets-report.md` present? 4b. Verify:
-   `docs/brand/brand-guidelines.md` present with sections 1–6? Missing
+4. Verify: `BusinessDocs/brand/brand-assets-report.md` present? 4b. Verify:
+   `BusinessDocs/brand/brand-guidelines.md` present with sections 1–6? Missing
    or incomplete → **BLOCKING**: return to Agent 30 for Step 5b re-execution
    before activating Storybook Agent
 5. With HANDOFF CHECKLIST checked: activate Storybook Agent
 
 ### On Storybook Agent handoff:
 
-1. Verify: `docs/storybook/component-inventory.md` present?
-2. Verify: `docs/storybook/storybook-setup-report.md` present?
+1. Verify: `BusinessDocs/storybook/component-inventory.md` present?
+2. Verify: `BusinessDocs/storybook/storybook-setup-report.md` present?
 3. Verify: Guardrail for Implementation Agent documented in
    component-inventory.md?
 4. Inject component-inventory.md path as mandatory context for all future
@@ -409,7 +409,7 @@ Excluded directories: `.github/`, `build/`, `out/`, `dist/`, `coverage/`,
 `INSUFFICIENT_DATA` items are passed as context — they do NOT block.
 
 **RULE ORC-09:** At every session start, the Orchestrator checks whether
-`docs/session/session-state.json` exists with `status ≠ COMPLETE`. If
+`BusinessDocs/session/session-state.json` exists with `status ≠ COMPLETE`. If
 yes: present the resumable session to the user per
 `docs/contracts/session-state-contract.md` and wait for choice RESUME or
 RESET.
@@ -419,7 +419,7 @@ parsed as valid JSON (truncated file, encoding error, etc.):
 
 1. Archive the corrupted file as `session-state-corrupted-[timestamp].json`
 2. Attempt to recover from the most recent `session-state-*-archived.json` in
-   `docs/session/archive/`
+   `BusinessDocs/session/archive/`
 3. If a valid archive exists: present it as a resumable session with warning:
    `⚠️ Session state was corrupted. Recovered from archive [filename]. Last known state: [status]. Some progress since the archive may be lost.`
 4. If no valid archive exists: inform the user:
@@ -443,7 +443,7 @@ corrupted file, inform the user via console output
 Do NOT block the session.
 
 1. At every session start and before every Sprint Gate, check whether
-   `docs/session/reevaluate-trigger.json` exists with
+   `BusinessDocs/session/reevaluate-trigger.json` exists with
    `status: "PENDING"`. If found: a. Read the `scope` field (valid values:
    `ALL`, `BUSINESS`, `TECH`, `UX`, `MARKETING`) b. Treat it as equivalent to a
    `REEVALUATE [scope]` command — activate the Reevaluate Agent per normal
@@ -460,8 +460,8 @@ Do NOT block the session.
    src/webapp/server.js\` and open http://127.0.0.1:3000`
 4. **Decisions via web UI:** The user may create new decisions (`DECIDED` or
    `OPEN_QUESTION`) and answer open questions through the web UI. The web UI
-   writes to `docs/decisions.md` (index + uncategorized decisions) and
-   to category files under `docs/decisions/` (decided items organized by
+   writes to `BusinessDocs/decisions.md` (index + uncategorized decisions) and
+   to category files under `BusinessDocs/decisions/` (decided items organized by
    technology stack). The Orchestrator reads all decision files at Sprint Gate
    Step 0 as the single source of truth — it does NOT distinguish whether
    entries were added via file edit or web UI.
@@ -469,7 +469,7 @@ Do NOT block the session.
 **RULE ORC-29: Command Queue integration (Web UI Command Center)**
 
 1. At every session start and before every Sprint Gate, check whether
-   `docs/session/command-queue.json` exists with `status: "PENDING"`. If
+   `BusinessDocs/session/command-queue.json` exists with `status: "PENDING"`. If
    found: a. Read the `command` field — this contains a valid system command
    (e.g. `CREATE`, `AUDIT TECH`, `FEATURE`, `SCOPE CHANGE`, `HOTFIX`,
    `REEVALUATE`, `REFRESH ONBOARDING`) b. Read optional fields: `project`
@@ -496,11 +496,11 @@ turn**. After each agent completes its handoff, the Orchestrator:
    `"02-domain-expert"` after `01-business-analyst` completes), updates
    `last_updated`. This ensures the web UI immediately reflects the upcoming
    agent.
-3. Updates `docs/session/pipeline-progress.json` for the web UI. Schema:
+3. Updates `BusinessDocs/session/pipeline-progress.json` for the web UI. Schema:
    `{ "active": boolean, "command": string, "phases": [{ "name": string, "status": string, "agents": [{ "name": string, "status": string }] }] }`.
    Written by Orchestrator, consumed by web UI `/api/progress` endpoint.
 4. **Commits session-state.json to git** per ORC-47:
-   `git add docs/session/session-state.json docs/session/pipeline-progress.json && git commit -m "checkpoint: [Agent Name] complete"`.
+   `git add BusinessDocs/session/session-state.json BusinessDocs/session/pipeline-progress.json && git commit -m "checkpoint: [Agent Name] complete"`.
    This prevents session-state from being lost across conversation boundaries.
 5. **Yields back to the user** with a concise status message:
    ```
@@ -784,12 +784,12 @@ and the status is reset.
 2. Verify all Critic + Risk validations PASSED
 3. Activate the Synthesis Agent
 4. Receive the 6 synthesis documents:
-   - `docs/synthesis/final-report-master.md`
-   - `docs/synthesis/final-report-business.md`
-   - `docs/synthesis/final-report-tech.md`
-   - `docs/synthesis/final-report-ux.md`
-   - `docs/synthesis/final-report-marketing.md`
-   - `docs/synthesis/cross-team-blocker-matrix.md`
+   - `BusinessDocs/synthesis/final-report-master.md`
+   - `BusinessDocs/synthesis/final-report-business.md`
+   - `BusinessDocs/synthesis/final-report-tech.md`
+   - `BusinessDocs/synthesis/final-report-ux.md`
+   - `BusinessDocs/synthesis/final-report-marketing.md`
+   - `BusinessDocs/synthesis/cross-team-blocker-matrix.md`
 5. Verify all 6 files pass the Synthesis Agent Definition of Done
 6. Verify every `BLOCKING` item in the Cross-Team Blocker Matrix appears as
    `BLOCKED` in the corresponding sprint plan item — missing linkage: return to
@@ -808,7 +808,7 @@ Before every sprint, the Orchestrator performs the following checks:
 
 1. Run `node scripts/github-state-snapshot.js` to capture the current
    GitHub board state (milestones, issues, labels) into
-   `docs/session/github-state-snapshot.json`.
+   `BusinessDocs/session/github-state-snapshot.json`.
 2. Inject the snapshot summary as a `## GITHUB STATE` context block into the
    Reevaluate Agent context (same injection pattern as
    `## QUESTIONNAIRE INPUT`).
@@ -821,9 +821,9 @@ Before every sprint, the Orchestrator performs the following checks:
 
 **Step 0b: Consult decisions**
 
-1. Read `docs/decisions.md` — extract all items with status `OPEN` and
+1. Read `BusinessDocs/decisions.md` — extract all items with status `OPEN` and
    priority `HIGH`
-2. Scan `docs/decisions/` — for each `.md` file, read the category
+2. Scan `BusinessDocs/decisions/` — for each `.md` file, read the category
    header (`> Status:` line). **Skip files with `Status: DEFERRED`** — these
    represent inapplicable technology stacks.
 3. From ACTIVE and PARTIAL category files, read all `DECIDED` items. From
@@ -838,7 +838,7 @@ Before every sprint, the Orchestrator performs the following checks:
    Decision ID: [DEC-NNN]
    Question: [question]
    Scope: [scope]
-   → Enter your answer in docs/decisions.md and set status to DECIDED.
+   → Enter your answer in BusinessDocs/decisions.md and set status to DECIDED.
    → Or use the web UI: run `node src/webapp/server.js` → http://127.0.0.1:3000 → Decisions tab.
    → Type RESUME to restart the Sprint Gate.
    ```
@@ -893,10 +893,10 @@ complete?"
    (`sprint_status = IN_PROGRESS`)
 3. Identify parallel tracks from sprint plan Step F2
 4. **Read `story_type` of each story and route per the table below**
-5. **Decision injection (mandatory if `docs/decisions.md` exists):**
-   - Load all items with status `DECIDED` from `docs/decisions.md`
+5. **Decision injection (mandatory if `BusinessDocs/decisions.md` exists):**
+   - Load all items with status `DECIDED` from `BusinessDocs/decisions.md`
      (index + uncategorized)
-   - Scan `docs/decisions/` — from each ACTIVE or PARTIAL category file,
+   - Scan `BusinessDocs/decisions/` — from each ACTIVE or PARTIAL category file,
      load all `DECIDED` items. **Skip DEFERRED category files entirely.** Skip
      individually deferred rows within PARTIAL files.
    - Filter on scope that affects the current sprint, its stories, or active
@@ -915,7 +915,7 @@ complete?"
      artifact location), (3) an assigned owner. Failure → `NOT_READY` per
      ORC-14.
 7. **Lessons learned injection (mandatory if
-   `docs/retrospectives/lessons-learned.md` exists):**
+   `BusinessDocs/retrospectives/lessons-learned.md` exists):**
    - Read top-3 from `lessons-learned.md`
    - Inject as context for Implementation Agent (QUALITY/BLOCKER lessons)
    - Inject as context for PR/Review Agent (QUALITY lessons)
@@ -960,7 +960,7 @@ complete?"
 
 ### On KPI Agent handoff:
 
-1. Receive KPI Report (`docs/metrics/sprint-[SP-N]-kpi.json`)
+1. Receive KPI Report (`BusinessDocs/metrics/sprint-[SP-N]-kpi.json`)
 2. Check: all KPIs measured or INSUFFICIENT_DATA documented?
 3. Check: `kpi-trend.md` updated?
 4. On `KPI_ALERT` (OFF_TRACK items): add to Sprint Gate context for next sprint;
@@ -1027,7 +1027,7 @@ communicates directly with other agents.
 ### On Retrospective Agent handoff:
 
 1. Receive Sprint Retrospective report
-   (`docs/retrospectives/sprint-[SP-N]-retrospective.md`)
+   (`BusinessDocs/retrospectives/sprint-[SP-N]-retrospective.md`)
 2. Check: `velocity-log.json` updated with sprint SP-N entry?
 3. Check: `lessons-learned.md` cumulatively updated with top-3 at the top?
 4. Check: retrospective file written immutably (not overwritten)?
@@ -1259,71 +1259,71 @@ CREATE|AUDIT [DISC1] [DISC2] [project]
 
 ## SITUATION HANDLING TABLE
 
-| Situation                                                                        | Action                                                                                                                                                                                                                                                                                                                                                                                   |
-| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Agent handoff BLOCKED                                                            | Analyze blocking item, resolve or escalate to human                                                                                                                                                                                                                                                                                                                                      |
-| Critic Agent FAILED                                                              | Return findings to relevant agent                                                                                                                                                                                                                                                                                                                                                        |
-| Risk Agent FAILED                                                                | Return risk items to relevant agent                                                                                                                                                                                                                                                                                                                                                      |
-| INSUFFICIENT_DATA in critical path                                               | Escalate to human for input                                                                                                                                                                                                                                                                                                                                                              |
-| Irresolvable conflict between agents                                             | Document in log, escalate to human                                                                                                                                                                                                                                                                                                                                                       |
-| Implementation Agent ESCALATE                                                    | Analyze type, decide: return / rework / human approval                                                                                                                                                                                                                                                                                                                                   |
-| Test Agent PERSISTENT_FAILURE                                                    | Analyze, escalate to human if > 3 returns without resolution                                                                                                                                                                                                                                                                                                                             |
-| PR/Review Agent SECURITY_VIOLATION                                               | BLOCK merge, escalate immediately to Security Architect                                                                                                                                                                                                                                                                                                                                  |
-| New CRITICAL_FINDING in Phase 5                                                  | BLOCK sprint, document, activate Phase 2 Security/Architect agent for assessment                                                                                                                                                                                                                                                                                                         |
-| KPI_MISS after sprint                                                            | Document in Sprint Completion Report, analyze cause, adjust next sprint                                                                                                                                                                                                                                                                                                                  |
-| `REEVALUATE [scope]` command received                                            | Activate Reevaluate Agent with specified scope; PAUSE running Sprint Gate decisions until Re-evaluation Report is available                                                                                                                                                                                                                                                              |
-| Reevaluate Agent SPRINT IMPACT FLAG on IN_PROGRESS sprint                        | Present flag to user via Sprint Gate; wait for decision before further implementation                                                                                                                                                                                                                                                                                                    |
-| `BRAND_REFRESH_REQUIRED` flag received from Reevaluate Agent                     | Block Sprint Gate for all CONTENT/DESIGN/UI stories in the affected sprint until `docs/brand/brand-guidelines.md` and `docs/brand/design-tokens.json` are updated; inform user: `⚠️ BRAND_REFRESH_REQUIRED — brand guidelines have changed. Update docs/brand/ and type RESUME to continue the Sprint Gate.` Continue with CODE/INFRA stories without UI impact if they are independent. |
-| Reevaluate Agent Critic/Risk FAILED                                              | Return Delta report to Reevaluate Agent for correction                                                                                                                                                                                                                                                                                                                                   |
-| `FEATURE [name]: [description]` command received                                 | Activate Feature Agent; create `Workitems/[name]/`; run full Phase 1–4 + Synthesis + Sprint Plan + Phase 5 loop isolated from main backlog                                                                                                                                                                                                                                               |
-| Feature Agent affects IN_PROGRESS sprint in main backlog                         | Generate SPRINT IMPACT FLAG per Reevaluate Agent protocol; wait for user decision                                                                                                                                                                                                                                                                                                        |
-| Feature sprint depends on BACKLOG main sprint                                    | Document cross-backlog dependency; cascade rule applies here too                                                                                                                                                                                                                                                                                                                         |
-| Feature Agent emits `ARCH_CONFLICT` or `OUT_OF_SCOPE → SCOPE CHANGE recommended` | Present choice to user: `⚠️ SCOPE CHANGE RECOMMENDED — type SCOPE CHANGE [DIMENSION]: [description] to process correctly, or OVERRIDE to continue as feature (SCOPE_CHANGE_RISK_ACCEPTED logged)`                                                                                                                                                                                        |
-| `SCOPE CHANGE [DIMENSION]: [description]` command received                       | Activate Scope Change Agent; PAUSE Sprint Gate for all IN_PROGRESS sprints in affected dimension until Sprint Gate Reconciliation step is complete                                                                                                                                                                                                                                       |
-| Scope Change Agent — Backlog Hold Report produced                                | Tag all affected QUEUED/IN_PROGRESS tickets as `SCOPE_CHANGE_HOLD SC-[N]`; do NOT touch COMPLETED tickets                                                                                                                                                                                                                                                                                |
-| Scope Change Agent — Critic + Risk FAILED                                        | Return scope-change re-analysis output to relevant phase agents for correction                                                                                                                                                                                                                                                                                                           |
-| Scope Change Agent — Sprint Gate Reconciliation ready                            | Present reconciliation summary to user; wait for approval before releasing REQUEUED tickets back into Sprint Gate                                                                                                                                                                                                                                                                        |
-| Scope Change Agent — Master Synthesis update complete                            | Resume normal Sprint Gate cycle for all REQUEUED tickets                                                                                                                                                                                                                                                                                                                                 |
-| `AUDIT [project]` command received                                               | **Create session-state.json immediately per ORC-46** (status: ONBOARDING); activate Onboarding Agent (full scope, AUDIT mode); start intake flow; NO Phase 1 before ONBOARDING_COMPLETE                                                                                                                                                                                                  |
-| `CREATE [project]` command received                                              | **Create session-state.json immediately per ORC-46** (status: ONBOARDING); activate Onboarding Agent (full scope, CREATE mode); start intake flow; NO Phase 1 before ONBOARDING_COMPLETE                                                                                                                                                                                                 |
-| `REFRESH ONBOARDING` command received                                            | Activate Onboarding Agent in maintenance mode (steps 3+4 only: scan + tooling check); partially update `docs/onboarding/onboarding-output.md` (intake answers from the original onboarding process remain intact); report ONBOARDING_REFRESHED to active Sprint Gate if running; on conflicts with existing sprint: escalate as `SCOPE_DECISION`                                         |
-| `AUDIT BUSINESS [project]` command received                                      | Store scope `PARTIAL:BUSINESS` in session-state; activate Onboarding Agent (limited scope, AUDIT mode); start Phase 1 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                      |
-| `AUDIT TECH [project]` command received                                          | Store scope `PARTIAL:TECH` in session-state; activate Onboarding Agent (limited scope, AUDIT mode); start Phase 2 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                          |
-| `AUDIT UX [project]` command received                                            | Store scope `PARTIAL:UX` in session-state; activate Onboarding Agent (limited scope, AUDIT mode); start Phase 3 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                            |
-| `AUDIT MARKETING [project]` command received                                     | Store scope `PARTIAL:MARKETING` in session-state; activate Onboarding Agent (limited scope, AUDIT mode); start Phase 4 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                     |
-| `AUDIT SYNTHESIS` command received                                               | Load session-state; inventory available phase outputs; activate Synthesis Agent with all available input; produce Master + Blocker Matrix only if all 4 phases are present                                                                                                                                                                                                               |
-| `CREATE BUSINESS [project]` command received                                     | Store scope `PARTIAL:BUSINESS` in session-state; activate Onboarding Agent (limited scope, CREATE mode); start Phase 1 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                     |
-| `CREATE TECH [project]` command received                                         | Store scope `PARTIAL:TECH` in session-state; activate Onboarding Agent (limited scope, CREATE mode); start Phase 2 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                         |
-| `CREATE UX [project]` command received                                           | Store scope `PARTIAL:UX` in session-state; activate Onboarding Agent (limited scope, CREATE mode); start Phase 3 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                           |
-| `CREATE MARKETING [project]` command received                                    | Store scope `PARTIAL:MARKETING` in session-state; activate Onboarding Agent (limited scope, CREATE mode); start Phase 4 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                    |
-| `CREATE SYNTHESIS` command received                                              | Load session-state; inventory available phase outputs; activate Synthesis Agent with all available input; produce Master + Blocker Matrix only if all 4 phases are present                                                                                                                                                                                                               |
-| Canva API auth failed in Brand & Assets Agent                                    | Document as `CANVA_API_ERROR`; set status to `PARTIAL`; continue to Storybook Agent with available data; notify user                                                                                                                                                                                                                                                                     |
-| `canva_api_token` missing in session-state                                       | Brand & Assets Agent status `SKIPPED_NO_TOKEN`; report informatively at Sprint Gate; NO blocking                                                                                                                                                                                                                                                                                         |
-| Storybook Agent: `DESIGN_TOKEN_MISSING`                                          | Generate empty placeholder tokens; document missing tokens; notify user before Synthesis                                                                                                                                                                                                                                                                                                 |
-| Implementation Agent uses UI component outside Storybook inventory               | PR/Review Agent BLOCKED; return to Implementation Agent; Storybook Agent must add story before resubmission                                                                                                                                                                                                                                                                              |
-| OPEN question `MEDIUM/LOW` in `docs/decisions.md` affects sprint scope           | Report informatively at Sprint Gate; continue without blocking                                                                                                                                                                                                                                                                                                                           |
-| `DECIDED` item in `docs/decisions.md` contradicts agent output                   | Document conflict as `DECISION_CONFLICT: [DEC-NNN]`; escalate via Human Escalation Protocol type `SCOPE_DECISION`                                                                                                                                                                                                                                                                        |
-| Questionnaire answers available at cycle start                                   | Activate Questionnaire Agent (answer loading); inject context blocks per re-analysis agents; for SCOPE_CHANGE: flag technical answers with `answer_age_status: POTENTIALLY_STALE` if they relate to the changed dimension — present flags to user before phase re-analysis begins                                                                                                        |
-| Phase Critic + Risk PASSED with QUESTIONNAIRE_REQUEST items                      | Activate Questionnaire Agent (generation); notify user about questions in BusinessDocs/[PHASE]/Questionnaires/                                                                                                                                                                                                                                                                           |
-| Phase Critic + Risk PASSED                                                       | Activate Questionnaire Agent (document generation); update OfficialDocuments/ for this phase                                                                                                                                                                                                                                                                                             |
-| Questionnaire Agent QUESTIONNAIRE_GENERATED                                      | Update questionnaire-index.md; log in Orchestrator Log; proceed to next phase — no blocking                                                                                                                                                                                                                                                                                              |
-| `INSUFFICIENT_DATA:` at REEVALUATE now resolved by questionnaire answer          | Phase agent marks as `RESOLVED_BY_QUESTIONNAIRE: [Q-ID]`; Questionnaire Agent updates official documents                                                                                                                                                                                                                                                                                 |
-| Official document completeness < 50% before Synthesis                            | Warn user: `⚠️ OfficialDocuments/[file] completeness < 50% — fill in BusinessDocs questionnaires and REEVALUATE to improve.`; do NOT block Synthesis                                                                                                                                                                                                                                     |
-| Official document MISSING entirely before Synthesis                              | Return to Questionnaire Agent for initial scaffold; document as `QUESTIONNAIRE_SCAFFOLD_REQUIRED`                                                                                                                                                                                                                                                                                        |
-| `ONBOARDING_BLOCKED` in Onboarding Output                                        | HALT all agents; document blockage; use Human Escalation Protocol type `ONBOARDING_BLOCKED`; wait for input                                                                                                                                                                                                                                                                              |
-| `TOOLING_GAP` (Category C) detected                                              | Document; BLOCK Phase 5 only; Phases 1–4 may continue; add to synthesis input                                                                                                                                                                                                                                                                                                            |
-| Open Human Escalation `HALT`-type present                                        | Set status to `AWAITING_HUMAN`; ask question per `docs/contracts/human-escalation-protocol.md`; NO further agent activity until response received                                                                                                                                                                                                                                        |
-| Open Human Escalation `PAUSE`-type present                                       | Pause dependent step; parallel steps without dependency may continue; ask question per escalation protocol                                                                                                                                                                                                                                                                               |
-| Documentation Agent `DOC_INCONSISTENCY` present                                  | Escalate via Human Escalation Protocol type `OTHER`; wait for decision; PR may still be merged                                                                                                                                                                                                                                                                                           |
-| Documentation Agent `DOC_PENDING` items present                                  | Add to blocker register with reference to blocked story; include in next sprint documentation pass                                                                                                                                                                                                                                                                                       |
-| Documentation Agent `DOC_MISSING` items received                                 | Group per specialist; activate each specialist with DOC_MISSING INPUT REQUEST; wait for all inputs; return bundled to Documentation Agent                                                                                                                                                                                                                                                |
-| GitHub Integration Agent authentication error                                    | Escalate via Human Escalation Protocol type `SCOPE_DECISION`; wait for valid token; no GitHub operations until resolved                                                                                                                                                                                                                                                                  |
-| GitHub project `[GITHUB_PROJECT_NAME]` does not exist                            | GitHub Integration Agent creates project — no escalation needed, document as `PROJECT_CREATED` in Sync Report                                                                                                                                                                                                                                                                            |
-| GitHub Actions workflow already present in repository                            | Compare with generated version; on conflict document as `WORKFLOW_CONFLICT` and escalate via Human Escalation Protocol                                                                                                                                                                                                                                                                   |
-| Secret scan FAIL detected by PR/Review Agent                                     | BLOCK merge immediately; escalate to Security Architect + user; type `SECURITY_DECISION`; no further sprint step until resolved                                                                                                                                                                                                                                                          |
-| Story NOT_READY after Definition of Ready check                                  | Move to next sprint; document reason; after 2x NOT_READY same story: Human Escalation Protocol type `SCOPE_DECISION`                                                                                                                                                                                                                                                                     |
-| KPI_ALERT (OFF_TRACK) received from KPI Agent                                    | Add to Sprint Gate context for next sprint; inject into relevant phase agent; no halting unless security KPI OFF_TRACK                                                                                                                                                                                                                                                                   |
-| Retrospective Agent: velocity ratio < 0.8 for 2+ sprints                         | Warn user at Sprint Gate; suggest reducing sprint size                                                                                                                                                                                                                                                                                                                                   |
+| Situation                                                                        | Action                                                                                                                                                                                                                                                                                                                                                                                                           |
+| -------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Agent handoff BLOCKED                                                            | Analyze blocking item, resolve or escalate to human                                                                                                                                                                                                                                                                                                                                                              |
+| Critic Agent FAILED                                                              | Return findings to relevant agent                                                                                                                                                                                                                                                                                                                                                                                |
+| Risk Agent FAILED                                                                | Return risk items to relevant agent                                                                                                                                                                                                                                                                                                                                                                              |
+| INSUFFICIENT_DATA in critical path                                               | Escalate to human for input                                                                                                                                                                                                                                                                                                                                                                                      |
+| Irresolvable conflict between agents                                             | Document in log, escalate to human                                                                                                                                                                                                                                                                                                                                                                               |
+| Implementation Agent ESCALATE                                                    | Analyze type, decide: return / rework / human approval                                                                                                                                                                                                                                                                                                                                                           |
+| Test Agent PERSISTENT_FAILURE                                                    | Analyze, escalate to human if > 3 returns without resolution                                                                                                                                                                                                                                                                                                                                                     |
+| PR/Review Agent SECURITY_VIOLATION                                               | BLOCK merge, escalate immediately to Security Architect                                                                                                                                                                                                                                                                                                                                                          |
+| New CRITICAL_FINDING in Phase 5                                                  | BLOCK sprint, document, activate Phase 2 Security/Architect agent for assessment                                                                                                                                                                                                                                                                                                                                 |
+| KPI_MISS after sprint                                                            | Document in Sprint Completion Report, analyze cause, adjust next sprint                                                                                                                                                                                                                                                                                                                                          |
+| `REEVALUATE [scope]` command received                                            | Activate Reevaluate Agent with specified scope; PAUSE running Sprint Gate decisions until Re-evaluation Report is available                                                                                                                                                                                                                                                                                      |
+| Reevaluate Agent SPRINT IMPACT FLAG on IN_PROGRESS sprint                        | Present flag to user via Sprint Gate; wait for decision before further implementation                                                                                                                                                                                                                                                                                                                            |
+| `BRAND_REFRESH_REQUIRED` flag received from Reevaluate Agent                     | Block Sprint Gate for all CONTENT/DESIGN/UI stories in the affected sprint until `BusinessDocs/brand/brand-guidelines.md` and `BusinessDocs/brand/design-tokens.json` are updated; inform user: `⚠️ BRAND_REFRESH_REQUIRED — brand guidelines have changed. Update BusinessDocs/brand/ and type RESUME to continue the Sprint Gate.` Continue with CODE/INFRA stories without UI impact if they are independent. |
+| Reevaluate Agent Critic/Risk FAILED                                              | Return Delta report to Reevaluate Agent for correction                                                                                                                                                                                                                                                                                                                                                           |
+| `FEATURE [name]: [description]` command received                                 | Activate Feature Agent; create `Workitems/[name]/`; run full Phase 1–4 + Synthesis + Sprint Plan + Phase 5 loop isolated from main backlog                                                                                                                                                                                                                                                                       |
+| Feature Agent affects IN_PROGRESS sprint in main backlog                         | Generate SPRINT IMPACT FLAG per Reevaluate Agent protocol; wait for user decision                                                                                                                                                                                                                                                                                                                                |
+| Feature sprint depends on BACKLOG main sprint                                    | Document cross-backlog dependency; cascade rule applies here too                                                                                                                                                                                                                                                                                                                                                 |
+| Feature Agent emits `ARCH_CONFLICT` or `OUT_OF_SCOPE → SCOPE CHANGE recommended` | Present choice to user: `⚠️ SCOPE CHANGE RECOMMENDED — type SCOPE CHANGE [DIMENSION]: [description] to process correctly, or OVERRIDE to continue as feature (SCOPE_CHANGE_RISK_ACCEPTED logged)`                                                                                                                                                                                                                |
+| `SCOPE CHANGE [DIMENSION]: [description]` command received                       | Activate Scope Change Agent; PAUSE Sprint Gate for all IN_PROGRESS sprints in affected dimension until Sprint Gate Reconciliation step is complete                                                                                                                                                                                                                                                               |
+| Scope Change Agent — Backlog Hold Report produced                                | Tag all affected QUEUED/IN_PROGRESS tickets as `SCOPE_CHANGE_HOLD SC-[N]`; do NOT touch COMPLETED tickets                                                                                                                                                                                                                                                                                                        |
+| Scope Change Agent — Critic + Risk FAILED                                        | Return scope-change re-analysis output to relevant phase agents for correction                                                                                                                                                                                                                                                                                                                                   |
+| Scope Change Agent — Sprint Gate Reconciliation ready                            | Present reconciliation summary to user; wait for approval before releasing REQUEUED tickets back into Sprint Gate                                                                                                                                                                                                                                                                                                |
+| Scope Change Agent — Master Synthesis update complete                            | Resume normal Sprint Gate cycle for all REQUEUED tickets                                                                                                                                                                                                                                                                                                                                                         |
+| `AUDIT [project]` command received                                               | **Create session-state.json immediately per ORC-46** (status: ONBOARDING); activate Onboarding Agent (full scope, AUDIT mode); start intake flow; NO Phase 1 before ONBOARDING_COMPLETE                                                                                                                                                                                                                          |
+| `CREATE [project]` command received                                              | **Create session-state.json immediately per ORC-46** (status: ONBOARDING); activate Onboarding Agent (full scope, CREATE mode); start intake flow; NO Phase 1 before ONBOARDING_COMPLETE                                                                                                                                                                                                                         |
+| `REFRESH ONBOARDING` command received                                            | Activate Onboarding Agent in maintenance mode (steps 3+4 only: scan + tooling check); partially update `BusinessDocs/onboarding/onboarding-output.md` (intake answers from the original onboarding process remain intact); report ONBOARDING_REFRESHED to active Sprint Gate if running; on conflicts with existing sprint: escalate as `SCOPE_DECISION`                                                         |
+| `AUDIT BUSINESS [project]` command received                                      | Store scope `PARTIAL:BUSINESS` in session-state; activate Onboarding Agent (limited scope, AUDIT mode); start Phase 1 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                                              |
+| `AUDIT TECH [project]` command received                                          | Store scope `PARTIAL:TECH` in session-state; activate Onboarding Agent (limited scope, AUDIT mode); start Phase 2 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                                                  |
+| `AUDIT UX [project]` command received                                            | Store scope `PARTIAL:UX` in session-state; activate Onboarding Agent (limited scope, AUDIT mode); start Phase 3 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                                                    |
+| `AUDIT MARKETING [project]` command received                                     | Store scope `PARTIAL:MARKETING` in session-state; activate Onboarding Agent (limited scope, AUDIT mode); start Phase 4 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                                             |
+| `AUDIT SYNTHESIS` command received                                               | Load session-state; inventory available phase outputs; activate Synthesis Agent with all available input; produce Master + Blocker Matrix only if all 4 phases are present                                                                                                                                                                                                                                       |
+| `CREATE BUSINESS [project]` command received                                     | Store scope `PARTIAL:BUSINESS` in session-state; activate Onboarding Agent (limited scope, CREATE mode); start Phase 1 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                                             |
+| `CREATE TECH [project]` command received                                         | Store scope `PARTIAL:TECH` in session-state; activate Onboarding Agent (limited scope, CREATE mode); start Phase 2 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                                                 |
+| `CREATE UX [project]` command received                                           | Store scope `PARTIAL:UX` in session-state; activate Onboarding Agent (limited scope, CREATE mode); start Phase 3 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                                                   |
+| `CREATE MARKETING [project]` command received                                    | Store scope `PARTIAL:MARKETING` in session-state; activate Onboarding Agent (limited scope, CREATE mode); start Phase 4 agents; activate Synthesis (PARTIAL) after Critic/Risk PASSED                                                                                                                                                                                                                            |
+| `CREATE SYNTHESIS` command received                                              | Load session-state; inventory available phase outputs; activate Synthesis Agent with all available input; produce Master + Blocker Matrix only if all 4 phases are present                                                                                                                                                                                                                                       |
+| Canva API auth failed in Brand & Assets Agent                                    | Document as `CANVA_API_ERROR`; set status to `PARTIAL`; continue to Storybook Agent with available data; notify user                                                                                                                                                                                                                                                                                             |
+| `canva_api_token` missing in session-state                                       | Brand & Assets Agent status `SKIPPED_NO_TOKEN`; report informatively at Sprint Gate; NO blocking                                                                                                                                                                                                                                                                                                                 |
+| Storybook Agent: `DESIGN_TOKEN_MISSING`                                          | Generate empty placeholder tokens; document missing tokens; notify user before Synthesis                                                                                                                                                                                                                                                                                                                         |
+| Implementation Agent uses UI component outside Storybook inventory               | PR/Review Agent BLOCKED; return to Implementation Agent; Storybook Agent must add story before resubmission                                                                                                                                                                                                                                                                                                      |
+| OPEN question `MEDIUM/LOW` in `BusinessDocs/decisions.md` affects sprint scope   | Report informatively at Sprint Gate; continue without blocking                                                                                                                                                                                                                                                                                                                                                   |
+| `DECIDED` item in `BusinessDocs/decisions.md` contradicts agent output           | Document conflict as `DECISION_CONFLICT: [DEC-NNN]`; escalate via Human Escalation Protocol type `SCOPE_DECISION`                                                                                                                                                                                                                                                                                                |
+| Questionnaire answers available at cycle start                                   | Activate Questionnaire Agent (answer loading); inject context blocks per re-analysis agents; for SCOPE_CHANGE: flag technical answers with `answer_age_status: POTENTIALLY_STALE` if they relate to the changed dimension — present flags to user before phase re-analysis begins                                                                                                                                |
+| Phase Critic + Risk PASSED with QUESTIONNAIRE_REQUEST items                      | Activate Questionnaire Agent (generation); notify user about questions in BusinessDocs/[PHASE]/Questionnaires/                                                                                                                                                                                                                                                                                                   |
+| Phase Critic + Risk PASSED                                                       | Activate Questionnaire Agent (document generation); update OfficialDocuments/ for this phase                                                                                                                                                                                                                                                                                                                     |
+| Questionnaire Agent QUESTIONNAIRE_GENERATED                                      | Update questionnaire-index.md; log in Orchestrator Log; proceed to next phase — no blocking                                                                                                                                                                                                                                                                                                                      |
+| `INSUFFICIENT_DATA:` at REEVALUATE now resolved by questionnaire answer          | Phase agent marks as `RESOLVED_BY_QUESTIONNAIRE: [Q-ID]`; Questionnaire Agent updates official documents                                                                                                                                                                                                                                                                                                         |
+| Official document completeness < 50% before Synthesis                            | Warn user: `⚠️ OfficialDocuments/[file] completeness < 50% — fill in BusinessDocs questionnaires and REEVALUATE to improve.`; do NOT block Synthesis                                                                                                                                                                                                                                                             |
+| Official document MISSING entirely before Synthesis                              | Return to Questionnaire Agent for initial scaffold; document as `QUESTIONNAIRE_SCAFFOLD_REQUIRED`                                                                                                                                                                                                                                                                                                                |
+| `ONBOARDING_BLOCKED` in Onboarding Output                                        | HALT all agents; document blockage; use Human Escalation Protocol type `ONBOARDING_BLOCKED`; wait for input                                                                                                                                                                                                                                                                                                      |
+| `TOOLING_GAP` (Category C) detected                                              | Document; BLOCK Phase 5 only; Phases 1–4 may continue; add to synthesis input                                                                                                                                                                                                                                                                                                                                    |
+| Open Human Escalation `HALT`-type present                                        | Set status to `AWAITING_HUMAN`; ask question per `docs/contracts/human-escalation-protocol.md`; NO further agent activity until response received                                                                                                                                                                                                                                                                |
+| Open Human Escalation `PAUSE`-type present                                       | Pause dependent step; parallel steps without dependency may continue; ask question per escalation protocol                                                                                                                                                                                                                                                                                                       |
+| Documentation Agent `DOC_INCONSISTENCY` present                                  | Escalate via Human Escalation Protocol type `OTHER`; wait for decision; PR may still be merged                                                                                                                                                                                                                                                                                                                   |
+| Documentation Agent `DOC_PENDING` items present                                  | Add to blocker register with reference to blocked story; include in next sprint documentation pass                                                                                                                                                                                                                                                                                                               |
+| Documentation Agent `DOC_MISSING` items received                                 | Group per specialist; activate each specialist with DOC_MISSING INPUT REQUEST; wait for all inputs; return bundled to Documentation Agent                                                                                                                                                                                                                                                                        |
+| GitHub Integration Agent authentication error                                    | Escalate via Human Escalation Protocol type `SCOPE_DECISION`; wait for valid token; no GitHub operations until resolved                                                                                                                                                                                                                                                                                          |
+| GitHub project `[GITHUB_PROJECT_NAME]` does not exist                            | GitHub Integration Agent creates project — no escalation needed, document as `PROJECT_CREATED` in Sync Report                                                                                                                                                                                                                                                                                                    |
+| GitHub Actions workflow already present in repository                            | Compare with generated version; on conflict document as `WORKFLOW_CONFLICT` and escalate via Human Escalation Protocol                                                                                                                                                                                                                                                                                           |
+| Secret scan FAIL detected by PR/Review Agent                                     | BLOCK merge immediately; escalate to Security Architect + user; type `SECURITY_DECISION`; no further sprint step until resolved                                                                                                                                                                                                                                                                                  |
+| Story NOT_READY after Definition of Ready check                                  | Move to next sprint; document reason; after 2x NOT_READY same story: Human Escalation Protocol type `SCOPE_DECISION`                                                                                                                                                                                                                                                                                             |
+| KPI_ALERT (OFF_TRACK) received from KPI Agent                                    | Add to Sprint Gate context for next sprint; inject into relevant phase agent; no halting unless security KPI OFF_TRACK                                                                                                                                                                                                                                                                                           |
+| Retrospective Agent: velocity ratio < 0.8 for 2+ sprints                         | Warn user at Sprint Gate; suggest reducing sprint size                                                                                                                                                                                                                                                                                                                                                           |
 
 ---
 
@@ -1388,13 +1388,13 @@ agent reports `DEFERRED_TECH_REQUIRED`, `DEFERRED_TECH_DETECTED`, or
 **automatically activates** the category without requiring user intervention:
 
 **Step 1 — Auto-activate the category file:** Open
-`docs/decisions/[file]` and edit the header block:
+`BusinessDocs/decisions/[file]` and edit the header block:
 
 - Change `Status: DEFERRED` → `Status: ACTIVE`
 - Change `Applicable: NO` → `Applicable: YES`
 - Remove the `> Deferred-Reason:` line entirely
 
-**Step 2 — Update the index file:** Open `docs/decisions.md` and locate
+**Step 2 — Update the index file:** Open `BusinessDocs/decisions.md` and locate
 the matching row in the Category Registry table. Change `DEFERRED` → `ACTIVE` in
 the Status column and `NO` → `YES` in the Applicable column.
 
@@ -1417,7 +1417,7 @@ agents in the current sprint. Resume the halted agent immediately.
 
 **Exception — SKIP ACTIVATION:** If the user explicitly types
 `SKIP ACTIVATION [category]` before or after auto-activation: write a `DECIDED`
-item to `docs/decisions.md` documenting the exception:
+item to `BusinessDocs/decisions.md` documenting the exception:
 `DEC-[NNN] — Exception: [category] technology introduced without activating deferred decisions. Reason: [user reason].`
 If the category was already auto-activated, revert it to DEFERRED.
 
@@ -1436,7 +1436,7 @@ Onboarding Agent. This ensures:
 1. Parse the command to determine `cycle_type`, `scope`, `project_name`, `mode`,
    and `project_type` (using the same rules as the Onboarding Agent's scope
    detection)
-2. Create `docs/session/session-state.json` with:
+2. Create `BusinessDocs/session/session-state.json` with:
    ```json
    {
      "schema_version": "1.0",
@@ -1468,7 +1468,7 @@ Onboarding Agent. This ensures:
      }
    }
    ```
-3. Create/update `docs/session/pipeline-progress.json` to reflect the
+3. Create/update `BusinessDocs/session/pipeline-progress.json` to reflect the
    ONBOARDING phase as active
 4. **Then** activate the Onboarding Agent
 

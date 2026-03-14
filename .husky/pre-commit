@@ -14,4 +14,4 @@ fi
 npx lint-staged
 
 # Run fast unit tests (schemas + middleware — lightweight, <5s)
-npx vitest run src/webapp/schemas.test.js src/webapp/middleware.test.js --reporter=dot
+npx vitest run tests/unit/schemas.test.js tests/unit/middleware.test.js --reporter=dot

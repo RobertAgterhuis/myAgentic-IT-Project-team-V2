@@ -84,19 +84,19 @@ The Onboarding Agent will ask you for:
 
 After a full `CREATE` cycle, the system produces:
 
-| Document            | Location                                      | Content                                                            |
-| ------------------- | --------------------------------------------- | ------------------------------------------------------------------ |
-| Master Report       | `docs/synthesis/final-report-master.md`       | Executive summary, Solution Blueprint, Risk Matrix, Roadmap, KPIs  |
-| Business Report     | `docs/synthesis/final-report-business.md`     | Business model, requirements, strategy, financial projections      |
-| Tech Report         | `docs/synthesis/final-report-tech.md`         | Architecture, tech stack, data model, security, DevOps             |
-| UX Report           | `docs/synthesis/final-report-ux.md`           | Personas, journeys, wireframes, design system, a11y, content, i18n |
-| Marketing Report    | `docs/synthesis/final-report-marketing.md`    | Brand identity, growth strategy, conversion design                 |
-| Blocker Matrix      | `docs/synthesis/cross-team-blocker-matrix.md` | Cross-team dependencies (BLOCKING or ADVISORY)                     |
-| Design Tokens       | `docs/brand/design-tokens.json`               | Brand colors, typography, spacing                                  |
-| Component Inventory | `docs/storybook/component-inventory.md`       | UI component library specification                                 |
-| Sprint Plan         | Generated per synthesis                       | Implementable sprint stories with estimates                        |
-| Questionnaires      | `BusinessDocs/[Phase]/Questionnaires/`        | Questions for missing information                                  |
-| Official Documents  | `BusinessDocs/OfficialDocuments/`             | 8 living documents (vision, tech overview, legal, etc.)            |
+| Document            | Location                                              | Content                                                            |
+| ------------------- | ----------------------------------------------------- | ------------------------------------------------------------------ |
+| Master Report       | `BusinessDocs/synthesis/final-report-master.md`       | Executive summary, Solution Blueprint, Risk Matrix, Roadmap, KPIs  |
+| Business Report     | `BusinessDocs/synthesis/final-report-business.md`     | Business model, requirements, strategy, financial projections      |
+| Tech Report         | `BusinessDocs/synthesis/final-report-tech.md`         | Architecture, tech stack, data model, security, DevOps             |
+| UX Report           | `BusinessDocs/synthesis/final-report-ux.md`           | Personas, journeys, wireframes, design system, a11y, content, i18n |
+| Marketing Report    | `BusinessDocs/synthesis/final-report-marketing.md`    | Brand identity, growth strategy, conversion design                 |
+| Blocker Matrix      | `BusinessDocs/synthesis/cross-team-blocker-matrix.md` | Cross-team dependencies (BLOCKING or ADVISORY)                     |
+| Design Tokens       | `BusinessDocs/brand/design-tokens.json`               | Brand colors, typography, spacing                                  |
+| Component Inventory | `BusinessDocs/storybook/component-inventory.md`       | UI component library specification                                 |
+| Sprint Plan         | Generated per synthesis                               | Implementable sprint stories with estimates                        |
+| Questionnaires      | `BusinessDocs/[Phase]/Questionnaires/`                | Questions for missing information                                  |
+| Official Documents  | `BusinessDocs/OfficialDocuments/`                     | 8 living documents (vision, tech overview, legal, etc.)            |
 
 ### CREATE Mode Agent Behavior
 

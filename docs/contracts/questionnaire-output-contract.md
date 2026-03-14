@@ -75,7 +75,7 @@ required for inter-phase answers to take effect.
 ### Reevaluate trigger file
 
 The web UI writes a trigger file at
-`docs/session/reevaluate-trigger.json` when the user clicks
+`BusinessDocs/session/reevaluate-trigger.json` when the user clicks
 "Reevaluate":
 
 ```json

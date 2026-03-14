@@ -39,11 +39,11 @@ demonstrably derivable from available measurement data. Not measurable =
 
 ## OUTPUT FILES
 
-| File                                  | Type                                              | Description                             |
-| ------------------------------------- | ------------------------------------------------- | --------------------------------------- |
-| `docs/metrics/kpi-baseline.json`      | Created once after Synthesis, readonly thereafter | KPI targets from Synthesis Final Report |
-| `docs/metrics/sprint-[SP-N]-kpi.json` | Per sprint, immutable                             | Realized KPI values this sprint         |
-| `docs/metrics/kpi-trend.md`           | Cumulative, updated every sprint                  | Readable trend overview for all KPIs    |
+| File                                          | Type                                              | Description                             |
+| --------------------------------------------- | ------------------------------------------------- | --------------------------------------- |
+| `BusinessDocs/metrics/kpi-baseline.json`      | Created once after Synthesis, readonly thereafter | KPI targets from Synthesis Final Report |
+| `BusinessDocs/metrics/sprint-[SP-N]-kpi.json` | Per sprint, immutable                             | Realized KPI values this sprint         |
+| `BusinessDocs/metrics/kpi-trend.md`           | Cumulative, updated every sprint                  | Readable trend overview for all KPIs    |
 
 ---
 
@@ -51,12 +51,12 @@ demonstrably derivable from available measurement data. Not measurable =
 
 On first activation (after Synthesis Final Report, before sprint 1) the agent
 reads the KPI baseline from the Synthesis Final Report and writes it to
-`docs/metrics/kpi-baseline.json`:
+`BusinessDocs/metrics/kpi-baseline.json`:
 
 ```json
 {
   "generated_at": "ISO 8601",
-  "source": "docs/synthesis/final-report-master.md",
+  "source": "BusinessDocs/synthesis/final-report-master.md",
   "kpis": [
     {
       "id": "KPI-001",
@@ -94,7 +94,7 @@ and escalate via Human Escalation Protocol type `SCOPE_DECISION`.
 
 ### Step 1: Load KPI Baseline
 
-Read `docs/metrics/kpi-baseline.json`. If the file does not exist:
+Read `BusinessDocs/metrics/kpi-baseline.json`. If the file does not exist:
 perform Step 0 first.
 
 ---
@@ -140,7 +140,7 @@ For each KPI:
 
 ### Step 3: Write Sprint KPI Report
 
-Write to `docs/metrics/sprint-[SP-N]-kpi.json`:
+Write to `BusinessDocs/metrics/sprint-[SP-N]-kpi.json`:
 
 ```json
 {
@@ -161,7 +161,7 @@ Write to `docs/metrics/sprint-[SP-N]-kpi.json`:
 
 ### Step 4: Update KPI Trend
 
-Update `docs/metrics/kpi-trend.md` cumulatively:
+Update `BusinessDocs/metrics/kpi-trend.md` cumulatively:
 
 ```markdown
 # KPI Trend — [Project name]
@@ -213,13 +213,13 @@ next sprint and injects them as priority into the relevant phase agent (e.g.
 `OFF_TRACK` security KPI → Security Architect context).
 
 **For `OFF_TRACK` over 2+ consecutive sprints: mandatorily write a
-`LESSON_CANDIDATE`** to `docs/retrospectives/lessons-learned.md` per
+`LESSON_CANDIDATE`** to `BusinessDocs/retrospectives/lessons-learned.md` per
 RULE ORC-22 (type: `KPI_MISS`, category: `VELOCITY` or `BLOCKER` depending on
 the KPI). Include the number of consecutive sprints and the trend in the
 description.
 
 **For `brand_violations_count` > 0 over 2+ consecutive sprints: mandatorily
-write a `LESSON_CANDIDATE`** to `docs/retrospectives/lessons-learned.md`
+write a `LESSON_CANDIDATE`** to `BusinessDocs/retrospectives/lessons-learned.md`
 (type: `BRAND_MISS`, category: `BRAND_COMPLIANCE`). Include the sprint IDs,
 total number of violations and most common violation type (color, typography,
 logo or tone of voice).

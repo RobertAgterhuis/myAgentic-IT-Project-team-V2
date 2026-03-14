@@ -9,7 +9,7 @@ contribute.
 
 ## Overview
 
-The synthesis stage produces **6 documents** in `docs/synthesis/`:
+The synthesis stage produces **6 documents** in `BusinessDocs/synthesis/`:
 
 | Document                      | File                           | Audience                                        |
 | ----------------------------- | ------------------------------ | ----------------------------------------------- |
@@ -130,12 +130,12 @@ usable digital assets.
 
 ### What It Produces
 
-| Output                                       | Location                            |
-| -------------------------------------------- | ----------------------------------- |
-| Brand guidelines                             | `docs/brand/brand-guidelines.md`    |
-| Design tokens                                | `docs/brand/design-tokens.json`     |
-| Brand assets report                          | `docs/brand/brand-assets-report.md` |
-| Visual assets (logos, social cards, banners) | `docs/brand/assets/`                |
+| Output                                       | Location                                    |
+| -------------------------------------------- | ------------------------------------------- |
+| Brand guidelines                             | `BusinessDocs/brand/brand-guidelines.md`    |
+| Design tokens                                | `BusinessDocs/brand/design-tokens.json`     |
+| Brand assets report                          | `BusinessDocs/brand/brand-assets-report.md` |
+| Visual assets (logos, social cards, banners) | `BusinessDocs/brand/assets/`                |
 
 ### Canva Integration
 
@@ -171,13 +171,13 @@ component library that governs all UI implementation.
 
 ### What It Produces
 
-| Output                  | Location                                |
-| ----------------------- | --------------------------------------- |
-| Component inventory     | `docs/storybook/component-inventory.md` |
-| Design tokens (CSS)     | `src/tokens/tokens.css`                 |
-| Design tokens (JS)      | `src/tokens/tokens.js`                  |
-| Storybook configuration | `.storybook/` directory                 |
-| Component stories       | Per-component `.stories.js` files       |
+| Output                  | Location                                        |
+| ----------------------- | ----------------------------------------------- |
+| Component inventory     | `BusinessDocs/storybook/component-inventory.md` |
+| Design tokens (CSS)     | `src/tokens/tokens.css`                         |
+| Design tokens (JS)      | `src/tokens/tokens.js`                          |
+| Storybook configuration | `.storybook/` directory                         |
+| Component stories       | Per-component `.stories.js` files               |
 
 ### Why It Matters
 
@@ -198,7 +198,7 @@ This means:
 
 The Storybook Agent uses this decision tree for design tokens:
 
-1. **Primary:** `docs/brand/design-tokens.json` (from Brand & Assets
+1. **Primary:** `BusinessDocs/brand/design-tokens.json` (from Brand & Assets
    Agent)
 2. **Fallback:** If design-tokens.json is missing or `SKIPPED_NO_TOKEN`, the
    Storybook Agent extracts tokens directly from Phase 4 Brand Strategist output

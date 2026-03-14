@@ -7,7 +7,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const LOCALES_DIR = path.join(__dirname, '..', '..', 'locales');
+const LOCALES_DIR = path.join(__dirname, '..', '..', 'src', 'webapp', 'locales');
 const FILES = ['ui-labels', 'validation-messages', 'doc-snippets'];
 const TARGET_LOCALES = ['fr-FR', 'de-DE'];
 

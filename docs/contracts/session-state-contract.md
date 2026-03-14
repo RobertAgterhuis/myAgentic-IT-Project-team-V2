@@ -19,7 +19,7 @@ This contract defines:
 
 ## SESSION STATE FILE
 
-**Location:** `docs/session/session-state.json` **Owner:** Only the
+**Location:** `BusinessDocs/session/session-state.json` **Owner:** Only the
 Orchestrator writes to this file. The Orchestrator **creates** this file
 immediately upon receiving a command (per ORC-46 in
 `agents/00-orchestrator.md`) with `status: "ONBOARDING"`. The Onboarding
@@ -55,14 +55,14 @@ HANDOFF CHECKLIST.
   "completed_agents": ["25-onboarding-agent", "01-business-analyst"],
 
   "phase_outputs": {
-    "onboarding": "docs/onboarding/onboarding-output.md | null",
+    "onboarding": "BusinessDocs/onboarding/onboarding-output.md | null",
     "phase-1": {
-      "01": "docs/phase-1/01-business-analyst.md | null",
-      "02": "docs/phase-1/02-domain-expert.md | null",
-      "03": "docs/phase-1/03-sales-strategist.md | null",
-      "04": "docs/phase-1/04-financial-analyst.md | null",
-      "34": "docs/phase-1/34-product-manager.md | null",
-      "critic_risk": "docs/phase-1/critic-risk-validation.md | null"
+      "01": "BusinessDocs/phase-1/01-business-analyst.md | null",
+      "02": "BusinessDocs/phase-1/02-domain-expert.md | null",
+      "03": "BusinessDocs/phase-1/03-sales-strategist.md | null",
+      "04": "BusinessDocs/phase-1/04-financial-analyst.md | null",
+      "34": "BusinessDocs/phase-1/34-product-manager.md | null",
+      "critic_risk": "BusinessDocs/phase-1/critic-risk-validation.md | null"
     },
     "phase-2": {
       "05": "null",
@@ -167,7 +167,7 @@ HANDOFF CHECKLIST.
       "old_premise": "string",
       "new_premise": "string",
       "status": "IN_PROGRESS | RECONCILIATION | COMPLETE",
-      "report_path": "docs/synthesis/scope-change-1.md | null",
+      "report_path": "BusinessDocs/synthesis/scope-change-1.md | null",
       "tickets_on_hold": ["SP-N-NNN"],
       "tickets_cancelled": [],
       "tickets_requeued": [],
@@ -198,7 +198,7 @@ HANDOFF CHECKLIST.
 
 ## REEVALUATE TRIGGER FILE (WEB UI)
 
-**Location:** `docs/session/reevaluate-trigger.json` **Written by:**
+**Location:** `BusinessDocs/session/reevaluate-trigger.json` **Written by:**
 Questionnaire & Decisions Manager web UI (`src/webapp/server.js`) **Read
 by:** Orchestrator (per RULE ORC-28 in `agents/00-orchestrator.md`)
 
@@ -233,7 +233,7 @@ every Sprint Gate.
 
 ## COMMAND QUEUE FILE (WEB UI COMMAND CENTER)
 
-**Location:** `docs/session/command-queue.json` **Written by:**
+**Location:** `BusinessDocs/session/command-queue.json` **Written by:**
 Questionnaire & Decisions Manager web UI (`src/webapp/server.js` — Command
 Center tab) **Read by:** Orchestrator (per RULE ORC-29 in
 `agents/00-orchestrator.md`)
@@ -326,7 +326,7 @@ without an explicit `REEVALUATE` trigger.
 
 At every new interaction the Orchestrator checks:
 
-1. Does `docs/session/session-state.json` exist?
+1. Does `BusinessDocs/session/session-state.json` exist?
 2. Is `status` anything other than `COMPLETE`?
 
 → Yes: **Resumable session detected.** Present to user:
@@ -501,14 +501,14 @@ are active in the current cycle:
 After `COMPLETE`:
 
 - Rename `session-state.json` to `session-state-[session_id]-complete.json`
-- Store in `docs/session/archive/`
+- Store in `BusinessDocs/session/archive/`
 - For feature cycles: also store in `Workitems/[FEATURENAME]/session/`
 
 ---
 
 ## Decisions Schema
 
-The file `BusinessDocs/decisions.md` (or `docs/decisions.md`) tracks all
+The file `BusinessBusinessDocs/decisions.md` (or `BusinessDocs/decisions.md`) tracks all
 project decisions. The Questionnaire & Decisions Manager web UI writes to this
 file directly.
 
@@ -553,8 +553,8 @@ keyed by sprint ID:
   "SP-1": {
     "stories_completed": ["SP-1-001", "SP-1-002"],
     "stories_blocked": ["SP-1-003"],
-    "kpi_report": "docs/metrics/sprint-SP-1-kpi.json",
-    "retrospective": "docs/retrospectives/sprint-SP-1-retrospective.md"
+    "kpi_report": "BusinessDocs/metrics/sprint-SP-1-kpi.json",
+    "retrospective": "BusinessDocs/retrospectives/sprint-SP-1-retrospective.md"
   },
   "SP-2": {
     "stories_completed": [],

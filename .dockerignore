@@ -12,11 +12,15 @@ build
 
 # Documentation and non-runtime files
 agents/
-BusinessDocs/
 word/
 hooks/
 *.md
 !README.md
+
+# BusinessDocs — exclude everything except brand assets needed by the build
+BusinessDocs/**
+!BusinessDocs/brand/
+!BusinessDocs/brand/design-tokens.json
 
 # Local logs/temp
 *.log

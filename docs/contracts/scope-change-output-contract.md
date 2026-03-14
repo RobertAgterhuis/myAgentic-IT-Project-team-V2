@@ -17,7 +17,7 @@ to update the Master Synthesis.
 
 ## OUTPUT FILE
 
-**Location:** `docs/synthesis/scope-change-[N].md` **Format:** Markdown
+**Location:** `BusinessDocs/synthesis/scope-change-[N].md` **Format:** Markdown
 
 ---
 

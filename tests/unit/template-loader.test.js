@@ -21,6 +21,7 @@ const {
   resolveTemplatePaths,
   loadTemplate,
   listTemplates,
+  seedDecisions,
   MANIFEST_FILENAME,
   REQUIRED_MANIFEST_KEYS,
 } = require('../../platform/engine/template-loader');
@@ -255,6 +256,32 @@ describe('resolveTemplatePaths', () => {
     const resolved = resolveTemplatePaths(manifest, '/root');
     expect(resolved.decisionCategories).toEqual([]);
   });
+
+  test('resolves decisionsDir when present', () => {
+    const manifest = createMinimalManifest({ decisionsDir: 'decisions' });
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.decisionsDir).toBe(path.join('/root', 'decisions'));
+  });
+
+  test('sets decisionsDir to null when not present', () => {
+    const manifest = createMinimalManifest();
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.decisionsDir).toBeNull();
+  });
+
+  test('resolves decisionIndexSeed when present', () => {
+    const manifest = createMinimalManifest({
+      decisionIndexSeed: 'decisions/_index-seed.md',
+    });
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.decisionIndexSeed).toBe(path.join('/root', 'decisions/_index-seed.md'));
+  });
+
+  test('sets decisionIndexSeed to null when not present', () => {
+    const manifest = createMinimalManifest();
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.decisionIndexSeed).toBeNull();
+  });
 });
 
 // ─── loadTemplate ────────────────────────────────────────────
@@ -416,5 +443,110 @@ describe('SDLC manifest consistency with current engine', () => {
       CRITIC_3: 'PHASE_3',
       CRITIC_4: 'PHASE_4',
     });
+  });
+});
+
+// ─── seedDecisions ───────────────────────────────────────────
+
+describe('seedDecisions', () => {
+  const os = require('node:os');
+  let tmpDir;
+
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'seed-dec-'));
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  test('seeds decision files into empty target directory', () => {
+    const result = seedDecisions('sdlc', tmpDir, TEMPLATES_DIR);
+
+    expect(result.seeded).toBe(true);
+    expect(result.files.length).toBeGreaterThanOrEqual(20);
+    expect(result.indexFile).toBe('decisions.md');
+
+    // Verify decisions/ directory was created with category files
+    const targetDecDir = path.join(tmpDir, 'decisions');
+    expect(fs.existsSync(targetDecDir)).toBe(true);
+    expect(fs.readdirSync(targetDecDir).length).toBeGreaterThanOrEqual(20);
+
+    // Verify index was copied
+    expect(fs.existsSync(path.join(tmpDir, 'decisions.md'))).toBe(true);
+  });
+
+  test('does not overwrite existing decisions directory', () => {
+    // Create existing decisions dir
+    const existingDir = path.join(tmpDir, 'decisions');
+    fs.mkdirSync(existingDir, { recursive: true });
+    fs.writeFileSync(path.join(existingDir, 'custom.md'), '# Custom');
+
+    const result = seedDecisions('sdlc', tmpDir, TEMPLATES_DIR);
+
+    expect(result.seeded).toBe(false);
+    expect(result.files).toEqual([]);
+
+    // Verify custom file still exists untouched
+    expect(fs.readFileSync(path.join(existingDir, 'custom.md'), 'utf8')).toBe('# Custom');
+  });
+
+  test('does not overwrite existing decisions.md index', () => {
+    // Seed once to create decisions/ but pre-create index
+    fs.writeFileSync(path.join(tmpDir, 'decisions.md'), '# My Index');
+
+    const result = seedDecisions('sdlc', tmpDir, TEMPLATES_DIR);
+
+    // decisions/ dir was seeded but index was NOT overwritten
+    expect(result.seeded).toBe(true);
+    expect(result.indexFile).toBeNull();
+    expect(fs.readFileSync(path.join(tmpDir, 'decisions.md'), 'utf8')).toBe('# My Index');
+  });
+
+  test('excludes underscore-prefixed files from category copy', () => {
+    seedDecisions('sdlc', tmpDir, TEMPLATES_DIR);
+
+    const targetDecDir = path.join(tmpDir, 'decisions');
+    const copiedFiles = fs.readdirSync(targetDecDir);
+
+    // _index-seed.md should NOT appear in the decisions/ directory
+    expect(copiedFiles.every((f) => !f.startsWith('_'))).toBe(true);
+
+    // But it should be in the seed source
+    const seedDir = path.join(TEMPLATES_DIR, 'sdlc', 'decisions');
+    expect(fs.existsSync(path.join(seedDir, '_index-seed.md'))).toBe(true);
+  });
+
+  test('returns no-op for template without decisionsDir', () => {
+    // Create a minimal template without decisionsDir
+    const customTemplatesDir = path.join(tmpDir, 'tpl');
+    const customTplDir = path.join(customTemplatesDir, 'minimal');
+    fs.mkdirSync(customTplDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(customTplDir, 'manifest.json'),
+      JSON.stringify(createMinimalManifest())
+    );
+
+    const targetDir = path.join(tmpDir, 'target');
+    fs.mkdirSync(targetDir);
+
+    const result = seedDecisions('minimal', targetDir, customTemplatesDir);
+
+    expect(result.seeded).toBe(false);
+    expect(result.files).toEqual([]);
+    expect(result.indexFile).toBeNull();
+  });
+
+  test('seeded files have valid markdown headers', () => {
+    seedDecisions('sdlc', tmpDir, TEMPLATES_DIR);
+
+    const targetDecDir = path.join(tmpDir, 'decisions');
+    const files = fs.readdirSync(targetDecDir);
+
+    for (const file of files) {
+      const content = fs.readFileSync(path.join(targetDecDir, file), 'utf8');
+      // Every seed file should start with a markdown heading
+      expect(content.startsWith('#')).toBe(true);
+    }
   });
 });

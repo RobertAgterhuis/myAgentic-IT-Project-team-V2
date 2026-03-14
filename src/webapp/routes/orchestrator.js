@@ -19,7 +19,7 @@
 
 const { getStore } = require('../store');
 const { createEngine } = require('../../../platform/engine/engine');
-const { listTemplates } = require('../../../platform/engine/template-loader');
+const { listTemplates, seedDecisions } = require('../../../platform/engine/template-loader');
 const { errorResponse } = require('../utils/errors');
 const { structuredLog, json, parseBody, _setSecurityHeaders } = require('../middleware');
 
@@ -229,6 +229,22 @@ module.exports = function createOrchestratorRoutes(ctx) {
 
       if (!resume) {
         engine.reset(command);
+
+        // Seed decision templates into BusinessDocs/ if decisions/ doesn't exist yet
+        const businessDocsDir = require('node:path').resolve(process.cwd(), 'BusinessDocs');
+        try {
+          const seedResult = seedDecisions(_templateName, businessDocsDir);
+          if (seedResult.seeded) {
+            structuredLog('info', 'orchestrator_decisions_seeded', {
+              files: seedResult.files.length,
+              indexFile: seedResult.indexFile,
+            });
+          }
+        } catch (seedErr) {
+          structuredLog('warn', 'orchestrator_decisions_seed_failed', {
+            error: seedErr.message,
+          });
+        }
       }
 
       const st = engine.status();

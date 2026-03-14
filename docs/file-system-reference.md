@@ -178,6 +178,19 @@ recommendations, sprint plan, guardrails). **Do not modify.**
 Agent-facing process definitions. **Do not modify** unless changing the system
 flow.
 
+### Decision seeds — `templates/sdlc/decisions/`
+
+Seed copies of all 20 decision category files plus the index template. These are
+platform knowledge — the Orchestrator copies them to `BusinessDocs/decisions/`
+when starting a fresh cycle (non-destructive: existing files are never
+overwritten). **Do not modify** category seeds unless changing the decision
+framework itself.
+
+| File                 | Purpose                                |
+| -------------------- | -------------------------------------- |
+| `_index-seed.md`     | Seed for `BusinessDocs/decisions.md`   |
+| `*.md` (20 files)    | Seed category files (technology stacks)|
+
 ### Help — `docs/help/`
 
 16 help pages for the web UI (commands, decisions, agents, sprints, keyboard
@@ -462,3 +475,4 @@ Quick smoke tests (landing page, create pipeline).
 | `BusinessDocs/` contents                           | With caution    | Loses all phase outputs and questionnaire answers |
 | `BusinessDocs/synthesis/` contents                 | With caution    | Must re-run Synthesis Agent                       |
 | Anything in `templates/sdlc/agents/`, `templates/sdlc/contracts/`, `templates/sdlc/guardrails/` | **No** | Breaks agent behavior |
+| `templates/sdlc/decisions/`                        | **No**          | Breaks decision seeding for new projects          |

@@ -47,7 +47,7 @@
 ## Decision Categories
 
 > Decided items are organized by technology stack in separate files under
-> `docs/decisions/`. The Orchestrator reads **ACTIVE** category files at
+> `BusinessDocs/decisions/`. The Orchestrator reads **ACTIVE** category files at
 > Sprint Gate and injects their decisions as hard constraints. **DEFERRED**
 > categories are skipped — the Orchestrator auto-activates them when the agentic
 > team detects the technology is needed (RULE ORC-45). You can also activate

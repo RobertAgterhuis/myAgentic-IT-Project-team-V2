@@ -188,6 +188,10 @@ function resolveTemplatePaths(manifest, templateRoot) {
     contractsDir: path.join(templateRoot, manifest.contractsDir),
     guardrailsDir: path.join(templateRoot, manifest.guardrailsDir),
     playbooksDir: manifest.playbooksDir ? path.join(templateRoot, manifest.playbooksDir) : null,
+    decisionsDir: manifest.decisionsDir ? path.join(templateRoot, manifest.decisionsDir) : null,
+    decisionIndexSeed: manifest.decisionIndexSeed
+      ? path.join(templateRoot, manifest.decisionIndexSeed)
+      : null,
     phaseAgents: manifest.phaseAgents,
     phaseContracts: manifest.phaseContracts,
     phaseGuardrails: manifest.phaseGuardrails,
@@ -259,6 +263,60 @@ function listTemplates(templatesDir) {
   });
 }
 
+/**
+ * Seed decision files from a template into a project directory.
+ *
+ * Copies all decision category files and the index seed from the template's
+ * decisions directory into the target project directory. Only seeds when the
+ * target decisions directory does not already exist (never overwrites).
+ *
+ * @param {string} [templateName] - Template to seed from. Defaults to 'sdlc'.
+ * @param {string} targetDir - Absolute path to the project root (e.g. BusinessDocs/).
+ * @param {string} [templatesDir] - Override templates base directory.
+ * @returns {{ seeded: boolean, files: string[], indexFile: string|null }}
+ */
+function seedDecisions(templateName, targetDir, templatesDir) {
+  const config = loadTemplate(templateName, templatesDir);
+
+  if (!config.decisionsDir || !fs.existsSync(config.decisionsDir)) {
+    return { seeded: false, files: [], indexFile: null };
+  }
+
+  const targetDecisionsDir = path.join(targetDir, 'decisions');
+
+  // Never overwrite existing decisions
+  if (fs.existsSync(targetDecisionsDir)) {
+    return { seeded: false, files: [], indexFile: null };
+  }
+
+  fs.mkdirSync(targetDecisionsDir, { recursive: true });
+
+  // Copy category files (exclude _index-seed.md)
+  const seedFiles = fs
+    .readdirSync(config.decisionsDir)
+    .filter((f) => f.endsWith('.md') && !f.startsWith('_'));
+  const copiedFiles = [];
+
+  for (const file of seedFiles) {
+    const srcPath = path.join(config.decisionsDir, file);
+    const destPath = path.join(targetDecisionsDir, file);
+    fs.copyFileSync(srcPath, destPath);
+    copiedFiles.push(file);
+  }
+
+  // Copy index seed to target root as decisions.md
+  let indexFile = null;
+  if (config.decisionIndexSeed && fs.existsSync(config.decisionIndexSeed)) {
+    const destIndex = path.join(targetDir, 'decisions.md');
+    if (!fs.existsSync(destIndex)) {
+      fs.copyFileSync(config.decisionIndexSeed, destIndex);
+      indexFile = 'decisions.md';
+    }
+  }
+
+  return { seeded: true, files: copiedFiles, indexFile };
+}
+
 module.exports = {
   MANIFEST_FILENAME,
   DEFAULT_TEMPLATES_DIR,
@@ -270,4 +328,5 @@ module.exports = {
   resolveTemplatePaths,
   loadTemplate,
   listTemplates,
+  seedDecisions,
 };

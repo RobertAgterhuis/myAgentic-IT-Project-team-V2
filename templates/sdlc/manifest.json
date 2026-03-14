@@ -9,6 +9,8 @@
   "contractsDir": "contracts",
   "guardrailsDir": "guardrails",
   "playbooksDir": "playbooks",
+  "decisionsDir": "decisions",
+  "decisionIndexSeed": "decisions/_index-seed.md",
   "decisionCategories": [
     { "file": "transformation.md", "name": "Transformation", "count": 15, "defaultStatus": "ACTIVE" },
     { "file": "reevaluation.md", "name": "Reevaluation", "count": 15, "defaultStatus": "ACTIVE" },

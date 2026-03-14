@@ -33,6 +33,7 @@ const {
 } = require('./state-persistence');
 const { runGate } = require('./gate-validator');
 const { runSprintGate } = require('./sprint-gate');
+const { loadTemplate } = require('./template-loader');
 
 /**
  * @typedef {object} EngineOptions
@@ -40,22 +41,34 @@ const { runSprintGate } = require('./sprint-gate');
  * @property {Function} [sseNotify] - SSE broadcast function (eventType, data)
  * @property {string} [flowsPath] - Override path to flows.yaml
  * @property {string} [sessionPath] - Override path to session-state.json
+ * @property {string} [templateName] - Template to load (default: 'sdlc')
+ * @property {string} [templatesDir] - Override templates base directory
  */
 
 /**
  * Create and initialize the orchestrator engine.
  *
- * 1. Loads flows.yaml (AC-1)
- * 2. Loads persisted session state for crash recovery (AC-7)
- * 3. Creates a StateMachine with auto-persist and SSE wiring (AC-6)
+ * 1. Loads template manifest and resolves template paths
+ * 2. Loads flows.yaml (AC-1)
+ * 3. Loads persisted session state for crash recovery (AC-7)
+ * 4. Creates a StateMachine with auto-persist and SSE wiring (AC-6)
  *
  * @param {EngineOptions} options
- * @returns {{ machine: StateMachine, flows: object, advance: Function, error: Function, recover: Function, status: Function }}
+ * @returns {{ machine: StateMachine, flows: object, template: object, advance: Function, error: Function, recover: Function, status: Function }}
  */
 function createEngine(options) {
-  const { store, sseNotify, flowsPath, sessionPath } = options;
+  const { store, sseNotify, flowsPath, sessionPath, templateName, templatesDir } = options;
 
   if (!store) throw new Error('Engine requires a store');
+
+  // Load template manifest (defaults to 'sdlc')
+  let template = null;
+  try {
+    template = loadTemplate(templateName, templatesDir);
+  } catch (_err) {
+    // Template loading is optional — fall back to hardcoded defaults
+    template = null;
+  }
 
   // AC-1: Load declarative flow definition
   const flows = loadFlows(store, flowsPath);
@@ -102,10 +115,14 @@ function createEngine(options) {
   };
 
   // Create the state machine (crash recovery is handled by constructor)
-  machine = createStateMachine(mode, sessionState, {
+  const smOptions = {
     onTransition: combinedOnTransition,
     onError: combinedOnError,
-  });
+  };
+  if (template && template.modes) {
+    smOptions.modeConfigs = template.modes;
+  }
+  machine = createStateMachine(mode, sessionState, smOptions);
 
   // ── Public API ──────────────────────────────────────────
 
@@ -147,6 +164,7 @@ function createEngine(options) {
       elapsedMs: machine.elapsedMs,
       phaseMetadata: machine.stateMetadata(),
       serialized: machine.serialize(),
+      templateName: template ? template.name : null,
     };
   }
 
@@ -189,18 +207,19 @@ function createEngine(options) {
    */
   function reset(newMode, phases) {
     archiveCurrentRun('RESET');
+    const smOpts = {
+      mode: newMode,
+      onTransition: combinedOnTransition,
+      onError: combinedOnError,
+    };
+    if (template && template.modes) {
+      smOpts.modeConfigs = template.modes;
+    }
     if (phases && phases.length > 0) {
-      machine = new StateMachine({
-        mode: newMode,
-        phases,
-        onTransition: combinedOnTransition,
-        onError: combinedOnError,
-      });
+      smOpts.phases = phases;
+      machine = new StateMachine(smOpts);
     } else {
-      machine = createStateMachine(newMode, null, {
-        onTransition: combinedOnTransition,
-        onError: combinedOnError,
-      });
+      machine = createStateMachine(newMode, null, smOpts);
     }
 
     // Persist the fresh state
@@ -221,11 +240,25 @@ function createEngine(options) {
    */
   function validateGate(deliverables, opts = {}) {
     const criticState = machine.state;
-    const result = runGate(store, {
-      criticState,
-      deliverables,
-      ...opts,
-    });
+    const gateOpts = { criticState, deliverables, ...opts };
+    if (template) {
+      if (!opts.contractsDir && template.contractsDir) {
+        gateOpts.contractsDir = template.contractsDir;
+      }
+      if (!opts.guardrailsDir && template.guardrailsDir) {
+        gateOpts.guardrailsDir = template.guardrailsDir;
+      }
+      if (!opts.criticToPhase && template.criticToPhase) {
+        gateOpts.criticToPhase = template.criticToPhase;
+      }
+      if (!opts.phaseContracts && template.phaseContracts) {
+        gateOpts.phaseContracts = template.phaseContracts;
+      }
+      if (!opts.phaseGuardrails && template.phaseGuardrails) {
+        gateOpts.phaseGuardrails = template.phaseGuardrails;
+      }
+    }
+    const result = runGate(store, gateOpts);
 
     // AC-7: Emit SSE events for gate results
     if (result.verdict === 'APPROVED') {
@@ -298,6 +331,7 @@ function createEngine(options) {
   return {
     machine,
     flows,
+    template,
     advance,
     error,
     recover,

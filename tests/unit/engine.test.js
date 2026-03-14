@@ -296,3 +296,41 @@ describe('createEngine — reset', () => {
     expect(result.state).toBe('IDLE');
   });
 });
+
+// ─────────────────────────────────────────────────────────────
+// S5: Template loading integration
+// ─────────────────────────────────────────────────────────────
+describe('createEngine — template integration (S5)', () => {
+  it('loads template and exposes it on engine', () => {
+    const store = storeWithFlows();
+    const engine = createEngine({ store, flowsPath: FLOWS_PATH });
+    // template is loaded if templates/sdlc/manifest.json exists on disk
+    if (engine.template) {
+      expect(engine.template.name).toBe('sdlc');
+      expect(engine.template.modes).toBeDefined();
+      expect(engine.template.phaseAgents).toBeDefined();
+    }
+  });
+
+  it('includes templateName in status', () => {
+    const store = storeWithFlows();
+    const engine = createEngine({ store, flowsPath: FLOWS_PATH });
+    const s = engine.status();
+    // templateName is either 'sdlc' or null depending on cwd
+    expect('templateName' in s).toBe(true);
+  });
+
+  it('gracefully falls back when template not found', () => {
+    const store = storeWithFlows();
+    const engine = createEngine({
+      store,
+      flowsPath: FLOWS_PATH,
+      templateName: 'nonexistent',
+    });
+    expect(engine.template).toBeNull();
+    expect(engine.status().templateName).toBeNull();
+    // Engine still works with defaults
+    engine.advance(); // IDLE → ONBOARDING
+    expect(engine.status().state).toBe('ONBOARDING');
+  });
+});

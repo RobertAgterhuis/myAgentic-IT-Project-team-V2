@@ -148,9 +148,10 @@ class StateMachine {
    * @param {Function} [options.onError] - Callback for errors
    */
   constructor(options = {}) {
-    const { mode = 'CREATE', phases, sessionState, onTransition, onError } = options;
+    const { mode = 'CREATE', phases, modeConfigs, sessionState, onTransition, onError } = options;
 
     this._mode = mode;
+    this._modeConfigs = modeConfigs || MODE_CONFIGS;
     this._onTransition = onTransition || (() => {});
     this._onError = onError || (() => {});
     this._history = [];
@@ -158,16 +159,16 @@ class StateMachine {
     this._transitioning = false;
     this._startedAt = new Date().toISOString();
 
-    this._transitionMap = StateMachine._buildTransitions(mode, phases);
+    this._transitionMap = StateMachine._buildTransitions(mode, phases, this._modeConfigs);
     this._state = this._recoverOrInit(sessionState);
   }
 
-  static _buildTransitions(mode, phases) {
-    const config = MODE_CONFIGS[mode];
+  static _buildTransitions(mode, phases, modeConfigs) {
+    const configs = modeConfigs || MODE_CONFIGS;
+    const config = configs[mode];
     if (!config) {
-      throw new Error(
-        `Unknown mode: ${mode}. Valid modes: ${Object.keys(MODE_CONFIGS).join(', ')}`
-      );
+      const valid = Object.keys(configs).join(', ');
+      throw new Error(`Unknown mode: ${mode}. Valid modes: ${valid}`);
     }
     return buildTransitionMap(phases || config.phases);
   }
@@ -427,6 +428,7 @@ function createStateMachine(mode, sessionState, callbacks = {}) {
   return new StateMachine({
     mode,
     sessionState,
+    modeConfigs: callbacks.modeConfigs,
     onTransition: callbacks.onTransition,
     onError: callbacks.onError,
   });

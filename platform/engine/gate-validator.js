@@ -388,9 +388,16 @@ function runGate(store, options) {
     deliverables = [],
     contractsDir = CONTRACTS_DIR,
     guardrailsDir = GUARDRAILS_DIR,
+    criticToPhase: ctpOverride,
+    phaseContracts: pcOverride,
+    phaseGuardrails: pgOverride,
   } = options;
 
-  const phase = CRITIC_TO_PHASE[criticState];
+  const ctp = ctpOverride || CRITIC_TO_PHASE;
+  const pc = pcOverride || PHASE_CONTRACTS;
+  const pg = pgOverride || PHASE_GUARDRAILS;
+
+  const phase = ctp[criticState];
   if (!phase) {
     return {
       verdict: 'FAILED',
@@ -407,14 +414,14 @@ function runGate(store, options) {
   }
 
   // AC-1: Load contract required sections
-  const contractFiles = (PHASE_CONTRACTS[phase] || []).map((c) => path.join(contractsDir, c));
+  const contractFiles = (pc[phase] || []).map((c) => path.join(contractsDir, c));
   const allRequiredSections = [];
   for (const cp of contractFiles) {
     allRequiredSections.push(...loadContractSections(store, cp));
   }
 
   // AC-4: Load guardrail rules
-  const guardrailFiles = (PHASE_GUARDRAILS[phase] || []).map((g) => path.join(guardrailsDir, g));
+  const guardrailFiles = (pg[phase] || []).map((g) => path.join(guardrailsDir, g));
   const allRules = [];
   for (const gp of guardrailFiles) {
     allRules.push(...loadGuardrailRules(store, gp));
@@ -523,6 +530,9 @@ class CriticValidator {
     this._store = store;
     this._contractsDir = options.contractsDir || CONTRACTS_DIR;
     this._guardrailsDir = options.guardrailsDir || GUARDRAILS_DIR;
+    this._criticToPhase = options.criticToPhase || null;
+    this._phaseContracts = options.phaseContracts || null;
+    this._phaseGuardrails = options.phaseGuardrails || null;
   }
 
   /**
@@ -537,6 +547,9 @@ class CriticValidator {
       deliverables,
       contractsDir: this._contractsDir,
       guardrailsDir: this._guardrailsDir,
+      criticToPhase: this._criticToPhase,
+      phaseContracts: this._phaseContracts,
+      phaseGuardrails: this._phaseGuardrails,
     });
   }
 }
@@ -555,6 +568,9 @@ class RiskValidator {
     this._store = store;
     this._contractsDir = options.contractsDir || CONTRACTS_DIR;
     this._guardrailsDir = options.guardrailsDir || GUARDRAILS_DIR;
+    this._criticToPhase = options.criticToPhase || null;
+    this._phaseContracts = options.phaseContracts || null;
+    this._phaseGuardrails = options.phaseGuardrails || null;
   }
 
   /**
@@ -569,6 +585,9 @@ class RiskValidator {
       deliverables,
       contractsDir: this._contractsDir,
       guardrailsDir: this._guardrailsDir,
+      criticToPhase: this._criticToPhase,
+      phaseContracts: this._phaseContracts,
+      phaseGuardrails: this._phaseGuardrails,
     });
 
     // Extract risk-specific items from tags

@@ -127,12 +127,13 @@ class Dispatcher {
    * @param {Function} [options.onLog] - Callback for invocation log entries
    */
   constructor(options = {}) {
-    const { store, config = {}, invoker, onLog } = options;
+    const { store, config = {}, invoker, onLog, phaseAgents } = options;
 
     if (!store) throw new Error('Dispatcher requires a store');
 
     this._store = store;
     this._config = { ...DEFAULT_CONFIG, ...config };
+    this._phaseAgents = phaseAgents || PHASE_AGENTS;
     this._invoker = invoker || this._defaultInvoker.bind(this);
     this._onLog = onLog || (() => {});
     this._log = [];
@@ -149,7 +150,7 @@ class Dispatcher {
    * @returns {Array<{id: string, name: string}>}
    */
   getAgentsForState(state) {
-    return PHASE_AGENTS[state] || [];
+    return this._phaseAgents[state] || [];
   }
 
   /**

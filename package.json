@@ -110,6 +110,10 @@
     "ajv-formats": "^3.0.1"
   },
   "lint-staged": {
-    "*.{js,ts,jsx,tsx}": "eslint --max-warnings=0 --no-warn-ignored"
+    "*.{js,ts,jsx,tsx}": [
+      "prettier --write",
+      "eslint --max-warnings=0 --no-warn-ignored"
+    ],
+    "*.{json,md,yml,yaml}": "prettier --write"
   }
 }

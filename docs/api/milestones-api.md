@@ -448,14 +448,14 @@ All error responses follow this format:
 
 **HTTP Status Codes**:
 
-| Status | Meaning         | Cause                                                  |
-| ------ | --------------- | ------------------------------------------------------ |
-| 200    | OK              | Successful GET request                                 |
-| 201    | Created         | Successful POST request                                |
-| 400    | Bad Request     | Invalid JSON, missing required field, validation error |
-| 404    | Not Found       | Milestone ID does not exist                            |
-| 409    | Conflict        | Duplicate milestone name                               |
-| 500    | Server Error    | Unexpected error (file I/O, parsing, etc.)             |
+| Status | Meaning      | Cause                                                  |
+| ------ | ------------ | ------------------------------------------------------ |
+| 200    | OK           | Successful GET request                                 |
+| 201    | Created      | Successful POST request                                |
+| 400    | Bad Request  | Invalid JSON, missing required field, validation error |
+| 404    | Not Found    | Milestone ID does not exist                            |
+| 409    | Conflict     | Duplicate milestone name                               |
+| 500    | Server Error | Unexpected error (file I/O, parsing, etc.)             |
 
 ---
 

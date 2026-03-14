@@ -44,16 +44,16 @@ implementation (human-in-the-loop, CONTINUE-to-proceed).
 
 ## Technology Stack
 
-| Layer      | Technology                                                                                                       |
-| ---------- | ---------------------------------------------------------------------------------------------------------------- |
-| Runtime    | Node.js ≥ 18 (zero external dependencies for web UI)                                                             |
-| Server     | Native `http` module, localhost only (127.0.0.1:3000)                                                            |
-| MCP Server | [Model Context Protocol](https://modelcontextprotocol.io/) via stdio transport                                   |
-| Data       | File-based JSON/Markdown storage with atomic writes                                                              |
-| Testing    | [Vitest 4](https://vitest.dev/) (1370 tests across 47 files)                                                      |
-| Linting    | [ESLint](https://eslint.org/) (flat config, `eslint.config.mjs`)                                                  |
-| AI Agents  | [GitHub Copilot](https://github.com/features/copilot) agents in VS Code, Visual Studio, JetBrains                |
-| License    | MIT                                                                                                              |
+| Layer      | Technology                                                                                        |
+| ---------- | ------------------------------------------------------------------------------------------------- |
+| Runtime    | Node.js ≥ 18 (zero external dependencies for web UI)                                              |
+| Server     | Native `http` module, localhost only (127.0.0.1:3000)                                             |
+| MCP Server | [Model Context Protocol](https://modelcontextprotocol.io/) via stdio transport                    |
+| Data       | File-based JSON/Markdown storage with atomic writes                                               |
+| Testing    | [Vitest 4](https://vitest.dev/) (1370 tests across 47 files)                                      |
+| Linting    | [ESLint](https://eslint.org/) (flat config, `eslint.config.mjs`)                                  |
+| AI Agents  | [GitHub Copilot](https://github.com/features/copilot) agents in VS Code, Visual Studio, JetBrains |
+| License    | MIT                                                                                               |
 
 ---
 

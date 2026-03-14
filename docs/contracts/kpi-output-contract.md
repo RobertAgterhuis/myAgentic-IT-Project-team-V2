@@ -18,8 +18,8 @@ alerts for off-track metrics that feed into Sprint Gate decision-making.
 
 **Location:**
 
-- `docs/metrics/sprint-[SP-N]-kpi.json`
-- `docs/metrics/kpi-trend.md`
+- `BusinessDocs/metrics/sprint-[SP-N]-kpi.json`
+- `BusinessDocs/metrics/kpi-trend.md`
 
 **Format:** JSON + Markdown
 

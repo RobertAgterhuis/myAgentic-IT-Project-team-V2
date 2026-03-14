@@ -20,10 +20,10 @@ const { server, _cache } = require('../../src/webapp/server');
 
 const WEBAPP_DIR = path.resolve(__dirname, '../../src/webapp');
 const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
-const GITHUB_DOCS = path.join(PROJECT_ROOT, 'docs');
-const SESSION_DIR = path.join(GITHUB_DOCS, 'session');
+const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
+const SESSION_DIR = path.join(BUSINESS_DOCS, 'session');
 const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
-const ONBOARDING_DIR = path.join(GITHUB_DOCS, 'onboarding');
+const ONBOARDING_DIR = path.join(BUSINESS_DOCS, 'onboarding');
 const ONBOARDING_OUTPUT = path.join(ONBOARDING_DIR, 'onboarding-output.md');
 
 let baseUrl;
@@ -91,7 +91,7 @@ const SESSION_PHASE1_ACTIVE = {
   completed_phases: ['ONBOARDING'],
   completed_agents: ['25-onboarding-agent'],
   phase_outputs: {
-    onboarding: 'docs/onboarding/onboarding-output.md',
+    onboarding: 'BusinessDocs/onboarding/onboarding-output.md',
   },
 };
 
@@ -115,14 +115,14 @@ const SESSION_PHASE1_DONE = {
     'critic_risk',
   ],
   phase_outputs: {
-    onboarding: 'docs/onboarding/onboarding-output.md',
+    onboarding: 'BusinessDocs/onboarding/onboarding-output.md',
     'phase-1': {
-      '01': 'docs/phase1/01-business-analyst-output.md',
-      '02': 'docs/phase1/02-domain-expert-output.md',
-      '03': 'docs/phase1/03-sales-strategist-output.md',
-      '04': 'docs/phase1/04-financial-analyst-output.md',
-      34: 'docs/phase1/34-product-manager-output.md',
-      critic_risk: 'docs/phase1/critic-risk-output.md',
+      '01': 'BusinessDocs/phase1/01-business-analyst-output.md',
+      '02': 'BusinessDocs/phase1/02-domain-expert-output.md',
+      '03': 'BusinessDocs/phase1/03-sales-strategist-output.md',
+      '04': 'BusinessDocs/phase1/04-financial-analyst-output.md',
+      34: 'BusinessDocs/phase1/34-product-manager-output.md',
+      critic_risk: 'BusinessDocs/phase1/critic-risk-output.md',
     },
   },
 };

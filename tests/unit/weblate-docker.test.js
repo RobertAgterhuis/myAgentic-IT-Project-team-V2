@@ -13,7 +13,7 @@ const ROOT = path.resolve(__dirname, '../..');
 
 /* ── Docker Compose stack validation ──────────────────────────── */
 describe('SP-2-501: Weblate Docker Compose stack', () => {
-  const composePath = path.join(ROOT, 'docker-compose.weblate.yml');
+  const composePath = path.join(ROOT, 'infra', 'docker-compose.weblate.yml');
   let content;
 
   beforeAll(() => {
@@ -172,7 +172,10 @@ describe('SP-2-501: Locale file readiness for Weblate import', () => {
 /* ── Port isolation validation ───────────────────────────────── */
 describe('SP-2-501: Port isolation', () => {
   it('should not conflict with main app (3000) or Matomo (8080)', () => {
-    const content = fs.readFileSync(path.join(ROOT, 'docker-compose.weblate.yml'), 'utf-8');
+    const content = fs.readFileSync(
+      path.join(ROOT, 'infra', 'docker-compose.weblate.yml'),
+      'utf-8'
+    );
     // Default port is 8081, should not be 3000 or 8080
     expect(content).toContain('8081');
     expect(content).not.toMatch(/"\$\{WEBLATE_PORT:-3000\}/);

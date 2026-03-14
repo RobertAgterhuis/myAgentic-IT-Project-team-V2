@@ -13,7 +13,7 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
-const TOKENS_PATH = resolve(ROOT, 'docs', 'brand', 'design-tokens.json');
+const TOKENS_PATH = resolve(ROOT, 'BusinessDocs', 'brand', 'design-tokens.json');
 const CSS_OUT = resolve(ROOT, 'src', 'webapp', 'ui', 'src', 'tokens.css');
 
 const tokens = JSON.parse(readFileSync(TOKENS_PATH, 'utf-8'));

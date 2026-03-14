@@ -38,7 +38,7 @@ and alignment between brand promise and product reality.
 ### Step 0: Check for Questionnaire Input
 
 > **SCOPE CHANGE context:** If a SCOPE CHANGE is active for your dimension,
-> check `docs/synthesis/scope-change-[N].md` for constraints before
+> check `BusinessDocs/synthesis/scope-change-[N].md` for constraints before
 > proceeding.
 
 Before starting your analysis, check whether the Orchestrator has injected a
@@ -186,7 +186,7 @@ does NOT deliver? Each discrepancy:
 - **Brand governance process:** Who approves brand usage? Escalation for
   deviations.
 - **Design token mapping:** Which brand decisions translate to design tokens?
-  (feeds `docs/brand/design-tokens.json`)
+  (feeds `BusinessDocs/brand/design-tokens.json`)
 
 `DEPENDENT_ON: UI Designer (12) for design system integration`
 `PLACEHOLDER: Storybook Agent (31) will create component library based on these guidelines.`

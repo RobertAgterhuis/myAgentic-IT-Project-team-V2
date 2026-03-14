@@ -41,7 +41,7 @@ This is a **multi-agent, sequential system**. Each agent:
 === PRIMARY MODE: CREATE (New Software Solution) ===
 
 On command or automatically at the start of a new creation cycle:
-  CREATE [project] → Onboarding Agent → requirements intake → docs/onboarding/onboarding-output.md → Orchestrator (full scope: all 4 phases)
+  CREATE [project] → Onboarding Agent → requirements intake → BusinessDocs/onboarding/onboarding-output.md → Orchestrator (full scope: all 4 phases)
 
 Partial creation (per discipline, independently executable):
   CREATE BUSINESS [project]  → Onboarding (scope: business)   → Phase 1 → Critic/Risk → Synthesis (PARTIAL) → final-report-business.md
@@ -77,9 +77,9 @@ Phase 4 — Brand & Growth: Brand Strategist → Growth Marketer → CRO Special
   ↓ [CRITIC + RISK validation]
   ↓ [Questionnaire Agent: generate questionnaires for all INSUFFICIENT_DATA: items → BusinessDocs/Phase4-Marketing/Questionnaires/]
   ↓ [Questionnaire Agent: update official documents → BusinessDocs/OfficialDocuments/ (brand-brief.md, market-positioning.md)]
-  Brand & Assets Agent (Canva) → design tokens + brand assets (`docs/brand/`)
-  Storybook Agent → component library + a11y baseline (`docs/storybook/`)
-Synthesis Agent → Master Report + 4 Department Reports + Cross-Team Blocker Matrix (`docs/synthesis/`)
+  Brand & Assets Agent (Canva) → design tokens + brand assets (`BusinessDocs/brand/`)
+  Storybook Agent → component library + a11y baseline (`BusinessDocs/storybook/`)
+Synthesis Agent → Master Report + 4 Department Reports + Cross-Team Blocker Matrix (`BusinessDocs/synthesis/`)
   ↓ [All 6 synthesis documents APPROVED + BLOCKING items linked to sprint plan]
   GitHub Integration Agent → create/configure project `[GITHUB_PROJECT_NAME]` + publish all stories as Issues
   ↓
@@ -91,7 +91,7 @@ Phase 5 — Implementation (per sprint, repeatable):
 
 === SECONDARY MODE: AUDIT (Existing Software Analysis) ===
 
-AUDIT [project] → Onboarding Agent → intake validation → docs/onboarding/onboarding-output.md → Orchestrator (full scope: all 4 phases, audit mode)
+AUDIT [project] → Onboarding Agent → intake validation → BusinessDocs/onboarding/onboarding-output.md → Orchestrator (full scope: all 4 phases, audit mode)
 AUDIT BUSINESS|TECH|UX|MARKETING [project] → Partial audit per discipline
 AUDIT [DISC1] [DISC2] [project] → Combination audit
 AUDIT SYNTHESIS → Combines all available phase outputs
@@ -101,8 +101,8 @@ Note: AUDIT mode uses the same phase sequence but agents analyze existing softwa
 
 On command (any time):
   REEVALUATE [scope] → Reevaluate Agent → Critic + Risk validation → Re-evaluation Report → Orchestrator (Sprint Gate for IN_PROGRESS impacts)
-  Note: Also triggered automatically when the Questionnaire & Decisions Manager web UI writes `docs/session/reevaluate-trigger.json` with `status: "PENDING"` (per RULE ORC-28)
-  Note: Decisions can be created and answered via the web UI (Decisions tab) — changes are written directly to `docs/decisions.md` and picked up at Sprint Gate Step 0
+  Note: Also triggered automatically when the Questionnaire & Decisions Manager web UI writes `BusinessDocs/session/reevaluate-trigger.json` with `status: "PENDING"` (per RULE ORC-28)
+  Note: Decisions can be created and answered via the web UI (Decisions tab) — changes are written directly to `BusinessDocs/decisions.md` and picked up at Sprint Gate Step 0
 
 On command (any time, independent of running cycles):
   FEATURE [name]: [description] → Feature Agent → full cycle (Phase 1–4 + Synthesis + Sprint Plan + Phase 5)
@@ -111,7 +111,7 @@ On command (any time, independent of running cycles):
   SCOPE CHANGE [DIMENSION]: [description] → Scope Change Agent → backlog hold → invalidation marking → re-analysis (affected dimension only) → Critic + Risk → scope-change-delta → Sprint Gate reconciliation → Master Synthesis update
   DIMENSION values: BUSINESS | TECH | UX | MARKETING | ALL
   Use when: the fundamental premise/direction of the project has changed (not just a delta) — e.g. business model pivot, core architecture change, target audience change
-  Output: docs/synthesis/scope-change-[N].md + updated sprint statuses
+  Output: BusinessDocs/synthesis/scope-change-[N].md + updated sprint statuses
 
 Emergency protocol (critical production issues):
   HOTFIX [description] → Orchestrator validates urgency → Sprint Gate BYPASS → Implementation → Test (abbreviated regression) → PR/Review (secret scan mandatory) → merge → KPI → Documentation → GitHub Integration → Retrospective
@@ -240,7 +240,7 @@ The system is complete when:
 1. All four design/strategy phases have been completed
 2. All Critic + Risk validations have passed
 3. The Synthesis Agent has produced the following documents in
-   `docs/synthesis/`:
+   `BusinessDocs/synthesis/`:
    - `final-report-master.md` (Executive Summary, Solution Blueprint Heatmap,
      Risk Matrix, Roadmap, Guardrails, KPIs, Open Items)
    - `final-report-business.md`, `final-report-tech.md`, `final-report-ux.md`,
@@ -249,10 +249,10 @@ The system is complete when:
      BLOCKING or ADVISORY)
 4. Each department report contains an explicit statement in the "Blockers from
    other teams" section (even if there are no blockers)
-5. `docs/brand/design-tokens.json` is present (or `SKIPPED_NO_TOKEN`
-   documented) AND `docs/brand/brand-guidelines.md` is present with
+5. `BusinessDocs/brand/design-tokens.json` is present (or `SKIPPED_NO_TOKEN`
+   documented) AND `BusinessDocs/brand/brand-guidelines.md` is present with
    sections 1–6 (also when `SKIPPED_NO_TOKEN`)
-6. `docs/storybook/component-inventory.md` is present with guardrail for
+6. `BusinessDocs/storybook/component-inventory.md` is present with guardrail for
    Implementation Agent
 7. No open `UNCERTAIN:` or `INSUFFICIENT_DATA:` items without resolution —
    unresolvable items have a corresponding question in
@@ -268,5 +268,5 @@ The system is complete when:
     written (`sprint-[SP-N]-kpi.json`), PR merged, user-manual.md and
     technical-manual.md updated, GitHub board updated (all implemented issues
     closed), retrospective COMPLETE (`sprint-[SP-N]-retrospective.md`),
-    `docs/retrospectives/velocity-log.json` updated, lessons-learned.md
+    `BusinessDocs/retrospectives/velocity-log.json` updated, lessons-learned.md
     updated

@@ -70,7 +70,7 @@ Go through each changed file (IMPL-OUTPUT-A):
 - Document:
   `SEC-REVIEW: COMPLIANT / VIOLATION [description + required remediation action]`
 - On `VIOLATION`: mandatorily write a `LESSON_CANDIDATE` to
-  `docs/retrospectives/lessons-learned.md` per RULE ORC-22 (type:
+  `BusinessDocs/retrospectives/lessons-learned.md` per RULE ORC-22 (type:
   `SECURITY_VIOLATION`, category: `QUALITY`).
 
 **2c. Quality Check**
@@ -92,7 +92,7 @@ intentional revert or rollback of previously merged work:
   functionality?
 - If **YES**:
   1. Document as `REVERT-DETECTED: [description of what was reverted and why]`
-  2. Mandatorily write a new `DECIDED` item to `docs/decisions.md` per
+  2. Mandatorily write a new `DECIDED` item to `BusinessDocs/decisions.md` per
      RULE ORC-21 (Orchestrator skill, `00-orchestrator.md`)
   3. Add `revert_documented: true` to the Sprint Completion Report JSON under
      the relevant story
@@ -100,12 +100,12 @@ intentional revert or rollback of previously merged work:
 - If **NO**: document `REVERT-CHECK: NO REVERTS DETECTED`
 
 **PROHIBITION:** Merging a PR with an intentional revert without a corresponding
-`DECIDED` item in `docs/decisions.md`.
+`DECIDED` item in `BusinessDocs/decisions.md`.
 
 **2f. Brand Compliance Check (ONLY for CONTENT and DESIGN story types)**
 
 If the sprint contains CONTENT or DESIGN stories: check the deliverables of
-those stories against `docs/brand/brand-guidelines.md`.
+those stories against `BusinessDocs/brand/brand-guidelines.md`.
 
 - **Colors:** are exclusively the tokens from brand-guidelines section 1 used?
   Hardcoded HEX values outside the allowed palette = `BRAND-VIOLATION`.
@@ -128,20 +128,20 @@ On `VIOLATION`:
 3. Document as `BRAND_VIOLATION` in the Sprint Completion Report JSON under that
    story.
 
-If `docs/brand/brand-guidelines.md` **does not exist**: document
+If `BusinessDocs/brand/brand-guidelines.md` **does not exist**: document
 `BRAND-REVIEW: SKIPPED — brand-guidelines.md not present` and do not apply the
 check. Report this as `TOOLING_GAP: brand-guidelines.md` to the Orchestrator.
 
 **PROHIBITION:** Skipping brand compliance check for CONTENT or DESIGN stories
-when `docs/brand/brand-guidelines.md` is present.
+when `BusinessDocs/brand/brand-guidelines.md` is present.
 
 **2g. Decision Compliance Check (MANDATORY)**
 
 Verify that the PR does not violate any active `DECIDED` items from the
 decisions system:
 
-1. **Load decisions:** Read `docs/decisions.md` for uncategorized
-   DECIDED items. Scan `docs/decisions/` — from each ACTIVE or PARTIAL
+1. **Load decisions:** Read `BusinessDocs/decisions.md` for uncategorized
+   DECIDED items. Scan `BusinessDocs/decisions/` — from each ACTIVE or PARTIAL
    category file (check `> Status:` header line), read all `DECIDED` rows.
    **Skip DEFERRED category files entirely.**
 2. **Scope matching:** For each changed file in the PR, determine which decision
@@ -172,7 +172,7 @@ decisions system:
      Report JSON under the relevant story
 
 **PROHIBITION:** Merging a PR that violates an active `DECIDED` item without the
-decision being formally changed or deferred via `docs/decisions.md`.
+decision being formally changed or deferred via `BusinessDocs/decisions.md`.
 
 **2h. Deferred Technology Detection (MANDATORY)**
 
@@ -189,13 +189,13 @@ DEFERRED decision categories:
 | `next.config.*`, `pages/`, `app/` (with Next.js imports) | `nextjs.md`                |
 
 1. For each technology marker found in the diff, check
-   `docs/decisions/[category].md` — read the `> Status:` header line.
+   `BusinessDocs/decisions/[category].md` — read the `> Status:` header line.
 2. If `Status: DEFERRED` → the PR introduces a technology that has pre-defined
    but deferred decisions:
    ```
    DEFERRED_TECH_DETECTED: [category]
    File(s) in diff: [list of matching files]
-   Category file: docs/decisions/[category].md
+   Category file: BusinessDocs/decisions/[category].md
    Decisions count: [N]
    Action required: Activate category before merge OR document exception
    ```
@@ -329,7 +329,7 @@ PR MERGE CHECKLIST: SP-N
 - [ ] PR description fully filled in
 - [ ] All INTERNAL blockers resolved (or escalated)
 - [ ] Orchestrator Log updated
-- [ ] Revert check performed — intentional reverts documented in docs/decisions.md (or NO REVERTS DETECTED)
+- [ ] Revert check performed — intentional reverts documented in BusinessDocs/decisions.md (or NO REVERTS DETECTED)
 ```
 
 ### Step 6: Orchestrator Report
@@ -380,7 +380,7 @@ Use KPI_MISS for any KPI not achieved after the sprint — NEVER hide this.
 - [ ] KPI measurement present (or MEASUREMENT_IMPOSSIBLE escalated)
 - [ ] Orchestrator Log updated
 - [ ] No CRITICAL_FINDING unresolved
-- [ ] Revert check performed — intentional reverts documented in docs/decisions.md as DECIDED item (or NO REVERTS DETECTED)
+- [ ] Revert check performed — intentional reverts documented in BusinessDocs/decisions.md as DECIDED item (or NO REVERTS DETECTED)
 - [ ] LESSON_CANDIDATE written on SECURITY_VIOLATION or revert (or NEITHER DETECTED)
 - [ ] All 4 deliverables produced per the contract
 - [ ] Output complies with agent-handoff-contract.md

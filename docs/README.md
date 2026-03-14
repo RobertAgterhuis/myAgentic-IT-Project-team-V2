@@ -68,7 +68,7 @@ phases, an autonomous sprint-by-sprint implementation follows.
 Each phase delivers four fixed deliverables: **Analysis → Recommendations →
 Sprint Plan → Guardrails**.  
 After all phases, the Synthesis Agent produces **six documents** in
-`docs/synthesis/`:
+`BusinessDocs/synthesis/`:
 
 | File                           | Content                                                                                                                   | Audience                      |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
@@ -199,7 +199,7 @@ starts automatically and asks intake questions about:
 - **Both modes:** GitHub project name (for automatically creating the Kanban
   board), Canva API token (optional, for brand assets)
 
-Answers are saved in `docs/session/session-state.json`. The Orchestrator
+Answers are saved in `BusinessDocs/session/session-state.json`. The Orchestrator
 uses this state throughout the entire cycle.
 
 > Make sure to answer the intake questions completely — the quality of the
@@ -226,7 +226,7 @@ When uncertain about findings you will see:
 - `INSUFFICIENT_DATA: [field]` — required data is missing, agent continues with
   what is available
 
-Both are escalated to you via `docs/decisions.md` or the Copilot Chat
+Both are escalated to you via `BusinessDocs/decisions.md` or the Copilot Chat
 before the next phase starts.
 
 ---
@@ -246,7 +246,7 @@ Sprint Gate (Definition of Ready + lessons-learned injection)
 
 Each sprint ends with a retrospective and KPI measurement. Lessons learned are
 automatically carried forward to the next sprint via the Sprint Gate. All sprint
-artifacts can be found in `docs/retrospectives/`.
+artifacts can be found in `BusinessDocs/retrospectives/`.
 
 ---
 
@@ -277,7 +277,7 @@ selection. `DIMENSION` is one of `BUSINESS | TECH | UX | MARKETING | ALL`. The
 Scope Change Agent puts the affected backlog stories on hold, marks prior
 analysis of that dimension as `INVALIDATED`, re-runs the analysis for that
 dimension, and updates the Master Synthesis. Output:
-`docs/synthesis/scope-change-[N].md`. This is distinct from
+`BusinessDocs/synthesis/scope-change-[N].md`. This is distinct from
 `REEVALUATE`, which handles incremental changes, not directional shifts.
 
 ---
@@ -312,13 +312,13 @@ Workitems/
 ```
 
 > **Which files can I edit myself?**  
-> `docs/decisions.md` is your direct communication channel — you fill
+> `BusinessDocs/decisions.md` is your direct communication channel — you fill
 > this in. All other files in `docs/` are generated and overwritten by
 > agents. Do not edit them manually, or the agents will go out of sync.
 
 ---
 
-## Decisions & Open Questions (`docs/decisions.md`)
+## Decisions & Open Questions (`BusinessDocs/decisions.md`)
 
 This is your direct communication channel with the agentic team. Fill it in
 yourself; agents adapt their behavior automatically.
@@ -345,8 +345,8 @@ Each decision or question gets a unique ID (`DEC-NNN`), a scope (e.g. `Phase 2`,
 | **Handoff Checklist**             | Every agent verifies its own output completely before handoff — no partials                                                                         |
 | **Immutable sprint files**        | `sprint-[SP-N]-*.md` and `sprint-[SP-N]-*.json` are never overwritten after creation                                                                |
 | **Secret scan as merge gate**     | PR/Review Agent blocks the merge if secrets are found (TruffleHog)                                                                                  |
-| **Storybook as design system**    | Implementation Agent only uses components from `docs/storybook/component-inventory.md`. New components require a Storybook story + a11y check first |
-| **decisions.md is authoritative** | Decisions in `docs/decisions.md` always override agent assumptions; HIGH-priority open questions block sprint start                                 |
+| **Storybook as design system**    | Implementation Agent only uses components from `BusinessDocs/storybook/component-inventory.md`. New components require a Storybook story + a11y check first |
+| **decisions.md is authoritative** | Decisions in `BusinessDocs/decisions.md` always override agent assumptions; HIGH-priority open questions block sprint start                                 |
 
 ---
 
@@ -368,7 +368,7 @@ action.
 ## Frequently asked questions & troubleshooting
 
 **An agent returns HALT — what do I do?**  
-The agent is missing required input. Check `docs/decisions.md` for open
+The agent is missing required input. Check `BusinessDocs/decisions.md` for open
 questions with priority HIGH, or review the Handoff Checklist of the previous
 agent for missing sections. Resolve the blocking item and restart the agent via
 the Orchestrator.
@@ -382,7 +382,7 @@ analytics data, usability test results), you can run `REEVALUATE [scope]`.
 now?**  
 This is a contract violation. The Critic Agent should catch this. If it slips
 through: report the finding as `ANTI_LAZINESS_VIOLATION` in
-`docs/decisions.md` and restart the relevant agent.
+`BusinessDocs/decisions.md` and restart the relevant agent.
 
 **The session-state.json is corrupt or missing — what do I do?**  
 Run `REFRESH ONBOARDING`. The Onboarding Agent re-runs steps 3 and 4 (codebase
@@ -396,7 +396,7 @@ Agent documents this as a LESSON_CANDIDATE.
 
 **The GitHub Integration Agent cannot create a project — what is wrong?**  
 Check that `GITHUB_PROJECT_NAME` is filled in
-`docs/session/session-state.json` and that your GitHub token has write
+`BusinessDocs/session/session-state.json` and that your GitHub token has write
 access to the repository. See the Human Escalation in your Copilot Chat for the
 exact error message.
 

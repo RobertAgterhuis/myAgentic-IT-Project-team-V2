@@ -21,9 +21,10 @@ myAgentic-IT-Project-team/
 ├── .github/                    ← CI workflows, issue templates, Copilot instructions
 ├── .husky/                     ← Git hooks (pre-commit)
 ├── agents/                     ← Agent skill files (38 agents)
-├── BusinessDocs/               ← User-facing project data (briefs, questionnaires, official docs)
+├── BusinessDocs/               ← Project-specific business data (session, decisions, phases, brand, synthesis, metrics, retrospectives)
 ├── data/                       ← Runtime data (milestones.json)
-├── docs/                       ← Documentation, contracts, guardrails, session state
+├── docs/                       ← Infrastructure docs (contracts, guardrails, playbooks, templates, help, api, security)
+├── infra/                      ← Docker files, Compose configs, Nginx configs
 ├── platform/                   ← Platform schema definitions (agents, flows, tools)
 ├── scripts/                    ← Build & maintenance scripts
 ├── src/                        ← Application source code
@@ -75,6 +76,24 @@ system itself.
 
 ---
 
+## `infra/` — Docker & container infrastructure
+
+| File                             | Purpose                                              | Modified by      |
+| -------------------------------- | ---------------------------------------------------- | ---------------- |
+| `Dockerfile`                     | Multi-stage production build (Node.js + React UI)    | DevOps / SWE     |
+| `Dockerfile.storybook`           | Storybook design system build (nginx)                | DevOps / SWE     |
+| `docker-compose.yml`             | Base webapp service definition                       | DevOps / SWE     |
+| `docker-compose.webapp.yml`      | End-user compose (webapp only, port 3000)            | DevOps / SWE     |
+| `docker-compose.dev.yml`         | Full-stack developer compose (all 7 services)        | DevOps / SWE     |
+| `docker-compose.analytics.yml`   | Matomo analytics stack (3 services, port 8080)       | DevOps / SWE     |
+| `docker-compose.weblate.yml`     | Weblate TMS stack (3 services, port 8081)            | DevOps / SWE     |
+| `matomo-nginx.conf`              | Nginx reverse proxy config for Matomo FPM            | DevOps / SWE     |
+
+> **Note:** `.dockerignore` remains in the repository root (Docker reads it from
+> the build context root).
+
+---
+
 ## `docs/` — Documentation & system configuration
 
 ### Root files
@@ -83,10 +102,8 @@ system itself.
 | ------------------------- | -------------------------------------------------- | ------------------ | ------------- |
 | `_config.yml`             | Jekyll / GitHub Pages config                       | System maintainers | Yes           |
 | `agent-index.md`          | Lookup table for all skills, guardrails, contracts | System maintainers | No            |
-| `analytics-events.json`   | Event tracking definitions                         | System maintainers | No            |
 | `contributing.md`         | Developer contribution guide                       | System maintainers | Yes           |
 | `data-dictionary.md`      | Data entity catalog                                | System maintainers | Yes           |
-| `decisions.md`            | Decision index — open questions + category registry| You + web UI       | **Yes**       |
 | `domain-glossary.md`      | Domain terminology reference                       | System maintainers | Yes           |
 | `file-system-reference.md`| This file                                          | System maintainers | Yes           |
 | `index.md`                | GitHub Pages landing page                          | System maintainers | Yes           |
@@ -116,11 +133,13 @@ Key contracts:
 
 **Do not modify** contracts unless you're changing agent behavior.
 
-### Decisions — `docs/decisions/`
+### Decisions — `BusinessDocs/decisions/`
 
-| Path             | Purpose                               | Written by                  | Safe to edit?                          |
-| ---------------- | ------------------------------------- | --------------------------- | -------------------------------------- |
-| `decisions/*.md` | Category files (technology stacks)    | You + web UI + Orchestrator | **Yes** (header status, decision rows) |
+| Path                          | Purpose                               | Written by                  | Safe to edit?                          |
+| ----------------------------- | ------------------------------------- | --------------------------- | -------------------------------------- |
+| `BusinessDocs/decisions.md`   | Decision index (open questions + registry)| You + web UI + Orchestrator | **Yes**                            |
+| `BusinessDocs/decisions/*.md` | Category files (technology stacks)    | You + web UI + Orchestrator | **Yes** (header status, decision rows) |
+| `BusinessDocs/analytics-events.json` | Event tracking definitions     | System maintainers          | No                                     |
 
 This is your primary communication channel with the agent team. See
 `docs/help/decisions.md` for details.
@@ -165,7 +184,7 @@ flow.
 shortcuts, troubleshooting, etc.). Written by System maintainers + Documentation
 Agent. Includes `decisions-architecture.md` (decision system technical reference).
 
-### Session state — `docs/session/`
+### Session state — `BusinessDocs/session/`
 
 | File                      | Purpose                          | Written by                      | Safe to edit?                     |
 | ------------------------- | -------------------------------- | ------------------------------- | --------------------------------- |
@@ -180,7 +199,7 @@ Agent. Includes `decisions-architecture.md` (decision system technical reference
 | ------------------- | ------------------------ |
 | `milestones-api.md` | Milestones API reference |
 
-### Brand assets — `docs/brand/`
+### Brand assets — `BusinessDocs/brand/`
 
 | File                     | Purpose                                        | Written by                                        |
 | ------------------------ | ---------------------------------------------- | ------------------------------------------------- |
@@ -198,21 +217,21 @@ effect via the decision system or reevaluation.
 | `project-board-setup.md` | Board configuration guide            |
 | `sync-report-*.md`      | Board sync reports (timestamped)     |
 
-### Onboarding — `docs/onboarding/`
+### Onboarding — `BusinessDocs/onboarding/`
 
 | File                    | Purpose                       | Written by      |
 | ----------------------- | ----------------------------- | --------------- |
 | `onboarding-output.md`  | Onboarding intake + scan data | Onboarding Agent|
 
-### Phase outputs — `docs/phase-1/` through `docs/phase-5/`
+### Phase outputs — `BusinessDocs/phase-1/` through `BusinessDocs/phase-5/`
 
 | Directory       | Purpose                                                  |
 | --------------- | -------------------------------------------------------- |
-| `docs/phase-1/` | Phase 1 (Requirements & Strategy) analysis outputs       |
-| `docs/phase-2/` | Phase 2 (Architecture & Design) analysis outputs         |
-| `docs/phase-3/` | Phase 3 (Experience Design) analysis outputs             |
-| `docs/phase-4/` | Phase 4 (Brand & Growth) analysis outputs                |
-| `docs/phase-5/` | Phase 5 (Implementation) sprint plans, completion reports|
+| `BusinessDocs/phase-1/` | Phase 1 (Requirements & Strategy) analysis outputs       |
+| `BusinessDocs/phase-2/` | Phase 2 (Architecture & Design) analysis outputs         |
+| `BusinessDocs/phase-3/` | Phase 3 (Experience Design) analysis outputs             |
+| `BusinessDocs/phase-4/` | Phase 4 (Brand & Growth) analysis outputs                |
+| `BusinessDocs/phase-5/` | Phase 5 (Implementation) sprint plans, completion reports|
 
 ### Security — `docs/security/`
 
@@ -222,7 +241,7 @@ effect via the decision system or reevaluation.
 | `security-design.md`           | Security architecture design                | Security Architect (Phase 2) |
 | `security-handoff-context.md`  | Security constraints for all Phase 5 agents | Security Architect (Phase 2) |
 
-### Storybook — `docs/storybook/`
+### Storybook — `BusinessDocs/storybook/`
 
 | File                     | Purpose                              | Written by      |
 | ------------------------ | ------------------------------------ | --------------- |
@@ -230,7 +249,7 @@ effect via the decision system or reevaluation.
 
 Generated after Phase 4, before Synthesis.
 
-### Synthesis — `docs/synthesis/`
+### Synthesis — `BusinessDocs/synthesis/`
 
 | File                           | Purpose                                          | Written by      |
 | ------------------------------ | ------------------------------------------------ | --------------- |
@@ -244,7 +263,7 @@ Generated after Phase 4, before Synthesis.
 You must **APPROVE** all 6 before Phase 5 starts. These are read-only after
 approval.
 
-### Audit trail — `docs/audit/`
+### Audit trail — `BusinessDocs/audit/`
 
 | File              | Purpose                               |
 | ----------------- | ------------------------------------- |
@@ -252,7 +271,7 @@ approval.
 
 Auto-generated. **Do not modify.**
 
-### Metrics — `docs/metrics/`
+### Metrics — `BusinessDocs/metrics/`
 
 | File                          | Purpose                           | Written by |
 | ----------------------------- | --------------------------------- | ---------- |
@@ -260,7 +279,7 @@ Auto-generated. **Do not modify.**
 | `sprint-[SP-N]-kpi-log.md`   | KPI log per sprint (markdown)     | KPI Agent  |
 | `sprint-[SP-N]-kpi-final.json`| KPI final measurements per sprint| KPI Agent  |
 
-### Retrospectives — `docs/retrospectives/`
+### Retrospectives — `BusinessDocs/retrospectives/`
 
 | File                             | Purpose                                             | Written by          |
 | -------------------------------- | --------------------------------------------------- | ------------------- |
@@ -434,9 +453,9 @@ Quick smoke tests (landing page, create pipeline).
 
 | Path                                               | Safe to delete? | Consequence                                       |
 | -------------------------------------------------- | --------------- | ------------------------------------------------- |
-| `docs/session/session-state.json`                  | Yes             | Loses current progress; can start fresh           |
-| `docs/session/command-queue.json`                  | Yes             | Loses queued (unconsumed) command                 |
-| `docs/session/reevaluate-trigger.json`             | Yes             | Cancels pending reevaluation                      |
+| `BusinessDocs/session/session-state.json`                  | Yes             | Loses current progress; can start fresh           |
+| `BusinessDocs/session/command-queue.json`                  | Yes             | Loses queued (unconsumed) command                 |
+| `BusinessDocs/session/reevaluate-trigger.json`             | Yes             | Cancels pending reevaluation                      |
 | `BusinessDocs/` contents                           | With caution    | Loses all phase outputs and questionnaire answers |
-| `docs/synthesis/` contents                         | With caution    | Must re-run Synthesis Agent                       |
+| `BusinessDocs/synthesis/` contents                         | With caution    | Must re-run Synthesis Agent                       |
 | Anything in `agents/`, `contracts/`, `guardrails/` | **No**          | Breaks agent behavior                             |

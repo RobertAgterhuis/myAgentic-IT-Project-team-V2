@@ -2,7 +2,7 @@
 
 ## Session states — what they mean
 
-The system tracks its progress in `docs/session/session-state.json`.
+The system tracks its progress in `BusinessDocs/session/session-state.json`.
 Understanding the status helps you diagnose where things stand:
 
 | Status                      | Meaning                                   | What to do                                                |
@@ -108,7 +108,7 @@ and resumes the cycle.
 ### "CONTINUE" doesn't seem to work
 
 1. Make sure `session-state.json` exists at
-   `docs/session/session-state.json`.
+   `BusinessDocs/session/session-state.json`.
 2. Check the `status` field — if it's `AWAITING_HUMAN` or `BLOCKED`, the system
    is waiting for specific input, not a generic CONTINUE.
 3. If the status is `COMPLETE`, there's nothing more to do. Start a new cycle
@@ -133,7 +133,7 @@ means:
 
 ### Sprint Gate keeps blocking
 
-Check `docs/decisions.md` for any `OPEN` + `HIGH` priority decisions
+Check `BusinessDocs/decisions.md` for any `OPEN` + `HIGH` priority decisions
 whose scope matches the sprint. Answer or defer them. Use the web UI Decisions
 tab for a visual overview.
 
@@ -151,7 +151,7 @@ Phase outputs are written to disk, not stored in chat. Check:
 - `BusinessDocs/Phase2-Tech/` for Phase 2 outputs
 - `BusinessDocs/Phase3-UX/` for Phase 3 outputs
 - `BusinessDocs/Phase4-Marketing/` for Phase 4 outputs
-- `docs/synthesis/` for synthesis reports
+- `BusinessDocs/synthesis/` for synthesis reports
 
 If a file is referenced but doesn't exist, the Orchestrator may need to re-run
 the agent. Type `CONTINUE` and the Orchestrator will detect the gap.
@@ -171,7 +171,7 @@ the agent. Type `CONTINUE` and the Orchestrator will detect the gap.
 
 ### Decisions not saving
 
-- Check that `docs/decisions.md` exists and is writable.
+- Check that `BusinessDocs/decisions.md` exists and is writable.
 - Look for error messages in the browser console (F12 → Console tab).
 - The server creates backups before writing — check for `.bak` files if data
   seems lost.
@@ -198,7 +198,7 @@ npm run lint         # Check for lint issues
 If `session-state.json` is corrupted or in an unexpected state, you can fix it
 manually:
 
-1. Open `docs/session/session-state.json` in your editor.
+1. Open `BusinessDocs/session/session-state.json` in your editor.
 2. Check `status` — set it to the correct state from the state machine table
    above.
 3. Check `current_agent` and `current_phase` — set them to where you want to
@@ -210,8 +210,8 @@ manually:
 or AUDIT command again. The Orchestrator creates a new session.
 
 > **Caution:** Deleting `session-state.json` does not delete phase outputs or
-> decisions. Those files remain in `BusinessDocs/`, `docs/synthesis/`,
-> and `docs/decisions/`. A new session will not automatically reuse them
+> decisions. Those files remain in `BusinessDocs/`, `BusinessDocs/synthesis/`,
+> and `BusinessDocs/decisions/`. A new session will not automatically reuse them
 > unless you run `REFRESH ONBOARDING`.
 
 ---

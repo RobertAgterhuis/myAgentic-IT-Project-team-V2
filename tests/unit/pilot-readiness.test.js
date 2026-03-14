@@ -7,8 +7,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const PHASE5 = path.join(__dirname, '..', '..', 'docs', 'phase-5');
-const DOCS = path.join(__dirname, '..', '..', 'docs');
+const PHASE5 = path.join(__dirname, '..', '..', 'BusinessDocs', 'phase-5');
+const DOCS = path.join(__dirname, '..', '..', 'BusinessDocs');
 
 describe('SP-2-202 — Pilot Materials Readiness', () => {
   describe('Pilot package — all 5 documents exist', () => {

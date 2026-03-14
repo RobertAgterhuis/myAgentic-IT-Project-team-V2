@@ -17,7 +17,7 @@ into Phase 5 (Implementation).
 
 ## OUTPUT FILES
 
-**Location:** `docs/synthesis/` **Format:** Markdown **Required files
+**Location:** `BusinessDocs/synthesis/` **Format:** Markdown **Required files
 (6):**
 
 1. `final-report-master.md`
@@ -71,7 +71,7 @@ Each department report must contain:
 
 The Orchestrator checks (per ORC-35):
 
-- [ ] All 6 files are present in `docs/synthesis/`
+- [ ] All 6 files are present in `BusinessDocs/synthesis/`
 - [ ] Master report contains all 7 mandatory sections
 - [ ] Each department report contains all 5 mandatory sections
 - [ ] Every department report has an explicit "Blockers from Other Teams"

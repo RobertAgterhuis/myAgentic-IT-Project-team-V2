@@ -7,7 +7,7 @@ const createMetricsDashboardRoutes = require('../../src/webapp/routes/metrics-da
 
 /* ── Test data ─────────────────────────────────────────────────── */
 
-const GITHUB_DOCS = path.resolve('test-docs');
+const BUSINESS_DOCS = path.resolve('test-docs');
 
 const velocityLog = {
   sprints: [
@@ -67,12 +67,12 @@ const kpiSP4 = {
 
 function buildFiles() {
   const files = {};
-  const vel = path.join(GITHUB_DOCS, 'retrospectives', 'velocity-log.json');
+  const vel = path.join(BUSINESS_DOCS, 'retrospectives', 'velocity-log.json');
   files[vel] = JSON.stringify(velocityLog);
   // "metrics" format KPI (SP-1)
-  files[path.join(GITHUB_DOCS, 'metrics', 'sprint-SP-1-kpi.json')] = JSON.stringify(kpiSP1);
+  files[path.join(BUSINESS_DOCS, 'metrics', 'sprint-SP-1-kpi.json')] = JSON.stringify(kpiSP1);
   // "phase5" format KPI (SP-4)
-  files[path.join(GITHUB_DOCS, 'phase-5', 'sprint-SP-4', 'sprint-SP-4-kpi.json')] =
+  files[path.join(BUSINESS_DOCS, 'phase-5', 'sprint-SP-4', 'sprint-SP-4-kpi.json')] =
     JSON.stringify(kpiSP4);
   return files;
 }
@@ -115,7 +115,7 @@ describe('metrics-dashboard route (FEAT-01)', () => {
     const store = new InMemoryStore(buildFiles());
     setStore(store);
     const cache = new FileCache();
-    routes = createMetricsDashboardRoutes({ _cache: cache, GITHUB_DOCS });
+    routes = createMetricsDashboardRoutes({ _cache: cache, BUSINESS_DOCS });
     handler = routes['GET /api/metrics/dashboard'];
   });
 
@@ -346,7 +346,7 @@ describe('metrics-dashboard route (FEAT-01)', () => {
     const store = new InMemoryStore(emptyFiles);
     setStore(store);
     const cache = new FileCache();
-    const r = createMetricsDashboardRoutes({ _cache: cache, GITHUB_DOCS });
+    const r = createMetricsDashboardRoutes({ _cache: cache, BUSINESS_DOCS });
     const h = r['GET /api/metrics/dashboard'];
     const res = fakeRes();
     await h(fakeReq(), res);

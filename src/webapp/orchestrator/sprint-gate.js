@@ -19,11 +19,11 @@ const _path = require('path');
 
 // ─── Constants ───────────────────────────────────────────────
 
-const DECISIONS_PATH = 'docs/decisions.md';
-const LESSONS_LEARNED_PATH = 'docs/retrospectives/lessons-learned.md';
-const VELOCITY_LOG_PATH = 'docs/retrospectives/velocity-log.json';
-const BLOCKER_MATRIX_PATH = 'docs/synthesis/cross-team-blocker-matrix.md';
-const REEVALUATE_TRIGGER_PATH = 'docs/session/reevaluate-trigger.json';
+const DECISIONS_PATH = 'BusinessDocs/decisions.md';
+const LESSONS_LEARNED_PATH = 'BusinessDocs/retrospectives/lessons-learned.md';
+const VELOCITY_LOG_PATH = 'BusinessDocs/retrospectives/velocity-log.json';
+const BLOCKER_MATRIX_PATH = 'BusinessDocs/synthesis/cross-team-blocker-matrix.md';
+const REEVALUATE_TRIGGER_PATH = 'BusinessDocs/session/reevaluate-trigger.json';
 
 /** Trailing sprint count for velocity average */
 const VELOCITY_WINDOW = 3;

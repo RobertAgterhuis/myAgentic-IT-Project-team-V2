@@ -12,14 +12,15 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const DOCS_DIR = path.resolve(__dirname, '../../docs');
+const BUSINESS_DOCS_DIR = path.resolve(__dirname, '../../BusinessDocs');
 
 /**
  * Read a markdown file and return its content.
  * @param {string} filename - Name of the file in the docs directory
  * @returns {string} File content
  */
-function readDoc(filename) {
-  const filePath = path.join(DOCS_DIR, filename);
+function readDoc(filename, baseDir = DOCS_DIR) {
+  const filePath = path.join(baseDir, filename);
   return fs.readFileSync(filePath, 'utf-8');
 }
 
@@ -41,7 +42,7 @@ describe('ga-definition.md — structure validation', () => {
   let headings;
 
   beforeAll(() => {
-    content = readDoc('phase-5/ga-definition.md');
+    content = readDoc('phase-5/ga-definition.md', BUSINESS_DOCS_DIR);
     headings = extractH2Headings(content);
   });
 

@@ -364,7 +364,7 @@ in `agents/00-orchestrator.md`). The Orchestrator creates
 `session-state.json` immediately on command receipt with `status: "ONBOARDING"`.
 The Onboarding Agent now **updates** it to reflect completion:
 
-Read `docs/session/session-state.json` and update the following fields:
+Read `BusinessDocs/session/session-state.json` and update the following fields:
 
 ```json
 {
@@ -374,7 +374,7 @@ Read `docs/session/session-state.json` and update the following fields:
   "current_step": "Waiting for Phase 1 to start",
   "github_project_name": "[filled in by user]",
   "canva_api_token": "[token or empty string on SKIP]",
-  "onboarding_output_path": "docs/onboarding/onboarding-output.md",
+  "onboarding_output_path": "BusinessDocs/onboarding/onboarding-output.md",
   "last_updated": "[ISO 8601]",
   "open_human_escalations": [],
   "insufficient_data_items": [],
@@ -441,7 +441,7 @@ file and log `SESSION_STATE_CORRECTED: [field]`.
    Steps 3 and 4** again (scan + tooling verification); intake answers from Step
    2 remain unchanged.
 
-Update: `docs/session/session-state.json` (file already exists — created
+Update: `BusinessDocs/session/session-state.json` (file already exists — created
 by Orchestrator per ORC-46)
 
 ---
@@ -449,7 +449,7 @@ by Orchestrator per ORC-46)
 ### Step 6: Produce Onboarding Output Document
 
 Produce the final Onboarding Output Document at
-`docs/onboarding/onboarding-output.md`:
+`BusinessDocs/onboarding/onboarding-output.md`:
 
 Mandatory sections:
 
@@ -494,10 +494,10 @@ Both methods write to the same files. After answering, type REEVALUATE to incorp
 - [ ] `GITHUB_PROJECT_NAME` requested from user and saved in session state
 - [ ] Tooling verification performed per tooling-contract.md
 - [ ] TOOLING_GAP items documented (with Phase 5 implication)
-- [ ] Session State updated at docs/session/session-state.json (status:
+- [ ] Session State updated at BusinessDocs/session/session-state.json (status:
       ONBOARDING_COMPLETE)
 - [ ] Onboarding Output Document present at
-      docs/onboarding/onboarding-output.md
+      BusinessDocs/onboarding/onboarding-output.md
 - [ ] Status: ONBOARDING_COMPLETE — ready for Phase 1
 ```
 

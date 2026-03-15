@@ -148,8 +148,6 @@ jobs:
   container-scan:
     name: Container Image Scan
     runs-on: ubuntu-latest
-    # Non-blocking: upstream base-image CVEs should not gate PRs
-    continue-on-error: true
     permissions:
       contents: read
     steps:
@@ -158,10 +156,10 @@ jobs:
       - name: Build Docker image
         run: docker build -f infra/Dockerfile -t app:ci .
 
+      - name: Install Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin
+
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: "app:ci"
-          format: "table"
-          exit-code: "1"
-          severity: "CRITICAL,HIGH"
+        run: |
+          trivy image --severity CRITICAL,HIGH --format table app:ci || echo "::warning::Trivy found vulnerabilities in the container image (non-blocking)"

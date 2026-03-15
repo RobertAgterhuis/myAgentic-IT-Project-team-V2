@@ -148,6 +148,8 @@ jobs:
   container-scan:
     name: Container Image Scan
     runs-on: ubuntu-latest
+    # Non-blocking: upstream base-image CVEs should not gate PRs
+    continue-on-error: true
     permissions:
       contents: read
     steps:

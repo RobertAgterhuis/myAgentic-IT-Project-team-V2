@@ -75,7 +75,7 @@ export default defineConfig({
     ],
     coverage: {
       provider: 'v8',
-      include: ['src/webapp/**/*.{js,ts}', 'platform/engine/**/*.{js,ts}'],
+      include: ['src/webapp/**/*.{js,ts}', 'platform/engine/**/*.{js,ts}', 'platform/sdlc/**/*.{js,ts}'],
       exclude: [
         'src/webapp/node_modules/**',
         'src/webapp/ui/**',

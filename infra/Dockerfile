@@ -1,5 +1,5 @@
 ## ── Stage 1: Build React UI ──────────────────────────────────
-FROM node:20-alpine@sha256:b88333c42c23fbd91596ebd7fd10de239cedab9617de04142dde7315e3bc0afa AS ui-builder
+FROM node:22-alpine AS ui-builder
 
 WORKDIR /build
 
@@ -17,7 +17,7 @@ RUN node scripts/build-tokens.mjs
 RUN cd src/webapp/ui && npm run build
 
 ## ── Stage 2: Production server ───────────────────────────────
-FROM node:20-alpine@sha256:b88333c42c23fbd91596ebd7fd10de239cedab9617de04142dde7315e3bc0afa AS base
+FROM node:22-alpine AS base
 
 WORKDIR /app
 

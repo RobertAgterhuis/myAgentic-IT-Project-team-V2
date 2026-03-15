@@ -376,5 +376,19 @@
       }
     ],
     "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-15T14:28:47.881Z",
+    "ended_at": "2026-03-15T14:28:47.882Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-15T14:28:47.881Z"
+      }
+    ],
+    "gate_results": {}
   }
 ]

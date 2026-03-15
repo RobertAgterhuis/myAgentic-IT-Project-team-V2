@@ -154,6 +154,7 @@ function readBody(req) {
       resolve(
         Buffer.concat(chunks)
           .toString('utf8')
+          // eslint-disable-next-line no-control-regex -- intentional control-char sanitization
           .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '')
       )
     );
@@ -216,7 +217,7 @@ const SECRET_PATTERNS = [
   { name: 'Azure Storage Key', re: /[A-Za-z0-9/+]{86}==/ },
   {
     name: 'Generic API Key',
-    re: /(?:^|[^/\w])(?:api[_-]?key|apikey|secret[_-]?key)\s*[:=]\s*['"]?[A-Za-z0-9_\-]{20,}/i,
+    re: /(?:^|[^/\w])(?:api[_-]?key|apikey|secret[_-]?key)\s*[:=]\s*['"]?[A-Za-z0-9_-]{20,}/i,
   },
   { name: 'Private Key', re: /-----BEGIN (?:RSA |EC |DSA )?PRIVATE KEY-----/ },
   { name: 'Bearer Token', re: /Bearer\s+[A-Za-z0-9\-._~+/]+=*/i },

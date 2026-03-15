@@ -71,7 +71,7 @@ const ALLOWED_GIT_COMMANDS = {
 };
 
 /* Synchronous git fallback — only used in tests or when async is unavailable */
-function getGitLines(commandKey, cwd) {
+function _getGitLines(commandKey, cwd) {
   const command = ALLOWED_GIT_COMMANDS[commandKey];
   if (!command) return [];
   try {

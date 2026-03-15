@@ -18,14 +18,23 @@
     "declarationDir": "./dist/types",
     "typeRoots": ["./node_modules/@types", "./src/webapp/types"]
   },
-  "include": ["src/**/*.js", "src/**/*.ts", "scripts/**/*.js", "src/webapp/types/**/*.d.ts"],
+  "include": [
+    "src/**/*.js",
+    "src/**/*.ts",
+    "platform/**/*.js",
+    "platform/**/*.ts",
+    "scripts/**/*.js",
+    "src/webapp/types/**/*.d.ts"
+  ],
   "exclude": [
     "node_modules",
     "coverage",
     "dist",
+    "src/webapp/ui",
     "**/*.test.js",
     "**/*.test.ts",
     "**/*.spec.js",
-    "src/webapp/dashboard.js"
+    "src/webapp/dashboard.js",
+    "scripts/github-config-audit.js"
   ]
 }

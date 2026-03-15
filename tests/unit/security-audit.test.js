@@ -45,8 +45,8 @@ describe('M5 Security Hardening', () => {
     });
   });
 
-  describe('Security Headers (middleware.js)', () => {
-    const middleware = fs.readFileSync(path.join(ROOT, 'src', 'webapp', 'middleware.js'), 'utf8');
+  describe('Security Headers (middleware.ts)', () => {
+    const middleware = fs.readFileSync(path.join(ROOT, 'src', 'webapp', 'middleware.ts'), 'utf8');
 
     it('sets X-Content-Type-Options: nosniff', () => {
       expect(middleware).toContain("'X-Content-Type-Options', 'nosniff'");
@@ -85,10 +85,10 @@ describe('M5 Security Hardening', () => {
   });
 
   describe('Path Traversal Protection', () => {
-    const middleware = fs.readFileSync(path.join(ROOT, 'src', 'webapp', 'middleware.js'), 'utf8');
+    const middleware = fs.readFileSync(path.join(ROOT, 'src', 'webapp', 'middleware.ts'), 'utf8');
 
     it('safePath function exists', () => {
-      expect(middleware).toContain('function safePath(base, relative)');
+      expect(middleware).toContain('function safePath(base: string, relative: string)');
     });
 
     it('blocks path traversal with error', () => {
@@ -97,7 +97,7 @@ describe('M5 Security Hardening', () => {
   });
 
   describe('Secret Detection', () => {
-    const middleware = fs.readFileSync(path.join(ROOT, 'src', 'webapp', 'middleware.js'), 'utf8');
+    const middleware = fs.readFileSync(path.join(ROOT, 'src', 'webapp', 'middleware.ts'), 'utf8');
 
     it('detects AWS access keys', () => {
       expect(middleware).toContain('AWS Access Key');
@@ -160,7 +160,12 @@ describe('M5 Security Hardening', () => {
         const full = path.join(dir, entry.name);
         if (entry.isDirectory() && !entry.name.startsWith('.') && !SKIP_DIRS.has(entry.name)) {
           content += readAllJs(full);
-        } else if (entry.name.endsWith('.js') && !entry.name.endsWith('.test.js')) {
+        } else if (
+          (entry.name.endsWith('.js') || entry.name.endsWith('.ts')) &&
+          !entry.name.endsWith('.test.js') &&
+          !entry.name.endsWith('.test.ts') &&
+          !entry.name.endsWith('.d.ts')
+        ) {
           content += fs.readFileSync(full, 'utf8') + '\n';
         }
       }
@@ -181,7 +186,7 @@ describe('M5 Security Hardening', () => {
     });
 
     it('child_process usage is allowlist-gated', () => {
-      // Only dashboard.js should use execSync, via ALLOWED_GIT_COMMANDS allowlist
+      // Only dashboard.ts should use execSync, via ALLOWED_GIT_COMMANDS allowlist
       if (allSource.includes('execSync')) {
         expect(allSource).toContain('ALLOWED_GIT_COMMANDS');
       }

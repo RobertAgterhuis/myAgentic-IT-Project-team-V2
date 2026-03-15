@@ -1,0 +1,119 @@
+// Copyright (c) 2026 Robert Agterhuis. MIT License.
+
+/**
+ * Drift detection route handler — GET /api/drift.
+ * Compares session-state sprint statuses against GitHub sync reports
+ * to detect discrepancies between orchestrator state and board state.
+ *
+ * @module routes/drift
+ * @param {object} ctx - Shared server context.
+ * @returns {object} Route map { 'METHOD /path': handler }.
+ */
+
+import path from 'path';
+import { getStore } from '../store';
+import { detectDrift } from '../drift-detector';
+import { json } from '../middleware';
+
+export = function createDriftRoutes(ctx): Record<string, unknown> {
+  const { SESSION_FILE, resolveSessionFile, PROJECT_ROOT, BUSINESS_DOCS } = ctx;
+
+  const SPRINTS_DIR = path.join(BUSINESS_DOCS, 'sprints');
+  const PHASE5_DIR = path.join(BUSINESS_DOCS, 'phase-5');
+
+  /**
+   * Read session-state.json safely.
+   * @returns {object|null}
+   */
+  function readSessionState() {
+    try {
+      const store = getStore();
+      const sessionFile =
+        typeof resolveSessionFile === 'function' ? resolveSessionFile() : SESSION_FILE;
+      if (!sessionFile || !store.exists(sessionFile)) return null;
+      return JSON.parse(store.readFile(sessionFile));
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Read the sprint plan content.
+   * @param {object} sessionState - Parsed session state.
+   * @returns {string|null}
+   */
+  function readSprintPlan(sessionState) {
+    const planPath =
+      sessionState && sessionState.sprint_backlog && sessionState.sprint_backlog.path;
+    if (!planPath) return null;
+    const abs = path.resolve(PROJECT_ROOT, planPath);
+    try {
+      return getStore().readFile(abs);
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * Discover and read all available GitHub sync reports.
+   * Searches both BusinessDocs/sprints/SP-N/ and BusinessDocs/phase-5/sprint-SP-N/ directories.
+   * @param {object} sprintStatuses - Map of sprint ID → status.
+   * @returns {Record<string, string|null>}
+   */
+  function readSyncReports(sprintStatuses) {
+    const store = getStore();
+    const reports = {};
+    for (const sprintId of Object.keys(sprintStatuses)) {
+      reports[sprintId] = null;
+
+      // Try: BusinessDocs/sprints/SP-N/github-sync-report.md
+      const path1 = path.join(SPRINTS_DIR, sprintId, 'github-sync-report.md');
+      if (store.exists(path1)) {
+        try {
+          reports[sprintId] = store.readFile(path1);
+          continue;
+        } catch {
+          /* fall through */
+        }
+      }
+
+      // Try: BusinessDocs/phase-5/sprint-SP-N/github-sync-report.md
+      const path2 = path.join(PHASE5_DIR, `sprint-${sprintId}`, 'github-sync-report.md');
+      if (store.exists(path2)) {
+        try {
+          reports[sprintId] = store.readFile(path2);
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+    return reports;
+  }
+
+  /* ── GET /api/drift ─────────────────────────────────────────── */
+
+  function handleGetDrift(_req, res) {
+    const sessionState = readSessionState();
+    if (!sessionState) {
+      return json(res, 200, {
+        generated_at: new Date().toISOString(),
+        summary: { total_drifts: 0, critical: 0, warning: 0, info: 0 },
+        drifts: [],
+        in_sync: { sprints: [], stories: 0 },
+        error: 'No session state found',
+      });
+    }
+
+    const sprintPlanContent = readSprintPlan(sessionState);
+    const sprintStatuses =
+      (sessionState.sprint_backlog && sessionState.sprint_backlog.sprint_statuses) || {};
+    const syncReports = readSyncReports(sprintStatuses);
+
+    const report = detectDrift({ sessionState, sprintPlanContent, syncReports });
+    json(res, 200, report);
+  }
+
+  return {
+    'GET /api/drift': handleGetDrift,
+  };
+};

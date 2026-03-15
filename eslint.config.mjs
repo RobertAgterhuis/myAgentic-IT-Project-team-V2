@@ -97,10 +97,18 @@ export default [
 
 
 
+  /* ── TypeScript files: disable no-undef (TS handles this) ──── */
+  {
+    files: ['**/*.ts', '**/*.tsx'],
+    rules: {
+      'no-undef': 'off',
+    },
+  },
+
   /* ── Webapp source (non-test): security rules ───────────────── */
   {
-    files: ['src/webapp/**/*.js'],
-    ignores: ['**/*.test.js'],
+    files: ['src/webapp/**/*.{js,ts}'],
+    ignores: ['**/*.test.{js,ts}'],
     rules: {
       'no-eval': 'error',
       'no-implied-eval': 'error',

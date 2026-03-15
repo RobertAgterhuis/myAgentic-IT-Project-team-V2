@@ -2,11 +2,11 @@
   "name": "myagentic-it-project-team-v2",
   "version": "0.4.0-rc.1",
   "description": "Agentic SDLC Platform - Multi-agent software development system",
-  "main": "src/webapp/server.js",
+  "main": "src/webapp/server.ts",
   "scripts": {
     "prepare": "husky",
-    "start": "node src/webapp/server.js",
-    "start:mcp": "node src/webapp/mcp-server.js",
+    "start": "tsx src/webapp/server.ts",
+    "start:mcp": "tsx src/webapp/mcp-server.ts",
     "test": "jest --passWithNoTests",
     "test:coverage": "jest --coverage --passWithNoTests",
     "test:integration": "jest --testMatch='**/*.integration.test.js' --passWithNoTests",
@@ -25,7 +25,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
-    "build": "echo 'No build step required — server runs native Node.js'",
+    "build": "echo 'No build step required — tsx runs TypeScript natively'",
     "tokens:build": "node scripts/build-tokens.mjs",
     "test:e2e": "npx playwright test",
     "test:e2e:headed": "npx playwright test --headed",
@@ -68,11 +68,15 @@
     "lighthouse": "^12.6.0",
     "lint-staged": "^16.3.3",
     "prettier": "^3.8.1",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   },
   "jest": {
     "testEnvironment": "node",
+    "transform": {
+      "^.+\\.ts$": "ts-jest"
+    },
     "coverageDirectory": "coverage",
     "collectCoverageFrom": [
       "**/*.{js,ts}",
@@ -107,7 +111,8 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
     "ajv": "^8.18.0",
-    "ajv-formats": "^3.0.1"
+    "ajv-formats": "^3.0.1",
+    "tsx": "^4.21.0"
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx}": [

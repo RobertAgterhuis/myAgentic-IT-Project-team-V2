@@ -21,20 +21,11 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Install dependencies
+        run: npm ci
+
       - name: Check source file syntax
-        run: |
-          node -c src/webapp/server.js
-          node -c src/webapp/models.js
-          node -c src/webapp/store.js
-          node -c src/webapp/cache.js
-          node -c src/webapp/schemas.js
-          node -c src/webapp/mcp-server.js
-          node -c platform/engine/engine.js
-          node -c platform/engine/dispatcher.js
-          node -c platform/engine/state-machine.js
-          node -c platform/engine/gate-validator.js
-          node -c platform/engine/sprint-gate.js
-          node -c platform/engine/template-loader.js
+        run: npx tsc --noEmit
 
   test:
     name: Tests

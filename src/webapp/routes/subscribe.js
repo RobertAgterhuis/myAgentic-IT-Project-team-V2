@@ -10,7 +10,9 @@
  */
 
 const path = require('path');
-const fs = require('fs');
+const crypto = require('crypto');
+const { getStore } = require('../store');
+const { withFileLock } = require('../file-lock');
 const { errorResponse } = require('../utils/errors');
 const { structuredLog, json, parseBody } = require('../middleware');
 
@@ -70,33 +72,44 @@ function parseAndValidateInput(parsed) {
   };
 }
 
-function readLocalSubscriptions() {
-  if (!fs.existsSync(LOCAL_SUBS_FILE)) {
-    return [];
-  }
-  return JSON.parse(fs.readFileSync(LOCAL_SUBS_FILE, 'utf-8'));
+function hashEmail(email) {
+  return crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
 }
 
-function handleLocalFallback(res, email, segment, source) {
+function readLocalSubscriptions() {
+  const store = getStore();
+  if (!store.exists(LOCAL_SUBS_FILE)) {
+    return [];
+  }
+  return JSON.parse(store.readFile(LOCAL_SUBS_FILE));
+}
+
+async function handleLocalFallback(res, email, segment, source) {
   structuredLog('info', 'subscribe_local_fallback', { email: '[redacted]', segment, source });
   try {
-    const subs = readLocalSubscriptions();
-    if (subs.some((s) => s.email === email)) {
-      return json(res, 409, {
-        error: 'already_subscribed',
-        message: 'This email is already subscribed (local).',
+    const emailHash = hashEmail(email);
+    return await withFileLock(LOCAL_SUBS_FILE, () => {
+      const subs = readLocalSubscriptions();
+      if (subs.some((s) => s.emailHash === emailHash)) {
+        return json(res, 409, {
+          error: 'already_subscribed',
+          message: 'This email is already subscribed (local).',
+        });
+      }
+      subs.push({ emailHash, segment, source, subscribedAt: new Date().toISOString() });
+      getStore().writeFile(LOCAL_SUBS_FILE, JSON.stringify(subs, null, 2));
+      return json(res, 201, {
+        status: 'stored_locally',
+        message: 'Newsletter service not configured. Subscription recorded locally.',
       });
-    }
-    subs.push({ email, segment, source, subscribedAt: new Date().toISOString() });
-    fs.writeFileSync(LOCAL_SUBS_FILE, JSON.stringify(subs, null, 2));
+    });
   } catch (writeErr) {
     structuredLog('error', 'subscribe_local_write_error', { message: writeErr.message });
+    return json(res, 201, {
+      status: 'stored_locally',
+      message: 'Newsletter service not configured. Subscription recorded locally.',
+    });
   }
-
-  return json(res, 201, {
-    status: 'stored_locally',
-    message: 'Newsletter service not configured. Subscription recorded locally.',
-  });
 }
 
 async function handleUpstreamResponse(res, upstream, segment, source) {
@@ -148,9 +161,11 @@ module.exports = function createSubscribeRoutes(_ctx) {
 
     const apiKey = process.env.BUTTONDOWN_API_KEY;
     if (!apiKey) {
-      return handleLocalFallback(res, email, segment, source);
+      return await handleLocalFallback(res, email, segment, source);
     }
 
+    const controller = new AbortController();
+    const fetchTimeout = setTimeout(() => controller.abort(), 10_000);
     try {
       const upstream = await fetch(BUTTONDOWN_API, {
         method: 'POST',
@@ -164,6 +179,7 @@ module.exports = function createSubscribeRoutes(_ctx) {
           metadata: { source },
           referrer_url: source,
         }),
+        signal: controller.signal,
       });
       return handleUpstreamResponse(res, upstream, segment, source);
     } catch (err) {
@@ -176,6 +192,8 @@ module.exports = function createSubscribeRoutes(_ctx) {
           'Could not reach newsletter service. Please try again later.'
         )
       );
+    } finally {
+      clearTimeout(fetchTimeout);
     }
   }
 

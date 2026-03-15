@@ -128,11 +128,50 @@ If one or more items in the checklist are NOT checked:
 | Post-Phase 4 → Synthesis | Synthesis Agent                   | Brand & Assets + Storybook outputs present     |
 | Synthesis → Sprint Gate  | Orchestrator                      | All 6 synthesis documents APPROVED             |
 | Sprint Gate → Phase 5    | Implementation Agent              | Sprint Gate choice IMPLEMENT                   |
+| Test Agent → Compliance  | Architecture Compliance Reviewer  | All stories APPROVED by Test Agent             |
+| Compliance → PR/Review   | PR/Review Agent                   | Compliance gate PASSED (all stories COMPLIANT) |
+| Compliance → Rework      | Implementation Agent              | NON_COMPLIANT verdict (rework loop, max 3)     |
 | Phase 5 → Sprint Gate    | Orchestrator                      | Sprint Completion Report APPROVED              |
 | HOTFIX → Phase 5         | Implementation Agent              | Sprint Gate BYPASSED (emergency protocol)      |
 
 The handoff message JSON (Step 4 above) serves as the JSON export for this
 contract. No separate JSON export file is produced.
+
+---
+
+## MARKDOWN-ONLY HANDOFF VARIANT
+
+Some output contracts define a Markdown-only schema without a separate JSON
+export (e.g., guardrails-output, tooling-contract, synthesis-output,
+brand-assets-output, storybook-output, documentation-output). For these
+deliverables:
+
+1. The `type` in the handoff message `deliverables` array is set to the
+   contract-specific type (e.g., `guardrails`, `tooling`, `synthesis`).
+2. The `contract_ref` references the Markdown-only contract.
+3. The checklist item "JSON export available and syntactically valid" is
+   marked as **N/A — Markdown-only contract** with a note referencing the
+   contract filename.
+4. The handoff message `deliverables[].path` points to the Markdown file.
+
+This variant is valid. Not all deliverables require a JSON export. The handoff
+message itself (Step 4) always remains JSON.
+
+---
+
+## QUESTIONNAIRE_REQUEST PROCESSING
+
+When an agent includes items in the `questionnaire_requests` array of the
+handoff message, the Orchestrator:
+
+1. Collects all `INSUFFICIENT_DATA:` items tagged with `QUESTIONNAIRE_REQUEST`
+2. Passes them to the Questionnaire Agent after Critic + Risk validation
+3. The Questionnaire Agent generates customer-facing questions in the
+   appropriate `BusinessDocs/[Phase]/Questionnaires/` directory
+4. Answers are fed back via REEVALUATE or next cycle
+
+Questionnaire requests NEVER block handoff. The agent completes its deliverable
+with `INSUFFICIENT_DATA:` markers and hands off normally.
 
 ---
 

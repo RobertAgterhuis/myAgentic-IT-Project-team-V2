@@ -57,7 +57,7 @@
       "id": "00",
       "name": "Orchestrator",
       "role": "Orchestrator specialist role",
-      "phase": "ORCHESTRATION",
+      "phase": "SPRINT_GATE",
       "skillFiles": ["templates/sdlc/agents/00-orchestrator.md"],
       "tools": [
         "tool.files.read",
@@ -775,7 +775,7 @@
       "id": "20",
       "name": "Implementation Agent",
       "role": "Implementation Agent specialist role",
-      "phase": "PHASE_5",
+      "phase": "PHASE_5_EXECUTING",
       "skillFiles": ["templates/sdlc/agents/20-implementation-agent.md"],
       "tools": [
         "tool.files.read",
@@ -810,7 +810,7 @@
       "id": "21",
       "name": "Test Agent",
       "role": "Test Agent specialist role",
-      "phase": "PHASE_5",
+      "phase": "PHASE_5_EXECUTING",
       "skillFiles": ["templates/sdlc/agents/21-test-agent.md"],
       "tools": [
         "tool.files.read",
@@ -845,7 +845,7 @@
       "id": "22",
       "name": "PR/Review Agent",
       "role": "PR/Review Agent specialist role",
-      "phase": "PHASE_5",
+      "phase": "PHASE_5_EXECUTING",
       "skillFiles": ["templates/sdlc/agents/22-pr-review-agent.md"],
       "tools": [
         "tool.files.read",
@@ -971,7 +971,7 @@
       "id": "26",
       "name": "Documentation Agent",
       "role": "Documentation Agent specialist role",
-      "phase": "PHASE_5",
+      "phase": "PHASE_5_EXECUTING",
       "skillFiles": ["templates/sdlc/agents/26-documentation-agent.md"],
       "tools": [
         "tool.files.read",
@@ -1006,7 +1006,7 @@
       "id": "27",
       "name": "GitHub Integration Agent",
       "role": "GitHub Integration Agent specialist role",
-      "phase": "PHASE_5",
+      "phase": "PHASE_5_EXECUTING",
       "skillFiles": ["templates/sdlc/agents/27-github-integration-agent.md"],
       "tools": [
         "tool.files.read",
@@ -1041,7 +1041,7 @@
       "id": "28",
       "name": "Sprint Retrospective Agent",
       "role": "Sprint Retrospective Agent specialist role",
-      "phase": "PHASE_5",
+      "phase": "PHASE_5_EXECUTING",
       "skillFiles": ["templates/sdlc/agents/28-retrospective-agent.md"],
       "tools": [
         "tool.files.read",
@@ -1076,7 +1076,7 @@
       "id": "29",
       "name": "KPI/Metrics Agent",
       "role": "KPI/Metrics Agent specialist role",
-      "phase": "PHASE_5",
+      "phase": "PHASE_5_EXECUTING",
       "skillFiles": ["templates/sdlc/agents/29-kpi-agent.md"],
       "tools": [
         "tool.files.read",
@@ -1374,6 +1374,34 @@
         "templates/sdlc/contracts/agent-handoff-contract.md"
       ],
       "dependencies": [],
+      "platformBindings": {
+        "copilot": {
+          "enabled": true
+        },
+        "claude": {
+          "enabled": true
+        },
+        "openai": {
+          "enabled": true
+        }
+      }
+    },
+    {
+      "id": "38",
+      "name": "Architecture Compliance Reviewer",
+      "role": "Validates implemented code against Phase 1-4 design decisions before PR merge",
+      "phase": "PHASE_5_EXECUTING",
+      "skillFiles": ["templates/sdlc/agents/38-architecture-compliance-reviewer.md"],
+      "tools": ["tool.files.read", "tool.context.search", "tool.validation.contract"],
+      "guardrails": [
+        "templates/sdlc/guardrails/00-global-guardrails.md",
+        "templates/sdlc/guardrails/06-implementation-guardrails.md"
+      ],
+      "contracts": [
+        "templates/sdlc/contracts/architecture-compliance-output-contract.md",
+        "templates/sdlc/contracts/agent-handoff-contract.md"
+      ],
+      "dependencies": ["21"],
       "platformBindings": {
         "copilot": {
           "enabled": true

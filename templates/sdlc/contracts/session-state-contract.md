@@ -380,6 +380,37 @@ The Orchestrator processes this and writes the state update to
 
 ---
 
+## CONCURRENCY AND ROLLBACK RULES
+
+### Concurrency
+
+1. **Single-writer guarantee:** Only the Orchestrator writes to
+   `session-state.json`. Agents never write directly — they emit a STATE UPDATE
+   block in their handoff and the Orchestrator applies it.
+2. **Sequential agent execution:** Within a phase, agents execute strictly in
+   order (no parallel phase agents). Parallel execution only occurs for Phase 5
+   Implementation Agent instances working on independent stories.
+3. **Phase 5 parallel stories:** When multiple Implementation Agent instances
+   run in parallel, each produces a separate STATE UPDATE. The Orchestrator
+   applies these sequentially after all stories in the parallel track complete.
+   No two STATE UPDATEs are applied simultaneously.
+
+### Rollback
+
+1. **Agent failure mid-execution:** If an agent fails before producing a handoff
+   checklist, the Orchestrator sets `current_step` to
+   `"FAILED — [agent] — [reason]"` and `status` to `BLOCKED`. The session can
+   be resumed; the failed agent re-executes from the beginning.
+2. **State file corruption:** If `session-state.json` fails JSON parsing, the
+   Orchestrator falls back to the most recent `session-state-*-archived.json`
+   in `BusinessDocs/session/archive/` and re-applies any phase outputs found on
+   disk but missing from the archived state.
+3. **No partial state writes:** The Orchestrator writes the complete
+   `session-state.json` atomically (write to temp file, then rename). A crash
+   during write leaves the previous version intact.
+
+---
+
 ## CYCLE TYPE CANONICAL MAPPING
 
 The `cycle_type` field in session-state.json maps CLI commands to internal cycle

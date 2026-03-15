@@ -9,7 +9,7 @@
 const http = require('http');
 const path = require('path');
 const { InMemoryStore, setStore } = require('../../src/webapp/store');
-const { server, _cache } = require('../../src/webapp/server');
+const { server, _cache, _rateLimitMap } = require('../../src/webapp/server');
 
 const WEBAPP_DIR = path.resolve(__dirname, '../../src/webapp');
 const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
@@ -56,6 +56,7 @@ function req(method, urlPath, body) {
 describe('Milestones API (SP-9)', () => {
   beforeAll(async () => {
     setStore(new InMemoryStore(PROJECT_ROOT));
+    _rateLimitMap.clear();
     const listener = server.listen(0);
     const addr = listener.address();
     baseUrl = `http://localhost:${addr.port}`;
@@ -67,6 +68,10 @@ describe('Milestones API (SP-9)', () => {
 
   afterAll(() => {
     if (server.listening) server.close();
+  });
+
+  beforeEach(() => {
+    _rateLimitMap.clear();
   });
 
   describe('SP-9.1: CRUD Operations', () => {

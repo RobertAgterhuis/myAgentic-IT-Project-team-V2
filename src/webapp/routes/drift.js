@@ -12,7 +12,7 @@
  */
 
 const path = require('path');
-const fs = require('fs');
+const { getStore } = require('../store');
 const { detectDrift } = require('../drift-detector');
 const { json } = require('../middleware');
 
@@ -28,10 +28,11 @@ module.exports = function createDriftRoutes(ctx) {
    */
   function readSessionState() {
     try {
+      const store = getStore();
       const sessionFile =
         typeof resolveSessionFile === 'function' ? resolveSessionFile() : SESSION_FILE;
-      if (!sessionFile || !fs.existsSync(sessionFile)) return null;
-      return JSON.parse(fs.readFileSync(sessionFile, 'utf8'));
+      if (!sessionFile || !store.exists(sessionFile)) return null;
+      return JSON.parse(store.readFile(sessionFile));
     } catch {
       return null;
     }
@@ -48,7 +49,7 @@ module.exports = function createDriftRoutes(ctx) {
     if (!planPath) return null;
     const abs = path.resolve(PROJECT_ROOT, planPath);
     try {
-      return fs.readFileSync(abs, 'utf8');
+      return getStore().readFile(abs);
     } catch {
       return null;
     }
@@ -61,15 +62,16 @@ module.exports = function createDriftRoutes(ctx) {
    * @returns {Record<string, string|null>}
    */
   function readSyncReports(sprintStatuses) {
+    const store = getStore();
     const reports = {};
     for (const sprintId of Object.keys(sprintStatuses)) {
       reports[sprintId] = null;
 
       // Try: BusinessDocs/sprints/SP-N/github-sync-report.md
       const path1 = path.join(SPRINTS_DIR, sprintId, 'github-sync-report.md');
-      if (fs.existsSync(path1)) {
+      if (store.exists(path1)) {
         try {
-          reports[sprintId] = fs.readFileSync(path1, 'utf8');
+          reports[sprintId] = store.readFile(path1);
           continue;
         } catch {
           /* fall through */
@@ -78,9 +80,9 @@ module.exports = function createDriftRoutes(ctx) {
 
       // Try: BusinessDocs/phase-5/sprint-SP-N/github-sync-report.md
       const path2 = path.join(PHASE5_DIR, `sprint-${sprintId}`, 'github-sync-report.md');
-      if (fs.existsSync(path2)) {
+      if (store.exists(path2)) {
         try {
-          reports[sprintId] = fs.readFileSync(path2, 'utf8');
+          reports[sprintId] = store.readFile(path2);
         } catch {
           /* ignore */
         }

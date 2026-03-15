@@ -12,7 +12,7 @@
  */
 
 const path = require('node:path');
-const fs = require('node:fs');
+const fsp = require('node:fs/promises');
 
 /* ── MCP SDK imports (CJS) ──────────────────────────────────────── */
 const sdkBase = require.resolve('@modelcontextprotocol/sdk/server');
@@ -58,8 +58,8 @@ function safeWrite(filePath, data) {
   cache.invalidate(filePath);
 }
 
-function parseQuestionnaireFile(full, name) {
-  const content = fs.readFileSync(full, 'utf8');
+async function parseQuestionnaireFile(full, name) {
+  const content = await fsp.readFile(full, 'utf8');
   const parsed = models.parseQuestionnaire(content, full, BUSINESS_DOCS);
   const rel = path.relative(PROJECT_ROOT, full).replace(/\\/g, '/');
   const qs = parsed.questions || [];
@@ -74,62 +74,61 @@ function parseQuestionnaireFile(full, name) {
   };
 }
 
-function walkQuestionnaires(dir, results) {
+async function walkQuestionnaires(dir, results) {
   let entries;
   try {
-    entries = fs.readdirSync(dir, { withFileTypes: true });
+    entries = await fsp.readdir(dir, { withFileTypes: true });
   } catch {
     return;
   }
   for (const e of entries) {
     const full = path.join(dir, e.name);
     if (e.isDirectory() && e.name !== '.backups') {
-      walkQuestionnaires(full, results);
+      await walkQuestionnaires(full, results);
       continue;
     }
     if (!e.isFile() || !e.name.endsWith('-questionnaire.md')) continue;
     try {
-      results.push(parseQuestionnaireFile(full, e.name));
+      results.push(await parseQuestionnaireFile(full, e.name));
     } catch {
       /* skip unparseable files */
     }
   }
 }
 
-function discoverQuestionnaires() {
+async function discoverQuestionnaires() {
   const results = [];
-  if (!fs.existsSync(BUSINESS_DOCS)) return results;
-  walkQuestionnaires(BUSINESS_DOCS, results);
+  try {
+    await fsp.access(BUSINESS_DOCS);
+  } catch {
+    return results;
+  }
+  await walkQuestionnaires(BUSINESS_DOCS, results);
   return results;
 }
 
-function readSessionState() {
+async function readSessionState() {
   const file =
     resolveSessionFile(store, cache, SESSION_DIR) || path.join(SESSION_DIR, 'session-state.json');
-  if (!fs.existsSync(file)) return null;
   try {
-    return JSON.parse(fs.readFileSync(file, 'utf8'));
+    return JSON.parse(await fsp.readFile(file, 'utf8'));
   } catch {
     return null;
   }
 }
 
-function readCommandQueue() {
+async function readCommandQueue() {
   const file = path.join(SESSION_DIR, 'command-queue.json');
-  if (!fs.existsSync(file)) return [];
   try {
-    return JSON.parse(fs.readFileSync(file, 'utf8'));
+    return JSON.parse(await fsp.readFile(file, 'utf8'));
   } catch {
     return [];
   }
 }
 
-function readDecisions() {
-  if (!fs.existsSync(DECISIONS_PATH)) {
-    return { open: [], decided: [], deferred: [] };
-  }
+async function readDecisions() {
   try {
-    return models.parseDecisions(fs.readFileSync(DECISIONS_PATH, 'utf8'));
+    return models.parseDecisions(await fsp.readFile(DECISIONS_PATH, 'utf8'));
   } catch {
     return { open: [], decided: [], deferred: [] };
   }
@@ -174,8 +173,8 @@ mcp.tool(
   'Get the current project status including session state, pipeline progress, active command, and command queue summary',
   async () => {
     try {
-      const session = readSessionState();
-      const queue = readCommandQueue();
+      const session = await readSessionState();
+      const queue = await readCommandQueue();
       const progress = buildProgress(session);
       return jsonResult({
         session: session
@@ -204,7 +203,7 @@ mcp.tool(
   'Get detailed pipeline progress: phase completion status, current agent, sprint information',
   async () => {
     try {
-      return jsonResult(buildProgress(readSessionState()));
+      return jsonResult(buildProgress(await readSessionState()));
     } catch (err) {
       return errorResult(`Failed to read progress: ${err.message}`);
     }
@@ -218,7 +217,7 @@ mcp.tool(
   'List all questionnaire files with completion statistics (total, answered, unanswered, deferred questions per file)',
   async () => {
     try {
-      return jsonResult(discoverQuestionnaires());
+      return jsonResult(await discoverQuestionnaires());
     } catch (err) {
       return errorResult(`Failed to list questionnaires: ${err.message}`);
     }
@@ -243,8 +242,12 @@ mcp.tool(
     try {
       if (!file) return errorResult('file parameter is required');
       const abs = safePath(PROJECT_ROOT, file);
-      if (!fs.existsSync(abs)) return errorResult(`File not found: ${file}`);
-      const content = fs.readFileSync(abs, 'utf8');
+      try {
+        await fsp.access(abs);
+      } catch {
+        return errorResult(`File not found: ${file}`);
+      }
+      const content = await fsp.readFile(abs, 'utf8');
       return jsonResult({ file, ...models.parseQuestionnaire(content, abs, PROJECT_ROOT) });
     } catch (err) {
       if (err.errorCode === 'PATH_TRAVERSAL') return errorResult('Invalid file path');
@@ -291,7 +294,11 @@ mcp.tool(
       if (updates.length > 200) return errorResult('Too many updates (max 200)');
 
       const abs = safePath(PROJECT_ROOT, file);
-      if (!fs.existsSync(abs)) return errorResult(`File not found: ${file}`);
+      try {
+        await fsp.access(abs);
+      } catch {
+        return errorResult(`File not found: ${file}`);
+      }
 
       return await applySaveAnswers(abs, file, updates);
     } catch (err) {
@@ -322,7 +329,7 @@ function applyOneUpdate(u, content, warnings) {
 
 function applySaveAnswers(abs, file, updates) {
   return withFileLock(abs, async () => {
-    let content = fs.readFileSync(abs, 'utf8');
+    let content = await fsp.readFile(abs, 'utf8');
     const warnings = [];
     let applied = 0;
 
@@ -354,7 +361,7 @@ mcp.tool(
   'List all decisions grouped by status: open questions, decided items, and deferred items',
   async () => {
     try {
-      return jsonResult(readDecisions());
+      return jsonResult(await readDecisions());
     } catch (err) {
       return errorResult(`Failed to read decisions: ${err.message}`);
     }
@@ -383,11 +390,14 @@ mcp.tool(
     try {
       const valErr = validateDecisionFields(type, priority, scope, text);
       if (valErr) return valErr;
-      if (!fs.existsSync(DECISIONS_PATH))
+      try {
+        await fsp.access(DECISIONS_PATH);
+      } catch {
         return errorResult('decisions.md not found — run a CREATE or AUDIT command first');
+      }
 
       return await withFileLock(DECISIONS_PATH, async () => {
-        let content = fs.readFileSync(DECISIONS_PATH, 'utf8');
+        let content = await fsp.readFile(DECISIONS_PATH, 'utf8');
         const id = models.nextDecisionId(content, 'DEC-');
         const safeText = sanitizeMarkdown(text);
         const safeNotes = notes ? sanitizeMarkdown(notes) : '';
@@ -444,10 +454,14 @@ mcp.tool(
     try {
       if (!id || !answer) return errorResult('id and answer are required');
       if (!models.DEC_ID_RE.test(id)) return errorResult(`Invalid decision ID format: ${id}`);
-      if (!fs.existsSync(DECISIONS_PATH)) return errorResult('decisions.md not found');
+      try {
+        await fsp.access(DECISIONS_PATH);
+      } catch {
+        return errorResult('decisions.md not found');
+      }
 
       return await withFileLock(DECISIONS_PATH, async () => {
-        let content = fs.readFileSync(DECISIONS_PATH, 'utf8');
+        let content = await fsp.readFile(DECISIONS_PATH, 'utf8');
         const secrets = detectSecrets(answer);
         const safeAnswer = sanitizeMarkdown(answer);
 
@@ -488,10 +502,14 @@ mcp.tool(
     try {
       if (!id) return errorResult('id is required');
       if (!models.DEC_ID_RE.test(id)) return errorResult(`Invalid decision ID format: ${id}`);
-      if (!fs.existsSync(DECISIONS_PATH)) return errorResult('decisions.md not found');
+      try {
+        await fsp.access(DECISIONS_PATH);
+      } catch {
+        return errorResult('decisions.md not found');
+      }
 
       return await withFileLock(DECISIONS_PATH, async () => {
-        let content = fs.readFileSync(DECISIONS_PATH, 'utf8');
+        let content = await fsp.readFile(DECISIONS_PATH, 'utf8');
         content = models.moveToDecided(content, id);
         content = models.appendAuditTrail(content, 'decide', id);
 
@@ -604,7 +622,7 @@ async function saveBrief(brief) {
 async function enqueueCommand(upperCmd, text, project, scope, description) {
   const queuePath = path.join(SESSION_DIR, 'command-queue.json');
   await withFileLock(queuePath, async () => {
-    const queue = readCommandQueue();
+    const queue = await readCommandQueue();
     const entry = { command: upperCmd, text, timestamp: models.isoNow(), status: 'QUEUED' };
     if (project) entry.project = project;
     if (scope) entry.scope = scope;
@@ -628,7 +646,7 @@ mcp.tool(
   'Get the full command queue with all queued, active, and completed commands',
   async () => {
     try {
-      return jsonResult(readCommandQueue());
+      return jsonResult(await readCommandQueue());
     } catch (err) {
       return errorResult(`Failed to read command queue: ${err.message}`);
     }
@@ -652,18 +670,26 @@ mcp.tool(
   },
   async ({ topic } = {}) => {
     try {
-      if (!fs.existsSync(HELP_DIR)) return errorResult('Help directory not found');
+      try {
+        await fsp.access(HELP_DIR);
+      } catch {
+        return errorResult('Help directory not found');
+      }
 
       if (!topic) {
-        const files = fs.readdirSync(HELP_DIR).filter((f) => f.endsWith('.md'));
+        const files = (await fsp.readdir(HELP_DIR)).filter((f) => f.endsWith('.md'));
         const topics = files.map((f) => ({ slug: f.replace('.md', ''), file: f }));
         return jsonResult({ topics });
       }
 
       const safe = topic.replace(/[^a-z0-9_-]/gi, '');
       const file = path.join(HELP_DIR, `${safe}.md`);
-      if (!fs.existsSync(file)) return errorResult(`Help topic not found: ${topic}`);
-      return jsonResult({ topic: safe, content: fs.readFileSync(file, 'utf8') });
+      try {
+        await fsp.access(file);
+      } catch {
+        return errorResult(`Help topic not found: ${topic}`);
+      }
+      return jsonResult({ topic: safe, content: await fsp.readFile(file, 'utf8') });
     } catch (err) {
       return errorResult(`Failed to read help: ${err.message}`);
     }
@@ -679,7 +705,7 @@ mcp.tool(
   async () => {
     try {
       const { detectDrift } = require('./drift-detector');
-      const session = readSessionState();
+      const session = await readSessionState();
       if (!session)
         return jsonResult({
           generated_at: new Date().toISOString(),
@@ -696,7 +722,7 @@ mcp.tool(
       if (planPath) {
         const abs = path.resolve(PROJECT_ROOT, planPath);
         try {
-          sprintPlanContent = fs.readFileSync(abs, 'utf8');
+          sprintPlanContent = await fsp.readFile(abs, 'utf8');
         } catch {
           /* missing plan */
         }
@@ -708,21 +734,17 @@ mcp.tool(
       for (const sprintId of Object.keys(sprintStatuses)) {
         syncReports[sprintId] = null;
         const p1 = path.join(sprintsDir, sprintId, 'github-sync-report.md');
-        if (fs.existsSync(p1)) {
-          try {
-            syncReports[sprintId] = fs.readFileSync(p1, 'utf8');
-            continue;
-          } catch {
-            /* */
-          }
+        try {
+          syncReports[sprintId] = await fsp.readFile(p1, 'utf8');
+          continue;
+        } catch {
+          /* */
         }
         const p2 = path.join(phase5Dir, `sprint-${sprintId}`, 'github-sync-report.md');
-        if (fs.existsSync(p2)) {
-          try {
-            syncReports[sprintId] = fs.readFileSync(p2, 'utf8');
-          } catch {
-            /* */
-          }
+        try {
+          syncReports[sprintId] = await fsp.readFile(p2, 'utf8');
+        } catch {
+          /* */
         }
       }
 
@@ -774,7 +796,7 @@ mcp.resource(
     contents: [
       {
         uri: uri.href,
-        text: JSON.stringify(readSessionState(), null, 2),
+        text: JSON.stringify(await readSessionState(), null, 2),
         mimeType: 'application/json',
       },
     ],
@@ -792,7 +814,7 @@ mcp.resource(
     contents: [
       {
         uri: uri.href,
-        text: JSON.stringify(readDecisions(), null, 2),
+        text: JSON.stringify(await readDecisions(), null, 2),
         mimeType: 'application/json',
       },
     ],
@@ -807,7 +829,7 @@ mcp.resource(
     contents: [
       {
         uri: uri.href,
-        text: JSON.stringify(readCommandQueue(), null, 2),
+        text: JSON.stringify(await readCommandQueue(), null, 2),
         mimeType: 'application/json',
       },
     ],

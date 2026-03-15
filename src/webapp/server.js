@@ -54,6 +54,32 @@ const SSE_HEARTBEAT_MS = 30000;
 const ANALYTICS_MAX_EVENTS = 5000;
 const METRICS_FLUSH_INTERVAL_MS = 60000;
 const SNAPSHOT_SYNC_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const RATE_LIMIT_MAX = 30;
+
+/* ── Rate limiter ─────────────────────────────────────────────── */
+
+const _rateLimitMap = new Map();
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  let entry = _rateLimitMap.get(ip);
+  if (!entry || now > entry.reset) {
+    entry = { count: 1, reset: now + RATE_LIMIT_WINDOW_MS };
+    _rateLimitMap.set(ip, entry);
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT_MAX;
+}
+
+// Periodically prune stale entries to prevent unbounded memory growth
+setInterval(() => {
+  const now = Date.now();
+  for (const [ip, entry] of _rateLimitMap) {
+    if (now > entry.reset) _rateLimitMap.delete(ip);
+  }
+}, RATE_LIMIT_WINDOW_MS).unref();
 
 /* ── Shared state ─────────────────────────────────────────────── */
 
@@ -275,6 +301,10 @@ const miscRoutes = require('./routes/misc')(ctx);
 
 const serveStatic = miscRoutes._serveStatic;
 
+// All route modules initialized and cross-module wiring complete.
+// Freeze ctx to prevent further accidental mutation.
+Object.freeze(ctx);
+
 /* ── Router ───────────────────────────────────────────────────── */
 
 const ROUTES = {
@@ -318,6 +348,18 @@ function resolveRoute(routes, method, pathname) {
   return null;
 }
 
+function findRouteTemplate(method, pathname) {
+  for (const key of Object.keys(ROUTES)) {
+    const splitAt = key.indexOf(' ');
+    if (splitAt < 0) continue;
+    const routeMethod = key.slice(0, splitAt);
+    if (routeMethod !== method) continue;
+    const routePath = key.slice(splitAt + 1);
+    if (matchPathTemplate(routePath, pathname)) return routePath;
+  }
+  return null;
+}
+
 // Remove internal-only keys from the route table
 delete ROUTES._readCommandQueue;
 delete ROUTES._getLatestCommand;
@@ -341,6 +383,7 @@ function serveLocaleFile(pathname, res) {
     res.end(localeContent);
   } catch (err) {
     structuredLog('warn', 'locale_serve_failed', { error: err.message, pathname });
+    setSecurityHeaders(res);
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('Not found');
   }
@@ -383,10 +426,41 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // Rate limit mutating API requests per IP
+  if (pathname.startsWith('/api') && req.method !== 'GET') {
+    const ip = req.socket.remoteAddress || 'unknown';
+    if (isRateLimited(ip)) {
+      setSecurityHeaders(res);
+      res.setHeader('Retry-After', '60');
+      json(res, 429, errorResponse('RATE_LIMITED', 'Too many requests. Please try again later.'));
+      return;
+    }
+  }
+
+  // Auth guard: reject mutating API requests on non-localhost bindings
+  // unless the caller provides a valid API key.
+  if (
+    HOST !== '127.0.0.1' &&
+    HOST !== 'localhost' &&
+    pathname.startsWith('/api') &&
+    req.method !== 'GET'
+  ) {
+    const expected = process.env.API_KEY;
+    const provided = req.headers['x-api-key'];
+    if (!expected || provided !== expected) {
+      setSecurityHeaders(res);
+      json(res, 403, errorResponse('FORBIDDEN', 'API key required for mutating requests'));
+      return;
+    }
+  }
+
   await dispatchRequest(req, res, pathname);
   const duration = Date.now() - start;
   if (pathname !== '/api/events') {
-    recordMetric(req.method, pathname, duration, res.statusCode);
+    // Normalize pathname to route template to avoid metric-key explosion
+    // from dynamic path segments like /api/questionnaires/Q-001
+    const routeKey = findRouteTemplate(req.method, pathname) || pathname;
+    recordMetric(req.method, routeKey, duration, res.statusCode);
     log(req.method, pathname, res.statusCode, duration);
   }
 });
@@ -414,6 +488,12 @@ if (require.main === module) {
       port: PORT,
       url: `http://${HOST}:${PORT}`,
     });
+    if (HOST !== '127.0.0.1' && HOST !== 'localhost' && !process.env.API_KEY) {
+      structuredLog('warn', 'auth_guard_no_api_key', {
+        host: HOST,
+        hint: 'Set API_KEY env var — all mutating API requests will be rejected without it',
+      });
+    }
   });
 
   const metricsFlushTimer = setInterval(flushMetrics, METRICS_FLUSH_INTERVAL_MS);
@@ -493,4 +573,5 @@ module.exports = {
   flushMetrics,
   loadMetrics,
   METRICS_FILE,
+  _rateLimitMap,
 };

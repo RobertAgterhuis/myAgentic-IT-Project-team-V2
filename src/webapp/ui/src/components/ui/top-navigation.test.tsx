@@ -34,7 +34,7 @@ describe('TopNavigation', () => {
 
   it('shows connection status', () => {
     render(<TopNavigation connectionStatus="disconnected" />);
-    expect(screen.getByText('Disconnected')).toBeInTheDocument();
+    expect(screen.getByText('Offline')).toBeInTheDocument();
   });
 
   it('hamburger button calls onMenuToggle', async () => {

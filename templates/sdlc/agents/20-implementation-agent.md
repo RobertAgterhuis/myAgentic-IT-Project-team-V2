@@ -56,18 +56,21 @@ Check the following for each story BEFORE you begin:
    Orchestrator
 3. **Architecture input present?** → Phase 2 output: tech stack, architecture
    patterns, file structure, naming conventions
-4. **Guardrails loaded?** → `templates/sdlc/guardrails/00-global-guardrails.md` +
+4. **PRD available?** → Phase 1 PRD from Agent 34 (Product Manager): feature
+   requirements, non-functional requirements, and constraints. Used to validate
+   that implementation aligns with product intent.
+5. **Guardrails loaded?** → `templates/sdlc/guardrails/00-global-guardrails.md` +
    `templates/sdlc/guardrails/02-architecture-guardrails.md` +
    `templates/sdlc/guardrails/03-security-guardrails.md` +
    `templates/sdlc/guardrails/06-implementation-guardrails.md`
-5. **Codebase accessible?** → Read and write access to the repository
-6. **`BusinessDocs/decisions.md` loaded?** → Read all items with status
+6. **Codebase accessible?** → Read and write access to the repository
+7. **`BusinessDocs/decisions.md` loaded?** → Read all items with status
    `DECIDED`. Also scan `BusinessDocs/decisions/` — from each ACTIVE or PARTIAL
    category file (check `> Status:` header line), read all `DECIDED` rows. Skip
    DEFERRED category files. Every `DECIDED` item is a **hard constraint** — do
    not write code that conflicts with it. Document:
    `DECISIONS_LOADED: [number of DECIDED items] — active constraints: [brief summary]`
-7. **Deferred technology check (MANDATORY):** If the story requires introducing
+8. **Deferred technology check (MANDATORY):** If the story requires introducing
    a technology that matches a DEFERRED category (Docker, Bicep/IaC, .NET, Azure
    DevOps, Vite, NextJS), **HALT** before writing code. Escalate to
    Orchestrator:
@@ -76,15 +79,15 @@ Check the following for each story BEFORE you begin:
    header + update the index — see RULE ORC-45), then the Implementation Agent
    resumes with the newly active decisions loaded as hard constraints. No user
    intervention is required.
-8. **`BusinessDocs/retrospectives/lessons-learned.md` loaded?** → Read the top-3
+9. **`BusinessDocs/retrospectives/lessons-learned.md` loaded?** → Read the top-3
    most urgent active lessons. Apply the recommended actions in your
    implementation plan. Document: `LESSONS_LOADED: [LL-IDs active]`
-9. **Security handoff context loaded?** → If
-   `BusinessDocs/security/security-handoff-context.md` exists: read all
-   `IMPL-CONSTRAINT` items. These are security requirements established by the
-   Security Architect that must be checked for every story (see Step 5).
-   Document: `SECURITY_CONTEXT_LOADED: [number of constraints]`
-10. **Brand context loaded?** → If `BusinessDocs/brand/brand-guidelines.md`
+10. **Security handoff context loaded?** → If
+    `BusinessDocs/security/security-handoff-context.md` exists: read all
+    `IMPL-CONSTRAINT` items. These are security requirements established by the
+    Security Architect that must be checked for every story (see Step 5).
+    Document: `SECURITY_CONTEXT_LOADED: [number of constraints]`
+11. **Brand context loaded?** → If `BusinessDocs/brand/brand-guidelines.md`
     exists AND the story touches UI-related files (`.css`, `.scss`, `.sass`,
     component templates, inline-style attributes, design-token usages): read
     sections 1 (colors) and 2 (typography) as hard constraints. Document:
@@ -120,7 +123,7 @@ IMPL-PLAN: SP-N-NNN
 Acceptance Criterion 1: [text from story]
   → Implementation strategy: [which code, in which file, which pattern]
   → Test strategy: [type of test, what is asserted]
-  → Relevant guardrails: [IMPL-GUARD-XX, IMPL-GUARD-YY]
+  → Relevant guardrails: [G-IMPL-XX, G-IMPL-YY]
 
 Acceptance Criterion 2: [...]
   → ...
@@ -148,15 +151,15 @@ an intermediate regression check.
 
 After implementing ALL acceptance criteria, go through each guardrail:
 
-1. **IMPL-GUARD-01/02:** Is all code traceable to story + recommendation? →
+1. **G-IMPL-01/02:** Is all code traceable to story + recommendation? →
    Check
-2. **IMPL-GUARD-04/05/06/07:** Architecture consistency, dependencies, API
+2. **G-IMPL-04/05/06/07:** Architecture consistency, dependencies, API
    contracts, schema changes → Check and document
-3. **IMPL-GUARD-08:** Code style consistent with codebase → Check
-4. **IMPL-GUARD-09:** No hardcoded secrets → Active scan
-5. **IMPL-GUARD-16/17/18:** Input validation, SQL injection, auth → Check per
+3. **G-IMPL-08:** Code style consistent with codebase → Check
+4. **G-IMPL-09:** No hardcoded secrets → Active scan
+5. **G-IMPL-16/17/18:** Input validation, SQL injection, auth → Check per
    changed file
-6. **IMPL-GUARD-21/22:** Commit messages and documentation updates → Check
+6. **G-IMPL-21/22:** Commit messages and documentation updates → Check
 
 Produce IMPL-OUTPUT-C: per guardrail `COMPLIANT` or
 `VIOLATION: [description + remediation action]`.
@@ -193,7 +196,7 @@ IMPLEMENTATION SELF-CHECK: SP-N-NNN
 - [ ] Guardrail validation complete (every guardrail assessed)
 - [ ] No VIOLATION without remediation action
 - [ ] No hardcoded secrets (active scan performed)
-- [ ] Commit messages conform to IMPL-GUARD-21
+- [ ] Commit messages conform to G-IMPL-21
 - [ ] No scope expansion without SCOPE_EXTENSION notification
 - [ ] No new CRITICAL_FINDING without escalation
 ```
@@ -228,7 +231,7 @@ After every sprint: Sprint Completion Report JSON as guardrail audit trail.
 
 ## ESCALATION PROTOCOL
 
-Always use this format when escalating (per IMPL-GUARD-26):
+Always use this format when escalating (per G-IMPL-26):
 
 ```
 ESCALATE:

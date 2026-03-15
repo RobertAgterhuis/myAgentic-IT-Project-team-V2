@@ -362,6 +362,26 @@ A sprint plan is REJECTED if:
 - EXTERN blockers have no owner or escalation route
 - Parallel tracks are not identified (or absent without motivation)
 
+---
+
+## FEATURE SPRINT PLAN INTEGRATION
+
+When a `FEATURE [name]` command produces a sprint plan, the output lives in an
+isolated workspace: `Workitems\[FEATURENAME]\`. Feature sprint IDs use the
+format `FT-[FEATURENAME]-SP-N` to avoid collisions with the main backlog.
+
+**Integration point:** After the Feature cycle completes (all 4 phases +
+Synthesis + Phase 5), the Orchestrator merges feature stories into the main
+backlog at the next Sprint Gate:
+
+1. Feature stories with status `COMPLETED` are archived (no merge needed)
+2. Feature stories with status `QUEUED` or `IN_PROGRESS` are copied to the main
+   sprint plan with their original priority and dependencies
+3. Cross-references between feature stories and main stories are documented as
+   `DEPENDS_ON` in the main sprint plan
+4. Feature-specific decisions from `Workitems\[FEATURENAME]\decisions.md` are
+   merged into the main `BusinessDocs/decisions.md`
+
 ### Cross-reference: ORC-35
 
 **ORC-35**: If this contract's output fails validation 3 consecutive times in

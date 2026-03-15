@@ -51,7 +51,7 @@ const COMMAND_OPT_FIELDS = ['project', 'description', 'scope', 'brief'];
 const COMMAND_OPT_LIMITS = { project: 200, description: 2000, scope: 200, brief: 200000 };
 
 module.exports = function createCommandRoutes(ctx) {
-  const { _cache, safeWriteSync, SESSION_DIR, COMMAND_QUEUE, BUSINESS_DOCS } = ctx;
+  const { _cache, safeWriteSync, sseNotify, SESSION_DIR, COMMAND_QUEUE, BUSINESS_DOCS } = ctx;
 
   function validateCommandBody(body) {
     assertString(body.command, 'command', 100);
@@ -153,6 +153,13 @@ module.exports = function createCommandRoutes(ctx) {
     await saveProjectBrief(body, entry);
     entry.clipboard_text = buildClipboardText(entry);
     await appendToCommandQueue(entry);
+
+    sseNotify('command_queued', {
+      type: 'command_queued',
+      command: entry.command,
+      project: entry.project,
+      timestamp: entry.requested_at,
+    });
 
     const cmdResponse = {
       ok: true,

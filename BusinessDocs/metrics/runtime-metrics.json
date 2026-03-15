@@ -1,0 +1,236 @@
+{
+  "flushed_at": "2026-03-15T06:02:00.957Z",
+  "requestCount": 1073,
+  "errorCount": 0,
+  "fileOpsCount": 1,
+  "responseTimes": [
+    3, 1, 1, 2, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0, 1, 1, 65, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 1, 0,
+    0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 0, 0
+  ],
+  "perEndpoint": {
+    "GET /": {
+      "count": 11,
+      "times": [3, 1, 1, 0, 1, 0, 0, 1, 1, 2, 1]
+    },
+    "GET /assets/index-BXy2Szdi.js": {
+      "count": 2,
+      "times": [3, 80]
+    },
+    "GET /assets/index-Ddnvybhv.css": {
+      "count": 2,
+      "times": [11, 10]
+    },
+    "GET /assets/dashboard-page-DuivgqLm.js": {
+      "count": 2,
+      "times": [1, 1]
+    },
+    "GET /assets/card-CeHJA5-j.js": {
+      "count": 2,
+      "times": [1, 1]
+    },
+    "GET /assets/metric-card-D5vb8zMi.js": {
+      "count": 2,
+      "times": [1, 18]
+    },
+    "GET /assets/clock-rO6kthOg.js": {
+      "count": 2,
+      "times": [1, 0]
+    },
+    "GET /assets/arrow-right-CEH5t02V.js": {
+      "count": 2,
+      "times": [1, 1]
+    },
+    "GET /assets/shield-check-DTZus6-F.js": {
+      "count": 2,
+      "times": [1, 19]
+    },
+    "GET /api/orchestrator/status": {
+      "count": 567,
+      "times": [
+        6, 1, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+        1, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1,
+        0, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0,
+        1, 1, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0,
+        0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 1, 1, 0, 0,
+        0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0,
+        1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0,
+        1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0,
+        1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1, 0, 0,
+        0, 0, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1,
+        0, 1, 0, 1, 0, 0, 0, 0, 1, 1, 1, 0, 21, 1, 0, 3, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 1, 3, 1, 0,
+        0, 0, 0, 0, 0, 1, 0, 0, 1, 1
+      ]
+    },
+    "GET /api/dashboard/health": {
+      "count": 15,
+      "times": [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0]
+    },
+    "GET /api/dashboard/metrics": {
+      "count": 28,
+      "times": [1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 1, 1]
+    },
+    "GET /api/dashboard/activity": {
+      "count": 15,
+      "times": [10, 0, 1, 9, 1, 1, 1, 0, 0, 1, 1, 2, 1, 1, 1]
+    },
+    "GET /api/dashboard/stats": {
+      "count": 15,
+      "times": [76, 58, 58, 79, 70, 64, 54, 56, 55, 59, 57, 68, 64, 68, 65]
+    },
+    "GET /vite.svg": {
+      "count": 43,
+      "times": [
+        0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 0, 0, 0,
+        0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0
+      ]
+    },
+    "GET /assets/pipeline-page-CMC5oLVN.js": {
+      "count": 2,
+      "times": [1, 18]
+    },
+    "GET /assets/progress-DM0J1SAE.js": {
+      "count": 2,
+      "times": [0, 12]
+    },
+    "GET /assets/use-progress-BINUMaR5.js": {
+      "count": 2,
+      "times": [0, 12]
+    },
+    "GET /api/progress": {
+      "count": 238,
+      "times": [
+        10, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0,
+        0, 0, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,
+        0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0, 1, 0, 0, 0,
+        0, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0,
+        0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 14, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0,
+        1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0
+      ]
+    },
+    "GET /assets/questionnaires-page-DlnZ5guI.js": {
+      "count": 1,
+      "times": [1]
+    },
+    "GET /assets/input-field-DBcCm3Or.js": {
+      "count": 1,
+      "times": [1]
+    },
+    "GET /api/questionnaires": {
+      "count": 5,
+      "times": [2, 1, 1, 1, 1]
+    },
+    "GET /questionnaires": {
+      "count": 1,
+      "times": [0]
+    },
+    "GET /assets/metrics-page-DXZOFghK.js": {
+      "count": 1,
+      "times": [0]
+    },
+    "GET /assets/data-table-B7q8ePqj.js": {
+      "count": 1,
+      "times": [0]
+    },
+    "GET /api/drift": {
+      "count": 1,
+      "times": [3]
+    },
+    "GET /assets/command-center-page-Dra0zjeM.js": {
+      "count": 1,
+      "times": [22]
+    },
+    "GET /api/command": {
+      "count": 85,
+      "times": [
+        0, 1, 0, 1, 0, 6, 1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0,
+        0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 1,
+        0, 0, 0, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0, 0
+      ]
+    },
+    "GET /assets/decisions-page-DB28SbBm.js": {
+      "count": 1,
+      "times": [28]
+    },
+    "GET /api/decisions": {
+      "count": 4,
+      "times": [140, 2, 2, 2]
+    },
+    "POST /api/command": {
+      "count": 1,
+      "times": [4]
+    },
+    "GET /decisions": {
+      "count": 1,
+      "times": [0]
+    },
+    "GET /assets/index-ywn_g6yY.css": {
+      "count": 1,
+      "times": [1]
+    },
+    "GET /assets/index-C1yRiJzr.js": {
+      "count": 1,
+      "times": [2]
+    },
+    "GET /assets/dashboard-page-CxGdPNB9.js": {
+      "count": 1,
+      "times": [0]
+    },
+    "GET /assets/card-B_FzCnrU.js": {
+      "count": 1,
+      "times": [0]
+    },
+    "GET /assets/metric-card-ufDrk6aN.js": {
+      "count": 1,
+      "times": [1]
+    },
+    "GET /assets/progress-BXEjTecn.js": {
+      "count": 1,
+      "times": [1]
+    },
+    "GET /assets/use-progress-TUjRp9ie.js": {
+      "count": 1,
+      "times": [0]
+    },
+    "GET /assets/arrow-right-CUVxCLnS.js": {
+      "count": 1,
+      "times": [1]
+    },
+    "GET /assets/shield-check-Dgmkkyqo.js": {
+      "count": 1,
+      "times": [0]
+    },
+    "GET /assets/zap-AODtrGFi.js": {
+      "count": 1,
+      "times": [1]
+    },
+    "GET /assets/command-center-page-B_NC4MMb.js": {
+      "count": 1,
+      "times": [1]
+    },
+    "GET /assets/input-field-B2Na9vtp.js": {
+      "count": 1,
+      "times": [1]
+    },
+    "GET /assets/pipeline-page-8y88cO9J.js": {
+      "count": 1,
+      "times": [1]
+    },
+    "GET /assets/shield-alert-DVzHVCIH.js": {
+      "count": 1,
+      "times": [1]
+    },
+    "GET /assets/questionnaires-page-BVV6kw5p.js": {
+      "count": 1,
+      "times": [1]
+    }
+  }
+}

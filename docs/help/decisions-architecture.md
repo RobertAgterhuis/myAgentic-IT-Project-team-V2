@@ -244,11 +244,11 @@ auto-activation.
 
 ## 5. Guardrail references
 
-| Guardrail         | File                                                        | Scope                                                                                                                    |
-| ----------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **G-GLOB-58**     | `templates/sdlc/guardrails/00-global-guardrails.md`         | All Phase 5 agents must validate against `DECIDED` items. Skip DEFERRED for compliance but scan for activation triggers. |
-| **IMPL-GUARD-32** | `templates/sdlc/guardrails/06-implementation-guardrails.md` | Decision compliance triple-check: Implementation → Test → PR/Review. All three must independently verify.                |
-| **IMPL-GUARD-33** | `templates/sdlc/guardrails/06-implementation-guardrails.md` | HALT before introducing deferred technology. Escalate to Orchestrator for ORC-45 auto-activation.                        |
+| Guardrail     | File                                                        | Scope                                                                                                                    |
+| ------------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **G-GLOB-58** | `templates/sdlc/guardrails/00-global-guardrails.md`         | All Phase 5 agents must validate against `DECIDED` items. Skip DEFERRED for compliance but scan for activation triggers. |
+| **G-IMPL-32** | `templates/sdlc/guardrails/06-implementation-guardrails.md` | Decision compliance triple-check: Implementation → Test → PR/Review. All three must independently verify.                |
+| **G-IMPL-33** | `templates/sdlc/guardrails/06-implementation-guardrails.md` | HALT before introducing deferred technology. Escalate to Orchestrator for ORC-45 auto-activation.                        |
 
 ---
 

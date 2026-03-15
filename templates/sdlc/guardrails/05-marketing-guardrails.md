@@ -4,6 +4,15 @@
 
 ---
 
+## ENFORCEMENT & CONTRACT REFERENCE
+
+| Rule Range  | Primary Enforcer          | Verification Agent | Related Contract                     | Default Violation Action |
+| ----------- | ------------------------- | ------------------ | ------------------------------------ | ------------------------ |
+| G-MKT-01–03 | Brand Strategist (14)     | Critic Agent (18)  | `analysis-output-contract.md`        | BLOCK handoff            |
+| G-MKT-04–06 | Growth Marketer (15)      | Critic Agent (18)  | `recommendations-output-contract.md` | BLOCK handoff            |
+| G-MKT-07–08 | CRO Specialist (16)       | Critic Agent (18)  | `recommendations-output-contract.md` | BLOCK handoff            |
+| G-MKT-09    | Brand & Assets Agent (30) | Critic Agent (18)  | `brand-assets-output-contract.md`    | WARN + document          |
+
 ## DOMAIN: BRAND, MARKETING & GROWTH
 
 ### G-MKT-01 – Message-Market Fit Validation

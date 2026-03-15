@@ -36,7 +36,9 @@ function _scoreByLastUpdated(cache, fp) {
     const parsed = JSON.parse(raw);
     const t = Date.parse(parsed && parsed.last_updated ? parsed.last_updated : '');
     return Number.isNaN(t) ? 0 : t;
-  } catch {
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('[session-state-resolver] _scoreByLastUpdated failed for %s: %s', fp, err.message);
     return 0;
   }
 }
@@ -45,7 +47,9 @@ function _scoreByMtime(store, fp) {
   try {
     const stat = store.stat(fp);
     return stat && stat.mtimeMs ? stat.mtimeMs : 0;
-  } catch {
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn('[session-state-resolver] _scoreByMtime failed for %s: %s', fp, err.message);
     return 0;
   }
 }

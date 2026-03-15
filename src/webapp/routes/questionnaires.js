@@ -38,7 +38,20 @@ module.exports = function createQuestionnaireRoutes(ctx) {
     Q_INDEX_FILE,
   } = ctx;
 
+  let _discoveryCache = null;
+  let _discoveryCacheTime = 0;
+  const DISCOVERY_CACHE_TTL_MS = 10_000;
+
+  function invalidateDiscoveryCache() {
+    _discoveryCache = null;
+    _discoveryCacheTime = 0;
+  }
+
   function discoverQuestionnaires() {
+    const now = Date.now();
+    if (_discoveryCache && now - _discoveryCacheTime < DISCOVERY_CACHE_TTL_MS) {
+      return _discoveryCache;
+    }
     const store = getStore();
     if (!store.exists(BUSINESS_DOCS)) return [];
     const results = [];
@@ -60,7 +73,10 @@ module.exports = function createQuestionnaireRoutes(ctx) {
         }
       }
     })(BUSINESS_DOCS, 0);
-    return results.sort();
+    const sorted = results.sort();
+    _discoveryCache = sorted;
+    _discoveryCacheTime = now;
+    return sorted;
   }
 
   async function rebuildQuestionnaireIndex() {
@@ -184,6 +200,7 @@ module.exports = function createQuestionnaireRoutes(ctx) {
     });
 
     const uniqueWarnings = detectSaveSecrets(body.updates);
+    invalidateDiscoveryCache();
     scheduleRebuildIndex();
     sseNotify('questionnaire_save', { file: body.file, count: body.updates.length });
     const response = { ok: true, saved: body.updates.length };

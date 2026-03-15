@@ -71,7 +71,7 @@
           "phase": {
             "type": "string",
             "enum": [
-              "ORCHESTRATION",
+              "SPRINT_GATE",
               "ONBOARDING",
               "PHASE_1",
               "PHASE_2",
@@ -79,7 +79,7 @@
               "PHASE_4",
               "CRITIC_RISK",
               "SYNTHESIS",
-              "PHASE_5",
+              "PHASE_5_EXECUTING",
               "REEVALUATE",
               "FEATURE",
               "QUESTIONNAIRE",

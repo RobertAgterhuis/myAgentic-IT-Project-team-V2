@@ -2,17 +2,21 @@
  * SSE event stream hook — connects to /api/events and triggers
  * TanStack Query cache invalidation on relevant server events.
  * Auto-reconnects on disconnect with exponential backoff.
+ * Tracks connection status and exposes last event for real-time UI.
  */
 import { useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query-keys';
+import { useUIStore } from '@/stores/ui-store';
+import { showToast } from '@/components/ui/toast-system';
 
 const SSE_URL = '/api/events';
 const MAX_RECONNECT_DELAY = 30_000;
 
-type SSEEvent = {
+export type SSEEvent = {
   type: string;
-  data?: string;
+  timestamp?: string;
+  [key: string]: unknown;
 };
 
 /** Map SSE event types to the query keys that should be invalidated. */
@@ -29,8 +33,38 @@ function getInvalidationKeys(eventType: string): readonly (readonly string[])[] 
       return [queryKeys.questionnaires.all];
     case 'decision_update':
       return [queryKeys.decisions.all];
+    case 'orchestrator_state':
+      return [queryKeys.orchestrator.status, queryKeys.progress.all];
+    case 'command_queued':
+    case 'command_completed':
+      return [queryKeys.orchestrator.queue, queryKeys.dashboard.activity];
+    case 'pipeline_update':
+      return [queryKeys.progress.all, queryKeys.orchestrator.status];
+    case 'agent_progress':
+      return [queryKeys.progress.all];
+    case 'metric_update':
+      return [queryKeys.dashboard.metrics, queryKeys.serverMetrics.all];
     default:
       return [];
+  }
+}
+
+/** User-visible toast messages for important events. */
+function notifyUser(event: SSEEvent) {
+  switch (event.type) {
+    case 'orchestrator_state':
+      if (event.state === 'ERROR') {
+        showToast.error(`Orchestrator entered ERROR state`);
+      } else if (event.transition) {
+        showToast.info(`Pipeline: ${String(event.from ?? '?')} → ${String(event.to ?? '?')}`);
+      }
+      break;
+    case 'command_completed':
+      showToast.success(`Command completed: ${String(event.command ?? 'unknown')}`);
+      break;
+    case 'command_queued':
+      showToast.info(`Command queued: ${String(event.command ?? 'unknown')}`);
+      break;
   }
 }
 
@@ -47,11 +81,14 @@ export function useSSEEvents() {
     // Clean up any existing connection
     esRef.current?.close();
 
+    useUIStore.getState().setConnectionStatus('connecting');
+
     const es = new EventSource(SSE_URL);
     esRef.current = es;
 
     es.onopen = () => {
       reconnectAttemptRef.current = 0;
+      useUIStore.getState().setConnectionStatus('connected');
     };
 
     es.onmessage = (event: MessageEvent) => {
@@ -62,15 +99,23 @@ export function useSSEEvents() {
         return;
       }
 
+      // Update last event for live status widgets
+      useUIStore.getState().setLastSSEEvent(parsed);
+
+      // Invalidate relevant query caches
       const keys = getInvalidationKeys(parsed.type);
       for (const key of keys) {
         qc.invalidateQueries({ queryKey: [...key] });
       }
+
+      // Show toast for important events
+      notifyUser(parsed);
     };
 
     es.onerror = () => {
       es.close();
       esRef.current = null;
+      useUIStore.getState().setConnectionStatus('disconnected');
 
       // Exponential backoff reconnect
       const delay = Math.min(1000 * 2 ** reconnectAttemptRef.current, MAX_RECONNECT_DELAY);
@@ -87,6 +132,7 @@ export function useSSEEvents() {
       clearTimeout(reconnectTimerRef.current);
       esRef.current?.close();
       esRef.current = null;
+      useUIStore.getState().setConnectionStatus('disconnected');
     };
   }, [connect]);
 }

@@ -259,8 +259,8 @@ module.exports = function createDecisionRoutes(ctx) {
     };
   }
 
-  function syncExpireToIndex(body) {
-    withFileLock(DECISIONS_FILE, () => {
+  async function syncExpireToIndex(body) {
+    await withFileLock(DECISIONS_FILE, () => {
       let indexContent = getStore().readFile(DECISIONS_FILE);
       const esc = models.escRx(body.id);
       const rowRe = new RegExp(`\\|\\s*${esc}\\s*\\|`);
@@ -285,7 +285,7 @@ module.exports = function createDecisionRoutes(ctx) {
     });
   }
 
-  function writeDecisionOutcome(targetFile, body, outcome) {
+  async function writeDecisionOutcome(targetFile, body, outcome) {
     const entityId = outcome.result.id || body.id;
     safeWriteSync(targetFile, outcome.content, undefined, {
       operation: body.action === 'create' ? 'create' : 'update',
@@ -295,7 +295,7 @@ module.exports = function createDecisionRoutes(ctx) {
       summary: `Decision ${body.action}: ${entityId}`,
     });
     if (body.action === 'expire' && targetFile !== DECISIONS_FILE) {
-      syncExpireToIndex(body);
+      await syncExpireToIndex(body);
     }
     return entityId;
   }
@@ -320,7 +320,7 @@ module.exports = function createDecisionRoutes(ctx) {
         ? findDecisionFile(body.id) || DECISIONS_FILE
         : DECISIONS_FILE;
 
-    return withFileLock(targetFile, () => {
+    return withFileLock(targetFile, async () => {
       const content = getStore().readFile(targetFile);
       const outcome =
         body.action === 'create'
@@ -328,7 +328,7 @@ module.exports = function createDecisionRoutes(ctx) {
           : handleDecisionMutate(body, content);
       if (outcome.error) return json(res, 400, errorResponse('INVALID_ACTION', outcome.error));
 
-      const entityId = writeDecisionOutcome(targetFile, body, outcome);
+      const entityId = await writeDecisionOutcome(targetFile, body, outcome);
       sseNotify('decision_update', { action: body.action, id: entityId });
       return json(res, 200, attachSecretWarnings(outcome.result, secretWarnings));
     });
@@ -349,11 +349,12 @@ module.exports = function createDecisionRoutes(ctx) {
       return json(res, 404, errorResponse('FILE_NOT_FOUND', `Category file ${fname} not found`));
     }
 
-    return withFileLock(filePath, () => {
+    // Step 1: Update category file under its own lock
+    const result = await withFileLock(filePath, () => {
       let content = st.readFile(filePath);
       const header = models.parseCategoryHeader(content);
       if (header.status === 'ACTIVE') {
-        return json(res, 200, { ok: true, action: 'already_active', file: fname });
+        return { alreadyActive: true, header };
       }
       content = models.activateCategoryHeader(content);
       content = models.appendAuditTrail(content, 'activate', fname);
@@ -364,30 +365,40 @@ module.exports = function createDecisionRoutes(ctx) {
         user: 'webapp',
         summary: `Category activated: ${header.name}`,
       });
+      return { alreadyActive: false, header };
+    });
 
-      withFileLock(DECISIONS_FILE, () => {
-        let indexContent = st.readFile(DECISIONS_FILE);
-        const rowRe = new RegExp(
-          `(\\|[^|]*\\[${models.escRx(fname)}\\][^|]*\\|[^|]*\\|)\\s*DEFERRED\\s*(\\|)\\s*NO\\s*\\|`
-        );
-        indexContent = indexContent.replace(rowRe, '$1 ACTIVE $2 YES |');
-        safeWriteSync(DECISIONS_FILE, indexContent, undefined, {
-          operation: 'update',
-          entityType: 'decision_index',
-          entityId: fname,
-          user: 'webapp',
-          summary: `Category registry updated: ${fname} -> ACTIVE`,
-        });
-      });
+    if (result.alreadyActive) {
+      return json(res, 200, { ok: true, action: 'already_active', file: fname });
+    }
 
-      sseNotify('decision_update', { action: 'activate_category', file: fname, name: header.name });
-      return json(res, 200, {
-        ok: true,
-        action: 'activated',
-        file: fname,
-        name: header.name,
-        stack: header.stack,
+    // Step 2: Update index file under a separate (non-nested) lock
+    await withFileLock(DECISIONS_FILE, () => {
+      let indexContent = st.readFile(DECISIONS_FILE);
+      const rowRe = new RegExp(
+        `(\\|[^|]*\\[${models.escRx(fname)}\\][^|]*\\|[^|]*\\|)\\s*DEFERRED\\s*(\\|)\\s*NO\\s*\\|`
+      );
+      indexContent = indexContent.replace(rowRe, '$1 ACTIVE $2 YES |');
+      safeWriteSync(DECISIONS_FILE, indexContent, undefined, {
+        operation: 'update',
+        entityType: 'decision_index',
+        entityId: fname,
+        user: 'webapp',
+        summary: `Category registry updated: ${fname} -> ACTIVE`,
       });
+    });
+
+    sseNotify('decision_update', {
+      action: 'activate_category',
+      file: fname,
+      name: result.header.name,
+    });
+    return json(res, 200, {
+      ok: true,
+      action: 'activated',
+      file: fname,
+      name: result.header.name,
+      stack: result.header.stack,
     });
   }
 
@@ -435,43 +446,45 @@ module.exports = function createDecisionRoutes(ctx) {
       );
     }
 
-    return withFileLock(DECISIONS_FILE, () => {
+    // Step 1: Create decision under DECISIONS_FILE lock
+    const id = await withFileLock(DECISIONS_FILE, () => {
       let decContent = store.readFile(DECISIONS_FILE);
       const { decision, notes } = buildDecisionFromLesson(lesson);
-      const id = models.nextDecisionId(decContent, 'DEC-');
+      const newId = models.nextDecisionId(decContent, 'DEC-');
       decContent = models.addOperationalDecision(decContent, {
-        id,
+        id: newId,
         priority,
         scope,
         decision,
         notes,
         date: models.today(),
       });
-      decContent = models.appendAuditTrail(decContent, 'promote-lesson', id);
+      decContent = models.appendAuditTrail(decContent, 'promote-lesson', newId);
       safeWriteSync(DECISIONS_FILE, decContent, undefined, {
         operation: 'create',
         entityType: 'decision',
-        entityId: id,
+        entityId: newId,
         user: 'webapp',
-        summary: `Decision promoted from lesson ${lessonId}: ${id}`,
+        summary: `Decision promoted from lesson ${lessonId}: ${newId}`,
       });
-
-      // Mark the lesson as PROMOTED in lessons-learned.md
-      withFileLock(LESSONS_FILE, () => {
-        const currentLessons = store.readFile(LESSONS_FILE);
-        const updatedLessons = markLessonPromoted(currentLessons, lessonId);
-        safeWriteSync(LESSONS_FILE, updatedLessons, undefined, {
-          operation: 'update',
-          entityType: 'lesson',
-          entityId: lessonId,
-          user: 'webapp',
-          summary: `Lesson ${lessonId} promoted to decision ${id}`,
-        });
-      });
-
-      sseNotify('decision_update', { action: 'promote-lesson', id, lessonId });
-      return json(res, 200, { ok: true, id, lessonId, action: 'promoted' });
+      return newId;
     });
+
+    // Step 2: Mark lesson as PROMOTED under a separate (non-nested) lock
+    await withFileLock(LESSONS_FILE, () => {
+      const currentLessons = store.readFile(LESSONS_FILE);
+      const updatedLessons = markLessonPromoted(currentLessons, lessonId);
+      safeWriteSync(LESSONS_FILE, updatedLessons, undefined, {
+        operation: 'update',
+        entityType: 'lesson',
+        entityId: lessonId,
+        user: 'webapp',
+        summary: `Lesson ${lessonId} promoted to decision ${id}`,
+      });
+    });
+
+    sseNotify('decision_update', { action: 'promote-lesson', id, lessonId });
+    return json(res, 200, { ok: true, id, lessonId, action: 'promoted' });
   }
 
   return {

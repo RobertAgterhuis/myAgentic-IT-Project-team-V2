@@ -85,7 +85,7 @@ Synthesis Agent → Master Report + 4 Department Reports + Cross-Team Blocker Ma
   ↓
 Phase 5 — Implementation (per sprint, repeatable):
   [Sprint Gate + Definition of Ready check + lessons-learned injection]
-  Implementation Agent (parallel per story) → Test Agent → PR/Review Agent (incl. secret scan) → KPI Agent → Documentation Agent → GitHub Integration Agent (board update) → Retrospective Agent
+  Implementation Agent (parallel per story) → Test Agent → Architecture Compliance Reviewer (3-tier: T1 Architecture, T2 UX/Design, T3 Business Rules — return to Implementation on violation, max 3 rework iterations) → PR/Review Agent (incl. secret scan) → KPI Agent → Documentation Agent → GitHub Integration Agent (board update) → Retrospective Agent
   ↓ [CRITIC + RISK validation per sprint]
   Next sprint
 

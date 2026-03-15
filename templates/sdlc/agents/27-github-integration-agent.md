@@ -379,6 +379,7 @@ IMPLEMENTED issues are confirmed closed via API response.
 - [ ] GitHub Sync Report present and complete
 - [ ] No open authentication escalations
 - [ ] Output complies with agent-handoff-contract.md
+- [ ] Output complies with templates/sdlc/contracts/github-integration-output-contract.md
 ```
 
 **AN AGENT MAY NOT HAND OFF THE TASK IF ANY CHECKBOX IS UNCHECKED.**

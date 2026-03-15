@@ -213,17 +213,17 @@ describe('buildProgress', () => {
 describe('readSessionState', () => {
   afterEach(cleanupTemp);
 
-  it('returns null when session file does not exist', () => {
+  it('returns null when session file does not exist', async () => {
     // Ensure the file doesn't exist (it shouldn't in a fresh clone)
     const file = path.join(SESSION_DIR, 'session-state.json');
     if (fs.existsSync(file)) return; // skip if the user has a real session
-    expect(readSessionState()).toBeNull();
+    expect(await readSessionState()).toBeNull();
   });
 
-  it('parses valid session-state.json', () => {
+  it('parses valid session-state.json', async () => {
     const data = { projectName: 'Test', mode: 'AUDIT', currentPhase: 1 };
     writeTemp(path.join(SESSION_DIR, 'session-state.json'), JSON.stringify(data));
-    const result = readSessionState();
+    const result = await readSessionState();
     expect(result.projectName).toBe('Test');
     expect(result.mode).toBe('AUDIT');
   });
@@ -232,18 +232,18 @@ describe('readSessionState', () => {
 describe('readCommandQueue', () => {
   afterEach(cleanupTemp);
 
-  it('returns empty array when queue file does not exist', () => {
+  it('returns empty array when queue file does not exist', async () => {
     const file = path.join(SESSION_DIR, 'command-queue.json');
     if (fs.existsSync(file)) return; // skip if real data exists
-    expect(readCommandQueue()).toEqual([]);
+    expect(await readCommandQueue()).toEqual([]);
   });
 
-  it('parses valid command-queue.json', () => {
+  it('parses valid command-queue.json', async () => {
     writeTemp(
       path.join(SESSION_DIR, 'command-queue.json'),
       JSON.stringify([{ command: 'CREATE', status: 'QUEUED' }])
     );
-    const result = readCommandQueue();
+    const result = await readCommandQueue();
     expect(result).toHaveLength(1);
     expect(result[0].command).toBe('CREATE');
   });
@@ -252,9 +252,9 @@ describe('readCommandQueue', () => {
 describe('readDecisions', () => {
   afterEach(cleanupTemp);
 
-  it('returns empty structure when decisions.md does not exist', () => {
+  it('returns empty structure when decisions.md does not exist', async () => {
     if (fs.existsSync(DECISIONS_PATH)) return;
-    const result = readDecisions();
+    const result = await readDecisions();
     expect(result).toEqual({ open: [], decided: [], deferred: [] });
   });
 });

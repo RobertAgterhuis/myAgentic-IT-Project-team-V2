@@ -81,6 +81,11 @@ whether the Sprint Completion Report contains the `brand_review` field:
 The documentation is organized in four parallel directory structures:
 
 ```
+> **Directory creation responsibility:** The Documentation Agent creates any
+> missing directories on first activation. If this is Sprint 1 and no
+> `documentation/` tree exists, the agent creates the full structure below
+> before writing content. Subsequent sprints update files in place.
+
 documentation/
   user-manual/
     NL/

@@ -51,6 +51,28 @@ For each identified risk:
 - Total risks by severity
 - CRITICAL + HIGH risks listed explicitly with their Risk IDs
 
+#### Probability × Impact Scoring
+
+Each risk receives a **composite score** from the following matrix:
+
+| Likelihood \ Severity | CRITICAL (4) | HIGH (3) | MEDIUM (2) | LOW (1) |
+| --------------------- | ------------ | -------- | ---------- | ------- |
+| VERY_LIKELY (4)       | 16           | 12       | 8          | 4       |
+| LIKELY (3)            | 12           | 9        | 6          | 3       |
+| POSSIBLE (2)          | 8            | 6        | 4          | 2       |
+| UNLIKELY (1)          | 4            | 3        | 2          | 1       |
+
+**Score interpretation:**
+
+- **12–16 (RED):** Immediate mitigation required; blocks phase approval
+- **6–9 (AMBER):** Mitigation plan required before sprint planning
+- **2–4 (GREEN):** Accept or monitor; document in risk register
+- **1 (NEGLIGIBLE):** Document only
+
+The Risk Agent must include the composite score for each risk in the Risk
+Inventory (field: `Score: N`). The Risk Summary Matrix must include a
+distribution of scores across RED / AMBER / GREEN / NEGLIGIBLE bands.
+
 ### 4. Cross-Phase Risk Dependencies
 
 - Risks that span multiple phases or disciplines

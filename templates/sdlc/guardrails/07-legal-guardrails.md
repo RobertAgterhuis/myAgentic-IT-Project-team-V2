@@ -4,6 +4,14 @@
 
 ---
 
+## ENFORCEMENT & CONTRACT REFERENCE
+
+| Rule Range  | Primary Enforcer          | Verification Agent            | Related Contract                     | Default Violation Action |
+| ----------- | ------------------------- | ----------------------------- | ------------------------------------ | ------------------------ |
+| G-LEG-01–03 | Legal Counsel (09)        | Critic Agent (18)             | `analysis-output-contract.md`        | BLOCK handoff            |
+| G-LEG-04–05 | Legal Counsel (09)        | Compliance Reviewer (38) — T3 | `recommendations-output-contract.md` | BLOCK handoff            |
+| G-LEG-06–07 | Implementation Agent (20) | PR/Review Agent (22)          | `implementation-output-contract.md`  | BLOCK merge              |
+
 ## DOMAIN: LEGAL & PRIVACY COMPLIANCE
 
 ### G-LEG-01 – Legal Claims Require Statutory Source
@@ -29,9 +37,17 @@ implementation at CRITICAL risk without human validation.
 
 ### G-LEG-03 – GDPR Audit Completeness
 
-**Rule:** The GDPR compliance audit MUST assess all nine requirements (Art. 6,
-12/13/14, 28, 30, 33, 15-20, 35, 37, 44-49). A judgment of "not verifiable" is
-permitted provided it is documented as `INSUFFICIENT_DATA:`.  
+**Jurisdiction check (prerequisite):** Before applying GDPR requirements,
+verify that the software processes personal data of EU/EEA data subjects OR
+that the organization is established in the EU/EEA. If GDPR does not apply,
+document the rationale (e.g., "no EU data subjects, US-only B2B SaaS") and
+mark as `NOT_APPLICABLE: G-LEG-03 — [rationale]`. Apply equivalent local
+regulation (CCPA, POPIA, LGPD, etc.) if applicable.
+
+**Rule:** When GDPR applies, the compliance audit MUST assess all nine
+requirements (Art. 6, 12/13/14, 28, 30, 33, 15-20, 35, 37, 44-49). A judgment
+of "not verifiable" is permitted provided it is documented as
+`INSUFFICIENT_DATA:`.  
 **Violation:** If one or more requirements are completely missing (not assessed,
 not documented), the GDPR audit is incomplete and the deliverable may not be
 marked as ready.

@@ -66,6 +66,19 @@ Every analysis deliverable consists of two parts:
 
 ## 1. Current State (AUDIT mode) / Solution Design (CREATE mode)
 
+> **Source Citation Standard (applies to all contracts):**
+> Every finding must include a `Source:` field using one of these canonical
+> formats:
+>
+> - Code: `Source: path/to/file.ext:L42` (file path + line number)
+> - Document: `Source: document-name.md § Section Name` (document + section)
+> - Questionnaire: `Source: questionnaire:Q-ID` (answered question)
+> - Interview: `Source: interview:YYYY-MM-DD-topic` (interview reference)
+> - External: `Source: external:URL-or-name` (third-party reference)
+> - Analysis cross-ref: `Source: GAP-NNN / RISK-NNN / CS-NNN / DESIGN-NNN`
+>
+> Multiple sources: separate with `|`. Unknown: use `INSUFFICIENT_DATA:`.
+
 ### 1.1 [Topic A]
 
 - Finding: [concrete description]

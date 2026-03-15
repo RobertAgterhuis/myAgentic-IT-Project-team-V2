@@ -303,9 +303,9 @@ describe('loadTemplate', () => {
     expect(config.phaseAgents.PHASE_1).toHaveLength(5);
     expect(config.phaseAgents.PHASE_2).toHaveLength(6);
     expect(config.phaseAgents.PHASE_3).toHaveLength(6);
-    expect(config.phaseAgents.PHASE_4).toHaveLength(3);
+    expect(config.phaseAgents.PHASE_4).toHaveLength(5);
     expect(config.phaseAgents.SYNTHESIS).toHaveLength(1);
-    expect(config.phaseAgents.PHASE_5_EXECUTING).toHaveLength(7);
+    expect(config.phaseAgents.PHASE_5_EXECUTING).toHaveLength(8);
   });
 
   test('SDLC template has all 9 modes', () => {

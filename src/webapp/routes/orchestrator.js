@@ -77,8 +77,19 @@ module.exports = function createOrchestratorRoutes(ctx) {
       const body = await parseBody(req);
       const engine = getEngine();
       const gateResult = body && body.gateResult ? body.gateResult : undefined;
+      const prevState = engine.status().state;
       const result = engine.advance(gateResult);
-      return json(res, 200, { ok: true, transition: result, status: engine.status() });
+      const newStatus = engine.status();
+      sseNotify('orchestrator_state', {
+        type: 'orchestrator_state',
+        transition: true,
+        from: prevState,
+        to: newStatus.state,
+        phase: newStatus.phase,
+        agent: newStatus.agent,
+        timestamp: new Date().toISOString(),
+      });
+      return json(res, 200, { ok: true, transition: result, status: newStatus });
     } catch (err) {
       structuredLog('warn', 'orchestrator_advance_failed', { error: err.message });
       return json(res, 400, errorResponse('ADVANCE_FAILED', err.message));
@@ -95,7 +106,14 @@ module.exports = function createOrchestratorRoutes(ctx) {
       }
       const engine = getEngine();
       engine.error(String(body.reason).slice(0, 2000));
-      return json(res, 200, { ok: true, status: engine.status() });
+      const errorStatus = engine.status();
+      sseNotify('orchestrator_state', {
+        type: 'orchestrator_state',
+        state: 'ERROR',
+        reason: String(body.reason).slice(0, 200),
+        timestamp: new Date().toISOString(),
+      });
+      return json(res, 200, { ok: true, status: errorStatus });
     } catch (err) {
       structuredLog('error', 'orchestrator_error_failed', { error: err.message });
       return json(res, 500, errorResponse('ENGINE_ERROR', err.message));
@@ -108,7 +126,14 @@ module.exports = function createOrchestratorRoutes(ctx) {
     try {
       const engine = getEngine();
       const recoveredState = engine.recover();
-      return json(res, 200, { ok: true, recoveredState, status: engine.status() });
+      const recoverStatus = engine.status();
+      sseNotify('orchestrator_state', {
+        type: 'orchestrator_state',
+        state: recoverStatus.state,
+        recovered: true,
+        timestamp: new Date().toISOString(),
+      });
+      return json(res, 200, { ok: true, recoveredState, status: recoverStatus });
     } catch (err) {
       structuredLog('warn', 'orchestrator_recover_failed', { error: err.message });
       return json(res, 400, errorResponse('RECOVER_FAILED', err.message));

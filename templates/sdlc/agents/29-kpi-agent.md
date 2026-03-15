@@ -244,6 +244,7 @@ logo or tone of voice).
       consecutive sprints (or NOT APPLICABLE)
 - [ ] Ready for next step (Documentation Agent)
 - [ ] Output complies with agent-handoff-contract.md
+- [ ] Output complies with templates/sdlc/contracts/kpi-output-contract.md
 ```
 
 **AN AGENT MAY NOT HAND OFF THE TASK IF ANY CHECKBOX IS UNCHECKED.**

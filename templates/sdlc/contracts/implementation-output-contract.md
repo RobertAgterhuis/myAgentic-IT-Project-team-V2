@@ -154,6 +154,8 @@ A story is DONE when:
 - [ ] Guardrail validation: COMPLIANT or documented VIOLATION with remediation
       action
 - [ ] Story Completion Declaration is completed
+- [ ] Architecture Compliance Reviewer verdict: COMPLIANT (per
+      `architecture-compliance-output-contract.md`)
 - [ ] Code review by PR/Review Agent is APPROVED
 
 ## DEFINITION OF DONE (PER SPRINT)
@@ -170,6 +172,25 @@ A sprint is DONE when:
 
 ---
 
+## HOTFIX APPLICABILITY
+
+HOTFIX stories (Sprint ID `HOTFIX-[N]`) follow this same contract with these
+deviations:
+
+- **Abbreviated regression:** Only regression tests related to the hotfix scope
+  are mandatory; full regression at Orchestrator discretion
+- **Sprint Gate BYPASS:** Orchestrator validates urgency before bypassing the
+  standard Sprint Gate
+- **Secret scan:** Remains MANDATORY (no deviation)
+- **LESSON_CANDIDATE:** Mandatory (structural constraints result in a `DECIDED`
+  item in `BusinessDocs/decisions.md`)
+- **Sprint ID format:** `HOTFIX-[N]` (not `SP-N`)
+
+All per-story outputs (IMPL-OUTPUT-A through D), Story Completion Declaration,
+and Sprint Completion Report are required as normal.
+
+---
+
 ## HANDOFF CHECKLIST (IMPLEMENTATION AGENT → TEST AGENT)
 
 ```
@@ -183,15 +204,27 @@ A sprint is DONE when:
 - [ ] No new CRITICAL_FINDING without escalation
 ```
 
-## HANDOFF CHECKLIST (TEST AGENT → PR/REVIEW AGENT)
+## HANDOFF CHECKLIST (TEST AGENT → ARCHITECTURE COMPLIANCE REVIEWER)
 
 ```
-## TEST HANDOFF CHECKLIST – [Sprint ID] – [Date]
+## TEST-TO-COMPLIANCE HANDOFF CHECKLIST – [Sprint ID] – [Date]
 - [ ] All stories: acceptance criteria tests PASSED
 - [ ] All existing tests PASSED (no regression)
 - [ ] Coverage delta documented
+- [ ] IMPL-OUTPUT-A, C, D present per story
+- [ ] Sprint Test Summary JSON present (all stories APPROVED)
+```
+
+## HANDOFF CHECKLIST (ARCHITECTURE COMPLIANCE REVIEWER → PR/REVIEW AGENT)
+
+```
+## COMPLIANCE-TO-PR HANDOFF CHECKLIST – [Sprint ID] – [Date]
+- [ ] Compliance report present per story
+- [ ] Sprint Compliance Summary JSON present and valid
+- [ ] All stories: overall compliance status COMPLIANT
+- [ ] No CRITICAL or MAJOR violations unresolved
+- [ ] Rework iterations documented (if any)
 - [ ] Sprint Completion Report JSON present
-- [ ] No VIOLATION in IMPL-OUTPUT-C without resolution
 ```
 
 ## HANDOFF CHECKLIST (PR/REVIEW AGENT → ORCHESTRATOR)

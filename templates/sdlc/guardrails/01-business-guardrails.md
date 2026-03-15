@@ -5,6 +5,15 @@
 
 ---
 
+## ENFORCEMENT & CONTRACT REFERENCE
+
+| Rule Range    | Primary Enforcer                  | Verification Agent        | Related Contract                           | Default Violation Action |
+| ------------- | --------------------------------- | ------------------------- | ------------------------------------------ | ------------------------ |
+| G-BUS-01–04   | Phase 1 Agents (01–04, 34)        | Critic Agent (18)         | `analysis-output-contract.md`              | BLOCK handoff            |
+| G-BUS-05–06   | Phase 1 Agents (01–04, 34)        | Critic Agent (18)         | `recommendations-output-contract.md`       | BLOCK handoff            |
+| G-BUS-07      | Product Manager (34)              | Critic Agent (18)         | `sprintplan-output-contract.md`            | BLOCK handoff            |
+| G-BUS-08      | All Phase 1 Agents                | Critic Agent (18)         | `analysis-output-contract.md`              | BLOCK handoff            |
+
 ## DOMAIN: BUSINESS & STRATEGY
 
 ### G-BUS-01 – Revenue Hypothesis Required
@@ -75,6 +84,11 @@ channel strategy, conversion funnel, and pricing touchpoints.
 from the Analysis are blocked.  
 **Violation:** Mark as `UNSUBSTANTIATED_RECOMMENDATION` and remove from
 deliverable.
+
+**Clarification for Product Manager (Agent 34):** Market analysis, competitor
+research, user interviews, and questionnaire answers are valid finding sources.
+A recommendation traced to these sources is NOT a strategic leap. The guardrail
+prevents untraceable "vision" recommendations that lack any evidentiary basis.
 
 ---
 

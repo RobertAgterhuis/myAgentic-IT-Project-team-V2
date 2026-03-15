@@ -37,6 +37,16 @@ complete rules.
 | `BusinessDocs/retrospectives/lessons-learned.md`             | Cumulative, extended each sprint | All active lessons learned across all sprints |
 | `BusinessDocs/retrospectives/velocity-log.json`              | Cumulative, machine-readable     | Velocity data per sprint for Orchestrator     |
 
+### Downstream Consumers
+
+| Consumer                | File Consumed            | Usage                                                              |
+| ----------------------- | ----------------------- | ------------------------------------------------------------------ |
+| Orchestrator (Agent 00) | `velocity-log.json`     | Sprint Gate Step 7 — velocity ratio check; if < 0.8 for 2+ sprints: warn and adjust estimates |
+| Orchestrator (Agent 00) | `lessons-learned.md`    | Sprint Gate Step 7 — inject top-3 lessons as context for Implementation and PR/Review agents |
+| Implementation (Agent 20) | `lessons-learned.md`  | Injected by Orchestrator at sprint start — QUALITY and BLOCKER lessons |
+| PR/Review (Agent 22)    | `lessons-learned.md`    | Injected by Orchestrator at sprint start — QUALITY lessons          |
+| KPI Agent (Agent 29)    | `velocity-log.json`     | Trend analysis across sprints for KPI reporting                     |
+
 ---
 
 ## MANDATORY WORKFLOW (STEP BY STEP)
@@ -283,6 +293,7 @@ And injects as context into the following agents:
 - [ ] velocity-log.json updated (existing entries unchanged)
 - [ ] Ready for next Sprint Gate
 - [ ] Output complies with agent-handoff-contract.md
+- [ ] Output complies with templates/sdlc/contracts/retrospective-output-contract.md
 ```
 
 **AN AGENT MAY NOT HAND OFF THE TASK IF ANY CHECKBOX IS UNCHECKED.**

@@ -144,3 +144,22 @@ jobs:
 
       - name: Validate translations (en-US, fr-FR, de-DE)
         run: npx jest tests/unit/translation-validation.test.js --passWithNoTests --verbose
+
+  container-scan:
+    name: Container Image Scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Build Docker image
+        run: docker build -f infra/Dockerfile -t app:ci .
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@18f2510ee396bbf400402947e7f3b01aec0aa2b2 # v0.31.0
+        with:
+          image-ref: "app:ci"
+          format: "table"
+          exit-code: "1"
+          severity: "CRITICAL,HIGH"

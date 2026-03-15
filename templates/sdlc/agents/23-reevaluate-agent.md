@@ -25,6 +25,12 @@ impact analysis handles remediation-mode stories.
 
 **Trigger:** `REEVALUATE [scope]`
 
+> **Boundary note:** The Reevaluate Agent handles **incremental deltas** within
+> the same strategic direction. If the fundamental premise has changed (business
+> model pivot, core architecture shift, target audience change), use
+> `SCOPE CHANGE [DIMENSION]` instead — see Agent 37 (Scope Change Agent) for
+> the boundary definition and escalation criteria.
+
 | Scope parameter | What is re-analyzed                            |
 | --------------- | ---------------------------------------------- |
 | `PHASE-1`       | Business & Strategy (agents 01–04, 34)         |

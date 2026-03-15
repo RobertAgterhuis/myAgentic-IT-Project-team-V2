@@ -5,6 +5,15 @@
 
 ---
 
+## ENFORCEMENT & CONTRACT REFERENCE
+
+| Rule Range    | Primary Enforcer                 | Verification Agent                 | Related Contract                           | Default Violation Action |
+| ------------- | -------------------------------- | ---------------------------------- | ------------------------------------------ | ------------------------ |
+| G-SEC-01–04   | Security Architect (08)          | Critic Agent (18)                  | `analysis-output-contract.md`              | BLOCK handoff            |
+| G-SEC-05–06   | Security Architect (08)          | Compliance Reviewer (38) — T1      | `recommendations-output-contract.md`       | BLOCK handoff            |
+| G-SEC-07      | PR/Review Agent (22)             | PR/Review Agent (22)               | `pr-review-output-contract.md`             | BLOCK merge              |
+| G-SEC-08      | Implementation Agent (20)        | Compliance Reviewer (38) — T1      | `implementation-output-contract.md`        | BLOCK handoff            |
+
 ## DOMAIN: SECURITY & COMPLIANCE
 
 ### G-SEC-01 – Zero Trust Principle
@@ -58,6 +67,36 @@ CVE is available.
 
 **Rule:** If no recent penetration test is available (< 12 months), this is
 reported as a `HIGH_PRIORITY_GAP`.
+
+### G-SEC-09 – Asset Classification Mandatory
+
+**Rule:** Security Architect MUST produce an asset classification before risk
+assessment. Every system component is classified by sensitivity:
+
+| Class       | Description                                | Example                      |
+| ----------- | ------------------------------------------ | ---------------------------- |
+| CRITICAL    | Breach = regulatory/legal/existential      | PII store, auth service, encryption keys |
+| HIGH        | Breach = significant business impact       | Payment processing, admin APIs |
+| MEDIUM      | Breach = operational disruption            | Internal dashboards, CI/CD   |
+| LOW         | Breach = minimal impact                    | Public marketing site, docs  |
+
+**Prohibition:** No security recommendations without asset classification
+context. Findings on CRITICAL assets automatically receive priority elevation.
+
+### G-SEC-10 – Threat Modeling Mandatory
+
+**Rule:** A threat model (STRIDE, DREAD, or equivalent) MUST be produced for
+every CRITICAL and HIGH-classified asset. At minimum:
+
+1. **Identify:** System boundaries, trust boundaries, data flows
+2. **Enumerate:** Threats per STRIDE category (Spoofing, Tampering, Repudiation,
+   Information Disclosure, Denial of Service, Elevation of Privilege)
+3. **Mitigate:** Documented mitigation per identified threat
+4. **Residual risk:** Accepted residual risks documented as `RISK_ACCEPTED:`
+   with business justification
+
+**Prohibition:** No architecture approval for CRITICAL assets without completed
+threat model.
 
 ---
 

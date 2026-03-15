@@ -7,6 +7,18 @@
 
 ---
 
+## ENFORCEMENT & CONTRACT REFERENCE
+
+| Rule Range       | Primary Enforcer   | Verification Agent        | Related Contract                  | Default Violation Action |
+| ---------------- | ------------------ | ------------------------- | --------------------------------- | ------------------------ |
+| G-GLOB-01–06     | All Agents (self)  | Critic Agent (18)         | `agent-handoff-contract.md`       | BLOCK handoff            |
+| G-GLOB-10–17     | All Agents (self)  | Critic Agent (18)         | `agent-handoff-contract.md`       | BLOCK handoff            |
+| G-GLOB-20–24     | All Agents (self)  | Orchestrator (00)         | `agent-handoff-contract.md`       | BLOCK handoff            |
+| G-GLOB-30–33     | All Agents (self)  | Orchestrator (00)         | `agent-handoff-contract.md`       | ESCALATE to Orchestrator |
+| G-GLOB-40–43     | All Agents (self)  | Questionnaire Agent (36)  | `questionnaire-output-contract.md`| WARN + document          |
+| G-GLOB-50–58     | All Agents (self)  | Orchestrator (00)         | `session-state-contract.md`       | BLOCK handoff            |
+| G-GLOB-60–65     | Orchestrator (00)  | Orchestrator (00)         | `session-state-contract.md`       | BLOCK phase transition   |
+
 ## 1. ANTI-HALLUCINATION RULES
 
 | Rule      | Required action                                                                                                        |

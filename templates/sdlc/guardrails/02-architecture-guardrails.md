@@ -5,6 +5,15 @@
 
 ---
 
+## ENFORCEMENT & CONTRACT REFERENCE
+
+| Rule Range    | Primary Enforcer                  | Verification Agent                 | Related Contract                           | Default Violation Action |
+| ------------- | --------------------------------- | ---------------------------------- | ------------------------------------------ | ------------------------ |
+| G-ARCH-01–05  | Phase 2 Agents (05–09)            | Critic Agent (18)                  | `analysis-output-contract.md`              | BLOCK handoff            |
+| G-ARCH-06–07  | Software Architect (05)           | Compliance Reviewer (38) — T1      | `recommendations-output-contract.md`       | BLOCK handoff            |
+| G-ARCH-08     | Data Architect (07)               | Compliance Reviewer (38) — T1      | `analysis-output-contract.md`              | BLOCK handoff            |
+| G-ARCH-09     | DevOps Engineer (06)              | Critic Agent (18)                  | `recommendations-output-contract.md`       | WARN + document          |
+
 ## DOMAIN: TECHNOLOGY & ARCHITECTURE
 
 ### G-ARCH-01 – Domain-Driven Design Mandatory
@@ -33,6 +42,16 @@ criteria.
 **Criteria required:** Each score dimension (coupling, testability,
 documentation, modularity, security) must be assessed separately.  
 **Prohibition:** Do not use "gut feeling" scores.
+
+**Scoring breakdown per dimension (each 0–20, sum = total 0–100):**
+
+| Dimension     | 0–5 (Critical)      | 6–10 (Poor)         | 11–15 (Acceptable) | 16–20 (Good)        |
+| ------------- | -------------------- | -------------------- | ------------------- | -------------------- |
+| Coupling      | Circular deps, god classes | High fan-out, tight coupling | Some coupling, documented | Loose coupling, clean boundaries |
+| Testability   | No tests, untestable design | <30% coverage, no mocks | 30–70% coverage | >70% coverage, test-first |
+| Documentation | None | Outdated or partial | Current but incomplete | Complete, maintained |
+| Modularity    | Monolithic, no separation | Some separation, leaky | Clear modules, some leaks | Clean modules, DDD-aligned |
+| Security      | Known vulnerabilities unpatched | Partial scanning | CI scanning, some gaps | Full pipeline, pen-tested |
 
 ### G-ARCH-05 – CI/CD Maturity Mandatory Documentation
 

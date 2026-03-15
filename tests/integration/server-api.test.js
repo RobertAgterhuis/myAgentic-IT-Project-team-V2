@@ -6,7 +6,7 @@
 const http = require('http');
 const path = require('path');
 const { InMemoryStore, setStore } = require('../../src/webapp/store');
-const { server, _cache } = require('../../src/webapp/server');
+const { server, _cache, _rateLimitMap } = require('../../src/webapp/server');
 
 // Compute the same paths the server module uses internally
 const WEBAPP_DIR = path.resolve(__dirname, '../../src/webapp');
@@ -200,6 +200,7 @@ afterAll(async () => {
 beforeEach(() => {
   setStore(seedStore());
   _cache.invalidateAll();
+  _rateLimitMap.clear();
 });
 
 afterEach(() => {

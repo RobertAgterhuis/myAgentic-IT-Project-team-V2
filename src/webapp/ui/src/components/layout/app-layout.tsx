@@ -95,6 +95,7 @@ export function AppLayout() {
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const helpOpen = useUIStore((s) => s.helpOpen);
   const toggleHelp = useUIStore((s) => s.toggleHelp);
+  const connectionStatus = useUIStore((s) => s.connectionStatus);
 
   const { data: orchestratorStatus } = useOrchestratorStatus();
 
@@ -109,6 +110,7 @@ export function AppLayout() {
       <TopNavigation
         projectName="Agentic SDLC"
         orchestratorState={orchestratorStatus?.state}
+        connectionStatus={connectionStatus}
         onMenuToggle={toggleSidebar}
       />
 

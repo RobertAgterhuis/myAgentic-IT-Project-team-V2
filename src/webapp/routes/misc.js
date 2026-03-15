@@ -206,7 +206,12 @@ module.exports = function createMiscRoutes(ctx) {
 
   /* ── SSE Endpoint (SP-R2-004-005) ─────────────────────────────── */
 
+  const MAX_SSE_CLIENTS = 50;
+
   async function apiGetEvents(req, res) {
+    if (_sseClients.size >= MAX_SSE_CLIENTS) {
+      return json(res, 503, errorResponse('SSE_LIMIT', 'Too many SSE connections'));
+    }
     setSecurityHeaders(res);
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
@@ -223,7 +228,8 @@ module.exports = function createMiscRoutes(ctx) {
     const heartbeat = setInterval(() => {
       try {
         res.write(`:heartbeat ${new Date().toISOString()}\n\n`);
-      } catch {
+      } catch (err) {
+        structuredLog('debug', 'sse_heartbeat_failed', { error: err.message });
         clearInterval(heartbeat);
         _sseClients.delete(res);
       }
@@ -340,13 +346,18 @@ module.exports = function createMiscRoutes(ctx) {
     json(res, 200, { ok: true, accepted: valid.length, rejected: errors.length });
   }
 
-  async function apiGetAnalytics(_req, res) {
+  async function apiGetAnalytics(req, res) {
     if (!getStore().exists(ANALYTICS_FILE)) return json(res, 200, { events: [], total: 0 });
     let events = [];
     try {
       events = JSON.parse(_cache.read(ANALYTICS_FILE));
     } catch {}
-    json(res, 200, { events, total: events.length });
+    const url = new URL(req.url, `http://${HOST}:${PORT}`);
+    const total = events.length;
+    const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit'), 10) || 100, 1), 1000);
+    const offset = Math.max(parseInt(url.searchParams.get('offset'), 10) || 0, 0);
+    const page = events.slice(offset, offset + limit);
+    json(res, 200, { events: page, total, limit, offset });
   }
 
   /* ── Audit Trail Endpoint (SP-R2-007-005) ─────────────────────── */

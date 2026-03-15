@@ -4,6 +4,15 @@
 
 ---
 
+## ENFORCEMENT & CONTRACT REFERENCE
+
+| Rule Range    | Primary Enforcer                  | Verification Agent        | Related Contract                           | Default Violation Action |
+| ------------- | --------------------------------- | ------------------------- | ------------------------------------------ | ------------------------ |
+| G-CNT-01–04   | Content Strategist (32)           | Critic Agent (18)         | `analysis-output-contract.md`              | BLOCK handoff            |
+| G-CNT-05–06   | Content Strategist (32)           | Critic Agent (18)         | `recommendations-output-contract.md`       | BLOCK handoff            |
+| G-CNT-07      | Localization Specialist (35)      | Critic Agent (18)         | `recommendations-output-contract.md`       | WARN + document          |
+| G-CNT-08      | Content Strategist (32)           | Critic Agent (18)         | `analysis-output-contract.md`              | BLOCK handoff            |
+
 ## DOMAIN: CONTENT STRATEGY & LOCALIZATION
 
 ### G-CNT-01 – No Production-Ready Copy

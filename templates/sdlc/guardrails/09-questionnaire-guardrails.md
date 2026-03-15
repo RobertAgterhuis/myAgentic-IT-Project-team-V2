@@ -4,6 +4,15 @@
 
 ---
 
+## ENFORCEMENT & CONTRACT REFERENCE
+
+| Rule Range    | Primary Enforcer                | Verification Agent        | Related Contract                           | Default Violation Action |
+| ------------- | ------------------------------- | ------------------------- | ------------------------------------------ | ------------------------ |
+| G-QST-01–05   | Questionnaire Agent (36)       | Orchestrator (00)         | `questionnaire-output-contract.md`         | BLOCK handoff            |
+| G-QST-06–09   | Questionnaire Agent (36)       | Orchestrator (00)         | `questionnaire-output-contract.md`         | BLOCK handoff            |
+| G-QST-10–11   | Questionnaire Agent (36)       | Orchestrator (00)         | `questionnaire-output-contract.md`         | WARN + document          |
+| G-QST-12–13   | Questionnaire Agent (36)       | Orchestrator (00)         | `questionnaire-output-contract.md`         | BLOCK handoff            |
+
 ## DOMAIN: QUESTIONNAIRE MANAGEMENT & OFFICIAL BUSINESS DOCUMENTS
 
 ### G-QST-01 – No Fabrication in Official Documents
@@ -106,6 +115,14 @@ the bottom of the file before any section is overwritten.
 **Prohibition:** Do not overwrite previous versions without archiving. Do not
 archive only changed sections — archive the full prior document version.  
 **Violation:** `GUARDRAIL_VIOLATION: G-QST-08 — previous version not preserved in [document]`.
+
+**Version numbering scheme:** Documents use integer versioning: `v1`, `v2`,
+`v3`, etc. The version number is incremented each time the Questionnaire Agent
+updates the document. The current version is stated in the document header
+(`Version: vN`). The `<details>` block title includes the version number:
+`<summary>Previous version (vN-1) — [ISO date]</summary>`.
+Questionnaire files themselves use the format `v[major].[minor]` where major
+increments on new question batches and minor increments on answer updates.
 
 ### G-QST-09 – REQUIRED Classification Requires Phase Agent Sign-off
 

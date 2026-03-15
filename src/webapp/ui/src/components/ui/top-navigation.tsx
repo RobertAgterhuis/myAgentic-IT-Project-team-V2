@@ -2,7 +2,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from './input';
 import { Badge } from './badge';
-import { Menu, Search } from 'lucide-react';
+import { Menu, Search, Wifi, WifiOff, Loader2 } from 'lucide-react';
 
 type ConnectionStatus = 'connected' | 'disconnected' | 'connecting';
 
@@ -13,9 +13,15 @@ const statusBadgeVariant: Record<ConnectionStatus, 'success' | 'error' | 'warnin
 };
 
 const statusLabel: Record<ConnectionStatus, string> = {
-  connected: 'Connected',
-  disconnected: 'Disconnected',
+  connected: 'Live',
+  disconnected: 'Offline',
   connecting: 'Connecting…',
+};
+
+const statusIcon: Record<ConnectionStatus, React.ReactNode> = {
+  connected: <Wifi className="size-3.5" />,
+  disconnected: <WifiOff className="size-3.5" />,
+  connecting: <Loader2 className="size-3.5 animate-spin" />,
 };
 
 interface TopNavigationProps extends React.ComponentProps<'header'> {
@@ -51,7 +57,10 @@ function TopNavigation({
   return (
     <header
       role="banner"
-      className={cn('flex h-14 items-center gap-4 border-b bg-card px-4', className)}
+      className={cn(
+        'flex h-14 items-center gap-4 border-b bg-card px-4 shadow-sm',
+        className
+      )}
       {...props}
     >
       {/* Mobile hamburger */}
@@ -66,9 +75,12 @@ function TopNavigation({
 
       {/* Project context */}
       {projectName && (
-        <span className="hidden sm:block text-sm font-semibold truncate max-w-48">
-          {projectName}
-        </span>
+        <div className="hidden sm:flex items-center gap-2">
+          <div className="size-2 rounded-full bg-primary animate-pulse" />
+          <span className="text-sm font-semibold truncate max-w-48">
+            {projectName}
+          </span>
+        </div>
       )}
 
       {/* Search */}
@@ -86,13 +98,30 @@ function TopNavigation({
       <div className="ml-auto flex items-center gap-2">
         {/* Orchestrator state */}
         {orchestratorState && (
-          <Badge variant="secondary" className="hidden sm:inline-flex">
+          <Badge
+            variant={
+              orchestratorState === 'ERROR' ? 'error' :
+              orchestratorState === 'IDLE' ? 'secondary' : 'info'
+            }
+            className="hidden sm:inline-flex gap-1"
+          >
+            {orchestratorState !== 'IDLE' && (
+              <span className="relative flex size-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-75" />
+                <span className="relative inline-flex rounded-full size-2 bg-current" />
+              </span>
+            )}
             {orchestratorState}
           </Badge>
         )}
 
         {/* Connection status */}
-        <Badge variant={statusBadgeVariant[connectionStatus]} dot>
+        <Badge
+          variant={statusBadgeVariant[connectionStatus]}
+          className="gap-1"
+          dot={false}
+        >
+          {statusIcon[connectionStatus]}
           <span className="hidden sm:inline">{statusLabel[connectionStatus]}</span>
         </Badge>
       </div>

@@ -46,8 +46,16 @@ Receive from Test Agent:
 - [ ] IMPL-OUTPUTs A–D per story
 - [ ] Code diff / changed files in repository
 
+Receive from Architecture Compliance Reviewer:
+
+- [ ] Sprint Compliance Summary JSON (`compliance_gate_status: "PASSED"`)
+- [ ] Per-story compliance verdicts (all `COMPLIANT`)
+
 **HALT:** If one story is REJECTED → return to Implementation Agent. Do NOT
 start PR creation until all stories are APPROVED or BLOCKED with escalation.
+**HALT:** If the Architecture Compliance Reviewer has not issued
+`compliance_gate_status: "PASSED"` → do NOT start PR creation. The compliance
+gate must pass before the PR/Review Agent activates.
 
 ### Step 2: Final Code Review
 
@@ -63,10 +71,10 @@ Go through each changed file (IMPL-OUTPUT-A):
 
 **2b. Security Review**
 
-- All inputs validated and sanitized? (IMPL-GUARD-16/17)
-- No hardcoded secrets? (active scan — IMPL-GUARD-09)
-- Auth checks intact? (IMPL-GUARD-18)
-- No PII in logs? (IMPL-GUARD-19)
+- All inputs validated and sanitized? (G-IMPL-16/17)
+- No hardcoded secrets? (active scan — G-IMPL-09)
+- Auth checks intact? (G-IMPL-18)
+- No PII in logs? (G-IMPL-19)
 - Document:
   `SEC-REVIEW: COMPLIANT / VIOLATION [description + required remediation action]`
 - On `VIOLATION`: mandatorily write a `LESSON_CANDIDATE` to
@@ -77,7 +85,7 @@ Go through each changed file (IMPL-OUTPUT-A):
 
 - Code style consistent with the codebase?
 - No dead code introduced?
-- Commit messages per IMPL-GUARD-21?
+- Commit messages per G-IMPL-21?
 - Document: `QUALITY-REVIEW: COMPLIANT / CONCERN [description]`
 
 **2d. Traceability**

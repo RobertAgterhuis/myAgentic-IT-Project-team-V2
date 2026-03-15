@@ -64,6 +64,8 @@ const PHASE_AGENTS = Object.freeze({
     { id: '14', name: 'Brand Strategist' },
     { id: '15', name: 'Growth Marketer' },
     { id: '16', name: 'CRO Specialist' },
+    { id: '30', name: 'Brand & Assets Agent' },
+    { id: '31', name: 'Storybook Agent' },
   ],
   [STATES.CRITIC_4]: [
     { id: '18', name: 'Critic Agent' },
@@ -74,6 +76,7 @@ const PHASE_AGENTS = Object.freeze({
   [STATES.PHASE_5_EXECUTING]: [
     { id: '20', name: 'Implementation Agent' },
     { id: '21', name: 'Test Agent' },
+    { id: '38', name: 'Architecture Compliance Reviewer' },
     { id: '22', name: 'PR/Review Agent' },
     { id: '29', name: 'KPI Agent' },
     { id: '26', name: 'Documentation Agent' },

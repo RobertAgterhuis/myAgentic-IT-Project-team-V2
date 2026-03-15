@@ -95,9 +95,12 @@ Acceptable phrasings:
 
 ## 4. Enforcement
 
-- Sprint Gate Step 0 includes a "metrics verification" check
-- The PR template includes a "evidence accuracy" checklist item
-- Critic Agent validates claims against measurable sources
+| Checkpoint                | Enforcing Agent              | Timing                              |
+| ------------------------- | ---------------------------- | ----------------------------------- |
+| Metrics verification      | Orchestrator (00) — Sprint Gate Step 0 | Before each sprint starts    |
+| Evidence accuracy checklist | PR/Review Agent (22)        | At PR creation for each sprint      |
+| Claims vs. measurable sources | Critic Agent (18)         | After each phase (4× per cycle)     |
+| Source citation completeness | Architecture Compliance Reviewer (38) — Tier 3 | After Test Agent, per sprint |
 
 ---
 

@@ -74,15 +74,15 @@ function SectionGroup({
                 type="button"
                 onClick={() => onItemSelect?.(item.id)}
                 className={cn(
-                  'flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-colors',
-                  'hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                  'flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-all duration-150',
+                  'hover:bg-muted hover:translate-x-0.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                   activeItemId === item.id
-                    ? 'bg-primary/10 text-primary font-medium'
-                    : 'text-foreground'
+                    ? 'bg-primary/10 text-primary font-medium border-l-2 border-primary'
+                    : 'text-foreground border-l-2 border-transparent'
                 )}
                 aria-current={activeItemId === item.id ? 'page' : undefined}
               >
-                {item.icon && <span className="shrink-0 [&>svg]:size-4">{item.icon}</span>}
+                {item.icon && <span className={cn('shrink-0 [&>svg]:size-4', activeItemId === item.id && 'text-primary')}>{item.icon}</span>}
                 {!collapsed && <span className="truncate">{item.label}</span>}
               </button>
             </li>
@@ -108,18 +108,18 @@ function SidePanel({
     <nav
       aria-label="Side navigation"
       className={cn(
-        'flex flex-col border-r bg-card transition-[width] duration-200',
+        'flex flex-col border-r bg-card transition-[width] duration-200 shadow-sm',
         collapsed ? 'w-14' : 'w-60',
         className
       )}
       {...props}
     >
       {/* Collapse toggle */}
-      <div className="flex items-center justify-end p-2">
+      <div className="flex items-center justify-end p-2 border-b border-border/50">
         <button
           type="button"
           onClick={() => onCollapse?.(!collapsed)}
-          className="rounded-sm p-1 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="rounded-sm p-1 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none transition-colors"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <ChevronLeft className={cn('size-4 transition-transform', collapsed && 'rotate-180')} />

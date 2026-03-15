@@ -255,7 +255,15 @@ ESCALATE:
 Use PERSISTENT_FAILURE if the Implementation Agent has failed the same test 3×
 after return.  
 Use CRITICAL_FINDING if during testing you discover a new security or data
-problem.
+problem.  
+Use ENVIRONMENT_ERROR when the test environment itself is broken (e.g. missing
+environment variables, database connection refused, Docker container not
+starting, port conflicts, CI runner out of resources). Recommended action:
+escalate to Orchestrator — do NOT return to Implementation Agent because the
+failure is not in the implementation code.  
+Use AC_AMBIGUOUS when acceptance criteria are unclear, contradictory, or
+untestable as written. Recommended action: escalate to Orchestrator for
+clarification before continuing test execution.
 
 **On PERSISTENT_FAILURE or CRITICAL_FINDING: mandatorily write a
 LESSON_CANDIDATE** to `BusinessDocs/retrospectives/lessons-learned.md` per RULE

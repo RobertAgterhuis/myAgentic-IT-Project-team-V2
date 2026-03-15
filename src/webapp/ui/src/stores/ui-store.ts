@@ -1,8 +1,12 @@
 /**
  * Zustand client-state store — UI-only state that does NOT map to a server resource.
- * Server state lives in TanStack Query; this store handles sidebar, modals, etc.
+ * Server state lives in TanStack Query; this store handles sidebar, modals,
+ * connection status, and real-time event tracking.
  */
 import { create } from 'zustand';
+import type { SSEEvent } from '@/hooks/use-sse-events';
+
+export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting';
 
 export interface UIState {
   /* Sidebar / navigation */
@@ -22,6 +26,14 @@ export interface UIState {
   confirmDialog: ConfirmDialogState | null;
   showConfirm: (dialog: ConfirmDialogState) => void;
   dismissConfirm: () => void;
+
+  /* Real-time connection status */
+  connectionStatus: ConnectionStatus;
+  setConnectionStatus: (status: ConnectionStatus) => void;
+
+  /* Last SSE event (for live status widgets) */
+  lastSSEEvent: SSEEvent | null;
+  setLastSSEEvent: (event: SSEEvent) => void;
 }
 
 export interface ConfirmDialogState {
@@ -45,4 +57,10 @@ export const useUIStore = create<UIState>((set) => ({
   confirmDialog: null,
   showConfirm: (dialog) => set({ confirmDialog: dialog }),
   dismissConfirm: () => set({ confirmDialog: null }),
+
+  connectionStatus: 'connecting',
+  setConnectionStatus: (status) => set({ connectionStatus: status }),
+
+  lastSSEEvent: null,
+  setLastSSEEvent: (event) => set({ lastSSEEvent: event }),
 }));

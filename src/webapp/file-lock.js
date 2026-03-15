@@ -3,6 +3,7 @@
 const path = require('node:path');
 
 const _writeLocks = new Map();
+const LOCK_TIMEOUT_MS = 30_000;
 
 /**
  * Execute a function under a per-path write lock to prevent concurrent writes.
@@ -20,7 +21,19 @@ async function withFileLock(filePath, fn) {
     resolve = r;
   });
   _writeLocks.set(key, current);
-  await prev;
+
+  // Race the previous lock against a timeout to avoid permanent hangs
+  const timeout = new Promise((_, reject) =>
+    setTimeout(() => reject(new Error(`File lock timeout after ${LOCK_TIMEOUT_MS}ms for ${key}`)), LOCK_TIMEOUT_MS)
+  );
+  try {
+    await Promise.race([prev, timeout]);
+  } catch (err) {
+    // Evict the stale predecessor so future callers don't wait on it
+    if (_writeLocks.get(key) !== current) _writeLocks.set(key, current);
+    throw err;
+  }
+
   try {
     return await fn();
   } finally {
@@ -29,4 +42,4 @@ async function withFileLock(filePath, fn) {
   }
 }
 
-module.exports = { withFileLock, _writeLocks };
+module.exports = { withFileLock, _writeLocks, LOCK_TIMEOUT_MS };

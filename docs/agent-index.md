@@ -56,6 +56,7 @@ Each agent has a dedicated skill file:
 | 35  | Localization Specialist        | `templates/sdlc/agents/35-localization-specialist.md`  |
 | 36  | Questionnaire Agent            | `templates/sdlc/agents/36-questionnaire-agent.md`      |
 | 37  | Scope Change Agent             | `templates/sdlc/agents/37-scope-change-agent.md`       |
+| 38  | Architecture Compliance Reviewer | `templates/sdlc/agents/38-architecture-compliance-reviewer.md` |
 
 ---
 
@@ -73,6 +74,7 @@ Each agent has a dedicated skill file:
 | Legal & Privacy               | `templates/sdlc/guardrails/07-legal-guardrails.md`          |
 | Content & Localization        | `templates/sdlc/guardrails/08-content-guardrails.md`        |
 | Questionnaire & Official Docs | `templates/sdlc/guardrails/09-questionnaire-guardrails.md`  |
+| Truth-Source Policy           | `templates/sdlc/guardrails/truth-source-policy.md`          |
 
 ---
 
@@ -105,3 +107,28 @@ Each agent has a dedicated skill file:
 | Brand Assets output       | `templates/sdlc/contracts/brand-assets-output-contract.md`       |
 | Storybook output          | `templates/sdlc/contracts/storybook-output-contract.md`          |
 | Scope Change output       | `templates/sdlc/contracts/scope-change-output-contract.md`       |
+| Architecture Compliance   | `templates/sdlc/contracts/architecture-compliance-output-contract.md` |
+| Decisions output          | `templates/sdlc/contracts/decisions-output-contract.md`              |
+| GitHub State Snapshot     | `templates/sdlc/contracts/github-state-snapshot-output-contract.md`  |
+
+---
+
+## AGENT DEPENDENCY CHAIN
+
+Key input/output dependencies between agents (read top-to-bottom):
+
+| Producer Agent             | Output                                    | Consumer Agent(s)                                  |
+| -------------------------- | ----------------------------------------- | -------------------------------------------------- |
+| Onboarding (25)            | `onboarding-output.md`                    | Orchestrator (00) → all Phase 1 agents             |
+| Phase 1 Agents (01–04, 34) | Analysis + Recommendations + Sprint Plan  | Phase 2 Agents (05–09, 33)                         |
+| Product Manager (34)       | PRD (features, NFRs, constraints)         | Software Architect (05), UX Researcher (10), Implementation (20) |
+| Phase 2 Agents (05–09, 33) | Architecture + Security decisions          | Phase 3 Agents (10–13, 32, 35)                     |
+| Phase 3 Agents             | UX/UI design + Content + a11y baseline     | Phase 4 Agents (14–16, 30, 31)                     |
+| Phase 4 Agents             | Brand + Growth + Design tokens             | Synthesis (17)                                      |
+| Critic (18) + Risk (19)    | Validation verdict per phase               | Orchestrator (00) → next phase or rework            |
+| Synthesis (17)             | Master Report + Department Reports         | GitHub Integration (27) → Sprint Gate               |
+| Questionnaire (36)         | Questionnaires + Official Documents        | All phase agents (via Orchestrator injection)       |
+| Orchestrator (00)          | Sprint Gate activation + lessons injection | Implementation (20)                                 |
+| Implementation (20)        | Code per story                             | Test (21) → Compliance Reviewer (38) → PR/Review (22) |
+| Retrospective (28)         | `velocity-log.json` + `lessons-learned.md` | Orchestrator (00) → next sprint context             |
+| KPI (29)                   | `sprint-kpi.json`                          | Orchestrator (00) → trend analysis                  |

@@ -245,14 +245,14 @@ or HOTFIX that changes security findings._
   'Must', 'Must not', 'Requires']
 - **Verification:** [how the Implementation / Test Agent demonstrates
   compliance]
-- **Guardrail reference:** [IMPL-GUARD-XX if applicable]
+- **Guardrail reference:** [G-IMPL-XX if applicable]
 ```
 
 Examples of valid constraints:
 
 - `Must not: construct SQL queries via string concatenation — use exclusively parameterized queries (OWASP A03)`
 - `Must: validate JWT tokens on expiry AND signature at every secured endpoint (IAM gap)`
-- `Requires: secrets via environment variables or vault — NEVER hardcoded (IMPL-GUARD-09)`
+- `Requires: secrets via environment variables or vault — NEVER hardcoded (G-IMPL-09)`
 
 **PROHIBITED:** An `IMPL-CONSTRAINT` without a demonstrable source finding
 (GAP/RISK ID). **PROHIBITED:** A constraint that is not testable or verifiable.

@@ -1,6 +1,11 @@
 # Commercial Software Audit – Complete Playbook
 
 > End-to-end audit process for existing commercial software
+>
+> **Mode:** AUDIT | **Counterpart:** CREATE mode — see
+> `software-creation-playbook.md` for the creation variant. Both playbooks
+> share the same phase structure, agent set, contracts, and guardrails. The key
+> difference: AUDIT analyzes existing software; CREATE designs new solutions.
 
 ---
 
@@ -14,6 +19,47 @@ sprint.
 
 **The order is non-negotiable.** Strategy → Technology → Experience → Growth →
 Implementation.
+
+---
+
+## ONBOARDING (Prerequisites)
+
+### Objective
+
+Capture the project brief, validate the working environment, and produce the
+foundational context document that all subsequent phases consume.
+
+### Agent
+
+**Onboarding Agent** (skill: `25-onboarding-agent.md`)
+
+### Trigger
+
+The Orchestrator (Agent 00) activates the Onboarding Agent as the FIRST action
+after receiving an `AUDIT` command. No phase agent may start until onboarding is
+complete.
+
+### Steps
+
+1. **Requirements Intake** — Gather audit scope (which software, what aspects,
+   business context, known issues, compliance requirements)
+2. **Stakeholder Context** — Identify key stakeholders, decision-makers, and
+   communication channels
+3. **Project Scan** — Scan the workspace for existing code, documentation, and
+   configuration to establish baseline context
+4. **Tooling Check** — Verify required tooling and platform integrations are
+   available
+
+### Required Output
+
+- `BusinessDocs/onboarding/onboarding-output.md` — complete onboarding document
+  with intake answers, scan results, and tooling status
+- `session-state.json` updated to `status: ONBOARDING_COMPLETE`
+
+### Validation
+
+Onboarding output MUST be present and marked COMPLETE before Phase 1 begins.
+The Orchestrator verifies this as a hard prerequisite.
 
 ---
 
@@ -291,17 +337,26 @@ milestones, and issues before any sprint begins.
 The Sprint Gate is the decision point between Synthesis and each sprint in
 Phase 5. It gates entry into implementation and recurs between sprints.
 
+**Owner:** Orchestrator (Agent 00) — see `agents/00-orchestrator.md` for full
+Sprint Gate logic, decision injection, and Definition of Ready criteria.
+
 ### Inputs
 
 - Synthesis outputs (all 6 documents APPROVED)
 - `BusinessDocs/decisions.md` (decided items since last gate)
 - `BusinessDocs/session/reevaluate-trigger.json` (if `status: "PENDING"`)
+- `BusinessDocs/session/github-state-snapshot.json` (captured at Sprint Gate
+  Step 0)
 - Sprint Completion Report from previous sprint (if not first sprint)
 - Lessons learned from previous sprint (if not first sprint)
 
 ### Sprint Gate Steps
 
-1. **Step 0 — Check Decisions + Reevaluate Triggers:** Load decisions.md for new
+1. **Step 0 — GitHub State Snapshot + Check Decisions + Reevaluate Triggers:**
+   Run `github-state-snapshot.js` to capture current GitHub board state
+   (milestones, issues) into `github-state-snapshot.json`. Inject snapshot as
+   `## GITHUB STATE` block into Reevaluate Agent context. Update
+   `session-state.json` `github_sync` fields. Then load decisions.md for new
    DECIDED items; check reevaluate-trigger.json for PENDING triggers. If PENDING
    reevaluate found, execute REEVALUATE before proceeding.
 2. **Step 1 — Present Sprint:** Present the next sprint's stories to user for
@@ -334,18 +389,22 @@ Completion Reports per sprint.
    per story
 2. **Test Agent** (skill: `21-test-agent.md`) — validates implementation against
    acceptance criteria
-3. **PR/Review Agent** (skill: `22-pr-review-agent.md`) — final review, create
+3. **Architecture Compliance Reviewer** (skill:
+   `38-architecture-compliance-reviewer.md`) — validates code against Phase 1–4
+   design decisions (3-tier review: T1 Architecture, T2 UX/Design, T3 Business
+   Rules). Returns to Implementation Agent on violation.
+4. **PR/Review Agent** (skill: `22-pr-review-agent.md`) — final review, create
    PR, close sprint
-4. ↓ **Critic Agent** (skill: `18-critic-agent.md`) — validate sprint output
-5. ↓ **Risk Agent** (skill: `19-risk-agent.md`) — risk assessment per sprint
-6. **KPI Agent** (skill: `29-kpi-agent.md`) — measure sprint KPIs and emit
+5. ↓ **Critic Agent** (skill: `18-critic-agent.md`) — validate sprint output
+6. ↓ **Risk Agent** (skill: `19-risk-agent.md`) — risk assessment per sprint
+7. **KPI Agent** (skill: `29-kpi-agent.md`) — measure sprint KPIs and emit
    alerts
-7. **Documentation Agent** (skill: `26-documentation-agent.md`) — update
+8. **Documentation Agent** (skill: `26-documentation-agent.md`) — update
    user/technical manuals and changelog
-8. **GitHub Integration Agent** (skill: `27-github-integration-agent.md`) —
+9. **GitHub Integration Agent** (skill: `27-github-integration-agent.md`) —
    update project board and close issues
-9. **Retrospective Agent** (skill: `28-retrospective-agent.md`) — sprint
-   retrospective, velocity log, lessons learned
+10. **Retrospective Agent** (skill: `28-retrospective-agent.md`) — sprint
+    retrospective, velocity log, lessons learned
 
 ### Required Input
 
@@ -366,19 +425,26 @@ and validated sprint plans (Critic + Risk PASSED per phase).
 For each sprint (SP-1, SP-2, ...):
   1. Orchestrator: activate stories per sprint plan (parallel tracks = simultaneously)
   2. Per story: Implementation Agent → Test Agent (return if REJECTED)
-  3. After all stories: PR/Review Agent assembles sprint PR
-  4. Critic Agent validates Sprint Completion Report
-  5. Risk Agent assesses new findings
-  6. On PASSED: merge PR, activate next sprint
-  7. On FAILED: return to Implementation Agent per finding
+  3. After all stories tested: Architecture Compliance Reviewer validates code against Phase 1–4 decisions
+     - T1 (Architecture): always — code vs Phase 2 decisions
+     - T2 (UX/Design): when UI files changed — code vs Phase 3 design system
+     - T3 (Business Rules): when business logic changed — code vs Phase 1 rules
+     - On NON_COMPLIANT: return to Implementation Agent → re-test → re-review (max 3 iterations)
+  4. After compliance PASSED: PR/Review Agent assembles sprint PR
+  5. Critic Agent validates Sprint Completion Report
+  6. Risk Agent assesses new findings
+  7. On PASSED: merge PR, activate next sprint
+  8. On FAILED: return to Implementation Agent per finding
 ```
 
 ### Parallel Tracks
 
 Stories in the same sprint that have NO mutual dependencies (identified in the
 Parallel Tracks section of the sprint plans) are picked up **simultaneously** by
-multiple Implementation Agent instances. The PR/Review Agent assembles all story
-outputs into one sprint PR after all stories are APPROVED.
+multiple Implementation Agent instances. After all stories are APPROVED by the
+Test Agent, the Architecture Compliance Reviewer validates the full sprint's code
+against Phase 1–4 design decisions. Only after compliance PASSED does the
+PR/Review Agent assemble all story outputs into one sprint PR.
 
 ### Required Output (Per Sprint)
 
@@ -443,10 +509,28 @@ actively _wrong_.
 | `MARKETING` | Phase 4 agents    |
 | `ALL`       | All phases        |
 
-Agent: `37-scope-change-agent.md` → Backlog Hold → Invalidation marking →
-Re-analysis → Critic + Risk → Sprint Gate Reconciliation → Master Synthesis
-update Output: `BusinessDocs/synthesis/scope-change-[N].md` + updated sprint
-statuses
+Agent: `37-scope-change-agent.md`
+
+**Mechanics:**
+
+1. **Backlog Hold:** The Orchestrator immediately sets `sprint_status = HOLD`
+   for all IN_PROGRESS and QUEUED sprints in the affected dimension(s).
+   Implementation Agents currently executing stories in affected sprints
+   receive `SCOPE_CHANGE_HALT` and stop work.
+2. **Invalidation Marking:** The Scope Change Agent scans all existing phase
+   outputs, sprint stories, and recommendations in the affected dimension.
+   Items that conflict with the new direction are marked
+   `INVALIDATED_BY_SCOPE_CHANGE: SC-[N]` with a reason.
+3. **Re-analysis:** Only the affected dimension is re-analyzed by the
+   corresponding phase agents. Unaffected dimensions are preserved.
+4. **Critic + Risk:** Validation of the re-analyzed dimension.
+5. **Sprint Gate Reconciliation:** The Orchestrator presents a reconciliation
+   report showing: invalidated stories, new/modified stories, cascade impact
+   on dependent sprints. User approval required before resuming.
+6. **Master Synthesis Update:** The Synthesis Agent updates
+   `final-report-master.md` and the affected department report.
+
+Output: `BusinessDocs/synthesis/scope-change-[N].md` + updated sprint statuses
 
 ### FEATURE [name]: [description]
 
@@ -460,8 +544,17 @@ on main backlog without Orchestrator approval. Agent: `24-feature-agent.md`
 
 Emergency protocol for critical production issues. Bypasses Sprint Gate.
 
-Agent pipeline: Implementation → Test (abbreviated) → PR/Review (secret scan
-mandatory) → merge → KPI → Documentation → GitHub Integration → Retrospective
+**Urgency Validation (Orchestrator, mandatory before bypass):**
+
+1. Orchestrator verifies the issue qualifies as HOTFIX (production down, data
+   loss risk, security breach, or SLA violation)
+2. If not urgent: reject HOTFIX, route to normal sprint backlog
+3. If urgent: document justification in Orchestrator Log and proceed with bypass
+
+Agent pipeline: Implementation → Test (abbreviated regression) → PR/Review
+(secret scan mandatory) → merge → KPI → Documentation → GitHub Integration →
+Retrospective
+
 Sprint ID: `HOTFIX-[N]` | Mandatory: LESSON_CANDIDATE + DECIDED item if
 structural constraint results.
 
@@ -504,18 +597,73 @@ The audit process is COMPLETE when:
 
 1. All four analysis phases are Critic + Risk APPROVED
 2. The Synthesis Agent has produced the final report
-3. The final report contains all 7 required components
+3. The final report (`final-report-master.md`) contains all 7 required
+   components: (1) Executive Summary, (2) Solution Blueprint Heatmap, (3) Risk
+   Matrix, (4) Roadmap, (5) Guardrails, (6) KPIs, (7) Open Items
 4. No open `CRITICAL_FINDING` or `CRITICAL_GAP` items without resolution
 5. No open `CRITICAL_MISALIGNMENT` items without resolution
 6. KPI baseline is documented (or `INSUFFICIENT_DATA:` with escalations
    resolved)
+7. No open `UNCERTAIN:` or `INSUFFICIENT_DATA:` items without resolution —
+   unresolvable items have a corresponding question in
+   `BusinessDocs/[PHASE]/Questionnaires/`
+8. `BusinessDocs/questionnaire-index.md` is present; all REQUIRED questions are
+   either ANSWERED or explicitly marked `DEFERRED` by the Orchestrator
+9. `BusinessDocs/OfficialDocuments/document-registry.md` is present; all 8
+   official documents exist (completeness may be < 100% when questionnaires are
+   still open)
 
-The implementation process (Phase 5) is COMPLETE per sprint when: 7. All stories
-in the sprint are IMPLEMENTED or BLOCKED (with escalation) 8. Sprint Completion
-Report JSON is present and APPROVED by Critic + Risk Agent 9. KPI measurement
-per sprint has been performed and documented 10. No new `CRITICAL_FINDING`
-without resolution in the sprint output 11. The PR has been merged into the main
-branch
+### The 8 Official Documents
+
+Generated by the Questionnaire Agent (Workflow 3) after each phase's Critic +
+Risk validation. Full schema: `questionnaire-output-contract.md` § Workflow 3.
+
+| # | Document                                   | Producer Phase | Location                                                |
+|---|-------------------------------------------|---------------|---------------------------------------------------------|
+| 1 | `product-vision.md`                       | Phase 1       | `BusinessDocs/OfficialDocuments/product-vision.md`      |
+| 2 | `financial-model-overview.md`             | Phase 1       | `BusinessDocs/OfficialDocuments/financial-model-overview.md` |
+| 3 | `technical-overview.md`                   | Phase 2       | `BusinessDocs/OfficialDocuments/technical-overview.md`  |
+| 4 | `legal-compliance-overview.md`            | Phase 2       | `BusinessDocs/OfficialDocuments/legal-compliance-overview.md` |
+| 5 | `ux-design-brief.md`                      | Phase 3       | `BusinessDocs/OfficialDocuments/ux-design-brief.md`     |
+| 6 | `content-strategy-brief.md`               | Phase 3       | `BusinessDocs/OfficialDocuments/content-strategy-brief.md` |
+| 7 | `brand-brief.md`                          | Phase 4       | `BusinessDocs/OfficialDocuments/brand-brief.md`         |
+| 8 | `market-positioning.md`                   | Phase 4       | `BusinessDocs/OfficialDocuments/market-positioning.md`  |
+
+The `document-registry.md` tracks: Version, Last Updated, Source Phases,
+Completeness (%) for each document.
+
+The implementation process (Phase 5) is COMPLETE per sprint when:
+
+10. All stories in the sprint are IMPLEMENTED or BLOCKED (with escalation)
+11. Sprint Completion Report JSON is present and APPROVED by Critic + Risk Agent
+12. KPI measurement per sprint has been performed and documented
+13. No new `CRITICAL_FINDING` without resolution in the sprint output
+14. The PR has been merged into the main branch
+15. Secret scan PASSED, user-manual.md and technical-manual.md updated
+16. GitHub board updated (all implemented issues closed), retrospective COMPLETE,
+    `BusinessDocs/retrospectives/velocity-log.json` updated, lessons-learned.md
+    updated
+
+### BLOCKED Story Escalation Protocol
+
+When a story is marked BLOCKED during Phase 5:
+
+1. **Implementation Agent** documents the blocker type:
+   - `EXTERN: [dependency]` — external dependency unavailable
+   - `TECH_DEBT: [description]` — prerequisite refactoring needed
+   - `DECISION_REQUIRED: [question]` — architectural or business decision pending
+   - `ENVIRONMENT: [issue]` — infrastructure or tooling failure
+2. **Orchestrator** evaluates within the same sprint cycle:
+   - If resolvable (e.g., decision can be made): resolve and return story to
+     Implementation Agent
+   - If not resolvable: move story to next sprint backlog, add to
+     `cross-team-blocker-matrix.md` if cross-team
+3. **Escalation threshold:** If ≥ 50% of sprint stories are BLOCKED, the
+   Orchestrator triggers a `REEVALUATE` cycle before proceeding to the next
+   sprint
+4. **Documentation:** Every BLOCKED story must appear in the Sprint Completion
+   Report with blocker type, attempted resolution, and disposition (DEFERRED /
+   ESCALATED / RESOLVED)
 
 ---
 

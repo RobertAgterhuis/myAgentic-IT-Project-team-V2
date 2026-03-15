@@ -2,6 +2,7 @@
 // Integration tests — no mocking (vitest v4 cannot intercept CJS require).
 
 import path from 'path';
+import crypto from 'crypto';
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'fs';
 import { fileURLToPath } from 'url';
 import createSubscribeRoutes from '../../src/webapp/routes/subscribe.js';
@@ -170,9 +171,10 @@ describe('subscribe routes', () => {
   });
 
   it('returns 409 for duplicate local subscription', async () => {
+    const emailHash = crypto.createHash('sha256').update('dupe@example.com').digest('hex');
     writeFileSync(
       LOCAL_SUBS_FILE,
-      JSON.stringify([{ email: 'dupe@example.com', segment: 'developers', source: 'landing' }])
+      JSON.stringify([{ emailHash, segment: 'developers', source: 'landing' }])
     );
 
     const res = fakeRes();

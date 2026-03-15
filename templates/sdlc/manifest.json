@@ -139,9 +139,7 @@
       "sprintplan-output-contract.md",
       "guardrails-output-contract.md"
     ],
-    "SYNTHESIS": [
-      "synthesis-output-contract.md"
-    ],
+    "SYNTHESIS": ["synthesis-output-contract.md"],
     "PHASE_5_EXECUTING": [
       "implementation-output-contract.md",
       "test-output-contract.md",
@@ -151,10 +149,7 @@
       "retrospective-output-contract.md",
       "github-integration-output-contract.md"
     ],
-    "CRITIC": [
-      "critic-output-contract.md",
-      "risk-output-contract.md"
-    ],
+    "CRITIC": ["critic-output-contract.md", "risk-output-contract.md"],
     "CROSS_PHASE": [
       "session-state-contract.md",
       "agent-handoff-contract.md",

@@ -34,10 +34,7 @@ function MetricCard({
   return (
     <Card
       elevation="flat"
-      className={cn(
-        'p-4 hover:shadow-md transition-all duration-200 group',
-        className
-      )}
+      className={cn('p-4 hover:shadow-md transition-all duration-200 group', className)}
       {...props}
     >
       <div className="flex items-center justify-between">

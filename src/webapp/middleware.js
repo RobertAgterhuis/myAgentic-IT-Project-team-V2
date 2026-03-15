@@ -150,7 +150,13 @@ function readBody(req) {
       }
       chunks.push(c);
     });
-    req.on('end', () => resolve(Buffer.concat(chunks).toString('utf8').replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '')));
+    req.on('end', () =>
+      resolve(
+        Buffer.concat(chunks)
+          .toString('utf8')
+          .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '')
+      )
+    );
     req.on('error', reject);
   });
 }

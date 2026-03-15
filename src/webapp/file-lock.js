@@ -24,7 +24,10 @@ async function withFileLock(filePath, fn) {
 
   // Race the previous lock against a timeout to avoid permanent hangs
   const timeout = new Promise((_, reject) =>
-    setTimeout(() => reject(new Error(`File lock timeout after ${LOCK_TIMEOUT_MS}ms for ${key}`)), LOCK_TIMEOUT_MS)
+    setTimeout(
+      () => reject(new Error(`File lock timeout after ${LOCK_TIMEOUT_MS}ms for ${key}`)),
+      LOCK_TIMEOUT_MS
+    )
   );
   try {
     await Promise.race([prev, timeout]);

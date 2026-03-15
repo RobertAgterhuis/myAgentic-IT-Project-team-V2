@@ -42,7 +42,10 @@ function gitLinesAsync(commandKey, cwd) {
   return new Promise((resolve) => {
     execFile(spec[0], spec[1], { cwd, encoding: 'utf8', timeout: 10_000 }, (err, stdout) => {
       if (err) return resolve([]);
-      const lines = stdout.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const lines = stdout
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
       _gitCache.set(cacheKey, { lines, ts: Date.now() });
       resolve(lines);
     });
@@ -175,9 +178,8 @@ function computeHealthStatus(ctx) {
     const ageMinutes = Math.round((Date.now() - stat.mtimeMs) / 60_000);
     buildValue = '✓ Built';
     buildStatus = 'healthy';
-    buildDetails = ageMinutes < 60
-      ? `Built ${ageMinutes}m ago`
-      : `Built ${Math.round(ageMinutes / 60)}h ago`;
+    buildDetails =
+      ageMinutes < 60 ? `Built ${ageMinutes}m ago` : `Built ${Math.round(ageMinutes / 60)}h ago`;
   } catch {
     /* dist not found */
   }
@@ -186,9 +188,12 @@ function computeHealthStatus(ctx) {
   const uptimeMs = ctx._metrics ? Date.now() - ctx._metrics.startedAt : 0;
   const uptimeMin = Math.round(uptimeMs / 60_000);
   const deployValue = uptimeMs > 0 ? 'Running' : 'Offline';
-  const deployDetails = uptimeMs > 0
-    ? (uptimeMin < 60 ? `Up ${uptimeMin}m` : `Up ${Math.round(uptimeMin / 60)}h ${uptimeMin % 60}m`)
-    : 'Server not started';
+  const deployDetails =
+    uptimeMs > 0
+      ? uptimeMin < 60
+        ? `Up ${uptimeMin}m`
+        : `Up ${Math.round(uptimeMin / 60)}h ${uptimeMin % 60}m`
+      : 'Server not started';
 
   return {
     quality: {

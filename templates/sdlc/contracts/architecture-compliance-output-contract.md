@@ -17,16 +17,16 @@ decisions.
 
 ## INPUT (MANDATORY PRESENT BEFORE REVIEW STARTS)
 
-| Field                          | Source                                               | Required |
-| ------------------------------ | ---------------------------------------------------- | -------- |
-| Test-approved stories          | Test Agent Sprint Test Summary (all stories APPROVED) | YES      |
-| IMPL-OUTPUT-A per story        | Implementation Agent (changed files)                  | YES      |
-| IMPL-OUTPUT-C per story        | Implementation Agent (guardrail self-check)            | YES      |
-| IMPL-OUTPUT-D per story        | Implementation Agent (story completion declaration)    | YES      |
-| Phase 2 architecture output    | Software Architect + Senior Developer + DevOps + Security + Data Architect | YES (T1) |
-| Phase 3 UX/design output       | UX Designer + UI Designer + Accessibility Specialist + Storybook Agent | CONDITIONAL (T2) |
-| Phase 1 business rules output  | Business Analyst + Domain Expert + Financial Analyst + Product Manager | CONDITIONAL (T3) |
-| Decision register              | `BusinessDocs/decisions.md` + active category files   | YES      |
+| Field                         | Source                                                                     | Required         |
+| ----------------------------- | -------------------------------------------------------------------------- | ---------------- |
+| Test-approved stories         | Test Agent Sprint Test Summary (all stories APPROVED)                      | YES              |
+| IMPL-OUTPUT-A per story       | Implementation Agent (changed files)                                       | YES              |
+| IMPL-OUTPUT-C per story       | Implementation Agent (guardrail self-check)                                | YES              |
+| IMPL-OUTPUT-D per story       | Implementation Agent (story completion declaration)                        | YES              |
+| Phase 2 architecture output   | Software Architect + Senior Developer + DevOps + Security + Data Architect | YES (T1)         |
+| Phase 3 UX/design output      | UX Designer + UI Designer + Accessibility Specialist + Storybook Agent     | CONDITIONAL (T2) |
+| Phase 1 business rules output | Business Analyst + Domain Expert + Financial Analyst + Product Manager     | CONDITIONAL (T3) |
+| Decision register             | `BusinessDocs/decisions.md` + active category files                        | YES              |
 
 **HALT:** If Test Agent has not APPROVED all stories, or if a required authority
 document for an active tier is missing → do NOT start review. Escalate to
@@ -36,11 +36,11 @@ Orchestrator.
 
 ## TIER ACTIVATION RULES
 
-| Tier | Name                    | Activation condition                                                        |
-| ---- | ----------------------- | --------------------------------------------------------------------------- |
-| T1   | Architecture Conformance | **Always active** for every sprint                                          |
-| T2   | UX/Design Conformance   | Active when ANY story modifies UI files (`.css`, `.scss`, `.tsx`, `.jsx`, `.vue`, `.svelte`, component files, design token references) |
-| T3   | Business Rules Conformance | Active when ANY story implements business validation, financial calculations, workflow rules, or domain logic |
+| Tier | Name                       | Activation condition                                                                                                                   |
+| ---- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| T1   | Architecture Conformance   | **Always active** for every sprint                                                                                                     |
+| T2   | UX/Design Conformance      | Active when ANY story modifies UI files (`.css`, `.scss`, `.tsx`, `.jsx`, `.vue`, `.svelte`, component files, design token references) |
+| T3   | Business Rules Conformance | Active when ANY story implements business validation, financial calculations, workflow rules, or domain logic                          |
 
 ---
 
@@ -125,12 +125,12 @@ VIOLATION: [VIOLATION-ID]
 
 ## SEVERITY DEFINITIONS
 
-| Severity   | Definition                                                          | Blocks PR |
-| ---------- | ------------------------------------------------------------------- | --------- |
-| `CRITICAL` | Code contradicts a core architecture decision or security pattern   | YES       |
-| `MAJOR`    | Code deviates from design patterns or introduces unapproved choices | YES       |
+| Severity   | Definition                                                          | Blocks PR                       |
+| ---------- | ------------------------------------------------------------------- | ------------------------------- |
+| `CRITICAL` | Code contradicts a core architecture decision or security pattern   | YES                             |
+| `MAJOR`    | Code deviates from design patterns or introduces unapproved choices | YES                             |
 | `MINOR`    | Stylistic deviation from design system or naming mismatch           | NO (with Orchestrator approval) |
-| `ADVISORY` | Potential improvement, not a violation                               | NO        |
+| `ADVISORY` | Potential improvement, not a violation                              | NO                              |
 
 ---
 

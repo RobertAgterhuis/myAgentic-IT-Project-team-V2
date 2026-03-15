@@ -63,14 +63,14 @@ Check the following for each story BEFORE you begin:
    `templates/sdlc/guardrails/02-architecture-guardrails.md` +
    `templates/sdlc/guardrails/03-security-guardrails.md` +
    `templates/sdlc/guardrails/06-implementation-guardrails.md`
-5. **Codebase accessible?** → Read and write access to the repository
-6. **`BusinessDocs/decisions.md` loaded?** → Read all items with status
+6. **Codebase accessible?** → Read and write access to the repository
+7. **`BusinessDocs/decisions.md` loaded?** → Read all items with status
    `DECIDED`. Also scan `BusinessDocs/decisions/` — from each ACTIVE or PARTIAL
    category file (check `> Status:` header line), read all `DECIDED` rows. Skip
    DEFERRED category files. Every `DECIDED` item is a **hard constraint** — do
    not write code that conflicts with it. Document:
    `DECISIONS_LOADED: [number of DECIDED items] — active constraints: [brief summary]`
-7. **Deferred technology check (MANDATORY):** If the story requires introducing
+8. **Deferred technology check (MANDATORY):** If the story requires introducing
    a technology that matches a DEFERRED category (Docker, Bicep/IaC, .NET, Azure
    DevOps, Vite, NextJS), **HALT** before writing code. Escalate to
    Orchestrator:
@@ -79,15 +79,15 @@ Check the following for each story BEFORE you begin:
    header + update the index — see RULE ORC-45), then the Implementation Agent
    resumes with the newly active decisions loaded as hard constraints. No user
    intervention is required.
-8. **`BusinessDocs/retrospectives/lessons-learned.md` loaded?** → Read the top-3
+9. **`BusinessDocs/retrospectives/lessons-learned.md` loaded?** → Read the top-3
    most urgent active lessons. Apply the recommended actions in your
    implementation plan. Document: `LESSONS_LOADED: [LL-IDs active]`
-9. **Security handoff context loaded?** → If
-   `BusinessDocs/security/security-handoff-context.md` exists: read all
-   `IMPL-CONSTRAINT` items. These are security requirements established by the
-   Security Architect that must be checked for every story (see Step 5).
-   Document: `SECURITY_CONTEXT_LOADED: [number of constraints]`
-10. **Brand context loaded?** → If `BusinessDocs/brand/brand-guidelines.md`
+10. **Security handoff context loaded?** → If
+    `BusinessDocs/security/security-handoff-context.md` exists: read all
+    `IMPL-CONSTRAINT` items. These are security requirements established by the
+    Security Architect that must be checked for every story (see Step 5).
+    Document: `SECURITY_CONTEXT_LOADED: [number of constraints]`
+11. **Brand context loaded?** → If `BusinessDocs/brand/brand-guidelines.md`
     exists AND the story touches UI-related files (`.css`, `.scss`, `.sass`,
     component templates, inline-style attributes, design-token usages): read
     sections 1 (colors) and 2 (typography) as hard constraints. Document:

@@ -6,12 +6,12 @@
 
 ## ENFORCEMENT & CONTRACT REFERENCE
 
-| Rule Range    | Primary Enforcer                | Verification Agent        | Related Contract                           | Default Violation Action |
-| ------------- | ------------------------------- | ------------------------- | ------------------------------------------ | ------------------------ |
-| G-QST-01–05   | Questionnaire Agent (36)       | Orchestrator (00)         | `questionnaire-output-contract.md`         | BLOCK handoff            |
-| G-QST-06–09   | Questionnaire Agent (36)       | Orchestrator (00)         | `questionnaire-output-contract.md`         | BLOCK handoff            |
-| G-QST-10–11   | Questionnaire Agent (36)       | Orchestrator (00)         | `questionnaire-output-contract.md`         | WARN + document          |
-| G-QST-12–13   | Questionnaire Agent (36)       | Orchestrator (00)         | `questionnaire-output-contract.md`         | BLOCK handoff            |
+| Rule Range  | Primary Enforcer         | Verification Agent | Related Contract                   | Default Violation Action |
+| ----------- | ------------------------ | ------------------ | ---------------------------------- | ------------------------ |
+| G-QST-01–05 | Questionnaire Agent (36) | Orchestrator (00)  | `questionnaire-output-contract.md` | BLOCK handoff            |
+| G-QST-06–09 | Questionnaire Agent (36) | Orchestrator (00)  | `questionnaire-output-contract.md` | BLOCK handoff            |
+| G-QST-10–11 | Questionnaire Agent (36) | Orchestrator (00)  | `questionnaire-output-contract.md` | WARN + document          |
+| G-QST-12–13 | Questionnaire Agent (36) | Orchestrator (00)  | `questionnaire-output-contract.md` | BLOCK handoff            |
 
 ## DOMAIN: QUESTIONNAIRE MANAGEMENT & OFFICIAL BUSINESS DOCUMENTS
 

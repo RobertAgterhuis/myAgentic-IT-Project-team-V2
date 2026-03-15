@@ -7,12 +7,12 @@
 
 ## ENFORCEMENT & CONTRACT REFERENCE
 
-| Rule Range    | Primary Enforcer                  | Verification Agent        | Related Contract                           | Default Violation Action |
-| ------------- | --------------------------------- | ------------------------- | ------------------------------------------ | ------------------------ |
-| G-BUS-01–04   | Phase 1 Agents (01–04, 34)        | Critic Agent (18)         | `analysis-output-contract.md`              | BLOCK handoff            |
-| G-BUS-05–06   | Phase 1 Agents (01–04, 34)        | Critic Agent (18)         | `recommendations-output-contract.md`       | BLOCK handoff            |
-| G-BUS-07      | Product Manager (34)              | Critic Agent (18)         | `sprintplan-output-contract.md`            | BLOCK handoff            |
-| G-BUS-08      | All Phase 1 Agents                | Critic Agent (18)         | `analysis-output-contract.md`              | BLOCK handoff            |
+| Rule Range  | Primary Enforcer           | Verification Agent | Related Contract                     | Default Violation Action |
+| ----------- | -------------------------- | ------------------ | ------------------------------------ | ------------------------ |
+| G-BUS-01–04 | Phase 1 Agents (01–04, 34) | Critic Agent (18)  | `analysis-output-contract.md`        | BLOCK handoff            |
+| G-BUS-05–06 | Phase 1 Agents (01–04, 34) | Critic Agent (18)  | `recommendations-output-contract.md` | BLOCK handoff            |
+| G-BUS-07    | Product Manager (34)       | Critic Agent (18)  | `sprintplan-output-contract.md`      | BLOCK handoff            |
+| G-BUS-08    | All Phase 1 Agents         | Critic Agent (18)  | `analysis-output-contract.md`        | BLOCK handoff            |
 
 ## DOMAIN: BUSINESS & STRATEGY
 

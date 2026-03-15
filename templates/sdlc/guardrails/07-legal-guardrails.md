@@ -6,11 +6,11 @@
 
 ## ENFORCEMENT & CONTRACT REFERENCE
 
-| Rule Range    | Primary Enforcer                | Verification Agent                 | Related Contract                           | Default Violation Action |
-| ------------- | ------------------------------- | ---------------------------------- | ------------------------------------------ | ------------------------ |
-| G-LEG-01–03   | Legal Counsel (09)              | Critic Agent (18)                  | `analysis-output-contract.md`              | BLOCK handoff            |
-| G-LEG-04–05   | Legal Counsel (09)              | Compliance Reviewer (38) — T3      | `recommendations-output-contract.md`       | BLOCK handoff            |
-| G-LEG-06–07   | Implementation Agent (20)       | PR/Review Agent (22)               | `implementation-output-contract.md`        | BLOCK merge              |
+| Rule Range  | Primary Enforcer          | Verification Agent            | Related Contract                     | Default Violation Action |
+| ----------- | ------------------------- | ----------------------------- | ------------------------------------ | ------------------------ |
+| G-LEG-01–03 | Legal Counsel (09)        | Critic Agent (18)             | `analysis-output-contract.md`        | BLOCK handoff            |
+| G-LEG-04–05 | Legal Counsel (09)        | Compliance Reviewer (38) — T3 | `recommendations-output-contract.md` | BLOCK handoff            |
+| G-LEG-06–07 | Implementation Agent (20) | PR/Review Agent (22)          | `implementation-output-contract.md`  | BLOCK merge              |
 
 ## DOMAIN: LEGAL & PRIVACY COMPLIANCE
 

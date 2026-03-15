@@ -44,16 +44,16 @@ phase if it does not already exist. The file is initialized with:
 
 ## COLUMN SCHEMA
 
-| Column                    | Type     | Description                                                                 |
-| ------------------------- | -------- | --------------------------------------------------------------------------- |
-| `ID`                      | string   | Unique identifier, format `DEC-NNN` (sequential)                           |
-| `Type`                    | enum     | `DECIDED` or `OPEN_QUESTION`                                               |
-| `Status`                  | enum     | `OPEN` · `DECIDED` · `DEFERRED` · `EXPIRED`                               |
-| `Priority`                | enum     | `HIGH` · `MEDIUM` · `LOW`                                                  |
-| `Scope`                   | string   | Affected phase, agent, sprint, or `All sprints`                            |
-| `Decision / Question`     | string   | The decision statement or question text                                    |
-| `Your answer / Notes`     | string   | Stakeholder answer (for OPEN_QUESTION) or implementation notes             |
-| `Date`                    | ISO 8601 | Date of entry or last update                                               |
+| Column                | Type     | Description                                                    |
+| --------------------- | -------- | -------------------------------------------------------------- |
+| `ID`                  | string   | Unique identifier, format `DEC-NNN` (sequential)               |
+| `Type`                | enum     | `DECIDED` or `OPEN_QUESTION`                                   |
+| `Status`              | enum     | `OPEN` · `DECIDED` · `DEFERRED` · `EXPIRED`                    |
+| `Priority`            | enum     | `HIGH` · `MEDIUM` · `LOW`                                      |
+| `Scope`               | string   | Affected phase, agent, sprint, or `All sprints`                |
+| `Decision / Question` | string   | The decision statement or question text                        |
+| `Your answer / Notes` | string   | Stakeholder answer (for OPEN_QUESTION) or implementation notes |
+| `Date`                | ISO 8601 | Date of entry or last update                                   |
 
 ---
 
@@ -70,26 +70,26 @@ phase if it does not already exist. The file is initialized with:
 
 ## PRODUCERS
 
-| Agent / Source                        | When                                                             |
-| ------------------------------------- | ---------------------------------------------------------------- |
-| Orchestrator (Agent 00)               | Operational decisions at Sprint Gate, HOTFIX, SCOPE CHANGE       |
-| Questionnaire Agent (Agent 36)        | Converts INSUFFICIENT_DATA items to OPEN_QUESTION entries        |
-| Architecture Compliance Reviewer (38) | Waivers after COMPLIANCE_LOOP_EXCEEDED (Type: DECIDED)           |
-| Reevaluate Agent                      | Decisions from re-evaluation findings                            |
-| Human stakeholder (via web UI)        | Direct answers to OPEN_QUESTION items                            |
+| Agent / Source                        | When                                                       |
+| ------------------------------------- | ---------------------------------------------------------- |
+| Orchestrator (Agent 00)               | Operational decisions at Sprint Gate, HOTFIX, SCOPE CHANGE |
+| Questionnaire Agent (Agent 36)        | Converts INSUFFICIENT_DATA items to OPEN_QUESTION entries  |
+| Architecture Compliance Reviewer (38) | Waivers after COMPLIANCE_LOOP_EXCEEDED (Type: DECIDED)     |
+| Reevaluate Agent                      | Decisions from re-evaluation findings                      |
+| Human stakeholder (via web UI)        | Direct answers to OPEN_QUESTION items                      |
 
 ---
 
 ## CONSUMERS
 
-| Agent / Phase               | How decisions are consumed                                       |
-| --------------------------- | ---------------------------------------------------------------- |
-| Orchestrator — Sprint Gate  | Step 0: reads all DECIDED items, injects as constraints          |
-| Implementation Agent (20)   | Reads DECIDED + active category files before coding (G-IMPL-32) |
-| Test Agent (21)             | Verifies decision compliance in test validation                  |
-| PR/Review Agent (22)        | Independently verifies decision compliance at review             |
-| Reevaluate Agent            | Reads current decisions as context for re-evaluation             |
-| Scope Change Agent          | Reads decisions to assess impact of scope change                 |
+| Agent / Phase              | How decisions are consumed                                      |
+| -------------------------- | --------------------------------------------------------------- |
+| Orchestrator — Sprint Gate | Step 0: reads all DECIDED items, injects as constraints         |
+| Implementation Agent (20)  | Reads DECIDED + active category files before coding (G-IMPL-32) |
+| Test Agent (21)            | Verifies decision compliance in test validation                 |
+| PR/Review Agent (22)       | Independently verifies decision compliance at review            |
+| Reevaluate Agent           | Reads current decisions as context for re-evaluation            |
+| Scope Change Agent         | Reads decisions to assess impact of scope change                |
 
 ---
 

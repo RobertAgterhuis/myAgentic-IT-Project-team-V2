@@ -15,17 +15,17 @@ period.
 
 ## ENFORCEMENT & CONTRACT REFERENCE
 
-| Rule Range       | Primary Enforcer              | Verification Agent                  | Related Contract                             | Default Violation Action |
-| ---------------- | ----------------------------- | ----------------------------------- | -------------------------------------------- | ------------------------ |
-| G-IMPL-01–04     | Implementation Agent (20)     | Compliance Reviewer (38) — T1       | `implementation-output-contract.md`          | BLOCK + rework           |
-| G-IMPL-05–08     | Implementation Agent (20)     | Test Agent (21)                     | `test-output-contract.md`                    | BLOCK + rework           |
-| G-IMPL-09–12     | Implementation Agent (20)     | Compliance Reviewer (38) — T1       | `architecture-compliance-output-contract.md` | BLOCK + rework           |
-| G-IMPL-13–15     | Implementation Agent (20)     | Compliance Reviewer (38) — T2       | `implementation-output-contract.md`          | BLOCK + rework           |
-| G-IMPL-16–20     | Implementation Agent (20)     | PR/Review Agent (22)                | `pr-review-output-contract.md`               | BLOCK merge              |
-| G-IMPL-21–24     | Test Agent (21)               | Compliance Reviewer (38) — T1       | `test-output-contract.md`                    | BLOCK + rework           |
-| G-IMPL-25–28     | PR/Review Agent (22)          | Orchestrator (00)                   | `pr-review-output-contract.md`               | BLOCK merge              |
-| G-IMPL-29–32     | Implementation Agent (20)     | Compliance Reviewer (38) — T3       | `implementation-output-contract.md`          | WARN + document          |
-| G-IMPL-33–36     | All Phase 5 Agents            | Orchestrator (00)                   | `agent-handoff-contract.md`                  | BLOCK handoff            |
+| Rule Range   | Primary Enforcer          | Verification Agent            | Related Contract                             | Default Violation Action |
+| ------------ | ------------------------- | ----------------------------- | -------------------------------------------- | ------------------------ |
+| G-IMPL-01–04 | Implementation Agent (20) | Compliance Reviewer (38) — T1 | `implementation-output-contract.md`          | BLOCK + rework           |
+| G-IMPL-05–08 | Implementation Agent (20) | Test Agent (21)               | `test-output-contract.md`                    | BLOCK + rework           |
+| G-IMPL-09–12 | Implementation Agent (20) | Compliance Reviewer (38) — T1 | `architecture-compliance-output-contract.md` | BLOCK + rework           |
+| G-IMPL-13–15 | Implementation Agent (20) | Compliance Reviewer (38) — T2 | `implementation-output-contract.md`          | BLOCK + rework           |
+| G-IMPL-16–20 | Implementation Agent (20) | PR/Review Agent (22)          | `pr-review-output-contract.md`               | BLOCK merge              |
+| G-IMPL-21–24 | Test Agent (21)           | Compliance Reviewer (38) — T1 | `test-output-contract.md`                    | BLOCK + rework           |
+| G-IMPL-25–28 | PR/Review Agent (22)      | Orchestrator (00)             | `pr-review-output-contract.md`               | BLOCK merge              |
+| G-IMPL-29–32 | Implementation Agent (20) | Compliance Reviewer (38) — T3 | `implementation-output-contract.md`          | WARN + document          |
+| G-IMPL-33–36 | All Phase 5 Agents        | Orchestrator (00)             | `agent-handoff-contract.md`                  | BLOCK handoff            |
 
 See also the **Violation Handling Response Table** at the end of this file for per-rule actions.
 
@@ -238,14 +238,14 @@ the agent. No user intervention is required. Violation:
 
 ## VIOLATED? THEN DO THIS:
 
-| Guard code       | On violation                                                                             |
-| ---------------- | ---------------------------------------------------------------------------------------- |
+| Guard code   | On violation                                                                             |
+| ------------ | ---------------------------------------------------------------------------------------- |
 | G-IMPL-01/02 | HALT, document, await Orchestrator                                                       |
-| G-IMPL-04    | HALT, `ARCH_CONFLICT:`, escalate (externally verified by Compliance Reviewer)             |
+| G-IMPL-04    | HALT, `ARCH_CONFLICT:`, escalate (externally verified by Compliance Reviewer)            |
 | G-IMPL-09    | HALT, `SECURITY_VIOLATION:`, escalate immediately                                        |
 | G-IMPL-12    | Story is NOT done, write test                                                            |
 | G-IMPL-13    | HALT, fix regression BEFORE handoff                                                      |
-| G-IMPL-25    | HALT, escalate per G-IMPL-26 format                                                  |
+| G-IMPL-25    | HALT, escalate per G-IMPL-26 format                                                      |
 | G-IMPL-29    | HALT, `ROUTING_ERROR:`, escalate to Orchestrator                                         |
 | G-IMPL-30    | HALT, `CROSS_TRACK_BLOCKER:`, escalate to Orchestrator                                   |
 | G-IMPL-32    | `DEC-VIOLATION:`, remediate before handoff; repeat violations → escalate to Orchestrator |

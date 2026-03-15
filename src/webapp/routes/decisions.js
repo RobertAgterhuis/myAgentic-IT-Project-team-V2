@@ -388,7 +388,11 @@ module.exports = function createDecisionRoutes(ctx) {
       });
     });
 
-    sseNotify('decision_update', { action: 'activate_category', file: fname, name: result.header.name });
+    sseNotify('decision_update', {
+      action: 'activate_category',
+      file: fname,
+      name: result.header.name,
+    });
     return json(res, 200, {
       ok: true,
       action: 'activated',

@@ -7,12 +7,12 @@
 
 ## ENFORCEMENT & CONTRACT REFERENCE
 
-| Rule Range    | Primary Enforcer                 | Verification Agent                 | Related Contract                           | Default Violation Action |
-| ------------- | -------------------------------- | ---------------------------------- | ------------------------------------------ | ------------------------ |
-| G-SEC-01–04   | Security Architect (08)          | Critic Agent (18)                  | `analysis-output-contract.md`              | BLOCK handoff            |
-| G-SEC-05–06   | Security Architect (08)          | Compliance Reviewer (38) — T1      | `recommendations-output-contract.md`       | BLOCK handoff            |
-| G-SEC-07      | PR/Review Agent (22)             | PR/Review Agent (22)               | `pr-review-output-contract.md`             | BLOCK merge              |
-| G-SEC-08      | Implementation Agent (20)        | Compliance Reviewer (38) — T1      | `implementation-output-contract.md`        | BLOCK handoff            |
+| Rule Range  | Primary Enforcer          | Verification Agent            | Related Contract                     | Default Violation Action |
+| ----------- | ------------------------- | ----------------------------- | ------------------------------------ | ------------------------ |
+| G-SEC-01–04 | Security Architect (08)   | Critic Agent (18)             | `analysis-output-contract.md`        | BLOCK handoff            |
+| G-SEC-05–06 | Security Architect (08)   | Compliance Reviewer (38) — T1 | `recommendations-output-contract.md` | BLOCK handoff            |
+| G-SEC-07    | PR/Review Agent (22)      | PR/Review Agent (22)          | `pr-review-output-contract.md`       | BLOCK merge              |
+| G-SEC-08    | Implementation Agent (20) | Compliance Reviewer (38) — T1 | `implementation-output-contract.md`  | BLOCK handoff            |
 
 ## DOMAIN: SECURITY & COMPLIANCE
 
@@ -73,12 +73,12 @@ reported as a `HIGH_PRIORITY_GAP`.
 **Rule:** Security Architect MUST produce an asset classification before risk
 assessment. Every system component is classified by sensitivity:
 
-| Class       | Description                                | Example                      |
-| ----------- | ------------------------------------------ | ---------------------------- |
-| CRITICAL    | Breach = regulatory/legal/existential      | PII store, auth service, encryption keys |
-| HIGH        | Breach = significant business impact       | Payment processing, admin APIs |
-| MEDIUM      | Breach = operational disruption            | Internal dashboards, CI/CD   |
-| LOW         | Breach = minimal impact                    | Public marketing site, docs  |
+| Class    | Description                           | Example                                  |
+| -------- | ------------------------------------- | ---------------------------------------- |
+| CRITICAL | Breach = regulatory/legal/existential | PII store, auth service, encryption keys |
+| HIGH     | Breach = significant business impact  | Payment processing, admin APIs           |
+| MEDIUM   | Breach = operational disruption       | Internal dashboards, CI/CD               |
+| LOW      | Breach = minimal impact               | Public marketing site, docs              |
 
 **Prohibition:** No security recommendations without asset classification
 context. Findings on CRITICAL assets automatically receive priority elevation.

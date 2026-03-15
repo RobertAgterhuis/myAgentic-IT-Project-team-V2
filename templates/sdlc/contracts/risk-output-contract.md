@@ -63,6 +63,7 @@ Each risk receives a **composite score** from the following matrix:
 | UNLIKELY (1)          | 4            | 3        | 2          | 1       |
 
 **Score interpretation:**
+
 - **12–16 (RED):** Immediate mitigation required; blocks phase approval
 - **6–9 (AMBER):** Mitigation plan required before sprint planning
 - **2–4 (GREEN):** Accept or monitor; document in risk register

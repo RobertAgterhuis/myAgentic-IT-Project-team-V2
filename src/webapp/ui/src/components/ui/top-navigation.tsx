@@ -57,10 +57,7 @@ function TopNavigation({
   return (
     <header
       role="banner"
-      className={cn(
-        'flex h-14 items-center gap-4 border-b bg-card px-4 shadow-sm',
-        className
-      )}
+      className={cn('flex h-14 items-center gap-4 border-b bg-card px-4 shadow-sm', className)}
       {...props}
     >
       {/* Mobile hamburger */}
@@ -77,9 +74,7 @@ function TopNavigation({
       {projectName && (
         <div className="hidden sm:flex items-center gap-2">
           <div className="size-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-sm font-semibold truncate max-w-48">
-            {projectName}
-          </span>
+          <span className="text-sm font-semibold truncate max-w-48">{projectName}</span>
         </div>
       )}
 
@@ -100,8 +95,11 @@ function TopNavigation({
         {orchestratorState && (
           <Badge
             variant={
-              orchestratorState === 'ERROR' ? 'error' :
-              orchestratorState === 'IDLE' ? 'secondary' : 'info'
+              orchestratorState === 'ERROR'
+                ? 'error'
+                : orchestratorState === 'IDLE'
+                  ? 'secondary'
+                  : 'info'
             }
             className="hidden sm:inline-flex gap-1"
           >
@@ -116,11 +114,7 @@ function TopNavigation({
         )}
 
         {/* Connection status */}
-        <Badge
-          variant={statusBadgeVariant[connectionStatus]}
-          className="gap-1"
-          dot={false}
-        >
+        <Badge variant={statusBadgeVariant[connectionStatus]} className="gap-1" dot={false}>
           {statusIcon[connectionStatus]}
           <span className="hidden sm:inline">{statusLabel[connectionStatus]}</span>
         </Badge>

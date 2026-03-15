@@ -1392,11 +1392,7 @@
       "role": "Validates implemented code against Phase 1-4 design decisions before PR merge",
       "phase": "PHASE_5_EXECUTING",
       "skillFiles": ["templates/sdlc/agents/38-architecture-compliance-reviewer.md"],
-      "tools": [
-        "tool.files.read",
-        "tool.context.search",
-        "tool.validation.contract"
-      ],
+      "tools": ["tool.files.read", "tool.context.search", "tool.validation.contract"],
       "guardrails": [
         "templates/sdlc/guardrails/00-global-guardrails.md",
         "templates/sdlc/guardrails/06-implementation-guardrails.md"

@@ -16,9 +16,9 @@ detect drift.
 
 ## PRODUCER
 
-| Producer        | Trigger                            | Tool                                  |
-| --------------- | ---------------------------------- | ------------------------------------- |
-| Orchestrator    | Sprint Gate Step 0 (automatic)     | `scripts/github-state-snapshot.js`    |
+| Producer     | Trigger                        | Tool                               |
+| ------------ | ------------------------------ | ---------------------------------- |
+| Orchestrator | Sprint Gate Step 0 (automatic) | `scripts/github-state-snapshot.js` |
 
 ---
 
@@ -71,10 +71,10 @@ detect drift.
 
 ## CONSUMERS
 
-| Consumer                | Usage                                                      |
-| ----------------------- | ---------------------------------------------------------- |
-| Orchestrator (Agent 00) | Sprint Gate Step 0 — injects as `## GITHUB STATE` context  |
-| Reevaluate Agent (23)   | Compares snapshot against sprint plan for drift detection   |
+| Consumer                | Usage                                                     |
+| ----------------------- | --------------------------------------------------------- |
+| Orchestrator (Agent 00) | Sprint Gate Step 0 — injects as `## GITHUB STATE` context |
+| Reevaluate Agent (23)   | Compares snapshot against sprint plan for drift detection |
 
 ---
 
@@ -98,10 +98,10 @@ detect drift.
 
 ## VALIDATION
 
-| Check                        | Rule                                          |
-| ---------------------------- | --------------------------------------------- |
-| `repo` matches project       | Must equal configured `OWNER/REPO`            |
-| `captured_at` is recent      | Within 1 hour of Sprint Gate start            |
-| `milestones` array present   | May be empty but must exist                   |
-| `issues` array present       | May be empty but must exist                   |
-| `summary` counts consistent  | `issues_open + issues_closed` ≥ `issues.length` |
+| Check                       | Rule                                            |
+| --------------------------- | ----------------------------------------------- |
+| `repo` matches project      | Must equal configured `OWNER/REPO`              |
+| `captured_at` is recent     | Within 1 hour of Sprint Gate start              |
+| `milestones` array present  | May be empty but must exist                     |
+| `issues` array present      | May be empty but must exist                     |
+| `summary` counts consistent | `issues_open + issues_closed` ≥ `issues.length` |

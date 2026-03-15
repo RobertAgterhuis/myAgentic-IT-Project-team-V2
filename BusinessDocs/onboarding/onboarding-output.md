@@ -19,15 +19,15 @@
 
 ## 2. Intake Questionnaire Answers
 
-| Question                          | Answer                                                               | Source                |
-| --------------------------------- | -------------------------------------------------------------------- | --------------------- |
-| Codebase accessible (read)?       | Yes                                                                  | file system verified  |
-| At least one documentation source | Yes — README.md, docs/, 182 markdown files                          | codebase scan         |
-| Audit objective                   | Self-audit of TECH architecture + UX quality of the Command Center   | user command          |
-| Git history available?            | Yes — 5+ major milestones, clean PR-based flow                       | git log               |
-| Business requirements available?  | Yes — templates/sdlc/ contains full SDLC contracts, guardrails       | codebase scan         |
-| GitHub project name               | INSUFFICIENT_DATA: not provided — not required for audit-only cycle  | —                     |
-| Canva API token                   | INSUFFICIENT_DATA: not requested — no Phase 4 in scope              | —                     |
+| Question                          | Answer                                                              | Source               |
+| --------------------------------- | ------------------------------------------------------------------- | -------------------- |
+| Codebase accessible (read)?       | Yes                                                                 | file system verified |
+| At least one documentation source | Yes — README.md, docs/, 182 markdown files                          | codebase scan        |
+| Audit objective                   | Self-audit of TECH architecture + UX quality of the Command Center  | user command         |
+| Git history available?            | Yes — 5+ major milestones, clean PR-based flow                      | git log              |
+| Business requirements available?  | Yes — templates/sdlc/ contains full SDLC contracts, guardrails      | codebase scan        |
+| GitHub project name               | INSUFFICIENT_DATA: not provided — not required for audit-only cycle | —                    |
+| Canva API token                   | INSUFFICIENT_DATA: not requested — no Phase 4 in scope              | —                    |
 
 ---
 
@@ -89,20 +89,20 @@
 
 ## 4. Tooling Gap Analysis
 
-| Tool                     | Available | Version            |
-| ------------------------ | --------- | ------------------ |
-| Git                      | Yes       | 2.48.1             |
-| Node.js                  | Yes       | 22.14.0            |
-| npm                      | Yes       | 10.9.2             |
-| TypeScript               | Yes       | 5.9.3              |
-| ESLint                   | Yes       | 8.57.1             |
-| Vitest                   | Yes       | 4.1.0              |
-| Playwright               | Yes       | 1.58.2             |
-| GitHub CLI               | Yes       | 2.83.2             |
-| File system (read)       | Yes       | —                  |
-| File system (write)      | Yes       | —                  |
-| Docker                   | Yes       | Dockerfile present |
-| Storybook                | Yes       | 10.x               |
+| Tool                | Available | Version            |
+| ------------------- | --------- | ------------------ |
+| Git                 | Yes       | 2.48.1             |
+| Node.js             | Yes       | 22.14.0            |
+| npm                 | Yes       | 10.9.2             |
+| TypeScript          | Yes       | 5.9.3              |
+| ESLint              | Yes       | 8.57.1             |
+| Vitest              | Yes       | 4.1.0              |
+| Playwright          | Yes       | 1.58.2             |
+| GitHub CLI          | Yes       | 2.83.2             |
+| File system (read)  | Yes       | —                  |
+| File system (write) | Yes       | —                  |
+| Docker              | Yes       | Dockerfile present |
+| Storybook           | Yes       | 10.x               |
 
 **Tooling gaps:** NONE — all required tools for Phase 2 (TECH) and Phase 3 (UX) audit are available.
 
@@ -118,6 +118,7 @@
 | Branches   | 2,672 | 2,169   | 81.2%      |
 
 **Lowest-coverage files:**
+
 - `routes/dashboard.js` — 48.2% lines (source: coverage-summary.json)
 - `routes/orchestrator.js` — 52.8% lines (source: coverage-summary.json)
 - `mcp-server.js` — 65.1% lines (source: coverage-summary.json)

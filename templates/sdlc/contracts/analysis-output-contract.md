@@ -77,7 +77,7 @@ Every analysis deliverable consists of two parts:
 > - External: `Source: external:URL-or-name` (third-party reference)
 > - Analysis cross-ref: `Source: GAP-NNN / RISK-NNN / CS-NNN / DESIGN-NNN`
 >
-> Multiple sources: separate with ` | `. Unknown: use `INSUFFICIENT_DATA:`.
+> Multiple sources: separate with `|`. Unknown: use `INSUFFICIENT_DATA:`.
 
 ### 1.1 [Topic A]
 

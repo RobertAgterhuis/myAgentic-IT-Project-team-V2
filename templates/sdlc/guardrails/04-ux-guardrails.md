@@ -7,13 +7,13 @@
 
 ## ENFORCEMENT & CONTRACT REFERENCE
 
-| Rule Range    | Primary Enforcer                  | Verification Agent                 | Related Contract                           | Default Violation Action |
-| ------------- | --------------------------------- | ---------------------------------- | ------------------------------------------ | ------------------------ |
-| G-UX-01–03    | UX Designer (11), UI Designer (12)| Critic Agent (18)                  | `analysis-output-contract.md`              | BLOCK handoff            |
-| G-UX-04–05    | UX Researcher (10)                | Critic Agent (18)                  | `analysis-output-contract.md`              | BLOCK handoff            |
-| G-UX-06–07    | Accessibility Specialist (13)     | Compliance Reviewer (38) — T2      | `recommendations-output-contract.md`       | BLOCK handoff            |
-| G-UX-08       | UI Designer (12)                  | Compliance Reviewer (38) — T2      | `brand-assets-output-contract.md`          | WARN + document          |
-| G-UX-09       | Localization Specialist (35)      | Critic Agent (18)                  | `recommendations-output-contract.md`       | BLOCK handoff            |
+| Rule Range | Primary Enforcer                   | Verification Agent            | Related Contract                     | Default Violation Action |
+| ---------- | ---------------------------------- | ----------------------------- | ------------------------------------ | ------------------------ |
+| G-UX-01–03 | UX Designer (11), UI Designer (12) | Critic Agent (18)             | `analysis-output-contract.md`        | BLOCK handoff            |
+| G-UX-04–05 | UX Researcher (10)                 | Critic Agent (18)             | `analysis-output-contract.md`        | BLOCK handoff            |
+| G-UX-06–07 | Accessibility Specialist (13)      | Compliance Reviewer (38) — T2 | `recommendations-output-contract.md` | BLOCK handoff            |
+| G-UX-08    | UI Designer (12)                   | Compliance Reviewer (38) — T2 | `brand-assets-output-contract.md`    | WARN + document          |
+| G-UX-09    | Localization Specialist (35)       | Critic Agent (18)             | `recommendations-output-contract.md` | BLOCK handoff            |
 
 ## DOMAIN: UX & PRODUCT EXPERIENCE
 
@@ -54,11 +54,11 @@ explicit criteria:
 
 **Scoring guidance per dimension:**
 
-| Dimension          | 1–3 (Low)                     | 4–6 (Medium)                   | 7–10 (High / Overloaded)          |
-| ------------------ | ----------------------------- | ------------------------------ | ---------------------------------- |
-| Information density | ≤5 data elements per viewport | 6–12 data elements              | >12 data elements or scrolling req |
-| Decision points    | 1 primary CTA, no branching   | 2–3 actions, clear hierarchy   | >3 competing actions or unclear    |
-| Visual complexity  | Clean layout, ample whitespace | Some density, clear grouping   | Cluttered, no grouping, >3 fonts   |
+| Dimension           | 1–3 (Low)                      | 4–6 (Medium)                 | 7–10 (High / Overloaded)           |
+| ------------------- | ------------------------------ | ---------------------------- | ---------------------------------- |
+| Information density | ≤5 data elements per viewport  | 6–12 data elements           | >12 data elements or scrolling req |
+| Decision points     | 1 primary CTA, no branching    | 2–3 actions, clear hierarchy | >3 competing actions or unclear    |
+| Visual complexity   | Clean layout, ample whitespace | Some density, clear grouping | Cluttered, no grouping, >3 fonts   |
 
 **Composite score:** Average of 3 dimensions. Score ≥7 triggers
 `UX_COGNITIVE_OVERLOAD_FLAG` with mandatory redesign recommendation.

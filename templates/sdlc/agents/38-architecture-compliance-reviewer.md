@@ -273,12 +273,12 @@ Proceed to handoff to PR/Review Agent ONLY when
 
 ## VIOLATION SEVERITY CLASSIFICATION
 
-| Severity    | Definition                                                          | Action                                        |
-| ----------- | ------------------------------------------------------------------- | --------------------------------------------- |
-| `CRITICAL`  | Code contradicts a core architecture decision or security pattern   | HALT — mandatory rework before any proceeding  |
-| `MAJOR`     | Code deviates from design patterns or introduces unapproved choices | Mandatory rework                               |
-| `MINOR`     | Code has stylistic deviation from design system or naming mismatch  | Rework recommended; proceed if Orchestrator OKs |
-| `ADVISORY`  | Potential improvement opportunity, not a violation                   | Document only — no rework required             |
+| Severity   | Definition                                                          | Action                                          |
+| ---------- | ------------------------------------------------------------------- | ----------------------------------------------- |
+| `CRITICAL` | Code contradicts a core architecture decision or security pattern   | HALT — mandatory rework before any proceeding   |
+| `MAJOR`    | Code deviates from design patterns or introduces unapproved choices | Mandatory rework                                |
+| `MINOR`    | Code has stylistic deviation from design system or naming mismatch  | Rework recommended; proceed if Orchestrator OKs |
+| `ADVISORY` | Potential improvement opportunity, not a violation                  | Document only — no rework required              |
 
 **PROHIBITION:** A story with ANY `CRITICAL` or `MAJOR` violation may NOT
 proceed to the PR/Review Agent.

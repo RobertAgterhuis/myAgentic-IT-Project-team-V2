@@ -39,13 +39,13 @@ complete rules.
 
 ### Downstream Consumers
 
-| Consumer                | File Consumed            | Usage                                                              |
-| ----------------------- | ----------------------- | ------------------------------------------------------------------ |
-| Orchestrator (Agent 00) | `velocity-log.json`     | Sprint Gate Step 7 — velocity ratio check; if < 0.8 for 2+ sprints: warn and adjust estimates |
-| Orchestrator (Agent 00) | `lessons-learned.md`    | Sprint Gate Step 7 — inject top-3 lessons as context for Implementation and PR/Review agents |
-| Implementation (Agent 20) | `lessons-learned.md`  | Injected by Orchestrator at sprint start — QUALITY and BLOCKER lessons |
-| PR/Review (Agent 22)    | `lessons-learned.md`    | Injected by Orchestrator at sprint start — QUALITY lessons          |
-| KPI Agent (Agent 29)    | `velocity-log.json`     | Trend analysis across sprints for KPI reporting                     |
+| Consumer                  | File Consumed        | Usage                                                                                         |
+| ------------------------- | -------------------- | --------------------------------------------------------------------------------------------- |
+| Orchestrator (Agent 00)   | `velocity-log.json`  | Sprint Gate Step 7 — velocity ratio check; if < 0.8 for 2+ sprints: warn and adjust estimates |
+| Orchestrator (Agent 00)   | `lessons-learned.md` | Sprint Gate Step 7 — inject top-3 lessons as context for Implementation and PR/Review agents  |
+| Implementation (Agent 20) | `lessons-learned.md` | Injected by Orchestrator at sprint start — QUALITY and BLOCKER lessons                        |
+| PR/Review (Agent 22)      | `lessons-learned.md` | Injected by Orchestrator at sprint start — QUALITY lessons                                    |
+| KPI Agent (Agent 29)      | `velocity-log.json`  | Trend analysis across sprints for KPI reporting                                               |
 
 ---
 

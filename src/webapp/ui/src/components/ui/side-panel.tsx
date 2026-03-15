@@ -82,7 +82,16 @@ function SectionGroup({
                 )}
                 aria-current={activeItemId === item.id ? 'page' : undefined}
               >
-                {item.icon && <span className={cn('shrink-0 [&>svg]:size-4', activeItemId === item.id && 'text-primary')}>{item.icon}</span>}
+                {item.icon && (
+                  <span
+                    className={cn(
+                      'shrink-0 [&>svg]:size-4',
+                      activeItemId === item.id && 'text-primary'
+                    )}
+                  >
+                    {item.icon}
+                  </span>
+                )}
                 {!collapsed && <span className="truncate">{item.label}</span>}
               </button>
             </li>

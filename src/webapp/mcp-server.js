@@ -242,7 +242,11 @@ mcp.tool(
     try {
       if (!file) return errorResult('file parameter is required');
       const abs = safePath(PROJECT_ROOT, file);
-      try { await fsp.access(abs); } catch { return errorResult(`File not found: ${file}`); }
+      try {
+        await fsp.access(abs);
+      } catch {
+        return errorResult(`File not found: ${file}`);
+      }
       const content = await fsp.readFile(abs, 'utf8');
       return jsonResult({ file, ...models.parseQuestionnaire(content, abs, PROJECT_ROOT) });
     } catch (err) {
@@ -290,7 +294,11 @@ mcp.tool(
       if (updates.length > 200) return errorResult('Too many updates (max 200)');
 
       const abs = safePath(PROJECT_ROOT, file);
-      try { await fsp.access(abs); } catch { return errorResult(`File not found: ${file}`); }
+      try {
+        await fsp.access(abs);
+      } catch {
+        return errorResult(`File not found: ${file}`);
+      }
 
       return await applySaveAnswers(abs, file, updates);
     } catch (err) {
@@ -382,7 +390,9 @@ mcp.tool(
     try {
       const valErr = validateDecisionFields(type, priority, scope, text);
       if (valErr) return valErr;
-      try { await fsp.access(DECISIONS_PATH); } catch {
+      try {
+        await fsp.access(DECISIONS_PATH);
+      } catch {
         return errorResult('decisions.md not found — run a CREATE or AUDIT command first');
       }
 
@@ -444,7 +454,11 @@ mcp.tool(
     try {
       if (!id || !answer) return errorResult('id and answer are required');
       if (!models.DEC_ID_RE.test(id)) return errorResult(`Invalid decision ID format: ${id}`);
-      try { await fsp.access(DECISIONS_PATH); } catch { return errorResult('decisions.md not found'); }
+      try {
+        await fsp.access(DECISIONS_PATH);
+      } catch {
+        return errorResult('decisions.md not found');
+      }
 
       return await withFileLock(DECISIONS_PATH, async () => {
         let content = await fsp.readFile(DECISIONS_PATH, 'utf8');
@@ -488,7 +502,11 @@ mcp.tool(
     try {
       if (!id) return errorResult('id is required');
       if (!models.DEC_ID_RE.test(id)) return errorResult(`Invalid decision ID format: ${id}`);
-      try { await fsp.access(DECISIONS_PATH); } catch { return errorResult('decisions.md not found'); }
+      try {
+        await fsp.access(DECISIONS_PATH);
+      } catch {
+        return errorResult('decisions.md not found');
+      }
 
       return await withFileLock(DECISIONS_PATH, async () => {
         let content = await fsp.readFile(DECISIONS_PATH, 'utf8');
@@ -652,7 +670,11 @@ mcp.tool(
   },
   async ({ topic } = {}) => {
     try {
-      try { await fsp.access(HELP_DIR); } catch { return errorResult('Help directory not found'); }
+      try {
+        await fsp.access(HELP_DIR);
+      } catch {
+        return errorResult('Help directory not found');
+      }
 
       if (!topic) {
         const files = (await fsp.readdir(HELP_DIR)).filter((f) => f.endsWith('.md'));
@@ -662,7 +684,11 @@ mcp.tool(
 
       const safe = topic.replace(/[^a-z0-9_-]/gi, '');
       const file = path.join(HELP_DIR, `${safe}.md`);
-      try { await fsp.access(file); } catch { return errorResult(`Help topic not found: ${topic}`); }
+      try {
+        await fsp.access(file);
+      } catch {
+        return errorResult(`Help topic not found: ${topic}`);
+      }
       return jsonResult({ topic: safe, content: await fsp.readFile(file, 'utf8') });
     } catch (err) {
       return errorResult(`Failed to read help: ${err.message}`);

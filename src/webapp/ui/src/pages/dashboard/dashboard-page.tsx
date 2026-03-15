@@ -182,8 +182,7 @@ function LiveStatusHero() {
           {/* Idle state encouragement */}
           {status?.state === 'IDLE' && (
             <Text muted className="mt-1">
-              No active pipeline. Use the Command Center to start a CREATE, AUDIT, or FEATURE
-              cycle.
+              No active pipeline. Use the Command Center to start a CREATE, AUDIT, or FEATURE cycle.
             </Text>
           )}
         </div>
@@ -243,11 +242,31 @@ function HealthCard({ name, indicator }: { name: string; indicator: HealthIndica
 function QuickLinks() {
   const navigate = useNavigate();
   const links = [
-    { ...routes.commandCenter, icon: <Terminal className="size-5" />, desc: 'Queue commands and manage the pipeline' },
-    { ...routes.pipeline, icon: <GitBranch className="size-5" />, desc: 'View pipeline phases and agent progress' },
-    { ...routes.questionnaires, icon: <FileText className="size-5" />, desc: 'Answer project intake questions' },
-    { ...routes.decisions, icon: <Scale className="size-5" />, desc: 'Review and manage architectural decisions' },
-    { ...routes.metrics, icon: <BarChart3 className="size-5" />, desc: 'Monitor drift, KPIs, and quality metrics' },
+    {
+      ...routes.commandCenter,
+      icon: <Terminal className="size-5" />,
+      desc: 'Queue commands and manage the pipeline',
+    },
+    {
+      ...routes.pipeline,
+      icon: <GitBranch className="size-5" />,
+      desc: 'View pipeline phases and agent progress',
+    },
+    {
+      ...routes.questionnaires,
+      icon: <FileText className="size-5" />,
+      desc: 'Answer project intake questions',
+    },
+    {
+      ...routes.decisions,
+      icon: <Scale className="size-5" />,
+      desc: 'Review and manage architectural decisions',
+    },
+    {
+      ...routes.metrics,
+      icon: <BarChart3 className="size-5" />,
+      desc: 'Monitor drift, KPIs, and quality metrics',
+    },
   ];
 
   return (
@@ -278,10 +297,7 @@ function QuickLinks() {
 /* ── Recent Commands Widget ── */
 function RecentCommands() {
   const { data: queue } = useOrchestratorQueue();
-  const recentCommands = useMemo(
-    () => (queue?.queue ?? []).slice(-5).reverse(),
-    [queue]
-  );
+  const recentCommands = useMemo(() => (queue?.queue ?? []).slice(-5).reverse(), [queue]);
 
   if (recentCommands.length === 0) return null;
 

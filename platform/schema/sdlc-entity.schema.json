@@ -1,0 +1,170 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myagentic-it.local/schema/sdlc-entity.schema.json",
+  "title": "SDLC Entity Schema",
+  "description": "Validates SDLC domain entities: Product, Project, Feature, Requirement, Architecture Decision, Implementation Task, Test Artifact, Release, Deployment, Incident, Improvement.",
+  "type": "object",
+  "required": ["id", "type", "name", "status", "stage", "created_at", "updated_at"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z_]+-[a-z0-9]+-[a-z0-9]+$",
+      "description": "Unique entity identifier (prefix-timestamp-sequence)"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "PRODUCT",
+        "PROJECT",
+        "FEATURE",
+        "REQUIREMENT",
+        "ARCHITECTURE_DECISION",
+        "IMPLEMENTATION_TASK",
+        "TEST_ARTIFACT",
+        "RELEASE",
+        "DEPLOYMENT",
+        "INCIDENT",
+        "IMPROVEMENT"
+      ]
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "description": {
+      "type": "string",
+      "maxLength": 5000
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "DRAFT",
+        "PROPOSED",
+        "APPROVED",
+        "IN_PROGRESS",
+        "IN_REVIEW",
+        "DONE",
+        "BLOCKED",
+        "CANCELLED",
+        "SUPERSEDED"
+      ]
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "IDEA",
+        "REQUIREMENTS",
+        "ARCHITECTURE",
+        "PLANNING",
+        "IMPLEMENTATION",
+        "TESTING",
+        "SECURITY_VALIDATION",
+        "RELEASE",
+        "OPERATIONS",
+        "IMPROVEMENT"
+      ]
+    },
+    "owner": { "type": "string" },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "links": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/TraceLink" }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "vision": { "type": "string" },
+    "stakeholders": { "type": "array", "items": { "type": "string" } },
+    "product_id": { "type": "string" },
+    "start_date": { "type": "string" },
+    "target_date": { "type": "string" },
+    "project_id": { "type": "string" },
+    "priority": { "type": "string", "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"] },
+    "acceptance_criteria": { "type": "array", "items": { "type": "string" } },
+    "feature_id": { "type": "string" },
+    "classification": { "type": "string", "enum": ["FUNCTIONAL", "NON_FUNCTIONAL"] },
+    "source": { "type": "string" },
+    "context": { "type": "string" },
+    "decision": { "type": "string" },
+    "consequences": { "type": "array", "items": { "type": "string" } },
+    "alternatives": { "type": "array", "items": { "type": "string" } },
+    "requirement_ids": { "type": "array", "items": { "type": "string" } },
+    "sprint_id": { "type": "string" },
+    "estimate_hours": { "type": "number", "minimum": 0 },
+    "assignee": { "type": "string" },
+    "task_id": { "type": "string" },
+    "test_type": {
+      "type": "string",
+      "enum": ["UNIT", "INTEGRATION", "E2E", "SECURITY", "PERFORMANCE"]
+    },
+    "result": { "type": "string", "enum": ["PASS", "FAIL", "SKIPPED", "PENDING"] },
+    "coverage_pct": { "type": ["number", "null"], "minimum": 0, "maximum": 100 },
+    "version": { "type": "string" },
+    "changelog": { "type": "array", "items": { "type": "string" } },
+    "task_ids": { "type": "array", "items": { "type": "string" } },
+    "test_ids": { "type": "array", "items": { "type": "string" } },
+    "release_id": { "type": "string" },
+    "environment": { "type": "string" },
+    "deployed_at": { "type": "string", "format": "date-time" },
+    "deployed_by": { "type": "string" },
+    "severity": { "type": "string", "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"] },
+    "root_cause": { "type": "string" },
+    "resolution": { "type": "string" },
+    "resolved_at": { "type": ["string", "null"] },
+    "source_type": {
+      "type": "string",
+      "enum": ["INCIDENT", "RETROSPECTIVE", "METRIC", "FEEDBACK"]
+    },
+    "source_id": { "type": "string" },
+    "proposed_action": { "type": "string" }
+  },
+  "$defs": {
+    "TraceLink": {
+      "type": "object",
+      "required": ["type", "target_id", "target_type", "created_at"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "DERIVES_FROM",
+            "IMPLEMENTS",
+            "TESTED_BY",
+            "RELEASED_IN",
+            "DEPLOYED_TO",
+            "TRIGGERED_BY",
+            "SUPERSEDES",
+            "BLOCKS",
+            "DEPENDS_ON"
+          ]
+        },
+        "target_id": { "type": "string" },
+        "target_type": {
+          "type": "string",
+          "enum": [
+            "PRODUCT",
+            "PROJECT",
+            "FEATURE",
+            "REQUIREMENT",
+            "ARCHITECTURE_DECISION",
+            "IMPLEMENTATION_TASK",
+            "TEST_ARTIFACT",
+            "RELEASE",
+            "DEPLOYMENT",
+            "INCIDENT",
+            "IMPROVEMENT"
+          ]
+        },
+        "created_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

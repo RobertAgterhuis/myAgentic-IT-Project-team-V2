@@ -1,0 +1,52 @@
+# Bug Fix Workflow
+# Streamlined workflow for fixing non-critical bugs.
+
+id: bug-fix
+name: Bug Fix
+description: Streamlined workflow for diagnosing and fixing reported bugs.
+version: "1.0.0"
+
+triggers:
+  - event: bug-reported
+  - command: "BUGFIX"
+
+stages:
+  - stage: REQUIREMENTS
+    label: Triage & Reproduce
+    agents:
+      - business-analyst
+    gates:
+      - G-REQ-01
+    artifacts:
+      - bug-report
+      - reproduction-steps
+
+  - stage: IMPLEMENTATION
+    agents:
+      - implementation-agent
+    gates:
+      - G-IMPL-01
+      - G-IMPL-02
+      - G-IMPL-03
+    artifacts:
+      - fix-branch
+      - fix-pr
+
+  - stage: TESTING
+    agents:
+      - test-agent
+    gates:
+      - G-TEST-01
+      - G-TEST-02
+    artifacts:
+      - regression-test-report
+      - fix-verification
+
+  - stage: RELEASE
+    agents:
+      - pr-review-agent
+    gates:
+      - G-REL-01
+      - G-REL-02
+    artifacts:
+      - patch-release-notes

@@ -1,0 +1,44 @@
+# Architecture Review Workflow
+# Focused workflow for reviewing and validating architecture decisions.
+
+id: architecture-review
+name: Architecture Review
+description: Review and validate architecture decisions, security design, and technology choices.
+version: "1.0.0"
+
+triggers:
+  - command: "CREATE TECH"
+  - event: architecture-decision-created
+
+stages:
+  - stage: ARCHITECTURE
+    agents:
+      - software-architect
+      - security-architect
+      - data-architect
+      - senior-developer
+    gates:
+      - G-ARCH-01
+      - G-ARCH-02
+      - G-ARCH-03
+    artifacts:
+      - architecture-decision-record
+      - security-design
+      - scalability-assessment
+
+  - stage: PLANNING
+    agents:
+      - product-manager
+    gates:
+      - G-PLAN-01
+    artifacts:
+      - technical-spike-plan
+      - proof-of-concept-plan
+
+validation:
+  critic-agent: true
+  risk-agent: true
+  compliance-check:
+    - OWASP-top-10
+    - data-privacy
+    - accessibility-baseline

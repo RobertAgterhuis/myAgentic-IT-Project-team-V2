@@ -1,0 +1,68 @@
+# Incident Response Workflow
+# Emergency workflow for handling production incidents.
+
+id: incident-response
+name: Incident Response
+description: Rapid response workflow for production incidents — triage, fix, deploy, retrospective.
+version: "1.0.0"
+
+triggers:
+  - command: "HOTFIX"
+  - event: incident-detected
+
+stages:
+  - stage: OPERATIONS
+    label: Triage
+    agents:
+      - devops-engineer
+    gates:
+      - G-OPS-01
+    artifacts:
+      - incident-report
+      - triage-assessment
+    timeout_hours: 1
+
+  - stage: IMPLEMENTATION
+    label: Hotfix
+    agents:
+      - implementation-agent
+    gates:
+      - G-IMPL-02
+      - G-IMPL-03
+    artifacts:
+      - hotfix-branch
+      - hotfix-pr
+    bypass_gates:
+      - G-IMPL-01 # Expedited review for hotfixes
+
+  - stage: TESTING
+    label: Regression
+    agents:
+      - test-agent
+    gates:
+      - G-TEST-02
+    artifacts:
+      - regression-test-report
+
+  - stage: RELEASE
+    agents:
+      - pr-review-agent
+    gates:
+      - G-REL-02
+      - G-REL-03
+    artifacts:
+      - hotfix-release-notes
+
+  - stage: IMPROVEMENT
+    agents:
+      - retrospective-agent
+    gates:
+      - G-IMP-01
+    artifacts:
+      - post-incident-review
+      - root-cause-analysis
+
+settings:
+  sprint_id_prefix: "HOTFIX"
+  lesson_candidate: mandatory
+  bypass_sprint_gate: true

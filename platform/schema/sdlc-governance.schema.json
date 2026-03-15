@@ -1,0 +1,154 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myagentic-it.local/schema/sdlc-governance.schema.json",
+  "title": "SDLC Governance Schema",
+  "description": "Validates governance structures: role bindings, approval requests, and approval policies.",
+  "type": "object",
+  "required": ["bindings", "approvals", "policies"],
+  "additionalProperties": false,
+  "properties": {
+    "bindings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/RoleBinding" }
+    },
+    "approvals": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ApprovalRequest" }
+    },
+    "policies": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ApprovalPolicy" }
+    }
+  },
+  "$defs": {
+    "RoleBinding": {
+      "type": "object",
+      "required": ["user_id", "role", "scope", "granted_at", "granted_by"],
+      "additionalProperties": false,
+      "properties": {
+        "user_id": { "type": "string", "minLength": 1 },
+        "role": {
+          "type": "string",
+          "enum": [
+            "PRODUCT_OWNER",
+            "ARCHITECT",
+            "DEVELOPER",
+            "QA_ENGINEER",
+            "SECURITY_REVIEWER",
+            "RELEASE_MANAGER",
+            "DEVOPS_ENGINEER",
+            "STAKEHOLDER"
+          ]
+        },
+        "scope": { "type": "string", "minLength": 1 },
+        "granted_at": { "type": "string", "format": "date-time" },
+        "granted_by": { "type": "string", "minLength": 1 }
+      }
+    },
+    "ApprovalRequest": {
+      "type": "object",
+      "required": [
+        "id",
+        "entity_id",
+        "stage",
+        "gate_id",
+        "requested_by",
+        "requested_at",
+        "required_role",
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^APR-[0-9]+$" },
+        "entity_id": { "type": "string" },
+        "stage": {
+          "type": "string",
+          "enum": [
+            "IDEA",
+            "REQUIREMENTS",
+            "ARCHITECTURE",
+            "PLANNING",
+            "IMPLEMENTATION",
+            "TESTING",
+            "SECURITY_VALIDATION",
+            "RELEASE",
+            "OPERATIONS",
+            "IMPROVEMENT"
+          ]
+        },
+        "gate_id": { "type": "string", "pattern": "^G-[A-Z]+-[0-9]+$" },
+        "requested_by": { "type": "string" },
+        "requested_at": { "type": "string", "format": "date-time" },
+        "required_role": {
+          "type": "string",
+          "enum": [
+            "PRODUCT_OWNER",
+            "ARCHITECT",
+            "DEVELOPER",
+            "QA_ENGINEER",
+            "SECURITY_REVIEWER",
+            "RELEASE_MANAGER",
+            "DEVOPS_ENGINEER",
+            "STAKEHOLDER"
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": ["PENDING", "APPROVED", "REJECTED", "EXPIRED"]
+        },
+        "decided_by": { "type": ["string", "null"] },
+        "decided_at": { "type": ["string", "null"] },
+        "reason": { "type": "string" }
+      }
+    },
+    "ApprovalPolicy": {
+      "type": "object",
+      "required": [
+        "stage",
+        "gate_id",
+        "required_approvals",
+        "required_roles",
+        "timeout_hours",
+        "auto_approve"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "stage": {
+          "type": "string",
+          "enum": [
+            "IDEA",
+            "REQUIREMENTS",
+            "ARCHITECTURE",
+            "PLANNING",
+            "IMPLEMENTATION",
+            "TESTING",
+            "SECURITY_VALIDATION",
+            "RELEASE",
+            "OPERATIONS",
+            "IMPROVEMENT"
+          ]
+        },
+        "gate_id": { "type": "string", "pattern": "^G-[A-Z]+-[0-9]+$" },
+        "required_approvals": { "type": "integer", "minimum": 0 },
+        "required_roles": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "PRODUCT_OWNER",
+              "ARCHITECT",
+              "DEVELOPER",
+              "QA_ENGINEER",
+              "SECURITY_REVIEWER",
+              "RELEASE_MANAGER",
+              "DEVOPS_ENGINEER",
+              "STAKEHOLDER"
+            ]
+          }
+        },
+        "timeout_hours": { "type": "number", "minimum": 0 },
+        "auto_approve": { "type": "boolean" }
+      }
+    }
+  }
+}

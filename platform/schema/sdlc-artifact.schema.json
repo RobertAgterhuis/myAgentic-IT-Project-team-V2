@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myagentic-it.local/schema/sdlc-artifact.schema.json",
+  "title": "SDLC Artifact Schema",
+  "description": "Validates SDLC artifacts with versioning, lineage, and ownership metadata.",
+  "type": "object",
+  "required": [
+    "id",
+    "name",
+    "artifact_type",
+    "status",
+    "stage",
+    "current_version",
+    "source_entity_id",
+    "source_entity_type",
+    "created_at",
+    "updated_at"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^ART-[a-z0-9]+-[a-z0-9]+$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "artifact_type": {
+      "type": "string",
+      "enum": [
+        "DOCUMENT",
+        "SCHEMA",
+        "CODE",
+        "TEST_REPORT",
+        "DEPLOYMENT_MANIFEST",
+        "DESIGN_ASSET",
+        "CONFIGURATION",
+        "BINARY"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": ["DRAFT", "REVIEW", "APPROVED", "PUBLISHED", "ARCHIVED", "SUPERSEDED"]
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "IDEA",
+        "REQUIREMENTS",
+        "ARCHITECTURE",
+        "PLANNING",
+        "IMPLEMENTATION",
+        "TESTING",
+        "SECURITY_VALIDATION",
+        "RELEASE",
+        "OPERATIONS",
+        "IMPROVEMENT"
+      ]
+    },
+    "owner": { "type": "string" },
+    "path": { "type": "string" },
+    "mime_type": { "type": "string" },
+    "current_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "versions": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ArtifactVersion" }
+    },
+    "source_entity_id": { "type": "string" },
+    "source_entity_type": {
+      "type": "string",
+      "enum": [
+        "PRODUCT",
+        "PROJECT",
+        "FEATURE",
+        "REQUIREMENT",
+        "ARCHITECTURE_DECISION",
+        "IMPLEMENTATION_TASK",
+        "TEST_ARTIFACT",
+        "RELEASE",
+        "DEPLOYMENT",
+        "INCIDENT",
+        "IMPROVEMENT"
+      ]
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "target_id", "target_type", "created_at"],
+        "properties": {
+          "type": { "type": "string" },
+          "target_id": { "type": "string" },
+          "target_type": { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "created_at": { "type": "string", "format": "date-time" },
+    "updated_at": { "type": "string", "format": "date-time" },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "$defs": {
+    "ArtifactVersion": {
+      "type": "object",
+      "required": ["version", "created_at", "created_by", "summary"],
+      "additionalProperties": false,
+      "properties": {
+        "version": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "created_at": { "type": "string", "format": "date-time" },
+        "created_by": { "type": "string" },
+        "summary": { "type": "string" },
+        "checksum": { "type": "string" },
+        "size_bytes": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

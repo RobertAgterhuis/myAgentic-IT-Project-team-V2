@@ -1,0 +1,109 @@
+# Feature Delivery Workflow
+# Standard workflow for delivering a new feature through all SDLC lifecycle stages.
+# Used by the Orchestrator to drive the multi-agent pipeline.
+
+id: feature-delivery
+name: Feature Delivery
+description: End-to-end workflow for delivering a feature from requirements to production.
+version: "1.0.0"
+
+triggers:
+  - command: "FEATURE"
+  - command: "CREATE"
+
+stages:
+  - stage: REQUIREMENTS
+    agents:
+      - business-analyst
+      - domain-expert
+      - product-manager
+    gates:
+      - G-REQ-01
+      - G-REQ-02
+    artifacts:
+      - requirements-document
+      - acceptance-criteria
+
+  - stage: ARCHITECTURE
+    agents:
+      - software-architect
+      - security-architect
+      - data-architect
+    gates:
+      - G-ARCH-01
+      - G-ARCH-02
+    artifacts:
+      - architecture-decision-record
+      - security-design
+
+  - stage: PLANNING
+    agents:
+      - product-manager
+    gates:
+      - G-PLAN-01
+      - G-PLAN-02
+    artifacts:
+      - sprint-backlog
+      - task-estimates
+
+  - stage: IMPLEMENTATION
+    agents:
+      - implementation-agent
+    gates:
+      - G-IMPL-01
+      - G-IMPL-02
+      - G-IMPL-03
+    artifacts:
+      - source-code
+      - pull-request
+
+  - stage: TESTING
+    agents:
+      - test-agent
+    gates:
+      - G-TEST-01
+      - G-TEST-02
+    artifacts:
+      - test-report
+      - coverage-report
+
+  - stage: SECURITY_VALIDATION
+    agents:
+      - security-architect
+    gates:
+      - G-SEC-01
+      - G-SEC-02
+    artifacts:
+      - security-scan-report
+      - dependency-audit
+
+  - stage: RELEASE
+    agents:
+      - pr-review-agent
+    gates:
+      - G-REL-01
+      - G-REL-02
+      - G-REL-03
+    artifacts:
+      - release-notes
+      - changelog
+
+  - stage: OPERATIONS
+    agents:
+      - kpi-agent
+      - documentation-agent
+    gates:
+      - G-OPS-01
+      - G-OPS-02
+    artifacts:
+      - deployment-manifest
+      - monitoring-config
+
+  - stage: IMPROVEMENT
+    agents:
+      - retrospective-agent
+    gates:
+      - G-IMP-01
+    artifacts:
+      - retrospective-report
+      - improvement-backlog

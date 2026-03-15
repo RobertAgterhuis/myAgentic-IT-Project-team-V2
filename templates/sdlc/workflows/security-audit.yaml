@@ -1,0 +1,37 @@
+# Security Audit Workflow
+# Focused workflow for security validation of a release candidate.
+
+id: security-audit
+name: Security Audit
+description: Comprehensive security audit including SAST, DAST, dependency audit, and OWASP compliance.
+version: "1.0.0"
+
+triggers:
+  - event: pre-release
+  - command: "AUDIT TECH"
+
+stages:
+  - stage: SECURITY_VALIDATION
+    agents:
+      - security-architect
+    gates:
+      - G-SEC-01
+      - G-SEC-02
+      - G-SEC-03
+    artifacts:
+      - sast-report
+      - dependency-audit-report
+      - owasp-compliance-report
+
+  - stage: RELEASE
+    agents:
+      - pr-review-agent
+    gates:
+      - G-REL-03
+    artifacts:
+      - security-sign-off
+
+validation:
+  critic-agent: true
+  risk-agent: true
+  blocking-on-critical: true

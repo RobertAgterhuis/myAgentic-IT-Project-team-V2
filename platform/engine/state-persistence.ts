@@ -89,6 +89,7 @@ function saveSessionState(store, serializedState, filePath) {
     gate_results: serializedState.gate_results,
     last_updated: serializedState.last_updated,
     governance_mode: serializedState.governance_mode || existing.governance_mode || undefined,
+    degradation_log: existing.degradation_log || [],
   };
 
   store.writeFile(target, JSON.stringify(merged, null, 2));
@@ -230,6 +231,40 @@ function saveTransitionComplete(store, filePath) {
   store.writeFile(target, JSON.stringify(existing, null, 2));
 }
 
+/**
+ * Add a degradation event to the session state.
+ * Tracks components operating in degraded mode after recoverable errors.
+ *
+ * @param {object} store - Store abstraction
+ * @param {{ component: string, reason: string, state?: string }} entry
+ * @param {string} [filePath] - Override path to session-state.json
+ */
+function addDegradationEntry(store, entry, filePath) {
+  const target = filePath || DEFAULT_SESSION_FILE;
+  const dir = path.dirname(target);
+  store.mkdirp(dir);
+
+  let existing: Record<string, unknown> = {};
+  if (store.exists(target)) {
+    try {
+      existing = JSON.parse(store.readFile(target));
+    } catch {
+      existing = {};
+    }
+  }
+
+  const log = Array.isArray(existing.degradation_log) ? existing.degradation_log : [];
+  log.push({
+    timestamp: new Date().toISOString(),
+    component: entry.component,
+    reason: entry.reason,
+    state: entry.state || null,
+  });
+  existing.degradation_log = log;
+
+  store.writeFile(target, JSON.stringify(existing, null, 2));
+}
+
 export {
   DEFAULT_SESSION_FILE,
   DEFAULT_HISTORY_FILE,
@@ -240,4 +275,5 @@ export {
   loadRunHistory,
   saveTransitionIntent,
   saveTransitionComplete,
+  addDegradationEntry,
 };

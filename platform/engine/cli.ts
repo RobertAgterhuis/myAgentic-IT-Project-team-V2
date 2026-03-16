@@ -66,6 +66,8 @@ function parseArgs(argv: string[]) {
     platform: 'copilot',
     resume: false,
     interactive: false,
+    singleStep: false,
+    checkpoint: false,
     help: false,
     error: null,
   };
@@ -87,6 +89,16 @@ function parseArgs(argv: string[]) {
 
     if (arg === '--interactive') {
       result.interactive = true;
+      continue;
+    }
+
+    if (arg === '--single-step') {
+      result.singleStep = true;
+      continue;
+    }
+
+    if (arg === '--checkpoint') {
+      result.checkpoint = true;
       continue;
     }
 
@@ -164,8 +176,8 @@ Commands:
 Options:
   --platform <name>   AI platform: copilot | claude | codex  (default: copilot)
   --resume            Resume from the last saved session state
-  --interactive       Enable interactive mode (prompt at gate boundaries)
-  --help, -h          Show this help message
+  --interactive       Enable interactive mode (prompt at gate boundaries)  --single-step       Process one state transition and exit
+  --checkpoint        With 'stop': write checkpoint for clean resume  --help, -h          Show this help message
 `.trim();
 
 // ─── Command Dispatcher ──────────────────────────────────────
@@ -194,8 +206,14 @@ function executeCommand(
   }
 
   if (parsed.command === '_STOP') {
-    const st = engine.stop();
-    write(JSON.stringify({ ok: true, stopped: true, status: st }, null, 2) + '\n');
+    const st = parsed.checkpoint ? engine.pauseAtCheckpoint() : engine.stop();
+    write(
+      JSON.stringify(
+        { ok: true, stopped: true, checkpoint: !!parsed.checkpoint, status: st },
+        null,
+        2
+      ) + '\n'
+    );
     return { ok: true, status: st };
   }
 
@@ -209,6 +227,34 @@ function executeCommand(
   // Reset the engine to the requested mode (starts fresh or resumes)
   if (!parsed.resume) {
     engine.reset(parsed.command);
+  }
+
+  // Single-step mode: process one transition and exit
+  if (parsed.singleStep) {
+    try {
+      const result = engine.advance();
+      const st = engine.status() as Record<string, unknown>;
+      write(
+        JSON.stringify(
+          {
+            ok: true,
+            singleStep: true,
+            transition: result,
+            state: st.state,
+            mode: st.mode,
+          },
+          null,
+          2
+        ) + '\n'
+      );
+      return { ok: true, singleStep: true, status: st };
+    } catch (err) {
+      write(
+        JSON.stringify({ ok: false, singleStep: true, error: (err as Error).message }, null, 2) +
+          '\n'
+      );
+      return { ok: false, error: (err as Error).message };
+    }
   }
 
   const st = engine.status() as Record<string, unknown>;

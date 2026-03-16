@@ -72,7 +72,7 @@ function saveSessionState(store, serializedState, filePath) {
   store.mkdirp(dir);
 
   // Merge with existing content to preserve non-engine fields
-  let existing = {};
+  let existing: Record<string, unknown> = {};
   if (store.exists(target)) {
     try {
       existing = JSON.parse(store.readFile(target));
@@ -88,6 +88,7 @@ function saveSessionState(store, serializedState, filePath) {
     state_history: serializedState.state_history,
     gate_results: serializedState.gate_results,
     last_updated: serializedState.last_updated,
+    governance_mode: serializedState.governance_mode || existing.governance_mode || undefined,
   };
 
   store.writeFile(target, JSON.stringify(merged, null, 2));

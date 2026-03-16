@@ -1,0 +1,61 @@
+{
+  "$schema": "../../../platform/schema/governance-policies.schema.json",
+  "governance_mode": "advisory",
+  "policies": [
+    {
+      "id": "GOV-GATE-01",
+      "gate_pattern": "CRITIC_*",
+      "description": "Critic gates require deliverable authorship tracking",
+      "required_roles": ["DEVELOPER", "ARCHITECT"],
+      "min_approvals": 0,
+      "auto_approve": true,
+      "advisory_message": "Deliverable author identity should be recorded for audit trail"
+    },
+    {
+      "id": "GOV-GATE-02",
+      "gate_pattern": "CRITIC_2",
+      "description": "Architecture gate requires architect sign-off",
+      "required_roles": ["ARCHITECT"],
+      "min_approvals": 1,
+      "auto_approve": false,
+      "advisory_message": "Architecture deliverables should be reviewed by an ARCHITECT role"
+    },
+    {
+      "id": "GOV-GATE-03",
+      "gate_pattern": "CRITIC_4",
+      "description": "Marketing gate requires product owner sign-off",
+      "required_roles": ["PRODUCT_OWNER"],
+      "min_approvals": 1,
+      "auto_approve": false,
+      "advisory_message": "Marketing deliverables should be reviewed by a PRODUCT_OWNER"
+    },
+    {
+      "id": "GOV-SPRINT-01",
+      "gate_pattern": "SPRINT_GATE",
+      "description": "Sprint gate requires Definition of Ready confirmation",
+      "required_roles": ["PRODUCT_OWNER", "DEVELOPER"],
+      "min_approvals": 1,
+      "auto_approve": false,
+      "advisory_message": "Sprint should have Definition of Ready confirmed by PRODUCT_OWNER"
+    },
+    {
+      "id": "GOV-SEC-01",
+      "gate_pattern": "CRITIC_2",
+      "description": "Security review required for architecture phase",
+      "required_roles": ["SECURITY_REVIEWER"],
+      "min_approvals": 1,
+      "auto_approve": false,
+      "advisory_message": "Architecture deliverables should include security review sign-off"
+    }
+  ],
+  "identity": {
+    "resolve_order": ["env", "git_config"],
+    "env_variable": "SDLC_USER",
+    "fallback": "anonymous"
+  },
+  "audit": {
+    "log_governance_checks": true,
+    "log_identity_resolution": true,
+    "include_advisory_in_gate_result": true
+  }
+}

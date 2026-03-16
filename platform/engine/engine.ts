@@ -36,6 +36,8 @@ import { runSprintGate } from './sprint-gate';
 import { loadTemplate } from './template-loader';
 import { createArtifactRegistrationHook } from './artifact-registration';
 import { ArtifactRegistry } from '../sdlc/artifacts';
+import { loadGovernancePolicies, type GovernancePoliciesConfig } from './governance-config';
+import { resolveIdentity, type ResolvedIdentity } from './identity';
 
 /**
  * Engine hook callbacks for extensibility without modifying the core loop.
@@ -81,6 +83,7 @@ function createEngine(options: Record<string, unknown>) {
     templateName,
     templatesDir,
     hooks: userHooks,
+    governancePoliciesPath,
   } = options as {
     store: {
       exists(p: string): boolean;
@@ -94,6 +97,7 @@ function createEngine(options: Record<string, unknown>) {
     templateName?: string;
     templatesDir?: string;
     hooks?: EngineHooks;
+    governancePoliciesPath?: string;
   };
 
   if (!store) throw new Error('Engine requires a store');
@@ -109,6 +113,18 @@ function createEngine(options: Record<string, unknown>) {
 
   // AC-1: Load declarative flow definition
   const flows = loadFlows(store, flowsPath);
+
+  // M4: Load governance policies (defaults to mode=off if file missing)
+  const governanceConfig: GovernancePoliciesConfig = loadGovernancePolicies(
+    store,
+    governancePoliciesPath
+  );
+
+  // M4: Resolve current user identity for governance audit
+  let resolvedIdentity: ResolvedIdentity | null = null;
+  if (governanceConfig.governance_mode !== 'off') {
+    resolvedIdentity = resolveIdentity(governanceConfig.identity);
+  }
 
   // AC-7: Load persisted state for crash recovery
   const sessionState = loadSessionState(store, sessionPath);
@@ -319,6 +335,8 @@ function createEngine(options: Record<string, unknown>) {
       serialized: machine.serialize(),
       templateName: template ? template.name : null,
       transitionStatus: transitionStatus,
+      governanceMode: governanceConfig.governance_mode,
+      identity: resolvedIdentity,
     };
   }
 
@@ -412,6 +430,12 @@ function createEngine(options: Record<string, unknown>) {
         gateOpts.phaseGuardrails = template.phaseGuardrails;
       }
     }
+
+    // M4: Inject governance config + identity into gate options
+    if (governanceConfig.governance_mode !== 'off') {
+      gateOpts.governanceConfig = governanceConfig;
+      gateOpts.identity = resolvedIdentity;
+    }
     const result = runGate(store, gateOpts);
 
     // Fire onGateResult hooks
@@ -439,6 +463,19 @@ function createEngine(options: Record<string, unknown>) {
         bySeverity: result.summary.bySeverity,
         questionnaireRequestCount: result.summary.questionnaireRequestCount,
         timestamp: result.summary.timestamp,
+      });
+    }
+
+    // M4: Emit governance audit event when governance is active
+    if (result.governance_report && governanceConfig.audit.log_governance_checks) {
+      sseForward('orchestrator:governance_check', {
+        criticState,
+        mode: result.governance_report.mode,
+        identity: result.governance_report.identity?.user || 'unknown',
+        policies_evaluated: result.governance_report.policies_evaluated,
+        unsatisfied_count: result.governance_report.unsatisfied_count,
+        verdict: result.verdict,
+        timestamp: result.governance_report.timestamp,
       });
     }
 
@@ -499,6 +536,8 @@ function createEngine(options: Record<string, unknown>) {
     flows,
     template,
     artifactRegistry,
+    governanceConfig,
+    resolvedIdentity,
     advance,
     error,
     recover,

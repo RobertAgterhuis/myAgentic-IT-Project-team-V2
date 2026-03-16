@@ -939,6 +939,126 @@ mcp.tool(
   }
 );
 
+/* ── Governance Approvals ───────────────────────────────────────── */
+
+const GOVERNANCE_STATE_PATH = path.join(SESSION_DIR, 'governance-state.json');
+
+function loadGovernanceEngine():
+  | import('../../platform/sdlc/governance.js').GovernanceEngine
+  | null {
+  // Dynamic import to avoid circular dependencies at module level
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const { GovernanceEngine } = require('../../platform/sdlc/governance') as {
+    GovernanceEngine: {
+      loadFrom(
+        s: { exists(p: string): boolean; readFile(p: string): string },
+        p: string
+      ): import('../../platform/sdlc/governance.js').GovernanceEngine | null;
+    };
+  };
+  return GovernanceEngine.loadFrom(store, GOVERNANCE_STATE_PATH);
+}
+
+mcp.tool('list_approvals', 'List pending governance approval requests', async () => {
+  try {
+    const engine = loadGovernanceEngine();
+    if (!engine) return jsonResult({ approvals: [], count: 0, note: 'No governance state found' });
+    const pending = engine.getPendingApprovals();
+    return jsonResult({
+      approvals: pending.map((a) => ({
+        id: a.id,
+        entity_id: a.entity_id,
+        gate_id: a.gate_id,
+        stage: a.stage,
+        requested_by: a.requested_by,
+        requested_at: a.requested_at,
+        required_role: a.required_role,
+        status: a.status,
+      })),
+      count: pending.length,
+    });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : String(err);
+    return errorResult(`Failed to list approvals: ${message}`);
+  }
+});
+
+mcp.tool(
+  'approve_request',
+  'Approve a pending governance approval request',
+  {
+    type: 'object',
+    properties: {
+      approval_id: { type: 'string', description: 'The approval request ID' },
+      user: { type: 'string', description: 'User performing the approval' },
+      reason: { type: 'string', description: 'Reason for approval' },
+    },
+    required: ['approval_id', 'user'],
+  },
+  async ({ approval_id, user, reason }: Record<string, unknown>) => {
+    try {
+      const engine = loadGovernanceEngine();
+      if (!engine) return errorResult('No governance state found');
+      const result = engine.decide(
+        String(approval_id),
+        String(user),
+        true,
+        String(reason || 'Approved via MCP')
+      );
+      engine.saveTo(store, GOVERNANCE_STATE_PATH);
+      return jsonResult({
+        ok: true,
+        approval: {
+          id: result.id,
+          status: result.status,
+          decided_by: result.decided_by,
+          decided_at: result.decided_at,
+          reason: result.reason,
+        },
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return errorResult(`Failed to approve: ${message}`);
+    }
+  }
+);
+
+mcp.tool(
+  'reject_request',
+  'Reject a pending governance approval request',
+  {
+    type: 'object',
+    properties: {
+      approval_id: { type: 'string', description: 'The approval request ID' },
+      user: { type: 'string', description: 'User performing the rejection' },
+      reason: { type: 'string', description: 'Reason for rejection (required)' },
+    },
+    required: ['approval_id', 'user', 'reason'],
+  },
+  async ({ approval_id, user, reason }: Record<string, unknown>) => {
+    try {
+      if (!reason || !String(reason).trim()) return errorResult('Reason is required for rejection');
+      const engine = loadGovernanceEngine();
+      if (!engine) return errorResult('No governance state found');
+      const result = engine.decide(String(approval_id), String(user), false, String(reason));
+      engine.saveTo(store, GOVERNANCE_STATE_PATH);
+      return jsonResult({
+        ok: true,
+        approval: {
+          id: result.id,
+          status: result.status,
+          decided_by: result.decided_by,
+          decided_at: result.decided_at,
+          reason: result.reason,
+        },
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return errorResult(`Failed to reject: ${message}`);
+    }
+  }
+);
+
 /* ════════════════════════════════════════════════════════════════ */
 /*  RESOURCES                                                      */
 /* ════════════════════════════════════════════════════════════════ */

@@ -101,4 +101,26 @@ export class AuditTrail {
     const content = fs.readFileSync(this.logPath, 'utf8');
     return content.trim().split('\n').filter(Boolean).length;
   }
+
+  /**
+   * Log a governance check event (M4: Governance Mode + Advisory Logging).
+   *
+   * @param entry - Governance-specific audit entry
+   */
+  logGovernanceCheck(entry: {
+    criticState: string;
+    mode: string;
+    user: string;
+    policiesEvaluated: number;
+    unsatisfiedCount: number;
+    verdict: string;
+  }): void {
+    this.log({
+      operation: 'GOVERNANCE_CHECK',
+      entityType: 'gate',
+      entityId: entry.criticState,
+      user: entry.user,
+      summary: `mode=${entry.mode} policies=${entry.policiesEvaluated} unsatisfied=${entry.unsatisfiedCount} verdict=${entry.verdict}`,
+    });
+  }
 }

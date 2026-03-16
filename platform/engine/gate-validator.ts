@@ -10,11 +10,14 @@
  *   - Guardrail compliance: rules loaded and violations tracked
  *   - Handoff checklist: all 9 items present and checked
  *   - Questionnaire extraction: QUESTIONNAIRE_REQUEST items collected
+ *   - Governance advisory: policy compliance report (M4, when mode != 'off')
  *
  * @module orchestrator/gate-validator
  */
 
 import path from 'path';
+import { matchPolicies, type GovernancePoliciesConfig } from './governance-config';
+import { type ResolvedIdentity } from './identity';
 
 interface GateStore {
   exists(path: string): boolean;
@@ -383,7 +386,9 @@ function validateDocument(content: string, options: { requiredSections?: string[
  * @param {string[]} options.deliverables - Paths to deliverable files
  * @param {string} [options.contractsDir] - Override contracts directory
  * @param {string} [options.guardrailsDir] - Override guardrails directory
- * @returns {{verdict: string, violations: Array, questionnaireRequests: Array, summary: object}}
+ * @param {GovernancePoliciesConfig} [options.governanceConfig] - Governance configuration (M4)
+ * @param {ResolvedIdentity} [options.identity] - Resolved user identity (M4)
+ * @returns {{verdict: string, violations: Array, questionnaireRequests: Array, summary: object, governance_report?: object}}
  */
 function runGate(store: GateStore, options: Record<string, unknown>) {
   const {
@@ -394,6 +399,8 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
     criticToPhase: ctpOverride,
     phaseContracts: pcOverride,
     phaseGuardrails: pgOverride,
+    governanceConfig,
+    identity,
   } = options as {
     criticState: string;
     deliverables?: string[];
@@ -402,6 +409,8 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
     criticToPhase?: Record<string, string>;
     phaseContracts?: Record<string, string[]>;
     phaseGuardrails?: Record<string, string[]>;
+    governanceConfig?: GovernancePoliciesConfig;
+    identity?: ResolvedIdentity;
   };
 
   const ctp = ctpOverride || CRITIC_TO_PHASE;
@@ -528,11 +537,39 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
     timestamp: new Date().toISOString(),
   };
 
+  // M4: Generate governance report when mode is not 'off'
+  const govMode = governanceConfig?.governance_mode || 'off';
+  let governance_report = undefined;
+
+  if (govMode !== 'off' && governanceConfig) {
+    const matchedPolicies = matchPolicies(governanceConfig.policies, criticState);
+    const advisories = matchedPolicies.map((p) => ({
+      policy_id: p.id,
+      gate_pattern: p.gate_pattern,
+      description: p.description,
+      required_roles: p.required_roles,
+      min_approvals: p.min_approvals,
+      auto_approve: p.auto_approve,
+      advisory_message: p.advisory_message,
+      satisfied: p.auto_approve || p.min_approvals === 0,
+    }));
+
+    governance_report = {
+      mode: govMode,
+      identity: identity || null,
+      policies_evaluated: matchedPolicies.length,
+      advisories,
+      unsatisfied_count: advisories.filter((a) => !a.satisfied).length,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
   return {
     verdict,
     violations: allViolations,
     questionnaireRequests: allQuestionnaireRequests,
     summary,
+    governance_report,
   };
 }
 

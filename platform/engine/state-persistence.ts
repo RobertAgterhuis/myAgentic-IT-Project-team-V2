@@ -88,6 +88,7 @@ function saveSessionState(store, serializedState, filePath) {
     state_history: serializedState.state_history,
     gate_results: serializedState.gate_results,
     last_updated: serializedState.last_updated,
+    governance_mode: serializedState.governance_mode || existing.governance_mode || undefined,
   };
 
   store.writeFile(target, JSON.stringify(merged, null, 2));

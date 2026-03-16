@@ -72,7 +72,7 @@ function saveSessionState(store, serializedState, filePath) {
   store.mkdirp(dir);
 
   // Merge with existing content to preserve non-engine fields
-  let existing = {};
+  let existing: Record<string, unknown> = {};
   if (store.exists(target)) {
     try {
       existing = JSON.parse(store.readFile(target));

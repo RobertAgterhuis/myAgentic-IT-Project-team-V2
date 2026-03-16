@@ -21,6 +21,11 @@ import {
   type LifecycleStage,
   type EntityType,
   ENTITY_TYPES,
+  type Release,
+  type ImplementationTask,
+  createRelease,
+  ENTITY_STATUS,
+  LINK_TYPES,
 } from './entities.js';
 
 // ─── Gate Condition ──────────────────────────────────────────
@@ -407,4 +412,51 @@ export function nextStage(current: LifecycleStage): LifecycleStage | undefined {
   const idx = STAGE_SEQUENCE.indexOf(current);
   if (idx < 0 || idx >= STAGE_SEQUENCE.length - 1) return undefined;
   return STAGE_SEQUENCE[idx + 1];
+}
+
+// ─── Release Creation at Sprint Completion ──────────────────
+
+export interface SprintCompletionInput {
+  sprint_id: string;
+  version: string;
+  completed_tasks: ImplementationTask[];
+  test_ids: string[];
+  changelog: string[];
+  owner?: string;
+}
+
+/**
+ * Create a Release entity from a completed sprint's tasks, linking it to
+ * the tasks and test artifacts that were part of the sprint.
+ */
+export function createReleaseFromSprint(input: SprintCompletionInput): Release {
+  const { sprint_id, version, completed_tasks, test_ids, changelog, owner } = input;
+
+  const taskIds = completed_tasks.map((t) => t.id);
+
+  const links = [
+    ...completed_tasks.map((t) => ({
+      type: LINK_TYPES.IMPLEMENTS as typeof LINK_TYPES.IMPLEMENTS,
+      target_id: t.id,
+      target_type: ENTITY_TYPES.IMPLEMENTATION_TASK as typeof ENTITY_TYPES.IMPLEMENTATION_TASK,
+      created_at: new Date().toISOString(),
+    })),
+    ...test_ids.map((tid) => ({
+      type: LINK_TYPES.TESTED_BY as typeof LINK_TYPES.TESTED_BY,
+      target_id: tid,
+      target_type: ENTITY_TYPES.TEST_ARTIFACT as typeof ENTITY_TYPES.TEST_ARTIFACT,
+      created_at: new Date().toISOString(),
+    })),
+  ];
+
+  return createRelease(version, {
+    status: ENTITY_STATUS.DONE,
+    owner: owner || '',
+    changelog,
+    task_ids: taskIds,
+    test_ids,
+    links,
+    tags: ['sprint', sprint_id],
+    metadata: { sprint_id },
+  });
 }

@@ -56,12 +56,14 @@ export {
   type GateCondition,
   type StageDefinition,
   type TransitionResult,
+  type SprintCompletionInput,
   STAGE_DEFINITIONS,
   STAGE_SEQUENCE,
   getStageDefinition,
   canTransition,
   validateTransition,
   nextStage,
+  createReleaseFromSprint,
 } from './lifecycle.js';
 
 // Artifact management

@@ -4,7 +4,10 @@
  * Container Adapter
  *
  * Adapter for container build and registry operations: build images, push to
- * registry, inspect manifests, scan for vulnerabilities.
+ * registry, list local images, inspect manifests, scan for vulnerabilities.
+ *
+ * Uses the shell executor to invoke docker/podman CLI commands — no shell
+ * interpolation. Build args are passed as explicit --build-arg flags.
  *
  * @module sdlc/adapters/container-adapter
  */
@@ -15,42 +18,171 @@ import {
   HEALTH_STATUS,
   type HealthCheck,
 } from './tool-adapter.js';
+import { shellExec, isBinaryAvailable } from './shell-executor.js';
 
 export interface ContainerConfig {
   [key: string]: unknown;
   runtime: 'docker' | 'podman' | 'generic';
   registry_url?: string;
+  timeout?: number;
 }
 
 export class ContainerAdapter extends BaseAdapter {
   readonly name = 'container';
   readonly category = ADAPTER_CATEGORIES.CONTAINER;
-  readonly version = '1.0.0';
+  readonly version = '2.0.0';
 
   constructor(config: ContainerConfig = { runtime: 'docker' }) {
     super();
     this._config = config as Record<string, unknown>;
+    const bin = config.runtime === 'podman' ? 'podman' : 'docker';
+    const timeout = config.timeout ?? 300_000; // 5 min default for builds
 
+    // ── build ────────────────────────────────────────────
     this._operations.set('build', async (params) => {
-      return { image: params.image, tag: params.tag || 'latest', note: 'Stub' };
+      const image = params.image as string;
+      const tag = (params.tag as string) || 'latest';
+      const context = (params.context as string) || '.';
+      const dockerfile = params.dockerfile as string | undefined;
+      const buildArgs = (params.build_args as Record<string, string>) || {};
+      if (!image) throw new Error('image name is required');
+
+      const args = ['build', '-t', `${image}:${tag}`];
+      if (dockerfile) args.push('-f', dockerfile);
+      for (const [k, v] of Object.entries(buildArgs)) {
+        args.push('--build-arg', `${k}=${v}`);
+      }
+      args.push(context);
+
+      const result = await shellExec(bin, args, { timeout });
+      if (result.exitCode !== 0) throw new Error(result.stderr || `${bin} build failed`);
+      return { image, tag, context, exit_code: result.exitCode };
     });
+
+    // ── push ─────────────────────────────────────────────
     this._operations.set('push', async (params) => {
-      return { image: params.image, registry: this._config.registry_url, note: 'Stub' };
+      const image = params.image as string;
+      const tag = (params.tag as string) || 'latest';
+      if (!image) throw new Error('image name is required');
+
+      const registry = (this._config.registry_url as string) || '';
+      const fullRef = registry ? `${registry}/${image}:${tag}` : `${image}:${tag}`;
+
+      // Tag for registry if registry_url is set
+      if (registry) {
+        const tagResult = await shellExec(bin, ['tag', `${image}:${tag}`, fullRef], {
+          timeout: 30_000,
+        });
+        if (tagResult.exitCode !== 0) throw new Error(tagResult.stderr || 'docker tag failed');
+      }
+
+      const result = await shellExec(bin, ['push', fullRef], { timeout });
+      if (result.exitCode !== 0) throw new Error(result.stderr || `${bin} push failed`);
+      return { image: fullRef, pushed: true, exit_code: result.exitCode };
     });
+
+    // ── list-images ──────────────────────────────────────
+    this._operations.set('list-images', async (params) => {
+      const filter = params.filter as string | undefined;
+      const args = ['images', '--format', '{{.Repository}}|{{.Tag}}|{{.ID}}|{{.Size}}'];
+      if (filter) args.push('--filter', `reference=${filter}`);
+
+      const result = await shellExec(bin, args, { timeout: 30_000 });
+      if (result.exitCode !== 0) throw new Error(result.stderr || `${bin} images failed`);
+
+      const images = result.stdout
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => {
+          const [repository, tag, id, size] = line.split('|');
+          return { repository, tag, id, size };
+        });
+      return { images, count: images.length };
+    });
+
+    // ── inspect ──────────────────────────────────────────
     this._operations.set('inspect', async (params) => {
-      return { image: params.image, manifest: {}, note: 'Stub' };
+      const image = params.image as string;
+      if (!image) throw new Error('image name is required');
+
+      const result = await shellExec(bin, ['inspect', image], { timeout: 30_000 });
+      if (result.exitCode !== 0) throw new Error(result.stderr || `${bin} inspect failed`);
+
+      let manifest: unknown = {};
+      try {
+        manifest = JSON.parse(result.stdout);
+      } catch {
+        manifest = { raw: result.stdout };
+      }
+      return { image, manifest };
     });
+
+    // ── scan ─────────────────────────────────────────────
     this._operations.set('scan', async (params) => {
-      return { image: params.image, vulnerabilities: [], note: 'Stub' };
+      const image = params.image as string;
+      if (!image) throw new Error('image name is required');
+
+      // Try docker scout / trivy if available
+      const scoutAvailable = bin === 'docker' && (await isBinaryAvailable('docker'));
+      if (scoutAvailable) {
+        const result = await shellExec(bin, ['scout', 'cves', '--format', 'json', image], {
+          timeout: 120_000,
+        });
+        if (result.exitCode === 0) {
+          let vulnerabilities: unknown[] = [];
+          try {
+            const data = JSON.parse(result.stdout);
+            vulnerabilities = Array.isArray(data) ? data : data.vulnerabilities || [];
+          } catch {
+            // non-JSON output
+          }
+          return { image, vulnerabilities, scanner: 'docker-scout' };
+        }
+      }
+
+      // Fallback: return empty scan (scanner not available)
+      return { image, vulnerabilities: [], scanner: 'none', note: 'No scanner available' };
     });
   }
 
   async healthCheck(): Promise<HealthCheck> {
+    const runtime = this._config.runtime as string;
+    const bin = runtime === 'podman' ? 'podman' : 'docker';
+    const available = await isBinaryAvailable(bin);
+
+    if (!available) {
+      return {
+        status: HEALTH_STATUS.UNAVAILABLE,
+        adapter: this.name,
+        category: this.category,
+        message: `${bin} binary not found on PATH`,
+        checked_at: new Date().toISOString(),
+      };
+    }
+
+    if (!runtime) {
+      return {
+        status: HEALTH_STATUS.UNCONFIGURED,
+        adapter: this.name,
+        category: this.category,
+        message: 'No container runtime configured',
+        checked_at: new Date().toISOString(),
+      };
+    }
+
+    // Verify daemon is running
+    const result = await shellExec(bin, ['info', '--format', '{{.ServerVersion}}'], {
+      timeout: 10_000,
+    });
+
     return {
-      status: this._config.runtime ? HEALTH_STATUS.HEALTHY : HEALTH_STATUS.UNCONFIGURED,
+      status: result.exitCode === 0 ? HEALTH_STATUS.HEALTHY : HEALTH_STATUS.DEGRADED,
       adapter: this.name,
       category: this.category,
-      message: `Container runtime: ${this._config.runtime || 'not set'}`,
+      message:
+        result.exitCode === 0
+          ? `${bin} daemon v${result.stdout.trim()}`
+          : `${bin} daemon not responding: ${result.stderr.trim()}`,
       checked_at: new Date().toISOString(),
     };
   }

@@ -86,7 +86,8 @@ jobs:
       # Coverage thresholds are enforced by Vitest in ci.yml
       # Root Jest tests cover documentation/landing/integration — no source code coverage expected
 
-  # Job 3: Security Scanning (Secret Detection + SAST)
+  # Job 3: Security Scanning (Vulnerability Detection)
+  # Note: Secret scanning is handled by TruffleHog in ci.yml
   security:
     name: Security Scan
     runs-on: ubuntu-latest
@@ -99,12 +100,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Run Gitleaks (Secret Scanning)
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master

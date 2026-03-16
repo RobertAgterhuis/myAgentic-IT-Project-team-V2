@@ -17,6 +17,12 @@ export {
   AdapterRegistry,
   BaseAdapter,
 } from './tool-adapter.js';
+export {
+  shellExec,
+  isBinaryAvailable,
+  type ShellResult,
+  type ShellOptions,
+} from './shell-executor.js';
 export { GitAdapter, type GitConfig } from './git-adapter.js';
 export { CiAdapter, type CiConfig } from './ci-adapter.js';
 export { ContainerAdapter, type ContainerConfig } from './container-adapter.js';

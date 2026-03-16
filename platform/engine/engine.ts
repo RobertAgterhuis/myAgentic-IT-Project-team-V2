@@ -28,10 +28,25 @@ import {
   createAutoPersist,
   saveRunHistory,
   loadRunHistory,
+  saveTransitionIntent,
+  saveTransitionComplete,
 } from './state-persistence';
 import { runGate } from './gate-validator';
 import { runSprintGate } from './sprint-gate';
 import { loadTemplate } from './template-loader';
+
+/**
+ * Engine hook callbacks for extensibility without modifying the core loop.
+ * beforeTransition hooks fire synchronously before the FSM advances.
+ * afterTransition hooks fire after the FSM has advanced and state is persisted.
+ * Failures in afterTransition/onError hooks are logged but do not roll back.
+ */
+interface EngineHooks {
+  beforeTransition?: ((from: string, to: string) => void)[];
+  afterTransition?: ((event: { from: string; to: string; timestamp: string }) => void)[];
+  onGateResult?: ((state: string, result: Record<string, unknown>) => void)[];
+  onError?: ((event: { from: string; reason: string }) => void)[];
+}
 
 /**
  * @typedef {object} EngineOptions
@@ -41,6 +56,7 @@ import { loadTemplate } from './template-loader';
  * @property {string} [sessionPath] - Override path to session-state.json
  * @property {string} [templateName] - Template to load (default: 'sdlc')
  * @property {string} [templatesDir] - Override templates base directory
+ * @property {EngineHooks} [hooks] - Transition hook callbacks
  */
 
 /**
@@ -55,17 +71,27 @@ import { loadTemplate } from './template-loader';
  * @returns {{ machine: StateMachine, flows: object, template: object, advance: Function, error: Function, recover: Function, status: Function }}
  */
 function createEngine(options: Record<string, unknown>) {
-  const { store, sseNotify, flowsPath, sessionPath, templateName, templatesDir } = options as {
+  const {
+    store,
+    sseNotify,
+    flowsPath,
+    sessionPath,
+    templateName,
+    templatesDir,
+    hooks: userHooks,
+  } = options as {
     store: {
       exists(p: string): boolean;
       readFile(p: string): string;
       writeFile(p: string, d: string): void;
+      mkdirp(p: string): void;
     };
     sseNotify?: (event: string, data: Record<string, unknown>) => void;
     flowsPath?: string;
     sessionPath?: string;
     templateName?: string;
     templatesDir?: string;
+    hooks?: EngineHooks;
   };
 
   if (!store) throw new Error('Engine requires a store');
@@ -94,11 +120,29 @@ function createEngine(options: Record<string, unknown>) {
   // SSE bridge: forward state machine events to connected UI clients
   const sseForward =
     sseNotify || ((() => {}) as (event: string, data: Record<string, unknown>) => void);
-  const onTransition = (event: Record<string, unknown>) => {
-    sseForward('orchestrator:transition', event);
-  };
-  const onError = (event: Record<string, unknown>) => {
-    sseForward('orchestrator:error', event);
+
+  // Build resolved hooks — SSE transition/error broadcasts are now hooks
+  const resolvedHooks = {
+    beforeTransition: (userHooks && userHooks.beforeTransition) || [],
+    afterTransition: [
+      ...(sseNotify
+        ? [
+            (event: { from: string; to: string; timestamp: string }) =>
+              sseForward('orchestrator:transition', { event: 'transition', ...event }),
+          ]
+        : []),
+      ...((userHooks && userHooks.afterTransition) || []),
+    ],
+    onGateResult: (userHooks && userHooks.onGateResult) || [],
+    onError: [
+      ...(sseNotify
+        ? [
+            (event: { from: string; reason: string }) =>
+              sseForward('orchestrator:error', { event: 'error', ...event }),
+          ]
+        : []),
+      ...((userHooks && userHooks.onError) || []),
+    ],
   };
 
   // Auto-persist: save to session-state.json on every transition/error
@@ -114,15 +158,24 @@ function createEngine(options: Record<string, unknown>) {
     }
   );
 
-  // Combined callbacks: SSE + auto-persist
+  // Combined callbacks: hooks + auto-persist
   const combinedOnTransition = (event: Record<string, unknown>) => {
-    onTransition(event);
+    // Non-transition events (gate_passed, crash_recovery) still use SSE directly
+    if (event.event !== 'transition') {
+      sseForward('orchestrator:transition', event);
+    }
+    // 'transition' events are handled by afterTransition hooks in advance()
     autoPersist.onTransition(event);
   };
   const combinedOnError = (event: Record<string, unknown>) => {
-    onError(event);
+    // Error SSE is handled by onError hooks in advance()/error()
     autoPersist.onError(event);
   };
+
+  // Track transition status for write-ahead persistence
+  let transitionStatus: string | null =
+    (sessionState && ((sessionState as Record<string, unknown>).transition_status as string)) ||
+    null;
 
   // Create the state machine (crash recovery is handled by constructor)
   const smOptions: Record<string, unknown> = {
@@ -138,11 +191,67 @@ function createEngine(options: Record<string, unknown>) {
 
   /**
    * Advance the state machine to the next state.
+   * Fires beforeTransition hooks, persists write-ahead intent,
+   * executes the transition, fires afterTransition hooks, then
+   * marks the transition complete.
+   *
    * @param {object} [gateResult] - Gate validation result for critic states
    * @returns {{ from: string, to: string, timestamp: string }}
    */
   function advance(gateResult?: Record<string, unknown>) {
-    return machine.advance(gateResult);
+    const from = machine.state;
+    const to = machine.nextState;
+
+    // Fire beforeTransition hooks (if any throws, abort + ERROR)
+    for (const hook of resolvedHooks.beforeTransition) {
+      try {
+        hook(from, to);
+      } catch (hookErr) {
+        machine.error(`beforeTransition hook failed: ${(hookErr as Error).message}`);
+        for (const h of resolvedHooks.onError) {
+          try {
+            h({ from, reason: (hookErr as Error).message });
+          } catch {
+            /* logged, not fatal */
+          }
+        }
+        throw hookErr;
+      }
+    }
+
+    // Write-ahead: persist transition intent
+    saveTransitionIntent(store, to, sessionPath);
+    transitionStatus = 'IN_PROGRESS';
+
+    try {
+      const result = machine.advance(gateResult);
+
+      // Fire afterTransition hooks (errors logged, no rollback)
+      for (const hook of resolvedHooks.afterTransition) {
+        try {
+          hook(result);
+        } catch {
+          /* logged, not fatal */
+        }
+      }
+
+      // Write-ahead: mark transition complete
+      saveTransitionComplete(store, sessionPath);
+      transitionStatus = 'COMPLETE';
+
+      return result;
+    } catch (err) {
+      transitionStatus = null;
+      // Fire onError hooks
+      for (const hook of resolvedHooks.onError) {
+        try {
+          hook({ from, reason: (err as Error).message });
+        } catch {
+          /* logged, not fatal */
+        }
+      }
+      throw err;
+    }
   }
 
   /**
@@ -150,7 +259,15 @@ function createEngine(options: Record<string, unknown>) {
    * @param {string} reason
    */
   function error(reason: string) {
+    const prevState = machine.state;
     machine.error(reason);
+    for (const hook of resolvedHooks.onError) {
+      try {
+        hook({ from: prevState, reason });
+      } catch {
+        /* logged, not fatal */
+      }
+    }
   }
 
   /**
@@ -175,6 +292,7 @@ function createEngine(options: Record<string, unknown>) {
       phaseMetadata: machine.stateMetadata(),
       serialized: machine.serialize(),
       templateName: template ? template.name : null,
+      transitionStatus: transitionStatus,
     };
   }
 
@@ -269,6 +387,15 @@ function createEngine(options: Record<string, unknown>) {
       }
     }
     const result = runGate(store, gateOpts);
+
+    // Fire onGateResult hooks
+    for (const hook of resolvedHooks.onGateResult) {
+      try {
+        hook(criticState, result);
+      } catch {
+        /* logged, not fatal */
+      }
+    }
 
     // AC-7: Emit SSE events for gate results
     if (result.verdict === 'APPROVED') {

@@ -268,3 +268,294 @@ export function computeDefectDensity(sprints: SprintMetrics[]): number {
   if (totalTasks === 0) return 0;
   return Math.round((totalDefects / totalTasks) * 100) / 100;
 }
+
+// ─── Time-Series Metrics Storage (M7 / Issue #372) ──────────
+
+/** Single data point in a time-series metric. */
+export interface MetricDataPoint {
+  timestamp: string;
+  value: number;
+  labels?: Record<string, string>;
+}
+
+/** A named time-series metric with append-only data points. */
+export interface TimeSeriesMetric {
+  name: string;
+  unit: string;
+  data_points: MetricDataPoint[];
+}
+
+/** Persistent store for all time-series metrics. */
+export interface MetricsStore {
+  metrics: Record<string, TimeSeriesMetric>;
+  last_updated: string;
+}
+
+/** Create an empty metrics store. */
+export function createMetricsStore(): MetricsStore {
+  return { metrics: {}, last_updated: new Date().toISOString() };
+}
+
+/** Ensure a named metric series exists in the store. */
+export function ensureMetric(store: MetricsStore, name: string, unit: string): TimeSeriesMetric {
+  if (!store.metrics[name]) {
+    store.metrics[name] = { name, unit, data_points: [] };
+  }
+  return store.metrics[name];
+}
+
+/**
+ * Append a data point to a named metric (append-only — never overwrites).
+ * Returns the updated store for chaining.
+ */
+export function appendMetric(
+  store: MetricsStore,
+  name: string,
+  unit: string,
+  value: number,
+  labels?: Record<string, string>
+): MetricsStore {
+  const metric = ensureMetric(store, name, unit);
+  metric.data_points.push({
+    timestamp: new Date().toISOString(),
+    value,
+    labels,
+  });
+  store.last_updated = new Date().toISOString();
+  return store;
+}
+
+/**
+ * Query data points for a metric within a time range.
+ * Both bounds are inclusive. Omit either to leave that side open.
+ */
+export function queryMetric(
+  store: MetricsStore,
+  name: string,
+  from?: string,
+  to?: string
+): MetricDataPoint[] {
+  const metric = store.metrics[name];
+  if (!metric) return [];
+
+  const fromMs = from ? new Date(from).getTime() : 0;
+  const toMs = to ? new Date(to).getTime() : Infinity;
+
+  return metric.data_points.filter((dp) => {
+    const t = new Date(dp.timestamp).getTime();
+    return t >= fromMs && t <= toMs;
+  });
+}
+
+/** Serialize the metrics store to JSON for persistence. */
+export function serializeMetricsStore(store: MetricsStore): string {
+  return JSON.stringify(store, null, 2);
+}
+
+/** Deserialize a metrics store from JSON. Returns empty store on invalid input. */
+export function deserializeMetricsStore(json: string): MetricsStore {
+  try {
+    const parsed = JSON.parse(json);
+    if (parsed && typeof parsed.metrics === 'object' && parsed.last_updated) {
+      return parsed as MetricsStore;
+    }
+  } catch {
+    // fall through
+  }
+  return createMetricsStore();
+}
+
+// ─── Agent Performance Tracking (M7 / Issue #373) ───────────
+
+/** Performance record for a single agent invocation. */
+export interface AgentPerformanceRecord {
+  agent_id: string;
+  agent_name: string;
+  state: string;
+  started_at: string;
+  ended_at: string;
+  duration_ms: number;
+  success: boolean;
+  attempt: number;
+  error?: string;
+}
+
+/** Aggregated performance stats for an agent. */
+export interface AgentPerformanceStats {
+  agent_id: string;
+  agent_name: string;
+  total_invocations: number;
+  successful: number;
+  failed: number;
+  success_rate_pct: number;
+  avg_duration_ms: number;
+  min_duration_ms: number;
+  max_duration_ms: number;
+  p95_duration_ms: number;
+}
+
+/**
+ * Record an agent invocation in the time-series store.
+ * Creates two metric series: agent_duration_ms and agent_success.
+ */
+export function recordAgentPerformance(
+  store: MetricsStore,
+  record: AgentPerformanceRecord
+): MetricsStore {
+  const labels = {
+    agent_id: record.agent_id,
+    agent_name: record.agent_name,
+    state: record.state,
+  };
+  appendMetric(store, 'agent_duration_ms', 'ms', record.duration_ms, labels);
+  appendMetric(store, 'agent_success', 'boolean', record.success ? 1 : 0, labels);
+  return store;
+}
+
+/**
+ * Compute aggregated performance statistics per agent from stored metrics.
+ */
+export function computeAgentStats(store: MetricsStore): AgentPerformanceStats[] {
+  const durationMetric = store.metrics['agent_duration_ms'];
+  const successMetric = store.metrics['agent_success'];
+  if (!durationMetric || !successMetric) return [];
+
+  // Group by agent_id
+  const agentMap = new Map<string, { durations: number[]; successes: number[]; name: string }>();
+
+  for (const dp of durationMetric.data_points) {
+    const id = dp.labels?.agent_id ?? 'unknown';
+    const name = dp.labels?.agent_name ?? id;
+    if (!agentMap.has(id)) agentMap.set(id, { durations: [], successes: [], name });
+    agentMap.get(id)!.durations.push(dp.value);
+  }
+  for (const dp of successMetric.data_points) {
+    const id = dp.labels?.agent_id ?? 'unknown';
+    const name = dp.labels?.agent_name ?? id;
+    if (!agentMap.has(id)) agentMap.set(id, { durations: [], successes: [], name });
+    agentMap.get(id)!.successes.push(dp.value);
+  }
+
+  const stats: AgentPerformanceStats[] = [];
+  for (const [id, data] of agentMap) {
+    const total = data.successes.length;
+    const successful = data.successes.filter((v) => v === 1).length;
+    const sorted = [...data.durations].sort((a, b) => a - b);
+    const p95Idx = Math.max(0, Math.ceil(sorted.length * 0.95) - 1);
+    stats.push({
+      agent_id: id,
+      agent_name: data.name,
+      total_invocations: total,
+      successful,
+      failed: total - successful,
+      success_rate_pct: total > 0 ? Math.round((successful / total) * 10000) / 100 : 0,
+      avg_duration_ms:
+        sorted.length > 0 ? Math.round(sorted.reduce((a, b) => a + b, 0) / sorted.length) : 0,
+      min_duration_ms: sorted.length > 0 ? sorted[0] : 0,
+      max_duration_ms: sorted.length > 0 ? sorted[sorted.length - 1] : 0,
+      p95_duration_ms: sorted.length > 0 ? sorted[p95Idx] : 0,
+    });
+  }
+
+  return stats.sort((a, b) => a.agent_id.localeCompare(b.agent_id));
+}
+
+// ─── Sprint Boundary Trend Computation (M7 / Issue #374) ────
+
+/** Velocity trend entry computed at a sprint boundary. */
+export interface VelocityTrendEntry {
+  sprint_id: string;
+  date: string;
+  planned_points: number;
+  completed_points: number;
+  velocity_ratio: number;
+  trailing_avg_velocity: number;
+  window_size: number;
+}
+
+/** DORA trend entry computed at a sprint boundary. */
+export interface DoraTrendEntry {
+  sprint_id: string;
+  date: string;
+  lead_time_hours: number;
+  deployment_frequency_per_day: number;
+  change_failure_rate_pct: number;
+  mttr_hours: number;
+  overall_level: DoraLevel;
+}
+
+/**
+ * Compute velocity trend at sprint boundary.
+ * Persists the result into the metrics store.
+ */
+export function computeVelocityTrendEntry(
+  sprints: SprintMetrics[],
+  windowSize: number = 3
+): VelocityTrendEntry[] {
+  const entries: VelocityTrendEntry[] = [];
+  for (let i = 0; i < sprints.length; i++) {
+    const s = sprints[i];
+    const ratio = s.planned_points > 0 ? s.completed_points / s.planned_points : 0;
+    const start = Math.max(0, i - windowSize + 1);
+    const window = sprints.slice(start, i + 1);
+    const trailingAvg =
+      window.length > 0
+        ? window.reduce((sum, w) => sum + w.completed_points, 0) / window.length
+        : 0;
+    entries.push({
+      sprint_id: s.sprint_id,
+      date: s.ended_at,
+      planned_points: s.planned_points,
+      completed_points: s.completed_points,
+      velocity_ratio: Math.round(ratio * 1000) / 1000,
+      trailing_avg_velocity: Math.round(trailingAvg * 10) / 10,
+      window_size: window.length,
+    });
+  }
+  return entries;
+}
+
+/**
+ * Record sprint boundary metrics into the time-series store.
+ * Appends velocity and DORA snapshots so they accumulate over time.
+ */
+export function recordSprintBoundary(
+  metricsStore: MetricsStore,
+  sprint: SprintMetrics,
+  doraReport?: DoraReport
+): MetricsStore {
+  const labels = { sprint_id: sprint.sprint_id };
+  appendMetric(metricsStore, 'sprint_planned_points', 'points', sprint.planned_points, labels);
+  appendMetric(metricsStore, 'sprint_completed_points', 'points', sprint.completed_points, labels);
+  const ratio = sprint.planned_points > 0 ? sprint.completed_points / sprint.planned_points : 0;
+  appendMetric(
+    metricsStore,
+    'sprint_velocity_ratio',
+    'ratio',
+    Math.round(ratio * 1000) / 1000,
+    labels
+  );
+  appendMetric(metricsStore, 'sprint_defects_found', 'count', sprint.defects_found, labels);
+  appendMetric(metricsStore, 'sprint_carry_over', 'count', sprint.tasks_carried_over, labels);
+
+  if (doraReport) {
+    appendMetric(metricsStore, 'dora_lead_time_hours', 'hours', doraReport.lead_time_hours, labels);
+    appendMetric(
+      metricsStore,
+      'dora_deploy_frequency',
+      'per_day',
+      doraReport.deployment_frequency_per_day,
+      labels
+    );
+    appendMetric(
+      metricsStore,
+      'dora_change_failure_rate',
+      'pct',
+      doraReport.change_failure_rate_pct,
+      labels
+    );
+    appendMetric(metricsStore, 'dora_mttr_hours', 'hours', doraReport.mttr_hours, labels);
+  }
+
+  return metricsStore;
+}

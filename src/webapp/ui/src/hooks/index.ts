@@ -64,3 +64,6 @@ export { useSSEEvents } from './use-sse-events';
 
 /* Keyboard Shortcuts (#241) */
 export { useKeyboardShortcuts } from './use-keyboard-shortcuts';
+
+/* Analytics (M7) */
+export { useAnalyticsTrends, useAnalyticsAgents, useAnalyticsMetrics } from './use-analytics';

@@ -503,3 +503,58 @@ export interface ServerMetrics {
     }
   >;
 }
+
+/* ──────────────────────────────────────────────
+ * Analytics (M7 / Issue #375-376)
+ * ────────────────────────────────────────────── */
+
+export interface MetricDataPoint {
+  timestamp: string;
+  value: number;
+  labels?: Record<string, string>;
+}
+
+export interface VelocityTrendEntry {
+  sprint_id: string;
+  date: string;
+  planned_points: number;
+  completed_points: number;
+  velocity_ratio: number;
+  trailing_avg_velocity: number;
+  window_size: number;
+}
+
+export interface AnalyticsTrendsData {
+  velocity: VelocityTrendEntry[];
+  dora: {
+    lead_time: MetricDataPoint[];
+    deployment_frequency: MetricDataPoint[];
+    change_failure_rate: MetricDataPoint[];
+    mttr: MetricDataPoint[];
+  };
+  sprints: {
+    planned_points: MetricDataPoint[];
+    completed_points: MetricDataPoint[];
+    defects_found: MetricDataPoint[];
+  };
+}
+
+export interface AgentPerformanceStats {
+  agent_id: string;
+  agent_name: string;
+  total_invocations: number;
+  successful: number;
+  failed: number;
+  success_rate_pct: number;
+  avg_duration_ms: number;
+  min_duration_ms: number;
+  max_duration_ms: number;
+  p95_duration_ms: number;
+}
+
+export interface MetricSummary {
+  name: string;
+  unit: string;
+  data_points_count: number;
+  latest: MetricDataPoint | null;
+}

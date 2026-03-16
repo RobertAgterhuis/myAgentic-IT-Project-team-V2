@@ -338,6 +338,7 @@ const orchestratorRoutes = require('./routes/orchestrator')(ctx);
 ctx._getEngine = orchestratorRoutes._getEngine;
 const approvalRoutes = require('./routes/approvals')(ctx);
 const artifactRoutes = require('./routes/artifacts')(ctx);
+const analyticsRoutes = require('./routes/analytics')(ctx);
 const miscRoutes = require('./routes/misc')(ctx);
 
 const serveStatic = miscRoutes._serveStatic;
@@ -364,6 +365,7 @@ const ROUTES: RouteTable = {
   ...orchestratorRoutes,
   ...approvalRoutes,
   ...artifactRoutes,
+  ...analyticsRoutes,
   ...orchestratorRoutes,
   ...miscRoutes,
 };

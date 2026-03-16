@@ -1,6 +1,6 @@
 /**
- * Metrics page — drift detection, KPI charts, time-range selector.
- * Issue #245 (S9G-38)
+ * Metrics page — drift detection, KPI charts, time-range selector, analytics trends.
+ * Issue #245 (S9G-38), M7 analytics integration (#376)
  */
 import { useState, useMemo } from 'react';
 import { Heading, Text } from '@/components/ui/typography';
@@ -12,8 +12,19 @@ import { DataTable } from '@/components/ui/data-table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { ProgressBar } from '@/components/ui/progress';
-import { useDriftDetection, useProgress, useDashboardMetrics } from '@/hooks';
-import type { DriftEntry, DriftSeverity } from '@/lib/api-types';
+import {
+  useDriftDetection,
+  useProgress,
+  useDashboardMetrics,
+  useAnalyticsTrends,
+  useAnalyticsAgents,
+} from '@/hooks';
+import type {
+  DriftEntry,
+  DriftSeverity,
+  VelocityTrendEntry,
+  AgentPerformanceStats,
+} from '@/lib/api-types';
 import type { ColumnDef } from '@tanstack/react-table';
 import {
   BarChart3,
@@ -23,6 +34,8 @@ import {
   Clock,
   ShieldAlert,
   Info,
+  TrendingUp,
+  Activity,
 } from 'lucide-react';
 
 /* ── Time range ── */
@@ -90,6 +103,62 @@ const driftColumns: ColumnDef<DriftEntry, unknown>[] = [
   },
 ];
 
+/* ── Velocity trend table columns ── */
+const velocityColumns: ColumnDef<VelocityTrendEntry, unknown>[] = [
+  { accessorKey: 'sprintId', header: 'Sprint' },
+  { accessorKey: 'planned', header: 'Planned' },
+  { accessorKey: 'completed', header: 'Completed' },
+  {
+    accessorKey: 'completionRate',
+    header: 'Rate',
+    cell: ({ getValue }) => `${((getValue() as number) * 100).toFixed(0)}%`,
+  },
+  {
+    accessorKey: 'carryOver',
+    header: 'Carry-over',
+    cell: ({ getValue }) => (getValue() as number) || '—',
+  },
+  {
+    accessorKey: 'trailingAvg',
+    header: '3-Sprint Avg',
+    cell: ({ getValue }) => {
+      const v = getValue() as number | undefined;
+      return v != null ? v.toFixed(1) : '—';
+    },
+  },
+];
+
+/* ── Agent performance table columns ── */
+const agentColumns: ColumnDef<AgentPerformanceStats, unknown>[] = [
+  { accessorKey: 'agentName', header: 'Agent' },
+  { accessorKey: 'invocations', header: 'Invocations' },
+  {
+    accessorKey: 'successRate',
+    header: 'Success Rate',
+    cell: ({ getValue }) => `${((getValue() as number) * 100).toFixed(1)}%`,
+  },
+  {
+    accessorKey: 'avgDurationMs',
+    header: 'Avg Duration',
+    cell: ({ getValue }) => `${Math.round(getValue() as number)} ms`,
+  },
+  {
+    accessorKey: 'p95DurationMs',
+    header: 'P95',
+    cell: ({ getValue }) => `${Math.round(getValue() as number)} ms`,
+  },
+  {
+    accessorKey: 'minDurationMs',
+    header: 'Min',
+    cell: ({ getValue }) => `${Math.round(getValue() as number)} ms`,
+  },
+  {
+    accessorKey: 'maxDurationMs',
+    header: 'Max',
+    cell: ({ getValue }) => `${Math.round(getValue() as number)} ms`,
+  },
+];
+
 /* ── Export helper ── */
 function exportData(drifts: DriftEntry[], format: 'json' | 'csv') {
   let content: string;
@@ -126,6 +195,8 @@ export default function MetricsPage() {
   const { data: drift, isLoading: driftLoading } = useDriftDetection();
   const { data: progress } = useProgress();
   const { data: metrics } = useDashboardMetrics();
+  const { data: trends } = useAnalyticsTrends();
+  const { data: agentPerf } = useAnalyticsAgents();
   const [timeRange, setTimeRange] = useState<TimeRange>('7d');
 
   // Sprint velocity mock (from progress data)
@@ -324,6 +395,83 @@ export default function MetricsPage() {
           )}
         </div>
       </section>
+
+      {/* Velocity Trends (M7 #376) */}
+      <section aria-label="Velocity trends">
+        <Heading level={2} className="mb-3">
+          <TrendingUp className="size-4 inline mr-2" />
+          Velocity Trends
+        </Heading>
+        {trends?.velocity && trends.velocity.length > 0 ? (
+          <DataTable
+            columns={velocityColumns}
+            data={trends.velocity}
+            enableSorting
+            emptyTitle="No velocity data"
+          />
+        ) : (
+          <EmptyState
+            icon={<TrendingUp className="size-12" />}
+            title="No velocity trends yet"
+            description="Velocity data will appear after sprint boundaries are recorded."
+          />
+        )}
+      </section>
+
+      {/* Agent Performance (M7 #376) */}
+      <section aria-label="Agent performance">
+        <Heading level={2} className="mb-3">
+          <Activity className="size-4 inline mr-2" />
+          Agent Performance
+        </Heading>
+        {agentPerf && agentPerf.length > 0 ? (
+          <DataTable
+            columns={agentColumns}
+            data={agentPerf}
+            enableSorting
+            enableFiltering
+            filterPlaceholder="Search agents…"
+            emptyTitle="No agent data"
+          />
+        ) : (
+          <EmptyState
+            icon={<Activity className="size-12" />}
+            title="No agent performance data"
+            description="Agent metrics will appear once agents have been invoked."
+          />
+        )}
+      </section>
+
+      {/* DORA Metrics Summary (M7 #376) */}
+      {trends?.dora &&
+        (trends.dora.lead_time.length > 0 || trends.dora.deployment_frequency.length > 0) && (
+          <section aria-label="DORA metrics">
+            <Heading level={2} className="mb-3">
+              DORA Metrics
+            </Heading>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {trends.dora.lead_time.length > 0 && (
+                <MetricCard
+                  label="Lead Time"
+                  value={`${trends.dora.lead_time[trends.dora.lead_time.length - 1].value.toFixed(1)}h`}
+                  icon={<Clock className="size-4" />}
+                  trend="neutral"
+                />
+              )}
+              {trends.dora.deployment_frequency.length > 0 && (
+                <MetricCard
+                  label="Deployment Freq"
+                  value={String(
+                    trends.dora.deployment_frequency[trends.dora.deployment_frequency.length - 1]
+                      .value
+                  )}
+                  icon={<BarChart3 className="size-4" />}
+                  trend="neutral"
+                />
+              )}
+            </div>
+          </section>
+        )}
 
       {/* Drift Detail Table */}
       <section aria-label="Drift details">

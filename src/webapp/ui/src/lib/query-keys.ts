@@ -54,4 +54,12 @@ export const queryKeys = {
   serverMetrics: {
     all: ['server-metrics'] as const,
   },
+
+  /* Analytics (M7) */
+  analytics: {
+    trends: ['analytics', 'trends'] as const,
+    agents: ['analytics', 'agents'] as const,
+    metrics: ['analytics', 'metrics'] as const,
+    metric: (name: string) => ['analytics', 'metrics', name] as const,
+  },
 } as const;

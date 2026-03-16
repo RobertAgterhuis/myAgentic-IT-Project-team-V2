@@ -15,6 +15,16 @@
 
 import _path from 'path';
 import { findPromotionCandidates } from '../../src/webapp/lesson-promotion';
+import {
+  type MetricsStore,
+  type SprintMetrics,
+  type DoraReport,
+  createMetricsStore,
+  deserializeMetricsStore,
+  serializeMetricsStore,
+  computeVelocityTrendEntry,
+  recordSprintBoundary,
+} from '../sdlc/observability';
 
 interface SprintGateStore {
   exists(path: string): boolean;
@@ -737,6 +747,97 @@ function runSprintGate(store: SprintGateStore, options: Record<string, unknown>)
   return { verdict, blockers: allBlockers, steps, summary };
 }
 
+// ─── Sprint Boundary Trend Computation (M7 / Issue #374) ────
+
+const METRICS_STORE_PATH = 'BusinessDocs/metrics/time-series-metrics.json';
+
+/**
+ * Compute and persist velocity trends at a sprint boundary.
+ *
+ * Reads the velocity log to build sprint history, computes trend entries,
+ * records the current sprint's metrics into the time-series store, and
+ * optionally includes DORA metrics.
+ *
+ * @param store - File store for reading/writing
+ * @param sprintMetrics - Completed sprint's metrics
+ * @param doraReport - Optional DORA report for the sprint period
+ * @param opts - Override file paths
+ * @returns Computed velocity trend entries and updated metrics store
+ */
+function computeAndPersistSprintTrends(
+  store: SprintGateStore,
+  sprintMetrics: SprintMetrics,
+  doraReport?: DoraReport,
+  opts: { velocityPath?: string; metricsPath?: string; windowSize?: number } = {}
+) {
+  const velocityPath = opts.velocityPath || VELOCITY_LOG_PATH;
+  const metricsPath = opts.metricsPath || METRICS_STORE_PATH;
+  const windowSize = opts.windowSize || VELOCITY_WINDOW;
+
+  // Load existing velocity data to build historical context
+  let sprintHistory: SprintMetrics[] = [];
+  if (store.exists(velocityPath)) {
+    try {
+      const raw = JSON.parse(store.readFile(velocityPath));
+      const sprints = raw.sprints || [];
+      sprintHistory = sprints.map((s: Record<string, unknown>) => ({
+        sprint_id: (s.sprint_id as string) || '',
+        started_at: (s.started_at as string) || (s.date as string) || '',
+        ended_at: (s.ended_at as string) || (s.date as string) || '',
+        planned_points: (s.planned_items as number) || (s.planned_points as number) || 0,
+        completed_points: (s.completed_items as number) || (s.completed_points as number) || 0,
+        tasks_completed: (s.tasks_completed as number) || (s.completed_items as number) || 0,
+        tasks_carried_over: (s.tasks_carried_over as number) || (s.carried_over as number) || 0,
+        defects_found: (s.defects_found as number) || 0,
+        defects_fixed: (s.defects_fixed as number) || 0,
+      }));
+    } catch {
+      sprintHistory = [];
+    }
+  }
+
+  // Include current sprint if not already present
+  if (!sprintHistory.some((s) => s.sprint_id === sprintMetrics.sprint_id)) {
+    sprintHistory.push(sprintMetrics);
+  }
+
+  // Compute trend entries
+  const trendEntries = computeVelocityTrendEntry(sprintHistory, windowSize);
+
+  // Load or create time-series metrics store
+  let metricsStore: MetricsStore;
+  try {
+    metricsStore = store.exists(metricsPath)
+      ? deserializeMetricsStore(store.readFile(metricsPath))
+      : createMetricsStore();
+  } catch {
+    metricsStore = createMetricsStore();
+  }
+
+  // Record sprint boundary data
+  recordSprintBoundary(metricsStore, sprintMetrics, doraReport);
+
+  // Persist
+  try {
+    const dir = metricsPath.replace(/[/\\][^/\\]+$/, '');
+    if (dir && !store.exists(dir)) {
+      // Use writeFile on the store if mkdirp not available
+    }
+    (store as unknown as { writeFile(p: string, d: string): void }).writeFile(
+      metricsPath,
+      serializeMetricsStore(metricsStore)
+    );
+  } catch {
+    // Metrics persistence failure is non-fatal
+  }
+
+  return {
+    trendEntries,
+    currentSprint: trendEntries.find((e) => e.sprint_id === sprintMetrics.sprint_id) || null,
+    metricsStore,
+  };
+}
+
 export {
   DECISIONS_PATH,
   LESSONS_LEARNED_PATH,
@@ -745,6 +846,7 @@ export {
   REEVALUATE_TRIGGER_PATH,
   VELOCITY_WINDOW,
   CAPACITY_THRESHOLD,
+  METRICS_STORE_PATH,
   parseDecisions,
   loadReevaluateTrigger,
   loadDecisionsAndTriggers,
@@ -757,4 +859,5 @@ export {
   checkBlockers,
   parseBlockerMatrix,
   runSprintGate,
+  computeAndPersistSprintTrends,
 };

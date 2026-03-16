@@ -184,7 +184,7 @@ function saveTransitionIntent(store, targetState, filePath) {
   const dir = path.dirname(target);
   store.mkdirp(dir);
 
-  let existing = {};
+  let existing: Record<string, unknown> = {};
   if (store.exists(target)) {
     try {
       existing = JSON.parse(store.readFile(target));
@@ -213,7 +213,7 @@ function saveTransitionIntent(store, targetState, filePath) {
 function saveTransitionComplete(store, filePath) {
   const target = filePath || DEFAULT_SESSION_FILE;
 
-  let existing = {};
+  let existing: Record<string, unknown> = {};
   if (store.exists(target)) {
     try {
       existing = JSON.parse(store.readFile(target));

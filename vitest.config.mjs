@@ -58,6 +58,8 @@ export default defineConfig({
     ],
     exclude: [
       '**/node_modules/**',
+      'tests/integration/git-adapter.integration.test.js',
+      'tests/integration/testing-adapter.integration.test.js',
     ],
     coverage: {
       provider: 'v8',

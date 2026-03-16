@@ -26,8 +26,8 @@ import {
   createArtifact,
   computeContentHash,
   type ArtifactType,
-} from '../sdlc/artifacts.js';
-import type { LifecycleStage } from '../sdlc/entities.js';
+} from '../sdlc/artifacts';
+import type { LifecycleStage } from '../sdlc/entities';
 
 // ─── Types ──────────────────────────────────────────────────
 

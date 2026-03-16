@@ -22,6 +22,9 @@ import {
   ClipboardList,
   Scale,
   BarChart3,
+  Package,
+  ShieldCheck,
+  GitPullRequest,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -31,6 +34,9 @@ const iconMap: Record<string, React.ReactNode> = {
   ClipboardList: <ClipboardList className="size-4" />,
   Scale: <Scale className="size-4" />,
   BarChart3: <BarChart3 className="size-4" />,
+  Package: <Package className="size-4" />,
+  ShieldCheck: <ShieldCheck className="size-4" />,
+  GitPullRequest: <GitPullRequest className="size-4" />,
 };
 
 function buildSections(): NavSection[] {

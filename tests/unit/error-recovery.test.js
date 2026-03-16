@@ -164,15 +164,16 @@ describe('Exponential Backoff (M5 #361)', () => {
 // RECOVERABLE → Degraded State
 // ─────────────────────────────────────────────────────────────
 describe('Recoverable Errors → Degraded (M5 #360/#362)', () => {
-  it('recoverable errors return degraded flag', async () => {
+  it('recoverable errors return degraded flag after retries exhausted', async () => {
     const store = createMockStore();
     const dispatcher = new Dispatcher({
       store,
-      config: { maxTransientRetries: 3, backoffBaseMs: 1, backoffCapMs: 10 },
+      config: { maxTransientRetries: 1, backoffBaseMs: 1, backoffCapMs: 10 },
       invoker: async () => {
         throw new Error('Something unexpected happened');
       },
     });
+    dispatcher._delay = () => Promise.resolve();
 
     const result = await dispatcher.invoke({ id: '01', name: 'Test' }, 'PHASE_1', {});
 

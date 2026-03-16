@@ -150,7 +150,6 @@ const DEFAULT_CONFIG = Object.freeze({
   retryDelayMs: 5000,
   backoffBaseMs: 2000,
   backoffCapMs: 30000,
-  maxTransientRetries: 3,
   skillsDir: 'templates/sdlc/agents',
   docsDir: 'docs',
 });
@@ -293,7 +292,8 @@ class Dispatcher {
     const platform = (agentConfig.platform || config.platform) as string;
     let lastError: { message: string } | null = null;
 
-    const maxRetries = (config.maxTransientRetries || DEFAULT_CONFIG.maxTransientRetries) as number;
+    // maxTransientRetries governs classified-TRANSIENT retries; fall back to legacy maxRetries
+    const maxRetries = (config.maxTransientRetries ?? config.maxRetries ?? 3) as number;
 
     for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
       const entry: InvocationEntry = {
@@ -326,11 +326,13 @@ class Dispatcher {
         entry.durationMs = +new Date(entry.endTime) - +new Date(entry.startTime);
         entry.error = (err as { message: string }).message;
         entry.status =
-          severity === ErrorSeverity.FATAL
-            ? 'failure'
-            : attempt <= maxRetries
-              ? 'retry'
-              : 'failure';
+          (err as { message: string }).message === 'TIMEOUT'
+            ? 'timeout'
+            : severity === ErrorSeverity.FATAL
+              ? 'failure'
+              : attempt <= maxRetries
+                ? 'retry'
+                : 'failure';
         entry.errorSeverity = severity;
 
         this._logEntry(entry);
@@ -340,17 +342,7 @@ class Dispatcher {
           return { success: false, error: lastError.message, severity: ErrorSeverity.FATAL };
         }
 
-        // RECOVERABLE → skip agent, mark degraded, continue pipeline
-        if (severity === ErrorSeverity.RECOVERABLE) {
-          return {
-            success: false,
-            error: lastError.message,
-            severity: ErrorSeverity.RECOVERABLE,
-            degraded: true,
-          };
-        }
-
-        // TRANSIENT → retry with exponential backoff
+        // TRANSIENT / RECOVERABLE → retry with backoff (if attempts remain)
         if (attempt <= maxRetries) {
           const base = (config.backoffBaseMs || DEFAULT_CONFIG.backoffBaseMs) as number;
           const cap = (config.backoffCapMs || DEFAULT_CONFIG.backoffCapMs) as number;
@@ -360,11 +352,16 @@ class Dispatcher {
       }
     }
 
-    // All transient retries exhausted → escalate to FATAL
+    // All retries exhausted
+    const finalSeverity = lastError ? Dispatcher.classifyError(lastError) : ErrorSeverity.FATAL;
     return {
       success: false,
       error: lastError ? lastError.message : 'Unknown error',
-      severity: ErrorSeverity.FATAL,
+      severity:
+        finalSeverity === ErrorSeverity.RECOVERABLE
+          ? ErrorSeverity.RECOVERABLE
+          : ErrorSeverity.FATAL,
+      degraded: finalSeverity === ErrorSeverity.RECOVERABLE ? true : undefined,
     };
   }
 

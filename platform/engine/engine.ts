@@ -30,6 +30,7 @@ import {
   loadRunHistory,
   saveTransitionIntent,
   saveTransitionComplete,
+  addDegradationEntry,
 } from './state-persistence';
 import { runGate } from './gate-validator';
 import { runSprintGate } from './sprint-gate';
@@ -351,6 +352,36 @@ function createEngine(options: Record<string, unknown>) {
     return status();
   }
 
+  /**
+   * Record a degradation event in the session state (M5 / Evolution 5).
+   * Called when a RECOVERABLE error allows the pipeline to continue
+   * with reduced functionality.
+   *
+   * @param {{ component: string, reason: string, state?: string }} entry
+   */
+  function logDegradation(entry: { component: string; reason: string; state?: string }) {
+    addDegradationEntry(store, { ...entry, state: entry.state || machine.state }, sessionPath);
+    sseForward('orchestrator:degradation', { ...entry, state: entry.state || machine.state });
+  }
+
+  /**
+   * Gracefully pause the engine at the current state boundary (M5 / Evolution 6).
+   * Writes a checkpoint so the engine can resume without duplicate work.
+   *
+   * @returns {object} Updated engine status
+   */
+  function pauseAtCheckpoint() {
+    const serialized = machine.serialize();
+    saveSessionState(store, serialized, sessionPath);
+    saveTransitionComplete(store, sessionPath);
+    sseForward('orchestrator:paused', {
+      state: machine.state,
+      mode: machine.mode,
+      checkpoint: true,
+    });
+    return status();
+  }
+
   /** Archive the current run into run-history.json (if non-trivial). */
   function archiveCurrentRun(endStatus: string) {
     if (machine.history.length === 0) return; // nothing to archive
@@ -543,6 +574,8 @@ function createEngine(options: Record<string, unknown>) {
     recover,
     status,
     stop,
+    logDegradation,
+    pauseAtCheckpoint,
     reset,
     validateGate,
     sprintGate,

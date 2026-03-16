@@ -18,6 +18,33 @@
 import path from 'node:path';
 import { STATES } from './state-machine';
 
+// ─── Error Severity Classification (M5 / Evolution 5) ───────
+
+enum ErrorSeverity {
+  TRANSIENT = 'TRANSIENT',
+  RECOVERABLE = 'RECOVERABLE',
+  FATAL = 'FATAL',
+}
+
+const TRANSIENT_PATTERNS: RegExp[] = [
+  /timeout/i,
+  /ETIMEDOUT/,
+  /ECONNRESET/,
+  /ECONNREFUSED/,
+  /rate.?limit/i,
+  /\b429\b/,
+  /\b503\b/,
+  /network/i,
+];
+
+const FATAL_PATTERNS: RegExp[] = [
+  /auth(?:entication|orization)?.?fail/i,
+  /\b401\b/,
+  /\b403\b/,
+  /state.?corrupt/i,
+  /contract.?violation/i,
+];
+
 interface DispatcherStore {
   exists(path: string): boolean;
   read(path: string): string;
@@ -40,6 +67,7 @@ interface InvocationEntry {
   attempt: number;
   error?: string;
   outputPath?: string;
+  errorSeverity?: string;
 }
 
 // ─── Agent Registry ──────────────────────────────────────────
@@ -120,6 +148,9 @@ const DEFAULT_CONFIG = Object.freeze({
   timeoutMs: 300000, // 5 minutes default
   maxRetries: 2,
   retryDelayMs: 5000,
+  backoffBaseMs: 2000,
+  backoffCapMs: 30000,
+  maxTransientRetries: 3,
   skillsDir: 'templates/sdlc/agents',
   docsDir: 'docs',
 });
@@ -262,7 +293,9 @@ class Dispatcher {
     const platform = (agentConfig.platform || config.platform) as string;
     let lastError: { message: string } | null = null;
 
-    for (let attempt = 1; attempt <= (config.maxRetries as number) + 1; attempt++) {
+    const maxRetries = (config.maxTransientRetries || DEFAULT_CONFIG.maxTransientRetries) as number;
+
+    for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
       const entry: InvocationEntry = {
         agentId: agent.id,
         agentName: agent.name,
@@ -288,26 +321,50 @@ class Dispatcher {
         return { success: true, outputPath: (result as Record<string, unknown>).outputPath };
       } catch (err) {
         lastError = err as { message: string };
+        const severity = Dispatcher.classifyError(err as { message: string });
         entry.endTime = new Date().toISOString();
         entry.durationMs = +new Date(entry.endTime) - +new Date(entry.startTime);
         entry.error = (err as { message: string }).message;
-        entry.status = Dispatcher._classifyError(
-          err as { message: string },
-          attempt,
-          config.maxRetries as number
-        );
+        entry.status =
+          severity === ErrorSeverity.FATAL
+            ? 'failure'
+            : attempt <= maxRetries
+              ? 'retry'
+              : 'failure';
+        entry.errorSeverity = severity;
 
         this._logEntry(entry);
 
-        if (attempt <= (config.maxRetries as number)) {
-          await this._delay(config.retryDelayMs as number);
+        // FATAL → halt immediately, no retry
+        if (severity === ErrorSeverity.FATAL) {
+          return { success: false, error: lastError.message, severity: ErrorSeverity.FATAL };
+        }
+
+        // RECOVERABLE → skip agent, mark degraded, continue pipeline
+        if (severity === ErrorSeverity.RECOVERABLE) {
+          return {
+            success: false,
+            error: lastError.message,
+            severity: ErrorSeverity.RECOVERABLE,
+            degraded: true,
+          };
+        }
+
+        // TRANSIENT → retry with exponential backoff
+        if (attempt <= maxRetries) {
+          const base = (config.backoffBaseMs || DEFAULT_CONFIG.backoffBaseMs) as number;
+          const cap = (config.backoffCapMs || DEFAULT_CONFIG.backoffCapMs) as number;
+          const delay = Math.min(base * Math.pow(2, attempt - 1), cap);
+          await this._delay(delay);
         }
       }
     }
 
+    // All transient retries exhausted → escalate to FATAL
     return {
       success: false,
       error: lastError ? lastError.message : 'Unknown error',
+      severity: ErrorSeverity.FATAL,
     };
   }
 
@@ -369,6 +426,16 @@ class Dispatcher {
     return attempt <= maxRetries ? 'retry' : 'failure';
   }
 
+  /**
+   * Classify an error into TRANSIENT, RECOVERABLE, or FATAL severity.
+   */
+  static classifyError(err: { message: string }): ErrorSeverity {
+    const msg = err.message || '';
+    if (FATAL_PATTERNS.some((p) => p.test(msg))) return ErrorSeverity.FATAL;
+    if (TRANSIENT_PATTERNS.some((p) => p.test(msg))) return ErrorSeverity.TRANSIENT;
+    return ErrorSeverity.RECOVERABLE;
+  }
+
   /** @private — Default invoker (no-op for testing) */
   async _defaultInvoker(_agent: AgentRef, _platform: string, _context: Record<string, unknown>) {
     throw new Error('No invoker configured. Provide an invoker function.');
@@ -403,4 +470,12 @@ class Dispatcher {
   }
 }
 
-export { PHASE_AGENTS, PLATFORMS, DEFAULT_CONFIG, Dispatcher };
+export {
+  PHASE_AGENTS,
+  PLATFORMS,
+  DEFAULT_CONFIG,
+  Dispatcher,
+  ErrorSeverity,
+  TRANSIENT_PATTERNS,
+  FATAL_PATTERNS,
+};

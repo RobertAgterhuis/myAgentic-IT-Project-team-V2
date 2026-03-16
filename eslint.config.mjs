@@ -69,7 +69,6 @@ export default [
     files: ['**/*.test.js', '**/*.spec.js', '**/*.test.ts', '**/*.spec.ts'],
     languageOptions: {
       globals: {
-        ...globals.jest,
         ...globals.browser,
         vi: 'readonly',
         describe: 'readonly',

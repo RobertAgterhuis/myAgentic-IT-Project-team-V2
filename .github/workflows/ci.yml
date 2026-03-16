@@ -45,7 +45,7 @@ jobs:
         run: npm ci
 
       - name: Run tests with coverage
-        run: npm run test:vitest:coverage
+        run: npm run test:coverage
         # vitest.config.mjs enforces coverage thresholds natively
 
   secret-scan:
@@ -134,7 +134,7 @@ jobs:
         run: npm ci
 
       - name: Validate translations (en-US, fr-FR, de-DE)
-        run: npx jest tests/unit/translation-validation.test.js --passWithNoTests --verbose
+        run: npx vitest run tests/unit/translation-validation.test.js
 
   container-scan:
     name: Container Image Scan

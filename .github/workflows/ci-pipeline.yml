@@ -86,7 +86,7 @@ jobs:
       #     token: ${{ secrets.CODECOV_TOKEN }}
 
       # Coverage thresholds are enforced by Vitest in ci.yml
-      # Root Jest tests cover documentation/landing/integration — no source code coverage expected
+      # All tests now run via Vitest — single unified runner
 
   # Job 3: Security Scanning (Vulnerability Detection)
   # Note: Secret scanning is handled by TruffleHog in ci.yml

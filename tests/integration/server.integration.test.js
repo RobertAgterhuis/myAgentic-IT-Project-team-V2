@@ -50,35 +50,39 @@ function request(urlPath, options = {}) {
   });
 }
 
-beforeAll((done) => {
-  // Import server and start on a random port
-  const serverModule = require(SERVER_PATH);
-  server = serverModule.server;
+beforeAll(() => {
+  return new Promise((resolve) => {
+    // Import server and start on a random port
+    const serverModule = require(SERVER_PATH);
+    server = serverModule.server;
 
-  // If server is already listening, close and re-listen on random port
-  if (server.listening) {
-    server.close(() => {
+    // If server is already listening, close and re-listen on random port
+    if (server.listening) {
+      server.close(() => {
+        server.listen(0, '127.0.0.1', () => {
+          const addr = server.address();
+          baseUrl = `http://127.0.0.1:${addr.port}`;
+          resolve();
+        });
+      });
+    } else {
       server.listen(0, '127.0.0.1', () => {
         const addr = server.address();
         baseUrl = `http://127.0.0.1:${addr.port}`;
-        done();
+        resolve();
       });
-    });
-  } else {
-    server.listen(0, '127.0.0.1', () => {
-      const addr = server.address();
-      baseUrl = `http://127.0.0.1:${addr.port}`;
-      done();
-    });
-  }
+    }
+  });
 });
 
-afterAll((done) => {
-  if (server && server.listening) {
-    server.close(done);
-  } else {
-    done();
-  }
+afterAll(() => {
+  return new Promise((resolve) => {
+    if (server && server.listening) {
+      server.close(resolve);
+    } else {
+      resolve();
+    }
+  });
 });
 
 describe('SP-11-612: Server Health & Core Endpoints', () => {

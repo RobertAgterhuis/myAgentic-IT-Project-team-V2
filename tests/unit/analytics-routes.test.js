@@ -259,5 +259,61 @@ describe('Analytics API routes (M7 #375)', () => {
       expect(body.data.filtered_count).toBe(1);
       expect(body.data.data_points[0].value).toBe(200);
     });
+
+    it('returns 400 when metric name is missing', () => {
+      const handler = routes['GET /api/v1/analytics/metrics/:name'];
+      const res = createRes();
+      handler(createReq('/api/v1/analytics/metrics'), res);
+
+      expect(res.statusCode).toBe(400);
+      const body = JSON.parse(res.body);
+      expect(body.message).toContain('Metric name is required');
+    });
+  });
+
+  // ── Edge cases ───────────────────────────────
+
+  describe('velocity log edge cases', () => {
+    it('handles velocity log with missing sprints field', () => {
+      const st = getStore();
+      st.writeFile(path.resolve('BusinessDocs/retrospectives/velocity-log.json'), '{}');
+
+      const handler = routes['GET /api/v1/analytics/trends'];
+      const res = createRes();
+      handler(createReq('/api/v1/analytics/trends'), res);
+
+      const body = JSON.parse(res.body);
+      expect(body.ok).toBe(true);
+      expect(body.data.velocity).toEqual([]);
+    });
+
+    it('handles corrupt velocity log JSON gracefully', () => {
+      const st = getStore();
+      st.writeFile(
+        path.resolve('BusinessDocs/retrospectives/velocity-log.json'),
+        'not valid json!'
+      );
+
+      const handler = routes['GET /api/v1/analytics/trends'];
+      const res = createRes();
+      handler(createReq('/api/v1/analytics/trends'), res);
+
+      const body = JSON.parse(res.body);
+      expect(body.ok).toBe(true);
+      expect(body.data.velocity).toEqual([]);
+    });
+
+    it('handles corrupt metrics store JSON gracefully', () => {
+      const st = getStore();
+      st.writeFile(path.resolve('BusinessDocs/metrics/time-series-metrics.json'), '{bad json');
+
+      const handler = routes['GET /api/v1/analytics/agents'];
+      const res = createRes();
+      handler(createReq('/api/v1/analytics/agents'), res);
+
+      const body = JSON.parse(res.body);
+      expect(body.ok).toBe(true);
+      expect(body.data).toEqual([]);
+    });
   });
 });

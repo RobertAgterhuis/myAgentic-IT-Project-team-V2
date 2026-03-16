@@ -402,10 +402,10 @@ export default function MetricsPage() {
           <TrendingUp className="size-4 inline mr-2" />
           Velocity Trends
         </Heading>
-        {trends?.velocityTrends && trends.velocityTrends.length > 0 ? (
+        {trends?.velocity && trends.velocity.length > 0 ? (
           <DataTable
             columns={velocityColumns}
-            data={trends.velocityTrends}
+            data={trends.velocity}
             enableSorting
             emptyTitle="No velocity data"
           />
@@ -443,38 +443,35 @@ export default function MetricsPage() {
       </section>
 
       {/* DORA Metrics Summary (M7 #376) */}
-      {trends?.dora && trends.dora.length > 0 && (
-        <section aria-label="DORA metrics">
-          <Heading level={2} className="mb-3">
-            DORA Metrics
-          </Heading>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            {(() => {
-              const latest = trends.dora[trends.dora.length - 1];
-              return (
-                <>
-                  <MetricCard
-                    label="Lead Time"
-                    value={`${latest.value.toFixed(1)}h`}
-                    icon={<Clock className="size-4" />}
-                    trend="neutral"
-                  />
-                  {trends.dora.length >= 2 && (
-                    <MetricCard
-                      label="Deployment Freq"
-                      value={String(
-                        trends.dora.filter((d) => d.metric === 'deployment_frequency').length
-                      )}
-                      icon={<BarChart3 className="size-4" />}
-                      trend="neutral"
-                    />
+      {trends?.dora &&
+        (trends.dora.lead_time.length > 0 || trends.dora.deployment_frequency.length > 0) && (
+          <section aria-label="DORA metrics">
+            <Heading level={2} className="mb-3">
+              DORA Metrics
+            </Heading>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              {trends.dora.lead_time.length > 0 && (
+                <MetricCard
+                  label="Lead Time"
+                  value={`${trends.dora.lead_time[trends.dora.lead_time.length - 1].value.toFixed(1)}h`}
+                  icon={<Clock className="size-4" />}
+                  trend="neutral"
+                />
+              )}
+              {trends.dora.deployment_frequency.length > 0 && (
+                <MetricCard
+                  label="Deployment Freq"
+                  value={String(
+                    trends.dora.deployment_frequency[trends.dora.deployment_frequency.length - 1]
+                      .value
                   )}
-                </>
-              );
-            })()}
-          </div>
-        </section>
-      )}
+                  icon={<BarChart3 className="size-4" />}
+                  trend="neutral"
+                />
+              )}
+            </div>
+          </section>
+        )}
 
       {/* Drift Detail Table */}
       <section aria-label="Drift details">

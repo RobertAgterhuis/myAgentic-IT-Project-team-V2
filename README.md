@@ -1,11 +1,11 @@
 # myAgentic-IT-Project-team – End-to-End Software Solution Creation & Audit
 
+[![CI](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/ci.yml)
 [![CI Pipeline](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/ci-pipeline.yml/badge.svg)](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/ci-pipeline.yml)
-[![codecov](https://codecov.io/gh/RobertAgterhuis/myAgentic-IT-Project-team-V2/branch/main/graph/badge.svg)](https://codecov.io/gh/RobertAgterhuis/myAgentic-IT-Project-team-V2)
+[![Storybook CI](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/storybook.yml/badge.svg)](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/storybook.yml)
+[![Coverage: 75%+ enforced](https://img.shields.io/badge/Coverage-75%25%2B%20enforced-brightgreen.svg)](#testing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js ≥ 18](https://img.shields.io/badge/Node.js-%E2%89%A518-green.svg)](https://nodejs.org/)
-[![Tests: 1370 passing](https://img.shields.io/badge/Tests-1370%20passing-brightgreen.svg)](#testing)
-[![Coverage: 88%+ enforced](https://img.shields.io/badge/Coverage-88%25%2B%20enforced-brightgreen.svg)](#testing)
 [![ESLint: 0 errors](https://img.shields.io/badge/ESLint-0%20errors-brightgreen.svg)](#code-quality)
 
 A **multi-agent system** of 38 specialized AI agents that creates complete,

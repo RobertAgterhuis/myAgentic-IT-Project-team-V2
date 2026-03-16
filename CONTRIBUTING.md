@@ -210,6 +210,14 @@ docs: update README with badges and technology stack
 
 ---
 
+## CI Health Review
+
+A monthly CI health review process is documented in
+[`docs/ci-health-review.md`](docs/ci-health-review.md). It tracks pipeline
+success rate, duration trends, flaky tests, disabled gates, and coverage.
+
+---
+
 ## Questions?
 
 Open a

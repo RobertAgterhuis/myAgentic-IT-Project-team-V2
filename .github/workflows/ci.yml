@@ -48,6 +48,64 @@ jobs:
         run: npm run test:coverage
         # vitest.config.mjs enforces coverage thresholds natively
 
+      - name: Upload coverage artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: |
+            coverage/coverage-final.json
+            coverage/coverage-summary.json
+          retention-days: 30
+
+  # Job: Integration Tests (M16-001)
+  integration-test:
+    name: Integration Tests
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run integration tests
+        run: npm run test:integration
+        env:
+          CI: true
+
+  # Job: Smoke Tests (M16-002)
+  smoke-test:
+    name: Smoke Tests
+    needs: test
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run smoke tests
+        run: npm run test:smoke
+        env:
+          CI: true
+
   secret-scan:
     name: Secret Scan
     runs-on: ubuntu-latest
@@ -154,3 +212,43 @@ jobs:
       - name: Run Trivy vulnerability scanner
         run: |
           trivy image --severity CRITICAL,HIGH --format table app:ci || echo "::warning::Trivy found vulnerabilities in the container image (non-blocking)"
+
+  # Job: Accessibility Gate (M16-003)
+  # Runs axe-core WCAG 2.1 AA audit on main-branch merges
+  # Critical/serious violations fail the build; moderate/minor are warnings
+  accessibility-gate:
+    name: Accessibility Gate
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Start application
+        run: npx tsx src/webapp/server.ts &
+        env:
+          NODE_ENV: test
+
+      - name: Wait for application
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:3000/health > /dev/null 2>&1; then
+              echo "Server ready"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Run axe-core WCAG audit
+        run: npx @axe-core/cli http://127.0.0.1:3000 --tags wcag2a,wcag2aa --exit

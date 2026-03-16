@@ -17,6 +17,7 @@
  */
 
 import type { EntityType, LifecycleStage, TraceLink } from './entities.js';
+import { createHash } from 'crypto';
 
 // ─── Artifact Types ──────────────────────────────────────────
 
@@ -270,4 +271,23 @@ export function createArtifact(
     tags: overrides.tags || [],
     metadata: overrides.metadata || {},
   };
+}
+
+// ─── Content Hash ────────────────────────────────────────────
+
+/**
+ * Compute SHA-256 content hash for artifact integrity verification.
+ * @param content - Raw file content (string)
+ * @returns Hex-encoded SHA-256 hash
+ */
+export function computeContentHash(content: string): string {
+  return createHash('sha256').update(content, 'utf8').digest('hex');
+}
+
+/**
+ * Verify that a file's content matches an expected hash.
+ * @returns true if hashes match, false otherwise
+ */
+export function verifyContentHash(content: string, expectedHash: string): boolean {
+  return computeContentHash(content) === expectedHash;
 }

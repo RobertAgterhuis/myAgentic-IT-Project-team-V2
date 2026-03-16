@@ -225,6 +225,168 @@
       "label": "Emergency HOTFIX"
     }
   },
+  "phaseArtifacts": {
+    "PHASE_1": [
+      {
+        "id": "P1-BA-analysis",
+        "type": "DOCUMENT",
+        "stage": "REQUIREMENTS",
+        "path": "BusinessDocs/Phase1-Business/analysis.md"
+      },
+      {
+        "id": "P1-BA-recommendations",
+        "type": "DOCUMENT",
+        "stage": "REQUIREMENTS",
+        "path": "BusinessDocs/Phase1-Business/recommendations.md"
+      },
+      {
+        "id": "P1-BA-sprint-plan",
+        "type": "DOCUMENT",
+        "stage": "PLANNING",
+        "path": "BusinessDocs/Phase1-Business/sprint-plan.md"
+      },
+      {
+        "id": "P1-BA-guardrails",
+        "type": "DOCUMENT",
+        "stage": "REQUIREMENTS",
+        "path": "BusinessDocs/Phase1-Business/guardrails.md"
+      }
+    ],
+    "PHASE_2": [
+      {
+        "id": "P2-SA-analysis",
+        "type": "DOCUMENT",
+        "stage": "ARCHITECTURE",
+        "path": "BusinessDocs/Phase2-Tech/analysis.md"
+      },
+      {
+        "id": "P2-SA-recommendations",
+        "type": "DOCUMENT",
+        "stage": "ARCHITECTURE",
+        "path": "BusinessDocs/Phase2-Tech/recommendations.md"
+      },
+      {
+        "id": "P2-SD-sprint-plan",
+        "type": "DOCUMENT",
+        "stage": "PLANNING",
+        "path": "BusinessDocs/Phase2-Tech/sprint-plan.md"
+      },
+      {
+        "id": "P2-SEC-guardrails",
+        "type": "DOCUMENT",
+        "stage": "ARCHITECTURE",
+        "path": "BusinessDocs/Phase2-Tech/guardrails.md"
+      }
+    ],
+    "PHASE_3": [
+      {
+        "id": "P3-UXR-analysis",
+        "type": "DOCUMENT",
+        "stage": "REQUIREMENTS",
+        "path": "BusinessDocs/Phase3-UX/analysis.md"
+      },
+      {
+        "id": "P3-UXD-wireframes",
+        "type": "DESIGN_ASSET",
+        "stage": "ARCHITECTURE",
+        "path": "BusinessDocs/Phase3-UX/wireframes.md"
+      },
+      {
+        "id": "P3-UID-design-system",
+        "type": "DESIGN_ASSET",
+        "stage": "ARCHITECTURE",
+        "path": "BusinessDocs/Phase3-UX/design-system.md"
+      },
+      {
+        "id": "P3-A11Y-baseline",
+        "type": "DOCUMENT",
+        "stage": "REQUIREMENTS",
+        "path": "BusinessDocs/Phase3-UX/a11y-baseline.md"
+      },
+      {
+        "id": "P3-CS-strategy",
+        "type": "DOCUMENT",
+        "stage": "REQUIREMENTS",
+        "path": "BusinessDocs/Phase3-UX/content-strategy.md"
+      }
+    ],
+    "PHASE_4": [
+      {
+        "id": "P4-BR-strategy",
+        "type": "DOCUMENT",
+        "stage": "PLANNING",
+        "path": "BusinessDocs/Phase4-Marketing/brand-strategy.md"
+      },
+      {
+        "id": "P4-BR-design-tokens",
+        "type": "CONFIGURATION",
+        "stage": "ARCHITECTURE",
+        "path": "BusinessDocs/brand/design-tokens.json"
+      },
+      {
+        "id": "P4-BR-guidelines",
+        "type": "DOCUMENT",
+        "stage": "PLANNING",
+        "path": "BusinessDocs/brand/brand-guidelines.md"
+      },
+      {
+        "id": "P4-GM-strategy",
+        "type": "DOCUMENT",
+        "stage": "PLANNING",
+        "path": "BusinessDocs/Phase4-Marketing/growth-strategy.md"
+      },
+      {
+        "id": "P4-CRO-strategy",
+        "type": "DOCUMENT",
+        "stage": "PLANNING",
+        "path": "BusinessDocs/Phase4-Marketing/cro-strategy.md"
+      }
+    ],
+    "SYNTHESIS": [
+      {
+        "id": "SYN-master-report",
+        "type": "DOCUMENT",
+        "stage": "PLANNING",
+        "path": "BusinessDocs/synthesis/final-report-master.md"
+      },
+      {
+        "id": "SYN-dept-business",
+        "type": "DOCUMENT",
+        "stage": "PLANNING",
+        "path": "BusinessDocs/synthesis/final-report-business.md"
+      },
+      {
+        "id": "SYN-dept-tech",
+        "type": "DOCUMENT",
+        "stage": "PLANNING",
+        "path": "BusinessDocs/synthesis/final-report-tech.md"
+      },
+      {
+        "id": "SYN-dept-ux",
+        "type": "DOCUMENT",
+        "stage": "PLANNING",
+        "path": "BusinessDocs/synthesis/final-report-ux.md"
+      },
+      {
+        "id": "SYN-dept-marketing",
+        "type": "DOCUMENT",
+        "stage": "PLANNING",
+        "path": "BusinessDocs/synthesis/final-report-marketing.md"
+      },
+      {
+        "id": "SYN-blocker-matrix",
+        "type": "DOCUMENT",
+        "stage": "PLANNING",
+        "path": "BusinessDocs/synthesis/cross-team-blocker-matrix.md"
+      }
+    ]
+  },
+  "phaseLineage": {
+    "PHASE_2": { "consumes": ["PHASE_1"] },
+    "PHASE_3": { "consumes": ["PHASE_2"] },
+    "PHASE_4": { "consumes": ["PHASE_3"] },
+    "SYNTHESIS": { "consumes": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"] }
+  },
   "outputTemplates": [
     "output-templates/analysis-template.md",
     "output-templates/recommendations-template.md",

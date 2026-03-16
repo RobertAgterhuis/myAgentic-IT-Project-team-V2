@@ -19,7 +19,7 @@ export interface RateLimitResult {
   retryAfter?: number;
 }
 
-interface RateLimitEntry {
+export interface RateLimitEntry {
   count: number;
   reset: number;
 }

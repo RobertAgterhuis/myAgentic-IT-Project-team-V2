@@ -352,6 +352,86 @@ export class GovernanceEngine {
     };
   }
 
+  // ─── Timeout / Expiration (M6) ────────────────────────────
+
+  /**
+   * Expire pending approvals that have exceeded their policy timeout.
+   * Returns the list of newly expired approval IDs.
+   */
+  expireTimedOut(): string[] {
+    const now = Date.now();
+    const expired: string[] = [];
+
+    for (const req of this._approvals) {
+      if (req.status !== APPROVAL_STATUS.PENDING) continue;
+
+      const policy = this._policies.find((p) => p.gate_id === req.gate_id);
+      if (!policy || policy.timeout_hours <= 0) continue;
+
+      const requestedAt = new Date(req.requested_at).getTime();
+      const timeoutMs = policy.timeout_hours * 60 * 60 * 1000;
+
+      if (now - requestedAt > timeoutMs) {
+        req.status = APPROVAL_STATUS.EXPIRED;
+        req.decided_by = 'SYSTEM';
+        req.decided_at = new Date().toISOString();
+        req.reason = `Expired after ${policy.timeout_hours}h timeout`;
+        expired.push(req.id);
+      }
+    }
+
+    return expired;
+  }
+
+  // ─── Historical Query (M6) ────────────────────────────────
+
+  /**
+   * Get all approvals across all entities, optionally filtered by status.
+   */
+  getAllApprovals(status?: ApprovalStatus): ApprovalRequest[] {
+    if (status) {
+      return this._approvals.filter((a) => a.status === status);
+    }
+    return [...this._approvals];
+  }
+
+  /**
+   * Get an approval by ID.
+   */
+  getApprovalById(approvalId: string): ApprovalRequest | undefined {
+    return this._approvals.find((a) => a.id === approvalId);
+  }
+
+  // ─── Persistence (M6) ─────────────────────────────────────
+
+  /**
+   * Save governance state to a store (file-based).
+   */
+  saveTo(
+    store: { writeFile(path: string, data: string): void; mkdirp(dir: string): void },
+    filePath: string
+  ): void {
+    const dir = filePath.replace(/[/\\][^/\\]+$/, '');
+    store.mkdirp(dir);
+    store.writeFile(filePath, JSON.stringify(this.toJSON(), null, 2));
+  }
+
+  /**
+   * Load governance state from a store (file-based).
+   */
+  static loadFrom(
+    store: { exists(path: string): boolean; readFile(path: string): string },
+    filePath: string
+  ): GovernanceEngine | null {
+    if (!store.exists(filePath)) return null;
+    try {
+      const data = JSON.parse(store.readFile(filePath));
+      return GovernanceEngine.fromJSON(data);
+    } catch {
+      return null;
+    }
+  }
+
   // ─── Serialization ────────────────────────────────────────
 
   toJSON(): { bindings: RoleBinding[]; approvals: ApprovalRequest[]; policies: ApprovalPolicy[] } {

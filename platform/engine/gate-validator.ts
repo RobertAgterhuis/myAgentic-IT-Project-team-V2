@@ -543,25 +543,70 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
 
   if (govMode !== 'off' && governanceConfig) {
     const matchedPolicies = matchPolicies(governanceConfig.policies, criticState);
-    const advisories = matchedPolicies.map((p) => ({
-      policy_id: p.id,
-      gate_pattern: p.gate_pattern,
-      description: p.description,
-      required_roles: p.required_roles,
-      min_approvals: p.min_approvals,
-      auto_approve: p.auto_approve,
-      advisory_message: p.advisory_message,
-      satisfied: p.auto_approve || p.min_approvals === 0,
-    }));
+
+    // M6: Check existing approvals when provided
+    const existingApprovals =
+      (
+        options as {
+          approvals?: Array<{
+            policy_id: string;
+            status: string;
+            decided_by?: string;
+            role?: string;
+          }>;
+        }
+      ).approvals || [];
+
+    const advisories = matchedPolicies.map((p) => {
+      // Count approvals that match this policy
+      const policyApprovals = existingApprovals.filter(
+        (a) => a.policy_id === p.id && a.status === 'APPROVED'
+      );
+      const satisfied =
+        p.auto_approve || p.min_approvals === 0 || policyApprovals.length >= p.min_approvals;
+
+      return {
+        policy_id: p.id,
+        gate_pattern: p.gate_pattern,
+        description: p.description,
+        required_roles: p.required_roles,
+        min_approvals: p.min_approvals,
+        auto_approve: p.auto_approve,
+        advisory_message: p.advisory_message,
+        satisfied,
+        approval_count: policyApprovals.length,
+      };
+    });
+
+    const unsatisfiedCount = advisories.filter((a) => !a.satisfied).length;
 
     governance_report = {
       mode: govMode,
       identity: identity || null,
       policies_evaluated: matchedPolicies.length,
       advisories,
-      unsatisfied_count: advisories.filter((a) => !a.satisfied).length,
+      unsatisfied_count: unsatisfiedCount,
       timestamp: new Date().toISOString(),
     };
+
+    // M6: Enforcing mode — block transition when policies are unsatisfied
+    if (govMode === 'enforcing' && unsatisfiedCount > 0) {
+      const timeoutHours =
+        (options as { approval_timeout_hours?: number }).approval_timeout_hours ?? 48;
+
+      return {
+        verdict: 'PENDING_APPROVAL',
+        violations: allViolations,
+        questionnaireRequests: allQuestionnaireRequests,
+        summary: {
+          ...summary,
+          blocked_by_governance: true,
+          unsatisfied_policies: advisories.filter((a) => !a.satisfied).map((a) => a.policy_id),
+          approval_timeout_hours: timeoutHours,
+        },
+        governance_report,
+      };
+    }
   }
 
   return {

@@ -51,6 +51,10 @@ const COMMAND_ALIASES = Object.freeze({
   status: '_STATUS',
   stop: '_STOP',
   gate_check: '_GATE_CHECK',
+  approvals: '_APPROVALS',
+  approvals_list: '_APPROVALS_LIST',
+  approvals_approve: '_APPROVALS_APPROVE',
+  approvals_reject: '_APPROVALS_REJECT',
 });
 
 /**
@@ -68,6 +72,7 @@ function parseArgs(argv: string[]) {
     interactive: false,
     singleStep: false,
     checkpoint: false,
+    reason: null,
     help: false,
     error: null,
   };
@@ -118,6 +123,17 @@ function parseArgs(argv: string[]) {
       continue;
     }
 
+    if (arg === '--reason') {
+      const next = argv[i + 1];
+      if (!next || next.startsWith('-')) {
+        result.error = '--reason requires a value';
+        return result;
+      }
+      result.reason = next;
+      i++;
+      continue;
+    }
+
     if (arg.startsWith('-')) {
       result.error = `Unknown flag: ${arg}`;
       return result;
@@ -131,8 +147,31 @@ function parseArgs(argv: string[]) {
     return result;
   }
 
+  // Handle compound commands like "approvals list", "approvals approve APR-1"
+  const first = positional[0] ? positional[0].toLowerCase().replace(/[\s-]+/g, '_') : null;
+  const second = positional[1] ? positional[1].toLowerCase().replace(/[\s-]+/g, '_') : null;
+
+  if (first === 'approvals' && second) {
+    const compoundKey = `${first}_${second}`;
+    const mapped = COMMAND_ALIASES[compoundKey];
+    if (mapped) {
+      result.command = mapped;
+      // Remaining positional args become the "project" (used as approval ID)
+      if (positional.length > 2) {
+        result.project = positional.slice(2).join(' ');
+      }
+      return result;
+    }
+    // "approvals" alone maps to list
+    result.command = COMMAND_ALIASES['approvals'];
+    if (positional.length > 1) {
+      result.project = positional.slice(1).join(' ');
+    }
+    return result;
+  }
+
   // First positional is the command, second (optional) is the project name
-  const rawCmd = positional[0] ? positional[0].toLowerCase().replace(/[\s-]+/g, '_') : null;
+  const rawCmd = first;
 
   if (rawCmd) {
     const mapped = COMMAND_ALIASES[rawCmd];
@@ -172,12 +211,18 @@ Commands:
   status                      Show current engine status (phase, agent, elapsed time)
   stop                        Stop the running pipeline
   gate-check                  Run sprint gate readiness check
+  approvals list              List pending approvals
+  approvals approve <id>      Approve a specific request (--reason optional)
+  approvals reject <id>       Reject a specific request (--reason required)
 
 Options:
   --platform <name>   AI platform: copilot | claude | codex  (default: copilot)
   --resume            Resume from the last saved session state
-  --interactive       Enable interactive mode (prompt at gate boundaries)  --single-step       Process one state transition and exit
-  --checkpoint        With 'stop': write checkpoint for clean resume  --help, -h          Show this help message
+  --interactive       Enable interactive mode (prompt at gate boundaries)
+  --reason <text>     Reason for approval/rejection decision
+  --single-step       Process one state transition and exit
+  --checkpoint        With 'stop': write checkpoint for clean resume
+  --help, -h          Show this help message
 `.trim();
 
 // ─── Command Dispatcher ──────────────────────────────────────
@@ -222,6 +267,132 @@ function executeCommand(
     const result = engine.sprintGate({ sprintId, stories: [] });
     write(JSON.stringify({ ok: true, gateCheck: result }, null, 2) + '\n');
     return { ok: true, gateCheck: result };
+  }
+
+  // ── Approval Commands (M6) ──────────────────────────────
+
+  if (parsed.command === '_APPROVALS' || parsed.command === '_APPROVALS_LIST') {
+    const governance = engine.getGovernance ? engine.getGovernance() : null;
+    if (!governance) {
+      write(
+        JSON.stringify({ ok: false, error: 'Governance engine not available' }, null, 2) + '\n'
+      );
+      return { ok: false, error: 'Governance engine not available' };
+    }
+    const gov = governance as { getPendingApprovals: () => Array<Record<string, unknown>> };
+    const pending = gov.getPendingApprovals();
+    const rows = pending.map((a) => ({
+      id: a.id,
+      entity: a.entity_id,
+      gate: a.gate_id,
+      stage: a.stage,
+      requested_by: a.requested_by,
+      requested_at: a.requested_at,
+      required_role: a.required_role,
+    }));
+    write(JSON.stringify({ ok: true, pending: rows, count: rows.length }, null, 2) + '\n');
+    return { ok: true, pending: rows };
+  }
+
+  if (parsed.command === '_APPROVALS_APPROVE') {
+    const approvalId = parsed.project;
+    if (!approvalId) {
+      write(
+        JSON.stringify(
+          { ok: false, error: 'Approval ID required. Usage: approvals approve <id>' },
+          null,
+          2
+        ) + '\n'
+      );
+      return { ok: false, error: 'Approval ID required' };
+    }
+    const governance = engine.getGovernance ? engine.getGovernance() : null;
+    if (!governance) {
+      write(
+        JSON.stringify({ ok: false, error: 'Governance engine not available' }, null, 2) + '\n'
+      );
+      return { ok: false, error: 'Governance engine not available' };
+    }
+    try {
+      const reason = parsed.reason || 'Approved via CLI';
+      const gov = governance as { decide: (...args: unknown[]) => Record<string, unknown> };
+      const result = gov.decide(approvalId, 'cli-user', true, reason);
+      write(
+        JSON.stringify(
+          {
+            ok: true,
+            approval: {
+              id: result.id,
+              status: result.status,
+              decided_by: result.decided_by,
+              reason: result.reason,
+            },
+          },
+          null,
+          2
+        ) + '\n'
+      );
+      return { ok: true, approval: result };
+    } catch (err) {
+      const msg = (err as Error).message;
+      write(JSON.stringify({ ok: false, error: msg }, null, 2) + '\n');
+      return { ok: false, error: msg };
+    }
+  }
+
+  if (parsed.command === '_APPROVALS_REJECT') {
+    const approvalId = parsed.project;
+    if (!approvalId) {
+      write(
+        JSON.stringify(
+          { ok: false, error: 'Approval ID required. Usage: approvals reject <id> --reason ...' },
+          null,
+          2
+        ) + '\n'
+      );
+      return { ok: false, error: 'Approval ID required' };
+    }
+    if (!parsed.reason) {
+      write(
+        JSON.stringify(
+          { ok: false, error: 'Reason required for rejection. Use --reason "..."' },
+          null,
+          2
+        ) + '\n'
+      );
+      return { ok: false, error: 'Reason required for rejection' };
+    }
+    const governance = engine.getGovernance ? engine.getGovernance() : null;
+    if (!governance) {
+      write(
+        JSON.stringify({ ok: false, error: 'Governance engine not available' }, null, 2) + '\n'
+      );
+      return { ok: false, error: 'Governance engine not available' };
+    }
+    try {
+      const gov = governance as { decide: (...args: unknown[]) => Record<string, unknown> };
+      const result = gov.decide(approvalId, 'cli-user', false, parsed.reason);
+      write(
+        JSON.stringify(
+          {
+            ok: true,
+            approval: {
+              id: result.id,
+              status: result.status,
+              decided_by: result.decided_by,
+              reason: result.reason,
+            },
+          },
+          null,
+          2
+        ) + '\n'
+      );
+      return { ok: true, approval: result };
+    } catch (err) {
+      const msg = (err as Error).message;
+      write(JSON.stringify({ ok: false, error: msg }, null, 2) + '\n');
+      return { ok: false, error: msg };
+    }
   }
 
   // Reset the engine to the requested mode (starts fresh or resumes)

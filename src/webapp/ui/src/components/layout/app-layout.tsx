@@ -12,6 +12,7 @@ import { HelpPanel } from '@/components/help-panel/help-panel';
 import { useUIStore } from '@/stores/ui-store';
 import { useOrchestratorStatus } from '@/hooks';
 import { useSSEEvents } from '@/hooks/use-sse-events';
+import { useRuntimeEvents } from '@/hooks/use-runtime-events';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { routes, buildBreadcrumbs } from '@/lib/routes';
 import { cn } from '@/lib/utils';
@@ -24,7 +25,8 @@ import {
   BarChart3,
   Package,
   ShieldCheck,
-  GitPullRequest,
+  Activity,
+  Bot,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -36,7 +38,8 @@ const iconMap: Record<string, React.ReactNode> = {
   BarChart3: <BarChart3 className="size-4" />,
   Package: <Package className="size-4" />,
   ShieldCheck: <ShieldCheck className="size-4" />,
-  GitPullRequest: <GitPullRequest className="size-4" />,
+  Activity: <Activity className="size-4" />,
+  Bot: <Bot className="size-4" />,
 };
 
 function buildSections(): NavSection[] {
@@ -107,6 +110,9 @@ export function AppLayout() {
 
   // SSE for real-time cache invalidation
   useSSEEvents();
+
+  // Bridge SSE events to runtime store (M15-034)
+  useRuntimeEvents();
 
   // Global keyboard shortcuts
   useKeyboardShortcuts();

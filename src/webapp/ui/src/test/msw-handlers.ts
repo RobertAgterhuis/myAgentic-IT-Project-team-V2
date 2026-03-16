@@ -16,6 +16,14 @@ import type {
   DashboardMetrics,
   ActivityEntry,
   DashboardStats,
+  SessionsListResponse,
+  SessionDetailResponse,
+  TimelineResponse,
+  AgentsListResponse,
+  AgentDetailResponse,
+  Session,
+  TimelineEvent,
+  AgentDetailEntry,
 } from '@/lib/api-types';
 
 /* ── Fixtures ── */
@@ -174,6 +182,90 @@ export const mockDashboardStats: TimestampedResponse<DashboardStats> = {
 
 /* ── Handlers ── */
 
+export const mockSession: Session = {
+  id: 'sess-test-001',
+  project: 'TestProject',
+  flow: 'CREATE',
+  phase: 'PHASE-1',
+  status: 'active',
+  progress: 25,
+  started_at: '2026-03-01T10:00:00Z',
+  completed_at: null,
+  current_agent: '01-business-analyst',
+};
+
+export const mockSessionsList: SessionsListResponse = {
+  ok: true,
+  count: 1,
+  sessions: [mockSession],
+};
+
+export const mockTimelineEvents: TimelineEvent[] = [
+  {
+    id: 'evt-001',
+    type: 'session_start',
+    timestamp: '2026-03-01T10:00:00Z',
+    description: 'Session started: CREATE for TestProject',
+  },
+  {
+    id: 'evt-002',
+    type: 'phase_start',
+    timestamp: '2026-03-01T10:00:01Z',
+    description: 'Phase started: PHASE-1',
+    phase: 'PHASE-1',
+  },
+  {
+    id: 'evt-003',
+    type: 'agent_start',
+    timestamp: '2026-03-01T10:00:02Z',
+    description: 'Agent started: Business Analyst',
+    agent: '01-business-analyst',
+    phase: 'PHASE-1',
+  },
+];
+
+/**
+ * Extended timeline including gate_failed and artifact_created events.
+ * Used by tests that need richer event data (sprint-5 / M15-036, M15-037).
+ */
+export const mockTimelineWithGateFailure: TimelineEvent[] = [
+  ...mockTimelineEvents,
+  {
+    id: 'evt-004',
+    type: 'artifact_created',
+    timestamp: '2026-03-01T10:00:03Z',
+    description: 'Artifact created: product-vision.md',
+    phase: 'PHASE-1',
+    artifact_id: 'art-001',
+  },
+  {
+    id: 'evt-005',
+    type: 'gate_failed',
+    timestamp: '2026-03-01T10:00:04Z',
+    description: 'Gate failed: PHASE-1 has 2 violations',
+    phase: 'PHASE-1',
+  },
+];
+
+export const mockAgentDetail: AgentDetailEntry = {
+  id: '01',
+  name: 'Business Analyst',
+  status: 'running',
+  task_description: 'Processing PHASE-1',
+  started_at: '2026-03-01T10:00:02Z',
+  duration_ms: 0,
+  outputs: [],
+  retry_count: 0,
+  session_id: 'sess-test-001',
+  phase: 'PHASE-1',
+};
+
+export const mockAgentsList: AgentsListResponse = {
+  ok: true,
+  count: 1,
+  agents: [mockAgentDetail],
+};
+
 export const handlers = [
   /* Questionnaires */
   http.get('/api/questionnaires', () => HttpResponse.json(mockQuestionnaires)),
@@ -288,6 +380,43 @@ export const handlers = [
 
   /* Progress */
   http.get('/api/progress', () => HttpResponse.json(mockProgress)),
+
+  /* Sessions (M15) */
+  http.get('/api/sessions', () => HttpResponse.json(mockSessionsList)),
+  http.get('/api/sessions/:id', ({ params }) => {
+    if (params.id !== mockSession.id) {
+      return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    const resp: SessionDetailResponse = {
+      ok: true,
+      session: mockSession,
+      agents: [mockAgentDetail],
+      timeline: mockTimelineEvents,
+    };
+    return HttpResponse.json(resp);
+  }),
+  http.get('/api/sessions/:id/timeline', ({ params }) => {
+    if (params.id !== mockSession.id) {
+      return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    const resp: TimelineResponse = {
+      ok: true,
+      session_id: mockSession.id,
+      count: mockTimelineEvents.length,
+      timeline: mockTimelineEvents,
+    };
+    return HttpResponse.json(resp);
+  }),
+
+  /* Agents (M15) */
+  http.get('/api/agents', () => HttpResponse.json(mockAgentsList)),
+  http.get('/api/agents/:id', ({ params }) => {
+    if (params.id !== mockAgentDetail.id) {
+      return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    const resp: AgentDetailResponse = { ok: true, agent: mockAgentDetail };
+    return HttpResponse.json(resp);
+  }),
 
   /* SSE — not mockable via MSW HTTP handlers, tested separately */
 ];

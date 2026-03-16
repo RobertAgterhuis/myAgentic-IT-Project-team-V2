@@ -6,80 +6,13 @@ import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Heading, Text } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { DagNode } from '@/components/artifacts/dag-node';
+import { DagEdge } from '@/components/artifacts/dag-edge';
 import { useArtifacts, useArtifactLineage } from '@/hooks';
-import type { LineageNode, LineageEdge } from '@/lib/api-types';
-import { GitBranch, ArrowRight, Circle, Search } from 'lucide-react';
-
-/* ── Status color mapping ── */
-const statusColor: Record<string, string> = {
-  VALID: 'bg-green-500',
-  DRAFT: 'bg-blue-400',
-  SUPERSEDED: 'bg-amber-400',
-  INVALID: 'bg-red-400',
-};
-
-const statusBadge: Record<string, 'success' | 'info' | 'warning' | 'error'> = {
-  VALID: 'success',
-  DRAFT: 'info',
-  SUPERSEDED: 'warning',
-  INVALID: 'error',
-};
-
-/* ── DAG Node component ── */
-function DagNode({
-  node,
-  selected,
-  onClick,
-}: {
-  node: LineageNode;
-  selected: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-2 rounded-lg border p-3 text-left transition-all hover:shadow-md ${
-        selected
-          ? 'border-primary ring-2 ring-primary/30 bg-primary/5'
-          : 'border-border bg-card hover:border-primary/50'
-      }`}
-    >
-      <span
-        className={`size-3 rounded-full ${statusColor[node.status] ?? 'bg-gray-400'}`}
-        aria-label={`Status: ${node.status}`}
-      />
-      <div className="min-w-0">
-        <p className="font-mono text-xs truncate max-w-45">{node.id}</p>
-        <div className="flex items-center gap-1 mt-1">
-          <Badge variant={statusBadge[node.status] ?? 'secondary'} className="text-[10px]">
-            {node.status}
-          </Badge>
-          <Badge variant="secondary" className="text-[10px]">
-            {node.artifact_type}
-          </Badge>
-        </div>
-      </div>
-    </button>
-  );
-}
-
-/* ── DAG Edge component ── */
-function DagEdge({ edge }: { edge: LineageEdge }) {
-  return (
-    <div className="flex items-center gap-2 px-4 py-1 text-xs text-muted-foreground">
-      <span className="font-mono truncate max-w-30">{edge.source}</span>
-      <ArrowRight className="size-3 shrink-0" />
-      <span className="font-mono truncate max-w-30">{edge.target}</span>
-      <Badge variant="secondary" className="text-[10px] ml-auto">
-        {edge.relationship}
-      </Badge>
-    </div>
-  );
-}
+import { GitBranch, Circle, Search } from 'lucide-react';
 
 /* ── Main Page ── */
 export default function LineagePage() {
@@ -91,7 +24,7 @@ export default function LineagePage() {
   const { data: artifactData, isLoading: artifactsLoading } = useArtifacts();
   const { data: lineageData, isLoading: lineageLoading } = useArtifactLineage(selectedId);
 
-  const artifacts = artifactData?.artifacts ?? [];
+  const artifacts = useMemo(() => artifactData?.artifacts ?? [], [artifactData]);
 
   // Filter artifact list for selector
   const filteredArtifacts = useMemo(() => {

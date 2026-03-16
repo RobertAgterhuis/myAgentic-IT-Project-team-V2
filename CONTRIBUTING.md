@@ -51,16 +51,16 @@ npm start
 
 ```
 src/webapp/           ← Web application (the code you'll work with most)
-  server.js               ← HTTP server, route handlers, SSE, metrics
-  store.js                ← Storage abstraction (FileStore + InMemoryStore)
-  models.js               ← Domain parsing (questionnaires, decisions, session state)
-  cache.js                ← File cache with mtime invalidation
-  schemas.js              ← JSON schema validation
-  strings.js              ← Externalized UI strings
-  audit.js                ← Mutation audit trail (append-only JSONL)
-  utils/errors.js         ← Error catalog with structured responses
-  utils/secret-utils.js   ← Secret pattern detection + warning formatting
-  index.html              ← Single-page web UI (HTML/CSS/JS, no build step)
+  server.ts               ← HTTP server, route handlers, SSE, metrics
+  store.ts                ← Storage abstraction (FileStore + InMemoryStore)
+  models.ts               ← Domain parsing (questionnaires, decisions, session state)
+  cache.ts                ← File cache with mtime invalidation
+  schemas.ts              ← JSON schema validation
+  strings.ts              ← Externalized UI strings
+  audit.ts                ← Mutation audit trail (append-only JSONL)
+  utils/errors.ts         ← Error catalog with structured responses
+  utils/secret-utils.ts   ← Secret pattern detection + warning formatting
+  ui/                     ← React SPA (Vite + React + TypeScript + Tailwind CSS)
 
 templates/sdlc/   ← Template pack (agents, contracts, guardrails, playbooks)
 platform/engine/  ← Domain-agnostic pipeline engine
@@ -72,9 +72,10 @@ tests/
 
 ### Key Design Decisions
 
-- **Zero runtime dependencies** — The server uses only Node.js built-in modules
-  (`http`, `fs`, `path`, `url`, `crypto`). Dev dependencies (Vitest, ESLint) are
-  test/lint-only.
+- **Minimal runtime dependencies** — The HTTP server uses only Node.js built-in
+  modules (`http`, `fs`, `path`, `url`, `crypto`). Runtime dependencies are
+  limited to MCP SDK, Ajv (schema validation), and tsx (TypeScript runner).
+  Dev dependencies (Vitest, ESLint) are test/lint-only.
 - **Store abstraction** — `FileStore` for production, `InMemoryStore` for tests.
   All I/O goes through the store interface.
 - **Atomic writes** — `safeWriteSync()` writes to a temp file first, then
@@ -90,7 +91,7 @@ tests/
 
 ### ESLint Configuration
 
-A single ESLint configuration (`.eslintrc.js`, ESLint 8.57.1) covers the entire project.
+A single ESLint configuration (`eslint.config.mjs`, flat config) covers the entire project.
 The `src/webapp/` override enforces:
 
 | Rule              | Setting                   | Rationale                         |
@@ -107,17 +108,17 @@ The `src/webapp/` override enforces:
 
 - **`const` by default**, `let` only when reassignment is needed
 - **Function complexity ≤ 8** — extract helpers if a function grows too complex
-- **No external runtime dependencies** — if you need functionality, implement it
+- **No unnecessary dependencies** — if you need functionality, implement it
   or use Node.js built-ins
-- **Externalize user-facing strings** to `strings.js`
-- **All errors** use the structured error catalog in `utils/errors.js`
+- **Externalize user-facing strings** to `strings.ts`
+- **All errors** use the structured error catalog in `utils/errors.ts`
 - **Tests use InMemoryStore** — never touch the real filesystem in tests
 
 ### Security Requirements
 
 All code must be free from OWASP Top 10 vulnerabilities:
 
-- Sanitize all user input (see `sanitizeMarkdown`, `sanitizeQID` in server.js)
+- Sanitize all user input (see `sanitizeMarkdown`, `sanitizeQID` in server.ts)
 - Use `safePath()` to prevent path traversal
 - Detect and warn on secret patterns (`detectSecrets()`)
 - Set security headers on every response (`setSecurityHeaders()`)
@@ -204,8 +205,8 @@ docs: update README with badges and technology stack
 - [ ] Coverage thresholds met (`npm run test:coverage`)
 - [ ] No secrets or credentials in committed code
 - [ ] Security headers maintained on new endpoints
-- [ ] New user-facing strings added to `strings.js`
-- [ ] New errors added to `utils/errors.js` catalog
+- [ ] New user-facing strings added to `strings.ts`
+- [ ] New errors added to `utils/errors.ts` catalog
 
 ---
 

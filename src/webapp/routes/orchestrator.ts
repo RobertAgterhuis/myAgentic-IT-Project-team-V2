@@ -27,6 +27,7 @@ import {
   parseBody,
   setSecurityHeaders as _setSecurityHeaders,
 } from '../middleware';
+import { sessionTracker } from '../session-tracker';
 
 export = function createOrchestratorRoutes(ctx): Record<string, unknown> {
   const { sseNotify } = ctx;
@@ -83,8 +84,101 @@ export = function createOrchestratorRoutes(ctx): Record<string, unknown> {
       const engine = getEngine();
       const gateResult = body && body.gateResult ? body.gateResult : undefined;
       const prevState = engine.status().state;
+      const prevPhase = engine.status().phase;
+      const prevAgent = engine.status().agent;
       const result = engine.advance(gateResult);
       const newStatus = engine.status();
+
+      // Session tracking: start session on first advance from IDLE/READY
+      const activeSession = sessionTracker.listSessions().find((s) => s.status === 'active');
+      if (!activeSession && (prevState === 'IDLE' || prevState === 'READY')) {
+        const project = newStatus.templateName || 'default';
+        const flow = newStatus.mode || 'CREATE';
+        sessionTracker.startSession(project, flow);
+      }
+
+      // Track phase transitions
+      const currentSession = sessionTracker.listSessions().find((s) => s.status === 'active');
+      if (currentSession) {
+        if (prevPhase !== newStatus.phase && newStatus.phase) {
+          if (prevPhase) {
+            sessionTracker.addTimelineEvent(currentSession.id, {
+              type: 'phase_complete',
+              description: `Phase completed: ${prevPhase}`,
+              phase: prevPhase,
+            });
+            sseNotify('phase_complete', {
+              type: 'phase_complete',
+              session_id: currentSession.id,
+              phase: prevPhase,
+              timestamp: new Date().toISOString(),
+            });
+          }
+          sessionTracker.addTimelineEvent(currentSession.id, {
+            type: 'phase_start',
+            description: `Phase started: ${newStatus.phase}`,
+            phase: newStatus.phase,
+          });
+          sseNotify('phase_start', {
+            type: 'phase_start',
+            session_id: currentSession.id,
+            phase: newStatus.phase,
+            timestamp: new Date().toISOString(),
+          });
+          sessionTracker.updateSession(currentSession.id, { phase: newStatus.phase });
+        }
+
+        // Track agent transitions
+        if (prevAgent !== newStatus.agent && newStatus.agent) {
+          if (prevAgent) {
+            sessionTracker.completeAgent(prevAgent);
+            sessionTracker.addTimelineEvent(currentSession.id, {
+              type: 'agent_complete',
+              description: `Agent completed: ${prevAgent}`,
+              agent: prevAgent,
+              phase: newStatus.phase,
+            });
+            sseNotify('agent_complete', {
+              type: 'agent_complete',
+              session_id: currentSession.id,
+              agent: prevAgent,
+              timestamp: new Date().toISOString(),
+            });
+          }
+          sessionTracker.startAgent(
+            currentSession.id,
+            newStatus.agent,
+            newStatus.agent,
+            newStatus.phase || '',
+            `Processing ${newStatus.phase || 'unknown'}`
+          );
+          sessionTracker.addTimelineEvent(currentSession.id, {
+            type: 'agent_start',
+            description: `Agent started: ${newStatus.agent}`,
+            agent: newStatus.agent,
+            phase: newStatus.phase,
+          });
+          sseNotify('agent_start', {
+            type: 'agent_start',
+            session_id: currentSession.id,
+            agent: newStatus.agent,
+            timestamp: new Date().toISOString(),
+          });
+          sessionTracker.updateSession(currentSession.id, { current_agent: newStatus.agent });
+        }
+
+        // Session completion on DONE/COMPLETE
+        if (newStatus.state === 'DONE' || newStatus.state === 'COMPLETE') {
+          sessionTracker.completeSession(currentSession.id, 'completed');
+          sseNotify('session_complete', {
+            type: 'session_complete',
+            session_id: currentSession.id,
+            status: 'completed',
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+
       sseNotify('orchestrator_state', {
         type: 'orchestrator_state',
         transition: true,
@@ -112,6 +206,24 @@ export = function createOrchestratorRoutes(ctx): Record<string, unknown> {
       const engine = getEngine();
       engine.error(String(body.reason).slice(0, 2000));
       const errorStatus = engine.status();
+
+      // Track session error
+      const activeSession = sessionTracker.listSessions().find((s) => s.status === 'active');
+      if (activeSession) {
+        sessionTracker.addTimelineEvent(activeSession.id, {
+          type: 'error',
+          description: `Error: ${String(body.reason).slice(0, 200)}`,
+          metadata: { reason: String(body.reason).slice(0, 200) },
+        });
+        sessionTracker.updateSession(activeSession.id, { status: 'failed' });
+        sseNotify('session_complete', {
+          type: 'session_complete',
+          session_id: activeSession.id,
+          status: 'failed',
+          timestamp: new Date().toISOString(),
+        });
+      }
+
       sseNotify('orchestrator_state', {
         type: 'orchestrator_state',
         state: 'ERROR',
@@ -186,6 +298,27 @@ export = function createOrchestratorRoutes(ctx): Record<string, unknown> {
       const deliverables = body.deliverables.map((d) => String(d));
       const engine = getEngine();
       const result = engine.validateGate(deliverables);
+
+      // Emit gate timeline event (M15-025)
+      const activeSession = sessionTracker.listSessions().find((s) => s.status === 'active');
+      if (activeSession) {
+        const gateType = result.verdict === 'APPROVED' ? 'gate_passed' : 'gate_failed';
+        sessionTracker.addTimelineEvent(activeSession.id, {
+          type: gateType,
+          description: `Gate ${result.verdict}: ${result.summary.phase}`,
+          phase: result.summary.phase,
+          metadata: { verdict: result.verdict, violations: result.summary.totalViolations },
+        });
+        sseNotify(gateType, {
+          type: gateType,
+          session_id: activeSession.id,
+          phase: result.summary.phase,
+          verdict: result.verdict,
+          violations: result.summary.totalViolations,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
       structuredLog(result.verdict === 'APPROVED' ? 'info' : 'warn', 'orchestrator_gate_result', {
         verdict: result.verdict,
         phase: result.summary.phase,

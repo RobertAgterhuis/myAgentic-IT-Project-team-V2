@@ -75,7 +75,7 @@ export default function QuestionnairesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [drafts, setDrafts] = useState<Record<string, string>>({});
 
-  const questionnaires = data?.questionnaires ?? [];
+  const questionnaires = useMemo(() => data?.questionnaires ?? [], [data]);
 
   // Build sidebar sections grouped by phase
   const sections: NavSection[] = useMemo(() => {

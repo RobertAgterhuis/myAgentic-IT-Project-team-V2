@@ -61,7 +61,8 @@ The system supports two primary modes:
   product, producing findings, recommendations, and an improvement roadmap.
 
 Both modes follow the same five-phase structure. After the analysis/design
-phases, an autonomous sprint-by-sprint implementation follows.
+phases, a supervised sprint-by-sprint implementation follows
+(human-in-the-loop, CONTINUE-to-proceed).
 
 | Phase                               | CREATE mode                                                       | AUDIT mode                                                        | Agents                                                                                                         | Manual           | With agents         |
 | ----------------------------------- | ----------------------------------------------------------------- | ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ---------------- | ------------------- |
@@ -419,7 +420,8 @@ If you are available quickly for `UNCERTAIN:` escalations, you can easily reach
 the lower end of 5 days. There are three moments when you need to be actively
 involved: (1) the onboarding intake (~1 hour), (2) answering escalations (~2–4
 hours spread across phases), and (3) reviewing the final reports (~3–5 hours).
-The agents continue working autonomously in the meantime.
+The agents continue working between your reviews, pausing at each checkpoint
+for your approval (CONTINUE-to-proceed).
 
 For CREATE mode, the timeline is comparable — the design and strategy phases
 take similar effort to analysis phases. For AUDIT mode with a large monorepo

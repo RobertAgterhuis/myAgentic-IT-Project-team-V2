@@ -1,11 +1,11 @@
 'use strict';
-/* Unit tests for the auth guard logic in server.js.
+/* Unit tests for the auth guard logic in server.ts.
  * The guard rejects mutating API requests on non-localhost bindings
  * unless the caller provides a valid API key. */
 
 describe('auth guard logic', () => {
   /**
-   * The guard condition extracted from server.js http.createServer callback:
+   * The guard condition extracted from server.ts http.createServer callback:
    *   HOST !== '127.0.0.1' && HOST !== 'localhost'
    *   && pathname.startsWith('/api')
    *   && req.method !== 'GET'

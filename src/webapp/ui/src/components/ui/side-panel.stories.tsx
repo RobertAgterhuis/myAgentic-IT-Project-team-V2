@@ -1,4 +1,4 @@
-import type { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react-vite';
 import { SidePanel, type NavSection } from './side-panel';
 import { FileText, Settings, BarChart, Users } from 'lucide-react';
 

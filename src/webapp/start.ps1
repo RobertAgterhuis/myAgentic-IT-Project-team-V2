@@ -11,5 +11,5 @@ if ($conn) {
 }
 
 Write-Host "Starting server on port $port..."
-$script = Join-Path $PSScriptRoot 'server.js'
-node $script
+$script = Join-Path $PSScriptRoot 'server.ts'
+npx tsx $script

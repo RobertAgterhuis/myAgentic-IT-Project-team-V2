@@ -89,7 +89,7 @@ Docker).
 
 | Component                  | Port         | Protocol | Binding        | Exposure               |
 | -------------------------- | ------------ | -------- | -------------- | ---------------------- |
-| Command Center (server.js) | 3000         | HTTP     | 127.0.0.1      | Localhost only         |
+| Command Center (server.ts) | 3000         | HTTP     | 127.0.0.1      | Localhost only         |
 | Command Center (Docker)    | 3000         | HTTP     | 0.0.0.0        | ⚠️ All interfaces      |
 | Matomo Analytics           | 8080         | HTTP     | via Docker     | Container network      |
 | Matomo MariaDB             | 3306         | MySQL    | Container-only | Not host-exposed       |
@@ -167,7 +167,7 @@ _\* LOW assumes `.env` is gitignored and Docker is not exposed to network._
 
 | #   | Check                                   | Status      | Pass/Fail Criteria                                                     |
 | --- | --------------------------------------- | ----------- | ---------------------------------------------------------------------- |
-| H1  | Server binds to `127.0.0.1`             | ✅ PASS     | `HOST` defaults to `'127.0.0.1'` in server.js                          |
+| H1  | Server binds to `127.0.0.1`             | ✅ PASS     | `HOST` defaults to `'127.0.0.1'` in server.ts                          |
 | H2  | `.env` is in `.gitignore`               | ✅ PASS     | Verified in `.gitignore`                                               |
 | H3  | No hardcoded secrets in tracked files   | ✅ PASS     | `detectSecrets()` scans inputs; manual review confirms                 |
 | H4  | Security headers set on all responses   | ✅ PASS     | `setSecurityHeaders()` applies CSP, X-Frame-Options, etc.              |
@@ -237,15 +237,15 @@ networking but creates a potential exposure if the host machine is on a network.
 
 | Control                   | Implementation                                                                                 | File                           |
 | ------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------ |
-| Security response headers | `setSecurityHeaders()` — CSP, X-Frame-Options, COOP, COEP, Referrer-Policy, Permissions-Policy | `src/webapp/middleware.js:48`  |
-| Path traversal prevention | `safePath()` — resolves and validates paths stay within base directory                         | `src/webapp/middleware.js:72`  |
-| Input sanitization        | `sanitizeMarkdown()`, `sanitizeQID()`, `assertString()`                                        | `src/webapp/middleware.js`     |
-| Secret detection          | `detectSecrets()` — regex-based scan for API keys, tokens, passwords in user input             | `src/webapp/middleware.js:224` |
-| File locking              | `withFileLock()` — prevents concurrent write corruption                                        | `src/webapp/file-lock.js`      |
-| Audit trail               | `AuditTrail` class — logs all state mutations with timestamp                                   | `src/webapp/audit.js`          |
-| Structured logging        | `structuredLog()` — JSON format with level, event, details                                     | `src/webapp/middleware.js`     |
-| Method validation         | `handleMethodNotAllowed()` — rejects unexpected HTTP methods per route                         | `src/webapp/middleware.js`     |
-| Error boundary            | `handleRouteError()` — catches and sanitizes all route errors                                  | `src/webapp/middleware.js`     |
+| Security response headers | `setSecurityHeaders()` — CSP, X-Frame-Options, COOP, COEP, Referrer-Policy, Permissions-Policy | `src/webapp/middleware.ts:48`  |
+| Path traversal prevention | `safePath()` — resolves and validates paths stay within base directory                         | `src/webapp/middleware.ts:72`  |
+| Input sanitization        | `sanitizeMarkdown()`, `sanitizeQID()`, `assertString()`                                        | `src/webapp/middleware.ts`     |
+| Secret detection          | `detectSecrets()` — regex-based scan for API keys, tokens, passwords in user input             | `src/webapp/middleware.ts:224` |
+| File locking              | `withFileLock()` — prevents concurrent write corruption                                        | `src/webapp/file-lock.ts`      |
+| Audit trail               | `AuditTrail` class — logs all state mutations with timestamp                                   | `src/webapp/audit.ts`          |
+| Structured logging        | `structuredLog()` — JSON format with level, event, details                                     | `src/webapp/middleware.ts`     |
+| Method validation         | `handleMethodNotAllowed()` — rejects unexpected HTTP methods per route                         | `src/webapp/middleware.ts`     |
+| Error boundary            | `handleRouteError()` — catches and sanitizes all route errors                                  | `src/webapp/middleware.ts`     |
 | Security policy           | `SECURITY.md` — vulnerability disclosure process                                               | `SECURITY.md`                  |
 
 ---

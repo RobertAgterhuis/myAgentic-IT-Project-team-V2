@@ -375,12 +375,12 @@ On `IMPLEMENT` decision → Phase 5 activates for the selected sprint.
 
 ---
 
-## PHASE 5: AUTONOMOUS IMPLEMENTATION (Ongoing per sprint)
+## PHASE 5: SUPERVISED IMPLEMENTATION (Ongoing per sprint)
 
 ### Objective
 
-Actual implementation of the approved sprint stories from Phases 1–4, fully
-autonomous and traceable, with automated tests, guardrail validation, and Sprint
+Actual implementation of the approved sprint stories from Phases 1–4, supervised
+and traceable (human-in-the-loop), with automated tests, guardrail validation, and Sprint
 Completion Reports per sprint.
 
 ### Agents (Per Sprint, In Order)

@@ -283,6 +283,7 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     json(res, 200, { ok: true, flushed_at: new Date().toISOString() });
   }
 
+  /** Readiness probe — used by Docker HEALTHCHECK and Playwright webServer. */
   async function apiGetHealth(_req, res) {
     let store_status = 'ok';
     try {
@@ -450,6 +451,7 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     'POST /api/analytics': apiPostAnalytics,
     'GET /api/analytics': apiGetAnalytics,
     'GET /api/audit': apiGetAudit,
+    /** Liveness probe — lightweight check that the process is running. */
     'GET /health': (_req, res) => {
       let store_status = 'ok';
       try {

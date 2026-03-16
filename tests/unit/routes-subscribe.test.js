@@ -344,7 +344,7 @@ describe('subscribe routes', () => {
   });
 
   it('returns 413 for payload exceeding 1 MB', async () => {
-    // middleware.js MAX_BODY = 1_048_576 bytes
+    // middleware.ts MAX_BODY = 1_048_576 bytes
     const bigBody = Buffer.alloc(1_048_577, 0x41); // 1 byte over limit
     const req = {
       headers: { 'content-type': 'application/json', host: 'localhost:3000' },

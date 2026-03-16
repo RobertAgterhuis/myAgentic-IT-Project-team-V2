@@ -199,7 +199,7 @@ HANDOFF CHECKLIST.
 ## REEVALUATE TRIGGER FILE (WEB UI)
 
 **Location:** `BusinessDocs/session/reevaluate-trigger.json` **Written by:**
-Questionnaire & Decisions Manager web UI (`src/webapp/server.js`) **Read
+Questionnaire & Decisions Manager web UI (`src/webapp/server.ts`) **Read
 by:** Orchestrator (per RULE ORC-28 in `agents/00-orchestrator.md`)
 
 > **ORC-28 summary:** At every session start and before every Sprint Gate, check
@@ -234,7 +234,7 @@ every Sprint Gate.
 ## COMMAND QUEUE FILE (WEB UI COMMAND CENTER)
 
 **Location:** `BusinessDocs/session/command-queue.json` **Written by:**
-Questionnaire & Decisions Manager web UI (`src/webapp/server.js` — Command
+Questionnaire & Decisions Manager web UI (`src/webapp/server.ts` — Command
 Center tab) **Read by:** Orchestrator (per RULE ORC-29 in
 `agents/00-orchestrator.md`)
 
@@ -264,7 +264,7 @@ Sprint Gate.
 
 | Field            | Description                                                                            |
 | ---------------- | -------------------------------------------------------------------------------------- |
-| `command`        | The system command to execute — must be one of the VALID_COMMANDS defined in server.js |
+| `command`        | The system command to execute — must be one of the VALID_COMMANDS defined in server.ts |
 | `project`        | Project name (for CREATE/AUDIT commands); null for commands that don't need it         |
 | `description`    | Feature/hotfix description (for FEATURE, SCOPE CHANGE, HOTFIX); null otherwise         |
 | `scope`          | Dimension scope (for SCOPE CHANGE, REEVALUATE); null otherwise                         |

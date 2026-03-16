@@ -6,7 +6,7 @@
 > Fill it in yourself — agents automatically adapt their behavior based on the
 > status below.
 >
-> **Web UI available:** Run `node src/webapp/server.js` and open
+> **Web UI available:** Run `npm start` and open
 > http://127.0.0.1:3000 → **Decisions** tab to view, create, and answer
 > decisions in a visual interface. The web UI writes directly to this file.
 

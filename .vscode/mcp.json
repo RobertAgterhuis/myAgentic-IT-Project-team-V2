@@ -3,7 +3,7 @@
     "agentic-it-project-team": {
       "type": "stdio",
       "command": "node",
-      "args": ["src/webapp/mcp-server.js"]
+      "args": ["--import", "tsx", "src/webapp/mcp-server.ts"]
     }
   }
 }

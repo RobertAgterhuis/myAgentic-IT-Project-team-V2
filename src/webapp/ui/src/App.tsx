@@ -3,39 +3,55 @@
  * Layout & SSE are handled inside AppLayout.
  */
 import { lazy } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/app-layout';
 import { NotFoundPage } from '@/pages/not-found-page';
 
+const OverviewPage = lazy(() => import('@/pages/overview/overview-page'));
 const DashboardPage = lazy(() => import('@/pages/dashboard/dashboard-page'));
-const CommandCenterPage = lazy(() => import('@/pages/command-center/command-center-page'));
+const CommandsPage = lazy(() => import('@/pages/commands/commands-page'));
 const PipelinePage = lazy(() => import('@/pages/pipeline/pipeline-page'));
+const SessionsPage = lazy(() => import('@/pages/sessions/sessions-page'));
+const SessionDetailPage = lazy(() => import('@/pages/sessions/session-detail-page'));
+const AgentsPage = lazy(() => import('@/pages/agents/agents-page'));
 const QuestionnairesPage = lazy(() => import('@/pages/questionnaires/questionnaires-page'));
 const DecisionsPage = lazy(() => import('@/pages/decisions/decisions-page'));
-const MetricsPage = lazy(() => import('@/pages/metrics/metrics-page'));
 const ArtifactBrowserPage = lazy(() => import('@/pages/artifacts/artifact-browser-page'));
 const LineagePage = lazy(() => import('@/pages/artifacts/lineage-page'));
+const ObservabilityPage = lazy(() => import('@/pages/observability/observability-page'));
 const GovernanceDashboardPage = lazy(() => import('@/pages/governance/governance-dashboard-page'));
-const AnalyticsTrendsPage = lazy(() => import('@/pages/analytics/analytics-trends-page'));
-const TraceabilityExplorerPage = lazy(
-  () => import('@/pages/traceability/traceability-explorer-page')
-);
 
 const router = createBrowserRouter([
   {
     element: <AppLayout />,
     children: [
-      { index: true, element: <DashboardPage /> },
-      { path: 'command-center', element: <CommandCenterPage /> },
+      /* Runtime */
+      { index: true, element: <OverviewPage /> },
+      { path: 'dashboard', element: <DashboardPage /> },
+      { path: 'sessions', element: <SessionsPage /> },
+      { path: 'sessions/:id', element: <SessionDetailPage /> },
       { path: 'pipeline', element: <PipelinePage /> },
-      { path: 'questionnaires', element: <QuestionnairesPage /> },
+
+      /* Operations */
+      { path: 'commands', element: <CommandsPage /> },
+      { path: 'agents', element: <AgentsPage /> },
       { path: 'decisions', element: <DecisionsPage /> },
-      { path: 'metrics', element: <MetricsPage /> },
+
+      /* Data */
       { path: 'artifacts', element: <ArtifactBrowserPage /> },
       { path: 'artifacts/lineage', element: <LineagePage /> },
+      { path: 'questionnaires', element: <QuestionnairesPage /> },
+
+      /* Observability */
+      { path: 'observability', element: <ObservabilityPage /> },
       { path: 'governance', element: <GovernanceDashboardPage /> },
-      { path: 'analytics', element: <AnalyticsTrendsPage /> },
-      { path: 'traceability', element: <TraceabilityExplorerPage /> },
+
+      /* Redirects for renamed/merged routes */
+      { path: 'command-center', element: <Navigate to="/commands" replace /> },
+      { path: 'metrics', element: <Navigate to="/observability" replace /> },
+      { path: 'analytics', element: <Navigate to="/observability" replace /> },
+      { path: 'traceability', element: <Navigate to="/observability" replace /> },
+
       { path: '*', element: <NotFoundPage /> },
     ],
   },

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { cn } from '@/lib/utils';
+import { cn, relativeTime } from '@/lib/utils';
 import { Card } from './card';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
@@ -71,18 +71,6 @@ interface ActivityItem {
 interface ActivityFeedProps extends React.ComponentProps<'div'> {
   items: ActivityItem[];
   pageSize?: number;
-}
-
-function relativeTime(ts: string): string {
-  const diff = Date.now() - new Date(ts).getTime();
-  const secs = Math.floor(diff / 1000);
-  if (secs < 60) return 'just now';
-  const mins = Math.floor(secs / 60);
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  const days = Math.floor(hrs / 24);
-  return `${days}d ago`;
 }
 
 function ActivityFeed({ items, pageSize = 10, className, ...props }: ActivityFeedProps) {

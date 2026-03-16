@@ -21,7 +21,7 @@ description: Day-to-day operational procedures for running the Agentic SDLC Plat
 ### Start the Command Center
 
 ```bash
-node src/webapp/server.js
+npm start
 ```
 
 The server binds to `127.0.0.1:3000` (localhost only). Open
@@ -65,7 +65,7 @@ The server logs all requests as structured JSON to stdout:
 Logs are not persisted to disk — pipe to a file if you need a log history:
 
 ```bash
-node src/webapp/server.js 2>&1 | tee server.log
+npx tsx src/webapp/server.ts 2>&1 | tee server.log
 ```
 
 ### Session State
@@ -102,7 +102,7 @@ netstat -ano | findstr :3000
 lsof -i :3000
 
 # Kill it or use a different port:
-PORT=3001 node src/webapp/server.js
+PORT=3001 npx tsx src/webapp/server.ts
 ```
 
 ### Command Center shows stale data

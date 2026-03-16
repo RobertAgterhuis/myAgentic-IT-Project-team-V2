@@ -368,18 +368,18 @@ main project cycle.
 
 | File                        | Purpose                       |
 | --------------------------- | ----------------------------- |
-| `server.js`                 | Express server (API + static) |
-| `mcp-server.js`             | MCP server for Copilot        |
-| `store.js`                  | State management              |
-| `schemas.js`                | Validation schemas            |
-| `models.js`                 | Data models                   |
-| `audit.js`                  | Audit logging                 |
-| `cache.js`                  | Server-side caching           |
-| `drift-detector.js`         | Configuration drift detection |
-| `file-lock.js`              | File locking utility          |
-| `middleware.js`             | Express middleware            |
-| `session-state-resolver.js` | Session state resolution      |
-| `strings.js`                | UI string constants           |
+| `server.ts`                 | HTTP server (API + static)    |
+| `mcp-server.ts`             | MCP server for Copilot        |
+| `store.ts`                  | State management              |
+| `schemas.ts`                | Validation schemas            |
+| `models.ts`                 | Data models                   |
+| `audit.ts`                  | Audit logging                 |
+| `cache.ts`                  | Server-side caching           |
+| `drift-detector.ts`         | Configuration drift detection |
+| `file-lock.ts`              | File locking utility          |
+| `middleware.ts`             | HTTP middleware               |
+| `session-state-resolver.ts` | Session state resolution      |
+| `strings.ts`                | UI string constants           |
 | `start.ps1`                 | PowerShell startup script     |
 
 ### Locales — `src/webapp/locales/`
@@ -405,7 +405,7 @@ tool-schema.
 | `email-templates/` | Email HTML templates (7 templates)     |
 | `social-cards/`    | OG/Twitter social card templates       |
 | `types/`           | TypeScript type definitions            |
-| `utils/`           | Utilities (errors.js, secret-utils.js) |
+| `utils/`           | Utilities (errors.ts, secret-utils.ts) |
 | `ui/`              | Vite + React frontend (see below)      |
 
 ### Frontend — `src/webapp/ui/`

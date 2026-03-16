@@ -45,7 +45,7 @@ Command Center, and troubleshooting common issues.
 ### 2. Launch the Web UI
 
 ```bash
-node src/webapp/server.js
+npm start
 ```
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser. The server
@@ -259,9 +259,9 @@ switching to the web UI.
 
 - **VS Code** — Works out of the box (`.vscode/mcp.json` is pre-configured)
 - **Visual Studio** — Add an MCP stdio server:
-  `node src/webapp/mcp-server.js`
+  `node --import tsx src/webapp/mcp-server.ts`
 - **JetBrains IDEs** — Add an MCP stdio server:
-  `node src/webapp/mcp-server.js`
+  `node --import tsx src/webapp/mcp-server.ts`
 
 ### What You Can Do via MCP
 
@@ -279,7 +279,7 @@ when needed. It reads and writes the same files as the web UI, so both
 interfaces stay in sync.
 
 No additional setup is needed for VS Code. For other IDEs, configure an MCP
-server with command `node` and argument `src/webapp/mcp-server.js`.
+server with command `node` and arguments `--import tsx src/webapp/mcp-server.ts`.
 
 ---
 

@@ -36,8 +36,8 @@ locations, and field descriptions.
 | Questionnaires      | Markdown | `BusinessDocs/Phase[N]-*/Questionnaires/*.md`         | `models.parseQuestionnaire()`     |
 | Questionnaire Index | Markdown | `BusinessDocs/questionnaire-index.md`                 | `models.parseIndex()`             |
 | Analytics Events    | JSON     | `BusinessDocs/analytics-events.json`                  | Server-side event type validation |
-| Audit Log           | JSONL    | `BusinessDocs/audit/audit-log.jsonl`                  | `audit.js` internal validation    |
-| Reevaluate Trigger  | JSON     | `BusinessDocs/session/reevaluate-trigger.json`        | Inline validation in server.js    |
+| Audit Log           | JSONL    | `BusinessDocs/audit/audit-log.jsonl`                  | `audit.ts` internal validation    |
+| Reevaluate Trigger  | JSON     | `BusinessDocs/session/reevaluate-trigger.json`        | Inline validation in server.ts    |
 | Help Content        | Markdown | `docs/help/*.md`                                      | Filesystem scan, slug validation  |
 | Official Documents  | Markdown | `BusinessDocs/OfficialDocuments/*.md`                 | N/A (freeform content)            |
 | Document Registry   | Markdown | `BusinessDocs/OfficialDocuments/document-registry.md` | N/A                               |
@@ -49,7 +49,7 @@ locations, and field descriptions.
 ### 1. Session State
 
 **File:** `BusinessDocs/session/session-state.json` **Format:** JSON object
-**Validator:** `schemas.validateSessionState()` (schemas.js)
+**Validator:** `schemas.validateSessionState()` (schemas.ts)
 
 | Field              | Type     | Required | Description                                                                                                                                                                             |
 | ------------------ | -------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -72,7 +72,7 @@ locations, and field descriptions.
 
 **File:** `BusinessDocs/session/command-queue.json` **Format:** JSON array of
 command entry objects **Validator:** `schemas.validateCommandQueue()` /
-`schemas.validateCommandEntry()` (schemas.js)
+`schemas.validateCommandEntry()` (schemas.ts)
 
 | Field          | Type   | Required | Description                                                 |
 | -------------- | ------ | -------- | ----------------------------------------------------------- |
@@ -86,7 +86,7 @@ command entry objects **Validator:** `schemas.validateCommandQueue()` /
 ### 3. Decisions
 
 **File:** `BusinessDocs/decisions.md` **Format:** Markdown with three table
-sections **Parser:** `models.parseDecisions()` (models.js)
+sections **Parser:** `models.parseDecisions()` (models.ts)
 
 **Returns:** `{ open: Decision[], decided: Decision[], deferred: Decision[] }`
 
@@ -139,7 +139,7 @@ sections **Parser:** `models.parseDecisions()` (models.js)
 **Files:**
 `BusinessDocs/Phase[N]-[Discipline]/Questionnaires/[NN]-[agent]-questionnaire.md`
 **Format:** Markdown with structured question blocks **Parser:**
-`models.parseQuestionnaire()` (models.js)
+`models.parseQuestionnaire()` (models.ts)
 
 #### Questionnaire Metadata (parsed from header)
 
@@ -171,7 +171,7 @@ Software Architect, question 1)
 ### 5. Questionnaire Index
 
 **File:** `BusinessDocs/questionnaire-index.md` **Format:** Markdown with
-summary tables **Parser:** `models.parseIndex()` (models.js)
+summary tables **Parser:** `models.parseIndex()` (models.ts)
 
 Tracks the status of all questionnaires: total questions, answered count,
 required vs optional distribution.
@@ -194,7 +194,7 @@ required vs optional distribution.
 ### 7. Audit Log
 
 **File:** `BusinessDocs/audit/audit-log.jsonl` **Format:** JSON Lines (one JSON
-object per line) **Module:** `audit.js` (AuditTrail class)
+object per line) **Module:** `audit.ts` (AuditTrail class)
 
 | Field         | Type   | Required | Description                                                        |
 | ------------- | ------ | -------- | ------------------------------------------------------------------ |
@@ -335,7 +335,7 @@ erDiagram
 
 ## Validation Rules
 
-### Session State (schemas.js → `validateSessionState`)
+### Session State (schemas.ts → `validateSessionState`)
 
 - `session_id`: must be string
 - `cycle_type`: must be string
@@ -344,20 +344,20 @@ erDiagram
   strings
 - `completed_phases`, `completed_agents`: optional arrays
 
-### Command Entry (schemas.js → `validateCommandEntry`)
+### Command Entry (schemas.ts → `validateCommandEntry`)
 
 - `command`: required string
 - `requested_at`: required string (ISO 8601)
 - `status`: required, must be one of `PENDING`, `PROCESSING`, `DONE`, `ERROR`
 - `project`, `description`, `scope`: optional strings
 
-### Analytics Events (server.js → inline validation)
+### Analytics Events (server.ts → inline validation)
 
 - `events` array: required, must have 1–100 items
 - Each event `event` field: must be in the allowlist (9 types)
 - `properties`: optional object
 
-### Questionnaire Answers (server.js → `apiSave`)
+### Questionnaire Answers (server.ts → `apiSave`)
 
 - `file`: required string, must resolve to a valid path within BusinessDocs/
 - `updates`: required array, 1–50 items
@@ -366,20 +366,20 @@ erDiagram
   found
 - Answer text run through `sanitizeMarkdown()` before insertion
 
-### Decisions (server.js → `apiPostDecision`)
+### Decisions (server.ts → `apiPostDecision`)
 
 - `action`: required, must be one of `create`, `answer`, `decide`, `defer`
 - For `create`: `type`, `priority`, `scope`, `text` required
 - For `answer`/`decide`/`defer`: `id` required
 - Answer/decision text run through `sanitizeMarkdown()` and `detectSecrets()`
 
-### Path Validation (server.js → `safePath`)
+### Path Validation (server.ts → `safePath`)
 
 - All file paths validated against path traversal (`..`)
 - Must resolve within the expected base directory
 - Throws on violation (HTTP 403)
 
-### Help Slugs (server.js → `apiGetHelp`)
+### Help Slugs (server.ts → `apiGetHelp`)
 
 - Must match `/^[a-z0-9-]+$/` — only lowercase alphanumeric and hyphens
 - Invalid slugs return HTTP 400

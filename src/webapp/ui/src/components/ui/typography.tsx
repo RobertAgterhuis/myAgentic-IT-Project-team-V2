@@ -75,7 +75,7 @@ function Text({
 
 /* ---------- InlineCode / CodeBlock ---------- */
 
-interface InlineCodeProps extends React.HTMLAttributes<HTMLElement> {}
+type InlineCodeProps = React.HTMLAttributes<HTMLElement>;
 
 function InlineCode({ className, children, ...props }: InlineCodeProps) {
   return (
@@ -85,7 +85,7 @@ function InlineCode({ className, children, ...props }: InlineCodeProps) {
   );
 }
 
-interface CodeBlockProps extends React.HTMLAttributes<HTMLPreElement> {}
+type CodeBlockProps = React.HTMLAttributes<HTMLPreElement>;
 
 function CodeBlock({ className, children, ...props }: CodeBlockProps) {
   return (

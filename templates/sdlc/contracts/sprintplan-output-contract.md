@@ -46,7 +46,7 @@ pipeline** the story runs through:
 - Parallel tracks are ALWAYS grouped per story type, so the code team is never
   dependent on the progress of non-technical tracks.
 - The Orchestrator routes automatically based on `story_type`. CODE and INFRA
-  stories go to the autonomous implementation pipeline. Other types follow their
+  stories go to the supervised implementation pipeline. Other types follow their
   own throughput time.
 
 ---

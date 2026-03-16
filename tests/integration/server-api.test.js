@@ -1,7 +1,7 @@
 'use strict';
 /* Integration test: server API routes through HTTP.
  * Uses InMemoryStore to avoid filesystem side effects.
- * Exercises all API endpoints to achieve ≥70% coverage on server.js. */
+ * Exercises all API endpoints to achieve ≥70% coverage on server.ts. */
 
 const http = require('http');
 const path = require('path');

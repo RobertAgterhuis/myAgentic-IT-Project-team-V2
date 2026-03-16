@@ -6,98 +6,17 @@
 import { useState, useMemo } from 'react';
 import { Heading, Text } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { MetricCard } from '@/components/ui/metric-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { VelocityChart } from '@/components/observability/velocity-chart';
+import { AgentChart } from '@/components/observability/agent-chart';
 import { useAnalyticsTrends, useAnalyticsAgents } from '@/hooks';
-import type { VelocityTrendEntry, AgentPerformanceStats, MetricDataPoint } from '@/lib/api-types';
+import type { MetricDataPoint } from '@/lib/api-types';
 import { TrendingUp, Activity, BarChart3, Clock, Zap, AlertTriangle, Gauge } from 'lucide-react';
 
 /* ── Time range ── */
 type TimeRange = '7d' | '30d' | '90d' | 'all';
-
-/* ── Inline bar chart (CSS-based) ── */
-function MiniBar({ value, max, color }: { value: number; max: number; color: string }) {
-  const pct = max > 0 ? Math.min((value / max) * 100, 100) : 0;
-  return (
-    <div
-      className="h-6 w-full bg-muted rounded-sm overflow-hidden"
-      role="meter"
-      aria-valuenow={value}
-      aria-valuemax={max}
-    >
-      <div className={`h-full ${color} transition-all duration-300`} style={{ width: `${pct}%` }} />
-    </div>
-  );
-}
-
-/* ── Velocity chart (table + bars) ── */
-function VelocityChart({ data }: { data: VelocityTrendEntry[] }) {
-  const maxPoints = Math.max(...data.map((d) => Math.max(d.planned_points, d.completed_points)), 1);
-
-  return (
-    <div className="space-y-2">
-      {data.map((entry) => (
-        <div key={entry.sprint_id} className="grid grid-cols-[120px_1fr_80px] items-center gap-3">
-          <span className="text-xs font-mono truncate">{entry.sprint_id}</span>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-muted-foreground w-16">Planned</span>
-              <MiniBar value={entry.planned_points} max={maxPoints} color="bg-blue-400/60" />
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-muted-foreground w-16">Done</span>
-              <MiniBar value={entry.completed_points} max={maxPoints} color="bg-green-500" />
-            </div>
-          </div>
-          <span className="text-xs font-semibold text-right">
-            {(entry.velocity_ratio * 100).toFixed(0)}%
-          </span>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-/* ── Agent performance chart (horizontal bars) ── */
-function AgentChart({ data }: { data: AgentPerformanceStats[] }) {
-  const maxInvocations = Math.max(...data.map((d) => d.total_invocations), 1);
-
-  return (
-    <div className="space-y-3">
-      {data.map((agent) => (
-        <div key={agent.agent_id} className="space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-medium">{agent.agent_name}</span>
-            <div className="flex items-center gap-2">
-              <Badge
-                variant={
-                  agent.success_rate_pct >= 90
-                    ? 'success'
-                    : agent.success_rate_pct >= 70
-                      ? 'warning'
-                      : 'error'
-                }
-                className="text-[10px]"
-              >
-                {agent.success_rate_pct.toFixed(1)}%
-              </Badge>
-              <span className="text-[10px] text-muted-foreground">
-                {agent.avg_duration_ms.toFixed(0)} ms avg
-              </span>
-            </div>
-          </div>
-          <MiniBar value={agent.total_invocations} max={maxInvocations} color="bg-violet-500/70" />
-          <div className="flex justify-between text-[10px] text-muted-foreground">
-            <span>{agent.total_invocations} invocations</span>
-            <span>P95: {agent.p95_duration_ms.toFixed(0)} ms</span>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 /* ── DORA metric card ── */
 function DoraMetric({

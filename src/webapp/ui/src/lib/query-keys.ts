@@ -62,4 +62,22 @@ export const queryKeys = {
     metrics: ['analytics', 'metrics'] as const,
     metric: (name: string) => ['analytics', 'metrics', name] as const,
   },
+
+  /* Artifacts (M10) */
+  artifacts: {
+    all: ['artifacts'] as const,
+    detail: (id: string) => ['artifacts', id] as const,
+    lineage: (id: string) => ['artifacts', id, 'lineage'] as const,
+    stats: ['artifacts', 'stats'] as const,
+  },
+
+  /* Governance / Approvals (M10) */
+  governance: {
+    approvals: ['governance', 'approvals'] as const,
+  },
+
+  /* Traceability (M10) */
+  traceability: {
+    chains: ['traceability', 'chains'] as const,
+  },
 } as const;

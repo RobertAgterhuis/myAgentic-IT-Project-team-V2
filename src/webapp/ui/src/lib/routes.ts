@@ -27,6 +27,19 @@ export const routes = {
   },
   decisions: { path: '/decisions', label: 'Decisions', icon: 'Scale', section: 'Data' },
   metrics: { path: '/metrics', label: 'Metrics', icon: 'BarChart3', section: 'Monitoring' },
+  artifacts: { path: '/artifacts', label: 'Artifacts', icon: 'Package', section: 'Platform' },
+  governance: {
+    path: '/governance',
+    label: 'Governance',
+    icon: 'ShieldCheck',
+    section: 'Platform',
+  },
+  traceability: {
+    path: '/traceability',
+    label: 'Traceability',
+    icon: 'GitPullRequest',
+    section: 'Platform',
+  },
 } as const satisfies Record<string, RouteEntry>;
 
 /** Build breadcrumb segments from a pathname. */

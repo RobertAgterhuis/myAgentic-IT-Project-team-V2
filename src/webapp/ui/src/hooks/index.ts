@@ -67,3 +67,12 @@ export { useKeyboardShortcuts } from './use-keyboard-shortcuts';
 
 /* Analytics (M7) */
 export { useAnalyticsTrends, useAnalyticsAgents, useAnalyticsMetrics } from './use-analytics';
+
+/* Artifacts (M10) */
+export { useArtifacts, useArtifact, useArtifactLineage, useArtifactStats } from './use-artifacts';
+
+/* Governance (M10) */
+export { useApprovals, useApproveRequest, useRejectRequest } from './use-governance';
+
+/* Traceability (M10) */
+export { useTraceability } from './use-traceability';

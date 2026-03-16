@@ -558,3 +558,117 @@ export interface MetricSummary {
   data_points_count: number;
   latest: MetricDataPoint | null;
 }
+
+/* ──────────────────────────────────────────────
+ * Artifacts (M10 / Issue #392-393)
+ * ────────────────────────────────────────────── */
+
+export interface Artifact {
+  id: string;
+  artifact_type: string;
+  stage: string;
+  status: string;
+  content_hash: string;
+  created_at: string;
+  updated_at: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ArtifactListResponse extends OkResponse {
+  count: number;
+  artifacts: Artifact[];
+}
+
+export interface ArtifactDetailResponse extends OkResponse {
+  artifact: Artifact;
+}
+
+export interface ArtifactStatsResponse extends OkResponse {
+  stats: Record<string, unknown>;
+}
+
+export interface LineageNode {
+  id: string;
+  artifact_type: string;
+  status: string;
+  stage: string;
+}
+
+export interface LineageEdge {
+  source: string;
+  target: string;
+  relationship: 'PRODUCES' | 'CONSUMES' | 'SUPERSEDES';
+}
+
+export interface ArtifactLineage {
+  nodes: LineageNode[];
+  edges: LineageEdge[];
+}
+
+export interface ArtifactLineageResponse extends OkResponse {
+  artifact_id: string;
+  lineage: ArtifactLineage;
+}
+
+/* ──────────────────────────────────────────────
+ * Governance (M10 / Issue #394)
+ * ────────────────────────────────────────────── */
+
+export interface ApprovalEntry {
+  id: string;
+  entity_id: string;
+  gate_id: string;
+  stage: string;
+  requested_by: string;
+  requested_at: string;
+  required_role: string;
+  status: string;
+}
+
+export interface ApprovalsListResponse {
+  approvals: ApprovalEntry[];
+  count: number;
+}
+
+export interface ApprovalDecideResponse extends OkResponse {
+  approval: {
+    id: string;
+    status: string;
+    decided_by: string;
+    decided_at: string;
+    reason: string;
+  };
+}
+
+/* ──────────────────────────────────────────────
+ * Traceability (M10 / Issue #396)
+ * ────────────────────────────────────────────── */
+
+export type TraceEntityType = 'requirement' | 'design' | 'code' | 'test';
+
+export interface TraceEntity {
+  id: string;
+  type: TraceEntityType;
+  label: string;
+  phase: string;
+  status: string;
+}
+
+export interface TraceLink {
+  source: string;
+  target: string;
+  relationship: string;
+}
+
+export interface TraceChain {
+  entities: TraceEntity[];
+  links: TraceLink[];
+  gaps: TraceGap[];
+}
+
+export interface TraceGap {
+  entity_id: string;
+  entity_type: TraceEntityType;
+  missing: TraceEntityType;
+  label: string;
+}

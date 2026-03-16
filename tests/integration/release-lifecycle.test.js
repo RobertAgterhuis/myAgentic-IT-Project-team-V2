@@ -50,7 +50,7 @@ describe('ContainerAdapter integration', () => {
     // In CI without Docker, expect UNAVAILABLE or DEGRADED; with Docker → HEALTHY
     expect(['HEALTHY', 'DEGRADED', 'UNAVAILABLE']).toContain(check.status);
     expect(check.adapter).toBe('container');
-  });
+  }, 15_000);
 
   it('build fails without image name', async () => {
     const result = await adapter.execute('build', {});

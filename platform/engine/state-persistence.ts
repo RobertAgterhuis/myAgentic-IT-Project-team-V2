@@ -170,6 +170,65 @@ function loadRunHistory(store, filePath) {
   }
 }
 
+/**
+ * Write transition intent before execution (write-ahead pattern).
+ * Marks the session as IN_PROGRESS so crash recovery knows the
+ * previous agent execution may have been interrupted.
+ *
+ * @param {object} store - Store abstraction
+ * @param {string} targetState - The state being transitioned to
+ * @param {string} [filePath] - Override path to session-state.json
+ */
+function saveTransitionIntent(store, targetState, filePath) {
+  const target = filePath || DEFAULT_SESSION_FILE;
+  const dir = path.dirname(target);
+  store.mkdirp(dir);
+
+  let existing = {};
+  if (store.exists(target)) {
+    try {
+      existing = JSON.parse(store.readFile(target));
+    } catch {
+      existing = {};
+    }
+  }
+
+  const updated = {
+    ...existing,
+    transition_status: 'IN_PROGRESS',
+    transition_target: targetState,
+    transition_started_at: new Date().toISOString(),
+  };
+
+  store.writeFile(target, JSON.stringify(updated, null, 2));
+}
+
+/**
+ * Mark the current transition as complete (write-ahead pattern).
+ * Clears the IN_PROGRESS marker after successful execution.
+ *
+ * @param {object} store - Store abstraction
+ * @param {string} [filePath] - Override path to session-state.json
+ */
+function saveTransitionComplete(store, filePath) {
+  const target = filePath || DEFAULT_SESSION_FILE;
+
+  let existing = {};
+  if (store.exists(target)) {
+    try {
+      existing = JSON.parse(store.readFile(target));
+    } catch {
+      existing = {};
+    }
+  }
+
+  existing.transition_status = 'COMPLETE';
+  delete existing.transition_target;
+  delete existing.transition_started_at;
+
+  store.writeFile(target, JSON.stringify(existing, null, 2));
+}
+
 export {
   DEFAULT_SESSION_FILE,
   DEFAULT_HISTORY_FILE,
@@ -178,4 +237,6 @@ export {
   createAutoPersist,
   saveRunHistory,
   loadRunHistory,
+  saveTransitionIntent,
+  saveTransitionComplete,
 };

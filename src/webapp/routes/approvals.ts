@@ -16,6 +16,32 @@
 import { errorResponse } from '../utils/errors';
 import { structuredLog, json, parseBody, assertString } from '../middleware';
 
+/** Minimal governance shape for type-safe access. */
+interface GovernanceLike {
+  getPendingApprovals(): Array<{
+    id: string;
+    entity_id: string;
+    gate_id: string;
+    stage: string;
+    requested_by: string;
+    requested_at: string;
+    required_role: string;
+    status: string;
+  }>;
+  decide(
+    id: string,
+    user: string,
+    approved: boolean,
+    reason: string
+  ): {
+    id: string;
+    status: string;
+    decided_by: string;
+    decided_at: string;
+    reason: string;
+  };
+}
+
 export = function createApprovalRoutes(ctx): Record<string, unknown> {
   const { sseNotify } = ctx;
 
@@ -23,10 +49,10 @@ export = function createApprovalRoutes(ctx): Record<string, unknown> {
    * Resolve the GovernanceEngine from the engine context.
    * Returns null if not available.
    */
-  function getGovernance() {
+  function getGovernance(): GovernanceLike | null {
     const engine = ctx._getEngine ? ctx._getEngine() : null;
     if (!engine) return null;
-    return engine.getGovernance ? engine.getGovernance() : null;
+    return engine.getGovernance ? (engine.getGovernance() as GovernanceLike) : null;
   }
 
   /* ── GET /api/v1/approvals ───────────────────────────────── */
@@ -54,7 +80,7 @@ export = function createApprovalRoutes(ctx): Record<string, unknown> {
       return json(res, 200, { approvals: rows, count: rows.length });
     } catch (err) {
       structuredLog('ERROR', 'approvals_list_failed', { error: (err as Error).message });
-      return errorResponse(res, 500, (err as Error).message);
+      return json(res, 500, errorResponse('INTERNAL_ERROR', (err as Error).message));
     }
   }
 
@@ -102,7 +128,7 @@ export = function createApprovalRoutes(ctx): Record<string, unknown> {
       structuredLog('ERROR', 'approval_approve_failed', { error: msg });
       if (msg.includes('not found')) return json(res, 404, { error: msg });
       if (msg.includes('already')) return json(res, 409, { error: msg });
-      return errorResponse(res, 500, msg);
+      return json(res, 500, errorResponse('INTERNAL_ERROR', msg));
     }
   }
 
@@ -153,7 +179,7 @@ export = function createApprovalRoutes(ctx): Record<string, unknown> {
       structuredLog('ERROR', 'approval_reject_failed', { error: msg });
       if (msg.includes('not found')) return json(res, 404, { error: msg });
       if (msg.includes('already')) return json(res, 409, { error: msg });
-      return errorResponse(res, 500, msg);
+      return json(res, 500, errorResponse('INTERNAL_ERROR', msg));
     }
   }
 

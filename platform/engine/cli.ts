@@ -279,7 +279,8 @@ function executeCommand(
       );
       return { ok: false, error: 'Governance engine not available' };
     }
-    const pending = governance.getPendingApprovals();
+    const gov = governance as { getPendingApprovals: () => Array<Record<string, unknown>> };
+    const pending = gov.getPendingApprovals();
     const rows = pending.map((a) => ({
       id: a.id,
       entity: a.entity_id,
@@ -314,7 +315,8 @@ function executeCommand(
     }
     try {
       const reason = parsed.reason || 'Approved via CLI';
-      const result = governance.decide(approvalId, 'cli-user', true, reason);
+      const gov = governance as { decide: (...args: unknown[]) => Record<string, unknown> };
+      const result = gov.decide(approvalId, 'cli-user', true, reason);
       write(
         JSON.stringify(
           {
@@ -368,7 +370,8 @@ function executeCommand(
       return { ok: false, error: 'Governance engine not available' };
     }
     try {
-      const result = governance.decide(approvalId, 'cli-user', false, parsed.reason);
+      const gov = governance as { decide: (...args: unknown[]) => Record<string, unknown> };
+      const result = gov.decide(approvalId, 'cli-user', false, parsed.reason);
       write(
         JSON.stringify(
           {

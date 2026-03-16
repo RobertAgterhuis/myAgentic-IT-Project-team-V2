@@ -70,6 +70,8 @@ export default defineConfig({
       'tests/integration/health.integration.test.js',
       'tests/integration/server.integration.test.js',
       'tests/integration/subscribe.integration.test.js',
+      'tests/integration/git-adapter.integration.test.js',
+      'tests/integration/testing-adapter.integration.test.js',
       'tests/smoke/landing.smoke.test.js',
       'tests/unit/example.test.js',
     ],

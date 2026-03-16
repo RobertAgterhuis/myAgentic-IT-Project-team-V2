@@ -22,7 +22,7 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
-    "build": "echo 'No build step required — tsx runs TypeScript natively'",
+    "build": "npm run tokens:build && npm run build --prefix src/webapp/ui",
     "tokens:build": "node scripts/build-tokens.mjs",
     "test:e2e": "npx playwright test",
     "test:e2e:headed": "npx playwright test --headed",

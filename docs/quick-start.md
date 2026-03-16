@@ -13,12 +13,13 @@ minutes.
 
 ## Prerequisites
 
-- **Node.js 18+** — [download](https://nodejs.org/)
-- **Git** — [download](https://git-scm.com/)
-- **VS Code** with
-  [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
-  enabled
-- **GitHub account** with repository access
+| Requirement        | Version                                                                                           | Check           |
+| ------------------ | ------------------------------------------------------------------------------------------------- | --------------- |
+| **Node.js**        | ≥ 18 (22 recommended)                                                                             | `node -v`       |
+| **npm**            | ≥ 9                                                                                               | `npm -v`        |
+| **Git**            | any recent version                                                                                | `git --version` |
+| **VS Code**        | latest, with [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) | —               |
+| **GitHub account** | with repository access                                                                            | —               |
 
 ---
 
@@ -30,24 +31,48 @@ cd myAgentic-IT-Project-team-V2
 npm install
 ```
 
-## Step 2: Start the Command Center
+This installs root dependencies. The UI has its own `package.json` under
+`src/webapp/ui/` — install those separately:
+
+```bash
+cd src/webapp/ui
+npm install
+cd ../../..
+```
+
+## Step 2: Build the UI
+
+The server serves a pre-built React SPA from `src/webapp/ui/dist/`. Build it:
+
+```bash
+npm run build
+```
+
+This runs two steps:
+
+1. `npm run tokens:build` — generates CSS custom properties from design tokens
+2. `npm run build --prefix src/webapp/ui` — builds the React SPA with Vite
+
+## Step 3: Start the Server
 
 ```bash
 npm start
 ```
 
-Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser.
+Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser. You should
+see the Command Center dashboard with pipeline view, questionnaire management,
+and decision tracking tabs.
 
-You should see the Command Center dashboard with pipeline view, questionnaire
-management, and decision tracking tabs.
-
-**Alternative: Docker (includes Matomo analytics)**
+## Step 4: Run Tests
 
 ```bash
-docker compose up --build
+npm test
 ```
 
-## Step 3: Create Your First Project
+This runs the full Vitest suite (2,400+ tests across 96 files). All tests should
+pass with **0 failures**.
+
+## Step 5: Create Your First Project
 
 ### Option A: Via Command Center (recommended)
 
@@ -66,7 +91,7 @@ Open Copilot Chat in VS Code and type:
 CREATE MyApp
 ```
 
-## Step 4: Follow the Pipeline
+## Step 6: Follow the Pipeline
 
 The Orchestrator runs **one agent at a time**:
 
@@ -78,7 +103,7 @@ The Orchestrator runs **one agent at a time**:
 All progress is saved in `session-state.json` — you can safely close and resume
 at any time.
 
-## Step 5: Answer Questionnaires
+## Step 7: Answer Questionnaires
 
 When agents need your input:
 
@@ -89,23 +114,43 @@ When agents need your input:
 
 ---
 
-## Verify Your Installation
+## Docker Workflow
+
+For a containerised setup (includes analytics and translation services):
 
 ```bash
-# Run test suites to confirm everything works
-npm test                      # Root suite (363 tests)
-npm run test:vitest      # Vitest suite (1239 tests)
+# Webapp only (end-users)
+docker compose -f infra/docker-compose.webapp.yml up --build
+
+# Full development stack (includes Matomo analytics + Weblate translations)
+docker compose -f infra/docker-compose.dev.yml up --build
 ```
 
-Both suites should report **0 failures**.
+Then open [http://127.0.0.1:3000](http://127.0.0.1:3000).
+
+---
+
+## Other Useful Commands
+
+| Command                    | Purpose                             |
+| -------------------------- | ----------------------------------- |
+| `npm run lint`             | ESLint + Prettier check             |
+| `npm run lint:fix`         | Auto-fix lint issues                |
+| `npm run typecheck`        | TypeScript type checking            |
+| `npm run test:coverage`    | Tests with coverage reporting       |
+| `npm run test:integration` | Integration tests only              |
+| `npm run test:smoke`       | Smoke tests only                    |
+| `npm run test:e2e`         | Playwright end-to-end tests         |
+| `npm run start:mcp`        | Start MCP server standalone (stdio) |
+| `npm run format`           | Format all files with Prettier      |
 
 ---
 
 ## What's Next?
 
+- **[Architecture Overview](architecture.md)** — Layer diagram, data flow, module inventory
+- **[MCP Setup Guide](mcp-setup.md)** — Configure MCP server for your IDE
 - **[User Manual](user-manual.md)** — Comprehensive guide to all features
 - **[Technical Manual](technical-manual.md)** — Architecture and API reference
-- **[Operating Handbook](../docs/operating-handbook.md)** — Monitoring,
-  troubleshooting, recovery
-- **[Available Commands](../README.md#available-commands)** — All CREATE, AUDIT,
-  FEATURE, and utility commands
+- **[Operating Handbook](operating-handbook.md)** — Monitoring, troubleshooting,
+  recovery

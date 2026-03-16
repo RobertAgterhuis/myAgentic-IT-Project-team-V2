@@ -86,7 +86,7 @@ export default function ArtifactBrowserPage() {
 
   const { data, isLoading, refetch } = useArtifacts(filters);
 
-  const artifacts = data?.artifacts ?? [];
+  const artifacts = useMemo(() => data?.artifacts ?? [], [data]);
 
   // Derive unique values for filter dropdowns
   const phases = useMemo(() => [...new Set(artifacts.map((a) => a.stage))].sort(), [artifacts]);

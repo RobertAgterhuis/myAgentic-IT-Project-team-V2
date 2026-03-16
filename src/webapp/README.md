@@ -1,21 +1,24 @@
 # myAgentic-IT-Project-team — Command Center
 
-A zero-dependency local web app for managing the agentic system. Provides a
-unified Command Center with three tabs — **Command Center** (pipeline view +
-command launcher), **Questionnaires** (answer questions, set statuses), and
-**Decisions** (create/answer/defer decisions) — so non-technical stakeholders
-can interact with the system without editing markdown by hand.
+A local web application for managing the agentic system. Provides a unified
+Command Center with tabs for **Command Center** (pipeline view + command
+launcher), **Questionnaires** (answer questions, set statuses), **Decisions**
+(create/answer/defer decisions), **Dashboard** (metrics & activity), and more —
+so non-technical stakeholders can interact with the system without editing
+markdown by hand.
 
 ## Prerequisites
 
-- **Node.js 14+** (no npm install required — zero external dependencies)
+- **Node.js ≥ 18**
+- **npm** (install dependencies with `npm ci`)
 
 ## Quick Start
 
 From the project root:
 
 ```bash
-node src/webapp/server.js
+npm ci
+npm start
 ```
 
 Then open **http://127.0.0.1:3000** in your browser.
@@ -23,7 +26,7 @@ Then open **http://127.0.0.1:3000** in your browser.
 ### Custom port
 
 ```bash
-PORT=8080 node src/webapp/server.js
+PORT=8080 npm start
 ```
 
 ## What It Does
@@ -33,6 +36,7 @@ PORT=8080 node src/webapp/server.js
 | **Command Center**     | Pipeline view showing phase/agent progress; command launcher for CREATE, AUDIT, REEVALUATE, etc.                                                   |
 | **Questionnaires**     | Shows all questionnaires grouped by phase with answer-progress bars; per-question answer editing with auto-resize                                  |
 | **Decisions**          | Create new decisions, answer or defer existing ones, view decision history                                                                         |
+| **Dashboard**          | Metrics, activity feed, and system health overview                                                                                                 |
 | **Status management**  | Dropdown per question: OPEN → ANSWERED → DEFERRED                                                                                                  |
 | **Save**               | Per-question save, per-file save, or global Save All (Ctrl+S)                                                                                      |
 | **Reevaluate**         | Saves all pending changes, writes `BusinessDocs/session/reevaluate-trigger.json`, and prompts you to type `REEVALUATE [SCOPE]` in the Copilot chat |
@@ -45,17 +49,41 @@ PORT=8080 node src/webapp/server.js
 
 ```
 src/webapp/
-  server.js     Node.js server (built-in http module only)
-  index.html    SPA — inline CSS + JS, no build step
-  README.md     This file
+  server.ts               API server (Node.js http + route dispatching)
+  mcp-server.ts           MCP tool server (IDE integration)
+  store.ts                Storage abstraction (FileStore + InMemoryStore)
+  models.ts               Domain parsing (questionnaires, decisions, session state)
+  schemas.ts              JSON schema validation (Ajv)
+  middleware.ts            Security headers, input validation, logging
+  cache.ts                File cache with mtime invalidation
+  audit.ts                Mutation audit trail (append-only JSONL)
+  strings.ts              Externalized UI strings
+  file-lock.ts            Async per-file mutex
+  drift-detector.ts       Configuration drift detection
+  session-state-resolver.ts  Session file resolution
+  session-tracker.ts      Session lifecycle tracking
+  lesson-promotion.ts     Lesson-to-decision promotion
+  utils/
+    errors.ts             Structured error catalog
+    secret-utils.ts       Secret pattern detection
+  routes/                 16 route modules (one per API domain)
+  ui/                     React SPA (Vite + React + TypeScript + Tailwind CSS)
+    src/components/       React components (Radix UI primitives)
+    src/hooks/            Custom React hooks
+    src/pages/            Page-level components
+    src/stores/           Zustand state stores
+    src/lib/              Utility functions
 ```
 
 - **Server** binds to `127.0.0.1` only (localhost) for security
 - **Markdown is the source of truth** — the UI reads and writes the same files
   the agentic system uses
-- **No database, no state** — everything lives in your `BusinessDocs/` folder
+- **No database** — all state lives in your `BusinessDocs/` folder as JSON and
+  Markdown files
+- **Runtime dependencies:** `@modelcontextprotocol/sdk`, `ajv`, `ajv-formats`,
+  `tsx`
 
-## API Endpoints
+## API Endpoints (selected)
 
 | Method | Path                     | Description                                                                                                    |
 | ------ | ------------------------ | -------------------------------------------------------------------------------------------------------------- |
@@ -70,7 +98,11 @@ src/webapp/
 | GET    | `/api/progress`          | Live phase/agent progress derived from `session-state.json`                                                    |
 | GET    | `/api/export`            | Export all questionnaire data as JSON                                                                          |
 | GET    | `/api/help?topic=<slug>` | Without `topic`: returns help table-of-contents. With `topic`: returns the markdown content for that help file |
-| GET    | `/health`                | Health check endpoint (returns uptime)                                                                         |
+| GET    | `/api/health`            | Readiness probe (uptime, version, SSE connections, timestamp) — used by Docker HEALTHCHECK                     |
+| GET    | `/api/dashboard/*`       | Dashboard aggregation endpoints (stats, activity, burndown)                                                    |
+| GET    | `/api/metrics-dashboard` | Runtime metrics and per-endpoint timing data                                                                   |
+| GET    | `/health`                | Liveness probe (status, version, uptime, store status)                                                         |
+| GET    | `/events`                | SSE stream for real-time UI updates                                                                            |
 
 ## Reevaluation Flow
 

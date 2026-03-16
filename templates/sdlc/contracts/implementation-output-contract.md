@@ -1,14 +1,14 @@
 ````markdown
 # Contract: Implementation Output
 
-> Version 1.0 | Phase 5 – Autonomous Implementation
+> Version 1.0 | Phase 5 – Supervised Implementation
 
 ---
 
 ## PURPOSE OF THIS CONTRACT
 
 This contract defines what a **fully implemented sprint story** means in the
-autonomous implementation system. Every output of the Implementation Agent, Test
+supervised implementation system. Every output of the Implementation Agent, Test
 Agent, and PR/Review Agent MUST comply with this contract before a handoff takes
 place.
 

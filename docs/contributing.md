@@ -21,9 +21,9 @@ That file covers:
 - Pull request process and review checklist
 - Webapp development cookbook
 
-3. Add user-facing strings to `strings.js` if the response includes messages.
+3. Add user-facing strings to `strings.ts` if the response includes messages.
 
-4. Add error codes to `utils/errors.js` if the endpoint can fail in new ways.
+4. Add error codes to `utils/errors.ts` if the endpoint can fail in new ways.
 
 5. Write tests — use `InMemoryStore` (never real filesystem):
    ```js
@@ -33,35 +33,21 @@ That file covers:
 
 ### Adding a New Tab to the UI
 
-The UI is a single-page app in `index.html`. Tabs are `<section>` elements
-shown/hidden with CSS.
+The UI is a React SPA in `src/webapp/ui/`. Components use React + TypeScript
+with Tailwind CSS and Radix UI primitives.
 
-1. Add a `<button>` to the tab bar (search for `tab-bar` in index.html):
+1. Create a new component in `src/webapp/ui/src/components/`.
 
-   ```html
-   <button class="tab-btn" data-tab="my-tab">My Tab</button>
-   ```
+2. Add a route or tab entry in the app layout.
 
-2. Add the content section:
-
-   ```html
-   <section id="my-tab" class="tab-content" hidden>
-     <!-- Your HTML here -->
-   </section>
-   ```
-
-3. The existing tab-switching JS handles visibility automatically based on
-   `data-tab` matching the section `id`.
-
-4. Fetch data from your API endpoint in a `loadMyTab()` function and call it
-   when the tab activates.
+3. Fetch data from your API endpoint using TanStack Query hooks.
 
 ### Adding a New Model Parser
 
-Model parsers live in `models.js`. They transform raw file content into
+Model parsers live in `models.ts`. They transform raw file content into
 structured data.
 
-1. Export a new function from `models.js`:
+1. Export a new function from `models.ts`:
 
    ```js
    function parseMyFormat(content) {
@@ -77,9 +63,9 @@ structured data.
 
 ### Adding Validation Schemas
 
-JSON schemas live in `schemas.js`. Used by endpoints that accept POST bodies.
+JSON schemas live in `schemas.ts`. Used by endpoints that accept POST bodies.
 
-1. Add your schema to `schemas.js`:
+1. Add your schema to `schemas.ts`:
 
    ```js
    const myThingSchema = { type: 'object', required: [...], properties: { ... } };
@@ -101,8 +87,8 @@ JSON schemas live in `schemas.js`. Used by endpoints that accept POST bodies.
 | Use `safePath()`           | All user-provided paths      | Prevents path traversal                |
 | Use `detectSecrets()`      | All user input saved to disk | Prevents accidental credential storage |
 | Use `setSecurityHeaders()` | All responses                | CSP, X-Frame-Options, etc.             |
-| Use `strings.js`           | All user-facing text         | Externalized for maintainability       |
-| Use `utils/errors.js`      | All error responses          | Consistent error codes                 |
+| Use `strings.ts`           | All user-facing text         | Externalized for maintainability       |
+| Use `utils/errors.ts`      | All error responses          | Consistent error codes                 |
 
 ---
 

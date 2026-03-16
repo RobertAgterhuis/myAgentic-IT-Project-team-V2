@@ -3,7 +3,7 @@
 
 /**
  * Tests for github-state-snapshot.js (INFRA-02-A)
- * and validateGithubSnapshot / github_sync validation in schemas.js (INFRA-02-D)
+ * and validateGithubSnapshot / github_sync validation in schemas.ts (INFRA-02-D)
  */
 
 const _path = require('path');

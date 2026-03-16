@@ -37,7 +37,7 @@ Decisions Manager web application.
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                    Browser (index.html)              │
+│                    Browser (React SPA)                 │
 │  ┌──────────┐ ┌──────────────┐ ┌──────────────────┐ │
 │  │ Cmd Ctr  │ │Questionnaires│ │   Decisions       │ │
 │  └──────────┘ └──────────────┘ └──────────────────┘ │
@@ -45,16 +45,16 @@ Decisions Manager web application.
 └─────────────────────────────────────────────────────┘
                         │
 ┌───────────────────────┼─────────────────────────────┐
-│            server.js (Coordinator, 189 LOC)          │
+│            server.ts (Coordinator, 189 LOC)          │
 │  Imports + config + shared state + ctx + routing     │
 │                                                      │
 │  ┌────────────────┐  ┌──────────────────────────┐    │
-│  │ middleware.js   │  │ routes/                   │   │
-│  │ (pure funcs)   │  │  questionnaires.js        │   │
-│  │ sanitization   │  │  decisions.js             │   │
-│  │ logging        │  │  commands.js              │   │
-│  │ security hdrs  │  │  progress.js              │   │
-│  │ error handling │  │  misc.js (SSE, metrics,   │   │
+│  │ middleware.ts   │  │ routes/                   │   │
+│  │ (pure funcs)   │  │  questionnaires.ts        │   │
+│  │ sanitization   │  │  decisions.ts             │   │
+│  │ logging        │  │  commands.ts              │   │
+│  │ security hdrs  │  │  progress.ts              │   │
+│  │ error handling │  │  misc.ts (SSE, metrics,   │   │
 │  └────────────────┘  │   export, help, health,   │   │
 │                       │   analytics, audit, static)│  │
 │                       └──────────────────────────┘   │
@@ -64,7 +64,7 @@ Decisions Manager web application.
 │  └───┬───┘ └───┬────┘ └────────┘ └───────────────┘  │
 │      │         │                                     │
 │  ┌───┴─────────┴───┐  ┌─────────────────┐           │
-│  │   store.js      │  │  file-lock.js   │           │
+│  │   store.ts      │  │  file-lock.ts   │           │
 │  │ FileStore /     │  │  withFileLock() │           │
 │  │ InMemoryStore   │  │  (shared lock)  │           │
 │  └─────────────────┘  └─────────────────┘           │
@@ -77,37 +77,38 @@ Decisions Manager web application.
 
 ### Design Principles
 
-- **Zero runtime dependencies** — Only Node.js built-in modules (`http`, `fs`,
-  `path`, `url`, `crypto`) for the web UI.
+- **Minimal runtime dependencies** — Node.js built-in modules (`http`, `fs`,
+  `path`, `url`, `crypto`) for the web UI, plus MCP SDK, Ajv (schema
+  validation), and tsx (TypeScript runner).
 - **MCP integration** — MCP server uses `@modelcontextprotocol/sdk` for
   cross-IDE support via stdio transport.
 - **Store abstraction** — All filesystem I/O goes through the Store interface.
   `FileStore` for production, `InMemoryStore` for testing.
-- **Atomic writes** — `safeWriteSync()` (server.js) and `store.writeFile()`
-  (mcp-server.js) write to a temp file, then rename. A backup is created before
+- **Atomic writes** — `safeWriteSync()` (server.ts) and `store.writeFile()`
+  (mcp-server.ts) write to a temp file, then rename. A backup is created before
   overwriting existing files.
-- **Unified store writes** — As of SP-2, `mcp-server.js` delegates all writes
+- **Unified store writes** — As of SP-2, `mcp-server.ts` delegates all writes
   through `store.writeFile()` instead of its own `safeWrite()` implementation,
   ensuring identical backup, atomic-rename, and directory-creation behavior
   across both entry points.
 - **Shared file locking** — All JSON write paths are serialized per file via
-  `withFileLock()` from `file-lock.js`. Uses promise-chaining (no OS-level
-  locks) to prevent concurrent write corruption. Both `server.js` (11 call
-  sites) and `mcp-server.js` (6 call sites) share the same lock Map through
+  `withFileLock()` from `file-lock.ts`. Uses promise-chaining (no OS-level
+  locks) to prevent concurrent write corruption. Both `server.ts` (11 call
+  sites) and `mcp-server.ts` (6 call sites) share the same lock Map through
   Node.js require cache.
 - **Localhost only** — Server binds to `127.0.0.1:3000`. No external network
   exposure.
-- **Single-page UI** — `index.html` contains all HTML, CSS, and JavaScript. No
-  build step, no bundler.
+- **React SPA** — Vite + React + TypeScript front-end in `src/webapp/ui/`.
+  Built with TanStack Query, Zustand, and Tailwind CSS.
 
 ---
 
 ## Module Reference
 
-### file-lock.js
+### file-lock.ts
 
 Shared concurrency primitive for all JSON file writes. Prevents concurrent write
-corruption across both server.js and mcp-server.js.
+corruption across both server.ts and mcp-server.ts.
 
 **Exports:**
 
@@ -123,37 +124,37 @@ corruption across both server.js and mcp-server.js.
   onto the previous promise for the same resolved path.
 - Lock Map entries are cleaned up after the chain completes (both success and
   error).
-- Singleton: both `server.js` and `mcp-server.js` import the same instance via
+- Singleton: both `server.ts` and `mcp-server.ts` import the same instance via
   Node.js require cache.
 - Zero external dependencies — only `node:path`.
 
 **Added in:** SP-1 (TECH-01 — P2-R01: file corruption prevention).
 
-### server.js (~189 lines) — Coordinator
+### server.ts (~189 lines) — Coordinator
 
 The main application coordinator. Initializes shared state, builds the context
 object, wires route modules, and creates the HTTP server.
 
-**Decomposed in:** SP-4 (TECH-02 — server.js decomposition). Previously ~1370
+**Decomposed in:** SP-4 (TECH-02 — server.ts decomposition). Previously ~1370
 LOC.
 
-**Key exports:** (backward-compatible with mcp-server.js and test imports)
+**Key exports:** (backward-compatible with mcp-server.ts and test imports)
 
 - `server` — Node.js `http.Server` instance
-- `withFileLock(filePath, fn)` — Re-exported from `file-lock.js`
+- `withFileLock(filePath, fn)` — Re-exported from `file-lock.ts`
 - `sanitizeMarkdown(text)`, `sanitizeQID(text)`, `detectSecrets(text)`,
   `checkSecretsInBody(body, fields)`, `safePath(base, relative)`,
-  `setSecurityHeaders(res)` — Re-exported from `middleware.js`
-- `structuredLog(level, message, fields)` — Re-exported from `middleware.js`
+  `setSecurityHeaders(res)` — Re-exported from `middleware.ts`
+- `structuredLog(level, message, fields)` — Re-exported from `middleware.ts`
 - `recordMetric(method, path, duration, status)` — Records request metric
 - `computePercentiles(arr)` — Returns `{ p50, p95, p99 }`
 - `sseNotify(channel, data)` — Broadcasts SSE event to connected clients
 - `_sseClients`, `_cache`, `_metrics`, `_audit` — Shared state instances
 
-### middleware.js (~262 lines)
+### middleware.ts (~262 lines)
 
 Pure middleware functions with no shared state dependencies. Extracted from
-server.js in SP-4.
+server.ts in SP-4.
 
 **Key exports:**
 
@@ -178,22 +179,22 @@ map (`{ 'METHOD /path': handler }`).
 
 | Module                     | LOC | Routes                                                                                                                                                                                                                 |
 | -------------------------- | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `routes/questionnaires.js` | 150 | `GET /api/questionnaires`, `POST /api/save`                                                                                                                                                                            |
-| `routes/decisions.js`      | 200 | `GET /api/decisions`, `POST /api/decisions`, `POST /api/decisions/activate-category`                                                                                                                                   |
-| `routes/commands.js`       | 130 | `POST /api/command`, `GET /api/command`                                                                                                                                                                                |
-| `routes/progress.js`       | 160 | `GET /api/progress`                                                                                                                                                                                                    |
-| `routes/misc.js`           | 297 | `GET /api/session`, `POST /api/reevaluate`, `GET /api/export`, `GET /api/help`, `GET /api/events`, `GET /api/metrics`, `GET /api/health`, `POST /api/analytics`, `GET /api/analytics`, `GET /api/audit`, `GET /health` |
-| `routes/subscribe.js`      | 55  | `POST /api/subscribe`                                                                                                                                                                                                  |
+| `routes/questionnaires.ts` | 150 | `GET /api/questionnaires`, `POST /api/save`                                                                                                                                                                            |
+| `routes/decisions.ts`      | 200 | `GET /api/decisions`, `POST /api/decisions`, `POST /api/decisions/activate-category`                                                                                                                                   |
+| `routes/commands.ts`       | 130 | `POST /api/command`, `GET /api/command`                                                                                                                                                                                |
+| `routes/progress.ts`       | 160 | `GET /api/progress`                                                                                                                                                                                                    |
+| `routes/misc.ts`           | 297 | `GET /api/session`, `POST /api/reevaluate`, `GET /api/export`, `GET /api/help`, `GET /api/events`, `GET /api/metrics`, `GET /api/health`, `POST /api/analytics`, `GET /api/analytics`, `GET /api/audit`, `GET /health` |
+| `routes/subscribe.ts`      | 55  | `POST /api/subscribe`                                                                                                                                                                                                  |
 
-### mcp-server.js
+### mcp-server.ts
 
 MCP (Model Context Protocol) server for cross-IDE integration. Exposes the
 Command Center functionality as MCP tools and resources via stdio transport.
 
 **Dependency:** `@modelcontextprotocol/sdk` (the only runtime npm dependency).
 
-**Concurrency:** All 6 write paths use `withFileLock()` from `file-lock.js` to
-serialize file mutations, sharing the same lock Map as `server.js`.
+**Concurrency:** All 6 write paths use `withFileLock()` from `file-lock.ts` to
+serialize file mutations, sharing the same lock Map as `server.ts`.
 
 **Transport:** stdio — launched automatically by the IDE via `.vscode/mcp.json`
 or equivalent IDE configuration.
@@ -226,16 +227,16 @@ or equivalent IDE configuration.
 
 **Key implementation details:**
 
-- Reuses `models.js`, `store.js`, `cache.js`, `audit.js`, and `server.js`
+- Reuses `models.ts`, `store.ts`, `cache.ts`, `audit.ts`, and `server.ts`
   sanitization functions from the web UI
 - All file writes delegate to `store.writeFile()` (unified in SP-2, TECH-04),
-  ensuring identical backup + atomic-rename behavior as server.js
+  ensuring identical backup + atomic-rename behavior as server.ts
 - Input sanitization (markdown injection, Q-ID neutralization, secret detection)
   is applied to all tool inputs
 - Path traversal is blocked via `safePath()` on all file parameters
 - Startup gated behind `if (require.main === module)` for test-safe importing
 
-### store.js
+### store.ts
 
 Storage abstraction layer.
 
@@ -257,7 +258,7 @@ Storage abstraction layer.
 - `setStore(store)` — Replace the global store instance
 - `getStore()` — Get the current global store instance
 
-### models.js
+### models.ts
 
 Domain parsing and mutation functions.
 
@@ -278,7 +279,7 @@ Domain parsing and mutation functions.
 - `parseSessionState(content)` → object — Parses session-state.json
 - `parseIndex(content)` → object — Parses questionnaire-index.md
 
-### cache.js
+### cache.ts
 
 File cache with mtime-based invalidation.
 
@@ -291,7 +292,7 @@ File cache with mtime-based invalidation.
 - `invalidateAll()` — Clears the entire cache
 - `stats()` → `{ hits, misses, size }` — Cache statistics
 
-### schemas.js
+### schemas.ts
 
 JSON schema validators for all data stores. All validators return
 `{ valid: boolean, errors: string[] }`.
@@ -327,7 +328,7 @@ JSON schema validators for all data stores. All validators return
 
 **Coverage (SP-3):** 98.3% statements, 96.8% branches, 100% functions
 
-### strings.js
+### strings.ts
 
 Externalized user-facing strings.
 
@@ -338,7 +339,7 @@ Externalized user-facing strings.
   `commandQueued(cmd)`)
 - `STATIC` — Static string constants
 
-### audit.js
+### audit.ts
 
 Mutation audit trail.
 
@@ -355,7 +356,7 @@ Mutation audit trail.
 `{ timestamp, operation, entity_type, entity_id, user, summary }`. File rotation
 at configurable max size (default 10 MB).
 
-### utils/errors.js
+### utils/errors.ts
 
 Structured error catalog.
 
@@ -370,7 +371,7 @@ Structured error catalog.
 `PAYLOAD_TOO_LARGE`, `INVALID_CONTENT_TYPE`, `INVALID_JSON`, `INVALID_INPUT`,
 `METHOD_NOT_ALLOWED`, `INTERNAL_ERROR`
 
-### utils/secret-utils.js
+### utils/secret-utils.ts
 
 Secret detection and warning utilities.
 
@@ -924,9 +925,9 @@ cd .github
 npm install
 
 # Start the server (from repo root — also works via root package.json)
-node src/webapp/server.js
-# or:
 npm start
+# or:
+npx tsx src/webapp/server.ts
 ```
 
 The server is designed for **localhost use only**. It does not implement
@@ -963,7 +964,7 @@ For persistent operation, use a process manager:
 
 ```bash
 # Using PM2
-npx pm2 start src/webapp/server.js --name agentic-team
+npx pm2 start npx -- tsx src/webapp/server.ts --name agentic-team
 
 # Check status
 npx pm2 status
@@ -971,9 +972,17 @@ npx pm2 status
 
 ### Health Checks
 
-- `GET /health` — Fast check, returns `{ status: "ok", uptime: N }`
-- `GET /api/health` — Detailed check, includes SSE connection count and
-  timestamp
+The server exposes two complementary health endpoints:
+
+- `GET /health` — **Liveness probe.** Lightweight check that the process is
+  running. Returns `{ status, version, uptime, store_status }`.
+- `GET /api/health` — **Readiness probe.** Confirms the server is ready to
+  handle requests. Returns additional `sse_connections` and `timestamp` fields.
+  Used by Docker HEALTHCHECK and Playwright `webServer.url`.
+
+> `GET /api/dashboard/health` is _not_ a server health endpoint — it returns
+> project health indicators (code quality, test coverage, etc.) for the
+> Dashboard UI.
 
 ### Analytics Stack (Matomo)
 
@@ -1404,7 +1413,7 @@ _Sprint reference: SP-R2-004-008_
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│  Browser (index.html)                                         │
+│  Browser (React SPA)                                          │
 │                                                               │
 │  trackEvent(name, props) → _analyticsQueue[]                  │
 │       ↓ (batched, every 5 s or 50 events)                     │
@@ -1412,7 +1421,7 @@ _Sprint reference: SP-R2-004-008_
 └────────────────────────────┬──────────────────────────────────┘
                              │
 ┌────────────────────────────▼──────────────────────────────────┐
-│  server.js  apiPostAnalytics()                                │
+│  server.ts  apiPostAnalytics()                                │
 │                                                               │
 │  1. Validate each event against VALID_ANALYTICS_EVENTS        │
 │  2. Reject unknown event types (counted, not fatal)           │
@@ -1428,7 +1437,7 @@ _Sprint reference: SP-R2-004-008_
 
 ### Server-Side Valid Event Types
 
-The server validates events against a strict allowlist defined in `server.js`:
+The server validates events against a strict allowlist defined in `server.ts`:
 
 ```js
 const VALID_ANALYTICS_EVENTS = [
@@ -1463,7 +1472,7 @@ response).
 
 ### Client-Side Events Currently Emitted
 
-The front-end (`index.html`) fires these events via `trackEvent()`:
+The front-end (React SPA) fires these events via `trackEvent()`:
 
 | Call Site         | Event Name            | Properties       | Server Accepts?           |
 | ----------------- | --------------------- | ---------------- | ------------------------- |

@@ -143,7 +143,7 @@ After Critic + Risk PASSED:
 
 Questionnaire generation NEVER blocks Phase 2. Answers fed back via REEVALUATE
 or new CREATE cycle. Non-technical stakeholders can use the Questionnaire &
-Decisions Manager web UI: `node src/webapp/server.js` →
+Decisions Manager web UI: `npm start` →
 http://127.0.0.1:3000 Decisions can also be created and answered from the
 **Decisions** tab in the web UI — changes are written directly to
 `BusinessDocs/decisions.md`.
@@ -207,7 +207,7 @@ After Critic + Risk PASSED:
    `legal-compliance-overview.md`
 
 Answers fed back via REEVALUATE or new cycle. Web UI available:
-`node src/webapp/server.js` → http://127.0.0.1:3000 (questionnaires +
+`npm start` → http://127.0.0.1:3000 (questionnaires +
 decisions management)
 
 ---
@@ -268,7 +268,7 @@ After Critic + Risk PASSED:
    `content-strategy-brief.md`
 
 Answers fed back via REEVALUATE or new cycle. Web UI available:
-`node src/webapp/server.js` → http://127.0.0.1:3000 (questionnaires +
+`npm start` → http://127.0.0.1:3000 (questionnaires +
 decisions management)
 
 ---
@@ -322,7 +322,7 @@ After Critic + Risk PASSED:
    `BusinessDocs/OfficialDocuments/brand-brief.md` and `market-positioning.md`
 
 Answers fed back via REEVALUATE or new cycle. Web UI available:
-`node src/webapp/server.js` → http://127.0.0.1:3000 (questionnaires +
+`npm start` → http://127.0.0.1:3000 (questionnaires +
 decisions management)
 
 ### Post-Phase 4: Brand & Storybook
@@ -424,12 +424,12 @@ On `IMPLEMENT` decision → Phase 5 activates for the selected sprint.
 
 ---
 
-## PHASE 5: AUTONOMOUS IMPLEMENTATION (Ongoing per sprint)
+## PHASE 5: SUPERVISED IMPLEMENTATION (Ongoing per sprint)
 
 ### Objective
 
 Actual implementation of the designed software product per the approved sprint
-stories from Phases 1–4, fully autonomous and traceable, with automated tests,
+stories from Phases 1–4, supervised and traceable (human-in-the-loop), with automated tests,
 guardrail validation, and Sprint Completion Reports per sprint.
 
 ### Agents (Per Sprint, In Order)

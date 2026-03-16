@@ -44,6 +44,20 @@ function getInvalidationKeys(eventType: string): readonly (readonly string[])[] 
       return [queryKeys.progress.all];
     case 'metric_update':
       return [queryKeys.dashboard.metrics, queryKeys.serverMetrics.all];
+    case 'session_start':
+    case 'session_complete':
+      return [queryKeys.sessions.all, queryKeys.progress.all];
+    case 'phase_start':
+    case 'phase_complete':
+      return [queryKeys.sessions.all, queryKeys.progress.all];
+    case 'agent_start':
+    case 'agent_complete':
+      return [queryKeys.agents.all, queryKeys.sessions.all];
+    case 'gate_passed':
+    case 'gate_failed':
+      return [queryKeys.sessions.all, queryKeys.progress.all];
+    case 'artifact_created':
+      return [queryKeys.artifacts.all, queryKeys.sessions.all];
     default:
       return [];
   }

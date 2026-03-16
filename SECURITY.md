@@ -30,8 +30,8 @@ Include:
 
 The following are in scope:
 
-- Server-side code (`src/webapp/server.js` and modules)
-- Client-side code (`src/webapp/index.html`)
+- Server-side code (`src/webapp/server.ts` and modules)
+- Client-side code (`src/webapp/ui/`)
 - CI/CD pipeline configuration
 - Secret management
 

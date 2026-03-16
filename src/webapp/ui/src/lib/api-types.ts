@@ -287,6 +287,17 @@ export interface ValidateGateResponse extends OkResponse {
   };
 }
 
+/** Gate failure info surfaced in ExplainabilityPanel (M15-037). */
+export interface GateFailureInfo {
+  phase: string;
+  reason: string;
+  suggestedAction?: string;
+  violations: number;
+  timestamp: string;
+  relatedArtifactId?: string;
+  relatedDecisionId?: string;
+}
+
 export type OrchestratorCommandName =
   | 'CREATE'
   | 'CREATE_BUSINESS'
@@ -671,4 +682,93 @@ export interface TraceGap {
   entity_type: TraceEntityType;
   missing: TraceEntityType;
   label: string;
+}
+
+/* ──────────────────────────────────────────────
+ * Sessions (M15 / Issue #M15-022)
+ * ────────────────────────────────────────────── */
+
+export type SessionStatus = 'active' | 'completed' | 'failed' | 'paused';
+
+export interface Session {
+  id: string;
+  project: string;
+  flow: string;
+  phase: string;
+  status: SessionStatus;
+  progress: number;
+  started_at: string;
+  completed_at: string | null;
+  current_agent: string | null;
+}
+
+export interface SessionsListResponse extends OkResponse {
+  count: number;
+  sessions: Session[];
+}
+
+export type TimelineEventType =
+  | 'session_start'
+  | 'session_complete'
+  | 'phase_start'
+  | 'phase_complete'
+  | 'agent_start'
+  | 'agent_complete'
+  | 'artifact_created'
+  | 'gate_passed'
+  | 'gate_failed'
+  | 'decision_created'
+  | 'error'
+  | 'retry';
+
+export interface TimelineEvent {
+  id: string;
+  type: TimelineEventType;
+  timestamp: string;
+  description: string;
+  agent?: string;
+  phase?: string;
+  artifact_id?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface SessionDetailResponse extends OkResponse {
+  session: Session;
+  agents: AgentDetailEntry[];
+  timeline: TimelineEvent[];
+}
+
+export interface TimelineResponse extends OkResponse {
+  session_id: string;
+  count: number;
+  timeline: TimelineEvent[];
+}
+
+/* ──────────────────────────────────────────────
+ * Agent Detail (M15 / Issue #M15-023-024)
+ * ────────────────────────────────────────────── */
+
+export type AgentDetailStatus = 'idle' | 'running' | 'completed' | 'failed' | 'retrying';
+
+export interface AgentDetailEntry {
+  id: string;
+  name: string;
+  status: AgentDetailStatus;
+  task_description: string;
+  started_at: string;
+  duration_ms: number;
+  prompt_summary?: string;
+  outputs: string[];
+  retry_count: number;
+  session_id: string;
+  phase: string;
+}
+
+export interface AgentsListResponse extends OkResponse {
+  count: number;
+  agents: AgentDetailEntry[];
+}
+
+export interface AgentDetailResponse extends OkResponse {
+  agent: AgentDetailEntry;
 }

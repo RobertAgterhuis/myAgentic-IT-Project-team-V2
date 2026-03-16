@@ -8,12 +8,15 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 const PAGES = [
-  { path: '/', name: 'Dashboard' },
+  { path: '/', name: 'Overview' },
   { path: '/decisions', name: 'Decisions' },
   { path: '/questionnaires', name: 'Questionnaires' },
   { path: '/metrics', name: 'Metrics' },
   { path: '/command-center', name: 'Command Center' },
   { path: '/pipeline', name: 'Pipeline' },
+  { path: '/sessions', name: 'Sessions' },
+  { path: '/agents', name: 'Agents' },
+  { path: '/governance', name: 'Governance' },
 ];
 
 test.describe('axe-core WCAG 2.1 AA scan', () => {

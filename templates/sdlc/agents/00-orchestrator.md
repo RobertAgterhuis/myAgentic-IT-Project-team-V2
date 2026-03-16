@@ -456,8 +456,8 @@ Do NOT block the session.
    channels — the markdown file is the single source of truth.
 3. When informing the user about open questionnaires (after phase completion per
    RULE ORC-25), include:
-   `ℹ️ You can answer questionnaires and manage decisions by editing the files directly or by using the web UI: run \`node
-   src/webapp/server.js\` and open http://127.0.0.1:3000`
+   `ℹ️ You can answer questionnaires and manage decisions by editing the files directly or by using the web UI: run \`npm
+   start\` and open http://127.0.0.1:3000`
 4. **Decisions via web UI:** The user may create new decisions (`DECIDED` or
    `OPEN_QUESTION`) and answer open questions through the web UI. The web UI
    writes to `BusinessDocs/decisions.md` (index + uncategorized decisions) and
@@ -483,8 +483,8 @@ Do NOT block the session.
    command in Copilot Chat to trigger the Orchestrator to read the queue. The
    clipboard-ready text is provided by the UI.
 3. When informing the user about available commands, include:
-   `ℹ️ You can also launch commands from the Command Center tab in the web UI: run \`node
-   src/webapp/server.js\` and open http://127.0.0.1:3000`
+   `ℹ️ You can also launch commands from the Command Center tab in the web UI: run \`npm
+   start\` and open http://127.0.0.1:3000`
 
 **RULE ORC-30: Checkpoint-and-Yield Protocol (MANDATORY — prevents network
 timeouts)** The Orchestrator MUST complete exactly **one agent per conversation
@@ -773,8 +773,8 @@ and the status is reset.
    - Wait for `QUESTIONNAIRE_GENERATED` confirmation
    - Update questionnaire-index.md entry
    - Inform user:
-     `ℹ️ Questionnaire(s) generated in BusinessDocs/[PHASE]/Questionnaires/ — fill in answers and run REEVALUATE or a new cycle to incorporate them. Alternatively, use the Questionnaire Manager web UI: run \`node
-     src/webapp/server.js\` and open http://127.0.0.1:3000` c. **Activate
+     `ℹ️ Questionnaire(s) generated in BusinessDocs/[PHASE]/Questionnaires/ — fill in answers and run REEVALUATE or a new cycle to incorporate them. Alternatively, use the Questionnaire Manager web UI: run \`npm
+     start\` and open http://127.0.0.1:3000` c. **Activate
      Questionnaire Agent — document generation workflow** for official documents
      updated by this phase (see RULE ORC-25) d. Activate next phase
 
@@ -839,7 +839,7 @@ Before every sprint, the Orchestrator performs the following checks:
    Question: [question]
    Scope: [scope]
    → Enter your answer in BusinessDocs/decisions.md and set status to DECIDED.
-   → Or use the web UI: run `node src/webapp/server.js` → http://127.0.0.1:3000 → Decisions tab.
+   → Or use the web UI: run `npm start` → http://127.0.0.1:3000 → Decisions tab.
    → Type RESUME to restart the Sprint Gate.
    ```
 6. Read all items with status `OPEN` and priority `MEDIUM` or `LOW` that affect

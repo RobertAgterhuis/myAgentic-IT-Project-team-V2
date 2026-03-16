@@ -53,8 +53,8 @@
 │   └── schema/         # JSON schemas for agents/tools
 ├── scripts/            # Build tokens, GitHub audit, weblate sync
 ├── src/webapp/
-│   ├── server.js       # Node.js API server (custom http, zero external deps)
-│   ├── mcp-server.js   # MCP stdio server for IDE integration
+│   ├── server.ts       # Node.js API server (custom http, minimal runtime deps)
+│   ├── mcp-server.ts   # MCP stdio server for IDE integration
 │   ├── routes/         # API route handlers (11 files)
 │   ├── ui/             # React SPA (Vite + TailwindCSS + Radix)
 │   │   ├── src/
@@ -121,7 +121,7 @@
 
 - `routes/dashboard.js` — 48.2% lines (source: coverage-summary.json)
 - `routes/orchestrator.js` — 52.8% lines (source: coverage-summary.json)
-- `mcp-server.js` — 65.1% lines (source: coverage-summary.json)
+- `mcp-server.ts` — 65.1% lines (source: coverage-summary.json)
 - `routes/milestones.js` — 74.1% lines (source: coverage-summary.json)
 
 ---

@@ -183,8 +183,8 @@ export default function TraceabilityExplorerPage() {
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<TraceEntityType | ''>('');
 
-  const entities = data?.entities ?? [];
-  const gaps = data?.gaps ?? [];
+  const entities = useMemo(() => data?.entities ?? [], [data]);
+  const gaps = useMemo(() => data?.gaps ?? [], [data]);
 
   const filtered = useMemo(() => {
     let result = entities;

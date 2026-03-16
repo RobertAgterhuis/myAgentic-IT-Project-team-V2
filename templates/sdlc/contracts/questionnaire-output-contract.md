@@ -112,7 +112,7 @@ contain:
 > improve analysis quality but are not blocking. When done, save this file — the
 > system will pick up your answers automatically. **Tip:** You can also use the
 > Questionnaire Manager web UI for a guided experience: run
-> `node src/webapp/server.js` and open http://127.0.0.1:3000
+> `npm start` and open http://127.0.0.1:3000
 
 ---
 

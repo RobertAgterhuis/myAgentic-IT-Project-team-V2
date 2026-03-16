@@ -90,6 +90,9 @@ Acceptable phrasings:
 | F-07    | Technology Stack listed ESLint 9                         | Corrected to ESLint 8 (root) + ESLint 10 (.github/)                                              |
 | F-07    | Coverage badge showed 95%+                               | Corrected to "70%+ enforced" (actual threshold)                                                  |
 | F-07    | Landing page showed "122 tests"                          | Updated to 1172                                                                                  |
+| F-47a   | docs/README.md said "autonomous sprint-by-sprint"        | Changed to "supervised sprint-by-sprint (human-in-the-loop, CONTINUE-to-proceed)" (M15-047)      |
+| F-47b   | Playbooks Phase 5 headed "AUTONOMOUS IMPLEMENTATION"     | Renamed to "SUPERVISED IMPLEMENTATION" in both playbooks (M15-047)                               |
+| F-47c   | Architecture diagrams showed "Browser (index.html)"      | Updated to "Browser (React SPA)" in technical-manual.md (M15-047)                                |
 
 ---
 

@@ -80,4 +80,17 @@ export const queryKeys = {
   traceability: {
     chains: ['traceability', 'chains'] as const,
   },
+
+  /* Sessions (M15) */
+  sessions: {
+    all: ['sessions'] as const,
+    detail: (id: string) => ['sessions', id] as const,
+    timeline: (id: string) => ['sessions', id, 'timeline'] as const,
+  },
+
+  /* Agents (M15) */
+  agents: {
+    all: ['agents'] as const,
+    detail: (id: string) => ['agents', id] as const,
+  },
 } as const;

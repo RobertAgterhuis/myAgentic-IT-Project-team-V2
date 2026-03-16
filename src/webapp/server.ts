@@ -1,7 +1,7 @@
 #!/usr/bin/env tsx
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 // Questionnaire Manager — Local API server (coordinator)
-// Zero external dependencies. Requires Node.js 18+.
+// Minimal runtime dependencies (MCP SDK, Ajv, tsx). Requires Node.js 18+.
 
 import http from 'http';
 import path from 'path';
@@ -339,6 +339,8 @@ ctx._getEngine = orchestratorRoutes._getEngine;
 const approvalRoutes = require('./routes/approvals')(ctx);
 const artifactRoutes = require('./routes/artifacts')(ctx);
 const analyticsRoutes = require('./routes/analytics')(ctx);
+const sessionRoutes = require('./routes/sessions')(ctx);
+const agentRoutes = require('./routes/agents')(ctx);
 const miscRoutes = require('./routes/misc')(ctx);
 
 const serveStatic = miscRoutes._serveStatic;
@@ -366,6 +368,8 @@ const ROUTES: RouteTable = {
   ...approvalRoutes,
   ...artifactRoutes,
   ...analyticsRoutes,
+  ...sessionRoutes,
+  ...agentRoutes,
   ...orchestratorRoutes,
   ...miscRoutes,
 };

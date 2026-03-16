@@ -11,34 +11,37 @@ export interface RouteEntry {
 }
 
 export const routes = {
-  dashboard: { path: '/', label: 'Dashboard', icon: 'LayoutDashboard', section: 'Overview' },
-  commandCenter: {
-    path: '/command-center',
-    label: 'Command Center',
-    icon: 'Terminal',
-    section: 'Operations',
-  },
-  pipeline: { path: '/pipeline', label: 'Pipeline', icon: 'GitBranch', section: 'Operations' },
+  /* Runtime */
+  dashboard: { path: '/', label: 'Overview', icon: 'LayoutDashboard', section: 'Runtime' },
+  sessions: { path: '/sessions', label: 'Sessions', icon: 'Activity', section: 'Runtime' },
+  pipeline: { path: '/pipeline', label: 'Pipeline', icon: 'GitBranch', section: 'Runtime' },
+
+  /* Operations */
+  commands: { path: '/commands', label: 'Commands', icon: 'Terminal', section: 'Operations' },
+  agents: { path: '/agents', label: 'Agents', icon: 'Bot', section: 'Operations' },
+  decisions: { path: '/decisions', label: 'Decisions', icon: 'Scale', section: 'Operations' },
+
+  /* Data */
+  artifacts: { path: '/artifacts', label: 'Artifacts', icon: 'Package', section: 'Data' },
   questionnaires: {
     path: '/questionnaires',
     label: 'Questionnaires',
     icon: 'ClipboardList',
     section: 'Data',
   },
-  decisions: { path: '/decisions', label: 'Decisions', icon: 'Scale', section: 'Data' },
-  metrics: { path: '/metrics', label: 'Metrics', icon: 'BarChart3', section: 'Monitoring' },
-  artifacts: { path: '/artifacts', label: 'Artifacts', icon: 'Package', section: 'Platform' },
+
+  /* Observability */
+  observability: {
+    path: '/observability',
+    label: 'Metrics',
+    icon: 'BarChart3',
+    section: 'Observability',
+  },
   governance: {
     path: '/governance',
     label: 'Governance',
     icon: 'ShieldCheck',
-    section: 'Platform',
-  },
-  traceability: {
-    path: '/traceability',
-    label: 'Traceability',
-    icon: 'GitPullRequest',
-    section: 'Platform',
+    section: 'Observability',
   },
 } as const satisfies Record<string, RouteEntry>;
 
@@ -49,6 +52,18 @@ export function buildBreadcrumbs(pathname: string): { label: string; path: strin
   const match = Object.values(routes).find((r) => r.path === pathname);
   if (match && match.path !== '/') {
     crumbs.push({ label: match.label, path: match.path });
+    return crumbs;
+  }
+
+  // Handle sub-routes like /sessions/:id
+  const segments = pathname.split('/').filter(Boolean);
+  if (segments.length >= 2) {
+    const parentPath = `/${segments[0]}`;
+    const parentMatch = Object.values(routes).find((r) => r.path === parentPath);
+    if (parentMatch) {
+      crumbs.push({ label: parentMatch.label, path: parentPath });
+      crumbs.push({ label: segments[1], path: pathname });
+    }
   }
 
   return crumbs;

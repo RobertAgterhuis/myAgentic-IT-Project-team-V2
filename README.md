@@ -37,8 +37,8 @@ implementation (human-in-the-loop, CONTINUE-to-proceed).
   resets
 - **Accessibility baseline** — WCAG 2.1 AA compliant web UI with skip-nav,
   aria-live regions, keyboard navigation
-- **Zero external runtime dependencies** — Pure Node.js HTTP server, no npm
-  packages at runtime
+- **Minimal runtime dependencies** — Node.js HTTP server with MCP SDK, schema
+  validation, and TypeScript runner. No Express or web framework dependency
 
 ---
 
@@ -46,7 +46,7 @@ implementation (human-in-the-loop, CONTINUE-to-proceed).
 
 | Layer      | Technology                                                                                        |
 | ---------- | ------------------------------------------------------------------------------------------------- |
-| Runtime    | Node.js ≥ 18 (zero external dependencies for web UI)                                              |
+| Runtime    | Node.js ≥ 18 (minimal runtime dependencies: MCP SDK, Ajv, tsx)                                    |
 | Server     | Native `http` module, localhost only (127.0.0.1:3000)                                             |
 | MCP Server | [Model Context Protocol](https://modelcontextprotocol.io/) via stdio transport                    |
 | Data       | File-based JSON/Markdown storage with atomic writes                                               |
@@ -76,7 +76,7 @@ implementation (human-in-the-loop, CONTINUE-to-proceed).
 **2. (Recommended) Launch the Command Center web UI:**
 
 ```bash
-node src/webapp/server.js
+npm start
 ```
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser.
@@ -138,7 +138,7 @@ appears automatically in the Copilot tools panel.
 ```json
 {
   "command": "node",
-  "args": ["src/webapp/mcp-server.js"]
+  "args": ["--import", "tsx", "src/webapp/mcp-server.ts"]
 }
 ```
 
@@ -206,7 +206,7 @@ templates/sdlc/
   playbooks/                  ← Process playbooks (CREATE + AUDIT)
 
 src/webapp/
-  server.js                   ← Native http server entrypoint
+  server.ts                   ← Native http server entrypoint
   routes/                     ← API route handlers
   ui/                         ← React single-page web UI
   brand/                      ← Design tokens + brand guidelines
@@ -301,6 +301,9 @@ statement coverage at **88%+**:
   regression suite
 - **E2E tests (`tests/e2e/`)** — Playwright browser tests
 - **Smoke tests (`tests/smoke/`)** — Quick sanity checks
+- **Doc-drift tests (`tests/unit/doc-drift.test.js`)** — Catches stale
+  `server.js` refs, unqualified "zero dependency" claims, positioning language
+  drift, and Dockerfile/Playwright health endpoint consistency
 
 ## Code Quality
 

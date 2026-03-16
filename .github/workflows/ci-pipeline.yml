@@ -277,7 +277,7 @@ jobs:
         run: npm ci --omit=dev
 
       - name: Start application
-        run: node src/webapp/server.js &
+        run: npx tsx src/webapp/server.ts &
 
       - name: Wait for application
         run: npx wait-on http://127.0.0.1:3000 --timeout 30000

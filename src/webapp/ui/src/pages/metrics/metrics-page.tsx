@@ -12,6 +12,8 @@ import { DataTable } from '@/components/ui/data-table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { ProgressBar } from '@/components/ui/progress';
+import { driftColumns, velocityColumns, agentColumns } from './columns';
+import { exportData } from './constants';
 import {
   useDriftDetection,
   useProgress,
@@ -19,13 +21,6 @@ import {
   useAnalyticsTrends,
   useAnalyticsAgents,
 } from '@/hooks';
-import type {
-  DriftEntry,
-  DriftSeverity,
-  VelocityTrendEntry,
-  AgentPerformanceStats,
-} from '@/lib/api-types';
-import type { ColumnDef } from '@tanstack/react-table';
 import {
   BarChart3,
   AlertTriangle,
@@ -33,162 +28,12 @@ import {
   Download,
   Clock,
   ShieldAlert,
-  Info,
   TrendingUp,
   Activity,
 } from 'lucide-react';
 
 /* ── Time range ── */
 type TimeRange = '24h' | '7d' | '30d' | '90d';
-
-/* ── Severity badge ── */
-const severityBadge: Record<DriftSeverity, 'error' | 'warning' | 'info'> = {
-  CRITICAL: 'error',
-  WARNING: 'warning',
-  INFO: 'info',
-};
-
-const severityIcons: Record<DriftSeverity, React.ReactNode> = {
-  CRITICAL: <ShieldAlert className="size-4 text-red-600" />,
-  WARNING: <AlertTriangle className="size-4 text-amber-500" />,
-  INFO: <Info className="size-4 text-blue-500" />,
-};
-
-/* ── Drift table columns ── */
-const driftColumns: ColumnDef<DriftEntry, unknown>[] = [
-  {
-    id: 'severity',
-    accessorKey: 'severity',
-    header: 'Severity',
-    cell: ({ row }) => (
-      <div className="flex items-center gap-1.5">
-        {severityIcons[row.original.severity]}
-        <Badge variant={severityBadge[row.original.severity]}>{row.original.severity}</Badge>
-      </div>
-    ),
-  },
-  {
-    accessorKey: 'type',
-    header: 'Type',
-  },
-  {
-    accessorKey: 'sprint',
-    header: 'Sprint',
-    cell: ({ getValue }) => (
-      <Badge variant="secondary" className="text-xs">
-        {getValue() as string}
-      </Badge>
-    ),
-  },
-  {
-    accessorKey: 'expected',
-    header: 'Expected',
-    cell: ({ getValue }) => (
-      <span className="text-xs max-w-[200px] line-clamp-2">{getValue() as string}</span>
-    ),
-  },
-  {
-    accessorKey: 'actual',
-    header: 'Actual',
-    cell: ({ getValue }) => (
-      <span className="text-xs max-w-[200px] line-clamp-2">{getValue() as string}</span>
-    ),
-  },
-  {
-    accessorKey: 'recommendation',
-    header: 'Recommendation',
-    cell: ({ getValue }) => (
-      <span className="text-xs text-muted-foreground line-clamp-2">{getValue() as string}</span>
-    ),
-  },
-];
-
-/* ── Velocity trend table columns ── */
-const velocityColumns: ColumnDef<VelocityTrendEntry, unknown>[] = [
-  { accessorKey: 'sprintId', header: 'Sprint' },
-  { accessorKey: 'planned', header: 'Planned' },
-  { accessorKey: 'completed', header: 'Completed' },
-  {
-    accessorKey: 'completionRate',
-    header: 'Rate',
-    cell: ({ getValue }) => `${((getValue() as number) * 100).toFixed(0)}%`,
-  },
-  {
-    accessorKey: 'carryOver',
-    header: 'Carry-over',
-    cell: ({ getValue }) => (getValue() as number) || '—',
-  },
-  {
-    accessorKey: 'trailingAvg',
-    header: '3-Sprint Avg',
-    cell: ({ getValue }) => {
-      const v = getValue() as number | undefined;
-      return v != null ? v.toFixed(1) : '—';
-    },
-  },
-];
-
-/* ── Agent performance table columns ── */
-const agentColumns: ColumnDef<AgentPerformanceStats, unknown>[] = [
-  { accessorKey: 'agentName', header: 'Agent' },
-  { accessorKey: 'invocations', header: 'Invocations' },
-  {
-    accessorKey: 'successRate',
-    header: 'Success Rate',
-    cell: ({ getValue }) => `${((getValue() as number) * 100).toFixed(1)}%`,
-  },
-  {
-    accessorKey: 'avgDurationMs',
-    header: 'Avg Duration',
-    cell: ({ getValue }) => `${Math.round(getValue() as number)} ms`,
-  },
-  {
-    accessorKey: 'p95DurationMs',
-    header: 'P95',
-    cell: ({ getValue }) => `${Math.round(getValue() as number)} ms`,
-  },
-  {
-    accessorKey: 'minDurationMs',
-    header: 'Min',
-    cell: ({ getValue }) => `${Math.round(getValue() as number)} ms`,
-  },
-  {
-    accessorKey: 'maxDurationMs',
-    header: 'Max',
-    cell: ({ getValue }) => `${Math.round(getValue() as number)} ms`,
-  },
-];
-
-/* ── Export helper ── */
-function exportData(drifts: DriftEntry[], format: 'json' | 'csv') {
-  let content: string;
-  let mime: string;
-  let ext: string;
-
-  if (format === 'json') {
-    content = JSON.stringify(drifts, null, 2);
-    mime = 'application/json';
-    ext = 'json';
-  } else {
-    const headers = ['id', 'type', 'severity', 'sprint', 'expected', 'actual', 'recommendation'];
-    const rows = drifts.map((d) =>
-      headers
-        .map((h) => `"${String(d[h as keyof DriftEntry] ?? '').replace(/"/g, '""')}"`)
-        .join(',')
-    );
-    content = [headers.join(','), ...rows].join('\n');
-    mime = 'text/csv';
-    ext = 'csv';
-  }
-
-  const blob = new Blob([content], { type: mime });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `drift-report.${ext}`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
 
 /* ── Main Page ── */
 export default function MetricsPage() {

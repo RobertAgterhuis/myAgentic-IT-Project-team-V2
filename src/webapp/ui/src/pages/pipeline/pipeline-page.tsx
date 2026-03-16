@@ -6,110 +6,11 @@ import { useState } from 'react';
 import { Heading, Text } from '@/components/ui/typography';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { ProgressBar } from '@/components/ui/progress';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { PhaseCard } from '@/components/runtime/phase-card';
 import { useOrchestratorStatus, useProgress } from '@/hooks';
-import type { PhaseEntry, AgentEntry } from '@/lib/api-types';
-import {
-  CheckCircle,
-  Circle,
-  PlayCircle,
-  ShieldCheck,
-  ShieldAlert,
-  Clock,
-  GitBranch,
-} from 'lucide-react';
-
-/* ── Phase card status icons ── */
-
-const phaseIcons: Record<string, React.ReactNode> = {
-  done: <CheckCircle className="size-5 text-green-600" />,
-  active: <PlayCircle className="size-5 text-blue-600 animate-pulse" />,
-  pending: <Circle className="size-5 text-muted-foreground" />,
-};
-
-const agentStatusBadge: Record<string, 'success' | 'info' | 'secondary'> = {
-  done: 'success',
-  active: 'info',
-  pending: 'secondary',
-};
-
-/* ── Gate indicator ── */
-
-function GateIndicator({ status }: { status: 'passed' | 'pending' | 'blocked' }) {
-  if (status === 'passed')
-    return <ShieldCheck className="size-4 text-green-600" aria-label="Gate passed" />;
-  if (status === 'blocked')
-    return <ShieldAlert className="size-4 text-red-600" aria-label="Gate blocked" />;
-  return <Clock className="size-4 text-muted-foreground" aria-label="Gate pending" />;
-}
-
-function deriveGateStatus(phase: PhaseEntry): 'passed' | 'pending' | 'blocked' {
-  if (phase.status === 'done') return 'passed';
-  if (phase.status === 'active') return 'pending';
-  return 'pending';
-}
-
-/* ── Agent detail list ── */
-
-function AgentList({ agents }: { agents: AgentEntry[] }) {
-  return (
-    <ul className="space-y-1 mt-3" role="list" aria-label="Agents">
-      {agents.map((agent) => (
-        <li key={agent.id} className="flex items-center gap-2 text-sm">
-          <Badge variant={agentStatusBadge[agent.status] ?? 'secondary'} className="text-xs">
-            {agent.status}
-          </Badge>
-          <span>{agent.name}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-/* ── Phase card ── */
-
-function PhaseCard({
-  phase,
-  isExpanded,
-  onToggle,
-}: {
-  phase: PhaseEntry;
-  isExpanded: boolean;
-  onToggle: () => void;
-}) {
-  const pct = phase.total > 0 ? Math.round((phase.done / phase.total) * 100) : 0;
-
-  return (
-    <Card
-      clickable
-      onClick={onToggle}
-      elevation={phase.status === 'active' ? 'raised' : 'outlined'}
-      tone={phase.status === 'active' ? 'info' : 'default'}
-    >
-      <div className="flex items-start gap-3">
-        {phaseIcons[phase.status] ?? phaseIcons.pending}
-
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <span className="font-semibold text-sm">{phase.label}</span>
-            <GateIndicator status={deriveGateStatus(phase)} />
-          </div>
-
-          <ProgressBar
-            value={pct}
-            label={`${phase.done}/${phase.total} agents`}
-            showPercentage
-            className="mt-2"
-          />
-        </div>
-      </div>
-
-      {isExpanded && phase.agents.length > 0 && <AgentList agents={phase.agents} />}
-    </Card>
-  );
-}
+import { GitBranch } from 'lucide-react';
 
 /* ── Pipeline connector ── */
 

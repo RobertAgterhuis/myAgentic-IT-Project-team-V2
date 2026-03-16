@@ -33,7 +33,7 @@ npm install
 ## Step 2: Start the Command Center
 
 ```bash
-node src/webapp/server.js
+npm start
 ```
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000) in your browser.

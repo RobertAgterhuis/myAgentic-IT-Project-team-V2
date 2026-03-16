@@ -30,14 +30,14 @@
 
 The system is composed of two primary layers:
 
-| Layer           | Technology                                              | Location                                      |
-| --------------- | ------------------------------------------------------- | --------------------------------------------- |
-| Backend API     | Node.js 22 (zero external HTTP deps, raw `http` module) | `src/webapp/server.js` + `src/webapp/routes/` |
-| Frontend SPA    | React 18 + Vite 6 + TailwindCSS 4 + Radix UI            | `src/webapp/ui/`                              |
-| Platform Engine | Node.js state machine + dispatcher                      | `platform/engine/`                            |
-| MCP Server      | Model Context Protocol (stdio)                          | `src/webapp/mcp-server.js`                    |
+| Layer           | Technology                                           | Location                                      |
+| --------------- | ---------------------------------------------------- | --------------------------------------------- |
+| Backend API     | Node.js 22 (minimal runtime deps, raw `http` module) | `src/webapp/server.ts` + `src/webapp/routes/` |
+| Frontend SPA    | React 18 + Vite 6 + TailwindCSS 4 + Radix UI         | `src/webapp/ui/`                              |
+| Platform Engine | Node.js state machine + dispatcher                   | `platform/engine/`                            |
+| MCP Server      | Model Context Protocol (stdio)                       | `src/webapp/mcp-server.ts`                    |
 
-**Source:** `src/webapp/server.js` lines 1–310, `platform/engine/engine.js` lines 1–85
+**Source:** `src/webapp/server.ts` lines 1–310, `platform/engine/engine.js` lines 1–85
 
 ### 1.2 Routing Architecture
 
@@ -46,7 +46,7 @@ Route modules are **factory functions** accepting a shared context object (`ctx`
 and returning a `{ "METHOD /path": handler }` map. Nine route modules are spread-merged
 into a single `ROUTES` object.
 
-**Source:** `src/webapp/server.js` lines 254–310
+**Source:** `src/webapp/server.ts` lines 254–310
 
 **Assessment:**
 
@@ -59,16 +59,16 @@ into a single `ROUTES` object.
 
 | Bounded Context          | Files                                                     | Coupling Assessment                            |
 | ------------------------ | --------------------------------------------------------- | ---------------------------------------------- |
-| Questionnaire Management | `routes/questionnaires.js`, `models.js` (parse functions) | LOW — well-isolated, uses models               |
-| Decision Management      | `routes/decisions.js`, `models.js`                        | LOW — self-contained CRUD                      |
-| Orchestrator / Pipeline  | `routes/orchestrator.js`, `platform/engine/*`             | MEDIUM — engine singleton, lazy init           |
-| Metrics & Dashboard      | `routes/metrics-dashboard.js`, `routes/dashboard.js`      | HIGH — overlapping responsibilities            |
-| Milestones               | `routes/milestones.js`                                    | MEDIUM — 247 LOC, 8 endpoints, templates logic |
-| Infrastructure           | `routes/misc.js`, `routes/subscribe.js`                   | MEDIUM — 11 catch-all endpoints                |
+| Questionnaire Management | `routes/questionnaires.ts`, `models.ts` (parse functions) | LOW — well-isolated, uses models               |
+| Decision Management      | `routes/decisions.ts`, `models.ts`                        | LOW — self-contained CRUD                      |
+| Orchestrator / Pipeline  | `routes/orchestrator.ts`, `platform/engine/*`             | MEDIUM — engine singleton, lazy init           |
+| Metrics & Dashboard      | `routes/metrics-dashboard.ts`, `routes/dashboard.ts`      | HIGH — overlapping responsibilities            |
+| Milestones               | `routes/milestones.ts`                                    | MEDIUM — 247 LOC, 8 endpoints, templates logic |
+| Infrastructure           | `routes/misc.ts`, `routes/subscribe.ts`                   | MEDIUM — 11 catch-all endpoints                |
 
-**Finding ARCH-01:** Metrics and dashboard routes blur boundaries — `dashboard.js` (48% coverage)
-serves health, metrics, activity, and stats, overlapping with `metrics-dashboard.js`.
-Source: `coverage-summary.json`, `src/webapp/routes/dashboard.js`, `src/webapp/routes/metrics-dashboard.js`
+**Finding ARCH-01:** Metrics and dashboard routes blur boundaries — `dashboard.ts` (48% coverage)
+serves health, metrics, activity, and stats, overlapping with `metrics-dashboard.ts`.
+Source: `coverage-summary.json`, `src/webapp/routes/dashboard.ts`, `src/webapp/routes/metrics-dashboard.ts`
 
 ### 1.4 Tech Debt Score (G-ARCH-04)
 
@@ -87,11 +87,11 @@ Source: `coverage-summary.json`, `src/webapp/routes/dashboard.js`, `src/webapp/r
 | --------------------- | ---------------------------------------- | ----------------------------------------------------- |
 | File-based storage    | All state in JSON/Markdown on disk       | Does not scale horizontally; single-writer bottleneck |
 | No connection pooling | N/A (no database)                        | Not applicable                                        |
-| FileCache unbounded   | `cache.js` has no LRU eviction           | Memory grows linearly with unique file reads          |
+| FileCache unbounded   | `cache.ts` has no LRU eviction           | Memory grows linearly with unique file reads          |
 | Audit log unbounded   | `audit-log.jsonl` appended per operation | Disk usage grows without rotation                     |
 | SSE clients set       | `_sseClients` is an in-memory Set        | Memory scales with connected browsers                 |
 
-**Source:** `src/webapp/cache.js` lines 1–29, `src/webapp/server.js` lines 60–62
+**Source:** `src/webapp/cache.ts` lines 1–29, `src/webapp/server.ts` lines 60–62
 
 ---
 
@@ -112,11 +112,11 @@ Source: `coverage-summary.json`, `src/webapp/routes/dashboard.js`, `src/webapp/r
 
 | File                     | Line Coverage | Branch Coverage | Risk                                            |
 | ------------------------ | ------------- | --------------- | ----------------------------------------------- |
-| `routes/dashboard.js`    | 48.2%         | 56.3%           | HIGH — untested dashboard aggregation logic     |
-| `routes/orchestrator.js` | 52.8%         | 55.7%           | HIGH — core pipeline control under-tested       |
-| `mcp-server.js`          | 65.1%         | 58.7%           | MEDIUM — IDE integration has significant gaps   |
-| `routes/milestones.js`   | 74.1%         | 65.2%           | MEDIUM — template CRUD partially tested         |
-| `routes/drift.js`        | 70.7%         | 35.0%           | HIGH — drift detection branch coverage very low |
+| `routes/dashboard.ts`    | 48.2%         | 56.3%           | HIGH — untested dashboard aggregation logic     |
+| `routes/orchestrator.ts` | 52.8%         | 55.7%           | HIGH — core pipeline control under-tested       |
+| `mcp-server.ts`          | 65.1%         | 58.7%           | MEDIUM — IDE integration has significant gaps   |
+| `routes/milestones.ts`   | 74.1%         | 65.2%           | MEDIUM — template CRUD partially tested         |
+| `routes/drift.ts`        | 70.7%         | 35.0%           | HIGH — drift detection branch coverage very low |
 
 **Source:** `coverage/coverage-summary.json` (all entries)
 
@@ -124,8 +124,8 @@ Source: `coverage-summary.json`, `src/webapp/routes/dashboard.js`, `src/webapp/r
 
 | Principle                     | Rating | Evidence                                                                               |
 | ----------------------------- | ------ | -------------------------------------------------------------------------------------- |
-| **S** (Single Responsibility) | GOOD   | Route modules have clear boundaries; `middleware.js` is pure functions                 |
-| **O** (Open/Closed)           | FAIR   | Route factory pattern allows extension; but `server.js` requires manual wiring         |
+| **S** (Single Responsibility) | GOOD   | Route modules have clear boundaries; `middleware.ts` is pure functions                 |
+| **O** (Open/Closed)           | FAIR   | Route factory pattern allows extension; but `server.ts` requires manual wiring         |
 | **L** (Liskov Substitution)   | GOOD   | `FileStore`/`InMemoryStore` are interchangeable (used in tests)                        |
 | **I** (Interface Segregation) | FAIR   | Store interface is minimal; but `ctx` object forces routes to accept everything        |
 | **D** (Dependency Inversion)  | POOR   | No DI container; engine is a singleton with lazy init; routes hard-depend on ctx shape |
@@ -157,12 +157,12 @@ Source: `eslint.config.mjs` lines 14–26
 
 | Module                 | Cohesion | Notes                                                      |
 | ---------------------- | -------- | ---------------------------------------------------------- |
-| `models.js`            | HIGH     | 297 lines, 45 functions — all pure parsers for domain data |
-| `schemas.js`           | HIGH     | 171 lines, 15 validators — single responsibility           |
-| `middleware.js`        | HIGH     | 99 lines, 20 functions — all pure HTTP helpers             |
-| `server.js`            | MEDIUM   | 187 lines + context setup + route merging — wiring layer   |
-| `routes/misc.js`       | LOW      | 186 lines, 11 endpoints — catch-all for unrelated features |
-| `routes/milestones.js` | MEDIUM   | 247 lines, 8 endpoints — includes template CRUD            |
+| `models.ts`            | HIGH     | 297 lines, 45 functions — all pure parsers for domain data |
+| `schemas.ts`           | HIGH     | 171 lines, 15 validators — single responsibility           |
+| `middleware.ts`        | HIGH     | 99 lines, 20 functions — all pure HTTP helpers             |
+| `server.ts`            | MEDIUM   | 187 lines + context setup + route merging — wiring layer   |
+| `routes/misc.ts`       | LOW      | 186 lines, 11 endpoints — catch-all for unrelated features |
+| `routes/milestones.ts` | MEDIUM   | 247 lines, 8 endpoints — includes template CRUD            |
 
 ---
 
@@ -236,27 +236,27 @@ Source: `eslint.config.mjs` lines 14–26
 
 | ID  | Threat                      | Status     | Severity | Evidence                                                                                                                                                                                                                                                                                                       |
 | --- | --------------------------- | ---------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A01 | Broken Access Control       | VULNERABLE | HIGH     | No authentication or authorization layer. RESOLVED_BY_QUESTIONNAIRE: Q-TECH-03/Q-TECH-05 — confirmed localhost-only deployment model; severity reduced from CRITICAL to HIGH (defense-in-depth concern, not an active exposure). Network deployment is a future epic. Source: `server.js` — no auth middleware |
+| A01 | Broken Access Control       | VULNERABLE | HIGH     | No authentication or authorization layer. RESOLVED_BY_QUESTIONNAIRE: Q-TECH-03/Q-TECH-05 — confirmed localhost-only deployment model; severity reduced from CRITICAL to HIGH (defense-in-depth concern, not an active exposure). Network deployment is a future epic. Source: `server.ts` — no auth middleware |
 | A02 | Cryptographic Failures      | N/A        | —        | No sensitive data encrypted at rest; no user data stored                                                                                                                                                                                                                                                       |
-| A03 | Injection                   | PROTECTED  | LOW      | Markdown sanitization, QID regex validation, path traversal blocking. Source: `middleware.js` L184–L210                                                                                                                                                                                                        |
+| A03 | Injection                   | PROTECTED  | LOW      | Markdown sanitization, QID regex validation, path traversal blocking. Source: `middleware.ts` L184–L210                                                                                                                                                                                                        |
 | A04 | Insecure Design             | PARTIAL    | MEDIUM   | Good: defense-in-depth pattern. Weak: no rate limiting                                                                                                                                                                                                                                                         |
-| A05 | Security Misconfiguration   | PROTECTED  | LOW      | Comprehensive security headers (CSP, COOP, COEP). Source: `middleware.js` L39–L55                                                                                                                                                                                                                              |
+| A05 | Security Misconfiguration   | PROTECTED  | LOW      | Comprehensive security headers (CSP, COOP, COEP). Source: `middleware.ts` L39–L55                                                                                                                                                                                                                              |
 | A06 | Vulnerable Components       | PROTECTED  | LOW      | Zero backend deps; `npm audit` in CI. Source: `ci.yml`                                                                                                                                                                                                                                                         |
-| A07 | Auth Failures               | VULNERABLE | HIGH     | No user identity — all actions logged as "system". Source: `server.js` L197                                                                                                                                                                                                                                    |
+| A07 | Auth Failures               | VULNERABLE | HIGH     | No user identity — all actions logged as "system". Source: `server.ts` L197                                                                                                                                                                                                                                    |
 | A08 | Integrity Failures          | PROTECTED  | LOW      | TruffleHog + Semgrep in CI; GitHub commit verification                                                                                                                                                                                                                                                         |
 | A09 | Logging/Monitoring Failures | PARTIAL    | MEDIUM   | Structured logging present but no external SIEM/alerting                                                                                                                                                                                                                                                       |
-| A10 | SSRF                        | PROTECTED  | LOW      | `safePath()` blocks path traversal. Source: `middleware.js` L52–L67                                                                                                                                                                                                                                            |
+| A10 | SSRF                        | PROTECTED  | LOW      | `safePath()` blocks path traversal. Source: `middleware.ts` L52–L67                                                                                                                                                                                                                                            |
 
 ### 4.2 Security Controls Inventory
 
 | Control                         | Implemented      | Source                    |
 | ------------------------------- | ---------------- | ------------------------- |
-| Input validation (body size)    | YES — 1 MB limit | `middleware.js` L212–L225 |
-| Content-Type enforcement        | YES — JSON only  | `middleware.js` L229–L255 |
-| Secret detection in requests    | YES — 7 patterns | `middleware.js` L262–L375 |
-| Security headers (CSP, X-Frame) | YES              | `middleware.js` L39–L55   |
-| Path traversal prevention       | YES              | `middleware.js` L52–L67   |
-| Atomic file writes              | YES              | `store.js` L70–L90        |
+| Input validation (body size)    | YES — 1 MB limit | `middleware.ts` L212–L225 |
+| Content-Type enforcement        | YES — JSON only  | `middleware.ts` L229–L255 |
+| Secret detection in requests    | YES — 7 patterns | `middleware.ts` L262–L375 |
+| Security headers (CSP, X-Frame) | YES              | `middleware.ts` L39–L55   |
+| Path traversal prevention       | YES              | `middleware.ts` L52–L67   |
+| Atomic file writes              | YES              | `store.ts` L70–L90        |
 | SAST (Semgrep)                  | YES              | `ci.yml`                  |
 | Secret scan (TruffleHog)        | YES              | `ci.yml`                  |
 | Rate limiting                   | NO               | —                         |
@@ -273,17 +273,17 @@ Source: `eslint.config.mjs` lines 14–26
   localhost-only is the confirmed deployment model (Docker or Node.js on localhost). Network/internet
   deployment is explicitly out of scope (future epic). Severity reduced from CRITICAL to HIGH as
   defense-in-depth measure. Risk remains if container port-forwards to shared networks.
-  Source: `server.js` lines 33–37
+  Source: `server.ts` lines 33–37
 
 - **SECURITY_FLAG: SEC-02** — No rate limiting. A single client can exhaust server resources via
-  rapid requests. Source: absence in `server.js` request handler
+  rapid requests. Source: absence in `server.ts` request handler
 
 - **SECURITY_FLAG: SEC-03** — CSP uses `unsafe-inline` for scripts. While mitigated by Vite's
   build output (external scripts), it weakens XSS protection.
-  Source: `middleware.js` L47
+  Source: `middleware.ts` L47
 
 - **SECURITY_FLAG: SEC-04** — Audit trail uses `user: 'system'` for all operations (no identity).
-  Forensic value is limited. Source: `server.js` L197
+  Forensic value is limited. Source: `server.ts` L197
 
 ---
 
@@ -296,16 +296,16 @@ Source: `eslint.config.mjs` lines 14–26
 All application state is persisted as JSON or Markdown files on the local filesystem.
 No database, no external storage service.
 
-**Source:** `src/webapp/store.js` (FileStore class), decision reference: `DEC-R2-006`
+**Source:** `src/webapp/store.ts` (FileStore class), decision reference: `DEC-R2-006`
 
 ### 5.2 Data Entity Inventory
 
 | Entity          | Format                | Location                                                    | Schema Validation                        |
 | --------------- | --------------------- | ----------------------------------------------------------- | ---------------------------------------- |
-| Session State   | JSON                  | `BusinessDocs/session/session-state.json`                   | YES — `schemas.js`                       |
-| Decisions       | Markdown tables       | `BusinessDocs/decisions.md` + `BusinessDocs/decisions/*.md` | YES — `models.js` parsers                |
-| Questionnaires  | Markdown (structured) | `BusinessDocs/Phase*/Questionnaires/*.md`                   | YES — `models.js` parsers                |
-| Milestones      | JSON                  | `BusinessDocs/milestones.json`                              | YES — `schemas.js`                       |
+| Session State   | JSON                  | `BusinessDocs/session/session-state.json`                   | YES — `schemas.ts`                       |
+| Decisions       | Markdown tables       | `BusinessDocs/decisions.md` + `BusinessDocs/decisions/*.md` | YES — `models.ts` parsers                |
+| Questionnaires  | Markdown (structured) | `BusinessDocs/Phase*/Questionnaires/*.md`                   | YES — `models.ts` parsers                |
+| Milestones      | JSON                  | `BusinessDocs/milestones.json`                              | YES — `schemas.ts`                       |
 | Audit Log       | JSONL (append-only)   | `BusinessDocs/audit/audit-log.jsonl`                        | PARTIAL — written, not validated on read |
 | Runtime Metrics | JSON                  | `BusinessDocs/metrics/runtime-metrics.json`                 | NO — ad-hoc structure                    |
 | Command Queue   | JSON                  | `BusinessDocs/session/command-queue.json`                   | PARTIAL                                  |
@@ -315,18 +315,18 @@ No database, no external storage service.
 
 ```
 User Input (Command Center UI / MCP tools)
-  └→ API Server (server.js + routes/)
-       ├→ models.js (parse/transform)
-       │    └→ store.js (FileStore write)
+  └→ API Server (server.ts + routes/)
+       ├→ models.ts (parse/transform)
+       │    └→ store.ts (FileStore write)
        │         └→ BusinessDocs/*.md / *.json
        │              └→ .backups/ (snapshot-on-write)
-       ├→ audit.js (AuditTrail append)
+       ├→ audit.ts (AuditTrail append)
        │    └→ BusinessDocs/audit/audit-log.jsonl
-       └→ cache.js (FileCache invalidate)
+       └→ cache.ts (FileCache invalidate)
 
-Platform Engine (engine.js)
-  └→ state-machine.js (transition)
-       └→ state-persistence.js (save)
+Platform Engine (engine.ts)
+  └→ state-machine.ts (transition)
+       └→ state-persistence.ts (save)
             └→ BusinessDocs/session/session-state.json
 ```
 
@@ -334,10 +334,10 @@ Platform Engine (engine.js)
 
 | Risk                         | Severity | Description                                                                                                                                    | Source                               |
 | ---------------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ |
-| No ACID transactions         | HIGH     | Multi-file operations (e.g., save questionnaire + update index) have no atomicity guarantee. A crash between writes leaves inconsistent state. | `store.js` — single-file atomic only |
-| Unbounded growth             | MEDIUM   | `audit-log.jsonl` and `FileCache` grow without bounds. No rotation, no eviction.                                                               | `audit.js`, `cache.js`               |
-| Concurrent access            | MEDIUM   | `withFileLock()` provides process-level locking but no cross-process coordination.                                                             | `file-lock.js`                       |
-| No backup rotation for JSONL | LOW      | Audit log has no backup/rotation strategy — only regular files get `.backups/`                                                                 | `store.js` backup logic              |
+| No ACID transactions         | HIGH     | Multi-file operations (e.g., save questionnaire + update index) have no atomicity guarantee. A crash between writes leaves inconsistent state. | `store.ts` — single-file atomic only |
+| Unbounded growth             | MEDIUM   | `audit-log.jsonl` and `FileCache` grow without bounds. No rotation, no eviction.                                                               | `audit.ts`, `cache.ts`               |
+| Concurrent access            | MEDIUM   | `withFileLock()` provides process-level locking but no cross-process coordination.                                                             | `file-lock.ts`                       |
+| No backup rotation for JSONL | LOW      | Audit log has no backup/rotation strategy — only regular files get `.backups/`                                                                 | `store.ts` backup logic              |
 
 ---
 
@@ -358,7 +358,7 @@ Source: absence in `ci.yml`
 ### 6.2 Privacy Assessment
 
 - **No user data collected** — system operates as a developer tool with no end-user PII
-- **IMPL-CONSTRAINT-006 documented:** "No PII in logs" (source: `middleware.js` L15)
+- **IMPL-CONSTRAINT-006 documented:** "No PII in logs" (source: `middleware.ts` L15)
 - **Privacy policy exists:** `docs/privacy-policy.md`
 - **Data inventory exists:** `docs/security/data-inventory.md`
 
@@ -376,38 +376,38 @@ Source: absence in `ci.yml`
 
 | ID       | Agent              | Finding                                                                                                                            | Severity | Source                           |
 | -------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------- | -------- | -------------------------------- |
-| TECH-C01 | Security Architect | No authentication/authorization layer. RESOLVED_BY_QUESTIONNAIRE: Q-TECH-03/Q-TECH-05 — localhost-only confirmed; severity reduced | HIGH     | `server.js` — no auth middleware |
+| TECH-C01 | Security Architect | No authentication/authorization layer. RESOLVED_BY_QUESTIONNAIRE: Q-TECH-03/Q-TECH-05 — localhost-only confirmed; severity reduced | HIGH     | `server.ts` — no auth middleware |
 | TECH-C02 | Security Architect | No rate limiting                                                                                                                   | HIGH     | absence in request handler       |
-| TECH-C03 | Senior Developer   | `routes/dashboard.js` at 48% coverage, `routes/orchestrator.js` at 53%                                                             | HIGH     | `coverage-summary.json`          |
-| TECH-C04 | Data Architect     | No multi-file transactional guarantees                                                                                             | HIGH     | `store.js` single-file atomicity |
+| TECH-C03 | Senior Developer   | `routes/dashboard.ts` at 48% coverage, `routes/orchestrator.ts` at 53%                                                             | HIGH     | `coverage-summary.json`          |
+| TECH-C04 | Data Architect     | No multi-file transactional guarantees                                                                                             | HIGH     | `store.ts` single-file atomicity |
 
 ### Important Findings (should address)
 
 | ID       | Agent              | Finding                                                   | Severity | Source                      |
 | -------- | ------------------ | --------------------------------------------------------- | -------- | --------------------------- |
-| TECH-I01 | Software Architect | FileCache unbounded growth (no LRU)                       | MEDIUM   | `cache.js`                  |
-| TECH-I02 | Software Architect | Monolithic context (ctx) couples all routes               | MEDIUM   | `server.js` L231–L250       |
+| TECH-I01 | Software Architect | FileCache unbounded growth (no LRU)                       | MEDIUM   | `cache.ts`                  |
+| TECH-I02 | Software Architect | Monolithic context (ctx) couples all routes               | MEDIUM   | `server.ts` L231–L250       |
 | TECH-I03 | DevOps Engineer    | Node 20 in Dockerfile vs Node 22 local — version mismatch | MEDIUM   | `Dockerfile` L2             |
 | TECH-I04 | DevOps Engineer    | No deployment automation in CI                            | MEDIUM   | `ci.yml` — no deploy step   |
 | TECH-I05 | DevOps Engineer    | No observability integration (traces, alerts)             | MEDIUM   | absence                     |
 | TECH-I06 | Senior Developer   | TypeScript strict mode disabled                           | MEDIUM   | `tsconfig.json` L7–L8       |
 | TECH-I07 | Senior Developer   | 12 test files excluded from vitest                        | MEDIUM   | `vitest.config.mjs` L12–L25 |
 | TECH-I08 | Senior Developer   | 97 TODOs, 9 FIXMEs, 2 HACKs                               | MEDIUM   | grep scan                   |
-| TECH-I09 | Data Architect     | Audit log grows unbounded (no rotation)                   | MEDIUM   | `audit.js`                  |
-| TECH-I10 | Security Architect | CSP uses `unsafe-inline`                                  | LOW      | `middleware.js` L47         |
+| TECH-I09 | Data Architect     | Audit log grows unbounded (no rotation)                   | MEDIUM   | `audit.ts`                  |
+| TECH-I10 | Security Architect | CSP uses `unsafe-inline`                                  | LOW      | `middleware.ts` L47         |
 | TECH-I11 | Legal Counsel      | No license compliance scanning in CI                      | LOW      | `ci.yml` absence            |
 
 ### Strengths Identified
 
 | ID       | Agent              | Finding                                                                                    | Source                  |
 | -------- | ------------------ | ------------------------------------------------------------------------------------------ | ----------------------- |
-| TECH-S01 | Software Architect | Zero runtime dependencies — minimizes supply chain risk                                    | `package.json`          |
+| TECH-S01 | Software Architect | Minimal runtime dependencies — minimizes supply chain risk                                 | `package.json`          |
 | TECH-S02 | Senior Developer   | 89% line coverage, 90% function coverage overall                                           | `coverage-summary.json` |
-| TECH-S03 | Security Architect | Defense-in-depth: sanitization, header security, secret detection, path traversal blocking | `middleware.js`         |
+| TECH-S03 | Security Architect | Defense-in-depth: sanitization, header security, secret detection, path traversal blocking | `middleware.ts`         |
 | TECH-S04 | DevOps Engineer    | Multi-stage Docker build with non-root execution                                           | `Dockerfile`            |
-| TECH-S05 | Data Architect     | Atomic writes with snapshot-on-write backup                                                | `store.js`              |
+| TECH-S05 | Data Architect     | Atomic writes with snapshot-on-write backup                                                | `store.ts`              |
 | TECH-S06 | Software Architect | Clean platform engine separation with state machine + quality gates                        | `platform/engine/`      |
-| TECH-S07 | Senior Developer   | Pure functional middleware — all functions stateless, testable                             | `middleware.js`         |
+| TECH-S07 | Senior Developer   | Pure functional middleware — all functions stateless, testable                             | `middleware.ts`         |
 | TECH-S08 | DevOps Engineer    | SAST + secret scanning + npm audit in CI                                                   | `ci.yml`                |
 
 ---

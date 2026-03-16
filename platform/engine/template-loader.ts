@@ -167,6 +167,105 @@ function validateManifest(manifest: Record<string, unknown>) {
     }
   }
 
+  // Validate governance structure (optional, v1.1.0+)
+  if (manifest.governance !== undefined) {
+    const gov = manifest.governance as Record<string, unknown>;
+    if (typeof gov !== 'object' || gov === null) {
+      errors.push('governance must be an object');
+    } else {
+      const validModes = ['off', 'advisory', 'enforcing'];
+      if (!gov.default_mode || !validModes.includes(gov.default_mode as string)) {
+        errors.push(`governance.default_mode must be one of: ${validModes.join(', ')}`);
+      }
+      if (!gov.policies_file || typeof gov.policies_file !== 'string') {
+        errors.push('governance.policies_file must be a non-empty string');
+      }
+      if (gov.gates !== undefined) {
+        if (typeof gov.gates !== 'object' || gov.gates === null) {
+          errors.push('governance.gates must be an object');
+        } else {
+          for (const [gateId, gateCfg] of Object.entries(
+            gov.gates as Record<string, Record<string, unknown>>
+          )) {
+            if (!gateCfg.policy || typeof gateCfg.policy !== 'string') {
+              errors.push(`governance.gates['${gateId}'].policy must be a non-empty string`);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Validate phaseTools structure (optional, v1.1.0+)
+  if (manifest.phaseTools !== undefined) {
+    if (typeof manifest.phaseTools !== 'object' || manifest.phaseTools === null) {
+      errors.push('phaseTools must be an object');
+    } else {
+      for (const [phase, toolCfg] of Object.entries(
+        manifest.phaseTools as Record<string, Record<string, unknown>>
+      )) {
+        if (toolCfg.required !== undefined && !Array.isArray(toolCfg.required)) {
+          errors.push(`phaseTools['${phase}'].required must be an array`);
+        }
+        if (toolCfg.optional !== undefined && !Array.isArray(toolCfg.optional)) {
+          errors.push(`phaseTools['${phase}'].optional must be an array`);
+        }
+        const allTools = [
+          ...((toolCfg.required || []) as Array<Record<string, unknown>>),
+          ...((toolCfg.optional || []) as Array<Record<string, unknown>>),
+        ];
+        for (let i = 0; i < allTools.length; i++) {
+          if (!allTools[i].adapter || typeof allTools[i].adapter !== 'string') {
+            errors.push(`phaseTools['${phase}'] tool[${i}] must have an 'adapter' string`);
+          }
+        }
+      }
+    }
+  }
+
+  // Validate lifecycle structure (optional, v1.1.0+)
+  if (manifest.lifecycle !== undefined) {
+    const lc = manifest.lifecycle as Record<string, unknown>;
+    if (typeof lc !== 'object' || lc === null) {
+      errors.push('lifecycle must be an object');
+    } else {
+      if (!Array.isArray(lc.stages) || lc.stages.length === 0) {
+        errors.push('lifecycle.stages must be a non-empty array');
+      }
+      if (lc.transitions !== undefined) {
+        if (!Array.isArray(lc.transitions)) {
+          errors.push('lifecycle.transitions must be an array');
+        } else {
+          const validGateTypes = [
+            'artifact_approved',
+            'governance_approved',
+            'tool_healthy',
+            'metric_threshold',
+            'manual_confirmation',
+          ];
+          for (let i = 0; i < lc.transitions.length; i++) {
+            const t = lc.transitions[i] as Record<string, unknown>;
+            if (!t.from || !t.to) {
+              errors.push(`lifecycle.transitions[${i}] must have 'from' and 'to'`);
+            }
+            if (t.gates && Array.isArray(t.gates)) {
+              for (let g = 0; g < (t.gates as Array<Record<string, unknown>>).length; g++) {
+                const gate = (t.gates as Array<Record<string, unknown>>)[g];
+                if (!gate.id || !gate.type) {
+                  errors.push(`lifecycle.transitions[${i}].gates[${g}] must have 'id' and 'type'`);
+                } else if (!validGateTypes.includes(gate.type as string)) {
+                  errors.push(
+                    `lifecycle.transitions[${i}].gates[${g}].type '${gate.type}' is invalid (${validGateTypes.join(', ')})`
+                  );
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   return { valid: errors.length === 0, errors };
 }
 
@@ -203,6 +302,20 @@ function resolveTemplatePaths(manifest: Record<string, unknown>, templateRoot: s
     criticToPhase: manifest.criticToPhase,
     modes: manifest.modes,
     decisionCategories: manifest.decisionCategories || [],
+    phaseArtifacts: manifest.phaseArtifacts || {},
+    phaseLineage: manifest.phaseLineage || {},
+    outputTemplates: manifest.outputTemplates || [],
+    governance: manifest.governance
+      ? {
+          ...(manifest.governance as Record<string, unknown>),
+          policies_file: path.join(
+            templateRoot,
+            (manifest.governance as Record<string, string>).policies_file
+          ),
+        }
+      : null,
+    phaseTools: manifest.phaseTools || {},
+    lifecycle: manifest.lifecycle || null,
   };
 }
 

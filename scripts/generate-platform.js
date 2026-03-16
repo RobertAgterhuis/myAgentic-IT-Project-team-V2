@@ -22,8 +22,14 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const SCHEMA_DIR = path.join(ROOT, 'platform', 'schema');
 const OUTPUT_DIR = path.join(ROOT, 'platform', 'generated');
+const MANIFEST_PATH = path.join(ROOT, 'templates', 'sdlc', 'manifest.json');
 
 function readJson(filePath) {
+  return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+}
+
+function readJsonOptional(filePath) {
+  if (!fs.existsSync(filePath)) return null;
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
@@ -41,6 +47,7 @@ function loadCanonical() {
     agents: readJson(path.join(SCHEMA_DIR, 'agents.json')),
     flows: readJson(path.join(SCHEMA_DIR, 'flows.json')),
     tools: readJson(path.join(SCHEMA_DIR, 'tools.json')),
+    manifest: readJsonOptional(MANIFEST_PATH),
   };
 }
 
@@ -50,7 +57,7 @@ function generateCopilot(canonical) {
   const outDir = path.join(OUTPUT_DIR, 'copilot');
   ensureDir(outDir);
 
-  const { agents, flows, tools } = canonical;
+  const { agents, flows, tools, manifest } = canonical;
   const lines = [];
 
   lines.push('# GitHub Copilot Agent Instructions (Auto-Generated)');
@@ -107,6 +114,65 @@ function generateCopilot(canonical) {
   }
   lines.push('');
 
+  // Extended manifest context (v1.1.0+)
+  if (manifest) {
+    if (manifest.phaseArtifacts) {
+      lines.push('## Phase Artifacts');
+      lines.push('');
+      for (const [phase, artifacts] of Object.entries(manifest.phaseArtifacts)) {
+        lines.push(`### ${phase}`);
+        lines.push('');
+        lines.push('| ID | Type | Stage | Path |');
+        lines.push('| --- | --- | --- | --- |');
+        for (const a of artifacts) {
+          lines.push(`| ${a.id} | ${a.type} | ${a.stage} | ${a.path} |`);
+        }
+        lines.push('');
+      }
+    }
+
+    if (manifest.phaseTools && Object.keys(manifest.phaseTools).length > 0) {
+      lines.push('## Phase Tool Requirements');
+      lines.push('');
+      for (const [phase, toolCfg] of Object.entries(manifest.phaseTools)) {
+        const req = (toolCfg.required || []).map((t) => t.adapter);
+        const opt = (toolCfg.optional || []).map((t) => t.adapter);
+        if (req.length > 0 || opt.length > 0) {
+          lines.push(`- **${phase}**: required=[${req.join(', ')}] optional=[${opt.join(', ')}]`);
+        }
+      }
+      lines.push('');
+    }
+
+    if (manifest.governance) {
+      lines.push('## Governance');
+      lines.push('');
+      lines.push(`- Default mode: ${manifest.governance.default_mode}`);
+      if (manifest.governance.gates) {
+        for (const [gate, cfg] of Object.entries(manifest.governance.gates)) {
+          lines.push(`- ${gate}: policy=${cfg.policy}, override=${cfg.override_allowed}`);
+        }
+      }
+      lines.push('');
+    }
+
+    if (manifest.lifecycle) {
+      lines.push('## Lifecycle Stages');
+      lines.push('');
+      lines.push(`Stages: ${manifest.lifecycle.stages.join(' → ')}`);
+      lines.push('');
+      if (manifest.lifecycle.transitions) {
+        lines.push('### Transitions');
+        lines.push('');
+        for (const t of manifest.lifecycle.transitions) {
+          const gateCount = t.gates ? t.gates.length : 0;
+          lines.push(`- ${t.from} → ${t.to} (${gateCount} gate${gateCount !== 1 ? 's' : ''})`);
+        }
+        lines.push('');
+      }
+    }
+  }
+
   const content = lines.join('\n');
   const outPath = path.join(outDir, 'copilot-instructions.md');
   fs.writeFileSync(outPath, content, 'utf8');
@@ -155,6 +221,34 @@ function generateCopilot(canonical) {
         agentLines.push(`- Agent ${dep}: ${depAgent ? depAgent.name : 'unknown'}`);
       }
       agentLines.push('');
+    }
+
+    // Extended context from manifest (v1.1.0+)
+    if (manifest && manifest.phaseArtifacts) {
+      const phaseArtifacts = manifest.phaseArtifacts[agent.phase];
+      if (phaseArtifacts && phaseArtifacts.length > 0) {
+        agentLines.push('## Artifacts');
+        agentLines.push('');
+        for (const a of phaseArtifacts) {
+          agentLines.push(`- \`${a.id}\` (${a.type}) → ${a.path}`);
+        }
+        agentLines.push('');
+      }
+    }
+
+    if (manifest && manifest.phaseTools) {
+      const toolCfg = manifest.phaseTools[agent.phase];
+      if (toolCfg) {
+        const req = (toolCfg.required || []).map((t) => t.adapter);
+        const opt = (toolCfg.optional || []).map((t) => t.adapter);
+        if (req.length > 0 || opt.length > 0) {
+          agentLines.push('## Tool Requirements');
+          agentLines.push('');
+          if (req.length > 0) agentLines.push(`- Required: ${req.join(', ')}`);
+          if (opt.length > 0) agentLines.push(`- Optional: ${opt.join(', ')}`);
+          agentLines.push('');
+        }
+      }
     }
 
     const safeName = agent.name

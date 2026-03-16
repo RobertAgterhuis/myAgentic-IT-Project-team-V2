@@ -90,8 +90,8 @@ describe('loadManifest', () => {
   test('loads the real SDLC manifest', () => {
     const manifest = loadManifest('sdlc', TEMPLATES_DIR);
     expect(manifest.name).toBe('sdlc');
-    expect(manifest.schemaVersion).toBe('1.0.0');
-    expect(manifest.version).toBe('1.0.0');
+    expect(manifest.schemaVersion).toBe('1.1.0');
+    expect(manifest.version).toBe('1.1.0');
   });
 
   test('throws for non-existent template', () => {
@@ -365,7 +365,7 @@ describe('listTemplates', () => {
     const sdlc = templates.find((t) => t.name === 'sdlc');
     expect(sdlc).toBeDefined();
     expect(sdlc.valid).toBe(true);
-    expect(sdlc.version).toBe('1.0.0');
+    expect(sdlc.version).toBe('1.1.0');
     expect(sdlc.displayName).toBe('Software Development Lifecycle');
   });
 
@@ -547,6 +547,363 @@ describe('seedDecisions', () => {
       const content = fs.readFileSync(path.join(targetDecDir, file), 'utf8');
       // Every seed file should start with a markdown heading
       expect(content.startsWith('#')).toBe(true);
+    }
+  });
+});
+
+// ─── Template System Extensions (M9 / v1.1.0) ───────────────
+
+describe('validateManifest — governance (v1.1.0)', () => {
+  test('accepts manifest with valid governance section', () => {
+    const manifest = createMinimalManifest({
+      governance: {
+        default_mode: 'advisory',
+        policies_file: 'governance-policies.json',
+        gates: {
+          CRITIC_1: { policy: 'REQUIREMENT_TO_DESIGN', override_allowed: true },
+        },
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
+    expect(result.errors).toEqual([]);
+  });
+
+  test('accepts manifest without governance (backward compat)', () => {
+    const manifest = createMinimalManifest();
+    delete manifest.governance;
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
+  });
+
+  test('rejects governance with invalid default_mode', () => {
+    const manifest = createMinimalManifest({
+      governance: { default_mode: 'invalid', policies_file: 'x.json' },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('default_mode'))).toBe(true);
+  });
+
+  test('rejects governance without policies_file', () => {
+    const manifest = createMinimalManifest({
+      governance: { default_mode: 'advisory' },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('policies_file'))).toBe(true);
+  });
+
+  test('rejects governance gate without policy', () => {
+    const manifest = createMinimalManifest({
+      governance: {
+        default_mode: 'advisory',
+        policies_file: 'x.json',
+        gates: { CRITIC_1: { override_allowed: true } },
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('policy'))).toBe(true);
+  });
+
+  test('accepts all three governance modes', () => {
+    for (const mode of ['off', 'advisory', 'enforcing']) {
+      const manifest = createMinimalManifest({
+        governance: { default_mode: mode, policies_file: 'x.json' },
+      });
+      const result = validateManifest(manifest);
+      expect(result.valid).toBe(true);
+    }
+  });
+});
+
+describe('validateManifest — phaseTools (v1.1.0)', () => {
+  test('accepts manifest with valid phaseTools', () => {
+    const manifest = createMinimalManifest({
+      phaseTools: {
+        PHASE_5_EXECUTING: {
+          required: [{ adapter: 'git', operations: ['create_branch'] }],
+          optional: [{ adapter: 'ci', operations: ['trigger_workflow'] }],
+        },
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
+  });
+
+  test('accepts manifest without phaseTools (backward compat)', () => {
+    const manifest = createMinimalManifest();
+    delete manifest.phaseTools;
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
+  });
+
+  test('rejects phaseTools with non-array required', () => {
+    const manifest = createMinimalManifest({
+      phaseTools: { PHASE_1: { required: 'not-array' } },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('required must be an array'))).toBe(true);
+  });
+
+  test('rejects tool entry without adapter', () => {
+    const manifest = createMinimalManifest({
+      phaseTools: {
+        PHASE_1: { required: [{ operations: ['test'] }] },
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('adapter'))).toBe(true);
+  });
+});
+
+describe('validateManifest — lifecycle (v1.1.0)', () => {
+  test('accepts manifest with valid lifecycle', () => {
+    const manifest = createMinimalManifest({
+      lifecycle: {
+        stages: ['IDEA', 'REQUIREMENTS', 'DESIGN'],
+        transitions: [
+          {
+            from: 'REQUIREMENTS',
+            to: 'DESIGN',
+            gates: [{ id: 'G-01', type: 'artifact_approved', artifact: 'P1-BA-analysis' }],
+          },
+        ],
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
+  });
+
+  test('accepts manifest without lifecycle (backward compat)', () => {
+    const manifest = createMinimalManifest();
+    delete manifest.lifecycle;
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
+  });
+
+  test('rejects lifecycle with empty stages', () => {
+    const manifest = createMinimalManifest({
+      lifecycle: { stages: [] },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('stages must be a non-empty array'))).toBe(true);
+  });
+
+  test('rejects lifecycle transition without from/to', () => {
+    const manifest = createMinimalManifest({
+      lifecycle: { stages: ['A', 'B'], transitions: [{ to: 'B' }] },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes("'from' and 'to'"))).toBe(true);
+  });
+
+  test('rejects lifecycle gate with invalid type', () => {
+    const manifest = createMinimalManifest({
+      lifecycle: {
+        stages: ['A', 'B'],
+        transitions: [{ from: 'A', to: 'B', gates: [{ id: 'G-01', type: 'bad_type' }] }],
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('bad_type'))).toBe(true);
+  });
+
+  test('accepts all valid gate types', () => {
+    const types = [
+      'artifact_approved',
+      'governance_approved',
+      'tool_healthy',
+      'metric_threshold',
+      'manual_confirmation',
+    ];
+    for (const type of types) {
+      const manifest = createMinimalManifest({
+        lifecycle: {
+          stages: ['A', 'B'],
+          transitions: [{ from: 'A', to: 'B', gates: [{ id: 'G-01', type }] }],
+        },
+      });
+      const result = validateManifest(manifest);
+      expect(result.valid).toBe(true);
+    }
+  });
+});
+
+describe('resolveTemplatePaths — extended sections (v1.1.0)', () => {
+  test('resolves governance.policies_file to absolute path', () => {
+    const manifest = createMinimalManifest({
+      governance: {
+        default_mode: 'advisory',
+        policies_file: 'governance-policies.json',
+        gates: { CRITIC_1: { policy: 'TEST', override_allowed: true } },
+      },
+    });
+    const root = '/project/templates/test';
+    const resolved = resolveTemplatePaths(manifest, root);
+
+    expect(resolved.governance).not.toBeNull();
+    expect(resolved.governance.policies_file).toBe(path.join(root, 'governance-policies.json'));
+    expect(resolved.governance.default_mode).toBe('advisory');
+    expect(resolved.governance.gates.CRITIC_1.policy).toBe('TEST');
+  });
+
+  test('defaults governance to null when not present', () => {
+    const manifest = createMinimalManifest();
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.governance).toBeNull();
+  });
+
+  test('passes through phaseTools', () => {
+    const phaseTools = {
+      PHASE_5_EXECUTING: {
+        required: [{ adapter: 'git' }],
+        optional: [],
+      },
+    };
+    const manifest = createMinimalManifest({ phaseTools });
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.phaseTools).toEqual(phaseTools);
+  });
+
+  test('defaults phaseTools to empty object', () => {
+    const manifest = createMinimalManifest();
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.phaseTools).toEqual({});
+  });
+
+  test('passes through lifecycle', () => {
+    const lifecycle = { stages: ['A', 'B'] };
+    const manifest = createMinimalManifest({ lifecycle });
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.lifecycle).toEqual(lifecycle);
+  });
+
+  test('defaults lifecycle to null when not present', () => {
+    const manifest = createMinimalManifest();
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.lifecycle).toBeNull();
+  });
+
+  test('passes through phaseArtifacts', () => {
+    const phaseArtifacts = {
+      PHASE_1: [{ id: 'P1-test', type: 'DOCUMENT', stage: 'REQUIREMENTS', path: 'test.md' }],
+    };
+    const manifest = createMinimalManifest({ phaseArtifacts });
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.phaseArtifacts).toEqual(phaseArtifacts);
+  });
+
+  test('defaults phaseArtifacts to empty object', () => {
+    const manifest = createMinimalManifest();
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.phaseArtifacts).toEqual({});
+  });
+
+  test('passes through phaseLineage', () => {
+    const phaseLineage = { PHASE_2: { consumes: ['PHASE_1'] } };
+    const manifest = createMinimalManifest({ phaseLineage });
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.phaseLineage).toEqual(phaseLineage);
+  });
+
+  test('defaults outputTemplates to empty array', () => {
+    const manifest = createMinimalManifest();
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.outputTemplates).toEqual([]);
+  });
+});
+
+describe('loadTemplate — SDLC v1.1.0 extended sections', () => {
+  test('SDLC template has governance configuration', () => {
+    const config = loadTemplate('sdlc', TEMPLATES_DIR);
+    expect(config.governance).not.toBeNull();
+    expect(config.governance.default_mode).toBe('advisory');
+    expect(config.governance.policies_file).toContain('governance-policies.json');
+    expect(config.governance.gates.CRITIC_1.policy).toBe('REQUIREMENT_TO_DESIGN');
+    expect(config.governance.gates.CRITIC_2.override_allowed).toBe(false);
+  });
+
+  test('SDLC template has phaseTools for PHASE_5_EXECUTING', () => {
+    const config = loadTemplate('sdlc', TEMPLATES_DIR);
+    expect(config.phaseTools.PHASE_5_EXECUTING).toBeDefined();
+    const p5 = config.phaseTools.PHASE_5_EXECUTING;
+    expect(p5.required.length).toBeGreaterThanOrEqual(2);
+    expect(p5.required.some((t) => t.adapter === 'git')).toBe(true);
+    expect(p5.required.some((t) => t.adapter === 'testing')).toBe(true);
+    expect(p5.optional.some((t) => t.adapter === 'ci')).toBe(true);
+  });
+
+  test('SDLC template has lifecycle with 11 stages', () => {
+    const config = loadTemplate('sdlc', TEMPLATES_DIR);
+    expect(config.lifecycle).not.toBeNull();
+    expect(config.lifecycle.stages).toHaveLength(11);
+    expect(config.lifecycle.stages[0]).toBe('IDEA');
+    expect(config.lifecycle.stages[10]).toBe('IMPROVEMENT');
+  });
+
+  test('SDLC template lifecycle has transitions with gates', () => {
+    const config = loadTemplate('sdlc', TEMPLATES_DIR);
+    expect(config.lifecycle.transitions.length).toBeGreaterThanOrEqual(1);
+    const firstTransition = config.lifecycle.transitions[0];
+    expect(firstTransition.from).toBeDefined();
+    expect(firstTransition.to).toBeDefined();
+    expect(firstTransition.gates.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test('SDLC template has phaseArtifacts for all phases', () => {
+    const config = loadTemplate('sdlc', TEMPLATES_DIR);
+    expect(config.phaseArtifacts.PHASE_1.length).toBeGreaterThanOrEqual(1);
+    expect(config.phaseArtifacts.PHASE_2.length).toBeGreaterThanOrEqual(1);
+    expect(config.phaseArtifacts.PHASE_3.length).toBeGreaterThanOrEqual(1);
+    expect(config.phaseArtifacts.PHASE_4.length).toBeGreaterThanOrEqual(1);
+    expect(config.phaseArtifacts.SYNTHESIS.length).toBeGreaterThanOrEqual(1);
+  });
+
+  test('SDLC template has phaseLineage', () => {
+    const config = loadTemplate('sdlc', TEMPLATES_DIR);
+    expect(config.phaseLineage.PHASE_2.consumes).toContain('PHASE_1');
+    expect(config.phaseLineage.SYNTHESIS.consumes).toContain('PHASE_1');
+    expect(config.phaseLineage.SYNTHESIS.consumes).toContain('PHASE_4');
+  });
+
+  test('SDLC template has outputTemplates', () => {
+    const config = loadTemplate('sdlc', TEMPLATES_DIR);
+    expect(config.outputTemplates.length).toBeGreaterThanOrEqual(6);
+  });
+
+  test('backward compatibility: v1.0.0 manifest without new sections still loads', () => {
+    // Simulate a v1.0.0 manifest by creating one without the new sections
+    const os = require('node:os');
+    const tmpTemplatesDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tpl-compat-'));
+    const tmpTplDir = path.join(tmpTemplatesDir, 'legacy');
+
+    try {
+      fs.mkdirSync(tmpTplDir, { recursive: true });
+      const legacyManifest = createMinimalManifest();
+      // Explicitly ensure no v1.1.0 sections
+      delete legacyManifest.governance;
+      delete legacyManifest.phaseTools;
+      delete legacyManifest.lifecycle;
+      delete legacyManifest.phaseArtifacts;
+      delete legacyManifest.phaseLineage;
+      fs.writeFileSync(path.join(tmpTplDir, 'manifest.json'), JSON.stringify(legacyManifest));
+
+      const config = loadTemplate('legacy', tmpTemplatesDir);
+      expect(config.name).toBe('test-template');
+      expect(config.governance).toBeNull();
+      expect(config.phaseTools).toEqual({});
+      expect(config.lifecycle).toBeNull();
+      expect(config.phaseArtifacts).toEqual({});
+      expect(config.phaseLineage).toEqual({});
+    } finally {
+      fs.rmSync(tmpTemplatesDir, { recursive: true, force: true });
     }
   });
 });

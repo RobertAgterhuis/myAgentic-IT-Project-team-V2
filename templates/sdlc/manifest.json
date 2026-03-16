@@ -1,7 +1,7 @@
 {
-  "schemaVersion": "1.0.0",
+  "schemaVersion": "1.1.0",
   "name": "sdlc",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "displayName": "Software Development Lifecycle",
   "description": "End-to-end new software solution creation through a structured multi-agent process across four phases: Requirements & Strategy, Architecture & Design, Experience Design, and Brand & Growth.",
   "flowsFile": "flows.yaml",
@@ -394,5 +394,164 @@
     "output-templates/guardrail-template.md",
     "output-templates/sprint-completion-report-template.md",
     "output-templates/sprint-retrospective-template.md"
-  ]
+  ],
+  "governance": {
+    "default_mode": "advisory",
+    "policies_file": "governance-policies.json",
+    "gates": {
+      "CRITIC_1": {
+        "policy": "REQUIREMENT_TO_DESIGN",
+        "override_allowed": true
+      },
+      "CRITIC_2": {
+        "policy": "DESIGN_TO_DEVELOPMENT",
+        "override_allowed": false
+      },
+      "CRITIC_3": {
+        "policy": "UX_TO_BRAND",
+        "override_allowed": true
+      },
+      "CRITIC_4": {
+        "policy": "BRAND_TO_SYNTHESIS",
+        "override_allowed": true
+      },
+      "SPRINT_GATE": {
+        "policy": "DEVELOPMENT_TO_TESTING",
+        "override_allowed": true
+      }
+    }
+  },
+  "phaseTools": {
+    "PHASE_1": {
+      "required": [],
+      "optional": [{ "adapter": "git", "operations": ["list_commits"] }]
+    },
+    "PHASE_2": {
+      "required": [],
+      "optional": [
+        { "adapter": "git", "operations": ["list_branches", "list_commits"] },
+        { "adapter": "security", "operations": ["audit_dependencies"] }
+      ]
+    },
+    "PHASE_3": {
+      "required": [],
+      "optional": []
+    },
+    "PHASE_4": {
+      "required": [],
+      "optional": []
+    },
+    "PHASE_5_EXECUTING": {
+      "required": [
+        { "adapter": "git", "operations": ["create_branch", "list_commits", "commit"] },
+        { "adapter": "testing", "operations": ["run_unit_tests"] }
+      ],
+      "optional": [
+        { "adapter": "ci", "operations": ["trigger_workflow"] },
+        { "adapter": "security", "operations": ["run_sast", "scan_secrets"] },
+        { "adapter": "container", "operations": ["build"] }
+      ]
+    }
+  },
+  "lifecycle": {
+    "stages": [
+      "IDEA",
+      "REQUIREMENTS",
+      "ARCHITECTURE",
+      "PLANNING",
+      "DEVELOPMENT",
+      "TESTING",
+      "STAGING",
+      "RELEASE",
+      "PRODUCTION",
+      "MONITORING",
+      "IMPROVEMENT"
+    ],
+    "transitions": [
+      {
+        "from": "REQUIREMENTS",
+        "to": "ARCHITECTURE",
+        "gates": [
+          {
+            "id": "G-ARCH-01",
+            "description": "Business requirements analysis completed",
+            "type": "artifact_approved",
+            "artifact": "P1-BA-analysis"
+          }
+        ]
+      },
+      {
+        "from": "ARCHITECTURE",
+        "to": "PLANNING",
+        "gates": [
+          {
+            "id": "G-PLAN-01",
+            "description": "Architecture review completed",
+            "type": "artifact_approved",
+            "artifact": "P2-SA-analysis"
+          },
+          {
+            "id": "G-PLAN-02",
+            "description": "Security review completed",
+            "type": "artifact_approved",
+            "artifact": "P2-SEC-guardrails"
+          }
+        ]
+      },
+      {
+        "from": "PLANNING",
+        "to": "DEVELOPMENT",
+        "gates": [
+          {
+            "id": "G-DEV-01",
+            "description": "Sprint plan approved",
+            "type": "governance_approved",
+            "policy": "DESIGN_TO_DEVELOPMENT"
+          },
+          {
+            "id": "G-DEV-02",
+            "description": "Git adapter healthy",
+            "type": "tool_healthy",
+            "adapter": "git"
+          }
+        ]
+      },
+      {
+        "from": "DEVELOPMENT",
+        "to": "TESTING",
+        "gates": [
+          {
+            "id": "G-TEST-01",
+            "description": "Unit tests passing",
+            "type": "tool_healthy",
+            "adapter": "testing"
+          }
+        ]
+      },
+      {
+        "from": "TESTING",
+        "to": "STAGING",
+        "gates": [
+          {
+            "id": "G-STAGE-01",
+            "description": "All tests pass",
+            "type": "metric_threshold",
+            "metric": "test_pass_rate",
+            "threshold": 95
+          }
+        ]
+      },
+      {
+        "from": "STAGING",
+        "to": "RELEASE",
+        "gates": [
+          {
+            "id": "G-REL-01",
+            "description": "Release approval",
+            "type": "manual_confirmation"
+          }
+        ]
+      }
+    ]
+  }
 }

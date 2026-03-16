@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://myagentic-it.local/schema/template-manifest.schema.json",
   "title": "Template Manifest Schema",
-  "description": "Defines the structure of a template pack manifest. Each template provides agents, contracts, guardrails, playbooks, and flow definitions for a specific domain.",
+  "description": "Defines the structure of a template pack manifest. Each template provides agents, contracts, guardrails, playbooks, flow definitions, governance policies, tool requirements, and lifecycle rules for a specific domain.",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -24,7 +24,7 @@
     "schemaVersion": {
       "type": "string",
       "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
-      "description": "Schema version for this manifest format."
+      "description": "Schema version for this manifest format (1.0.0 or 1.1.0)."
     },
     "name": {
       "type": "string",
@@ -71,6 +71,16 @@
       "type": "string",
       "minLength": 1,
       "description": "Path to playbooks directory relative to the template root."
+    },
+    "decisionsDir": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to decisions directory relative to the template root."
+    },
+    "decisionIndexSeed": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Path to the decision index seed file relative to the template root."
     },
     "decisionCategories": {
       "type": "array",
@@ -166,6 +176,273 @@
         }
       },
       "description": "Command mode definitions (CREATE, AUDIT, etc.)."
+    },
+    "phaseArtifacts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "type", "stage", "path"],
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Unique artifact identifier (e.g. 'P1-BA-analysis')."
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "DOCUMENT",
+                "DESIGN_ASSET",
+                "CONFIGURATION",
+                "CODE",
+                "TEST_RESULT",
+                "DEPLOYMENT"
+              ],
+              "description": "Artifact type classification."
+            },
+            "stage": {
+              "type": "string",
+              "enum": [
+                "IDEA",
+                "REQUIREMENTS",
+                "ARCHITECTURE",
+                "PLANNING",
+                "DEVELOPMENT",
+                "TESTING",
+                "STAGING",
+                "RELEASE",
+                "PRODUCTION",
+                "MONITORING",
+                "IMPROVEMENT"
+              ],
+              "description": "Lifecycle stage this artifact belongs to."
+            },
+            "path": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Output path relative to the project root."
+            },
+            "agent": {
+              "type": "string",
+              "description": "Agent ID that produces this artifact."
+            },
+            "required": {
+              "type": "boolean",
+              "default": true,
+              "description": "Whether this artifact is required for phase completion."
+            },
+            "pattern": {
+              "type": "boolean",
+              "default": false,
+              "description": "Whether the path is a glob pattern (e.g. 'decisions/*.md')."
+            }
+          }
+        }
+      },
+      "description": "Maps phase names to artifact declarations (produces list)."
+    },
+    "phaseLineage": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "consumes": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "description": "Phase IDs whose artifacts this phase consumes."
+          }
+        }
+      },
+      "description": "Dependency graph between phases (which phases consume outputs from other phases)."
+    },
+    "outputTemplates": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "description": "Paths to output template files relative to the template root."
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default_mode", "policies_file"],
+      "properties": {
+        "default_mode": {
+          "type": "string",
+          "enum": ["off", "advisory", "enforcing"],
+          "description": "Default governance mode for this template."
+        },
+        "policies_file": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Path to governance policies JSON file relative to the template root."
+        },
+        "gates": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["policy"],
+            "properties": {
+              "policy": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Policy ID from the policies file to apply at this gate."
+              },
+              "override_allowed": {
+                "type": "boolean",
+                "default": true,
+                "description": "Whether this gate's policy can be overridden with --force."
+              }
+            }
+          },
+          "description": "Maps gate IDs to governance policy assignments."
+        }
+      },
+      "description": "Governance configuration — policy references and gate assignments."
+    },
+    "phaseTools": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "required": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["adapter"],
+              "properties": {
+                "adapter": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Adapter identifier (e.g. 'git', 'testing', 'ci')."
+                },
+                "operations": {
+                  "type": "array",
+                  "items": { "type": "string", "minLength": 1 },
+                  "description": "Specific operations needed from this adapter."
+                }
+              }
+            },
+            "description": "Adapters that must be healthy before the phase can start."
+          },
+          "optional": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["adapter"],
+              "properties": {
+                "adapter": {
+                  "type": "string",
+                  "minLength": 1,
+                  "description": "Adapter identifier."
+                },
+                "operations": {
+                  "type": "array",
+                  "items": { "type": "string", "minLength": 1 },
+                  "description": "Specific operations needed from this adapter."
+                }
+              }
+            },
+            "description": "Adapters that enhance the phase but are not required."
+          }
+        }
+      },
+      "description": "Maps phase names to tool/adapter requirements."
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stages"],
+      "properties": {
+        "stages": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": "Ordered list of lifecycle stages."
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from", "to"],
+            "properties": {
+              "from": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Source lifecycle stage."
+              },
+              "to": {
+                "type": "string",
+                "minLength": 1,
+                "description": "Target lifecycle stage."
+              },
+              "gates": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["id", "type"],
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "minLength": 1,
+                      "description": "Unique gate identifier."
+                    },
+                    "description": {
+                      "type": "string",
+                      "description": "Human-readable description of this gate condition."
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "artifact_approved",
+                        "governance_approved",
+                        "tool_healthy",
+                        "metric_threshold",
+                        "manual_confirmation"
+                      ],
+                      "description": "Gate evaluation type."
+                    },
+                    "artifact": {
+                      "type": "string",
+                      "description": "Artifact ID reference (for artifact_approved type)."
+                    },
+                    "policy": {
+                      "type": "string",
+                      "description": "Policy ID reference (for governance_approved type)."
+                    },
+                    "adapter": {
+                      "type": "string",
+                      "description": "Adapter ID reference (for tool_healthy type)."
+                    },
+                    "metric": {
+                      "type": "string",
+                      "description": "Metric name (for metric_threshold type)."
+                    },
+                    "threshold": {
+                      "type": "number",
+                      "description": "Threshold value (for metric_threshold type)."
+                    }
+                  }
+                },
+                "description": "Gate conditions that must be satisfied for this transition."
+              }
+            }
+          },
+          "description": "Lifecycle stage transition rules with gate conditions."
+        }
+      },
+      "description": "Lifecycle configuration — stages and transition rules with gates."
     }
   }
 }

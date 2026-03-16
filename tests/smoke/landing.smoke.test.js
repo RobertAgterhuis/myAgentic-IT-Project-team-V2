@@ -43,30 +43,34 @@ function request(urlPath, options = {}) {
   });
 }
 
-beforeAll((done) => {
-  const serverModule = require(SERVER_PATH);
-  server = serverModule.server;
-  if (server.listening) {
-    server.close(() => {
+beforeAll(() => {
+  return new Promise((resolve) => {
+    const serverModule = require(SERVER_PATH);
+    server = serverModule.server;
+    if (server.listening) {
+      server.close(() => {
+        server.listen(0, '127.0.0.1', () => {
+          baseUrl = `http://127.0.0.1:${server.address().port}`;
+          resolve();
+        });
+      });
+    } else {
       server.listen(0, '127.0.0.1', () => {
         baseUrl = `http://127.0.0.1:${server.address().port}`;
-        done();
+        resolve();
       });
-    });
-  } else {
-    server.listen(0, '127.0.0.1', () => {
-      baseUrl = `http://127.0.0.1:${server.address().port}`;
-      done();
-    });
-  }
+    }
+  });
 });
 
-afterAll((done) => {
-  if (server && server.listening) {
-    server.close(done);
-  } else {
-    done();
-  }
+afterAll(() => {
+  return new Promise((resolve) => {
+    if (server && server.listening) {
+      server.close(resolve);
+    } else {
+      resolve();
+    }
+  });
 });
 
 /* ── SMOKE-001: Landing page loads ──────────────────────────────── */

@@ -86,9 +86,9 @@ describe('weblate-sync — writeLocaleFile', () => {
 describe('weblate-sync — validate', () => {
   test('validate() completes without throwing for consistent locales', () => {
     // The real locale files in the repo should be consistent
-    const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
-    const errSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
-    const exitSpy = jest.spyOn(process, 'exit').mockImplementation(() => {});
+    const spy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const errSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {});
 
     validate();
 

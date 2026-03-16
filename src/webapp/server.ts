@@ -108,16 +108,16 @@ function safeWriteSync(
   const rel = path.relative(PROJECT_ROOT, filePath).replace(/\\/g, '/');
   sseNotify('file_change', { file: rel, timestamp: new Date().toISOString() });
   _audit.log({
-    operation: auditMeta?.operation || 'update',
+    operation: (auditMeta?.operation as string) || 'update',
     entityType:
-      auditMeta?.entityType ||
+      (auditMeta?.entityType as string) ||
       rel
         .split('/')
         .pop()!
         .replace(/\.\w+$/, ''),
     entityId: (auditMeta?.entityId as string | null) || null,
-    user: auditMeta?.user || 'system',
-    summary: auditMeta?.summary || `File written: ${rel}`,
+    user: (auditMeta?.user as string) || 'system',
+    summary: (auditMeta?.summary as string) || `File written: ${rel}`,
   });
 }
 

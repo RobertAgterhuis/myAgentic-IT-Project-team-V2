@@ -34,6 +34,8 @@ import {
 import { runGate } from './gate-validator';
 import { runSprintGate } from './sprint-gate';
 import { loadTemplate } from './template-loader';
+import { createArtifactRegistrationHook } from './artifact-registration';
+import { ArtifactRegistry } from '../sdlc/artifacts';
 
 /**
  * Engine hook callbacks for extensibility without modifying the core loop.
@@ -122,6 +124,29 @@ function createEngine(options: Record<string, unknown>) {
     sseNotify || ((() => {}) as (event: string, data: Record<string, unknown>) => void);
 
   // Build resolved hooks — SSE transition/error broadcasts are now hooks
+  // Wire artifact registration if template declares phaseArtifacts
+  const artifactStore = {
+    read: async (p: string) => (store.exists(p) ? store.readFile(p) : null),
+    write: async (p: string, d: string) => {
+      const dir = p.replace(/[/\\][^/\\]+$/, '');
+      if (dir && !store.exists(dir)) store.mkdirp(dir);
+      store.writeFile(p, d);
+    },
+  };
+  const artifactRegistry = new ArtifactRegistry(artifactStore);
+
+  const artifactHooks: ((event: { from: string; to: string; timestamp: string }) => void)[] = [];
+  if (template && template.phaseArtifacts) {
+    artifactHooks.push(
+      createArtifactRegistrationHook(
+        artifactRegistry,
+        store,
+        template.phaseArtifacts,
+        template.phaseLineage || {}
+      )
+    );
+  }
+
   const resolvedHooks = {
     beforeTransition: (userHooks && userHooks.beforeTransition) || [],
     afterTransition: [
@@ -131,6 +156,7 @@ function createEngine(options: Record<string, unknown>) {
               sseForward('orchestrator:transition', { event: 'transition', ...event }),
           ]
         : []),
+      ...artifactHooks,
       ...((userHooks && userHooks.afterTransition) || []),
     ],
     onGateResult: (userHooks && userHooks.onGateResult) || [],
@@ -472,6 +498,7 @@ function createEngine(options: Record<string, unknown>) {
     machine,
     flows,
     template,
+    artifactRegistry,
     advance,
     error,
     recover,

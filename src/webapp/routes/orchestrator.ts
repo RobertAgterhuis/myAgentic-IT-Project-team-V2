@@ -355,6 +355,7 @@ export = function createOrchestratorRoutes(ctx): Record<string, unknown> {
   }
 
   return {
+    _getEngine: getEngine,
     'GET /api/orchestrator/status': handleStatus,
     'GET /api/orchestrator/templates': handleTemplates,
     'GET /api/orchestrator/run-history': handleRunHistory,

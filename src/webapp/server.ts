@@ -335,6 +335,8 @@ const dashboardRoutes = require('./routes/dashboard')(ctx);
 const milestonesRoutes = require('./routes/milestones')(ctx);
 const subscribeRoutes = require('./routes/subscribe')(ctx);
 const orchestratorRoutes = require('./routes/orchestrator')(ctx);
+ctx._getEngine = orchestratorRoutes._getEngine;
+const artifactRoutes = require('./routes/artifacts')(ctx);
 const miscRoutes = require('./routes/misc')(ctx);
 
 const serveStatic = miscRoutes._serveStatic;
@@ -358,6 +360,8 @@ const ROUTES: RouteTable = {
   ...dashboardRoutes,
   ...milestonesRoutes,
   ...subscribeRoutes,
+  ...orchestratorRoutes,
+  ...artifactRoutes,
   ...orchestratorRoutes,
   ...miscRoutes,
 };
@@ -404,6 +408,7 @@ function findRouteTemplate(method: string, pathname: string): string | null {
 // Remove internal-only keys from the route table
 delete ROUTES._readCommandQueue;
 delete ROUTES._getLatestCommand;
+delete ROUTES._getEngine;
 delete ROUTES._serveStatic;
 delete ROUTES._rebuildQuestionnaireIndex;
 

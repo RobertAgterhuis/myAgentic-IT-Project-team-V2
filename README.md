@@ -1,7 +1,6 @@
 # myAgentic-IT-Project-team – End-to-End Software Solution Creation & Audit
 
 [![CI](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/ci.yml)
-[![CI Pipeline](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/ci-pipeline.yml/badge.svg)](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/ci-pipeline.yml)
 [![Storybook CI](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/storybook.yml/badge.svg)](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/storybook.yml)
 [![Coverage: 75%+ enforced](https://img.shields.io/badge/Coverage-75%25%2B%20enforced-brightgreen.svg)](#testing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)

@@ -50,7 +50,7 @@ implementation (human-in-the-loop, CONTINUE-to-proceed).
 | Server     | Native `http` module, localhost only (127.0.0.1:3000)                                             |
 | MCP Server | [Model Context Protocol](https://modelcontextprotocol.io/) via stdio transport                    |
 | Data       | File-based JSON/Markdown storage with atomic writes                                               |
-| Testing    | [Vitest 4](https://vitest.dev/) (1370 tests across 47 files)                                      |
+| Testing    | [Vitest 4](https://vitest.dev/) (2,420+ tests across 96 files)                                    |
 | Linting    | [ESLint](https://eslint.org/) (flat config, `eslint.config.mjs`)                                  |
 | AI Agents  | [GitHub Copilot](https://github.com/features/copilot) agents in VS Code, Visual Studio, JetBrains |
 | License    | MIT                                                                                               |
@@ -73,7 +73,15 @@ implementation (human-in-the-loop, CONTINUE-to-proceed).
 
 **1. Open this workspace in VS Code** with Copilot enabled.
 
-**2. (Recommended) Launch the Command Center web UI:**
+**2. Install and build:**
+
+```bash
+npm install
+cd src/webapp/ui && npm install && cd ../../..
+npm run build
+```
+
+**3. Launch the Command Center web UI:**
 
 ```bash
 npm start
@@ -93,7 +101,7 @@ docker compose -f infra/docker-compose.dev.yml up --build
 
 Then open [http://127.0.0.1:3000](http://127.0.0.1:3000).
 
-**3. Start a project** — in the Command Center:
+**4. Start a project** — in the Command Center:
 
 - Select **CREATE** (or **AUDIT** for existing software)
 - Enter a project name
@@ -107,7 +115,7 @@ Alternatively, type directly in Copilot Chat:
 CREATE MyProject
 ```
 
-**4. Follow the agent pipeline:**
+**5. Follow the agent pipeline:**
 
 - The Orchestrator runs **one agent at a time** — type **CONTINUE** after each
 - At **phase boundaries**, start a **new Copilot Chat** and type **CONTINUE**
@@ -115,7 +123,7 @@ CREATE MyProject
 - Critic + Risk Agents validate every phase and every sprint automatically
 - Track progress in the Command Center pipeline view
 
-**5. Answer questionnaires & decisions** — when agents need your input,
+**6. Answer questionnaires & decisions** — when agents need your input,
 questions appear in the **Questionnaires** tab. Use the **Decisions** tab to
 create decisions or answer open questions. Answer them, then run `REEVALUATE`
 for improved results.
@@ -126,7 +134,8 @@ for improved results.
 
 The system includes an **MCP (Model Context Protocol) server** that exposes the
 Command Center functionality to any MCP-compatible IDE — VS Code, Visual Studio,
-JetBrains, and others.
+JetBrains, and others. See **[docs/mcp-setup.md](docs/mcp-setup.md)** for the
+full setup guide and troubleshooting.
 
 ### Setup
 
@@ -270,6 +279,11 @@ Command Center pipeline view is unaffected by conversation resets.
 
 ---
 
+## Architecture
+
+See **[docs/architecture.md](docs/architecture.md)** for the full layer diagram,
+data flow, MCP integration, and module inventory.
+
 ## Documentation
 
 For the full guide including all agents, FAQ, troubleshooting, and ground rules,
@@ -286,14 +300,14 @@ see:
 npm test
 
 # Run with coverage report
-npm run test:vitest:coverage
+npm run test:coverage
 
 # Watch mode (re-run on file changes)
-npm run test:vitest:watch
+npm run test:watch
 ```
 
-The test suite includes **1370 tests** across 47 files (Vitest) with
-statement coverage at **88%+**:
+The test suite includes **2,420+ tests** across 96 files (Vitest) with
+coverage enforcement at **75%+**:
 
 - **Unit tests (`tests/unit/`)** — Models, sanitization, cache, schemas,
   audit trail, file locking, MCP server, engine, state machine, validators

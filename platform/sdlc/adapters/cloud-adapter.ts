@@ -35,6 +35,11 @@ export class CloudAdapter extends BaseAdapter {
   readonly category = ADAPTER_CATEGORIES.CLOUD;
   readonly version = '2.0.0';
 
+  /** @internal — test-only override for shellExec */
+  _exec: typeof shellExec = shellExec;
+  /** @internal — test-only override for isBinaryAvailable */
+  _isAvail: typeof isBinaryAvailable = isBinaryAvailable;
+
   constructor(config: CloudConfig = { provider: 'azure' }) {
     super();
     this._config = config as Record<string, unknown>;
@@ -120,7 +125,7 @@ export class CloudAdapter extends BaseAdapter {
       args.push('--slot', slot);
     }
 
-    const result = await shellExec(az, args, { timeout });
+    const result = await this._exec(az, args, { timeout });
     if (result.exitCode !== 0) throw new Error(result.stderr || 'az deployment failed');
 
     let response: unknown = {};
@@ -137,7 +142,7 @@ export class CloudAdapter extends BaseAdapter {
     const rg = this._rg();
     if (!rg) throw new Error('resource_group is required');
 
-    const result = await shellExec(
+    const result = await this._exec(
       az,
       ['webapp', 'show', '--resource-group', rg, '--name', appName, '--output', 'json'],
       { timeout: Math.min(timeout, 30_000) }
@@ -158,7 +163,7 @@ export class CloudAdapter extends BaseAdapter {
     const rg = this._rg();
     if (!rg) return { environments: [], note: 'resource_group not configured' };
 
-    const result = await shellExec(
+    const result = await this._exec(
       az,
       ['webapp', 'list', '--resource-group', rg, '--output', 'json'],
       { timeout: Math.min(timeout, 30_000) }
@@ -196,7 +201,7 @@ export class CloudAdapter extends BaseAdapter {
       'production',
     ];
 
-    const result = await shellExec(az, args, { timeout });
+    const result = await this._exec(az, args, { timeout });
     if (result.exitCode !== 0) throw new Error(result.stderr || 'az slot swap failed');
     return { app_name: appName, rolled_back: true, version: version || 'previous-slot' };
   }
@@ -213,7 +218,7 @@ export class CloudAdapter extends BaseAdapter {
     }
 
     const az = this._azBin();
-    const available = await isBinaryAvailable(az);
+    const available = await this._isAvail(az);
     if (!available) {
       return {
         status: HEALTH_STATUS.UNAVAILABLE,
@@ -227,7 +232,7 @@ export class CloudAdapter extends BaseAdapter {
     // Verify authentication
     let result: ShellResult;
     try {
-      result = await shellExec(az, ['account', 'show', '--output', 'json'], {
+      result = await this._exec(az, ['account', 'show', '--output', 'json'], {
         timeout: 15_000,
       });
     } catch {

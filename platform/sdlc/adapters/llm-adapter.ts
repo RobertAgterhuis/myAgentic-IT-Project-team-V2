@@ -181,7 +181,8 @@ async function httpPost(
   url: string,
   headers: Record<string, string>,
   body: Record<string, unknown>,
-  timeout: number
+  timeout: number,
+  exec: typeof shellExec = shellExec
 ): Promise<{ status: number; body: unknown }> {
   const args = ['-s', '-w', '\n%{http_code}', '-X', 'POST'];
   for (const [k, v] of Object.entries(headers)) {
@@ -190,7 +191,7 @@ async function httpPost(
   args.push('-d', JSON.stringify(body));
   args.push(url);
 
-  const result = await shellExec('curl', args, { timeout });
+  const result = await exec('curl', args, { timeout });
   const lines = result.stdout.trimEnd().split('\n');
   const statusCode = parseInt(lines[lines.length - 1], 10) || 0;
   const jsonBody = lines.slice(0, -1).join('\n');
@@ -216,6 +217,9 @@ export class LlmAdapter extends BaseAdapter {
   private _model: string;
   private _maxTokens: number;
   private _timeout: number;
+
+  /** @internal — test-only override for shellExec */
+  _exec: typeof shellExec = shellExec;
 
   constructor(config: LlmConfig = { provider: 'generic' }) {
     super();
@@ -334,7 +338,7 @@ export class LlmAdapter extends BaseAdapter {
 
     let lastErr: Error | null = null;
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-      const resp = await httpPost(provider.url, provider.headers, body, this._timeout);
+      const resp = await httpPost(provider.url, provider.headers, body, this._timeout, this._exec);
 
       if (resp.status >= 200 && resp.status < 300) {
         return provider.parseResponse(resp.body);

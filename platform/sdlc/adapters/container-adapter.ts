@@ -32,6 +32,11 @@ export class ContainerAdapter extends BaseAdapter {
   readonly category = ADAPTER_CATEGORIES.CONTAINER;
   readonly version = '2.0.0';
 
+  /** @internal — test-only override for shellExec */
+  _exec: typeof shellExec = shellExec;
+  /** @internal — test-only override for isBinaryAvailable */
+  _isAvail: typeof isBinaryAvailable = isBinaryAvailable;
+
   constructor(config: ContainerConfig = { runtime: 'docker' }) {
     super();
     this._config = config as Record<string, unknown>;
@@ -54,7 +59,7 @@ export class ContainerAdapter extends BaseAdapter {
       }
       args.push(context);
 
-      const result = await shellExec(bin, args, { timeout });
+      const result = await this._exec(bin, args, { timeout });
       if (result.exitCode !== 0) throw new Error(result.stderr || `${bin} build failed`);
       return { image, tag, context, exit_code: result.exitCode };
     });
@@ -70,13 +75,13 @@ export class ContainerAdapter extends BaseAdapter {
 
       // Tag for registry if registry_url is set
       if (registry) {
-        const tagResult = await shellExec(bin, ['tag', `${image}:${tag}`, fullRef], {
+        const tagResult = await this._exec(bin, ['tag', `${image}:${tag}`, fullRef], {
           timeout: 30_000,
         });
         if (tagResult.exitCode !== 0) throw new Error(tagResult.stderr || 'docker tag failed');
       }
 
-      const result = await shellExec(bin, ['push', fullRef], { timeout });
+      const result = await this._exec(bin, ['push', fullRef], { timeout });
       if (result.exitCode !== 0) throw new Error(result.stderr || `${bin} push failed`);
       return { image: fullRef, pushed: true, exit_code: result.exitCode };
     });
@@ -87,7 +92,7 @@ export class ContainerAdapter extends BaseAdapter {
       const args = ['images', '--format', '{{.Repository}}|{{.Tag}}|{{.ID}}|{{.Size}}'];
       if (filter) args.push('--filter', `reference=${filter}`);
 
-      const result = await shellExec(bin, args, { timeout: 30_000 });
+      const result = await this._exec(bin, args, { timeout: 30_000 });
       if (result.exitCode !== 0) throw new Error(result.stderr || `${bin} images failed`);
 
       const images = result.stdout
@@ -105,7 +110,7 @@ export class ContainerAdapter extends BaseAdapter {
       const image = params.image as string;
       if (!image) throw new Error('image name is required');
 
-      const result = await shellExec(bin, ['inspect', image], { timeout: 30_000 });
+      const result = await this._exec(bin, ['inspect', image], { timeout: 30_000 });
       if (result.exitCode !== 0) throw new Error(result.stderr || `${bin} inspect failed`);
 
       let manifest: unknown = {};
@@ -123,9 +128,9 @@ export class ContainerAdapter extends BaseAdapter {
       if (!image) throw new Error('image name is required');
 
       // Try docker scout / trivy if available
-      const scoutAvailable = bin === 'docker' && (await isBinaryAvailable('docker'));
+      const scoutAvailable = bin === 'docker' && (await this._isAvail('docker'));
       if (scoutAvailable) {
-        const result = await shellExec(bin, ['scout', 'cves', '--format', 'json', image], {
+        const result = await this._exec(bin, ['scout', 'cves', '--format', 'json', image], {
           timeout: 120_000,
         });
         if (result.exitCode === 0) {
@@ -148,7 +153,7 @@ export class ContainerAdapter extends BaseAdapter {
   async healthCheck(): Promise<HealthCheck> {
     const runtime = this._config.runtime as string;
     const bin = runtime === 'podman' ? 'podman' : 'docker';
-    const available = await isBinaryAvailable(bin);
+    const available = await this._isAvail(bin);
 
     if (!available) {
       return {
@@ -171,7 +176,7 @@ export class ContainerAdapter extends BaseAdapter {
     }
 
     // Verify daemon is running
-    const result = await shellExec(bin, ['info', '--format', '{{.ServerVersion}}'], {
+    const result = await this._exec(bin, ['info', '--format', '{{.ServerVersion}}'], {
       timeout: 10_000,
     });
 

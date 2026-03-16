@@ -101,7 +101,7 @@ describe('CloudAdapter integration', () => {
     // Without Azure CLI → UNAVAILABLE; with CLI but no auth → DEGRADED; fully configured → HEALTHY
     expect(['HEALTHY', 'DEGRADED', 'UNAVAILABLE']).toContain(check.status);
     expect(check.adapter).toBe('cloud');
-  });
+  }, 30_000);
 
   it('deploy fails without environment', async () => {
     const result = await adapter.execute('deploy', { artifact: 'build.zip' });

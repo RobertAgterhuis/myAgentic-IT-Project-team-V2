@@ -47,9 +47,105 @@ PORT=8080 npm start
 
 ## Architecture
 
+### Module Dependency Diagram
+
+```mermaid
+graph TD
+    server["server.ts<br/>(composition root, 194 lines)"]
+
+    server --> config["config.ts<br/>22 constants"]
+    server --> router["router.ts<br/>matchPathTemplate · resolveRoute"]
+    server --> rateLimiter["rate-limiter.ts<br/>createRateLimiter()"]
+    server --> sseManager["sse-manager.ts<br/>createSSEManager()"]
+    server --> metricsCollector["metrics-collector.ts<br/>createMetricsCollector()"]
+    server --> staticHandler["static-handler.ts<br/>createStaticHandler()"]
+    server --> middleware["middleware.ts<br/>security headers · validation"]
+    server --> store["store.ts<br/>FileStore · InMemoryStore"]
+    server --> cache["cache.ts<br/>FileCache"]
+    server --> audit["audit.ts<br/>AuditTrail"]
+    server --> routes["routes/<br/>16 route modules"]
+
+    routes --> store
+    routes --> cache
+    routes --> sseManager
+    routes --> metricsCollector
+```
+
+### Request Lifecycle
+
+```
+Incoming HTTP Request
+  │
+  ├─ Locale check (/locales/*.json → serve directly)
+  │
+  ├─ Rate Limiter (rate-limiter.ts)
+  │   └─ 429 Too Many Requests if limit exceeded
+  │
+  ├─ Auth Guard (API_KEY env check)
+  │   └─ 401 Unauthorized if key mismatch
+  │
+  ├─ Route Resolution (router.ts)
+  │   ├─ resolveRoute(ROUTES, method, pathname)
+  │   │   ├─ Match found → execute route handler
+  │   │   ├─ Path exists but wrong method → 405 Method Not Allowed
+  │   │   └─ No match → static file handler (static-handler.ts)
+  │   └─ findRouteTemplate() for metrics key
+  │
+  └─ Record Metric (metrics-collector.ts)
+      └─ method + endpoint + duration + status code
+```
+
+### SSE Lifecycle
+
+```
+Client connects to GET /api/events
+  │
+  ├─ Route handler (routes/misc.ts) sets SSE headers
+  │   └─ Content-Type: text/event-stream
+  │
+  ├─ sseManager.addClient(req, res)
+  │   ├─ Adds to internal Set
+  │   ├─ Starts heartbeat (30s interval)
+  │   └─ Registers disconnect handler (req 'close')
+  │
+  ├─ Server mutations trigger sseManager.broadcast(event, data)
+  │   └─ Writes "event: <name>\ndata: <json>\n\n" to all clients
+  │
+  └─ Client disconnects
+      ├─ Heartbeat timer cleared
+      └─ Client removed from Set
+```
+
+### Metrics Collection Flow
+
+```
+Request completes
+  │
+  ├─ recordMetric(method, endpoint, durationMs, statusCode)
+  │   └─ metricsCollector.record()
+  │       ├─ Increments requestCount
+  │       ├─ Tracks per-endpoint count + response times
+  │       └─ Increments errorCount if status >= 400
+  │
+  ├─ Auto-flush timer (every 60s)
+  │   └─ metricsCollector.flush()
+  │       └─ Writes to BusinessDocs/metrics/runtime-metrics.json
+  │
+  └─ POST /api/metrics/flush (manual trigger)
+      └─ metricsCollector.flush()
+```
+
+### Source Layout
+
 ```
 src/webapp/
-  server.ts               API server (Node.js http + route dispatching)
+  server.ts               Composition root — wires all modules, creates HTTP server
+  config.ts               All configuration constants (PORT, HOST, paths, intervals, limits)
+  router.ts               Lightweight path-template router (matchPathTemplate, resolveRoute)
+  rate-limiter.ts          In-memory rate limiter with automatic pruning
+  sse-manager.ts           SSE connection manager (heartbeat, broadcast, cleanup)
+  metrics-collector.ts     Per-endpoint metrics with periodic disk flushing
+  static-handler.ts        Static file serving (MIME types, CSP, SPA fallback)
   mcp-server.ts           MCP tool server (IDE integration)
   store.ts                Storage abstraction (FileStore + InMemoryStore)
   models.ts               Domain parsing (questionnaires, decisions, session state)
@@ -68,11 +164,6 @@ src/webapp/
     secret-utils.ts       Secret pattern detection
   routes/                 16 route modules (one per API domain)
   ui/                     React SPA (Vite + React + TypeScript + Tailwind CSS)
-    src/components/       React components (Radix UI primitives)
-    src/hooks/            Custom React hooks
-    src/pages/            Page-level components
-    src/stores/           Zustand state stores
-    src/lib/              Utility functions
 ```
 
 - **Server** binds to `127.0.0.1` only (localhost) for security

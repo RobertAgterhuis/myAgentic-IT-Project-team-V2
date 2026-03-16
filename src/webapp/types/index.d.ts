@@ -20,7 +20,7 @@ interface StoreInterface {
 
 interface ServerContext {
   _cache: import('../cache').FileCache;
-  _sseClients: Set<import('http').ServerResponse>;
+  sseManager: import('../sse-manager').SSEManager;
   _metrics: RuntimeMetrics;
   _audit: { log(meta: AuditMeta): void; read(limit?: number): AuditEntry[] };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

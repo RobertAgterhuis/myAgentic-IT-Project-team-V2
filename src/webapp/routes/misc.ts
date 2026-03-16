@@ -32,7 +32,7 @@ const MAX_EXPORT_SIZE = 10 * 1024 * 1024;
 export = function createMiscRoutes(ctx): Record<string, unknown> {
   const {
     _cache,
-    _sseClients,
+    sseManager,
     _metrics,
     _audit,
     safeWriteSync,
@@ -47,7 +47,6 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     HOST,
     PORT,
     WEBAPP_DIR,
-    SSE_HEARTBEAT_MS,
     ANALYTICS_MAX_EVENTS,
     _readCommandQueue,
   } = ctx;
@@ -209,7 +208,7 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
   const MAX_SSE_CLIENTS = 50;
 
   async function apiGetEvents(req, res) {
-    if (_sseClients.size >= MAX_SSE_CLIENTS) {
+    if (sseManager.size >= MAX_SSE_CLIENTS) {
       return json(res, 503, errorResponse('SSE_LIMIT', 'Too many SSE connections'));
     }
     setSecurityHeaders(res);
@@ -222,24 +221,8 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     res.write(
       `event: connected\ndata: ${JSON.stringify({ timestamp: new Date().toISOString() })}\n\n`
     );
-    _sseClients.add(res);
-    structuredLog('info', 'sse_client_connected', { clients: _sseClients.size });
-
-    const heartbeat = setInterval(() => {
-      try {
-        res.write(`:heartbeat ${new Date().toISOString()}\n\n`);
-      } catch (err) {
-        structuredLog('debug', 'sse_heartbeat_failed', { error: err.message });
-        clearInterval(heartbeat);
-        _sseClients.delete(res);
-      }
-    }, SSE_HEARTBEAT_MS);
-
-    req.on('close', () => {
-      clearInterval(heartbeat);
-      _sseClients.delete(res);
-      structuredLog('info', 'sse_client_disconnected', { clients: _sseClients.size });
-    });
+    sseManager.addClient(req, res);
+    structuredLog('info', 'sse_client_connected', { clients: sseManager.size });
   }
 
   /* ── Metrics Endpoint (SP-R2-004-007) ─────────────────────────── */
@@ -258,7 +241,7 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
       response_time_p50: pcts.p50,
       response_time_p95: pcts.p95,
       response_time_p99: pcts.p99,
-      sse_connections: _sseClients.size,
+      sse_connections: sseManager.size,
       file_ops_count: _metrics.fileOpsCount,
       cache_hit_ratio: totalCache > 0 ? +((cacheStats.hits || 0) / totalCache).toFixed(4) : 0,
       per_endpoint: {},
@@ -297,7 +280,7 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
       version: _version,
       uptime: Math.round(process.uptime()),
       store_status,
-      sse_connections: _sseClients.size,
+      sse_connections: sseManager.size,
       timestamp: new Date().toISOString(),
     });
   }

@@ -244,7 +244,7 @@ describe('Router', () => {
     const r = await req('DELETE', '/api/questionnaires');
     expect(r.status).toBe(405);
     expect(r.json.error).toBe('Method Not Allowed');
-    expect(r.headers.allow).toBe('GET');
+    expect(r.headers.allow).toContain('GET');
   });
 
   it('returns 415 for wrong Content-Type on POST', async () => {

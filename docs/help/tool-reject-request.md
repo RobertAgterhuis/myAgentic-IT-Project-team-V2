@@ -25,7 +25,7 @@ rejections.
 
 ## Usage Example
 
-```
+```text
 Tool: reject_request
 Arguments: {
   "approval_id": "APR-001",

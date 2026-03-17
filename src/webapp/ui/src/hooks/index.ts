@@ -88,3 +88,14 @@ export { useAgents, useAgent } from './use-agents';
 
 /* Runtime Events (M15) */
 export { useRuntimeEvents } from './use-runtime-events';
+
+/* Cockpit (M27) */
+export {
+  useCockpitHealth,
+  useDependencyGraph,
+  useRootCause,
+  useApprovalDetail,
+  useApprovalHistory,
+  useApproveWithComment,
+  useRejectWithComment,
+} from './use-cockpit';

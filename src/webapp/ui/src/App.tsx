@@ -20,6 +20,8 @@ const ArtifactBrowserPage = lazy(() => import('@/pages/artifacts/artifact-browse
 const LineagePage = lazy(() => import('@/pages/artifacts/lineage-page'));
 const ObservabilityPage = lazy(() => import('@/pages/observability/observability-page'));
 const GovernanceDashboardPage = lazy(() => import('@/pages/governance/governance-dashboard-page'));
+const CockpitDashboardPage = lazy(() => import('@/pages/cockpit/cockpit-dashboard-page'));
+const ApprovalDetailPage = lazy(() => import('@/pages/cockpit/approval-detail-page'));
 
 const router = createBrowserRouter([
   {
@@ -45,6 +47,10 @@ const router = createBrowserRouter([
       /* Observability */
       { path: 'observability', element: <ObservabilityPage /> },
       { path: 'governance', element: <GovernanceDashboardPage /> },
+
+      /* Cockpit — M27 */
+      { path: 'cockpit', element: <CockpitDashboardPage /> },
+      { path: 'cockpit/approvals/:id', element: <ApprovalDetailPage /> },
 
       /* Redirects for renamed/merged routes */
       { path: 'command-center', element: <Navigate to="/commands" replace /> },

@@ -13,8 +13,9 @@ import { AlertBanner } from '@/components/ui/alert-banner';
 import { Button } from '@/components/ui/button';
 import { DagNode } from '@/components/artifacts/dag-node';
 import { DagEdge } from '@/components/artifacts/dag-edge';
+import { InteractiveLineageGraph } from '@/components/cockpit/interactive-lineage-graph';
 import { useArtifacts, useArtifactLineage } from '@/hooks';
-import { GitBranch, Circle, Search, RefreshCw } from 'lucide-react';
+import { GitBranch, Circle, Search, RefreshCw, Network } from 'lucide-react';
 
 /* ── Main Page ── */
 export default function LineagePage() {
@@ -22,6 +23,7 @@ export default function LineagePage() {
   const initialId = searchParams.get('artifact') ?? '';
   const [selectedId, setSelectedId] = useState(initialId);
   const [search, setSearch] = useState('');
+  const [viewMode, setViewMode] = useState<'list' | 'graph'>('graph');
 
   const {
     data: artifactData,
@@ -141,31 +143,66 @@ export default function LineagePage() {
             />
           ) : (
             <div className="space-y-4">
-              {/* Graph nodes */}
-              <div>
-                <Text className="text-sm font-semibold mb-2">Nodes ({nodes.length})</Text>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  {nodes.map((node) => (
-                    <DagNode
-                      key={node.id}
-                      node={node}
-                      selected={node.id === selectedId}
-                      onClick={() => setSelectedId(node.id)}
-                    />
-                  ))}
-                </div>
+              {/* View toggle */}
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setViewMode('graph')}
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                    viewMode === 'graph'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  <Network className="size-3" /> Graph
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors ${
+                    viewMode === 'list'
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:bg-muted'
+                  }`}
+                >
+                  List
+                </button>
               </div>
 
-              {/* Graph edges */}
-              {edges.length > 0 && (
-                <div>
-                  <Text className="text-sm font-semibold mb-2">Edges ({edges.length})</Text>
-                  <Card elevation="flat" className="divide-y">
-                    {edges.map((edge, i) => (
-                      <DagEdge key={`${edge.source}-${edge.target}-${i}`} edge={edge} />
-                    ))}
-                  </Card>
-                </div>
+              {viewMode === 'graph' ? (
+                <InteractiveLineageGraph
+                  nodes={nodes}
+                  edges={edges}
+                  onNodeClick={(nodeId) => setSelectedId(nodeId)}
+                  className="h-[500px]"
+                />
+              ) : (
+                <>
+                  {/* Graph nodes */}
+                  <div>
+                    <Text className="text-sm font-semibold mb-2">Nodes ({nodes.length})</Text>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {nodes.map((node) => (
+                        <DagNode
+                          key={node.id}
+                          node={node}
+                          selected={node.id === selectedId}
+                          onClick={() => setSelectedId(node.id)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Graph edges */}
+                  {edges.length > 0 && (
+                    <div>
+                      <Text className="text-sm font-semibold mb-2">Edges ({edges.length})</Text>
+                      <Card elevation="flat" className="divide-y">
+                        {edges.map((edge, i) => (
+                          <DagEdge key={`${edge.source}-${edge.target}-${i}`} edge={edge} />
+                        ))}
+                      </Card>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}

@@ -43,6 +43,12 @@ export const routes = {
     icon: 'ShieldCheck',
     section: 'Observability',
   },
+  cockpit: {
+    path: '/cockpit',
+    label: 'Cockpit',
+    icon: 'Gauge',
+    section: 'Observability',
+  },
 } as const satisfies Record<string, RouteEntry>;
 
 /** Build breadcrumb segments from a pathname. */

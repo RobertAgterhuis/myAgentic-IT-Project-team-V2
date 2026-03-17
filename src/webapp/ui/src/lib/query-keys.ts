@@ -95,4 +95,16 @@ export const queryKeys = {
     all: ['agents'] as const,
     detail: (id: string) => ['agents', id] as const,
   },
+
+  /* Cockpit (M27) */
+  cockpit: {
+    health: ['cockpit', 'health'] as const,
+    dependencies: ['cockpit', 'dependencies'] as const,
+    rootCause: (sessionId?: string) =>
+      sessionId
+        ? (['cockpit', 'root-cause', sessionId] as const)
+        : (['cockpit', 'root-cause'] as const),
+    approvalDetail: (id: string) => ['cockpit', 'approval', id] as const,
+    approvalHistory: ['cockpit', 'approval-history'] as const,
+  },
 } as const;

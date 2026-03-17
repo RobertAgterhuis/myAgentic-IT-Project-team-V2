@@ -325,23 +325,41 @@ function getNodeServer() {
 }
 
 /* ── Expose legacy `server` property for existing test imports ── */
+const _listeners: Record<string, Array<(...args: unknown[]) => void>> = {};
+
 const server = {
   /**
-   * Backward-compatible `listen()`. Tests that import `{ server }` and
-   * call `server.listen(0, '127.0.0.1', cb)` still work.
+   * Backward-compatible `listen()`. Supports two call styles:
+   *   server.listen(0, '127.0.0.1', cb)   – server-api test style
+   *   server.listen(0)                     – milestones test style (returns this)
    */
-  listen(port: number, host: string, cb?: () => void) {
+  listen(port: number, host?: string | (() => void), cb?: () => void) {
+    let resolvedHost = '127.0.0.1';
+    let resolvedCb: (() => void) | undefined;
+    if (typeof host === 'function') {
+      resolvedCb = host;
+    } else if (typeof host === 'string') {
+      resolvedHost = host;
+      resolvedCb = cb;
+    }
+
     createApp()
       .then(async (app) => {
         await initStorageProvider().catch((err: Error) => {
           structuredLog('error', 'storage_provider_init_failed', { error: err.message });
         });
-        await app.listen({ port, host });
-        cb?.();
+        await app.listen({ port, host: resolvedHost });
+        resolvedCb?.();
+        // Emit 'listening' for tests that use server.once('listening', ...)
+        const cbs = _listeners['listening'];
+        if (cbs) {
+          for (const fn of cbs.splice(0)) fn();
+        }
       })
       .catch((err) => {
         structuredLog('error', 'server_start_failed', { error: (err as Error).message });
       });
+    return this;
   },
   close(cb?: () => void) {
     _app?.close().then(cb).catch(cb);
@@ -352,8 +370,11 @@ const server = {
   address() {
     return _app?.server?.address() ?? null;
   },
-  on(_event: string, _handler: (...args: unknown[]) => void) {
-    // No-op for backward compat — Fastify handles its own error events
+  on(event: string, handler: (...args: unknown[]) => void) {
+    (_listeners[event] ??= []).push(handler);
+  },
+  once(event: string, handler: (...args: unknown[]) => void) {
+    (_listeners[event] ??= []).push(handler);
   },
   setTimeout(_ms: number) {
     // Handled via Fastify requestTimeout

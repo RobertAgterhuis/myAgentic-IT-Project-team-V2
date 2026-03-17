@@ -57,17 +57,17 @@ describe('Milestones API (SP-9)', () => {
   beforeAll(async () => {
     setStore(new InMemoryStore(PROJECT_ROOT));
     _rateLimitMap.clear();
-    const listener = server.listen(0);
-    const addr = listener.address();
-    baseUrl = `http://localhost:${addr.port}`;
     await new Promise((resolve) => {
-      if (listener.listening) resolve();
-      else listener.once('listening', resolve);
+      server.listen(0, '127.0.0.1', () => {
+        const addr = server.address();
+        baseUrl = `http://localhost:${addr.port}`;
+        resolve();
+      });
     });
   });
 
-  afterAll(() => {
-    if (server.listening) server.close();
+  afterAll(async () => {
+    await new Promise((resolve) => server.close(resolve));
   });
 
   beforeEach(() => {

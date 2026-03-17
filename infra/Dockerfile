@@ -19,6 +19,9 @@ RUN cd src/webapp/ui && npm run build
 ## ── Stage 2: Production server ───────────────────────────────
 FROM node:22-alpine AS base
 
+# Patch Alpine OS packages (zlib, etc.) and update npm bundled dependencies
+RUN apk update && apk upgrade --no-cache && npm install -g npm@latest && rm -rf /root/.npm
+
 WORKDIR /app
 
 # Install only the webapp runtime dependencies.

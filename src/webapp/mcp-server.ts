@@ -34,6 +34,8 @@ import * as models from './models';
 import { sanitizeMarkdown, sanitizeQID, detectSecrets, safePath } from './server';
 import { withFileLock } from './file-lock';
 import * as schemas from './schemas';
+import { createStorageProvider } from '../../platform/engine/persistence';
+import type { StorageProvider } from '../../platform/engine/persistence';
 
 /* ── Service layer (M20-004) ───────────────────────────────────── */
 import {
@@ -130,6 +132,9 @@ const AUDIT_DIR: string = path.join(BUSINESS_DOCS, 'audit');
 const store = new FileStore();
 const cache = new FileCache();
 const audit = new AuditTrail({ logDir: AUDIT_DIR });
+
+/* ── StorageProvider (M23-005) ──────────────────────────────────── */
+let _storageProvider: StorageProvider | null = null;
 
 /* ── Service layer context ─────────────────────────────────────── */
 const svcCtx: ServiceContext = {
@@ -873,6 +878,12 @@ mcp.resource(
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 if (require.main === module) {
   (async () => {
+    // Initialize StorageProvider (M23-005)
+    try {
+      _storageProvider = await createStorageProvider();
+    } catch {
+      process.stderr.write('Warning: StorageProvider init failed, continuing without it\n');
+    }
     const transport = new StdioServerTransport();
     await mcp.connect(transport);
   })().catch((err: unknown) => {

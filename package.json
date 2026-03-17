@@ -50,6 +50,7 @@
     "@axe-core/playwright": "^4.11.1",
     "@eslint/js": "^8.57.1",
     "@playwright/test": "^1.58.2",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20.19.37",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
@@ -70,6 +71,7 @@
     "@modelcontextprotocol/sdk": "^1.27.1",
     "ajv": "^8.18.0",
     "ajv-formats": "^3.0.1",
+    "better-sqlite3": "^12.8.0",
     "tsx": "^4.21.0"
   },
   "lint-staged": {

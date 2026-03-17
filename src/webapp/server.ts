@@ -49,7 +49,11 @@ import {
   SNAPSHOT_SYNC_INTERVAL_MS,
   RATE_LIMIT_WINDOW_MS,
   RATE_LIMIT_MAX,
+  STORAGE_PROVIDER,
+  STORAGE_PATH,
 } from './config';
+import { createStorageProvider } from '../../platform/engine/persistence';
+import type { StorageProvider } from '../../platform/engine/persistence';
 
 const _cache = new FileCache();
 const _audit = new AuditTrail({ logDir: path.join(BUSINESS_DOCS, 'audit') });
@@ -59,6 +63,33 @@ const rateLimiter = createRateLimiter({
 });
 const sseManager = createSSEManager({ heartbeatMs: SSE_HEARTBEAT_MS });
 const store = () => getStore();
+
+/* ── StorageProvider (M23-005) ────────────────────────────────── */
+let _storageProvider: StorageProvider | null = null;
+function getStorageProvider(): StorageProvider | null {
+  return _storageProvider;
+}
+async function initStorageProvider(): Promise<StorageProvider> {
+  const basePath =
+    STORAGE_PROVIDER === 'file'
+      ? STORAGE_PATH || path.join(PROJECT_ROOT, '.agentic', 'storage')
+      : undefined;
+  const dbPath =
+    STORAGE_PROVIDER === 'sqlite'
+      ? STORAGE_PATH || path.join(PROJECT_ROOT, '.agentic', 'data.db')
+      : undefined;
+  _storageProvider = await createStorageProvider({
+    provider: STORAGE_PROVIDER,
+    basePath,
+    dbPath,
+  });
+  structuredLog('info', 'storage_provider_initialized', {
+    provider: STORAGE_PROVIDER,
+    name: _storageProvider.name,
+  });
+  return _storageProvider;
+}
+
 const metricsCollector = createMetricsCollector({
   flushIntervalMs: METRICS_FLUSH_INTERVAL_MS,
   outputPath: METRICS_FILE,
@@ -165,6 +196,9 @@ const ctx: Record<string, unknown> = {
   SSE_HEARTBEAT_MS,
   ANALYTICS_MAX_EVENTS,
   resolveSessionFile: () => resolveSessionFile(getStore(), _cache, SESSION_DIR),
+  /** StorageProvider getter — returns null pre-init, provider post-init (M23-005). */
+  getStorageProvider,
+  STORAGE_PROVIDER,
 };
 
 const questionnaireRoutes = require('./routes/questionnaires')(ctx);
@@ -302,15 +336,31 @@ if (require.main === module) {
     });
     process.exit(1);
   });
-  server.listen(PORT, HOST, () => {
-    structuredLog('info', 'server_started', {
-      host: HOST,
-      port: PORT,
-      url: `http://${HOST}:${PORT}`,
+  // Initialize StorageProvider before accepting requests (M23-005)
+  initStorageProvider()
+    .then(() => {
+      server.listen(PORT, HOST, () => {
+        structuredLog('info', 'server_started', {
+          host: HOST,
+          port: PORT,
+          url: `http://${HOST}:${PORT}`,
+          storageProvider: STORAGE_PROVIDER,
+        });
+        if (HOST !== '127.0.0.1' && HOST !== 'localhost' && !process.env.API_KEY)
+          structuredLog('warn', 'auth_guard_no_api_key', { host: HOST });
+      });
+    })
+    .catch((err: Error) => {
+      structuredLog('error', 'storage_provider_init_failed', { error: err.message });
+      // Fall back to starting without StorageProvider — FileStore still works
+      server.listen(PORT, HOST, () => {
+        structuredLog('warn', 'server_started_without_storage_provider', {
+          host: HOST,
+          port: PORT,
+          url: `http://${HOST}:${PORT}`,
+        });
+      });
     });
-    if (HOST !== '127.0.0.1' && HOST !== 'localhost' && !process.env.API_KEY)
-      structuredLog('warn', 'auth_guard_no_api_key', { host: HOST });
-  });
   const flushTimer = setInterval(() => metricsCollector.flush(), METRICS_FLUSH_INTERVAL_MS);
   flushTimer.unref();
   let _snap: { createSnapshot(): void } | undefined;
@@ -341,6 +391,9 @@ if (require.main === module) {
     clearInterval(flushTimer);
     clearInterval(snapTimer);
     metricsCollector.flush();
+    // Close StorageProvider gracefully (M23-005)
+    const sp = getStorageProvider();
+    if (sp) sp.close().catch(() => {});
     server.close(() => {
       structuredLog('info', 'server_closed');
       process.exit(0);
@@ -380,4 +433,6 @@ export {
   loadMetrics,
   METRICS_FILE,
   _rateLimitMap,
+  getStorageProvider,
+  initStorageProvider,
 };

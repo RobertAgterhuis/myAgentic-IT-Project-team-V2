@@ -39,13 +39,28 @@ export function useKeyboardShortcuts() {
             navigate('/');
             return;
           case 'c':
-            navigate('/command-center');
+            navigate('/commands');
             return;
           case 'p':
             navigate('/pipeline');
             return;
           case 'q':
             navigate('/questionnaires');
+            return;
+          case 'e':
+            navigate('/decisions');
+            return;
+          case 's':
+            navigate('/sessions');
+            return;
+          case 'a':
+            navigate('/agents');
+            return;
+          case 'o':
+            navigate('/observability');
+            return;
+          case 'v':
+            navigate('/governance');
             return;
         }
         return;

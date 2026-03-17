@@ -3,7 +3,7 @@
  * Uses React Router's <Outlet> for nested page rendering.
  */
 import { Suspense } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
 import { TopNavigation } from '@/components/ui/top-navigation';
 import { SidePanel, type NavSection } from '@/components/ui/side-panel';
 import { ErrorBoundary } from '@/components/ui/empty-state';
@@ -80,14 +80,16 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
     <nav aria-label="Breadcrumb" className="px-6 pt-4 text-sm text-muted-foreground">
       <ol className="flex items-center gap-1.5">
         {crumbs.map((c, i) => (
-          <li key={c.path} className="flex items-center gap-1.5">
+          <li key={c.path + i} className="flex items-center gap-1.5">
             {i > 0 && <span aria-hidden>/</span>}
             {i === crumbs.length - 1 ? (
               <span className="font-medium text-foreground" aria-current="page">
                 {c.label}
               </span>
             ) : (
-              <span>{c.label}</span>
+              <Link to={c.path} className="hover:text-foreground transition-colors">
+                {c.label}
+              </Link>
             )}
           </li>
         ))}

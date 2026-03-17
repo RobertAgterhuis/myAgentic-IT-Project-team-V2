@@ -11,6 +11,7 @@ import { MetricCard } from '@/components/ui/metric-card';
 import { DataTable } from '@/components/ui/data-table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { AlertBanner } from '@/components/ui/alert-banner';
 import { ProgressBar } from '@/components/ui/progress';
 import { driftColumns, velocityColumns, agentColumns } from './columns';
 import { exportData } from './constants';
@@ -30,6 +31,7 @@ import {
   ShieldAlert,
   TrendingUp,
   Activity,
+  RefreshCw,
 } from 'lucide-react';
 
 /* ── Time range ── */
@@ -37,7 +39,12 @@ type TimeRange = '24h' | '7d' | '30d' | '90d';
 
 /* ── Main Page ── */
 export default function MetricsPage() {
-  const { data: drift, isLoading: driftLoading } = useDriftDetection();
+  const {
+    data: drift,
+    isLoading: driftLoading,
+    error: driftError,
+    refetch: refetchDrift,
+  } = useDriftDetection();
   const { data: progress } = useProgress();
   const { data: metrics } = useDashboardMetrics();
   const { data: trends } = useAnalyticsTrends();
@@ -63,6 +70,21 @@ export default function MetricsPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Spinner label="Loading metrics…" />
+      </div>
+    );
+  }
+
+  if (driftError) {
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load metrics: {(driftError as Error).message}</span>
+            <Button variant="outline" size="sm" onClick={() => refetchDrift()}>
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
       </div>
     );
   }

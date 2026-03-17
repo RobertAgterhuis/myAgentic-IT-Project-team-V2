@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/card';
 import { DataTable } from '@/components/ui/data-table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { AlertBanner } from '@/components/ui/alert-banner';
 import { ModalDialog } from '@/components/ui/modal-dialog';
 import { LifecycleFlow } from '@/components/decisions/lifecycle-flow';
 import { CreateDecisionDialog } from '@/components/decisions/create-decision-dialog';
@@ -17,7 +18,7 @@ import { getColumns } from './columns';
 import { statusBadge, priorityBadge } from './constants';
 import type { DecisionItem, StatusFilter } from './types';
 import { useDecisions, useUpdateDecision, useDeleteDecision } from '@/hooks';
-import { Scale, Plus, Filter, X } from 'lucide-react';
+import { Scale, Plus, Filter, X, RefreshCw } from 'lucide-react';
 
 /* ── Decision Detail Dialog ── */
 function DecisionDetailDialog({
@@ -129,7 +130,7 @@ function DecisionDetailDialog({
 
 /* ── Main Page ── */
 export default function DecisionsPage() {
-  const { data, isLoading } = useDecisions();
+  const { data, isLoading, error, refetch } = useDecisions();
   const updateDecision = useUpdateDecision();
   const deleteDecision = useDeleteDecision();
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -211,6 +212,21 @@ export default function DecisionsPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Spinner label="Loading decisions…" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load decisions: {(error as Error).message}</span>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
       </div>
     );
   }

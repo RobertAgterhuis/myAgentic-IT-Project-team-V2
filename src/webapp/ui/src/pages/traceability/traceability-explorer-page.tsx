@@ -11,6 +11,8 @@ import { DataTable } from '@/components/ui/data-table';
 import { MetricCard } from '@/components/ui/metric-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { AlertBanner } from '@/components/ui/alert-banner';
+import { Button } from '@/components/ui/button';
 import { useTraceability } from '@/hooks';
 import type { TraceEntity, TraceGap, TraceEntityType } from '@/lib/api-types';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -24,6 +26,7 @@ import {
   Search,
   ArrowRight,
   ArrowLeft,
+  RefreshCw,
 } from 'lucide-react';
 
 /* ── Entity type config ── */
@@ -179,7 +182,7 @@ function TraceChainVisual({ entities }: { entities: TraceEntity[] }) {
 
 /* ── Main Page ── */
 export default function TraceabilityExplorerPage() {
-  const { data, isLoading } = useTraceability();
+  const { data, isLoading, error, refetch } = useTraceability();
   const [search, setSearch] = useState('');
   const [filterType, setFilterType] = useState<TraceEntityType | ''>('');
 
@@ -211,6 +214,21 @@ export default function TraceabilityExplorerPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Spinner label="Loading traceability data…" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load traceability data: {(error as Error).message}</span>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
       </div>
     );
   }

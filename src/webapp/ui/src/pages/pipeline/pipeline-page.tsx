@@ -8,9 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { AlertBanner } from '@/components/ui/alert-banner';
+import { Button } from '@/components/ui/button';
 import { PhaseCard } from '@/components/runtime/phase-card';
 import { useOrchestratorStatus, useProgress } from '@/hooks';
-import { GitBranch } from 'lucide-react';
+import { GitBranch, RefreshCw } from 'lucide-react';
 
 /* ── Pipeline connector ── */
 
@@ -26,13 +28,28 @@ function Connector() {
 
 export default function PipelinePage() {
   const { data: status } = useOrchestratorStatus();
-  const { data: progress, isLoading } = useProgress();
+  const { data: progress, isLoading, error, refetch } = useProgress();
   const [expandedPhase, setExpandedPhase] = useState<string | null>(null);
 
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Spinner label="Loading pipeline…" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load pipeline: {(error as Error).message}</span>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
       </div>
     );
   }

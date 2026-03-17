@@ -19,14 +19,19 @@ const SHORTCUTS: Shortcut[] = [
   { keys: ['Ctrl', 'K'], description: 'Focus search' },
   { keys: ['Escape'], description: 'Close panel / dismiss dialog' },
   { keys: ['G', 'D'], description: 'Go to Dashboard' },
-  { keys: ['G', 'C'], description: 'Go to Command Center' },
+  { keys: ['G', 'C'], description: 'Go to Commands' },
   { keys: ['G', 'P'], description: 'Go to Pipeline' },
   { keys: ['G', 'Q'], description: 'Go to Questionnaires' },
+  { keys: ['G', 'E'], description: 'Go to Decisions' },
+  { keys: ['G', 'S'], description: 'Go to Sessions' },
+  { keys: ['G', 'A'], description: 'Go to Agents' },
+  { keys: ['G', 'O'], description: 'Go to Observability' },
+  { keys: ['G', 'V'], description: 'Go to Governance' },
   { keys: ['['], description: 'Toggle sidebar' },
   // Pipeline-specific
   { keys: ['Enter'], description: 'Expand selected phase', routes: ['/pipeline'] },
-  // Command Center–specific
-  { keys: ['Ctrl', 'Enter'], description: 'Submit brief', routes: ['/command-center'] },
+  // Commands-specific
+  { keys: ['Ctrl', 'Enter'], description: 'Submit brief', routes: ['/commands'] },
 ];
 
 function ShortcutRow({ shortcut }: { shortcut: Shortcut }) {

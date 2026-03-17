@@ -9,6 +9,8 @@ import { Card } from '@/components/ui/card';
 import { MetricCard, ActivityFeed, type ActivityItem } from '@/components/ui/metric-card';
 import { Spinner } from '@/components/ui/spinner';
 import { EmptyState } from '@/components/ui/empty-state';
+import { AlertBanner } from '@/components/ui/alert-banner';
+import { Button } from '@/components/ui/button';
 import { LiveStatusHero } from '@/components/runtime/live-status-hero';
 import { HealthCard } from '@/components/dashboard/health-card';
 import { QuickLinks } from '@/components/dashboard/quick-links';
@@ -20,7 +22,7 @@ import {
   useDashboardStats,
 } from '@/hooks';
 import type { HealthIndicator, DashboardMetrics } from '@/lib/api-types';
-import { Activity, BarChart3, Clock, FileText, Users, Target, Star } from 'lucide-react';
+import { Activity, BarChart3, Clock, FileText, Users, Target, Star, RefreshCw } from 'lucide-react';
 
 /* ── Metric trend derivation ── */
 function deriveTrend(t: string): 'up' | 'down' | 'neutral' {
@@ -39,7 +41,12 @@ const statIcons: Record<string, React.ReactNode> = {
 
 /* ── Main Page ── */
 export default function DashboardPage() {
-  const { data: health, isLoading: healthLoading } = useDashboardHealth();
+  const {
+    data: health,
+    isLoading: healthLoading,
+    error: healthError,
+    refetch: refetchHealth,
+  } = useDashboardHealth();
   const { data: metrics } = useDashboardMetrics();
   const { data: activity } = useDashboardActivity();
   const { data: stats } = useDashboardStats();
@@ -75,6 +82,21 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Spinner label="Loading dashboard…" />
+      </div>
+    );
+  }
+
+  if (healthError) {
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load dashboard: {(healthError as Error).message}</span>
+            <Button variant="outline" size="sm" onClick={() => refetchHealth()}>
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
       </div>
     );
   }

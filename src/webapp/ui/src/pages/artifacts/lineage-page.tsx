@@ -9,10 +9,12 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { AlertBanner } from '@/components/ui/alert-banner';
+import { Button } from '@/components/ui/button';
 import { DagNode } from '@/components/artifacts/dag-node';
 import { DagEdge } from '@/components/artifacts/dag-edge';
 import { useArtifacts, useArtifactLineage } from '@/hooks';
-import { GitBranch, Circle, Search } from 'lucide-react';
+import { GitBranch, Circle, Search, RefreshCw } from 'lucide-react';
 
 /* ── Main Page ── */
 export default function LineagePage() {
@@ -21,7 +23,12 @@ export default function LineagePage() {
   const [selectedId, setSelectedId] = useState(initialId);
   const [search, setSearch] = useState('');
 
-  const { data: artifactData, isLoading: artifactsLoading } = useArtifacts();
+  const {
+    data: artifactData,
+    isLoading: artifactsLoading,
+    error: artifactsError,
+    refetch: refetchArtifacts,
+  } = useArtifacts();
   const { data: lineageData, isLoading: lineageLoading } = useArtifactLineage(selectedId);
 
   const artifacts = useMemo(() => artifactData?.artifacts ?? [], [artifactData]);
@@ -43,6 +50,21 @@ export default function LineagePage() {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Spinner label="Loading artifacts…" />
+      </div>
+    );
+  }
+
+  if (artifactsError) {
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load artifacts: {(artifactsError as Error).message}</span>
+            <Button variant="outline" size="sm" onClick={() => refetchArtifacts()}>
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
       </div>
     );
   }

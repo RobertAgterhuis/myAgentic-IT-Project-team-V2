@@ -62,6 +62,7 @@
     "jsdom": "^28.1.0",
     "lighthouse": "^12.6.0",
     "lint-staged": "^16.3.3",
+    "msw-storybook-addon": "^2.0.6",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"

@@ -8,10 +8,12 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { AlertBanner } from '@/components/ui/alert-banner';
 import { ProgressBar } from '@/components/ui/progress';
+import { Button } from '@/components/ui/button';
 import { useSessions } from '@/hooks';
 import type { SessionStatus } from '@/lib/api-types';
-import { Activity, Clock, CheckCircle, XCircle, Pause } from 'lucide-react';
+import { Activity, Clock, CheckCircle, XCircle, Pause, RefreshCw } from 'lucide-react';
 
 const statusConfig: Record<
   SessionStatus,
@@ -24,13 +26,28 @@ const statusConfig: Record<
 };
 
 export default function SessionsPage() {
-  const { data, isLoading } = useSessions();
+  const { data, isLoading, error, refetch } = useSessions();
   const navigate = useNavigate();
 
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Spinner label="Loading sessions…" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load sessions: {(error as Error).message}</span>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
       </div>
     );
   }

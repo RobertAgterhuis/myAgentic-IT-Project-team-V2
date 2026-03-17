@@ -1,0 +1,225 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myagentic-it.local/schema/workspace.schema.json",
+  "title": "Workspace Schema",
+  "description": "Validates workspace, repository, project, and service definitions for multi-repo workspace awareness (M25-001).",
+
+  "$defs": {
+    "Service": {
+      "type": "object",
+      "description": "A logical service within a repository (e.g. a microservice, library, or package).",
+      "required": ["id", "name", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,62}$",
+          "description": "Unique service identifier within the repository"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Human-readable service name"
+        },
+        "path": {
+          "type": "string",
+          "description": "Relative path within the repository root"
+        },
+        "stack": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Detected technology stack (e.g. ['node', 'typescript', 'express'])"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["api", "web", "worker", "library", "cli", "infra", "other"],
+          "description": "Service archetype"
+        }
+      }
+    },
+
+    "Repository": {
+      "type": "object",
+      "description": "A registered source repository.",
+      "required": ["id", "name", "provider", "url", "defaultBranch"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,62}$",
+          "description": "Unique repository identifier"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200,
+          "description": "Repository display name"
+        },
+        "provider": {
+          "type": "string",
+          "enum": ["github", "azure-devops", "gitlab", "local"],
+          "description": "Git hosting provider or local"
+        },
+        "url": {
+          "type": "string",
+          "description": "Clone URL or local file path"
+        },
+        "defaultBranch": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Default branch name (e.g. main)"
+        },
+        "services": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Service" },
+          "description": "Logical services discovered within this repository"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Classification tags (e.g. frontend, api, infra)"
+        }
+      }
+    },
+
+    "Team": {
+      "type": "object",
+      "description": "A team associated with a workspace.",
+      "required": ["id", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,62}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "members": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "User identifiers belonging to this team"
+        }
+      }
+    },
+
+    "PolicyScope": {
+      "type": "object",
+      "description": "Defines policy applicability per repository, team, or domain.",
+      "required": ["policyId", "scope"],
+      "additionalProperties": false,
+      "properties": {
+        "policyId": {
+          "type": "string",
+          "description": "Reference to a policy rule ID"
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["workspace", "repository", "team", "domain"],
+          "description": "Level at which the policy applies"
+        },
+        "targetIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "IDs of repositories, teams, or domains this policy targets"
+        }
+      }
+    },
+
+    "Project": {
+      "type": "object",
+      "description": "A project that spans one or more repositories within a workspace.",
+      "required": ["id", "workspaceId", "name", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,62}$"
+        },
+        "workspaceId": {
+          "type": "string",
+          "description": "Parent workspace ID"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "repositories": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Repository IDs assigned to this project"
+        },
+        "sessions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Session IDs associated with this project"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["active", "archived", "draft"],
+          "default": "active"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+
+    "Workspace": {
+      "type": "object",
+      "description": "Top-level workspace that groups repositories, projects, teams, and policies.",
+      "required": ["id", "name", "owner", "created_at"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,62}$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "repositories": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Repository" }
+        },
+        "teams": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Team" }
+        },
+        "policies": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/PolicyScope" }
+        },
+        "owner": {
+          "type": "string",
+          "description": "User or team ID owning the workspace"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+
+  "oneOf": [
+    { "$ref": "#/$defs/Workspace" },
+    { "$ref": "#/$defs/Project" },
+    { "$ref": "#/$defs/Repository" }
+  ]
+}

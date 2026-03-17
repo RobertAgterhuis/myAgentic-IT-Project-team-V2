@@ -116,11 +116,15 @@ describe('MCP server — tool registration', () => {
     'list_jobs',
     'get_job',
     'cancel_job',
+    'list_workspaces',
+    'get_workspace',
+    'create_project',
+    'add_repository',
   ];
 
-  it('registers all 23 tools', () => {
+  it('registers all 27 tools', () => {
     const tools = Object.keys(mcp._registeredTools);
-    expect(tools).toHaveLength(23);
+    expect(tools).toHaveLength(27);
   });
 
   for (const name of expectedTools) {

@@ -262,3 +262,155 @@ describe('TraceabilityMatrix serialisation', () => {
     expect(m2.traceForward('REQ-1')).toHaveLength(1);
   });
 });
+
+// ─── Cross-Repo Traceability (M25-004) ──────────────────────
+
+describe('TraceabilityMatrix cross-repo queries', () => {
+  let matrix;
+
+  beforeEach(() => {
+    matrix = new TraceabilityMatrix();
+  });
+
+  it('nodesByRepo() filters nodes by repoId', () => {
+    matrix.addNode({
+      entity_id: 'REQ-1',
+      entity_type: ENTITY_TYPES.REQUIREMENT,
+      name: 'Auth',
+      stage: 'REQUIREMENTS',
+      repoId: 'backend',
+    });
+    matrix.addNode({
+      entity_id: 'REQ-2',
+      entity_type: ENTITY_TYPES.REQUIREMENT,
+      name: 'UI',
+      stage: 'REQUIREMENTS',
+      repoId: 'frontend',
+    });
+    matrix.addNode({
+      entity_id: 'REQ-3',
+      entity_type: ENTITY_TYPES.REQUIREMENT,
+      name: 'API',
+      stage: 'REQUIREMENTS',
+      repoId: 'backend',
+    });
+
+    const backendNodes = matrix.nodesByRepo('backend');
+    expect(backendNodes).toHaveLength(2);
+    expect(backendNodes.every((n) => n.repoId === 'backend')).toBe(true);
+  });
+
+  it('nodesByRepo() returns empty for unknown repo', () => {
+    matrix.addNode({
+      entity_id: 'REQ-1',
+      entity_type: ENTITY_TYPES.REQUIREMENT,
+      name: 'A',
+      stage: 'REQUIREMENTS',
+      repoId: 'backend',
+    });
+    expect(matrix.nodesByRepo('nonexistent')).toEqual([]);
+  });
+
+  it('allRepoIds() returns unique repo IDs across all nodes', () => {
+    matrix.addNode({
+      entity_id: 'A',
+      entity_type: ENTITY_TYPES.REQUIREMENT,
+      name: 'A',
+      stage: 'REQUIREMENTS',
+      repoId: 'backend',
+    });
+    matrix.addNode({
+      entity_id: 'B',
+      entity_type: ENTITY_TYPES.IMPLEMENTATION_TASK,
+      name: 'B',
+      stage: 'IMPLEMENTATION',
+      repoId: 'frontend',
+    });
+    matrix.addNode({
+      entity_id: 'C',
+      entity_type: ENTITY_TYPES.TEST_ARTIFACT,
+      name: 'C',
+      stage: 'TESTING',
+      repoId: 'backend',
+    });
+    matrix.addNode({
+      entity_id: 'D',
+      entity_type: ENTITY_TYPES.REQUIREMENT,
+      name: 'D',
+      stage: 'REQUIREMENTS',
+    }); // no repoId
+
+    const ids = matrix.allRepoIds();
+    expect(ids.sort()).toEqual(['backend', 'frontend']);
+  });
+
+  it('allRepoIds() returns empty when no nodes have repoId', () => {
+    matrix.addNode(makeNode('REQ-1', ENTITY_TYPES.REQUIREMENT, 'A'));
+    expect(matrix.allRepoIds()).toEqual([]);
+  });
+
+  it('crossRepoEdges() returns only edges between different repos', () => {
+    matrix.addNode({
+      entity_id: 'A',
+      entity_type: ENTITY_TYPES.REQUIREMENT,
+      name: 'A',
+      stage: 'REQUIREMENTS',
+      repoId: 'backend',
+    });
+    matrix.addNode({
+      entity_id: 'B',
+      entity_type: ENTITY_TYPES.IMPLEMENTATION_TASK,
+      name: 'B',
+      stage: 'IMPLEMENTATION',
+      repoId: 'backend',
+    });
+    matrix.addNode({
+      entity_id: 'C',
+      entity_type: ENTITY_TYPES.TEST_ARTIFACT,
+      name: 'C',
+      stage: 'TESTING',
+      repoId: 'frontend',
+    });
+
+    matrix.addEdge('A', 'B', LINK_TYPES.IMPLEMENTS); // same repo
+    matrix.addEdge('A', 'C', LINK_TYPES.VALIDATES); // cross-repo
+    matrix.addEdge('B', 'C', LINK_TYPES.VALIDATES); // cross-repo
+
+    const crossEdges = matrix.crossRepoEdges();
+    expect(crossEdges).toHaveLength(2);
+    // All returned edges connect nodes from different repos
+    for (const edge of crossEdges) {
+      const from = matrix.getNode(edge.from_id);
+      const to = matrix.getNode(edge.to_id);
+      expect(from.repoId).not.toBe(to.repoId);
+    }
+  });
+
+  it('crossRepoEdges() returns empty when all edges are same-repo', () => {
+    matrix.addNode({
+      entity_id: 'A',
+      entity_type: ENTITY_TYPES.REQUIREMENT,
+      name: 'A',
+      stage: 'REQUIREMENTS',
+      repoId: 'backend',
+    });
+    matrix.addNode({
+      entity_id: 'B',
+      entity_type: ENTITY_TYPES.IMPLEMENTATION_TASK,
+      name: 'B',
+      stage: 'IMPLEMENTATION',
+      repoId: 'backend',
+    });
+    matrix.addEdge('A', 'B', LINK_TYPES.IMPLEMENTS);
+
+    expect(matrix.crossRepoEdges()).toEqual([]);
+  });
+
+  it('crossRepoEdges() excludes edges where nodes lack repoId', () => {
+    matrix.addNode(makeNode('A', ENTITY_TYPES.REQUIREMENT, 'A'));
+    matrix.addNode(makeNode('B', ENTITY_TYPES.IMPLEMENTATION_TASK, 'B'));
+    matrix.addEdge('A', 'B', LINK_TYPES.IMPLEMENTS);
+
+    expect(matrix.crossRepoEdges()).toEqual([]);
+  });
+});

@@ -912,6 +912,141 @@ mcp.tool(
 );
 
 /* ════════════════════════════════════════════════════════════════ */
+/*  WORKSPACE TOOLS (M25-005)                                      */
+/* ════════════════════════════════════════════════════════════════ */
+
+mcp.tool(
+  'list_workspaces',
+  'List all registered workspaces with their repositories and projects',
+  async () => {
+    try {
+      if (!_storageProvider) return errorResult('StorageProvider not available');
+      const { WorkspaceManager } = await import('../../platform/engine/workspace');
+      const mgr = new WorkspaceManager(_storageProvider);
+      const workspaces = await mgr.listWorkspaces();
+      return jsonResult({ workspaces, total: workspaces.length });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return errorResult(`Failed to list workspaces: ${message}`);
+    }
+  }
+);
+
+mcp.tool(
+  'get_workspace',
+  'Get workspace details including repositories, teams, and projects',
+  {
+    type: 'object',
+    properties: {
+      workspace_id: { type: 'string', description: 'The workspace ID to retrieve' },
+    },
+    required: ['workspace_id'],
+  },
+  async ({ workspace_id }: Record<string, unknown>) => {
+    try {
+      if (!_storageProvider) return errorResult('StorageProvider not available');
+      const { WorkspaceManager } = await import('../../platform/engine/workspace');
+      const mgr = new WorkspaceManager(_storageProvider);
+      const workspace = await mgr.getWorkspace(String(workspace_id));
+      const projects = await mgr.listProjects(String(workspace_id));
+      return jsonResult({ workspace, projects });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return errorResult(`Failed to get workspace: ${message}`);
+    }
+  }
+);
+
+mcp.tool(
+  'create_project',
+  'Create a new project in a workspace, optionally assigning repositories',
+  {
+    type: 'object',
+    properties: {
+      workspace_id: { type: 'string', description: 'Parent workspace ID' },
+      project_id: { type: 'string', description: 'Unique project identifier' },
+      name: { type: 'string', description: 'Project display name' },
+      repository_ids: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Repository IDs to assign to the project',
+      },
+    },
+    required: ['workspace_id', 'project_id', 'name'],
+  },
+  async ({ workspace_id, project_id, name, repository_ids }: Record<string, unknown>) => {
+    try {
+      if (!_storageProvider) return errorResult('StorageProvider not available');
+      const { WorkspaceManager } = await import('../../platform/engine/workspace');
+      const mgr = new WorkspaceManager(_storageProvider);
+      const project = await mgr.createProject({
+        id: String(project_id),
+        workspaceId: String(workspace_id),
+        name: String(name),
+        repositories: Array.isArray(repository_ids) ? repository_ids.map(String) : undefined,
+      });
+      return jsonResult({ ok: true, project });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return errorResult(`Failed to create project: ${message}`);
+    }
+  }
+);
+
+mcp.tool(
+  'add_repository',
+  'Register a repository in a workspace',
+  {
+    type: 'object',
+    properties: {
+      workspace_id: { type: 'string', description: 'Workspace to add the repository to' },
+      repo_id: { type: 'string', description: 'Unique repository identifier' },
+      name: { type: 'string', description: 'Repository display name' },
+      provider: {
+        type: 'string',
+        enum: ['github', 'azure-devops', 'gitlab', 'local'],
+        description: 'Git hosting provider',
+      },
+      url: { type: 'string', description: 'Clone URL or local path' },
+      default_branch: { type: 'string', description: 'Default branch (e.g. main)' },
+      tags: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Classification tags (e.g. frontend, api)',
+      },
+    },
+    required: ['workspace_id', 'repo_id', 'name', 'provider', 'url', 'default_branch'],
+  },
+  async ({
+    workspace_id,
+    repo_id,
+    name: repoName,
+    provider,
+    url,
+    default_branch,
+    tags,
+  }: Record<string, unknown>) => {
+    try {
+      if (!_storageProvider) return errorResult('StorageProvider not available');
+      const { WorkspaceManager } = await import('../../platform/engine/workspace');
+      const mgr = new WorkspaceManager(_storageProvider);
+      const workspace = await mgr.addRepository(String(workspace_id), {
+        id: String(repo_id),
+        name: String(repoName),
+        provider: String(provider) as 'github' | 'azure-devops' | 'gitlab' | 'local',
+        url: String(url),
+        defaultBranch: String(default_branch),
+        tags: Array.isArray(tags) ? tags.map(String) : [],
+      });
+      return jsonResult({ ok: true, repository_count: workspace.repositories.length });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return errorResult(`Failed to add repository: ${message}`);
+    }
+  }
+);
+
+/* ════════════════════════════════════════════════════════════════ */
 /*  RESOURCES                                                      */
 /* ════════════════════════════════════════════════════════════════ */
 

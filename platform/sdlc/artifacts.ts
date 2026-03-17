@@ -58,6 +58,15 @@ export interface ArtifactVersion {
   size_bytes: number;
 }
 
+// ─── Repository Origin (M25-004) ─────────────────────────────
+
+export interface ArtifactOrigin {
+  repoId: string;
+  branch: string;
+  commitSha?: string;
+  path: string;
+}
+
 // ─── Artifact Definition ─────────────────────────────────────
 
 export interface Artifact {
@@ -78,6 +87,8 @@ export interface Artifact {
   updated_at: string;
   tags: string[];
   metadata: Record<string, unknown>;
+  /** Repository origin for cross-repo lineage (M25-004). Defaults to local. */
+  origin?: ArtifactOrigin;
 }
 
 // ─── Lineage Edge ────────────────────────────────────────────
@@ -203,6 +214,39 @@ export class ArtifactRegistry {
       this._artifacts.set(a.id, a);
     }
     this._lineage = data.lineage || [];
+  }
+
+  // ─── Cross-Repo Queries (M25-004) ─────────────────────────
+
+  /** All artifacts originating from a specific repository. */
+  listByRepo(repoId: string): Artifact[] {
+    return Array.from(this._artifacts.values()).filter((a) => a.origin?.repoId === repoId);
+  }
+
+  /** All unique repository IDs that contributed to an artifact's lineage. */
+  reposContributingTo(artifactId: string): string[] {
+    const { upstream } = this.getLineage(artifactId);
+    const repos = new Set<string>();
+    const artifact = this._artifacts.get(artifactId);
+    if (artifact?.origin?.repoId) repos.add(artifact.origin.repoId);
+    for (const edge of upstream) {
+      const src = this._artifacts.get(edge.from_artifact_id);
+      if (src?.origin?.repoId) repos.add(src.origin.repoId);
+    }
+    return Array.from(repos);
+  }
+
+  /** Set or update the repository origin for an artifact. */
+  setOrigin(artifactId: string, origin: ArtifactOrigin): Artifact {
+    const artifact = this._artifacts.get(artifactId);
+    if (!artifact) throw new Error(`Artifact not found: ${artifactId}`);
+    const updated: Artifact = {
+      ...artifact,
+      origin,
+      updated_at: new Date().toISOString(),
+    };
+    this._artifacts.set(artifactId, updated);
+    return updated;
   }
 
   // ─── Stats ───────────────────────────────────────────────

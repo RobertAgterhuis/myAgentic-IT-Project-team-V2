@@ -39,6 +39,7 @@ import { createArtifactRegistrationHook } from './artifact-registration';
 import { ArtifactRegistry } from '../sdlc/artifacts';
 import { loadGovernancePolicies, type GovernancePoliciesConfig } from './governance-config';
 import { resolveIdentity, type ResolvedIdentity } from './identity';
+import type { ProjectContext } from './workspace/types';
 
 /**
  * Engine hook callbacks for extensibility without modifying the core loop.
@@ -62,6 +63,7 @@ interface EngineHooks {
  * @property {string} [templateName] - Template to load (default: 'sdlc')
  * @property {string} [templatesDir] - Override templates base directory
  * @property {EngineHooks} [hooks] - Transition hook callbacks
+ * @property {ProjectContext} [projectContext] - Multi-repo project context (M25-003)
  */
 
 /**
@@ -85,6 +87,7 @@ function createEngine(options: Record<string, unknown>) {
     templatesDir,
     hooks: userHooks,
     governancePoliciesPath,
+    projectContext: inputProjectContext,
   } = options as {
     store: {
       exists(p: string): boolean;
@@ -99,9 +102,28 @@ function createEngine(options: Record<string, unknown>) {
     templatesDir?: string;
     hooks?: EngineHooks;
     governancePoliciesPath?: string;
+    projectContext?: ProjectContext;
   };
 
   if (!store) throw new Error('Engine requires a store');
+
+  // M25-003: Resolve project context (defaults to single-repo local mode)
+  const projectContext: ProjectContext = inputProjectContext ?? {
+    projectId: 'default',
+    projectName: 'Local Project',
+    workspaceId: 'default',
+    repositories: [
+      {
+        repoId: 'local',
+        repoName: 'current',
+        provider: 'local',
+        url: '.',
+        defaultBranch: 'main',
+        services: [],
+        tags: [],
+      },
+    ],
+  };
 
   // Load template manifest (defaults to 'sdlc')
   let template = null;
@@ -338,6 +360,7 @@ function createEngine(options: Record<string, unknown>) {
       transitionStatus: transitionStatus,
       governanceMode: governanceConfig.governance_mode,
       identity: resolvedIdentity,
+      projectContext,
     };
   }
 
@@ -569,6 +592,7 @@ function createEngine(options: Record<string, unknown>) {
     artifactRegistry,
     governanceConfig,
     resolvedIdentity,
+    projectContext,
     advance,
     error,
     recover,

@@ -220,6 +220,7 @@ const artifactRoutes = require('./routes/artifacts')(ctx);
 const analyticsRoutes = require('./routes/analytics')(ctx);
 const sessionRoutes = require('./routes/sessions')(ctx);
 const agentRoutes = require('./routes/agents')(ctx);
+const workspaceRoutes = require('./routes/workspaces')(ctx);
 const miscRoutes = require('./routes/misc')(ctx);
 const serveStatic = miscRoutes._serveStatic;
 Object.freeze(ctx);
@@ -241,6 +242,7 @@ const ROUTES: RouteTable = {
   ...analyticsRoutes,
   ...sessionRoutes,
   ...agentRoutes,
+  ...workspaceRoutes,
   ...orchestratorRoutes,
   ...miscRoutes,
 };

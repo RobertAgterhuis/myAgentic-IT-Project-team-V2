@@ -297,3 +297,83 @@ describe('ArtifactRegistry stats', () => {
     expect(s.by_status.APPROVED).toBe(1);
   });
 });
+
+// ─── Cross-Repo Lineage (M25-004) ───────────────────────────
+
+describe('ArtifactRegistry cross-repo lineage', () => {
+  let registry;
+
+  beforeEach(() => {
+    resetArtifactIdCounter();
+    registry = new ArtifactRegistry(createMockStore());
+  });
+
+  it('setOrigin() attaches repo origin to an artifact', () => {
+    const a = makeArtifact('spec.md');
+    registry.register(a);
+
+    const updated = registry.setOrigin(a.id, {
+      repoId: 'backend',
+      branch: 'main',
+      commitSha: 'abc123',
+      path: 'docs/spec.md',
+    });
+
+    expect(updated.origin.repoId).toBe('backend');
+    expect(updated.origin.branch).toBe('main');
+    expect(updated.origin.commitSha).toBe('abc123');
+    expect(updated.origin.path).toBe('docs/spec.md');
+  });
+
+  it('setOrigin() throws for unknown artifact', () => {
+    expect(() =>
+      registry.setOrigin('NONEXISTENT', { repoId: 'x', branch: 'main', path: '.' })
+    ).toThrow('Artifact not found');
+  });
+
+  it('listByRepo() returns artifacts from a specific repo', () => {
+    const a1 = makeArtifact('a.md');
+    const a2 = makeArtifact('b.md');
+    const a3 = makeArtifact('c.md');
+    registry.register(a1);
+    registry.register(a2);
+    registry.register(a3);
+    registry.setOrigin(a1.id, { repoId: 'backend', branch: 'main', path: '.' });
+    registry.setOrigin(a2.id, { repoId: 'frontend', branch: 'main', path: '.' });
+    registry.setOrigin(a3.id, { repoId: 'backend', branch: 'main', path: '.' });
+
+    const backendArtifacts = registry.listByRepo('backend');
+    expect(backendArtifacts).toHaveLength(2);
+    expect(backendArtifacts.every((a) => a.origin.repoId === 'backend')).toBe(true);
+  });
+
+  it('listByRepo() returns empty for unknown repo', () => {
+    expect(registry.listByRepo('nonexistent')).toEqual([]);
+  });
+
+  it('reposContributingTo() identifies repos in upstream lineage', () => {
+    const a1 = makeArtifact('upstream.md');
+    const a2 = makeArtifact('downstream.md');
+    registry.register(a1);
+    registry.register(a2);
+    registry.setOrigin(a1.id, { repoId: 'lib-repo', branch: 'main', path: '.' });
+    registry.setOrigin(a2.id, { repoId: 'app-repo', branch: 'main', path: '.' });
+    registry.addLineageEdge({
+      from_artifact_id: a1.id,
+      to_artifact_id: a2.id,
+      relationship: 'PRODUCES',
+      created_at: new Date().toISOString(),
+    });
+
+    const repos = registry.reposContributingTo(a2.id);
+    expect(repos).toContain('app-repo');
+    expect(repos).toContain('lib-repo');
+    expect(repos).toHaveLength(2);
+  });
+
+  it('reposContributingTo() returns empty for no-origin artifact', () => {
+    const a = makeArtifact('lonely.md');
+    registry.register(a);
+    expect(registry.reposContributingTo(a.id)).toEqual([]);
+  });
+});

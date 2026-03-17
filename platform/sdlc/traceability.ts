@@ -27,6 +27,8 @@ export interface TraceNode {
   entity_type: EntityType;
   name: string;
   stage: string;
+  /** Repository origin for cross-repo traceability (M25-004). */
+  repoId?: string;
 }
 
 // ─── Trace Edge ──────────────────────────────────────────────
@@ -302,6 +304,31 @@ export class TraceabilityMatrix {
 
   edgeCount(): number {
     return this._edges.length;
+  }
+
+  // ─── Cross-Repo Queries (M25-004) ─────────────────────────
+
+  /** All nodes from a specific repository. */
+  nodesByRepo(repoId: string): TraceNode[] {
+    return Array.from(this._nodes.values()).filter((n) => n.repoId === repoId);
+  }
+
+  /** All unique repository IDs in the graph. */
+  allRepoIds(): string[] {
+    const ids = new Set<string>();
+    for (const n of this._nodes.values()) {
+      if (n.repoId) ids.add(n.repoId);
+    }
+    return Array.from(ids);
+  }
+
+  /** Edges that cross repository boundaries. */
+  crossRepoEdges(): TraceEdge[] {
+    return this._edges.filter((e) => {
+      const from = this._nodes.get(e.from_id);
+      const to = this._nodes.get(e.to_id);
+      return from?.repoId && to?.repoId && from.repoId !== to.repoId;
+    });
   }
 
   // ─── Serialization ────────────────────────────────────────

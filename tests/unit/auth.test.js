@@ -583,4 +583,247 @@ describe('loadAuthConfig', () => {
     expect(config.clientSecret).toBe('test-secret');
     expect(config.callbackUrl).toContain('/api/auth/callback');
   });
+
+  it('uses AUTH_CALLBACK_URL when provided', () => {
+    process.env.GITHUB_CLIENT_ID = 'test-id';
+    process.env.GITHUB_CLIENT_SECRET = 'test-secret';
+    process.env.AUTH_CALLBACK_URL = 'https://example.com';
+    const config = loadAuthConfig();
+    expect(config.callbackUrl).toBe('https://example.com/api/auth/callback');
+  });
+
+  it('uses AUTH_STATE_SECRET when provided', () => {
+    process.env.GITHUB_CLIENT_ID = 'test-id';
+    process.env.GITHUB_CLIENT_SECRET = 'test-secret';
+    process.env.AUTH_STATE_SECRET = 'my-secret';
+    const config = loadAuthConfig();
+    expect(config.stateSecret).toBe('my-secret');
+  });
+
+  it('sets secureCookies from env', () => {
+    process.env.GITHUB_CLIENT_ID = 'test-id';
+    process.env.GITHUB_CLIENT_SECRET = 'test-secret';
+    process.env.AUTH_SECURE_COOKIES = 'true';
+    const config = loadAuthConfig();
+    expect(config.secureCookies).toBe(true);
+  });
+});
+
+/* ── Additional AuthManager Coverage ──────────────────────────── */
+
+describe('AuthManager extra coverage', () => {
+  const stateSecret = crypto.randomBytes(32).toString('hex');
+  const config = {
+    clientId: 'cov-id',
+    clientSecret: 'cov-secret',
+    callbackUrl: 'http://localhost:3000/api/auth/callback',
+    stateSecret,
+    secureCookies: false,
+    enabled: true,
+  };
+  let manager, dbPath;
+
+  beforeEach(() => {
+    dbPath = tmpDbPath();
+    manager = new AuthManager({ ...config, dbPath });
+  });
+
+  afterEach(() => {
+    manager.close();
+    rmDir(dbPath);
+  });
+
+  it('setSessionCookie sets sid and csrf cookies', () => {
+    const user = manager.store.upsertUser({
+      githubId: 50001,
+      email: 'cookie@test.com',
+      name: 'Cookie',
+      avatarUrl: '',
+    });
+    const session = manager.createSession(user.id);
+    let lastSetCookie = [];
+    const res = {
+      setHeader: (k, v) => {
+        if (k === 'Set-Cookie') lastSetCookie = Array.isArray(v) ? v : [v];
+      },
+      getHeader: (k) => {
+        if (k === 'Set-Cookie') return lastSetCookie;
+        return undefined;
+      },
+    };
+    manager.setSessionCookie(res, session);
+    expect(lastSetCookie.length).toBeGreaterThanOrEqual(2);
+    expect(lastSetCookie.some((c) => c.startsWith('sid='))).toBe(true);
+    expect(lastSetCookie.some((c) => c.startsWith('csrf='))).toBe(true);
+  });
+
+  it('clearSessionCookies clears both cookies', () => {
+    let lastSetCookie = [];
+    const res = {
+      setHeader: (k, v) => {
+        if (k === 'Set-Cookie') lastSetCookie = Array.isArray(v) ? v : [v];
+      },
+      getHeader: (k) => {
+        if (k === 'Set-Cookie') return lastSetCookie;
+        return undefined;
+      },
+    };
+    manager.clearSessionCookies(res);
+    expect(lastSetCookie.some((c) => c.includes('sid='))).toBe(true);
+    expect(lastSetCookie.some((c) => c.includes('Max-Age=0'))).toBe(true);
+  });
+
+  it('getLoginUrl returns GitHub OAuth URL', () => {
+    const url = manager.getLoginUrl('/dashboard');
+    expect(url).toContain('github.com/login/oauth/authorize');
+    expect(url).toContain('client_id=cov-id');
+    expect(url).toContain('state=');
+  });
+
+  it('getUserForSession returns null for non-existent user', () => {
+    const user = manager.store.upsertUser({
+      githubId: 50002,
+      email: 'ghost2@test.com',
+      name: 'Ghost2',
+      avatarUrl: '',
+    });
+    const session = manager.createSession(user.id);
+    manager.store._db.prepare('DELETE FROM users WHERE id = ?').run(user.id);
+    expect(manager.getUserForSession(session)).toBeNull();
+  });
+
+  it('getSessionFromRequest returns null for malformed session IDs', () => {
+    const req = { headers: { cookie: 'sid=not-hex-64' } };
+    expect(manager.getSessionFromRequest(req)).toBeNull();
+  });
+
+  it('getSessionFromRequest returns null when no cookie', () => {
+    const req = { headers: {} };
+    expect(manager.getSessionFromRequest(req)).toBeNull();
+  });
+
+  it('exchangeCode throws on network error', async () => {
+    // exchangeCode calls fetch — without mocking, GitHub will reject/fail
+    await expect(manager.exchangeCode('invalid-code')).rejects.toThrow();
+  });
+
+  it('listUsers returns all users', () => {
+    manager.store.upsertUser({ githubId: 50010, email: 'a@t.com', name: 'A', avatarUrl: '' });
+    manager.store.upsertUser({ githubId: 50011, email: 'b@t.com', name: 'B', avatarUrl: '' });
+    const users = manager.listUsers();
+    expect(users.length).toBe(2);
+  });
+
+  it('updateUserRole returns false for non-existent user', () => {
+    expect(manager.updateUserRole('nonexistent', 'admin')).toBe(false);
+  });
+});
+
+/* ── Middleware audit logging coverage ────────────────────────── */
+
+describe('createAuthMiddleware with audit', () => {
+  const stateSecret = crypto.randomBytes(32).toString('hex');
+  const config = {
+    clientId: 'audit-id',
+    clientSecret: 'audit-secret',
+    callbackUrl: 'http://localhost:3000/api/auth/callback',
+    stateSecret,
+    secureCookies: false,
+    enabled: true,
+  };
+  let manager, dbPath, middleware, auditLog;
+
+  function mockRes() {
+    const headers = {};
+    return {
+      writeHead: vi.fn((code, h) => {
+        if (h) Object.assign(headers, h);
+      }),
+      end: vi.fn(),
+      setHeader: vi.fn((k, v) => {
+        headers[k] = v;
+      }),
+      getHeader: vi.fn((k) => headers[k]),
+      _headers: headers,
+    };
+  }
+
+  beforeEach(() => {
+    dbPath = tmpDbPath();
+    manager = new AuthManager({ ...config, dbPath });
+    auditLog = [];
+    middleware = createAuthMiddleware({
+      authManager: manager,
+      log: () => {},
+      audit: { log: (meta) => auditLog.push(meta) },
+    });
+  });
+
+  afterEach(() => {
+    manager.close();
+    rmDir(dbPath);
+  });
+
+  it('requireRole with audit logs access_denied', () => {
+    manager.store.upsertUser({
+      githubId: 60001,
+      email: 'v-audit@test.com',
+      name: 'Viewer',
+      avatarUrl: '',
+    });
+    // Ensure viewer has viewer role (not first user admin)
+    manager.store.upsertUser({ githubId: 60000, email: 'x@t.com', name: 'X', avatarUrl: '' });
+    const viewer2 = manager.store.upsertUser({
+      githubId: 60002,
+      email: 'v2@test.com',
+      name: 'V2',
+      avatarUrl: '',
+    });
+    const req = { user: viewer2 };
+    const res = mockRes();
+    const result = middleware.requireRole(req, res, 'admin', '/api/admin/users');
+    expect(result).toBe(false);
+    expect(auditLog.length).toBe(1);
+    expect(auditLog[0].operation).toBe('access_denied');
+  });
+
+  it('authenticate invalidates session with deleted user', async () => {
+    const user = manager.store.upsertUser({
+      githubId: 60010,
+      email: 'del@test.com',
+      name: 'Del',
+      avatarUrl: '',
+    });
+    const session = manager.createSession(user.id);
+    manager.store._db.prepare('DELETE FROM users WHERE id = ?').run(user.id);
+
+    const req = {
+      headers: { cookie: `sid=${session.id}` },
+      method: 'GET',
+    };
+    const res = mockRes();
+    const result = await middleware.authenticate(req, res, '/api/sessions');
+    expect(result).toBe(false);
+    expect(res.writeHead).toHaveBeenCalledWith(401, expect.any(Object));
+  });
+
+  it('authenticate skips CSRF for HEAD and OPTIONS methods', async () => {
+    const user = manager.store.upsertUser({
+      githubId: 60020,
+      email: 'head@test.com',
+      name: 'Head',
+      avatarUrl: '',
+    });
+    const session = manager.createSession(user.id);
+
+    for (const method of ['HEAD', 'OPTIONS']) {
+      const req = {
+        headers: { cookie: `sid=${session.id}` },
+        method,
+      };
+      const res = mockRes();
+      const result = await middleware.authenticate(req, res, '/api/sessions');
+      expect(result).toBe(true);
+    }
+  });
 });

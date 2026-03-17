@@ -13,6 +13,7 @@ import { getStore } from '../store';
 import * as models from '../models';
 import * as schemas from '../schemas';
 import { withFileLock } from '../file-lock';
+import { SessionService, toServiceContext } from '../services';
 import { errorResponse } from '../utils/errors';
 import { VALIDATION as V, RESPONSES as R, STATIC as S } from '../strings';
 import { structuredLog, json, parseBody, safePath, setSecurityHeaders } from '../middleware';
@@ -34,14 +35,12 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     _cache,
     sseManager,
     _metrics,
-    _audit,
     safeWriteSync,
     computePercentiles,
     flushMetrics,
     SESSION_DIR,
     SESSION_FILE,
     resolveSessionFile,
-    HELP_DIR,
     ANALYTICS_FILE,
     PROJECT_ROOT,
     HOST,
@@ -50,6 +49,8 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     ANALYTICS_MAX_EVENTS,
     _readCommandQueue,
   } = ctx;
+
+  const svc = new SessionService(toServiceContext(ctx));
 
   /* ── Version (read once at module load) ──────────────────────── */
   let _version = '0.0.0';
@@ -64,16 +65,8 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
   /* ── Session API ──────────────────────────────────────────────── */
 
   async function apiGetSession(_req, res) {
-    const store = getStore();
-    const sessionFile =
-      typeof resolveSessionFile === 'function' ? resolveSessionFile() : SESSION_FILE;
-    if (!sessionFile || !store.exists(sessionFile)) return json(res, 200, { session: null });
-    const { data: session, errors } = _cache.readJSON(sessionFile, schemas.validateSessionState);
-    if (errors) {
-      structuredLog('warn', 'session_validation', { errors });
-    }
-    if (!session) return json(res, 200, { session: null });
-    json(res, 200, { session });
+    const session = svc.readSessionState();
+    json(res, 200, { session: session || null });
   }
 
   async function apiReevaluate(req, res) {
@@ -194,13 +187,12 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
       return json(res, 400, errorResponse('INVALID_TOPIC', 'Invalid topic slug'));
     }
 
-    const filePath = safePath(HELP_DIR, slug + '.md');
-    if (!getStore().exists(filePath)) {
+    const result = svc.getHelpTopic(slug);
+    if (!result) {
       return json(res, 404, errorResponse('TOPIC_NOT_FOUND', 'Help topic not found'));
     }
-    const content = _cache.read(filePath);
     const entry = HELP_TOC.find((t) => t.slug === slug);
-    json(res, 200, { slug, title: entry ? entry.title : slug, content });
+    json(res, 200, { slug, title: entry ? entry.title : slug, content: result.content });
   }
 
   /* ── SSE Endpoint (SP-R2-004-005) ─────────────────────────────── */
@@ -353,8 +345,8 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     const url = new URL(req.url, `http://${HOST}:${PORT}`);
     const limitParam = parseInt(url.searchParams.get('limit'), 10);
     const limit = limitParam >= 1 && limitParam <= 1000 ? limitParam : 50;
-    const entries = _audit.read(limit);
-    json(res, 200, { entries, total: entries.length, limit });
+    const result = svc.readAuditLog(limit);
+    json(res, 200, { entries: result.entries, total: result.total, limit });
   }
 
   /* ── Static file serving (React SPA from ui/dist/) ──────────── */

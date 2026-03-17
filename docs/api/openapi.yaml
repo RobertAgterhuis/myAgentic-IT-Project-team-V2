@@ -1,0 +1,1661 @@
+openapi: 3.1.0
+info:
+  title: Agentic IT Project Team — Canonical API
+  version: 1.0.0
+  description: >
+    REST API surface for the Agentic IT Project Team platform.
+    Operations are backed by shared services (M20-002) and consumed by
+    both the HTTP server and the MCP server.
+  license:
+    name: MIT
+    identifier: MIT
+  contact:
+    name: Robert Agterhuis
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+security: []
+
+tags:
+  - name: Session
+    description: Project session state and progress
+  - name: Questionnaires
+    description: Questionnaire discovery, retrieval, and answer management
+  - name: Decisions
+    description: Decision log — open questions, operational decisions, categories
+  - name: Commands
+    description: Orchestrator command queue
+  - name: Governance
+    description: Governance approvals workflow
+  - name: Drift
+    description: Drift detection between session state and GitHub board
+  - name: Help
+    description: Help topic retrieval
+  - name: Audit
+    description: Mutation audit trail
+  - name: Orchestrator
+    description: Pipeline orchestrator control
+  - name: Milestones
+    description: Milestone and template CRUD
+  - name: Dashboard
+    description: Dashboard health, metrics, and activity feeds
+  - name: Analytics
+    description: Trend analytics and agent metrics
+  - name: Artifacts
+    description: Build/deploy artifact registry
+  - name: Sessions
+    description: Historical session browser
+  - name: Agents
+    description: Agent registry and detail
+  - name: Operational
+    description: Health checks, SSE events, runtime metrics
+
+paths:
+  # ── Session ────────────────────────────────────────────────────
+  /api/session:
+    get:
+      operationId: getSession
+      tags: [Session]
+      summary: Get current session state
+      description: >
+        Returns the current session-state.json contents including project name,
+        mode, status, current phase/agent, and sprint backlog summary.
+        Service: SessionService.readSessionState()
+      responses:
+        "200":
+          description: Current session state (or null fields when no session exists)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SessionState"
+
+  /api/progress:
+    get:
+      operationId: getProgress
+      tags: [Session]
+      summary: Get pipeline progress
+      description: >
+        Returns a progress summary derived from the session state. Includes
+        project name, mode, current phase/agent, phase list, and active sprint.
+        Service: SessionService.buildProgressMcp()
+      responses:
+        "200":
+          description: Progress info
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgressInfo"
+
+  # ── Questionnaires ─────────────────────────────────────────────
+  /api/questionnaires:
+    get:
+      operationId: listQuestionnaires
+      tags: [Questionnaires]
+      summary: List all questionnaires with completion stats
+      description: >
+        Discovers all *-questionnaire.md files under BusinessDocs/ and returns
+        summary metadata including question counts and answer progress.
+        Service: QuestionnaireService.list()
+      responses:
+        "200":
+          description: Array of questionnaire summaries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  questionnaires:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/QuestionnaireSummary"
+
+  /api/save:
+    post:
+      operationId: saveAnswers
+      tags: [Questionnaires]
+      summary: Save answers to a questionnaire file
+      description: >
+        Applies one or more answer updates to a questionnaire markdown file.
+        Each update targets a specific question ID (Q-XX-XXXX format).
+        Uses file locking to prevent concurrent writes.
+        Service: QuestionnaireService.saveAnswers()
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [file, updates]
+              properties:
+                file:
+                  type: string
+                  description: Relative path to the questionnaire .md file
+                  example: Phase1-Business/Questionnaires/business-analyst-questionnaire.md
+                updates:
+                  type: array
+                  maxItems: 200
+                  items:
+                    $ref: "#/components/schemas/QuestionnaireUpdate"
+      responses:
+        "200":
+          description: Save result with applied count and any warnings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SaveAnswersResult"
+        "400":
+          description: Validation error (missing file, empty updates, path traversal)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ── Decisions ──────────────────────────────────────────────────
+  /api/decisions:
+    get:
+      operationId: listDecisions
+      tags: [Decisions]
+      summary: List all decisions grouped by status
+      description: >
+        Parses decisions.md and returns open questions, decided items, and
+        deferred items. Also discovers category files in the decisions/ directory.
+        Service: DecisionService.list()
+      responses:
+        "200":
+          description: Grouped decision lists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DecisionListResult"
+    post:
+      operationId: createDecision
+      tags: [Decisions]
+      summary: Create a new decision entry
+      description: >
+        Adds an open question or operational decision to decisions.md.
+        Service: DecisionService.create()
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DecisionCreateInput"
+      responses:
+        "200":
+          description: Created decision
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DecisionResult"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/decisions/activate-category:
+    post:
+      operationId: activateDecisionCategory
+      tags: [Decisions]
+      summary: Activate a decision category file
+      description: >
+        Copies a category seed file from decisions/_index-seed.md pattern
+        into the active decisions directory.
+        Service: DecisionService.activateCategory()
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category]
+              properties:
+                category:
+                  type: string
+                  description: Category filename (without .md extension)
+                  example: accessibility
+      responses:
+        "200":
+          description: Activation result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  category:
+                    type: string
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/decisions/promote-lesson:
+    post:
+      operationId: promoteLessonToDecision
+      tags: [Decisions]
+      summary: Promote a lesson-learned item to a decision/question
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lessonId]
+              properties:
+                lessonId:
+                  type: string
+                text:
+                  type: string
+      responses:
+        "200":
+          description: Promotion result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DecisionResult"
+
+  # ── Commands ───────────────────────────────────────────────────
+  /api/command:
+    get:
+      operationId: getCommandQueue
+      tags: [Commands]
+      summary: Get the command queue
+      description: >
+        Returns all entries from command-queue.json.
+        Service: CommandService.getQueue()
+      responses:
+        "200":
+          description: Command queue entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommandQueueEntry"
+    post:
+      operationId: queueCommand
+      tags: [Commands]
+      summary: Queue an orchestrator command
+      description: >
+        Validates and enqueues a command (CREATE, AUDIT, FEATURE, etc.)
+        into the command queue file. Optionally saves a project brief.
+        Service: CommandService.queue()
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QueueCommandInput"
+      responses:
+        "200":
+          description: Queue result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QueueCommandResult"
+        "400":
+          description: Invalid command type
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ── Drift ──────────────────────────────────────────────────────
+  /api/drift:
+    get:
+      operationId: checkDrift
+      tags: [Drift]
+      summary: Detect drift between session state and GitHub sync reports
+      description: >
+        Compares sprint statuses in session-state.json against GitHub board
+        sync reports. Returns a drift report with severity levels.
+        Service: SessionService.checkDrift()
+      responses:
+        "200":
+          description: Drift report
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DriftReport"
+
+  # ── Governance Approvals ───────────────────────────────────────
+  /api/v1/approvals:
+    get:
+      operationId: listApprovals
+      tags: [Governance]
+      summary: List pending governance approval requests
+      description: >
+        Returns all pending approval requests from the governance engine.
+        Service: GovernanceService.listApprovals()
+      responses:
+        "200":
+          description: Approval list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  approvals:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ApprovalItem"
+                  count:
+                    type: integer
+        "503":
+          description: Governance engine not available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/approvals/{id}/approve:
+    post:
+      operationId: approveRequest
+      tags: [Governance]
+      summary: Approve a governance request
+      description: >
+        Approves a pending approval request. Service: GovernanceService.approve()
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Approval request ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user]
+              properties:
+                user:
+                  type: string
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Approval decision result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApprovalDecisionResult"
+        "503":
+          description: Governance engine not available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/approvals/{id}/reject:
+    post:
+      operationId: rejectRequest
+      tags: [Governance]
+      summary: Reject a governance request
+      description: >
+        Rejects a pending approval request. Reason is required.
+        Service: GovernanceService.reject()
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [user, reason]
+              properties:
+                user:
+                  type: string
+                reason:
+                  type: string
+      responses:
+        "200":
+          description: Rejection decision result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApprovalDecisionResult"
+        "400":
+          description: Missing reason
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "503":
+          description: Governance engine not available
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ── Help ───────────────────────────────────────────────────────
+  /api/help:
+    get:
+      operationId: getHelp
+      tags: [Help]
+      summary: List help topics or get a specific topic
+      description: >
+        Without a topic parameter, lists all available help topics.
+        With a topic parameter, returns the topic content.
+        Service: SessionService.getHelpTopics() / getHelpTopic()
+      parameters:
+        - name: topic
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Help topic slug (e.g. "commands", "decisions")
+      responses:
+        "200":
+          description: Help topics list or single topic content
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      topics:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            slug:
+                              type: string
+                            file:
+                              type: string
+                  - type: object
+                    properties:
+                      topic:
+                        type: string
+                      content:
+                        type: string
+        "404":
+          description: Unknown topic
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ── Audit ──────────────────────────────────────────────────────
+  /api/audit:
+    get:
+      operationId: getAuditLog
+      tags: [Audit]
+      summary: Get recent audit trail entries
+      description: >
+        Returns the most recent entries from the append-only mutation audit log.
+        Service: SessionService.readAuditLog()
+      parameters:
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 1000
+          description: Maximum number of entries to return
+      responses:
+        "200":
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  entries:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        timestamp:
+                          type: string
+                          format: date-time
+                        operation:
+                          type: string
+                        entityType:
+                          type: string
+                        entityId:
+                          type: string
+                        user:
+                          type: string
+                        summary:
+                          type: string
+
+  # ── Orchestrator ───────────────────────────────────────────────
+  /api/orchestrator/status:
+    get:
+      operationId: getOrchestratorStatus
+      tags: [Orchestrator]
+      summary: Get orchestrator pipeline status
+      responses:
+        "200":
+          description: Pipeline status
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/orchestrator/templates:
+    get:
+      operationId: getOrchestratorTemplates
+      tags: [Orchestrator]
+      summary: List available pipeline templates
+      responses:
+        "200":
+          description: Template list
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/orchestrator/run-history:
+    get:
+      operationId: getRunHistory
+      tags: [Orchestrator]
+      summary: Get pipeline run history
+      responses:
+        "200":
+          description: Run history
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/orchestrator/advance:
+    post:
+      operationId: advanceOrchestrator
+      tags: [Orchestrator]
+      summary: Advance the orchestrator to the next step
+      responses:
+        "200":
+          description: Advance result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/orchestrator/command:
+    post:
+      operationId: sendOrchestratorCommand
+      tags: [Orchestrator]
+      summary: Send a direct command to the orchestrator
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Command result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/orchestrator/sprint-gate:
+    post:
+      operationId: triggerSprintGate
+      tags: [Orchestrator]
+      summary: Trigger a sprint gate check
+      responses:
+        "200":
+          description: Sprint gate result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/orchestrator/validate-gate:
+    post:
+      operationId: validateGate
+      tags: [Orchestrator]
+      summary: Validate a pipeline gate
+      responses:
+        "200":
+          description: Validation result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/orchestrator/error:
+    post:
+      operationId: reportOrchestratorError
+      tags: [Orchestrator]
+      summary: Report an orchestrator error
+      responses:
+        "200":
+          description: Error acknowledged
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/orchestrator/recover:
+    post:
+      operationId: recoverOrchestrator
+      tags: [Orchestrator]
+      summary: Attempt orchestrator recovery from error state
+      responses:
+        "200":
+          description: Recovery result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/orchestrator/reset:
+    post:
+      operationId: resetOrchestrator
+      tags: [Orchestrator]
+      summary: Reset the orchestrator to initial state
+      responses:
+        "200":
+          description: Reset result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/orchestrator/stop:
+    post:
+      operationId: stopOrchestrator
+      tags: [Orchestrator]
+      summary: Stop the orchestrator
+      responses:
+        "200":
+          description: Stop result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ── Milestones ─────────────────────────────────────────────────
+  /api/milestones:
+    get:
+      operationId: listMilestones
+      tags: [Milestones]
+      summary: List all milestones
+      responses:
+        "200":
+          description: Milestone list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Milestone"
+    post:
+      operationId: createMilestone
+      tags: [Milestones]
+      summary: Create a new milestone
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [id, title, status]
+              properties:
+                id:
+                  type: string
+                title:
+                  type: string
+                status:
+                  type: string
+                  enum: [planned, active, completed, archived]
+                description:
+                  type: string
+                stories:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        "200":
+          description: Created milestone
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Milestone"
+
+  /api/milestones/{id}:
+    get:
+      operationId: getMilestone
+      tags: [Milestones]
+      summary: Get a single milestone by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Milestone detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Milestone"
+        "404":
+          description: Milestone not found
+    put:
+      operationId: updateMilestone
+      tags: [Milestones]
+      summary: Update a milestone
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Updated milestone
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Milestone"
+
+  /api/milestones/{id}/archive:
+    patch:
+      operationId: archiveMilestone
+      tags: [Milestones]
+      summary: Archive a milestone
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Archived milestone
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Milestone"
+
+  /api/milestone-templates:
+    get:
+      operationId: listMilestoneTemplates
+      tags: [Milestones]
+      summary: List milestone templates
+      responses:
+        "200":
+          description: Template list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+    post:
+      operationId: createMilestoneTemplate
+      tags: [Milestones]
+      summary: Create a milestone template
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Created template
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/milestone-templates/{id}:
+    delete:
+      operationId: deleteMilestoneTemplate
+      tags: [Milestones]
+      summary: Delete a milestone template
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+
+  /api/milestone-templates/{id}/apply:
+    post:
+      operationId: applyMilestoneTemplate
+      tags: [Milestones]
+      summary: Apply a milestone template to create milestones
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Applied template result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ── Dashboard ──────────────────────────────────────────────────
+  /api/dashboard/health:
+    get:
+      operationId: getDashboardHealth
+      tags: [Dashboard]
+      summary: Get system health indicators
+      responses:
+        "200":
+          description: Health status
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/dashboard/metrics:
+    get:
+      operationId: getDashboardMetrics
+      tags: [Dashboard]
+      summary: Get dashboard metrics summary
+      responses:
+        "200":
+          description: Metric summary
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/dashboard/activity:
+    get:
+      operationId: getDashboardActivity
+      tags: [Dashboard]
+      summary: Get recent activity feed
+      responses:
+        "200":
+          description: Activity entries
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [Dashboard]
+      summary: Get dashboard statistics
+      responses:
+        "200":
+          description: Stats overview
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/metrics/dashboard:
+    get:
+      operationId: getMetricsDashboard
+      tags: [Dashboard]
+      summary: Get metrics dashboard data
+      responses:
+        "200":
+          description: Metrics dashboard
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ── Analytics ──────────────────────────────────────────────────
+  /api/v1/analytics/trends:
+    get:
+      operationId: getAnalyticsTrends
+      tags: [Analytics]
+      summary: Get trend analytics data
+      responses:
+        "200":
+          description: Trend data
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/v1/analytics/agents:
+    get:
+      operationId: getAnalyticsAgents
+      tags: [Analytics]
+      summary: Get agent performance analytics
+      responses:
+        "200":
+          description: Agent analytics
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/v1/analytics/metrics:
+    get:
+      operationId: listAnalyticsMetrics
+      tags: [Analytics]
+      summary: List available analytics metric names
+      responses:
+        "200":
+          description: Metric names
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/v1/analytics/metrics/{name}:
+    get:
+      operationId: queryAnalyticsMetric
+      tags: [Analytics]
+      summary: Query a specific analytics metric
+      parameters:
+        - name: name
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Metric data
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ── Artifacts ──────────────────────────────────────────────────
+  /api/v1/artifacts:
+    get:
+      operationId: listArtifacts
+      tags: [Artifacts]
+      summary: List build/deploy artifacts
+      responses:
+        "200":
+          description: Artifact list
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/v1/artifacts/stats:
+    get:
+      operationId: getArtifactStats
+      tags: [Artifacts]
+      summary: Get artifact statistics
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/v1/artifacts/{id}:
+    get:
+      operationId: getArtifact
+      tags: [Artifacts]
+      summary: Get a specific artifact
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Artifact detail
+          content:
+            application/json:
+              schema:
+                type: object
+        "404":
+          description: Artifact not found
+
+  /api/v1/artifacts/{id}/lineage:
+    get:
+      operationId: getArtifactLineage
+      tags: [Artifacts]
+      summary: Get artifact build lineage
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Lineage graph
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ── Sessions ───────────────────────────────────────────────────
+  /api/sessions:
+    get:
+      operationId: listSessions
+      tags: [Sessions]
+      summary: List historical sessions
+      responses:
+        "200":
+          description: Session list
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/sessions/{id}:
+    get:
+      operationId: getSessionDetail
+      tags: [Sessions]
+      summary: Get session detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Session detail
+          content:
+            application/json:
+              schema:
+                type: object
+        "404":
+          description: Session not found
+
+  /api/sessions/{id}/timeline:
+    get:
+      operationId: getSessionTimeline
+      tags: [Sessions]
+      summary: Get session event timeline
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Timeline events
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ── Agents ─────────────────────────────────────────────────────
+  /api/agents:
+    get:
+      operationId: listAgents
+      tags: [Agents]
+      summary: List registered agents
+      responses:
+        "200":
+          description: Agent list
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/agents/{id}:
+    get:
+      operationId: getAgentDetail
+      tags: [Agents]
+      summary: Get agent detail
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Agent detail
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ── Operational ────────────────────────────────────────────────
+  /api/health:
+    get:
+      operationId: getHealth
+      tags: [Operational]
+      summary: Health check endpoint
+      responses:
+        "200":
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /api/metrics:
+    get:
+      operationId: getRuntimeMetrics
+      tags: [Operational]
+      summary: Get runtime metrics
+      responses:
+        "200":
+          description: Runtime metrics
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/metrics/flush:
+    post:
+      operationId: flushMetrics
+      tags: [Operational]
+      summary: Flush metrics to disk
+      responses:
+        "200":
+          description: Flushed
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/events:
+    get:
+      operationId: getEvents
+      tags: [Operational]
+      summary: Server-Sent Events (SSE) stream
+      description: >
+        Opens a persistent SSE connection. Events are emitted when files change,
+        decisions are updated, commands are queued, etc.
+      responses:
+        "200":
+          description: SSE stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  /api/export:
+    get:
+      operationId: exportData
+      tags: [Operational]
+      summary: Export project data
+      responses:
+        "200":
+          description: Exported data
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/reevaluate:
+    post:
+      operationId: triggerReevaluate
+      tags: [Operational]
+      summary: Trigger a reevaluation cycle
+      responses:
+        "200":
+          description: Reevaluation triggered
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/subscribe:
+    post:
+      operationId: subscribe
+      tags: [Operational]
+      summary: Subscribe to event notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Subscription result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/analytics:
+    get:
+      operationId: getAnalytics
+      tags: [Operational]
+      summary: Get runtime analytics
+      responses:
+        "200":
+          description: Analytics data
+          content:
+            application/json:
+              schema:
+                type: object
+    post:
+      operationId: postAnalytics
+      tags: [Operational]
+      summary: Record analytics event
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          description: Event recorded
+          content:
+            application/json:
+              schema:
+                type: object
+
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+
+    SessionState:
+      type: object
+      properties:
+        session_id:
+          type: string
+        projectName:
+          type: ["string", "null"]
+        mode:
+          type: ["string", "null"]
+          enum: [CREATE, AUDIT, null]
+        status:
+          type: ["string", "null"]
+          enum: [ONBOARDING, ONBOARDING_COMPLETE, IN_PROGRESS, PAUSED, COMPLETE, null]
+        cycle_type:
+          type: ["string", "null"]
+        currentPhase:
+          type: ["string", "null"]
+        currentAgent:
+          type: ["string", "null"]
+        current_step:
+          type: ["string", "null"]
+        initiated_at:
+          type: string
+          format: date-time
+        last_updated:
+          type: string
+          format: date-time
+        phases:
+          type: array
+          items:
+            type: object
+        activeSprint:
+          type: ["object", "null"]
+        completed_phases:
+          type: array
+          items:
+            type: string
+        completed_agents:
+          type: array
+          items:
+            type: string
+        phase_outputs:
+          type: object
+          additionalProperties: true
+        sprint_backlog:
+          type: object
+          properties:
+            sprint_statuses:
+              type: object
+              additionalProperties: true
+            total_sprints:
+              type: integer
+            path:
+              type: string
+        blockers:
+          type: array
+          items:
+            type: object
+        open_human_escalations:
+          type: array
+          items:
+            type: object
+
+    ProgressInfo:
+      type: object
+      properties:
+        projectName:
+          type: ["string", "null"]
+        mode:
+          type: ["string", "null"]
+        currentPhase:
+          type: ["string", "null"]
+        currentAgent:
+          type: ["string", "null"]
+        phases:
+          type: array
+          items:
+            type: object
+        activeSprint:
+          type: ["object", "null"]
+
+    QuestionnaireSummary:
+      type: object
+      properties:
+        file:
+          type: string
+          description: Relative path to the questionnaire file
+        phase:
+          type: string
+          description: Pipeline phase (e.g. Phase 1, Phase 2)
+        title:
+          type: string
+          description: Questionnaire title
+        total:
+          type: integer
+          description: Total number of questions
+        answered:
+          type: integer
+        unanswered:
+          type: integer
+        deferred:
+          type: integer
+
+    QuestionnaireUpdate:
+      type: object
+      required: [questionId, answer, status]
+      properties:
+        questionId:
+          type: string
+          pattern: '^Q-\d{2}-\d{4}$'
+          description: Question ID in Q-XX-XXXX format
+        answer:
+          type: string
+          description: Answer text (max 50 000 characters)
+          maxLength: 50000
+        status:
+          type: string
+          enum: [ANSWERED, DEFERRED, OPEN]
+
+    SaveAnswersResult:
+      type: object
+      properties:
+        saved:
+          type: boolean
+        file:
+          type: string
+        applied:
+          type: integer
+        total:
+          type: integer
+        warnings:
+          type: array
+          items:
+            type: string
+
+    DecisionListResult:
+      type: object
+      properties:
+        open:
+          type: array
+          items:
+            $ref: "#/components/schemas/DecisionItem"
+        decided:
+          type: array
+          items:
+            $ref: "#/components/schemas/DecisionItem"
+        deferred:
+          type: array
+          items:
+            $ref: "#/components/schemas/DecisionItem"
+        categories:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              file:
+                type: string
+
+    DecisionItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Decision ID (e.g. DEC-001)
+        type:
+          type: string
+          enum: [OPEN_QUESTION, DECIDED, DEFERRED]
+        status:
+          type: string
+        priority:
+          type: string
+          enum: [CRITICAL, HIGH, MEDIUM, LOW]
+        scope:
+          type: string
+        question:
+          type: string
+        answer:
+          type: string
+        reason:
+          type: string
+        decided_at:
+          type: string
+
+    DecisionCreateInput:
+      type: object
+      required: [type, priority, scope, text]
+      properties:
+        type:
+          type: string
+          enum: [question, operational, OPEN_QUESTION]
+        priority:
+          type: string
+          enum: [CRITICAL, HIGH, MEDIUM, LOW]
+        scope:
+          type: string
+        text:
+          type: string
+        notes:
+          type: string
+
+    DecisionResult:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        id:
+          type: string
+        action:
+          type: string
+
+    CommandQueueEntry:
+      type: object
+      properties:
+        command:
+          type: string
+          description: Command type
+          enum: [CREATE, AUDIT, FEATURE, SCOPE CHANGE, HOTFIX, REEVALUATE, REFRESH ONBOARDING]
+        text:
+          type: string
+          description: Full command text for clipboard
+        project:
+          type: ["string", "null"]
+        scope:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        requested_at:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [PENDING, COMPLETED, FAILED]
+        source:
+          type: string
+        clipboard_text:
+          type: string
+        brief_saved:
+          type: boolean
+        brief_path:
+          type: string
+
+    QueueCommandInput:
+      type: object
+      required: [command]
+      properties:
+        command:
+          type: string
+          enum: [CREATE, AUDIT, FEATURE, SCOPE CHANGE, HOTFIX, REEVALUATE, REFRESH ONBOARDING]
+        project:
+          type: string
+        scope:
+          type: string
+        description:
+          type: string
+        brief:
+          type: string
+          description: Optional project brief content to save
+
+    QueueCommandResult:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        clipboard_text:
+          type: string
+          description: Full command text suitable for clipboard paste
+        brief_saved:
+          type: boolean
+
+    DriftReport:
+      type: object
+      properties:
+        generated_at:
+          type: string
+          format: date-time
+        summary:
+          type: object
+          properties:
+            total_drifts:
+              type: integer
+            critical:
+              type: integer
+            warning:
+              type: integer
+            info:
+              type: integer
+        drifts:
+          type: array
+          items:
+            type: object
+            properties:
+              sprint_id:
+                type: string
+              severity:
+                type: string
+                enum: [CRITICAL, WARNING, INFO]
+              type:
+                type: string
+              message:
+                type: string
+        in_sync:
+          type: object
+          properties:
+            sprints:
+              type: array
+              items:
+                type: string
+            stories:
+              type: integer
+
+    ApprovalItem:
+      type: object
+      properties:
+        id:
+          type: string
+        entity_id:
+          type: string
+        gate_id:
+          type: string
+        stage:
+          type: string
+        requested_by:
+          type: string
+        requested_at:
+          type: string
+          format: date-time
+        required_role:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+
+    ApprovalDecisionResult:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        approval:
+          type: object
+          properties:
+            id:
+              type: string
+            status:
+              type: string
+            decided_by:
+              type: string
+            decided_at:
+              type: string
+              format: date-time
+            reason:
+              type: string
+
+    Milestone:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+          enum: [planned, active, completed, archived]
+        description:
+          type: string
+        stories:
+          type: array
+          items:
+            type: object
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time

@@ -576,7 +576,7 @@ describe('tool: queue_command', () => {
     const queue = JSON.parse(fs.readFileSync(queueFile, 'utf8'));
     expect(queue).toHaveLength(1);
     expect(queue[0].command).toBe('CREATE');
-    expect(queue[0].status).toBe('QUEUED');
+    expect(queue[0].status).toBe('PENDING');
   });
 
   it('accepts all valid command types', async () => {

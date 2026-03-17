@@ -30,11 +30,22 @@ const { StdioServerTransport } = require(sdkBase.replace(/index\.js$/, 'stdio.js
 import { FileStore } from './store';
 import { FileCache } from './cache';
 import { AuditTrail } from './audit';
-import { resolveSessionFile } from './session-state-resolver';
 import * as models from './models';
 import { sanitizeMarkdown, sanitizeQID, detectSecrets, safePath } from './server';
 import { withFileLock } from './file-lock';
 import * as schemas from './schemas';
+
+/* ── Service layer (M20-004) ───────────────────────────────────── */
+import {
+  SessionService,
+  QuestionnaireService,
+  DecisionService,
+  CommandService,
+  GovernanceService,
+  ServiceValidationError,
+  ServiceNotAvailableError,
+} from './services';
+import type { ServiceContext } from './services/types';
 
 /* ── Type definitions ───────────────────────────────────────────── */
 
@@ -103,16 +114,6 @@ interface QuestionnaireSummary {
   deferred: number;
 }
 
-interface CommandQueueEntry {
-  command: string;
-  text: string;
-  timestamp: string;
-  status: string;
-  project?: string;
-  scope?: string;
-  description?: string;
-}
-
 /* ── Path constants ─────────────────────────────────────────────── */
 const PROJECT_ROOT: string = path.resolve(__dirname, '../..');
 const DOC_ROOT: string = path.join(PROJECT_ROOT, 'docs');
@@ -127,6 +128,31 @@ const store = new FileStore();
 const cache = new FileCache();
 const audit = new AuditTrail({ logDir: AUDIT_DIR });
 
+/* ── Service layer context ─────────────────────────────────────── */
+const svcCtx: ServiceContext = {
+  store,
+  cache,
+  audit,
+  projectRoot: PROJECT_ROOT,
+  businessDocs: BUSINESS_DOCS,
+  sessionDir: SESSION_DIR,
+  decisionsFile: DECISIONS_PATH,
+  decisionsDir: path.join(BUSINESS_DOCS, 'decisions'),
+  commandQueue: path.join(SESSION_DIR, 'command-queue.json'),
+  helpDir: HELP_DIR,
+  safeWrite(filePath: string, data: string, _encoding?: string, auditEntry?) {
+    store.writeFile(filePath, data);
+    cache.invalidate(filePath);
+    if (auditEntry) audit.log(auditEntry);
+  },
+};
+
+const sessionSvc = new SessionService(svcCtx);
+const questionnaireSvc = new QuestionnaireService(svcCtx);
+const decisionSvc = new DecisionService(svcCtx);
+const commandSvc = new CommandService(svcCtx);
+const governanceSvc = new GovernanceService(svcCtx);
+
 /* ── Helpers ────────────────────────────────────────────────────── */
 
 function jsonResult(data: unknown): McpToolResult {
@@ -140,107 +166,6 @@ function errorResult(message: string): McpToolResult {
 function safeWrite(filePath: string, data: string): void {
   store.writeFile(filePath, data);
   cache.invalidate(filePath);
-}
-
-async function parseQuestionnaireFile(full: string, name: string): Promise<QuestionnaireSummary> {
-  const content = await fsp.readFile(full, 'utf8');
-  const parsed = models.parseQuestionnaire(content, full, BUSINESS_DOCS);
-  const rel = path.relative(PROJECT_ROOT, full).replace(/\\/g, '/');
-  const qs: Array<{ status: string }> = parsed.questions || [];
-  return {
-    file: rel,
-    phase: parsed.phase || '',
-    title: (parsed as unknown as { title?: string }).title || name,
-    total: qs.length,
-    answered: qs.filter((q) => q.status === 'ANSWERED').length,
-    unanswered: qs.filter((q) => q.status === 'OPEN' || q.status === 'UNANSWERED').length,
-    deferred: qs.filter((q) => q.status === 'DEFERRED').length,
-  };
-}
-
-async function walkQuestionnaires(dir: string, results: QuestionnaireSummary[]): Promise<void> {
-  let entries;
-  try {
-    entries = await fsp.readdir(dir, { withFileTypes: true });
-  } catch {
-    return;
-  }
-  for (const e of entries) {
-    const full = path.join(dir, e.name);
-    if (e.isDirectory() && e.name !== '.backups') {
-      await walkQuestionnaires(full, results);
-      continue;
-    }
-    if (!e.isFile() || !e.name.endsWith('-questionnaire.md')) continue;
-    try {
-      results.push(await parseQuestionnaireFile(full, e.name));
-    } catch {
-      /* skip unparseable files */
-    }
-  }
-}
-
-async function discoverQuestionnaires(): Promise<QuestionnaireSummary[]> {
-  const results: QuestionnaireSummary[] = [];
-  try {
-    await fsp.access(BUSINESS_DOCS);
-  } catch {
-    return results;
-  }
-  await walkQuestionnaires(BUSINESS_DOCS, results);
-  return results;
-}
-
-async function readSessionState(): Promise<SessionState | null> {
-  const file =
-    resolveSessionFile(store, cache, SESSION_DIR) || path.join(SESSION_DIR, 'session-state.json');
-  try {
-    return JSON.parse(await fsp.readFile(file, 'utf8')) as SessionState;
-  } catch {
-    return null;
-  }
-}
-
-async function readCommandQueue(): Promise<CommandQueueEntry[]> {
-  const file = path.join(SESSION_DIR, 'command-queue.json');
-  try {
-    return JSON.parse(await fsp.readFile(file, 'utf8')) as CommandQueueEntry[];
-  } catch {
-    return [];
-  }
-}
-
-async function readDecisions(): Promise<{
-  open: unknown[];
-  decided: unknown[];
-  deferred: unknown[];
-}> {
-  try {
-    return models.parseDecisions(await fsp.readFile(DECISIONS_PATH, 'utf8'));
-  } catch {
-    return { open: [], decided: [], deferred: [] };
-  }
-}
-
-function buildProgress(session: SessionState | null): ProgressInfo {
-  if (!session) {
-    return {
-      projectName: null,
-      mode: null,
-      currentPhase: null,
-      currentAgent: null,
-      phases: [],
-      activeSprint: null,
-    };
-  }
-  return {
-    projectName: session.projectName || null,
-    mode: session.mode || null,
-    currentPhase: session.currentPhase || null,
-    currentAgent: session.currentAgent || null,
-    phases: session.phases || [],
-    activeSprint: session.activeSprint || null,
-  };
 }
 
 /* ── MCP Server ─────────────────────────────────────────────────── */
@@ -261,9 +186,9 @@ mcp.tool(
   'Get the current project status including session state, pipeline progress, active command, and command queue summary',
   async () => {
     try {
-      const session = await readSessionState();
-      const queue = await readCommandQueue();
-      const progress = buildProgress(session);
+      const session = await sessionSvc.readSessionStateAsync();
+      const queue = commandSvc.getQueue();
+      const progress = sessionSvc.buildProgressMcp(session);
       return jsonResult({
         session: session
           ? {
@@ -292,7 +217,7 @@ mcp.tool(
   'Get detailed pipeline progress: phase completion status, current agent, sprint information',
   async () => {
     try {
-      return jsonResult(buildProgress(await readSessionState()));
+      return jsonResult(sessionSvc.buildProgressMcp(await sessionSvc.readSessionStateAsync()));
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to read progress: ${message}`);
@@ -307,7 +232,18 @@ mcp.tool(
   'List all questionnaire files with completion statistics (total, answered, unanswered, deferred questions per file)',
   async () => {
     try {
-      return jsonResult(await discoverQuestionnaires());
+      const questionnaires = questionnaireSvc.list();
+      const summaries = questionnaires.map((q) => ({
+        file: q.file,
+        phase: q.phase,
+        title: (q as unknown as { title?: string }).title || '',
+        total: q.questions.length,
+        answered: q.questions.filter((x) => x.status === 'ANSWERED').length,
+        unanswered: q.questions.filter((x) => x.status === 'OPEN' || x.status === 'UNANSWERED')
+          .length,
+        deferred: q.questions.filter((x) => x.status === 'DEFERRED').length,
+      }));
+      return jsonResult(summaries);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to list questionnaires: ${message}`);
@@ -332,17 +268,13 @@ mcp.tool(
   async ({ file }: Record<string, unknown>) => {
     try {
       if (!file) return errorResult('file parameter is required');
-      const abs = safePath(PROJECT_ROOT, file as string);
-      try {
-        await fsp.access(abs);
-      } catch {
-        return errorResult(`File not found: ${file}`);
-      }
-      const content = await fsp.readFile(abs, 'utf8');
-      return jsonResult({ file, ...models.parseQuestionnaire(content, abs, PROJECT_ROOT) });
+      const relFile = (file as string).replace(/^BusinessDocs[\\/]?/, '');
+      const result = questionnaireSvc.get(relFile);
+      return jsonResult({ file, ...result });
     } catch (err: unknown) {
       if ((err as { errorCode?: string }).errorCode === 'PATH_TRAVERSAL')
         return errorResult('Invalid file path');
+      if (err instanceof ServiceValidationError) return errorResult(err.message);
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to read questionnaire: ${message}`);
     }
@@ -464,7 +396,7 @@ mcp.tool(
   'List all decisions grouped by status: open questions, decided items, and deferred items',
   async () => {
     try {
-      return jsonResult(await readDecisions());
+      return jsonResult(decisionSvc.list());
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to read decisions: ${message}`);
@@ -492,57 +424,16 @@ mcp.tool(
   },
   async ({ type, priority, scope, text, notes }: Record<string, unknown>) => {
     try {
-      const valErr = validateDecisionFields(
-        type as string,
-        priority as string,
-        scope as string,
-        text as string
-      );
-      if (valErr) return valErr;
-      try {
-        await fsp.access(DECISIONS_PATH);
-      } catch {
-        return errorResult('decisions.md not found — run a CREATE or AUDIT command first');
-      }
-
-      return await withFileLock(DECISIONS_PATH, async () => {
-        let content = await fsp.readFile(DECISIONS_PATH, 'utf8');
-        const id = models.nextDecisionId(content, 'DEC-');
-        const safeText = sanitizeMarkdown(text as string);
-        const safeNotes = notes ? sanitizeMarkdown(notes as string) : '';
-
-        if (type === 'question') {
-          content = models.addOpenQuestion(content, {
-            id,
-            priority: priority as string,
-            scope: scope as string,
-            question: safeText,
-            answer: '',
-            date: models.today(),
-          });
-        } else {
-          content = models.addOperationalDecision(content, {
-            id,
-            priority: priority as string,
-            scope: scope as string,
-            decision: safeText,
-            notes: safeNotes,
-            date: models.today(),
-          });
-        }
-        content = models.appendAuditTrail(content, 'create', id);
-
-        safeWrite(DECISIONS_PATH, content);
-        audit.log({
-          operation: 'CREATE_DECISION',
-          entityType: 'decision',
-          entityId: id,
-          user: 'mcp',
-          summary: `${type}: ${(text as string).slice(0, 80)}`,
-        });
-        return jsonResult({ created: true, id, type, priority, scope });
+      const result = await decisionSvc.create({
+        type: type as 'question' | 'operational',
+        priority: priority as string,
+        scope: scope as string,
+        text: text as string,
+        notes: notes as string | undefined,
       });
+      return jsonResult({ created: result.ok, id: result.id, type, priority, scope });
     } catch (err: unknown) {
+      if (err instanceof ServiceValidationError) return errorResult(err.message);
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to create decision: ${message}`);
     }
@@ -565,35 +456,12 @@ mcp.tool(
       if (!id || !answer) return errorResult('id and answer are required');
       if (!models.DEC_ID_RE.test(id as string))
         return errorResult(`Invalid decision ID format: ${id}`);
-      try {
-        await fsp.access(DECISIONS_PATH);
-      } catch {
-        return errorResult('decisions.md not found');
-      }
-
-      return await withFileLock(DECISIONS_PATH, async () => {
-        let content = await fsp.readFile(DECISIONS_PATH, 'utf8');
-        const secrets = detectSecrets(answer as string);
-        const safeAnswer = sanitizeMarkdown(answer as string);
-
-        content = models.answerOpenQuestion(content, id as string, safeAnswer);
-        content = models.appendAuditTrail(content, 'answer', id as string);
-
-        safeWrite(DECISIONS_PATH, content);
-        audit.log({
-          operation: 'ANSWER_DECISION',
-          entityType: 'decision',
-          entityId: id as string,
-          user: 'mcp',
-          summary: `Answered: ${(answer as string).slice(0, 80)}`,
-        });
-
-        const result: Record<string, unknown> = { answered: true, id };
-        if (secrets.length)
-          result.warnings = ['Secret pattern detected in answer — review before committing'];
-        return jsonResult(result);
-      });
+      const result = await decisionSvc.answer(id as string, answer as string, 'mcp');
+      const mapped: Record<string, unknown> = { answered: result.ok, id: result.id };
+      if (result.warnings) mapped.warnings = result.warnings;
+      return jsonResult(mapped);
     } catch (err: unknown) {
+      if (err instanceof ServiceValidationError) return errorResult(err.message);
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to answer decision: ${message}`);
     }
@@ -615,28 +483,10 @@ mcp.tool(
       if (!id) return errorResult('id is required');
       if (!models.DEC_ID_RE.test(id as string))
         return errorResult(`Invalid decision ID format: ${id}`);
-      try {
-        await fsp.access(DECISIONS_PATH);
-      } catch {
-        return errorResult('decisions.md not found');
-      }
-
-      return await withFileLock(DECISIONS_PATH, async () => {
-        let content = await fsp.readFile(DECISIONS_PATH, 'utf8');
-        content = models.moveToDecided(content, id as string);
-        content = models.appendAuditTrail(content, 'decide', id as string);
-
-        safeWrite(DECISIONS_PATH, content);
-        audit.log({
-          operation: 'DECIDE_QUESTION',
-          entityType: 'decision',
-          entityId: id as string,
-          user: 'mcp',
-          summary: `Decided: ${id}`,
-        });
-        return jsonResult({ decided: true, id });
-      });
+      const result = await decisionSvc.decide(id as string, 'mcp');
+      return jsonResult({ decided: result.ok, id: result.id });
     } catch (err: unknown) {
+      if (err instanceof ServiceValidationError) return errorResult(err.message);
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to decide question: ${message}`);
     }
@@ -645,35 +495,9 @@ mcp.tool(
 
 /* ── Commands ───────────────────────────────────────────────────── */
 
-function validateDecisionFields(
-  type: string,
-  priority: string,
-  scope: string,
-  text: string
-): McpToolResult | null {
-  const r = schemas.validateDecisionCreate({ type, priority, scope, text });
-  if (!r.valid) return errorResult(r.errors[0]);
-  return null;
-}
-
-const VALID_COMMANDS: string[] = [
-  'CREATE',
-  'AUDIT',
-  'CREATE BUSINESS',
-  'CREATE TECH',
-  'CREATE UX',
-  'CREATE MARKETING',
-  'CREATE SYNTHESIS',
-  'REEVALUATE',
-  'FEATURE',
-  'SCOPE CHANGE',
-  'HOTFIX',
-  'REFRESH ONBOARDING',
-];
-
 mcp.tool(
   'queue_command',
-  `Queue a command for the orchestrator. Valid commands: ${VALID_COMMANDS.join(', ')}. After queuing, paste the returned text into Copilot Chat.`,
+  'Queue a command for the orchestrator. After queuing, paste the returned text into Copilot Chat.',
   {
     type: 'object',
     properties: {
@@ -700,100 +524,38 @@ mcp.tool(
   async ({ command, project, scope, description, brief }: Record<string, unknown>) => {
     try {
       if (!command) return errorResult('command is required');
-      const upperCmd = (command as string).toUpperCase().trim();
-
-      if (!VALID_COMMANDS.some((v) => upperCmd.startsWith(v))) {
-        return errorResult(`Unknown command: ${command}. Valid: ${VALID_COMMANDS.join(', ')}`);
-      }
-
-      const text = buildCommandText(
-        upperCmd,
-        project as string | undefined,
-        scope as string | undefined,
-        description as string | undefined
+      const result = await commandSvc.queue(
+        {
+          command: command as string,
+          project: project as string | undefined,
+          scope: scope as string | undefined,
+          description: description as string | undefined,
+          brief: brief as string | undefined,
+        },
+        'mcp'
       );
-      if (brief) await saveBrief(brief as string);
-      await enqueueCommand(
-        upperCmd,
-        text,
-        project as string | undefined,
-        scope as string | undefined,
-        description as string | undefined
-      );
-
       return jsonResult({
-        queued: true,
-        text,
-        instruction: `Paste this into Copilot Chat: ${text}`,
+        queued: result.ok,
+        text: result.clipboard_text,
+        instruction: `Paste this into Copilot Chat: ${result.clipboard_text}`,
       });
     } catch (err: unknown) {
+      if (err instanceof ServiceValidationError)
+        return errorResult(
+          `Unknown command: ${command}. Valid: CREATE, AUDIT, REEVALUATE, FEATURE, SCOPE CHANGE, HOTFIX, REFRESH ONBOARDING`
+        );
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to queue command: ${message}`);
     }
   }
 );
 
-function buildCommandText(
-  upperCmd: string,
-  project: string | undefined,
-  scope: string | undefined,
-  description: string | undefined
-): string {
-  let text = upperCmd;
-  if (project) text += ` ${project}`;
-  if (scope) text += ` ${scope}`;
-  if (description) text += `: ${description}`;
-  return text;
-}
-
-async function saveBrief(brief: string): Promise<void> {
-  const check = schemas.validateProjectBrief(brief);
-  if (!check.valid) throw new Error(check.errors[0]);
-  const briefPath = path.join(PROJECT_ROOT, 'BusinessDocs', 'project-brief.md');
-  await withFileLock(briefPath, async () => {
-    safeWrite(briefPath, brief);
-  });
-}
-
-async function enqueueCommand(
-  upperCmd: string,
-  text: string,
-  project: string | undefined,
-  scope: string | undefined,
-  description: string | undefined
-): Promise<void> {
-  const queuePath = path.join(SESSION_DIR, 'command-queue.json');
-  await withFileLock(queuePath, async () => {
-    const queue = await readCommandQueue();
-    const entry: CommandQueueEntry = {
-      command: upperCmd,
-      text,
-      timestamp: models.isoNow(),
-      status: 'QUEUED',
-    };
-    if (project) entry.project = project;
-    if (scope) entry.scope = scope;
-    if (description) entry.description = description;
-    queue.push(entry);
-
-    safeWrite(queuePath, JSON.stringify(queue, null, 2));
-  });
-
-  audit.log({
-    operation: 'QUEUE_COMMAND',
-    entityType: 'command',
-    entityId: text,
-    user: 'mcp',
-    summary: text,
-  });
-}
-
 mcp.tool(
   'get_command_queue',
   'Get the full command queue with all queued, active, and completed commands',
   async () => {
     try {
-      return jsonResult(await readCommandQueue());
+      return jsonResult(commandSvc.getQueue());
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to read command queue: ${message}`);
@@ -818,26 +580,14 @@ mcp.tool(
   },
   async ({ topic }: Record<string, unknown> = {}) => {
     try {
-      try {
-        await fsp.access(HELP_DIR);
-      } catch {
-        return errorResult('Help directory not found');
-      }
-
       if (!topic) {
-        const files = (await fsp.readdir(HELP_DIR)).filter((f) => f.endsWith('.md'));
-        const topics = files.map((f) => ({ slug: f.replace('.md', ''), file: f }));
+        const topics = sessionSvc.getHelpTopics();
+        if (topics.length === 0) return errorResult('Help directory not found');
         return jsonResult({ topics });
       }
-
-      const safe = (topic as string).replace(/[^a-z0-9_-]/gi, '');
-      const file = path.join(HELP_DIR, `${safe}.md`);
-      try {
-        await fsp.access(file);
-      } catch {
-        return errorResult(`Help topic not found: ${topic}`);
-      }
-      return jsonResult({ topic: safe, content: await fsp.readFile(file, 'utf8') });
+      const result = sessionSvc.getHelpTopic(topic as string);
+      if (!result) return errorResult(`Help topic not found: ${topic}`);
+      return jsonResult(result);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to read help: ${message}`);
@@ -850,62 +600,17 @@ mcp.tool(
 mcp.tool(
   'check_drift',
   'Detect drift between session-state sprint statuses and GitHub board sync reports. Returns a drift report with severity levels (CRITICAL, WARNING, INFO) and recommendations.',
-  // eslint-disable-next-line complexity
   async () => {
     try {
       // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { detectDrift } = require('./drift-detector') as {
         detectDrift: (opts: {
-          sessionState: SessionState;
+          sessionState: unknown;
           sprintPlanContent: string | null;
           syncReports: Record<string, string | null>;
         }) => unknown;
       };
-      const session = await readSessionState();
-      if (!session)
-        return jsonResult({
-          generated_at: new Date().toISOString(),
-          summary: { total_drifts: 0, critical: 0, warning: 0, info: 0 },
-          drifts: [],
-          in_sync: { sprints: [], stories: 0 },
-          error: 'No session state found',
-        });
-
-      const sprintStatuses: Record<string, unknown> =
-        (session.sprint_backlog && session.sprint_backlog.sprint_statuses) || {};
-      const planPath = session.sprint_backlog && session.sprint_backlog.path;
-      let sprintPlanContent: string | null = null;
-      if (planPath) {
-        const abs = path.resolve(PROJECT_ROOT, planPath);
-        try {
-          sprintPlanContent = await fsp.readFile(abs, 'utf8');
-        } catch {
-          /* missing plan */
-        }
-      }
-
-      const sprintsDir = path.join(DOC_ROOT, 'sprints');
-      const phase5Dir = path.join(DOC_ROOT, 'phase-5');
-      const syncReports: Record<string, string | null> = {};
-      for (const sprintId of Object.keys(sprintStatuses)) {
-        syncReports[sprintId] = null;
-        const p1 = path.join(sprintsDir, sprintId, 'github-sync-report.md');
-        try {
-          syncReports[sprintId] = await fsp.readFile(p1, 'utf8');
-          continue;
-        } catch {
-          /* */
-        }
-        const p2 = path.join(phase5Dir, `sprint-${sprintId}`, 'github-sync-report.md');
-        try {
-          syncReports[sprintId] = await fsp.readFile(p2, 'utf8');
-        } catch {
-          /* */
-        }
-      }
-
-      const report = detectDrift({ sessionState: session, sprintPlanContent, syncReports });
-      return jsonResult(report);
+      return jsonResult(sessionSvc.checkDrift(detectDrift));
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to check drift: ${message}`);
@@ -929,9 +634,7 @@ mcp.tool(
   },
   async ({ limit }: Record<string, unknown> = {}) => {
     try {
-      const n = Math.min(Math.max(Number(limit) || 50, 1), 1000);
-      const entries = audit.read(n);
-      return jsonResult({ total: entries.length, entries });
+      return jsonResult(sessionSvc.readAuditLog(Number(limit) || 50));
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to read audit log: ${message}`);
@@ -941,43 +644,14 @@ mcp.tool(
 
 /* ── Governance Approvals ───────────────────────────────────────── */
 
-const GOVERNANCE_STATE_PATH = path.join(SESSION_DIR, 'governance-state.json');
-
-function loadGovernanceEngine():
-  | import('../../platform/sdlc/governance.js').GovernanceEngine
-  | null {
-  // Dynamic import to avoid circular dependencies at module level
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { GovernanceEngine } = require('../../platform/sdlc/governance') as {
-    GovernanceEngine: {
-      loadFrom(
-        s: { exists(p: string): boolean; readFile(p: string): string },
-        p: string
-      ): import('../../platform/sdlc/governance.js').GovernanceEngine | null;
-    };
-  };
-  return GovernanceEngine.loadFrom(store, GOVERNANCE_STATE_PATH);
-}
-
 mcp.tool('list_approvals', 'List pending governance approval requests', async () => {
   try {
-    const engine = loadGovernanceEngine();
-    if (!engine) return jsonResult({ approvals: [], count: 0, note: 'No governance state found' });
-    const pending = engine.getPendingApprovals();
-    return jsonResult({
-      approvals: pending.map((a) => ({
-        id: a.id,
-        entity_id: a.entity_id,
-        gate_id: a.gate_id,
-        stage: a.stage,
-        requested_by: a.requested_by,
-        requested_at: a.requested_at,
-        required_role: a.required_role,
-        status: a.status,
-      })),
-      count: pending.length,
-    });
+    const result = governanceSvc.listApprovals();
+    return jsonResult(result);
   } catch (err: unknown) {
+    if (err instanceof ServiceNotAvailableError) {
+      return jsonResult({ approvals: [], count: 0, note: 'No governance state found' });
+    }
     const message = err instanceof Error ? err.message : String(err);
     return errorResult(`Failed to list approvals: ${message}`);
   }
@@ -997,26 +671,14 @@ mcp.tool(
   },
   async ({ approval_id, user, reason }: Record<string, unknown>) => {
     try {
-      const engine = loadGovernanceEngine();
-      if (!engine) return errorResult('No governance state found');
-      const result = engine.decide(
+      const result = governanceSvc.approve(
         String(approval_id),
         String(user),
-        true,
         String(reason || 'Approved via MCP')
       );
-      engine.saveTo(store, GOVERNANCE_STATE_PATH);
-      return jsonResult({
-        ok: true,
-        approval: {
-          id: result.id,
-          status: result.status,
-          decided_by: result.decided_by,
-          decided_at: result.decided_at,
-          reason: result.reason,
-        },
-      });
+      return jsonResult(result);
     } catch (err: unknown) {
+      if (err instanceof ServiceNotAvailableError) return errorResult('No governance state found');
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to approve: ${message}`);
     }
@@ -1038,21 +700,10 @@ mcp.tool(
   async ({ approval_id, user, reason }: Record<string, unknown>) => {
     try {
       if (!reason || !String(reason).trim()) return errorResult('Reason is required for rejection');
-      const engine = loadGovernanceEngine();
-      if (!engine) return errorResult('No governance state found');
-      const result = engine.decide(String(approval_id), String(user), false, String(reason));
-      engine.saveTo(store, GOVERNANCE_STATE_PATH);
-      return jsonResult({
-        ok: true,
-        approval: {
-          id: result.id,
-          status: result.status,
-          decided_by: result.decided_by,
-          decided_at: result.decided_at,
-          reason: result.reason,
-        },
-      });
+      const result = governanceSvc.reject(String(approval_id), String(user), String(reason));
+      return jsonResult(result);
     } catch (err: unknown) {
+      if (err instanceof ServiceNotAvailableError) return errorResult('No governance state found');
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to reject: ${message}`);
     }
@@ -1074,7 +725,7 @@ mcp.resource(
     contents: [
       {
         uri: uri.href,
-        text: JSON.stringify(await readSessionState(), null, 2),
+        text: JSON.stringify(sessionSvc.readSessionState(), null, 2),
         mimeType: 'application/json',
       },
     ],
@@ -1092,7 +743,7 @@ mcp.resource(
     contents: [
       {
         uri: uri.href,
-        text: JSON.stringify(await readDecisions(), null, 2),
+        text: JSON.stringify(decisionSvc.list(), null, 2),
         mimeType: 'application/json',
       },
     ],
@@ -1107,7 +758,7 @@ mcp.resource(
     contents: [
       {
         uri: uri.href,
-        text: JSON.stringify(await readCommandQueue(), null, 2),
+        text: JSON.stringify(commandSvc.getQueue(), null, 2),
         mimeType: 'application/json',
       },
     ],
@@ -1130,9 +781,47 @@ if (require.main === module) {
   });
 }
 
+/* ── Backward-compatible wrappers (used by tests & consumers) ─── */
+
+/** @deprecated Use SessionService.readSessionState() */
+function readSessionState(): SessionState | null {
+  return sessionSvc.readSessionState();
+}
+
+/** @deprecated Use CommandService.getQueue() */
+function readCommandQueue(): unknown[] {
+  return commandSvc.getQueue();
+}
+
+/** @deprecated Use DecisionService.list() */
+function readDecisions(): { open: unknown[]; decided: unknown[]; deferred: unknown[] } {
+  return decisionSvc.list();
+}
+
+/** @deprecated Use SessionService.buildProgressMcp() */
+function buildProgress(session: SessionState | null): ProgressInfo {
+  return sessionSvc.buildProgressMcp(session);
+}
+
+/** @deprecated Use QuestionnaireService.list() */
+function discoverQuestionnaires(): QuestionnaireSummary[] {
+  return questionnaireSvc.list().map((q) => {
+    const qs = q.questions || [];
+    return {
+      file: q.file,
+      phase: q.phase,
+      title: q.agent || q.file,
+      total: qs.length,
+      answered: qs.filter((x) => x.status === 'ANSWERED').length,
+      unanswered: qs.filter((x) => x.status === 'OPEN' || x.status === 'UNANSWERED').length,
+      deferred: qs.filter((x) => x.status === 'DEFERRED').length,
+    };
+  });
+}
+
 /* ── Exports for testing ────────────────────────────────────────── */
 export {
-  discoverQuestionnaires,
+  discoverQuestionnaires as _discoverQuestionnaires,
   readSessionState,
   readCommandQueue,
   readDecisions,
@@ -1141,8 +830,8 @@ export {
   errorResult,
   safeWrite,
   mcp,
-  PROJECT_ROOT,
-  DOC_ROOT,
+  PROJECT_ROOT as _PROJECT_ROOT,
+  DOC_ROOT as _DOC_ROOT,
   BUSINESS_DOCS,
   SESSION_DIR,
   DECISIONS_PATH,

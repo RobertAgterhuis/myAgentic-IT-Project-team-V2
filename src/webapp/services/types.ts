@@ -1,0 +1,197 @@
+// Copyright (c) 2026 Robert Agterhuis. MIT License.
+
+/**
+ * Shared types for the service layer (M20-002).
+ * Services depend on these interfaces — not on concrete implementations.
+ */
+
+import type { FileStore, InMemoryStore } from '../store';
+import type { FileCache } from '../cache';
+import type { AuditTrail } from '../audit';
+
+/* ── Store abstraction ────────────────────────────────────────── */
+
+export type Store = FileStore | InMemoryStore;
+
+/* ── Service context injected into every service ──────────────── */
+
+export interface ServiceContext {
+  store: Store;
+  cache: FileCache;
+  audit: AuditTrail;
+  projectRoot: string;
+  businessDocs: string;
+  sessionDir: string;
+  decisionsFile: string;
+  decisionsDir: string;
+  commandQueue: string;
+  helpDir: string;
+  /** Atomic-write helper: write + cache invalidate + audit log + SSE */
+  safeWrite(
+    filePath: string,
+    data: string,
+    encoding?: string,
+    auditEntry?: {
+      operation: string;
+      entityType: string;
+      entityId?: string;
+      user?: string;
+      summary?: string;
+    }
+  ): void;
+}
+
+/* ── Decision types ───────────────────────────────────────────── */
+
+export interface DecisionCreateInput {
+  type: 'question' | 'operational' | 'OPEN_QUESTION';
+  priority: string;
+  scope: string;
+  text: string;
+  notes?: string;
+}
+
+export interface DecisionMutateInput {
+  action: 'answer' | 'decide' | 'defer' | 'expire' | 'reopen' | 'edit';
+  id: string;
+  answer?: string;
+  reason?: string;
+  priority?: string;
+  scope?: string;
+  text?: string;
+  notes?: string;
+}
+
+export interface DecisionResult {
+  ok: boolean;
+  id: string;
+  action: string;
+  warnings?: string[];
+}
+
+export interface DecisionListResult {
+  open: unknown[];
+  decided: unknown[];
+  deferred: unknown[];
+  categories?: unknown[];
+}
+
+/* ── Questionnaire types ──────────────────────────────────────── */
+
+export interface QuestionnaireUpdate {
+  questionId: string;
+  answer: string;
+  status: string;
+}
+
+export interface QuestionnaireSummary {
+  file: string;
+  phase: string;
+  title: string;
+  total: number;
+  answered: number;
+  unanswered: number;
+  deferred: number;
+}
+
+export interface SaveAnswersResult {
+  saved: boolean;
+  file: string;
+  applied: number;
+  total: number;
+  warnings?: string[];
+}
+
+/* ── Command types ────────────────────────────────────────────── */
+
+export interface CommandQueueEntry {
+  command: string;
+  text?: string;
+  project?: string | null;
+  scope?: string | null;
+  description?: string | null;
+  requested_at?: string;
+  timestamp?: string;
+  status: string;
+  source?: string;
+  clipboard_text?: string;
+  brief_saved?: boolean;
+  brief_path?: string;
+}
+
+export interface QueueCommandInput {
+  command: string;
+  project?: string;
+  scope?: string;
+  description?: string;
+  brief?: string;
+}
+
+export interface QueueCommandResult {
+  ok: boolean;
+  clipboard_text: string;
+  brief_saved: boolean;
+  warnings?: string[];
+}
+
+/* ── Governance types ─────────────────────────────────────────── */
+
+export interface ApprovalItem {
+  id: string;
+  entity_id: string;
+  gate_id: string;
+  stage: string;
+  requested_by: string;
+  requested_at: string;
+  required_role: string;
+  status: string;
+}
+
+export interface ApprovalDecisionResult {
+  ok: boolean;
+  approval: {
+    id: string;
+    status: string;
+    decided_by: string;
+    decided_at: string;
+    reason: string;
+  };
+}
+
+/* ── Session / progress types ─────────────────────────────────── */
+
+export interface SessionState {
+  session_id?: string;
+  projectName?: string | null;
+  mode?: string | null;
+  status?: string | null;
+  cycle_type?: string | null;
+  currentPhase?: string | null;
+  current_phase?: string | null;
+  currentAgent?: string | null;
+  current_agent?: string | null;
+  current_step?: string | null;
+  initiated_at?: string;
+  last_updated?: string;
+  phases?: unknown[];
+  activeSprint?: unknown | null;
+  completed_phases?: string[];
+  completed_agents?: string[];
+  phase_outputs?: Record<string, unknown>;
+  sprint_backlog?: {
+    sprint_statuses?: Record<string, unknown>;
+    total_sprints?: number;
+    path?: string;
+  };
+  blockers?: unknown[];
+  open_human_escalations?: Array<{ status: string; [k: string]: unknown }>;
+}
+
+export interface ProgressInfo {
+  projectName: string | null;
+  mode: string | null;
+  currentPhase: string | null;
+  currentAgent: string | null;
+  phases: unknown[];
+  activeSprint: unknown | null;
+}

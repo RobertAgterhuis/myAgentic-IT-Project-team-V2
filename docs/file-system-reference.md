@@ -39,12 +39,12 @@ myAgentic-IT-Project-team/
 
 ## `.github/` — CI & repository configuration
 
-| File                       | Purpose                                  |
-| -------------------------- | ---------------------------------------- |
-| `CODEOWNERS`               | Code ownership rules for PR reviews      |
-| `copilot-instructions.md`  | Copilot agent instructions for this repo |
-| `dependabot.yml`           | Dependabot configuration                 |
-| `PULL_REQUEST_TEMPLATE.md` | PR template                              |
+| File                       | Purpose                             |
+| -------------------------- | ----------------------------------- |
+| `CODEOWNERS`               | Code ownership rules for PR reviews |
+| `instructions/`            | Generated Copilot instruction files |
+| `dependabot.yml`           | Dependabot configuration            |
+| `PULL_REQUEST_TEMPLATE.md` | PR template                         |
 
 ### Issue templates — `.github/ISSUE_TEMPLATE/`
 

@@ -50,8 +50,8 @@ component inventory. New components first require a Storybook story + review.
 ## UNIVERSAL AGENT RULES
 
 Applicable: Anti-Hallucination Protocol, Anti-Laziness Protocol, Verification
-Protocol, Scope Discipline. See `.github/copilot-instructions.md` for the
-complete rules.
+Protocol, Scope Discipline. See
+`templates/sdlc/guardrails/00-global-guardrails.md` for the complete rules.
 
 ---
 

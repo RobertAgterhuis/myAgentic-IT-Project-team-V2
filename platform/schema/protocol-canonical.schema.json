@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "protocol-canonical.schema.json",
+  "title": "Canonical Protocols Schema",
+  "description": "Defines universal agent protocols in structured format for multi-platform transpilation.",
+  "type": "object",
+  "required": ["schemaVersion", "protocols"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "protocols": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "rules"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^PROTO-\\d{3}$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "mandatory": {
+            "type": "boolean"
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "text", "severity"],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": ["BLOCK", "WARN", "INFO"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "handoffChecklist": {
+      "type": "object",
+      "required": ["items", "enforcementRule"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "enforcementRule": {
+          "type": "string"
+        }
+      }
+    },
+    "definitionOfDone": {
+      "type": "object",
+      "required": ["designPhases", "implementationPhase"],
+      "properties": {
+        "designPhases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "implementationPhase": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

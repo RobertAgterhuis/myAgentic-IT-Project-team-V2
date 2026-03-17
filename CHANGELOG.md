@@ -12,6 +12,18 @@ and this project adheres to
 
 ### Added
 
+- M28: Multi-platform instruction migration
+  - `platform/schema/protocols.json` — canonical protocol data (6 protocols,
+    handoff checklist, definition of done) with JSON Schema
+  - `templates/sdlc/contracts/definition-of-done.md` — unified 19-item
+    DoD contract (9 design + 10 implementation)
+  - Transpiler now generates real platform convention files:
+    - Copilot: `.github/instructions/*.instructions.md` (YAML frontmatter
+      with `applyTo` scoping)
+    - Claude: `CLAUDE.md` + `.claude/settings.json` + `.claude/commands/*.md`
+    - OpenAI/Codex: `.codex/instructions.md` + `.codex/agents.json`
+  - `--dry-run` flag for transpiler CLI
+  - `npm run generate:platform` script + postinstall hook
 - GA definition document (`docs/ga-definition.md`) — defines v1 GA as
   localhost/single-operator with supervised autonomy posture
 - Security design document (`docs/security-design.md`) — STRIDE threat
@@ -28,6 +40,11 @@ and this project adheres to
 
 ### Changed
 
+- M28: 14 agent skill files now reference `templates/sdlc/guardrails/00-global-guardrails.md`
+  instead of `.github/copilot-instructions.md`
+- M28: Handoff checklist canonical template embedded directly in guardrails (G-GLOB-20)
+- M28: Transpiler outputs to real platform convention paths instead of `platform/generated/`
+- M28: Documentation references updated (README, user-manual, file-system-reference, etc.)
 - README.md: reworded "autonomous" claims to "supervised (human-in-the-loop)"
 - README.md: updated test badge from 576 to 1172
 - README.md: fixed Technology Stack — added Jest 29 (root) alongside Vitest 4,
@@ -43,6 +60,11 @@ and this project adheres to
   contrast ratio on light backgrounds
 - contrast.test.js: all 29 tests now pass (previously failing due to missing
   `color.light`/`color.dark` structure)
+
+### Removed
+
+- `.github/copilot-instructions.md` — replaced by generated platform-specific
+  instruction files via `npm run generate:platform`
 
 ---
 

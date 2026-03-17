@@ -27,7 +27,9 @@
     "test:e2e": "npx playwright test",
     "test:e2e:headed": "npx playwright test --headed",
     "audit:github": "node scripts/github-config-audit.js",
-    "snapshot:github": "node scripts/github-state-snapshot.js"
+    "snapshot:github": "node scripts/github-state-snapshot.js",
+    "generate:platform": "node scripts/generate-platform.js all",
+    "postinstall": "node scripts/generate-platform.js all"
   },
   "repository": {
     "type": "git",

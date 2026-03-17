@@ -200,7 +200,7 @@ appears automatically in the Copilot tools panel.
 .vscode/
   mcp.json                    ← MCP server configuration for VS Code
 .github/
-  copilot-instructions.md     ← System instructions (Orchestrator entry point)
+  instructions/               ← Generated platform instructions (Copilot)
   workflows/                  ← CI/CD pipeline definitions
 
 platform/

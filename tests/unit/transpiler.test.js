@@ -4,21 +4,21 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { generate, loadCanonical, TARGETS } = require('../../scripts/generate-platform');
 
-const OUTPUT_DIR = path.resolve(__dirname, '..', '..', 'platform', 'generated');
+const ROOT = path.resolve(__dirname, '..', '..');
+
+// Directories written by the generators
+const COPILOT_DIR = path.join(ROOT, '.github', 'instructions');
+const CLAUDE_DIR = path.join(ROOT, '.claude');
+const CLAUDE_MD = path.join(ROOT, 'CLAUDE.md');
+const CODEX_DIR = path.join(ROOT, '.codex');
 
 describe('Platform transpiler (S4-4/S4-5/S4-6)', () => {
-  beforeAll(() => {
-    // Clean output directory before tests
-    if (fs.existsSync(OUTPUT_DIR)) {
-      fs.rmSync(OUTPUT_DIR, { recursive: true });
-    }
-  });
-
   afterAll(() => {
     // Clean up generated test output
-    if (fs.existsSync(OUTPUT_DIR)) {
-      fs.rmSync(OUTPUT_DIR, { recursive: true });
+    for (const dir of [COPILOT_DIR, CLAUDE_DIR, CODEX_DIR]) {
+      if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true });
     }
+    if (fs.existsSync(CLAUDE_MD)) fs.unlinkSync(CLAUDE_MD);
   });
 
   it('loads canonical data without errors', () => {
@@ -26,106 +26,170 @@ describe('Platform transpiler (S4-4/S4-5/S4-6)', () => {
     expect(data.agents).toBeDefined();
     expect(data.flows).toBeDefined();
     expect(data.tools).toBeDefined();
+    expect(data.protocols).toBeDefined();
     expect(data.agents.agents.length).toBeGreaterThanOrEqual(38);
+    expect(data.protocols.protocols.length).toBeGreaterThanOrEqual(5);
   });
 
   it('has all 3 target generators', () => {
     expect(Object.keys(TARGETS)).toEqual(['copilot', 'claude', 'openai']);
   });
 
+  // ─── Dry-run mode ──────────────────────────────────────────
+  describe('dry-run mode', () => {
+    beforeAll(() => {
+      // Ensure clean state — remove any previously generated files
+      for (const dir of [COPILOT_DIR, CLAUDE_DIR, CODEX_DIR]) {
+        if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true });
+      }
+      if (fs.existsSync(CLAUDE_MD)) fs.unlinkSync(CLAUDE_MD);
+    });
+
+    it('returns file list without writing to disk', () => {
+      const results = generate('copilot', { dryRun: true });
+      expect(results).toHaveLength(1);
+      expect(results[0].dryRun).toBe(true);
+      expect(results[0].files).toBeDefined();
+      expect(results[0].files.length).toBe(results[0].fileCount);
+
+      // Verify no files were actually written
+      for (const f of results[0].files) {
+        expect(fs.existsSync(f.path)).toBe(false);
+      }
+    });
+
+    it('dry-run works for all targets', () => {
+      const results = generate('all', { dryRun: true });
+      expect(results).toHaveLength(3);
+      for (const r of results) {
+        expect(r.dryRun).toBe(true);
+        expect(r.files.length).toBeGreaterThan(0);
+      }
+    });
+  });
+
+  // ─── Copilot target ────────────────────────────────────────
   describe('copilot target', () => {
-    it('generates copilot instructions', () => {
+    it('generates scoped .instructions.md files', () => {
       const results = generate('copilot');
       expect(results).toHaveLength(1);
       expect(results[0].target).toBe('copilot');
-      expect(results[0].fileCount).toBeGreaterThan(1);
+      expect(results[0].fileCount).toBe(3);
 
-      const mainFile = path.join(OUTPUT_DIR, 'copilot', 'copilot-instructions.md');
-      expect(fs.existsSync(mainFile)).toBe(true);
-
-      const content = fs.readFileSync(mainFile, 'utf8');
-      expect(content).toContain('Agent Roster');
-      expect(content).toContain('Command Modes');
-      expect(content).toContain('Tool Catalog');
+      const protocols = path.join(COPILOT_DIR, 'protocols.instructions.md');
+      expect(fs.existsSync(protocols)).toBe(true);
+      const content = fs.readFileSync(protocols, 'utf8');
+      expect(content).toContain('Anti-Hallucination');
+      expect(content).toContain('HANDOFF CHECKLIST');
     });
 
-    it('generates per-agent files', () => {
-      const agentDir = path.join(OUTPUT_DIR, 'copilot', 'agents');
-      expect(fs.existsSync(agentDir)).toBe(true);
+    it('has YAML frontmatter with applyTo on scoped files', () => {
+      const phaseAgents = path.join(COPILOT_DIR, 'phase-agents.instructions.md');
+      const content = fs.readFileSync(phaseAgents, 'utf8');
+      expect(content).toMatch(/^---\napplyTo:/);
+      expect(content).toContain('templates/sdlc/**');
+    });
 
-      const files = fs.readdirSync(agentDir);
-      expect(files.length).toBeGreaterThanOrEqual(38);
+    it('protocols file has no applyTo (applies globally)', () => {
+      const protocols = path.join(COPILOT_DIR, 'protocols.instructions.md');
+      const content = fs.readFileSync(protocols, 'utf8');
+      expect(content).not.toContain('applyTo:');
     });
 
     it('is idempotent (running twice produces identical output)', () => {
       generate('copilot');
-      const first = fs.readFileSync(
-        path.join(OUTPUT_DIR, 'copilot', 'copilot-instructions.md'),
-        'utf8'
-      );
-
-      // Remove timestamp line for comparison
-      const normalize = (s) => s.replace(/^> Generated at: .+$/m, '');
-
+      const first = fs.readFileSync(path.join(COPILOT_DIR, 'protocols.instructions.md'), 'utf8');
       generate('copilot');
-      const second = fs.readFileSync(
-        path.join(OUTPUT_DIR, 'copilot', 'copilot-instructions.md'),
-        'utf8'
-      );
-
-      expect(normalize(first)).toBe(normalize(second));
+      const second = fs.readFileSync(path.join(COPILOT_DIR, 'protocols.instructions.md'), 'utf8');
+      expect(first).toBe(second);
     });
   });
 
+  // ─── Claude target ─────────────────────────────────────────
   describe('claude target', () => {
     it('generates CLAUDE.md and .claude/ directory', () => {
       const results = generate('claude');
       expect(results).toHaveLength(1);
       expect(results[0].target).toBe('claude');
 
-      const claudeMd = path.join(OUTPUT_DIR, 'claude', 'CLAUDE.md');
-      expect(fs.existsSync(claudeMd)).toBe(true);
-
-      const content = fs.readFileSync(claudeMd, 'utf8');
-      expect(content).toContain('200k token context');
+      expect(fs.existsSync(CLAUDE_MD)).toBe(true);
+      const content = fs.readFileSync(CLAUDE_MD, 'utf8');
+      expect(content).toContain('Anti-Hallucination');
       expect(content).toContain('Agent Execution Order');
 
-      const claudeDir = path.join(OUTPUT_DIR, 'claude', '.claude');
-      expect(fs.existsSync(claudeDir)).toBe(true);
+      expect(fs.existsSync(CLAUDE_DIR)).toBe(true);
+    });
 
-      const agentFiles = fs.readdirSync(claudeDir);
-      expect(agentFiles.length).toBeGreaterThanOrEqual(38);
+    it('generates settings.json with MCP config', () => {
+      const settingsPath = path.join(CLAUDE_DIR, 'settings.json');
+      expect(fs.existsSync(settingsPath)).toBe(true);
+      const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf8'));
+      expect(settings.mcpServers).toBeDefined();
+    });
+
+    it('generates command files', () => {
+      const commandsDir = path.join(CLAUDE_DIR, 'commands');
+      expect(fs.existsSync(commandsDir)).toBe(true);
+      const files = fs.readdirSync(commandsDir);
+      expect(files.length).toBeGreaterThanOrEqual(1);
+      expect(files.some((f) => f.endsWith('.md'))).toBe(true);
     });
   });
 
+  // ─── OpenAI target ─────────────────────────────────────────
   describe('openai target', () => {
-    it('generates codex.md and .codex/ directory', () => {
+    it('generates .codex/ with instructions.md and agents.json', () => {
       const results = generate('openai');
       expect(results).toHaveLength(1);
       expect(results[0].target).toBe('openai');
+      expect(results[0].fileCount).toBe(2);
 
-      const codexMd = path.join(OUTPUT_DIR, 'openai', 'codex.md');
-      expect(fs.existsSync(codexMd)).toBe(true);
-
-      const content = fs.readFileSync(codexMd, 'utf8');
+      const instrFile = path.join(CODEX_DIR, 'instructions.md');
+      expect(fs.existsSync(instrFile)).toBe(true);
+      const content = fs.readFileSync(instrFile, 'utf8');
       expect(content).toContain('Sandbox Execution Model');
       expect(content).toContain('Tool Definitions');
+      expect(content).toContain('Anti-Hallucination');
 
-      const codexDir = path.join(OUTPUT_DIR, 'openai', '.codex');
-      expect(fs.existsSync(codexDir)).toBe(true);
-      expect(fs.existsSync(path.join(codexDir, 'agents.json'))).toBe(true);
-
-      // Verify agents.json is valid JSON
-      const agentConfigs = JSON.parse(fs.readFileSync(path.join(codexDir, 'agents.json'), 'utf8'));
+      const agentsFile = path.join(CODEX_DIR, 'agents.json');
+      expect(fs.existsSync(agentsFile)).toBe(true);
+      const agentConfigs = JSON.parse(fs.readFileSync(agentsFile, 'utf8'));
       expect(agentConfigs.length).toBeGreaterThanOrEqual(38);
     });
   });
 
+  // ─── All targets ───────────────────────────────────────────
   describe('all targets', () => {
     it('generates for all 3 platforms at once', () => {
       const results = generate('all');
       expect(results).toHaveLength(3);
       expect(results.map((r) => r.target).sort()).toEqual(['claude', 'copilot', 'openai']);
+    });
+  });
+
+  // ─── Protocol validation ───────────────────────────────────
+  describe('protocol data', () => {
+    it('protocols.json contains all 6 mandatory protocols', () => {
+      const data = loadCanonical();
+      const protoIds = data.protocols.protocols.map((p) => p.id);
+      expect(protoIds).toContain('PROTO-001');
+      expect(protoIds).toContain('PROTO-002');
+      expect(protoIds).toContain('PROTO-003');
+      expect(protoIds).toContain('PROTO-004');
+      expect(protoIds).toContain('PROTO-005');
+      expect(protoIds).toContain('PROTO-006');
+    });
+
+    it('handoff checklist has 9 items', () => {
+      const data = loadCanonical();
+      expect(data.protocols.handoffChecklist.items).toHaveLength(9);
+    });
+
+    it('all protocols are marked mandatory', () => {
+      const data = loadCanonical();
+      for (const proto of data.protocols.protocols) {
+        expect(proto.mandatory).toBe(true);
+      }
     });
   });
 

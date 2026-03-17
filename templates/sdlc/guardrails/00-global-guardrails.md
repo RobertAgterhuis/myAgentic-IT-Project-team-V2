@@ -45,13 +45,31 @@
 
 ## 3. VERIFICATION BEFORE HANDOFF
 
-| Rule      | Required action                                                                                                                                                                                                                                                                   |
-| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| G-GLOB-20 | Every agent MUST produce a fully completed **HANDOFF CHECKLIST** at the end of its output. The canonical handoff checklist template is the one in copilot-instructions.md VERIFICATION PROTOCOL section (9 items). Domain-specific agents may extend it but must never reduce it. |
-| G-GLOB-21 | An agent may NOT hand off the task if one or more checkboxes are not checked.                                                                                                                                                                                                     |
-| G-GLOB-22 | The checklist must contain machine-readable checkboxes (markdown `- [ ]` / `- [x]` format).                                                                                                                                                                                       |
-| G-GLOB-23 | Perform a **self-check**: read your own output from beginning to end and verify internal consistency before delivery.                                                                                                                                                             |
-| G-GLOB-24 | Explicitly verify that the output schema matches the relevant contract in `/templates/sdlc/contracts/`.                                                                                                                                                                           |
+| Rule      | Required action                                                                                                                                                                              |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| G-GLOB-20 | Every agent MUST produce a fully completed **HANDOFF CHECKLIST** at the end of its output using the canonical template below. Domain-specific agents may extend it but must never reduce it. |
+| G-GLOB-21 | An agent may NOT hand off the task if one or more checkboxes are not checked.                                                                                                                |
+| G-GLOB-22 | The checklist must contain machine-readable checkboxes (markdown `- [ ]` / `- [x]` format).                                                                                                  |
+| G-GLOB-23 | Perform a **self-check**: read your own output from beginning to end and verify internal consistency before delivery.                                                                        |
+| G-GLOB-24 | Explicitly verify that the output schema matches the relevant contract in `/templates/sdlc/contracts/`.                                                                                      |
+
+### Canonical Handoff Checklist Template (9 items)
+
+```markdown
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are filled (not empty, not placeholder)
+- [ ] All UNCERTAIN: items are documented and escalated
+- [ ] All INSUFFICIENT_DATA: items are documented and escalated
+- [ ] Output complies with the contract in /templates/sdlc/contracts/
+- [ ] Guardrails from /templates/sdlc/guardrails/ have been checked
+- [ ] Output is machine-readable and ready as input for the next agent
+- [ ] No contradictory statements in this document
+- [ ] All findings include a source reference
+- [ ] Deliverable written to file (not only in chat) per MEMORY MANAGEMENT PROTOCOL
+```
+
+**AN AGENT MAY NOT HAND OFF THE TASK IF ANY CHECKBOX IS UNCHECKED.**
 
 ## 4. SCOPE DISCIPLINE
 

@@ -1,0 +1,227 @@
+{
+  "$schema": "./protocol-canonical.schema.json",
+  "schemaVersion": "1.0.0",
+  "protocols": [
+    {
+      "id": "PROTO-001",
+      "name": "Anti-Hallucination Protocol",
+      "mandatory": true,
+      "rules": [
+        {
+          "id": "AH-1",
+          "text": "Never assert facts you cannot verify from the provided input, code, documentation, or data.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "AH-2",
+          "text": "Use the prefix UNCERTAIN: for any claim where you are not 100% certain of the source.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "AH-3",
+          "text": "Use INSUFFICIENT_DATA: when a required field cannot be filled based on available input.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "AH-4",
+          "text": "Never fabricate metrics, percentages, KPI values, scores, or timestamps.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "AH-5",
+          "text": "Always cite the source of every finding: filename, line number, document page, or interview transcript.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "AH-6",
+          "text": "If a tool or external service is unavailable, escalate to the Orchestrator — do NOT make assumptions.",
+          "severity": "BLOCK"
+        }
+      ]
+    },
+    {
+      "id": "PROTO-002",
+      "name": "Anti-Laziness Protocol",
+      "mandatory": true,
+      "rules": [
+        {
+          "id": "AL-1",
+          "text": "Always deliver the complete deliverable as defined by the contract. No summaries, no partials.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "AL-2",
+          "text": "Never skip a step, even if it seems obvious.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "AL-3",
+          "text": "Never write \"see appendix\" or \"this speaks for itself\" as a substitute for content.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "AL-4",
+          "text": "Always produce concrete, specific findings — NO generic statements.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "AL-5",
+          "text": "If a section risks being empty: conduct additional research or mark as INSUFFICIENT_DATA: + escalate.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "AL-6",
+          "text": "Do NOT assume what the user \"probably already knows\".",
+          "severity": "WARN"
+        }
+      ]
+    },
+    {
+      "id": "PROTO-003",
+      "name": "Memory Management Protocol",
+      "mandatory": true,
+      "rules": [
+        {
+          "id": "MM-1",
+          "text": "Write all deliverables to disk files, NOT as inline chat output. Chat contains ONLY: summary (max 20 lines) + file path + handoff status.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "MM-2",
+          "text": "Never read entire predecessor outputs into context — use targeted file reads with line ranges.",
+          "severity": "WARN"
+        },
+        {
+          "id": "MM-3",
+          "text": "If output exceeds 400 lines, split across multiple files and produce a summary + file manifest.",
+          "severity": "WARN"
+        },
+        {
+          "id": "MM-4",
+          "text": "At phase boundaries, the Orchestrator will instruct the user to start a fresh conversation. All state is preserved in session-state.json.",
+          "severity": "INFO"
+        },
+        {
+          "id": "MM-5",
+          "text": "Refer to templates/sdlc/guardrails/00-global-guardrails.md Section 6 for full rules (G-GLOB-50 through G-GLOB-55).",
+          "severity": "INFO"
+        }
+      ]
+    },
+    {
+      "id": "PROTO-004",
+      "name": "Questionnaire Protocol",
+      "mandatory": true,
+      "rules": [
+        {
+          "id": "QP-1",
+          "text": "At the START of your work, check whether the Orchestrator has injected a QUESTIONNAIRE INPUT block. If present, treat every answered question as verified client input — cite it as source questionnaire:[Q-ID].",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "QP-2",
+          "text": "At the END of your analysis, compile all remaining INSUFFICIENT_DATA: items that cannot be resolved from code or documentation. Pass these to the Orchestrator with the tag QUESTIONNAIRE_REQUEST.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "QP-3",
+          "text": "Never block your handoff because of missing questionnaire answers — mark items INSUFFICIENT_DATA:, pass the QUESTIONNAIRE_REQUEST, and complete your handoff.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "QP-4",
+          "text": "When an answered questionnaire resolves a previously open INSUFFICIENT_DATA: item in a REEVALUATE cycle, mark as RESOLVED_BY_QUESTIONNAIRE: [Q-ID] with the answer as source.",
+          "severity": "WARN"
+        }
+      ]
+    },
+    {
+      "id": "PROTO-005",
+      "name": "Scope Discipline",
+      "mandatory": true,
+      "rules": [
+        {
+          "id": "SD-1",
+          "text": "Each agent operates EXCLUSIVELY within its defined domain.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "SD-2",
+          "text": "Findings outside your domain are documented as OUT_OF_SCOPE: [domain] and passed to the Orchestrator.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "SD-3",
+          "text": "Never make a recommendation outside your area of competence.",
+          "severity": "BLOCK"
+        }
+      ]
+    },
+    {
+      "id": "PROTO-006",
+      "name": "Verification Protocol",
+      "mandatory": true,
+      "rules": [
+        {
+          "id": "VP-1",
+          "text": "Every agent MUST produce a fully completed HANDOFF CHECKLIST at the end of its output.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "VP-2",
+          "text": "An agent may NOT hand off the task if any checkbox is unchecked.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "VP-3",
+          "text": "The checklist must contain machine-readable checkboxes (markdown - [ ] / - [x] format).",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "VP-4",
+          "text": "Perform a self-check: read your own output from beginning to end and verify internal consistency before delivery.",
+          "severity": "WARN"
+        }
+      ]
+    }
+  ],
+  "handoffChecklist": {
+    "items": [
+      "All required sections are filled (not empty, not placeholder)",
+      "All UNCERTAIN: items are documented and escalated",
+      "All INSUFFICIENT_DATA: items are documented and escalated",
+      "Output complies with the contract in /templates/sdlc/contracts/",
+      "Guardrails from /templates/sdlc/guardrails/ have been checked",
+      "Output is machine-readable and ready as input for the next agent",
+      "No contradictory statements in this document",
+      "All findings include a source reference",
+      "Deliverable written to file (not only in chat) per MEMORY MANAGEMENT PROTOCOL"
+    ],
+    "enforcementRule": "AN AGENT MAY NOT HAND OFF THE TASK IF ANY CHECKBOX IS UNCHECKED."
+  },
+  "definitionOfDone": {
+    "designPhases": [
+      "All four design/strategy phases have been completed",
+      "All Critic + Risk validations have passed",
+      "The Synthesis Agent has produced final-report-master.md, 4 department reports, and cross-team-blocker-matrix.md in BusinessDocs/synthesis/",
+      "Each department report contains an explicit statement in the Blockers from other teams section",
+      "BusinessDocs/brand/design-tokens.json is present (or SKIPPED_NO_TOKEN documented) AND brand-guidelines.md present with sections 1-6",
+      "BusinessDocs/storybook/component-inventory.md is present with guardrail for Implementation Agent",
+      "No open UNCERTAIN: or INSUFFICIENT_DATA: items without resolution",
+      "BusinessDocs/questionnaire-index.md is present; all REQUIRED questions are ANSWERED or DEFERRED",
+      "BusinessDocs/OfficialDocuments/document-registry.md is present; all 8 official documents exist"
+    ],
+    "implementationPhase": [
+      "Sprint Completion Report APPROVED",
+      "All stories IMPLEMENTED or BLOCKED with escalation",
+      "Secret scan PASSED",
+      "KPI report written (sprint-[SP-N]-kpi.json)",
+      "PR merged",
+      "user-manual.md and technical-manual.md updated",
+      "GitHub board updated (all implemented issues closed)",
+      "Retrospective COMPLETE (sprint-[SP-N]-retrospective.md)",
+      "BusinessDocs/retrospectives/velocity-log.json updated",
+      "lessons-learned.md updated"
+    ]
+  }
+}

@@ -25,6 +25,11 @@ import {
   computeVelocityTrendEntry,
   recordSprintBoundary,
 } from '../sdlc/observability';
+import {
+  runPolicyEvaluation,
+  type EvaluationReport,
+  type EvaluationContext,
+} from './policy-evaluator';
 
 interface SprintGateStore {
   exists(path: string): boolean;
@@ -666,6 +671,28 @@ function runSprintGate(store: SprintGateStore, options: Record<string, unknown>)
   // Step 4: Blocker check
   const step4 = checkBlockers(store, paths.blockerPath);
 
+  // Step 5: Policy evaluation (M22)
+  let step5: { report: EvaluationReport | null; blockingFailures: number } = {
+    report: null,
+    blockingFailures: 0,
+  };
+  const policyContext: EvaluationContext = {
+    type: 'gate',
+    scope: 'sprint',
+    checks: ((options as Record<string, unknown>).policyChecks as Record<string, boolean>) || {},
+    data: { sprintId },
+  };
+  const policyPackPaths = (paths as Record<string, string>).policyPackPaths
+    ? String((paths as Record<string, string>).policyPackPaths).split(',')
+    : undefined;
+  const report = runPolicyEvaluation(store, policyContext, policyPackPaths);
+  if (report) {
+    step5 = {
+      report,
+      blockingFailures: report.summary.blocking_failures,
+    };
+  }
+
   // Collect all blocking issues
   const allBlockers = [];
 
@@ -694,6 +721,20 @@ function runSprintGate(store: SprintGateStore, options: Record<string, unknown>)
 
   // Step 4 blockers
   allBlockers.push(...step4.issues.filter((i) => i.severity === 'CRITICAL'));
+
+  // Step 5 blockers: blocking policy failures
+  if (step5.report) {
+    for (const f of step5.report.failed) {
+      if (f.severity === 'blocking') {
+        allBlockers.push({
+          severity: 'CRITICAL',
+          rule: 'POLICY_VIOLATION',
+          description: `Policy ${f.policy_id} (${f.policy_name}): ${f.message}`,
+          policyId: f.policy_id,
+        });
+      }
+    }
+  }
 
   const verdict = allBlockers.length === 0 ? 'READY' : 'NOT_READY';
 
@@ -727,6 +768,16 @@ function runSprintGate(store: SprintGateStore, options: Record<string, unknown>)
       advisories: step4.advisories,
       issues: step4.issues,
     },
+    step5_policyEvaluation: step5.report
+      ? {
+          passed: step5.report.summary.passed,
+          failed: step5.report.summary.failed,
+          warnings: step5.report.summary.warnings,
+          skipped: step5.report.summary.skipped,
+          blocking_failures: step5.report.summary.blocking_failures,
+          details: step5.report,
+        }
+      : null,
   };
 
   const summary = {
@@ -741,6 +792,8 @@ function runSprintGate(store: SprintGateStore, options: Record<string, unknown>)
     advisoryCount: step4.advisories.length,
     decisionsLoaded: step0.decisions.length,
     activeCategoryCount: step0.activeCategories.length,
+    policyFailures: step5.report?.summary.failed ?? 0,
+    policyWarnings: step5.report?.summary.warnings ?? 0,
     timestamp: new Date().toISOString(),
   };
 

@@ -1,0 +1,143 @@
+{
+  "pack_id": "quality-baseline",
+  "pack_name": "Quality Baseline",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "id": "POL-QA-001",
+      "name": "Unit test coverage threshold on changed files",
+      "description": "Changed files must maintain at least 60% unit test coverage to prevent regression.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "warning",
+      "condition": {
+        "type": "pr",
+        "check": "coverage_threshold",
+        "parameters": {
+          "threshold_percent": 60,
+          "scope": "changed_files"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Unit test coverage on changed files is below 60%. Consider adding tests.",
+        "notify_roles": ["QA_ENGINEER", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "quality-team",
+        "created": "2026-03-17T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["coverage", "testing"]
+      }
+    },
+    {
+      "id": "POL-QA-002",
+      "name": "No FIXME/TODO without linked issue",
+      "description": "FIXME and TODO comments in code should reference a tracked issue to prevent forgotten work items.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "advisory",
+      "condition": {
+        "type": "pr",
+        "check": "todo_has_issue_link",
+        "parameters": {
+          "patterns": ["FIXME", "TODO"]
+        }
+      },
+      "action": {
+        "type": "notify",
+        "message": "Found FIXME/TODO comments without linked issues. Consider creating tracking issues.",
+        "notify_roles": ["DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "quality-team",
+        "created": "2026-03-17T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["code-hygiene", "tracking"]
+      }
+    },
+    {
+      "id": "POL-QA-003",
+      "name": "Public functions must have JSDoc",
+      "description": "All exported/public functions should have JSDoc documentation for maintainability.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "advisory",
+      "condition": {
+        "type": "pr",
+        "check": "jsdoc_coverage",
+        "parameters": {
+          "scope": "public_functions"
+        }
+      },
+      "action": {
+        "type": "notify",
+        "message": "Some public functions are missing JSDoc documentation.",
+        "notify_roles": ["DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "quality-team",
+        "created": "2026-03-17T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["documentation", "jsdoc"]
+      }
+    },
+    {
+      "id": "POL-QA-004",
+      "name": "E2E tests must pass before production deploy",
+      "description": "All end-to-end tests must pass before deploying to production to prevent regressions.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "blocking",
+      "condition": {
+        "type": "deploy",
+        "check": "e2e_tests_passed",
+        "parameters": {
+          "environment": "production"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "E2E tests must pass before production deployment. Fix failing tests and re-run.",
+        "notify_roles": ["QA_ENGINEER", "RELEASE_MANAGER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "quality-team",
+        "created": "2026-03-17T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["e2e", "deployment", "production"]
+      }
+    },
+    {
+      "id": "POL-QA-005",
+      "name": "Accessibility audit score threshold",
+      "description": "Accessibility audit score must exceed 90 for UI components to meet WCAG compliance goals.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "warning",
+      "condition": {
+        "type": "artifact",
+        "check": "accessibility_score",
+        "parameters": {
+          "min_score": 90
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Accessibility audit score is below 90. Review and improve accessibility of changed components.",
+        "notify_roles": ["DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "quality-team",
+        "created": "2026-03-17T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["accessibility", "wcag", "a11y"]
+      }
+    }
+  ]
+}

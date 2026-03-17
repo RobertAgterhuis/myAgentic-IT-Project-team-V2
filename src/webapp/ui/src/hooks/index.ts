@@ -74,6 +74,9 @@ export { useArtifacts, useArtifact, useArtifactLineage, useArtifactStats } from 
 /* Governance (M10) */
 export { useApprovals, useApproveRequest, useRejectRequest } from './use-governance';
 
+/* Policies (M22) */
+export { usePolicies, usePolicyEvaluation, useCreateException } from './use-governance';
+
 /* Traceability (M10) */
 export { useTraceability } from './use-traceability';
 

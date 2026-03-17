@@ -27,6 +27,7 @@ import {
   ShieldCheck,
   Activity,
   Bot,
+  Gauge,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -40,6 +41,7 @@ const iconMap: Record<string, React.ReactNode> = {
   ShieldCheck: <ShieldCheck className="size-4" />,
   Activity: <Activity className="size-4" />,
   Bot: <Bot className="size-4" />,
+  Gauge: <Gauge className="size-4" />,
 };
 
 function buildSections(): NavSection[] {

@@ -827,3 +827,94 @@ export interface AgentsListResponse extends OkResponse {
 export interface AgentDetailResponse extends OkResponse {
   agent: AgentDetailEntry;
 }
+
+/* ──────────────────────────────────────────────
+ * Cockpit — Confidence Indicators (M27-004)
+ * ────────────────────────────────────────────── */
+
+export interface ConfidenceScore {
+  label: string;
+  score: number; // 0–100
+  factors: { label: string; value: number; weight: number }[];
+}
+
+export interface CockpitHealthResponse extends OkResponse {
+  session_health: ConfidenceScore;
+  sprint_readiness: ConfidenceScore;
+  agent_confidence: ConfidenceScore;
+}
+
+/* ──────────────────────────────────────────────
+ * Cockpit — Dependency Graph (M27-003)
+ * ────────────────────────────────────────────── */
+
+export interface DependencyNode {
+  id: string;
+  type: 'decision' | 'gate' | 'sprint' | 'questionnaire';
+  label: string;
+  status: 'resolved' | 'pending' | 'blocked' | 'passed' | 'failed';
+}
+
+export interface DependencyEdge {
+  source: string;
+  target: string;
+  relationship: 'blocks' | 'feeds' | 'requires';
+  critical: boolean;
+}
+
+export interface DependencyGraphResponse extends OkResponse {
+  nodes: DependencyNode[];
+  edges: DependencyEdge[];
+  critical_path: string[];
+}
+
+/* ──────────────────────────────────────────────
+ * Cockpit — Root-Cause Analysis (M27-006)
+ * ────────────────────────────────────────────── */
+
+export interface RootCauseEntry {
+  id: string;
+  type: 'gate_failure' | 'uncertain' | 'insufficient_data' | 'sprint_blocked';
+  summary: string;
+  source_agent?: string;
+  source_file?: string;
+  source_line?: number;
+  cause_chain: string[];
+  actionable_link?: string;
+  actionable_type?: 'questionnaire' | 'decision' | 'document' | 'sprint';
+  timestamp: string;
+}
+
+export interface RootCauseResponse extends OkResponse {
+  items: RootCauseEntry[];
+  session_id?: string;
+}
+
+/* ──────────────────────────────────────────────
+ * Cockpit — Approval Detail (M27-005)
+ * ────────────────────────────────────────────── */
+
+export interface ApprovalDetail extends ApprovalEntry {
+  context: string;
+  risk_assessment: string;
+  recommended_action: string;
+  related_artifacts: string[];
+  comparison?: { before: string; after: string };
+}
+
+export interface ApprovalDetailResponse extends OkResponse {
+  approval: ApprovalDetail;
+}
+
+export interface ApprovalHistoryEntry {
+  id: string;
+  approval_id: string;
+  action: 'APPROVED' | 'REJECTED';
+  user: string;
+  reason: string;
+  decided_at: string;
+}
+
+export interface ApprovalHistoryResponse extends OkResponse {
+  history: ApprovalHistoryEntry[];
+}

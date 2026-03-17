@@ -18,6 +18,7 @@ import { FlowTimeline, type FlowPhase } from '@/components/runtime/flow-timeline
 import { AgentActivity, type AgentEntry } from '@/components/runtime/agent-activity';
 import { RuntimeLog, type RuntimeLogEvent } from '@/components/runtime/runtime-log';
 import { ExplainabilityPanel } from '@/components/runtime/explainability-panel';
+import { ExecutionTimeline } from '@/components/cockpit/execution-timeline';
 import { useSession } from '@/hooks';
 import { useRuntimeStore } from '@/stores/runtime-store';
 import type {
@@ -282,6 +283,23 @@ export default function SessionDetailPage() {
           </div>
         )}
       </section>
+
+      {/* M27-002: Execution Timeline with replay */}
+      {mergedLogEvents.length > 0 && (
+        <section aria-label="Execution timeline">
+          <ExecutionTimeline
+            events={mergedLogEvents.map((e) => ({
+              id: e.id,
+              type: e.type,
+              timestamp: e.timestamp,
+              description: e.description,
+              agent: e.agent,
+              phase: e.phase,
+              artifact_id: e.artifactId,
+            }))}
+          />
+        </section>
+      )}
 
       {/* Three-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">

@@ -20,8 +20,10 @@ import {
   useDashboardMetrics,
   useDashboardActivity,
   useDashboardStats,
+  useCockpitHealth,
 } from '@/hooks';
 import type { HealthIndicator, DashboardMetrics } from '@/lib/api-types';
+import { ConfidencePanel } from '@/components/cockpit/confidence-indicators';
 import { Activity, BarChart3, Clock, FileText, Users, Target, Star, RefreshCw } from 'lucide-react';
 
 /* ── Metric trend derivation ── */
@@ -50,6 +52,7 @@ export default function DashboardPage() {
   const { data: metrics } = useDashboardMetrics();
   const { data: activity } = useDashboardActivity();
   const { data: stats } = useDashboardStats();
+  const { data: cockpitHealth } = useCockpitHealth();
 
   // Map API activity to ActivityFeed shape with relative time
   const feedItems: ActivityItem[] = useMemo(() => {
@@ -140,6 +143,20 @@ export default function DashboardPage() {
           <RecentCommands />
         </div>
       </div>
+
+      {/* M27-004: Confidence Scores */}
+      {cockpitHealth && (
+        <section aria-label="Confidence scores">
+          <Heading level={2} className="mb-3">
+            Confidence
+          </Heading>
+          <ConfidencePanel
+            sessionHealth={cockpitHealth.session_health}
+            sprintReadiness={cockpitHealth.sprint_readiness}
+            agentConfidence={cockpitHealth.agent_confidence}
+          />
+        </section>
+      )}
 
       {/* Key Metrics */}
       {metricEntries.length > 0 && (

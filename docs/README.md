@@ -293,7 +293,7 @@ dimension, and updates the Master Synthesis. Output:
 
 ```text
 .github/
-  copilot-instructions.md     ← System instructions for the Orchestrator
+  instructions/               ← Generated Copilot instructions (protocols, phase-agents, webapp)
 
 templates/sdlc/
   agents/                     ← One skill file per agent (00-orchestrator.md … 37-scope-change-agent.md)

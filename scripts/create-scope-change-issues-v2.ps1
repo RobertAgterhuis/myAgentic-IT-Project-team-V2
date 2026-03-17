@@ -62,7 +62,7 @@ Move all agent skill files from ``.github/skills/`` to ``agents/``. These are co
 ### Acceptance Criteria
 - [ ] All files from ``.github/skills/`` (38 files) moved to ``agents/``
 - [ ] Agent loading code updated to reference new path
-- [ ] copilot-instructions.md references updated
+- [ ] Platform instruction references updated
 - [ ] All agent invocation tests pass
 - [ ] MCP tool paths updated if applicable
 "@

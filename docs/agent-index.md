@@ -6,9 +6,9 @@ description: Lookup table for all agent skill files, guardrail scopes, and contr
 
 # Agent, Guardrails & Contracts Index
 
-> This file is referenced from `copilot-instructions.md` and contains the full
-> lookup tables. Agents: read this file when you need to find a skill file,
-> guardrail, or contract path.
+> This file is referenced from the generated platform instructions and contains
+> the full lookup tables. Agents: read this file when you need to find a skill
+> file, guardrail, or contract path.
 
 ---
 

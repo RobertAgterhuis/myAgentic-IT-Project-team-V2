@@ -46,7 +46,7 @@ impact analysis handles remediation-mode stories.
 
 Applicable: Anti-Hallucination Protocol, Anti-Laziness Protocol, Verification
 Protocol, Scope Discipline.  
-See `.github/copilot-instructions.md` for the complete rules.
+See `templates/sdlc/guardrails/00-global-guardrails.md` for the complete rules.
 
 ---
 

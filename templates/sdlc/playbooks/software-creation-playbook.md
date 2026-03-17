@@ -674,6 +674,8 @@ REEVALUATE is premature.
 
 ## DEFINITION OF DONE (SYSTEM)
 
+> Canonical reference: `templates/sdlc/contracts/definition-of-done.md`
+
 The creation process is COMPLETE when:
 
 1. All four design phases are Critic + Risk APPROVED

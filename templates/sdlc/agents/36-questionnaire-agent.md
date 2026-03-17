@@ -36,8 +36,8 @@ REEVALUATE cycle and after phase agents complete their work.
 ## UNIVERSAL AGENT RULES
 
 Applicable: Anti-Hallucination Protocol, Anti-Laziness Protocol, Verification
-Protocol, Scope Discipline. See `.github/copilot-instructions.md` for the
-complete rules.
+Protocol, Scope Discipline. See
+`templates/sdlc/guardrails/00-global-guardrails.md` for the complete rules.
 
 **Domain-specific guardrails:**
 `templates/sdlc/guardrails/09-questionnaire-guardrails.md`  

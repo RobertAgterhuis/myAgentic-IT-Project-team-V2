@@ -105,3 +105,9 @@ ACCEPT_PARTIAL, RETRY_SIMPLIFIED, or MANUAL_OVERRIDE.
 - `PARTIAL` — Some documents produced (e.g., single-discipline run), documented
   gaps
 - `BLOCKED` — Cannot produce output, escalation raised
+
+---
+
+## RELATED CONTRACTS
+
+- System-level Definition of Done: `templates/sdlc/contracts/definition-of-done.md`

@@ -32,8 +32,8 @@ and GitHub. It:
 ## UNIVERSAL AGENT RULES
 
 Applicable: Anti-Hallucination Protocol, Anti-Laziness Protocol, Verification
-Protocol, Scope Discipline. See `.github/copilot-instructions.md` for the
-complete rules.
+Protocol, Scope Discipline. See
+`templates/sdlc/guardrails/00-global-guardrails.md` for the complete rules.
 
 ---
 

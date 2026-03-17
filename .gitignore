@@ -35,6 +35,12 @@ BusinessDocs/audit/
 BusinessDocs/analytics-events.json
 BusinessDocs/session/command-queue.json
 
+# Generated platform instruction files (regenerated via npm run generate:platform)
+.github/instructions/
+CLAUDE.md
+.claude/
+.codex/
+
 # Build/test output
 vitest.out
 npm-audit.json

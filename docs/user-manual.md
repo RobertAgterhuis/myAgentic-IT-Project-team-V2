@@ -359,7 +359,7 @@ sprint (configurable via decisions).
 - Ensure GitHub Copilot is active (check the Copilot icon in VS Code status
   bar).
 - Start a **new** Copilot Chat conversation if the current one is too long.
-- Verify the workspace includes the `.github/copilot-instructions.md` file.
+- Verify the workspace includes generated instructions (`npm run generate:platform`).
 
 ### Tests fail after pulling updates
 

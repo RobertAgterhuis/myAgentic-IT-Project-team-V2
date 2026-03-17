@@ -42,6 +42,9 @@ import {
   DecisionService,
   CommandService,
   GovernanceService,
+  PolicyService,
+  PolicyValidationError,
+  PolicyNotFoundError,
   ServiceValidationError,
   ServiceNotAvailableError,
 } from './services';
@@ -152,6 +155,7 @@ const questionnaireSvc = new QuestionnaireService(svcCtx);
 const decisionSvc = new DecisionService(svcCtx);
 const commandSvc = new CommandService(svcCtx);
 const governanceSvc = new GovernanceService(svcCtx);
+const policySvc = new PolicyService(svcCtx);
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 
@@ -706,6 +710,103 @@ mcp.tool(
       if (err instanceof ServiceNotAvailableError) return errorResult('No governance state found');
       const message = err instanceof Error ? err.message : String(err);
       return errorResult(`Failed to reject: ${message}`);
+    }
+  }
+);
+
+/* ── Policy-as-Code Governance (M22) ───────────────────────────── */
+
+mcp.tool(
+  'list_policies',
+  'List all active governance policies with status across all policy packs',
+  async () => {
+    try {
+      const result = policySvc.listPolicies();
+      return jsonResult(result);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return errorResult(`Failed to list policies: ${message}`);
+    }
+  }
+);
+
+mcp.tool(
+  'get_policy_evaluation',
+  'Evaluate all policies against a given context and return results',
+  {
+    type: 'object',
+    properties: {
+      context_type: {
+        type: 'string',
+        enum: ['gate', 'pr', 'deploy', 'artifact', 'schedule'],
+        description: 'The evaluation context type',
+      },
+      scope: {
+        type: 'string',
+        enum: ['global', 'org', 'team', 'repo', 'sprint'],
+        description: 'The scope to evaluate against',
+      },
+      checks: {
+        type: 'object',
+        description: 'Map of check names to boolean results (e.g. { "secret_scan_passed": true })',
+        additionalProperties: { type: 'boolean' },
+      },
+    },
+    required: ['context_type', 'scope', 'checks'],
+  },
+  async ({ context_type, scope, checks }: Record<string, unknown>) => {
+    try {
+      const result = policySvc.evaluatePolicies({
+        type: String(context_type) as 'gate' | 'pr' | 'deploy' | 'artifact' | 'schedule',
+        scope: String(scope) as 'global' | 'org' | 'team' | 'repo' | 'sprint',
+        checks: (checks || {}) as Record<string, boolean>,
+      });
+      return jsonResult(result);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return errorResult(`Failed to evaluate policies: ${message}`);
+    }
+  }
+);
+
+mcp.tool(
+  'create_exception',
+  'Request an exception for a specific governance policy (requires approval)',
+  {
+    type: 'object',
+    properties: {
+      policy_id: {
+        type: 'string',
+        description: 'The policy ID to create an exception for (e.g. POL-SEC-001)',
+      },
+      reason: { type: 'string', description: 'Justification for the exception' },
+      approved_by: { type: 'string', description: 'User approving the exception' },
+      expires: {
+        type: 'string',
+        description: 'ISO date-time when the exception expires',
+      },
+      scope_override: {
+        type: 'string',
+        description: 'Optional narrower scope for the exception',
+      },
+    },
+    required: ['policy_id', 'reason', 'approved_by', 'expires'],
+  },
+  async ({ policy_id, reason, approved_by, expires, scope_override }: Record<string, unknown>) => {
+    try {
+      const result = policySvc.createException({
+        policy_id: String(policy_id),
+        reason: String(reason),
+        approved_by: String(approved_by),
+        expires: String(expires),
+        scope_override: scope_override ? String(scope_override) : undefined,
+      });
+      return jsonResult(result);
+    } catch (err: unknown) {
+      if (err instanceof PolicyValidationError) return errorResult(err.message);
+      if (err instanceof PolicyNotFoundError) return errorResult(err.message);
+      const message = err instanceof Error ? err.message : String(err);
+      return errorResult(`Failed to create exception: ${message}`);
     }
   }
 );

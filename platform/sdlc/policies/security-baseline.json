@@ -1,0 +1,140 @@
+{
+  "pack_id": "security-baseline",
+  "pack_name": "Security Baseline",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "id": "POL-SEC-001",
+      "name": "Secret scanning required before merge",
+      "description": "All code changes must pass secret scanning to prevent credential leaks in the repository.",
+      "scope": "global",
+      "category": "security",
+      "severity": "blocking",
+      "condition": {
+        "type": "pr",
+        "check": "secret_scan_passed",
+        "parameters": {}
+      },
+      "action": {
+        "type": "block",
+        "message": "Secret scanning must pass before merge. Run the secret scanner and resolve all findings.",
+        "notify_roles": ["SECURITY_REVIEWER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "security-team",
+        "created": "2026-03-17T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["secrets", "pre-merge"]
+      }
+    },
+    {
+      "id": "POL-SEC-002",
+      "name": "SAST scan required before merge",
+      "description": "Static Application Security Testing must complete with no HIGH or CRITICAL findings before merge.",
+      "scope": "global",
+      "category": "security",
+      "severity": "blocking",
+      "condition": {
+        "type": "pr",
+        "check": "sast_scan_passed",
+        "parameters": {
+          "max_severity": "MEDIUM"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "SAST scan must pass with no HIGH/CRITICAL findings before merge.",
+        "notify_roles": ["SECURITY_REVIEWER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "security-team",
+        "created": "2026-03-17T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["sast", "pre-merge"]
+      }
+    },
+    {
+      "id": "POL-SEC-003",
+      "name": "Dependency vulnerability scan required",
+      "description": "All dependencies must be scanned for known vulnerabilities. HIGH and CRITICAL findings block the gate.",
+      "scope": "global",
+      "category": "security",
+      "severity": "blocking",
+      "condition": {
+        "type": "pr",
+        "check": "dependency_scan_passed",
+        "parameters": {
+          "block_on": ["HIGH", "CRITICAL"]
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Dependency vulnerability scan found HIGH/CRITICAL issues. Update or patch affected dependencies.",
+        "notify_roles": ["SECURITY_REVIEWER", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "security-team",
+        "created": "2026-03-17T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["dependencies", "supply-chain"]
+      }
+    },
+    {
+      "id": "POL-SEC-004",
+      "name": "Container image scan required for Docker builds",
+      "description": "All Docker/container images must be scanned for vulnerabilities before deployment.",
+      "scope": "global",
+      "category": "security",
+      "severity": "blocking",
+      "condition": {
+        "type": "deploy",
+        "check": "container_scan_passed",
+        "parameters": {
+          "block_on": ["HIGH", "CRITICAL"]
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Container image scan must pass before deployment. Resolve all HIGH/CRITICAL vulnerabilities.",
+        "notify_roles": ["SECURITY_REVIEWER", "DEVOPS_ENGINEER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "security-team",
+        "created": "2026-03-17T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["containers", "docker", "deployment"]
+      }
+    },
+    {
+      "id": "POL-SEC-005",
+      "name": "API key rotation reminder",
+      "description": "API keys older than 90 days should be rotated. This is a warning — not a blocker.",
+      "scope": "global",
+      "category": "security",
+      "severity": "warning",
+      "condition": {
+        "type": "schedule",
+        "check": "api_key_age",
+        "parameters": {
+          "max_age_days": 90
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "One or more API keys are older than 90 days. Consider rotating them.",
+        "notify_roles": ["SECURITY_REVIEWER", "DEVOPS_ENGINEER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "security-team",
+        "created": "2026-03-17T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["key-rotation", "hygiene"]
+      }
+    }
+  ]
+}

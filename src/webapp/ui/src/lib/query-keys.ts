@@ -74,6 +74,8 @@ export const queryKeys = {
   /* Governance / Approvals (M10) */
   governance: {
     approvals: ['governance', 'approvals'] as const,
+    policies: ['governance', 'policies'] as const,
+    policyEvaluation: ['governance', 'policy-evaluation'] as const,
   },
 
   /* Traceability (M10) */

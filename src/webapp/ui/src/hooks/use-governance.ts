@@ -1,11 +1,17 @@
 /**
- * Governance hooks — TanStack Query wrappers for /api/v1/approvals/*.
- * M10 / Issue #394
+ * Governance hooks — TanStack Query wrappers for /api/v1/approvals/* and /api/v1/policies/*.
+ * M10 / Issue #394, M22 / Policy-as-Code Governance
  */
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPost } from '@/lib/api-client';
 import { queryKeys } from '@/lib/query-keys';
-import type { ApprovalsListResponse, ApprovalDecideResponse } from '@/lib/api-types';
+import type {
+  ApprovalsListResponse,
+  ApprovalDecideResponse,
+  PolicyListResponse,
+  PolicyEvaluationResponse,
+  ExceptionCreateResponse,
+} from '@/lib/api-types';
 
 /** List pending approvals. */
 export function useApprovals() {
@@ -39,5 +45,44 @@ export function useRejectRequest() {
         user: user ?? 'web-user',
       }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.governance.approvals }),
+  });
+}
+
+/* ── Policy hooks (M22) ── */
+
+/** List all active policies. */
+export function usePolicies() {
+  return useQuery({
+    queryKey: queryKeys.governance.policies,
+    queryFn: () => apiGet<PolicyListResponse>('/v1/policies'),
+  });
+}
+
+/** Evaluate policies against the current context. */
+export function usePolicyEvaluation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (context: {
+      context_type: string;
+      scope: string;
+      checks: Record<string, boolean>;
+    }) => apiPost<PolicyEvaluationResponse>('/v1/policies/evaluate', context),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: queryKeys.governance.policyEvaluation }),
+  });
+}
+
+/** Create a policy exception. */
+export function useCreateException() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: {
+      policy_id: string;
+      reason: string;
+      approved_by: string;
+      expires: string;
+      scope_override?: string;
+    }) => apiPost<ExceptionCreateResponse>('/v1/policies/exceptions', input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.governance.policies }),
   });
 }

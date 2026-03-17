@@ -652,6 +652,61 @@ export interface ApprovalDecideResponse extends OkResponse {
 }
 
 /* ──────────────────────────────────────────────
+ * Policies (M22 / Policy-as-Code Governance)
+ * ────────────────────────────────────────────── */
+
+export interface PolicyEntry {
+  id: string;
+  name: string;
+  scope: string;
+  category: string;
+  severity: string;
+  condition_type: string;
+  condition_check: string;
+  exception_count: number;
+  pack_id?: string;
+}
+
+export interface PolicyListResponse {
+  policies: PolicyEntry[];
+  count: number;
+}
+
+export interface PolicyResult {
+  policy_id: string;
+  policy_name: string;
+  severity: string;
+  passed: boolean;
+  reason: string;
+  exception_applied?: string;
+}
+
+export interface PolicyEvaluationResponse {
+  evaluation: {
+    timestamp: string;
+    context: { type: string; scope: string };
+    results: PolicyResult[];
+    summary: {
+      total: number;
+      passed: number;
+      failed: number;
+      skipped: number;
+      blocking_failures: number;
+    };
+  };
+}
+
+export interface ExceptionCreateResponse extends OkResponse {
+  exception: {
+    id: string;
+    reason: string;
+    approved_by: string;
+    expires: string;
+  };
+  policy_id: string;
+}
+
+/* ──────────────────────────────────────────────
  * Traceability (M10 / Issue #396)
  * ────────────────────────────────────────────── */
 

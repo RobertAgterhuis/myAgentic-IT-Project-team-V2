@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myagentic-it.local/schema/policy.schema.json",
+  "title": "Policy-as-Code Schema",
+  "description": "Validates policy definitions for rule-based governance with inheritance and exception support (M22).",
+
+  "type": "object",
+  "required": ["policies"],
+  "additionalProperties": false,
+  "properties": {
+    "pack_id": {
+      "type": "string",
+      "description": "Unique identifier for this policy pack",
+      "pattern": "^[a-z][a-z0-9-]+$"
+    },
+    "pack_name": {
+      "type": "string",
+      "description": "Human-readable name for the policy pack"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semver version of this policy pack",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "policies": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/Policy" },
+      "minItems": 1
+    }
+  },
+
+  "$defs": {
+    "Policy": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "scope",
+        "category",
+        "severity",
+        "condition",
+        "action",
+        "metadata"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^POL-[A-Z]+-\\d{3}$",
+          "description": "Unique policy identifier (e.g. POL-SEC-001)"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Human-readable policy name"
+        },
+        "description": {
+          "type": "string",
+          "description": "Detailed policy description"
+        },
+        "scope": {
+          "type": "string",
+          "enum": ["global", "org", "team", "repo", "sprint"],
+          "description": "Inheritance scope level"
+        },
+        "category": {
+          "type": "string",
+          "enum": ["security", "quality", "compliance", "process", "architecture"],
+          "description": "Policy category for filtering"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["blocking", "warning", "advisory"],
+          "description": "Enforcement level: blocking fails the gate, warning logs but passes, advisory is informational"
+        },
+        "condition": { "$ref": "#/$defs/PolicyCondition" },
+        "action": { "$ref": "#/$defs/PolicyAction" },
+        "exceptions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/ExceptionRule" },
+          "default": []
+        },
+        "metadata": { "$ref": "#/$defs/PolicyMetadata" }
+      }
+    },
+
+    "PolicyCondition": {
+      "type": "object",
+      "required": ["type", "check"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["gate", "pr", "deploy", "artifact", "schedule"],
+          "description": "Context in which this policy is evaluated"
+        },
+        "check": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Machine-readable check identifier (e.g. 'secret_scan_passed', 'coverage_threshold')"
+        },
+        "parameters": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Check-specific parameters (e.g. { threshold: 60 })"
+        }
+      }
+    },
+
+    "PolicyAction": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["block", "warn", "notify", "log"],
+          "description": "Action to take when the condition is met"
+        },
+        "message": {
+          "type": "string",
+          "description": "Human-readable message to display when triggered"
+        },
+        "notify_roles": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Roles to notify on trigger"
+        }
+      }
+    },
+
+    "ExceptionRule": {
+      "type": "object",
+      "required": ["id", "reason", "approved_by", "expires"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^EXC-\\d+$",
+          "description": "Exception identifier"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Justification for the exception"
+        },
+        "approved_by": {
+          "type": "string",
+          "minLength": 1,
+          "description": "User who approved the exception"
+        },
+        "approved_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of approval"
+        },
+        "expires": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp after which the exception is no longer valid"
+        },
+        "scope_override": {
+          "type": "string",
+          "description": "Optional narrower scope for this exception"
+        }
+      }
+    },
+
+    "PolicyMetadata": {
+      "type": "object",
+      "required": ["owner", "created"],
+      "additionalProperties": false,
+      "properties": {
+        "owner": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Team or individual responsible for this policy"
+        },
+        "created": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp when the policy was created"
+        },
+        "updated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO timestamp of last modification"
+        },
+        "expires": {
+          "type": ["string", "null"],
+          "format": "date-time",
+          "description": "Optional expiry date for time-limited policies"
+        },
+        "evidence_required": {
+          "type": "boolean",
+          "default": false,
+          "description": "Whether evidence must be attached when this policy is evaluated"
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Freeform tags for filtering and grouping"
+        }
+      }
+    }
+  }
+}

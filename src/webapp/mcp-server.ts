@@ -816,6 +816,101 @@ mcp.tool(
   }
 );
 
+/* ── Job Management (M24-006) ──────────────────────────────────── */
+
+mcp.tool(
+  'list_jobs',
+  'List background jobs with optional status/type filter. Returns job queue state.',
+  {
+    type: 'object',
+    properties: {
+      status: {
+        type: 'string',
+        enum: ['queued', 'running', 'completed', 'failed', 'cancelled'],
+        description: 'Filter by job status',
+      },
+      type: {
+        type: 'string',
+        enum: [
+          'agent-invocation',
+          'gate-validation',
+          'artifact-registration',
+          'sprint-gate',
+          'policy-evaluation',
+        ],
+        description: 'Filter by job type',
+      },
+      limit: { type: 'number', description: 'Max results (default 50)' },
+    },
+  },
+  async ({ status, type, limit }: Record<string, unknown>) => {
+    try {
+      if (!_storageProvider) return errorResult('StorageProvider not available');
+      const { MemoryQueue } = await import('../../platform/engine/jobs');
+      // Use the in-process queue as the default
+      const queue = new MemoryQueue();
+      const jobs = await queue.list({
+        status: status as undefined,
+        type: type as undefined,
+        limit: (limit as number) || 50,
+      });
+      return jsonResult({ total: jobs.length, jobs });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return errorResult(`Failed to list jobs: ${message}`);
+    }
+  }
+);
+
+mcp.tool(
+  'get_job',
+  'Get details of a specific background job including its result',
+  {
+    type: 'object',
+    properties: {
+      job_id: { type: 'string', description: 'The job ID to look up' },
+    },
+    required: ['job_id'],
+  },
+  async ({ job_id }: Record<string, unknown>) => {
+    try {
+      if (!_storageProvider) return errorResult('StorageProvider not available');
+      const { PersistentQueue } = await import('../../platform/engine/jobs');
+      const queue = new PersistentQueue(_storageProvider);
+      const job = await queue.status(String(job_id));
+      if (!job) return errorResult(`Job not found: ${job_id}`);
+      return jsonResult(job);
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return errorResult(`Failed to get job: ${message}`);
+    }
+  }
+);
+
+mcp.tool(
+  'cancel_job',
+  'Cancel a queued or running background job',
+  {
+    type: 'object',
+    properties: {
+      job_id: { type: 'string', description: 'The job ID to cancel' },
+    },
+    required: ['job_id'],
+  },
+  async ({ job_id }: Record<string, unknown>) => {
+    try {
+      if (!_storageProvider) return errorResult('StorageProvider not available');
+      const { PersistentQueue } = await import('../../platform/engine/jobs');
+      const queue = new PersistentQueue(_storageProvider);
+      await queue.cancel(String(job_id));
+      return jsonResult({ ok: true, message: `Job ${job_id} cancelled` });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      return errorResult(`Failed to cancel job: ${message}`);
+    }
+  }
+);
+
 /* ════════════════════════════════════════════════════════════════ */
 /*  RESOURCES                                                      */
 /* ════════════════════════════════════════════════════════════════ */

@@ -17,6 +17,7 @@
 
 import path from 'node:path';
 import { STATES } from './state-machine';
+import type { JobQueue, JobType } from './jobs/job-types';
 
 // ─── Error Severity Classification (M5 / Evolution 5) ───────
 
@@ -180,6 +181,7 @@ class Dispatcher {
   _invoker: (...args: unknown[]) => unknown;
   _onLog: (...args: unknown[]) => void;
   _log: InvocationEntry[];
+  _jobQueue: JobQueue | null;
 
   /**
    * @param {object} options
@@ -195,12 +197,14 @@ class Dispatcher {
       invoker,
       onLog,
       phaseAgents,
+      jobQueue,
     } = options as {
       store?: DispatcherStore;
       config?: Record<string, unknown>;
       invoker?: (...args: unknown[]) => unknown;
       onLog?: (...args: unknown[]) => void;
       phaseAgents?: Record<string, AgentRef[]>;
+      jobQueue?: JobQueue;
     };
 
     if (!store) throw new Error('Dispatcher requires a store');
@@ -211,6 +215,7 @@ class Dispatcher {
     this._invoker = invoker || this._defaultInvoker.bind(this);
     this._onLog = onLog || (() => {});
     this._log = [];
+    this._jobQueue = jobQueue || null;
   }
 
   /** @returns {InvocationLogEntry[]} Full invocation log */
@@ -270,6 +275,39 @@ class Dispatcher {
     }
 
     return context;
+  }
+
+  /**
+   * Enqueue an agent invocation as a background job.
+   * Returns the job ID — callers can poll queue.status(id) for result.
+   * Only available when a jobQueue is configured.
+   */
+  async enqueueInvocation(
+    agent: AgentRef,
+    state: string,
+    context: Record<string, unknown>,
+    agentConfig: Record<string, unknown> = {}
+  ): Promise<{ jobId: string }> {
+    if (!this._jobQueue) {
+      throw new Error('No job queue configured — use invoke() for direct execution');
+    }
+
+    const config = { ...this._config, ...agentConfig };
+    const job = await this._jobQueue.enqueue({
+      type: 'agent-invocation' as JobType,
+      payload: {
+        agentId: agent.id,
+        agentName: agent.name,
+        platform: (agentConfig.platform || config.platform) as string,
+        state,
+        context,
+      },
+      priority: (agentConfig.priority as number) || 5,
+      retryCount: 0,
+      maxRetries: (config.maxTransientRetries ?? config.maxRetries ?? 2) as number,
+    });
+
+    return { jobId: job.id };
   }
 
   /**

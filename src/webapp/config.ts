@@ -39,3 +39,12 @@ export const METRICS_FLUSH_INTERVAL_MS = 60000;
 export const SNAPSHOT_SYNC_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 export const RATE_LIMIT_WINDOW_MS = 60_000;
 export const RATE_LIMIT_MAX = 30;
+
+/* ── Persistence layer (M23-005) ──────────────────────────────── */
+export type StorageProviderType = 'file' | 'sqlite';
+export const STORAGE_PROVIDER: StorageProviderType = (() => {
+  const v = process.env.STORAGE_PROVIDER;
+  if (v === 'sqlite') return 'sqlite';
+  return 'file';
+})();
+export const STORAGE_PATH: string | undefined = process.env.STORAGE_PATH || undefined;

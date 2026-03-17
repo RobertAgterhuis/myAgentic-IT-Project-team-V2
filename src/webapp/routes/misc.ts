@@ -48,6 +48,8 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     WEBAPP_DIR,
     ANALYTICS_MAX_EVENTS,
     _readCommandQueue,
+    getStorageProvider,
+    STORAGE_PROVIDER: _storageProviderType,
   } = ctx;
 
   const svc = new SessionService(toServiceContext(ctx));
@@ -267,6 +269,21 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     } catch {
       store_status = 'degraded';
     }
+    // StorageProvider health (M23-005 / M23-007)
+    let storage_health: Record<string, unknown> | undefined;
+    const sp = typeof getStorageProvider === 'function' ? getStorageProvider() : null;
+    if (sp) {
+      try {
+        const h = await sp.health();
+        storage_health = {
+          status: h.status,
+          provider: h.provider,
+          latencyMs: h.latencyMs,
+        };
+      } catch {
+        storage_health = { status: 'unhealthy', provider: _storageProviderType || 'unknown' };
+      }
+    }
     json(res, 200, {
       status: 'ok',
       version: _version,
@@ -274,6 +291,7 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
       store_status,
       sse_connections: sseManager.size,
       timestamp: new Date().toISOString(),
+      ...(storage_health ? { storage: storage_health } : {}),
     });
   }
 
@@ -434,11 +452,13 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
       } catch {
         store_status = 'degraded';
       }
+      const sp = typeof getStorageProvider === 'function' ? getStorageProvider() : null;
       json(res, 200, {
         status: 'ok',
         version: _version,
         uptime: Math.round(process.uptime()),
         store_status,
+        storage_provider: sp ? sp.name : 'none',
       });
     },
     _serveStatic: serveStatic,

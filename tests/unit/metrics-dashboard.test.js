@@ -356,4 +356,97 @@ describe('metrics-dashboard route (FEAT-01)', () => {
     expect(data.burnup).toHaveLength(0);
     expect(data.forecast.avg_velocity).toBe(0);
   });
+
+  /* ── Storage metrics in dashboard (M23-007) ──────────────────── */
+
+  it('includes storage metrics when getStorageProvider is available', async () => {
+    const store = new InMemoryStore(buildFiles());
+    setStore(store);
+    const cache = new FileCache();
+    const fakeProvider = {
+      name: 'file',
+      metrics() {
+        return {
+          reads: 100,
+          writes: 50,
+          deletes: 5,
+          errors: 2,
+          readLatencies: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+          writeLatencies: [5, 10, 15, 20],
+        };
+      },
+    };
+    const r = createMetricsDashboardRoutes({
+      _cache: cache,
+      BUSINESS_DOCS,
+      getStorageProvider: () => fakeProvider,
+    });
+    const h = r['GET /api/metrics/dashboard'];
+    const res = fakeRes();
+    await h(fakeReq(), res);
+    expect(res.status).toBe(200);
+    const data = res.json;
+    expect(data.storage).toBeDefined();
+    expect(data.storage.provider).toBe('file');
+    expect(data.storage.operations).toEqual({ reads: 100, writes: 50, deletes: 5, errors: 2 });
+    expect(data.storage.latency.read.p50).toBeGreaterThan(0);
+    expect(data.storage.latency.read.p95).toBeGreaterThan(0);
+    expect(data.storage.latency.read.samples).toBe(10);
+    expect(data.storage.latency.write.p50).toBeGreaterThan(0);
+    expect(data.storage.latency.write.p95).toBeGreaterThan(0);
+    expect(data.storage.latency.write.samples).toBe(4);
+  });
+
+  it('omits storage key when getStorageProvider is not in ctx', async () => {
+    const store = new InMemoryStore(buildFiles());
+    setStore(store);
+    const cache = new FileCache();
+    const r = createMetricsDashboardRoutes({ _cache: cache, BUSINESS_DOCS });
+    const h = r['GET /api/metrics/dashboard'];
+    const res = fakeRes();
+    await h(fakeReq(), res);
+    expect(res.status).toBe(200);
+    expect(res.json.storage).toBeUndefined();
+  });
+
+  it('omits storage key when getStorageProvider returns null', async () => {
+    const store = new InMemoryStore(buildFiles());
+    setStore(store);
+    const cache = new FileCache();
+    const r = createMetricsDashboardRoutes({
+      _cache: cache,
+      BUSINESS_DOCS,
+      getStorageProvider: () => null,
+    });
+    const h = r['GET /api/metrics/dashboard'];
+    const res = fakeRes();
+    await h(fakeReq(), res);
+    expect(res.status).toBe(200);
+    expect(res.json.storage).toBeUndefined();
+  });
+
+  it('handles metrics() throwing gracefully', async () => {
+    const store = new InMemoryStore(buildFiles());
+    setStore(store);
+    const cache = new FileCache();
+    const fakeProvider = {
+      name: 'broken',
+      metrics() {
+        throw new Error('db locked');
+      },
+    };
+    const r = createMetricsDashboardRoutes({
+      _cache: cache,
+      BUSINESS_DOCS,
+      getStorageProvider: () => fakeProvider,
+    });
+    const h = r['GET /api/metrics/dashboard'];
+    const res = fakeRes();
+    await h(fakeReq(), res);
+    expect(res.status).toBe(200);
+    const data = res.json;
+    expect(data.storage).toBeDefined();
+    expect(data.storage.provider).toBe('broken');
+    expect(data.storage.error).toBe('metrics_unavailable');
+  });
 });

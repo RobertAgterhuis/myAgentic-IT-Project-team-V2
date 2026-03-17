@@ -371,8 +371,42 @@ function buildHeatmapData(velocity, kpis) {
 /* ── Route factory ─────────────────────────────────────────────── */
 
 export = function createMetricsDashboardRoutes(ctx): Record<string, unknown> {
-  const { _cache, BUSINESS_DOCS } = ctx;
+  const { _cache, BUSINESS_DOCS, getStorageProvider } = ctx;
   const VELOCITY_FILE = path.join(BUSINESS_DOCS, 'retrospectives', 'velocity-log.json');
+
+  function percentile(sorted: number[], p: number): number {
+    if (!sorted.length) return 0;
+    const idx = Math.ceil((p / 100) * sorted.length) - 1;
+    return sorted[Math.max(0, idx)];
+  }
+
+  function buildStorageMetrics() {
+    const sp = typeof getStorageProvider === 'function' ? getStorageProvider() : null;
+    if (!sp) return null;
+    try {
+      const m = sp.metrics();
+      const readSorted = [...m.readLatencies].sort((a, b) => a - b);
+      const writeSorted = [...m.writeLatencies].sort((a, b) => a - b);
+      return {
+        provider: sp.name,
+        operations: { reads: m.reads, writes: m.writes, deletes: m.deletes, errors: m.errors },
+        latency: {
+          read: {
+            p50: percentile(readSorted, 50),
+            p95: percentile(readSorted, 95),
+            samples: readSorted.length,
+          },
+          write: {
+            p50: percentile(writeSorted, 50),
+            p95: percentile(writeSorted, 95),
+            samples: writeSorted.length,
+          },
+        },
+      };
+    } catch {
+      return { provider: sp.name, error: 'metrics_unavailable' };
+    }
+  }
 
   function readVelocity(store) {
     if (!store.exists(VELOCITY_FILE)) return { sprints: [] };
@@ -454,6 +488,7 @@ export = function createMetricsDashboardRoutes(ctx): Record<string, unknown> {
     const filtered = sliceLast(sorted, lastN);
     const burnup = buildBurnup(sorted);
     const m = computeAllMetrics(sorted, kpis);
+    const storageMetrics = buildStorageMetrics();
 
     json(res, 200, {
       velocity: filtered,
@@ -471,6 +506,7 @@ export = function createMetricsDashboardRoutes(ctx): Record<string, unknown> {
       estimationHistogram: m.estimationHistogram,
       riskTrend: m.riskTrend,
       heatmapData: m.heatmapData,
+      ...(storageMetrics ? { storage: storageMetrics } : {}),
       generated_at: new Date().toISOString(),
     });
   }

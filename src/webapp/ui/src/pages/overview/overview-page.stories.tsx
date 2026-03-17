@@ -60,7 +60,7 @@ const healthData = {
 
 const decisionsData = { all: [], open: [] };
 const questionnairesData = { questionnaires: [] };
-const approvalsData = [];
+const approvalsData: unknown[] = [];
 
 export const Populated: Story = {
   parameters: {

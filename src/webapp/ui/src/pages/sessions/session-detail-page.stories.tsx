@@ -9,9 +9,12 @@ import { withProviders } from '@/test/storybook-decorators';
 const meta = {
   title: 'Pages/SessionDetail',
   component: SessionDetailPage,
-  decorators: [(Story) => withProviders(Story, { initialEntries: ['/sessions/sess-abc123'] })],
+  decorators: [withProviders],
   tags: ['autodocs'],
-  parameters: { layout: 'fullscreen' },
+  parameters: {
+    layout: 'fullscreen',
+    routerInitialEntries: ['/sessions/sess-abc123'],
+  },
 } satisfies Meta<typeof SessionDetailPage>;
 
 export default meta;

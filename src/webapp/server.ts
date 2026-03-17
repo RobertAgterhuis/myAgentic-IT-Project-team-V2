@@ -27,6 +27,12 @@ import {
   handleRouteError,
 } from './middleware';
 import {
+  AuthManager,
+  createAuthMiddleware,
+  loadAuthConfig,
+  type AuthenticatedRequest,
+} from './auth';
+import {
   PORT,
   HOST,
   WEBAPP_DIR,
@@ -88,6 +94,24 @@ async function initStorageProvider(): Promise<StorageProvider> {
     name: _storageProvider.name,
   });
   return _storageProvider;
+}
+
+/* ── Auth (M29) ───────────────────────────────────────────────── */
+const _authConfig = loadAuthConfig();
+const _authManager: AuthManager | null = _authConfig ? new AuthManager(_authConfig) : null;
+const _authMiddleware = _authManager
+  ? createAuthMiddleware({
+      authManager: _authManager,
+      log: structuredLog,
+      audit: _audit,
+    })
+  : null;
+if (_authManager) {
+  structuredLog('info', 'auth_enabled', { provider: 'github_oauth' });
+} else {
+  structuredLog('warn', 'auth_disabled', {
+    reason: 'GITHUB_CLIENT_ID or GITHUB_CLIENT_SECRET not set',
+  });
 }
 
 const metricsCollector = createMetricsCollector({
@@ -199,6 +223,9 @@ const ctx: Record<string, unknown> = {
   /** StorageProvider getter — returns null pre-init, provider post-init (M23-005). */
   getStorageProvider,
   STORAGE_PROVIDER,
+  /** Auth (M29) */
+  _authManager,
+  _authMiddleware,
 };
 
 const questionnaireRoutes = require('./routes/questionnaires')(ctx);
@@ -222,6 +249,7 @@ const sessionRoutes = require('./routes/sessions')(ctx);
 const agentRoutes = require('./routes/agents')(ctx);
 const workspaceRoutes = require('./routes/workspaces')(ctx);
 const cockpitRoutes = require('./routes/cockpit')(ctx);
+const authRoutes = require('./routes/auth')(ctx);
 const miscRoutes = require('./routes/misc')(ctx);
 const serveStatic = miscRoutes._serveStatic;
 Object.freeze(ctx);
@@ -245,6 +273,7 @@ const ROUTES: RouteTable = {
   ...agentRoutes,
   ...workspaceRoutes,
   ...cockpitRoutes,
+  ...authRoutes,
   ...orchestratorRoutes,
   ...miscRoutes,
 };
@@ -295,17 +324,42 @@ const server = http.createServer(async (req, res) => {
       return;
     }
   }
-  if (
-    HOST !== '127.0.0.1' &&
-    HOST !== 'localhost' &&
-    pathname.startsWith('/api') &&
-    req.method !== 'GET'
-  ) {
-    const expected = process.env.API_KEY;
-    if (!expected || req.headers['x-api-key'] !== expected) {
-      setSecurityHeaders(res);
-      json(res, 403, errorResponse('FORBIDDEN', 'API key required for mutating requests'));
-      return;
+
+  /* ── Auth gate (M29-005: replaces localhost trust bypass) ──── */
+  if (_authMiddleware && pathname.startsWith('/api')) {
+    const authed = await _authMiddleware.authenticate(req as AuthenticatedRequest, res, pathname);
+    if (!authed) return;
+
+    /* ── RBAC enforcement (M29-009/010/011) ──────────────────── */
+    const method = req.method || 'GET';
+    const aReq = req as AuthenticatedRequest;
+    if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
+      // Admin-only endpoints
+      if (
+        pathname.startsWith('/api/admin') ||
+        pathname.startsWith('/api/sessions') ||
+        pathname.startsWith('/api/workspaces')
+      ) {
+        if (!_authMiddleware.requireRole(aReq, res, 'admin', pathname)) return;
+      }
+      // Policy management requires admin
+      else if (pathname.startsWith('/api/v1/policies') && !pathname.includes('/evaluate')) {
+        if (!_authMiddleware.requireRole(aReq, res, 'admin', pathname)) return;
+      }
+      // All other mutating endpoints require operator
+      else {
+        if (!_authMiddleware.requireRole(aReq, res, 'operator', pathname)) return;
+      }
+    }
+  } else if (!_authMiddleware && pathname.startsWith('/api') && req.method !== 'GET') {
+    // Fallback: API key guard when auth is disabled (backward compat)
+    if (HOST !== '127.0.0.1' && HOST !== 'localhost') {
+      const expected = process.env.API_KEY;
+      if (!expected || req.headers['x-api-key'] !== expected) {
+        setSecurityHeaders(res);
+        json(res, 403, errorResponse('FORBIDDEN', 'API key required for mutating requests'));
+        return;
+      }
     }
   }
 
@@ -350,7 +404,7 @@ if (require.main === module) {
           url: `http://${HOST}:${PORT}`,
           storageProvider: STORAGE_PROVIDER,
         });
-        if (HOST !== '127.0.0.1' && HOST !== 'localhost' && !process.env.API_KEY)
+        if (!_authManager && HOST !== '127.0.0.1' && HOST !== 'localhost' && !process.env.API_KEY)
           structuredLog('warn', 'auth_guard_no_api_key', { host: HOST });
       });
     })
@@ -398,6 +452,8 @@ if (require.main === module) {
     // Close StorageProvider gracefully (M23-005)
     const sp = getStorageProvider();
     if (sp) sp.close().catch(() => {});
+    // Close auth DB (M29)
+    if (_authManager) _authManager.close();
     server.close(() => {
       structuredLog('info', 'server_closed');
       process.exit(0);

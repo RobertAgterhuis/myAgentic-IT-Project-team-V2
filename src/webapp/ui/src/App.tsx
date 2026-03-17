@@ -7,6 +7,7 @@ import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/app-layout';
 import { NotFoundPage } from '@/pages/not-found-page';
 
+const LoginPage = lazy(() => import('@/pages/login/login-page'));
 const OverviewPage = lazy(() => import('@/pages/overview/overview-page'));
 const DashboardPage = lazy(() => import('@/pages/dashboard/dashboard-page'));
 const CommandsPage = lazy(() => import('@/pages/commands/commands-page'));
@@ -24,6 +25,8 @@ const CockpitDashboardPage = lazy(() => import('@/pages/cockpit/cockpit-dashboar
 const ApprovalDetailPage = lazy(() => import('@/pages/cockpit/approval-detail-page'));
 
 const router = createBrowserRouter([
+  /* Login — outside the app shell (no sidebar/nav) */
+  { path: 'login', element: <LoginPage /> },
   {
     element: <AppLayout />,
     children: [

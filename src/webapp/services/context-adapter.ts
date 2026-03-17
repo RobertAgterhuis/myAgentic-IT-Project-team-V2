@@ -29,7 +29,9 @@ export function toServiceContext(ctx: Record<string, unknown>): ServiceContext {
     (ctx.SESSION_FILE ? path.dirname(ctx.SESSION_FILE as string) : '');
 
   return {
-    store: getStore(),
+    get store() {
+      return getStore();
+    },
     cache: (ctx._cache as ServiceContext['cache']) || fallbackCache(),
     audit: (ctx._audit || { log() {}, read: () => [] }) as ServiceContext['audit'],
     safeWrite: ctx.safeWriteSync as ServiceContext['safeWrite'],

@@ -12,7 +12,7 @@ import * as models from '../models';
 import * as schemas from '../schemas';
 import { withFileLock } from '../file-lock';
 import { sanitizeMarkdown, sanitizeQID, detectSecrets, safePath } from '../middleware';
-import { ServiceValidationError } from './decisions-service';
+import { ServiceValidationError, ServiceNotFoundError } from './decisions-service';
 import type { ServiceContext, QuestionnaireUpdate, SaveAnswersResult } from './types';
 
 export class QuestionnaireService {
@@ -92,7 +92,7 @@ export class QuestionnaireService {
     this.validateUpdates(updates);
     const filePath = safePath(this.ctx.businessDocs, file);
     if (!this.ctx.store.exists(filePath)) {
-      throw new ServiceValidationError(`File not found: ${file}`);
+      throw new ServiceNotFoundError(`File not found: ${file}`);
     }
 
     // Sanitize
@@ -234,7 +234,7 @@ export class QuestionnaireService {
       const r = schemas.validateQuestionnaireUpdate(u);
       if (!r.valid) throw new ServiceValidationError(r.errors[0]);
       if (!models.Q_ID_RE.test(u.questionId)) {
-        throw new ServiceValidationError(`Invalid question ID format: ${u.questionId}`);
+        throw new ServiceValidationError(`Invalid Q-ID format: ${u.questionId}`);
       }
     }
   }

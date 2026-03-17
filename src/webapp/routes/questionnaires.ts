@@ -11,7 +11,12 @@
  */
 
 import * as schemas from '../schemas';
-import { QuestionnaireService, ServiceValidationError, toServiceContext } from '../services';
+import {
+  QuestionnaireService,
+  ServiceValidationError,
+  ServiceNotFoundError,
+  toServiceContext,
+} from '../services';
 import { attachSecretWarnings } from '../utils/secret-utils';
 import { errorResponse } from '../utils/errors';
 import { VALIDATION as V } from '../strings';
@@ -76,6 +81,9 @@ export = function createQuestionnaireRoutes(ctx): Record<string, unknown> {
     try {
       await svc.saveAnswers(filePath, updates, 'webapp');
     } catch (e) {
+      if (e instanceof ServiceNotFoundError) {
+        return json(res, 404, errorResponse('FILE_NOT_FOUND', e.message));
+      }
       if (e instanceof ServiceValidationError) {
         return json(res, 400, errorResponse('VALIDATION_ERROR', e.message));
       }

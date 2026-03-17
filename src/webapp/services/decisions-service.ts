@@ -196,7 +196,12 @@ export class DecisionService {
     edit: 'edited',
   };
 
+  private static VALID_ACTIONS = new Set(['answer', 'decide', 'defer', 'expire', 'reopen', 'edit']);
+
   async mutate(input: DecisionMutateInput, user = 'service'): Promise<DecisionResult> {
+    if (!DecisionService.VALID_ACTIONS.has(input.action)) {
+      throw new ServiceValidationError(`Unknown action: ${input.action}`);
+    }
     this.validateId(input.id);
     const targetFile = this.findDecisionFile(input.id) || this.ctx.decisionsFile;
 
@@ -287,7 +292,7 @@ export class DecisionService {
   }
 
   private validateId(id: string): void {
-    if (!id) throw new ServiceValidationError('Decision ID is required');
+    if (!id) throw new ServiceValidationError('Missing id');
     if (!models.DEC_ID_RE.test(id))
       throw new ServiceValidationError(`Invalid decision ID format: ${id}`);
   }
@@ -378,5 +383,12 @@ export class ServiceValidationError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'ServiceValidationError';
+  }
+}
+
+export class ServiceNotFoundError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ServiceNotFoundError';
   }
 }

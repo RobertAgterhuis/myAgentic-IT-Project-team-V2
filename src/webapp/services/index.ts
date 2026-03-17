@@ -7,7 +7,7 @@
  * is accessed through these service classes.
  */
 
-export { DecisionService, ServiceValidationError } from './decisions-service';
+export { DecisionService, ServiceValidationError, ServiceNotFoundError } from './decisions-service';
 export { QuestionnaireService } from './questionnaire-service';
 export { CommandService } from './commands-service';
 export { GovernanceService, ServiceNotAvailableError } from './governance-service';

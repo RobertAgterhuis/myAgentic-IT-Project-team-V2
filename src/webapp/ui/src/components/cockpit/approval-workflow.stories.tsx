@@ -41,6 +41,7 @@ const metaHistory = {
   component: ApprovalHistoryTimeline,
   tags: ['autodocs'],
 } satisfies Meta<typeof ApprovalHistoryTimeline>;
+export { metaHistory };
 
 type HistoryStory = StoryObj<typeof metaHistory>;
 

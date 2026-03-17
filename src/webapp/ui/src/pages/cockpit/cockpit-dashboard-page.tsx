@@ -14,6 +14,12 @@ import { DependencyGraph } from '@/components/cockpit/dependency-graph';
 import { RootCauseView } from '@/components/cockpit/root-cause-view';
 import { ApprovalHistoryTimeline } from '@/components/cockpit/approval-workflow';
 import { useCockpitHealth, useDependencyGraph, useRootCause, useApprovalHistory } from '@/hooks';
+import type {
+  CockpitHealthResponse,
+  DependencyGraphResponse,
+  RootCauseResponse,
+  ApprovalHistoryResponse,
+} from '@/lib/api-types';
 import { Gauge, GitBranch, AlertTriangle, ClipboardCheck, RefreshCw } from 'lucide-react';
 
 type Tab = 'health' | 'dependencies' | 'root-cause' | 'approvals';
@@ -125,7 +131,7 @@ interface QueryState<T> {
   refetch: () => void;
 }
 
-function HealthPanel({ query }: { query: QueryState<any> }) {
+function HealthPanel({ query }: { query: QueryState<CockpitHealthResponse> }) {
   if (query.isLoading) return <Spinner label="Loading confidence scores…" />;
   if (query.error) return <ErrorBanner error={query.error} onRetry={query.refetch} />;
   const data = query.data;
@@ -139,7 +145,7 @@ function HealthPanel({ query }: { query: QueryState<any> }) {
   );
 }
 
-function DependenciesPanel({ query }: { query: QueryState<any> }) {
+function DependenciesPanel({ query }: { query: QueryState<DependencyGraphResponse> }) {
   if (query.isLoading) return <Spinner label="Loading dependency graph…" />;
   if (query.error) return <ErrorBanner error={query.error} onRetry={query.refetch} />;
   return (
@@ -155,7 +161,7 @@ function RootCausePanel({
   query,
   onNavigate,
 }: {
-  query: QueryState<any>;
+  query: QueryState<RootCauseResponse>;
   onNavigate: (link: string, type: string) => void;
 }) {
   if (query.isLoading) return <Spinner label="Loading root-cause data…" />;
@@ -163,7 +169,7 @@ function RootCausePanel({
   return <RootCauseView items={query.data?.items ?? []} onNavigate={onNavigate} />;
 }
 
-function ApprovalsPanel({ query }: { query: QueryState<any> }) {
+function ApprovalsPanel({ query }: { query: QueryState<ApprovalHistoryResponse> }) {
   if (query.isLoading) return <Spinner label="Loading approval history…" />;
   if (query.error) return <ErrorBanner error={query.error} onRetry={query.refetch} />;
   return <ApprovalHistoryTimeline />;

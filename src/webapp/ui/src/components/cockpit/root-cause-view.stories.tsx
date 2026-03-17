@@ -81,7 +81,7 @@ const items: RootCauseEntry[] = [
 export const Typical: Story = {
   args: {
     items,
-    onNavigate: (link, type) => console.log('Navigate:', type, link),
+    onNavigate: (_link, _type) => {},
   },
 };
 

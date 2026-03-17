@@ -32,6 +32,7 @@ const metaCard = {
   component: ConfidenceCard,
   tags: ['autodocs'],
 } satisfies Meta<typeof ConfidenceCard>;
+export { metaCard };
 
 type CardStory = StoryObj<typeof metaCard>;
 
@@ -55,6 +56,7 @@ const metaPanel = {
   component: ConfidencePanel,
   tags: ['autodocs'],
 } satisfies Meta<typeof ConfidencePanel>;
+export { metaPanel };
 
 type PanelStory = StoryObj<typeof metaPanel>;
 

@@ -11,6 +11,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { HelpPanel } from '@/components/help-panel/help-panel';
 import { useUIStore } from '@/stores/ui-store';
 import { useOrchestratorStatus } from '@/hooks';
+import { useCurrentUser } from '@/hooks/use-auth';
 import { useSSEEvents } from '@/hooks/use-sse-events';
 import { useRuntimeEvents } from '@/hooks/use-runtime-events';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
@@ -111,6 +112,9 @@ export function AppLayout() {
   const connectionStatus = useUIStore((s) => s.connectionStatus);
 
   const { data: orchestratorStatus } = useOrchestratorStatus();
+
+  // Fetch current user session (M29-006)
+  useCurrentUser();
 
   // SSE for real-time cache invalidation
   useSSEEvents();

@@ -1,5 +1,8 @@
 // Custom hooks barrel file
 
+/* Auth (M29-006) */
+export { useCurrentUser, useLogout } from './use-auth';
+
 /* Questionnaires (#233) */
 export { useQuestionnaires, useQuestionnaire, useSaveQuestionnaire } from './use-questionnaires';
 

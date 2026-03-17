@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { Input } from './input';
 import { Badge } from './badge';
 import { Menu, Search, Wifi, WifiOff, Loader2 } from 'lucide-react';
+import { UserMenu } from './user-menu';
 
 type ConnectionStatus = 'connected' | 'disconnected' | 'connecting';
 
@@ -118,6 +119,9 @@ function TopNavigation({
           {statusIcon[connectionStatus]}
           <span className="hidden sm:inline">{statusLabel[connectionStatus]}</span>
         </Badge>
+
+        {/* User menu (M29-006) */}
+        <UserMenu />
       </div>
     </header>
   );

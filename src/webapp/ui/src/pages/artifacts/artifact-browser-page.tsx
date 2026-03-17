@@ -11,6 +11,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { MetricCard } from '@/components/ui/metric-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { AlertBanner } from '@/components/ui/alert-banner';
 import { useArtifacts } from '@/hooks';
 import type { Artifact } from '@/lib/api-types';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -84,7 +85,7 @@ export default function ArtifactBrowserPage() {
     return f;
   }, [filterPhase, filterType, filterStatus]);
 
-  const { data, isLoading, refetch } = useArtifacts(filters);
+  const { data, isLoading, error, refetch } = useArtifacts(filters);
 
   const artifacts = useMemo(() => data?.artifacts ?? [], [data]);
 
@@ -100,6 +101,21 @@ export default function ArtifactBrowserPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Spinner label="Loading artifacts…" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load artifacts: {(error as Error).message}</span>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
       </div>
     );
   }

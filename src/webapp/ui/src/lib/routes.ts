@@ -51,18 +51,22 @@ export function buildBreadcrumbs(pathname: string): { label: string; path: strin
 
   const match = Object.values(routes).find((r) => r.path === pathname);
   if (match && match.path !== '/') {
+    crumbs.push({ label: match.section, path: match.path });
     crumbs.push({ label: match.label, path: match.path });
     return crumbs;
   }
 
   // Handle sub-routes like /sessions/:id
   const segments = pathname.split('/').filter(Boolean);
-  if (segments.length >= 2) {
+  if (segments.length >= 1) {
     const parentPath = `/${segments[0]}`;
     const parentMatch = Object.values(routes).find((r) => r.path === parentPath);
     if (parentMatch) {
+      crumbs.push({ label: parentMatch.section, path: parentMatch.path });
       crumbs.push({ label: parentMatch.label, path: parentPath });
-      crumbs.push({ label: segments[1], path: pathname });
+      if (segments.length >= 2) {
+        crumbs.push({ label: segments[1], path: pathname });
+      }
     }
   }
 

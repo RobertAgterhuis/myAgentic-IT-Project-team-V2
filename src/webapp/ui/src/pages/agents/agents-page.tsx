@@ -8,11 +8,13 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { AlertBanner } from '@/components/ui/alert-banner';
+import { Button } from '@/components/ui/button';
 import { MetricCard } from '@/components/ui/metric-card';
 import { ExplainabilityPanel } from '@/components/runtime/explainability-panel';
 import { useAgents } from '@/hooks';
 import type { AgentDetailStatus, AgentDetailEntry } from '@/lib/api-types';
-import { Bot, Activity, CheckCircle, XCircle, Clock, RotateCcw } from 'lucide-react';
+import { Bot, Activity, CheckCircle, XCircle, Clock, RotateCcw, RefreshCw } from 'lucide-react';
 
 const statusConfig: Record<
   AgentDetailStatus,
@@ -26,13 +28,28 @@ const statusConfig: Record<
 };
 
 export default function AgentsPage() {
-  const { data, isLoading } = useAgents();
+  const { data, isLoading, error, refetch } = useAgents();
   const [selectedAgent, setSelectedAgent] = useState<AgentDetailEntry | null>(null);
 
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Spinner label="Loading agents…" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load agents: {(error as Error).message}</span>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
       </div>
     );
   }

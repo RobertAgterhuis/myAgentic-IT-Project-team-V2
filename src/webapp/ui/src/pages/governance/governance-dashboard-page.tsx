@@ -9,13 +9,23 @@ import { MetricCard } from '@/components/ui/metric-card';
 import { DataTable } from '@/components/ui/data-table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { AlertBanner } from '@/components/ui/alert-banner';
+import { Button } from '@/components/ui/button';
 import { getPendingColumns, historyColumns } from './columns';
 import { useApprovals, useApproveRequest, useRejectRequest } from '@/hooks';
-import { ShieldCheck, CheckCircle, XCircle, Clock, AlertTriangle, Shield } from 'lucide-react';
+import {
+  ShieldCheck,
+  CheckCircle,
+  XCircle,
+  Clock,
+  AlertTriangle,
+  Shield,
+  RefreshCw,
+} from 'lucide-react';
 
 /* ── Main Page ── */
 export default function GovernanceDashboardPage() {
-  const { data, isLoading } = useApprovals();
+  const { data, isLoading, error, refetch } = useApprovals();
   const approveMutation = useApproveRequest();
   const rejectMutation = useRejectRequest();
   const [rejectReason, setRejectReason] = useState('');
@@ -53,6 +63,21 @@ export default function GovernanceDashboardPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Spinner label="Loading governance data…" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load governance data: {(error as Error).message}</span>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
       </div>
     );
   }

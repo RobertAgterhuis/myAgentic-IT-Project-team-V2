@@ -9,11 +9,22 @@ import { Card } from '@/components/ui/card';
 import { MetricCard } from '@/components/ui/metric-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { AlertBanner } from '@/components/ui/alert-banner';
+import { Button } from '@/components/ui/button';
 import { VelocityChart } from '@/components/observability/velocity-chart';
 import { AgentChart } from '@/components/observability/agent-chart';
 import { useAnalyticsTrends, useAnalyticsAgents } from '@/hooks';
 import type { MetricDataPoint } from '@/lib/api-types';
-import { TrendingUp, Activity, BarChart3, Clock, Zap, AlertTriangle, Gauge } from 'lucide-react';
+import {
+  TrendingUp,
+  Activity,
+  BarChart3,
+  Clock,
+  Zap,
+  AlertTriangle,
+  Gauge,
+  RefreshCw,
+} from 'lucide-react';
 
 /* ── Time range ── */
 type TimeRange = '7d' | '30d' | '90d' | 'all';
@@ -70,8 +81,18 @@ function DoraMetric({
 
 /* ── Main Page ── */
 export default function AnalyticsTrendChartsPage() {
-  const { data: trends, isLoading: trendsLoading } = useAnalyticsTrends();
-  const { data: agentPerf, isLoading: agentsLoading } = useAnalyticsAgents();
+  const {
+    data: trends,
+    isLoading: trendsLoading,
+    error: trendsError,
+    refetch: refetchTrends,
+  } = useAnalyticsTrends();
+  const {
+    data: agentPerf,
+    isLoading: agentsLoading,
+    error: agentsError,
+    refetch: refetchAgents,
+  } = useAnalyticsAgents();
   const [timeRange, setTimeRange] = useState<TimeRange>('all');
 
   // Filter velocity data by time range
@@ -92,11 +113,34 @@ export default function AnalyticsTrendChartsPage() {
   }, [trends, timeRange]);
 
   const isLoading = trendsLoading || agentsLoading;
+  const error = trendsError || agentsError;
 
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Spinner label="Loading analytics…" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load analytics: {(error as Error).message}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                refetchTrends();
+                refetchAgents();
+              }}
+            >
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
       </div>
     );
   }

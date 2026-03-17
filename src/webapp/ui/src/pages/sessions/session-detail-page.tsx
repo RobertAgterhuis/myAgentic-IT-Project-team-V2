@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { AlertBanner } from '@/components/ui/alert-banner';
 import { ProgressBar } from '@/components/ui/progress';
 import { EmptyState } from '@/components/ui/empty-state';
 import { FlowTimeline, type FlowPhase } from '@/components/runtime/flow-timeline';
@@ -35,6 +36,7 @@ import {
   Scale,
   Lightbulb,
   ShieldAlert,
+  RefreshCw,
 } from 'lucide-react';
 
 /* ── Status badge config ── */
@@ -104,7 +106,7 @@ function toLogEvent(event: TimelineEvent): RuntimeLogEvent {
 export default function SessionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { data, isLoading } = useSession(id ?? '');
+  const { data, isLoading, error, refetch } = useSession(id ?? '');
   const [explainAgent, setExplainAgent] = useState<AgentDetailEntry | null>(null);
   const [gateFailure, setGateFailure] = useState<GateFailureInfo | null>(null);
   const [phaseFilter, setPhaseFilter] = useState<string | null>(null);
@@ -192,6 +194,21 @@ export default function SessionDetailPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Spinner label="Loading session…" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load session: {(error as Error).message}</span>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
       </div>
     );
   }

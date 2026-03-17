@@ -11,16 +11,18 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { EmptyState } from '@/components/ui/empty-state';
+import { AlertBanner } from '@/components/ui/alert-banner';
 import { SessionStatus, type SessionSummary } from '@/components/runtime/session-status';
 import { FlowTimeline, type FlowPhase } from '@/components/runtime/flow-timeline';
 import { AgentActivity, type AgentEntry } from '@/components/runtime/agent-activity';
 import { HealthCard } from '@/components/dashboard/health-card';
+import { WhatsNextGuidance } from '@/components/dashboard/whats-next-guidance';
 import { WelcomeWizard } from '@/components/onboarding/welcome-wizard';
 import { useWelcomeWizard } from '@/components/onboarding/use-welcome-wizard';
 import { useSessions, useSession, useDecisions, useDashboardHealth } from '@/hooks';
 import { useUIStore } from '@/stores/ui-store';
 import type { Session, HealthIndicator, TimelineEvent, AgentDetailEntry } from '@/lib/api-types';
-import { Package, Scale, ArrowRight, Rocket } from 'lucide-react';
+import { Package, Scale, ArrowRight, Rocket, RefreshCw } from 'lucide-react';
 
 /* ── Phase derivation (shared logic with session-detail) ── */
 const PHASE_ORDER = ['PHASE-1', 'PHASE-2', 'PHASE-3', 'PHASE-4', 'PHASE-5'];
@@ -66,9 +68,19 @@ export default function OverviewPage() {
   const navigate = useNavigate();
   const connectionStatus = useUIStore((s) => s.connectionStatus);
   const { dismissed: wizardDismissed, dismiss: dismissWizard } = useWelcomeWizard();
-  const { data: sessionsData, isLoading: sessionsLoading } = useSessions();
+  const {
+    data: sessionsData,
+    isLoading: sessionsLoading,
+    error: sessionsError,
+    refetch: refetchSessions,
+  } = useSessions();
   const { data: decisionsData } = useDecisions();
-  const { data: health, isLoading: healthLoading } = useDashboardHealth();
+  const {
+    data: health,
+    isLoading: healthLoading,
+    error: healthError,
+    refetch: refetchHealth,
+  } = useDashboardHealth();
 
   // Pick the active session (first active, or most recent)
   const activeSession: Session | null = useMemo(() => {
@@ -113,6 +125,29 @@ export default function OverviewPage() {
     );
   }
 
+  if (sessionsError || healthError) {
+    const err = sessionsError || healthError;
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load overview: {(err as Error).message}</span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                refetchSessions();
+                refetchHealth();
+              }}
+            >
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6 space-y-6" data-testid="overview-page">
       {/* Header */}
@@ -123,6 +158,9 @@ export default function OverviewPage() {
 
       {/* Welcome Wizard — first-time users (M15-040) */}
       {!wizardDismissed && <WelcomeWizard onDismiss={dismissWizard} />}
+
+      {/* What's Next — contextual guidance (M21-002) */}
+      <WhatsNextGuidance />
 
       {/* Active Session Hero */}
       <section aria-label="Active session">

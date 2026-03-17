@@ -12,9 +12,10 @@ import { ProgressBar } from '@/components/ui/progress';
 import { SidePanel, type NavSection } from '@/components/ui/side-panel';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
+import { AlertBanner } from '@/components/ui/alert-banner';
 import { useQuestionnaires, useQuestionnaire, useSaveQuestionnaire } from '@/hooks';
 import type { QuestionnaireQuestion, QuestionUpdate } from '@/lib/api-types';
-import { ClipboardList, Save, Search, FileQuestion } from 'lucide-react';
+import { ClipboardList, Save, Search, FileQuestion, RefreshCw } from 'lucide-react';
 
 /* ── Status badge mapping ── */
 const statusVariant: Record<string, 'success' | 'warning' | 'secondary'> = {
@@ -69,7 +70,7 @@ function QuestionRow({
 
 /* ── Main Page ── */
 export default function QuestionnairesPage() {
-  const { data, isLoading } = useQuestionnaires();
+  const { data, isLoading, error, refetch } = useQuestionnaires();
   const save = useSaveQuestionnaire();
   const [selectedFile, setSelectedFile] = useState<string | undefined>();
   const [searchTerm, setSearchTerm] = useState('');
@@ -165,6 +166,21 @@ export default function QuestionnairesPage() {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
         <Spinner label="Loading questionnaires…" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6">
+        <AlertBanner variant="error">
+          <div className="flex items-center justify-between gap-4 w-full">
+            <span>Failed to load questionnaires: {(error as Error).message}</span>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="size-3 mr-1.5" /> Retry
+            </Button>
+          </div>
+        </AlertBanner>
       </div>
     );
   }

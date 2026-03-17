@@ -18,13 +18,14 @@ import {
 } from '../services';
 import { errorResponse } from '../utils/errors';
 import { structuredLog } from '../middleware';
+import * as RS from '../route-schemas';
 
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const svc = new PolicyService(toServiceContext(ctx as unknown as Record<string, unknown>));
 
   /* ── GET /api/v1/policies ────────────────────────────────── */
 
-  app.get('/api/v1/policies', { schema: { tags: ['policies'] } }, async (_request, reply) => {
+  app.get('/api/v1/policies', { schema: RS.policiesList }, async (_request, reply) => {
     try {
       const result = svc.listPolicies();
       structuredLog('INFO', 'policies_list', { count: result.count });
@@ -37,47 +38,39 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   /* ── POST /api/v1/policies/evaluate ──────────────────────── */
 
-  app.post(
-    '/api/v1/policies/evaluate',
-    { schema: { tags: ['policies'] } },
-    async (request, reply) => {
-      try {
-        const body = request.body as Record<string, unknown>;
-        const contextType = body.context_type as string;
-        const scope = body.scope as string;
-        const checks = (body.checks || {}) as Record<string, boolean>;
+  app.post('/api/v1/policies/evaluate', { schema: RS.policyEvaluate }, async (request, reply) => {
+    try {
+      const body = request.body as Record<string, unknown>;
+      const contextType = body.context_type as string;
+      const scope = body.scope as string;
+      const checks = (body.checks || {}) as Record<string, boolean>;
 
-        if (!contextType || !scope) {
-          return reply.code(400).send({ error: 'context_type and scope are required' });
-        }
+      const result = svc.evaluatePolicies({
+        type: contextType as 'gate' | 'pr' | 'deploy' | 'artifact' | 'schedule',
+        scope: scope as 'global' | 'org' | 'team' | 'repo' | 'sprint',
+        checks,
+      });
 
-        const result = svc.evaluatePolicies({
-          type: contextType as 'gate' | 'pr' | 'deploy' | 'artifact' | 'schedule',
-          scope: scope as 'global' | 'org' | 'team' | 'repo' | 'sprint',
-          checks,
-        });
-
-        structuredLog('INFO', 'policies_evaluated', {
-          total: result.evaluation.summary.total,
-          blocking: result.evaluation.summary.blocking_failures,
-        });
-        ctx.sseNotify('policy_evaluation', {
-          type: 'policy_evaluation',
-          summary: result.evaluation.summary,
-        });
-        return reply.send(result);
-      } catch (err) {
-        structuredLog('ERROR', 'policies_evaluate_failed', { error: (err as Error).message });
-        return reply.code(500).send(errorResponse('INTERNAL_ERROR', (err as Error).message));
-      }
+      structuredLog('INFO', 'policies_evaluated', {
+        total: result.evaluation.summary.total,
+        blocking: result.evaluation.summary.blocking_failures,
+      });
+      ctx.sseNotify('policy_evaluation', {
+        type: 'policy_evaluation',
+        summary: result.evaluation.summary,
+      });
+      return reply.send(result);
+    } catch (err) {
+      structuredLog('ERROR', 'policies_evaluate_failed', { error: (err as Error).message });
+      return reply.code(500).send(errorResponse('INTERNAL_ERROR', (err as Error).message));
     }
-  );
+  });
 
   /* ── POST /api/v1/policies/exceptions ────────────────────── */
 
   app.post(
     '/api/v1/policies/exceptions',
-    { schema: { tags: ['policies'] } },
+    { schema: RS.policyCreateException },
     async (request, reply) => {
       try {
         const body = request.body as Record<string, unknown>;

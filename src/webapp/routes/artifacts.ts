@@ -17,6 +17,7 @@
 import type { FastifyInstance } from 'fastify';
 import type { ServerContext } from '../context';
 import { errorResponse } from '../utils/errors';
+import * as RS from '../route-schemas';
 
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   /**
@@ -43,7 +44,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.get<{ Querystring: { stage?: string; type?: string; status?: string } }>(
     '/api/v1/artifacts',
-    { schema: { tags: ['artifacts'] } },
+    { schema: RS.artifactsList },
     async (request, reply) => {
       const registry = getRegistry();
       if (!registry) {
@@ -83,7 +84,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.get<{ Params: { id: string } }>(
     '/api/v1/artifacts/:id',
-    { schema: { tags: ['artifacts'] } },
+    { schema: RS.artifactDetail },
     async (request, reply) => {
       const registry = getRegistry();
       if (!registry) {

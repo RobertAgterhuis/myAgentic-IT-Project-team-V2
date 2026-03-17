@@ -67,6 +67,10 @@ export const ERROR_CATALOG: Record<string, ErrorEntry> = {
     message: 'This HTTP method is not supported here.',
     recovery: 'Use a supported HTTP method for this endpoint.',
   },
+  RATE_LIMITED: {
+    message: 'Too many requests — rate limit exceeded.',
+    recovery: 'Wait a moment and try again.',
+  },
   INTERNAL_ERROR: {
     message: 'An unexpected server error occurred.',
     recovery: 'Try again. If the problem persists, check server logs.',
@@ -80,6 +84,7 @@ const STATUS_TO_CODE: Record<number, string> = {
   405: 'METHOD_NOT_ALLOWED',
   413: 'PAYLOAD_TOO_LARGE',
   415: 'INVALID_CONTENT_TYPE',
+  429: 'RATE_LIMITED',
 };
 
 export function errorResponse(code: string, detail?: string) {

@@ -19,7 +19,8 @@ import {
   toServiceContext,
 } from '../services';
 import { errorResponse } from '../utils/errors';
-import { structuredLog, assertString } from '../middleware';
+import { structuredLog } from '../middleware';
+import * as RS from '../route-schemas';
 
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const svc = new GovernanceService(toServiceContext(ctx as unknown as Record<string, unknown>), {
@@ -28,7 +29,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   /* ── GET /api/v1/approvals ───────────────────────────────── */
 
-  app.get('/api/v1/approvals', { schema: { tags: ['approvals'] } }, async (_request, reply) => {
+  app.get('/api/v1/approvals', { schema: RS.approvalsList }, async (_request, reply) => {
     try {
       const result = svc.listApprovals();
       structuredLog('INFO', 'approvals_list', { count: result.count });
@@ -46,7 +47,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.post<{ Params: { id: string } }>(
     '/api/v1/approvals/:id/approve',
-    { schema: { tags: ['approvals'] } },
+    { schema: RS.approvalApprove },
     async (request, reply) => {
       try {
         const approvalId = request.params.id;
@@ -57,8 +58,6 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const body = request.body as Record<string, unknown>;
         const reason = (body.reason as string) || 'Approved via API';
         const decidedBy = (body.user as string) || 'api-user';
-        assertString(reason, 'reason', 1000);
-        assertString(decidedBy, 'user', 200);
 
         const result = svc.approve(approvalId, decidedBy, reason);
         structuredLog('INFO', 'approval_approved', { id: approvalId, decided_by: decidedBy });
@@ -84,7 +83,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.post<{ Params: { id: string } }>(
     '/api/v1/approvals/:id/reject',
-    { schema: { tags: ['approvals'] } },
+    { schema: RS.approvalReject },
     async (request, reply) => {
       try {
         const approvalId = request.params.id;
@@ -95,12 +94,6 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const body = request.body as Record<string, unknown>;
         const reason = body.reason as string;
         const decidedBy = (body.user as string) || 'api-user';
-
-        if (!reason || typeof reason !== 'string' || !reason.trim()) {
-          return reply.code(400).send({ error: 'Reason is required for rejection' });
-        }
-        assertString(reason, 'reason', 1000);
-        assertString(decidedBy, 'user', 200);
 
         const result = svc.reject(approvalId, decidedBy, reason);
         structuredLog('INFO', 'approval_rejected', { id: approvalId, decided_by: decidedBy });

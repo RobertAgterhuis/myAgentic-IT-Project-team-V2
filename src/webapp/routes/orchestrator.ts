@@ -25,6 +25,7 @@ import { listTemplates, seedDecisions } from '../../../platform/engine/template-
 import { errorResponse } from '../utils/errors';
 import { structuredLog } from '../middleware';
 import { sessionTracker } from '../session-tracker';
+import * as RS from '../route-schemas';
 
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const { sseNotify } = ctx;
@@ -85,7 +86,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.post(
     '/api/orchestrator/advance',
-    { schema: { tags: ['orchestrator'] } },
+    { schema: RS.orchestratorAdvance },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const body = (request.body as Record<string, unknown>) || {};
@@ -208,13 +209,10 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.post(
     '/api/orchestrator/error',
-    { schema: { tags: ['orchestrator'] } },
+    { schema: RS.orchestratorError },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const body = (request.body as Record<string, unknown>) || {};
-        if (!body || !body.reason) {
-          return reply.code(400).send(errorResponse('INVALID_INPUT', 'reason is required'));
-        }
         const engine = getEngine();
         engine.error(String(body.reason).slice(0, 2000));
         const errorStatus = engine.status();
@@ -278,13 +276,10 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.post(
     '/api/orchestrator/reset',
-    { schema: { tags: ['orchestrator'] } },
+    { schema: RS.orchestratorReset },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const body = (request.body as Record<string, unknown>) || {};
-        if (!body || !body.mode) {
-          return reply.code(400).send(errorResponse('INVALID_INPUT', 'mode is required'));
-        }
         const mode = String(body.mode).slice(0, 50);
         const phases = Array.isArray(body.phases) ? body.phases.map((p) => String(p)) : undefined;
         const template = body.template ? String(body.template).slice(0, 100) : undefined;

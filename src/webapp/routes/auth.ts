@@ -18,6 +18,7 @@ import type { ServerContext } from '../context';
 import type { AuthManager, AuthenticatedRequest, Role } from '../auth';
 
 import { structuredLog } from '../middleware';
+import * as RS from '../route-schemas';
 
 const VALID_ROLES: Role[] = ['admin', 'operator', 'viewer'];
 
@@ -214,7 +215,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
   /* ── PUT /api/admin/users/:id/role ────────────────────────── */
   app.put<{ Params: { id: string }; Body: { role?: string } }>(
     '/api/admin/users/:id/role',
-    { schema: { tags: ['auth'] } },
+    { schema: RS.authUpdateRole },
     async (request, reply) => {
       if (!authManager || !authMiddleware) {
         return reply

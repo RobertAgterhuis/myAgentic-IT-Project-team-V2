@@ -19,6 +19,7 @@ import { SessionService, toServiceContext } from '../services';
 import { errorResponse } from '../utils/errors';
 import { VALIDATION as V, RESPONSES as R, STATIC as S } from '../strings';
 import { structuredLog, safePath, setSecurityHeaders } from '../middleware';
+import * as RS from '../route-schemas';
 
 const HELP_TOC = [
   { slug: 'getting-started', title: 'Getting Started', icon: '🚀' },
@@ -444,16 +445,16 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
   /* ── Register routes ────────────────────────────────────────── */
 
   app.get('/api/session', apiGetSession);
-  app.post('/api/reevaluate', apiReevaluate);
+  app.post('/api/reevaluate', { schema: RS.reevaluate }, apiReevaluate);
   app.get('/api/export', apiGetExport);
-  app.get('/api/help', apiGetHelp);
+  app.get('/api/help', { schema: RS.helpGet }, apiGetHelp);
   app.get('/api/events', apiGetEvents);
   app.get('/api/metrics', apiGetMetrics);
   app.post('/api/metrics/flush', apiFlushMetrics);
   app.get('/api/health', apiGetHealth);
-  app.post('/api/analytics', apiPostAnalytics);
-  app.get('/api/analytics', apiGetAnalytics);
-  app.get('/api/audit', apiGetAudit);
+  app.post('/api/analytics', { schema: RS.analyticsPost }, apiPostAnalytics);
+  app.get('/api/analytics', { schema: RS.analyticsGet }, apiGetAnalytics);
+  app.get('/api/audit', { schema: RS.auditGet }, apiGetAudit);
 
   /** Liveness probe — lightweight check that the process is running. */
   app.get('/health', async (_request: FastifyRequest, reply: FastifyReply) => {

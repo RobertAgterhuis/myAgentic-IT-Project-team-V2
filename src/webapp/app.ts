@@ -1,24 +1,25 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
 /**
- * Fastify application factory (M30-003).
+ * Fastify application factory (M30-003, M30-005).
  *
- * Builds a configured Fastify instance with:
- *  - Security headers hook (replaces setSecurityHeaders middleware)
- *  - Structured JSON logging via Pino
- *  - Request metrics recording
- *  - Rate limiting via @fastify/rate-limit
- *  - Cookie parsing via @fastify/cookie
- *  - Static file serving via @fastify/static
+ * Builds a configured Fastify instance with framework-native plugins:
+ *  - body-parser plugin — text/plain content-type support
+ *  - @fastify/cookie — session cookie parsing
+ *  - rate-limit plugin — abuse prevention
+ *  - Auth + RBAC hook (M29)
+ *  - security-headers plugin — OWASP response headers
+ *  - Metrics recording hook
  *  - OpenAPI / Swagger via @fastify/swagger + @fastify/swagger-ui
- *  - Auth + RBAC hooks (M29)
+ *  - Static file serving via @fastify/static
  *  - Typed ServerContext decorated on every request
+ *
+ * See `plugins/index.ts` for the full middleware ordering table.
  *
  * @module app
  */
 
 import Fastify, { type FastifyInstance } from 'fastify';
-import fastifyRateLimit from '@fastify/rate-limit';
 import fastifyCookie from '@fastify/cookie';
 import fastifyStatic from '@fastify/static';
 import fastifySwagger from '@fastify/swagger';
@@ -29,6 +30,7 @@ import type { ServerContext } from './context';
 import type { AuthenticatedRequest } from './auth';
 import { structuredLog } from './middleware';
 import { errorResponse } from './utils/errors';
+import { securityHeadersPlugin, rateLimitPlugin, bodyParserPlugin } from './plugins';
 
 /* ── Fastify type augmentation ────────────────────────────────── */
 
@@ -71,39 +73,16 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
   /* ── Decorate every request with typed ctx ────────────────── */
   app.decorateRequest('ctx', { getter: () => ctx });
 
-  /* ── Body parsing — Fastify's built-in JSON parser + text fallback ── */
-  app.addContentTypeParser(
-    'text/plain',
-    { parseAs: 'string', bodyLimit: 1048576 },
-    function (_req, body, done) {
-      done(null, body);
-    }
-  );
+  /* ── 1. Body parsing plugin (M30-005) ─────────────────────── */
+  await app.register(bodyParserPlugin);
 
-  /* ── Cookie parsing (for auth sessions) ───────────────────── */
+  /* ── 2. Cookie parsing (for auth sessions) ────────────────── */
   await app.register(fastifyCookie);
 
-  /* ── Rate limiting ────────────────────────────────────────── */
-  const skipRateLimit = options.disableRateLimit || process.env.NODE_ENV === 'test';
-  if (!skipRateLimit) {
-    await app.register(fastifyRateLimit, {
-      max: 30,
-      timeWindow: '1 minute',
-      allowList: (req) => {
-        // Don't rate-limit GET requests or health checks
-        return req.method === 'GET' || req.url === '/api/health';
-      },
-      errorResponseBuilder: (_req, context) => {
-        return {
-          statusCode: 429,
-          ...errorResponse(
-            'RATE_LIMITED',
-            `Rate limit exceeded, retry in ${Math.ceil(context.ttl / 1000)} seconds.`
-          ),
-        };
-      },
-    });
-  }
+  /* ── 3. Rate limiting plugin (M30-005) ────────────────────── */
+  await app.register(rateLimitPlugin, {
+    disabled: options.disableRateLimit,
+  });
 
   /* ── OpenAPI / Swagger ────────────────────────────────────── */
   await app.register(fastifySwagger, {
@@ -152,32 +131,7 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
     });
   }
 
-  /* ── Security headers on all responses ────────────────────── */
-  app.addHook('onSend', async (_request, reply) => {
-    reply.header('X-Content-Type-Options', 'nosniff');
-    reply.header('X-Frame-Options', 'SAMEORIGIN');
-    reply.header('Referrer-Policy', 'strict-origin-when-cross-origin');
-    reply.header(
-      'Content-Security-Policy',
-      "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; form-action 'self'; frame-ancestors 'self'; base-uri 'self'; object-src 'none'"
-    );
-    reply.header('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
-    reply.header('Cross-Origin-Opener-Policy', 'same-origin');
-    reply.header('Cross-Origin-Embedder-Policy', 'require-corp');
-    reply.header('X-DNS-Prefetch-Control', 'off');
-    reply.header('X-Permitted-Cross-Domain-Policies', 'none');
-    reply.header('Cache-Control', 'no-store');
-  });
-
-  /* ── Metrics recording hook ───────────────────────────────── */
-  if (!options.disableRequestLogging) {
-    app.addHook('onResponse', async (request, reply) => {
-      if (request.url === '/api/events') return; // SSE — no per-request metrics
-      ctx.recordMetric(request.method, request.url, reply.elapsedTime, reply.statusCode);
-    });
-  }
-
-  /* ── Auth + RBAC hook (M29) ───────────────────────────────── */
+  /* ── 4. Auth + RBAC hook (M29) ──────────────────────────────── */
   app.addHook('onRequest', async (request, reply) => {
     const pathname = request.url.split('?')[0].replace(/\/+$/, '') || '/';
 
@@ -225,6 +179,17 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
       }
     }
   });
+
+  /* ── 5. Security headers plugin (M30-005) ─────────────────── */
+  await app.register(securityHeadersPlugin);
+
+  /* ── 6. Metrics recording hook ──────────────────────────────── */
+  if (!options.disableRequestLogging) {
+    app.addHook('onResponse', async (request, reply) => {
+      if (request.url === '/api/events') return; // SSE — no per-request metrics
+      ctx.recordMetric(request.method, request.url, reply.elapsedTime, reply.statusCode);
+    });
+  }
 
   /* ── Static file serving (UI build output) ────────────────── */
   const uiDistDir = path.join(ctx.WEBAPP_DIR, 'ui', 'dist');

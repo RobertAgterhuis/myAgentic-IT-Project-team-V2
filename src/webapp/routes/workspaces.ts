@@ -29,6 +29,7 @@ import {
   DuplicateError,
   ValidationError,
 } from '../../../platform/engine/workspace';
+import * as RS from '../route-schemas';
 
 interface WorkspaceCtx {
   getStorageProvider?: () => StorageProvider | null;
@@ -80,17 +81,12 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   // ── POST /api/workspaces ─────────────────────────────────
 
-  app.post('/api/workspaces', { schema: { tags: ['workspaces'] } }, async (request, reply) => {
+  app.post('/api/workspaces', { schema: RS.workspaceCreate }, async (request, reply) => {
     const mgr = getManager(wCtx);
     if (!mgr)
       return reply.code(503).send(errorResponse('UNAVAILABLE', 'StorageProvider not ready'));
     try {
       const body = request.body as { id?: string; name?: string; owner?: string };
-      if (!body.id || !body.name || !body.owner) {
-        return reply
-          .code(400)
-          .send(errorResponse('VALIDATION', 'id, name, and owner are required'));
-      }
       const workspace = await mgr.createWorkspace({
         id: String(body.id),
         name: String(body.name),
@@ -127,7 +123,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.put<{ Params: { id: string } }>(
     '/api/workspaces/:id',
-    { schema: { tags: ['workspaces'] } },
+    { schema: RS.workspaceUpdate },
     async (request, reply) => {
       const mgr = getManager(wCtx);
       if (!mgr)
@@ -148,7 +144,16 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.delete<{ Params: { id: string } }>(
     '/api/workspaces/:id',
-    { schema: { tags: ['workspaces'] } },
+    {
+      schema: {
+        tags: ['workspaces'],
+        params: {
+          type: 'object',
+          required: ['id'],
+          properties: { id: { type: 'string', minLength: 1 } },
+        },
+      },
+    },
     async (request, reply) => {
       const mgr = getManager(wCtx);
       if (!mgr)
@@ -168,7 +173,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.post<{ Params: { id: string } }>(
     '/api/workspaces/:id/repositories',
-    { schema: { tags: ['workspaces'] } },
+    { schema: RS.workspaceAddRepository },
     async (request, reply) => {
       const mgr = getManager(wCtx);
       if (!mgr)
@@ -185,13 +190,6 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           defaultBranch?: string;
           tags?: string[];
         };
-        if (!body.id || !body.name || !body.provider || !body.url || !body.defaultBranch) {
-          return reply
-            .code(400)
-            .send(
-              errorResponse('VALIDATION', 'id, name, provider, url, defaultBranch are required')
-            );
-        }
         const workspace = await mgr.addRepository(workspaceId, {
           id: String(body.id),
           name: String(body.name),
@@ -257,7 +255,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.post<{ Params: { id: string } }>(
     '/api/workspaces/:id/projects',
-    { schema: { tags: ['workspaces'] } },
+    { schema: RS.workspaceCreateProject },
     async (request, reply) => {
       const mgr = getManager(wCtx);
       if (!mgr)
@@ -267,9 +265,6 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         return reply.code(400).send(errorResponse('MISSING_ID', 'Workspace ID required'));
       try {
         const body = request.body as { id?: string; name?: string; repositories?: string[] };
-        if (!body.id || !body.name) {
-          return reply.code(400).send(errorResponse('VALIDATION', 'id and name are required'));
-        }
         const project = await mgr.createProject({
           id: String(body.id),
           workspaceId,

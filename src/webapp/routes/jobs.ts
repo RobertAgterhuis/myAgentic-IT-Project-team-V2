@@ -12,11 +12,11 @@
 
 import type { FastifyInstance } from 'fastify';
 import type { ServerContext } from '../context';
-import { assertString } from '../middleware';
 import { errorResponse } from '../utils/errors';
 import { PersistentQueue } from '../../../platform/engine/jobs';
 import type { StorageProvider } from '../../../platform/engine/persistence';
 import type { JobFilter, JobStatus, JobType } from '../../../platform/engine/jobs';
+import * as RS from '../route-schemas';
 
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const storageProvider = ctx.getStorageProvider() as StorageProvider | undefined;
@@ -28,7 +28,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.get<{ Querystring: { status?: string; type?: string; limit?: string } }>(
     '/api/jobs',
-    { schema: { tags: ['jobs'] } },
+    { schema: RS.jobsList },
     async (request, reply) => {
       try {
         const q = getQueue();
@@ -49,7 +49,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.get<{ Params: { id: string } }>(
     '/api/jobs/:id',
-    { schema: { tags: ['jobs'] } },
+    { schema: RS.jobDetail },
     async (request, reply) => {
       try {
         const q = getQueue();
@@ -65,11 +65,10 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     }
   );
 
-  app.post('/api/jobs/cancel', { schema: { tags: ['jobs'] } }, async (request, reply) => {
+  app.post('/api/jobs/cancel', { schema: RS.jobCancel }, async (request, reply) => {
     try {
       const q = getQueue();
       const body = request.body as Record<string, unknown>;
-      assertString(body.job_id, 'job_id', 100);
       await q.cancel(body.job_id as string);
 
       ctx.sseNotify('job_cancelled', {

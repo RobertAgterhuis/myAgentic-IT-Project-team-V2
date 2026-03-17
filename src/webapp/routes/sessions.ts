@@ -15,6 +15,7 @@ import type { FastifyInstance, FastifyReply } from 'fastify';
 import type { ServerContext } from '../context';
 import { errorResponse } from '../utils/errors';
 import { sessionTracker } from '../session-tracker';
+import * as RS from '../route-schemas';
 
 export async function registerRoutes(app: FastifyInstance, _ctx: ServerContext): Promise<void> {
   // ── GET /api/sessions ────────────────────────────────────
@@ -32,7 +33,7 @@ export async function registerRoutes(app: FastifyInstance, _ctx: ServerContext):
 
   app.get<{ Params: { id: string } }>(
     '/api/sessions/:id',
-    { schema: { tags: ['sessions'] } },
+    { schema: RS.sessionDetail },
     async (request, reply: FastifyReply) => {
       const id = decodeURIComponent(request.params.id);
       if (!id) {
@@ -52,7 +53,7 @@ export async function registerRoutes(app: FastifyInstance, _ctx: ServerContext):
 
   app.get<{ Params: { id: string } }>(
     '/api/sessions/:id/timeline',
-    { schema: { tags: ['sessions'] } },
+    { schema: RS.sessionDetail },
     async (request, reply: FastifyReply) => {
       const id = decodeURIComponent(request.params.id);
       if (!id) {

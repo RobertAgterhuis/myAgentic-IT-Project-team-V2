@@ -12,7 +12,6 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { ServerContext } from '../context';
-import * as schemas from '../schemas';
 import {
   QuestionnaireService,
   ServiceValidationError,
@@ -21,8 +20,8 @@ import {
 } from '../services';
 import { attachSecretWarnings } from '../utils/secret-utils';
 import { errorResponse } from '../utils/errors';
-import { VALIDATION as V } from '../strings';
-import { structuredLog, assertString, safePath, detectSecrets } from '../middleware';
+import { structuredLog, safePath, detectSecrets } from '../middleware';
+import * as RS from '../route-schemas';
 
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const legacyCtx = ctx as unknown as Record<string, unknown>;
@@ -34,16 +33,6 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   // Expose for ctx.scheduleRebuildIndex wiring
   legacyCtx._rebuildQuestionnaireIndex = () => svc.rebuildIndex(legacyCtx.Q_INDEX_FILE as string);
-
-  function validateSaveUpdates(updates: unknown) {
-    if (!Array.isArray(updates) || updates.length === 0 || updates.length > 200)
-      return V.UPDATES_RANGE;
-    for (const u of updates) {
-      const r = schemas.validateQuestionnaireUpdate(u);
-      if (!r.valid) return r.errors[0];
-    }
-    return null;
-  }
 
   function detectSaveSecrets(updates: Array<{ answer?: string }>) {
     const warnings: string[] = [];
@@ -59,7 +48,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.get(
     '/api/questionnaires',
-    { schema: { tags: ['questionnaires'] } },
+    { schema: RS.questionnairesList },
     async (_request: FastifyRequest, reply: FastifyReply) => {
       const result = svc.listWithCorruptionCheck();
       const response: Record<string, unknown> = { questionnaires: result.questionnaires };
@@ -80,13 +69,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       file?: string;
       updates?: Array<{ questionId: string; answer: string; status: string }>;
     };
-  }>('/api/save', { schema: { tags: ['questionnaires'] } }, async (request, reply) => {
+  }>('/api/save', { schema: RS.questionnaireSave }, async (request, reply) => {
     const body = request.body ?? {};
-    assertString(body.file, 'file', 500);
     const updates = body.updates as Array<{ questionId: string; answer: string; status: string }>;
-    const validationError = validateSaveUpdates(updates);
-    if (validationError)
-      return reply.code(400).send(errorResponse('VALIDATION_ERROR', validationError));
 
     const filePath = safePath(BUSINESS_DOCS, body.file as string);
 

@@ -20,6 +20,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { ServerContext } from '../context';
 import { withFileLock } from '../file-lock';
 import { getStore } from '../store';
+import * as RS from '../route-schemas';
 
 const VALID_STATUSES = ['not started', 'in progress', 'complete', 'blocked'];
 
@@ -696,7 +697,7 @@ async function applyTemplate(
 }
 
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
-  app.post('/api/milestones', { schema: { tags: ['milestones'] } }, (req, reply) =>
+  app.post('/api/milestones', { schema: RS.milestoneCreate }, (req, reply) =>
     createMilestone(req, reply, ctx)
   );
   app.get('/api/milestones', { schema: { tags: ['milestones'] } }, (req, reply) =>
@@ -709,15 +710,15 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
   );
   app.put<{ Params: { id: string } }>(
     '/api/milestones/:id',
-    { schema: { tags: ['milestones'] } },
+    { schema: RS.milestoneUpdate },
     (req, reply) => updateMilestone(req, reply, ctx)
   );
   app.patch<{ Params: { id: string } }>(
     '/api/milestones/:id/archive',
-    { schema: { tags: ['milestones'] } },
+    { schema: RS.milestoneArchive },
     (req, reply) => archiveMilestone(req, reply, ctx)
   );
-  app.post('/api/milestone-templates', { schema: { tags: ['milestones'] } }, (req, reply) =>
+  app.post('/api/milestone-templates', { schema: RS.milestoneTemplateCreate }, (req, reply) =>
     createTemplate(req, reply, ctx)
   );
   app.get('/api/milestone-templates', { schema: { tags: ['milestones'] } }, (req, reply) =>

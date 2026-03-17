@@ -16,6 +16,7 @@ import { getStore } from '../store';
 import { withFileLock } from '../file-lock';
 import { errorResponse } from '../utils/errors';
 import { structuredLog } from '../middleware';
+import * as RS from '../route-schemas';
 
 const BUTTONDOWN_API = 'https://api.buttondown.email/v1/subscribers';
 const VALID_SEGMENTS = ['engineering-leaders', 'product-managers', 'developers', 'evaluators'];
@@ -162,7 +163,7 @@ async function handleUpstreamResponse(
 export async function registerRoutes(app: FastifyInstance, _ctx: ServerContext): Promise<void> {
   app.post<{ Body: { email?: string; metadata?: Record<string, unknown> } }>(
     '/api/subscribe',
-    { schema: { tags: ['subscribe'] } },
+    { schema: RS.subscribe },
     async (
       request: FastifyRequest<{ Body: { email?: string; metadata?: Record<string, unknown> } }>,
       reply: FastifyReply

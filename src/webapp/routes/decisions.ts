@@ -33,6 +33,7 @@ import {
   markLessonPromoted,
   buildDecisionFromLesson,
 } from '../lesson-promotion';
+import * as RS from '../route-schemas';
 
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const svc = new DecisionService(toServiceContext(ctx as unknown as Record<string, unknown>));
@@ -64,11 +65,11 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   /* ── Decisions API handlers ─────────────────────────────────── */
 
-  app.get('/api/decisions', { schema: { tags: ['decisions'] } }, async (_request, reply) => {
+  app.get('/api/decisions', { schema: RS.decisionsList }, async (_request, reply) => {
     return reply.send(svc.list());
   });
 
-  app.post('/api/decisions', { schema: { tags: ['decisions'] } }, async (request, reply) => {
+  app.post('/api/decisions', { schema: RS.decisionMutate }, async (request, reply) => {
     const body = request.body as Record<string, unknown>;
     const valErr = validateDecisionBody(body);
     if (valErr) return reply.code(400).send(errorResponse('VALIDATION_ERROR', valErr));
@@ -109,10 +110,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.post(
     '/api/decisions/activate-category',
-    { schema: { tags: ['decisions'] } },
+    { schema: RS.decisionActivateCategory },
     async (request, reply) => {
       const body = request.body as Record<string, unknown>;
-      assertString(body.file, 'file', 100);
       const fname = path.basename(body.file as string);
       if (!fname.endsWith('.md') || fname.includes('..') || fname.includes(path.sep)) {
         return reply.code(400).send(errorResponse('INVALID_FILE', 'Invalid category filename'));
@@ -155,13 +155,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.post(
     '/api/decisions/promote-lesson',
-    { schema: { tags: ['decisions'] } },
+    { schema: RS.decisionPromoteLesson },
     async (request, reply) => {
       const body = request.body as Record<string, unknown>;
-      if (!body.lessonId || typeof body.lessonId !== 'string') {
-        return reply.code(400).send(errorResponse('VALIDATION_ERROR', V.MISSING_LESSON_ID));
-      }
-
       const lessonId = sanitizeMarkdown((body.lessonId as string).trim());
       if (!/^L\d+$/.test(lessonId)) {
         return reply.code(400).send(errorResponse('VALIDATION_ERROR', V.INVALID_LESSON_ID));

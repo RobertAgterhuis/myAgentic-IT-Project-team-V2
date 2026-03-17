@@ -14,6 +14,7 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { ServerContext } from '../context';
 import { errorResponse } from '../utils/errors';
 import { sessionTracker } from '../session-tracker';
+import * as RS from '../route-schemas';
 
 export async function registerRoutes(app: FastifyInstance, _ctx: ServerContext): Promise<void> {
   // ── GET /api/agents ──────────────────────────────────────
@@ -31,7 +32,7 @@ export async function registerRoutes(app: FastifyInstance, _ctx: ServerContext):
 
   app.get<{ Params: { id: string } }>(
     '/api/agents/:id',
-    { schema: { tags: ['agents'] } },
+    { schema: RS.agentDetail },
     async (request, reply) => {
       const id = decodeURIComponent(request.params.id);
       if (!id) {

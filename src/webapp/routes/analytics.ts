@@ -19,6 +19,7 @@ import type { ServerContext } from '../context';
 import path from 'path';
 import { getStore } from '../store';
 import { errorResponse } from '../utils/errors';
+import * as RS from '../route-schemas';
 import {
   deserializeMetricsStore,
   createMetricsStore,
@@ -179,7 +180,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   app.get<{ Params: { name: string }; Querystring: { from?: string; to?: string } }>(
     '/api/v1/analytics/metrics/:name',
-    { schema: { tags: ['analytics'] } },
+    { schema: RS.analyticsV1MetricQuery },
     async (request, reply: FastifyReply) => {
       const metricName = decodeURIComponent(request.params.name);
       if (!metricName) {

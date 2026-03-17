@@ -50,9 +50,29 @@ import { createStorageProvider } from '../../platform/engine/persistence';
 import type { StorageProvider } from '../../platform/engine/persistence';
 
 import { buildApp } from './app';
-import { registerLegacyRoutes } from './route-adapter';
 import type { ServerContext } from './context';
-import { toLegacyCtx } from './context';
+
+/* ── Native Fastify route plugins (M30-004) ───────────────────── */
+import { registerRoutes as registerQuestionnaireRoutes } from './routes/questionnaires';
+import { registerRoutes as registerDecisionRoutes } from './routes/decisions';
+import { registerRoutes as registerCommandRoutes } from './routes/commands';
+import { registerRoutes as registerProgressRoutes } from './routes/progress';
+import { registerRoutes as registerDriftRoutes } from './routes/drift';
+import { registerRoutes as registerMetricsDashboardRoutes } from './routes/metrics-dashboard';
+import { registerRoutes as registerDashboardRoutes } from './routes/dashboard';
+import { registerRoutes as registerMilestonesRoutes } from './routes/milestones';
+import { registerRoutes as registerSubscribeRoutes } from './routes/subscribe';
+import { registerRoutes as registerOrchestratorRoutes } from './routes/orchestrator';
+import { registerRoutes as registerApprovalRoutes } from './routes/approvals';
+import { registerRoutes as registerPolicyRoutes } from './routes/policies';
+import { registerRoutes as registerArtifactRoutes } from './routes/artifacts';
+import { registerRoutes as registerAnalyticsRoutes } from './routes/analytics';
+import { registerRoutes as registerSessionRoutes } from './routes/sessions';
+import { registerRoutes as registerAgentRoutes } from './routes/agents';
+import { registerRoutes as registerWorkspaceRoutes } from './routes/workspaces';
+import { registerRoutes as registerCockpitRoutes } from './routes/cockpit';
+import { registerRoutes as registerAuthRoutes } from './routes/auth';
+import { registerRoutes as registerMiscRoutes } from './routes/misc';
 
 const _cache = new FileCache();
 const _audit = new AuditTrail({ logDir: path.join(BUSINESS_DOCS, 'audit') });
@@ -218,42 +238,8 @@ function scheduleRebuildIndex(): void {
   }, 500);
 }
 
-/* ── Legacy ctx adapter for route modules not yet migrated ────── */
-const legacyCtx = toLegacyCtx(ctx);
-
-/* ── Route modules (legacy pattern: ctx → RouteTable) ─────────── */
-const questionnaireRoutes = require('./routes/questionnaires')(legacyCtx);
-const decisionRoutes = require('./routes/decisions')(legacyCtx);
-const commandRoutes = require('./routes/commands')(legacyCtx);
-ctx._getLatestCommand = commandRoutes._getLatestCommand;
-ctx._readCommandQueue = commandRoutes._readCommandQueue;
-const progressRoutes = require('./routes/progress')(legacyCtx);
-const driftRoutes = require('./routes/drift')(legacyCtx);
-const metricsDashboardRoutes = require('./routes/metrics-dashboard')(legacyCtx);
-const dashboardRoutes = require('./routes/dashboard')(legacyCtx);
-const milestonesRoutes = require('./routes/milestones')(legacyCtx);
-const subscribeRoutes = require('./routes/subscribe')(legacyCtx);
-const orchestratorRoutes = require('./routes/orchestrator')(legacyCtx);
-ctx._getEngine = orchestratorRoutes._getEngine;
-const approvalRoutes = require('./routes/approvals')(legacyCtx);
-const policyRoutes = require('./routes/policies')(legacyCtx);
-const artifactRoutes = require('./routes/artifacts')(legacyCtx);
-const analyticsRoutes = require('./routes/analytics')(legacyCtx);
-const sessionRoutes = require('./routes/sessions')(legacyCtx);
-const agentRoutes = require('./routes/agents')(legacyCtx);
-const workspaceRoutes = require('./routes/workspaces')(legacyCtx);
-const cockpitRoutes = require('./routes/cockpit')(legacyCtx);
-const authRoutes = require('./routes/auth')(legacyCtx);
-const miscRoutes = require('./routes/misc')(legacyCtx);
-
-/* ── Clean private keys from route tables ─────────────────────── */
-function stripPrivateKeys(routes: Record<string, unknown>): Record<string, unknown> {
-  const clean = { ...routes };
-  for (const k of Object.keys(clean)) {
-    if (k.startsWith('_')) delete clean[k];
-  }
-  return clean;
-}
+/* (Cross-route wiring for _getLatestCommand, _readCommandQueue, _getEngine
+   is now handled inside registerRoutes() of commands.ts and orchestrator.ts) */
 
 /* ── Build Fastify app ────────────────────────────────────────── */
 let _app: Awaited<ReturnType<typeof buildApp>> | null = null;
@@ -261,59 +247,30 @@ let _app: Awaited<ReturnType<typeof buildApp>> | null = null;
 async function createApp() {
   const app = await buildApp({ ctx, disableRequestLogging: false });
 
-  // Register all legacy route modules with OpenAPI tags
-  registerLegacyRoutes(
-    app,
-    stripPrivateKeys(questionnaireRoutes) as Record<string, never>,
-    'questionnaires'
-  );
-  registerLegacyRoutes(app, stripPrivateKeys(decisionRoutes) as Record<string, never>, 'decisions');
-  registerLegacyRoutes(app, stripPrivateKeys(commandRoutes) as Record<string, never>, 'commands');
-  registerLegacyRoutes(app, stripPrivateKeys(progressRoutes) as Record<string, never>, 'progress');
-  registerLegacyRoutes(app, stripPrivateKeys(driftRoutes) as Record<string, never>, 'drift');
-  registerLegacyRoutes(
-    app,
-    stripPrivateKeys(metricsDashboardRoutes) as Record<string, never>,
-    'metrics'
-  );
-  registerLegacyRoutes(
-    app,
-    stripPrivateKeys(dashboardRoutes) as Record<string, never>,
-    'dashboard'
-  );
-  registerLegacyRoutes(
-    app,
-    stripPrivateKeys(milestonesRoutes) as Record<string, never>,
-    'milestones'
-  );
-  registerLegacyRoutes(
-    app,
-    stripPrivateKeys(subscribeRoutes) as Record<string, never>,
-    'subscribe'
-  );
-  registerLegacyRoutes(
-    app,
-    stripPrivateKeys(orchestratorRoutes) as Record<string, never>,
-    'orchestrator'
-  );
-  registerLegacyRoutes(app, stripPrivateKeys(approvalRoutes) as Record<string, never>, 'approvals');
-  registerLegacyRoutes(app, stripPrivateKeys(policyRoutes) as Record<string, never>, 'policies');
-  registerLegacyRoutes(app, stripPrivateKeys(artifactRoutes) as Record<string, never>, 'artifacts');
-  registerLegacyRoutes(
-    app,
-    stripPrivateKeys(analyticsRoutes) as Record<string, never>,
-    'analytics'
-  );
-  registerLegacyRoutes(app, stripPrivateKeys(sessionRoutes) as Record<string, never>, 'sessions');
-  registerLegacyRoutes(app, stripPrivateKeys(agentRoutes) as Record<string, never>, 'agents');
-  registerLegacyRoutes(
-    app,
-    stripPrivateKeys(workspaceRoutes) as Record<string, never>,
-    'workspaces'
-  );
-  registerLegacyRoutes(app, stripPrivateKeys(cockpitRoutes) as Record<string, never>, 'cockpit');
-  registerLegacyRoutes(app, stripPrivateKeys(authRoutes) as Record<string, never>, 'auth');
-  registerLegacyRoutes(app, stripPrivateKeys(miscRoutes) as Record<string, never>, 'system');
+  // Register native Fastify route plugins (M30-004)
+  // Commands must register before orchestrator (cross-route wiring order)
+  await registerCommandRoutes(app, ctx);
+  await registerOrchestratorRoutes(app, ctx);
+
+  await registerQuestionnaireRoutes(app, ctx);
+  await registerDecisionRoutes(app, ctx);
+  await registerProgressRoutes(app, ctx);
+  await registerDriftRoutes(app, ctx);
+  await registerMetricsDashboardRoutes(app, ctx);
+  await registerDashboardRoutes(app, ctx);
+  await registerMilestonesRoutes(app, ctx);
+  await registerSubscribeRoutes(app, ctx);
+  await registerApprovalRoutes(app, ctx);
+  await registerPolicyRoutes(app, ctx);
+  await registerArtifactRoutes(app, ctx);
+  await registerAnalyticsRoutes(app, ctx);
+  await registerSessionRoutes(app, ctx);
+  await registerAgentRoutes(app, ctx);
+  await registerWorkspaceRoutes(app, ctx);
+  await registerCockpitRoutes(app, ctx);
+  await registerAuthRoutes(app, ctx);
+  // misc registers last — includes catch-all SPA static handler
+  await registerMiscRoutes(app, ctx);
 
   _app = app;
   return app;

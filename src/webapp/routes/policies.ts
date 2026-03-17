@@ -8,6 +8,8 @@
  * @module routes/policies
  */
 
+import type { FastifyInstance } from 'fastify';
+import type { ServerContext } from '../context';
 import {
   PolicyService,
   PolicyValidationError,
@@ -15,90 +17,98 @@ import {
   toServiceContext,
 } from '../services';
 import { errorResponse } from '../utils/errors';
-import { structuredLog, json, parseBody } from '../middleware';
+import { structuredLog } from '../middleware';
 
-export = function createPolicyRoutes(ctx): Record<string, unknown> {
-  const { sseNotify } = ctx;
-  const svc = new PolicyService(toServiceContext(ctx));
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  const svc = new PolicyService(toServiceContext(ctx as unknown as Record<string, unknown>));
 
   /* ── GET /api/v1/policies ────────────────────────────────── */
 
-  async function listPolicies(_req, res) {
+  app.get('/api/v1/policies', { schema: { tags: ['policies'] } }, async (_request, reply) => {
     try {
       const result = svc.listPolicies();
       structuredLog('INFO', 'policies_list', { count: result.count });
-      return json(res, 200, result);
+      return reply.send(result);
     } catch (err) {
       structuredLog('ERROR', 'policies_list_failed', { error: (err as Error).message });
-      return json(res, 500, errorResponse('INTERNAL_ERROR', (err as Error).message));
+      return reply.code(500).send(errorResponse('INTERNAL_ERROR', (err as Error).message));
     }
-  }
+  });
 
   /* ── POST /api/v1/policies/evaluate ──────────────────────── */
 
-  async function evaluatePolicies(req, res) {
-    try {
-      const body = await parseBody(req);
-      const contextType = body.context_type as string;
-      const scope = body.scope as string;
-      const checks = (body.checks || {}) as Record<string, boolean>;
+  app.post(
+    '/api/v1/policies/evaluate',
+    { schema: { tags: ['policies'] } },
+    async (request, reply) => {
+      try {
+        const body = request.body as Record<string, unknown>;
+        const contextType = body.context_type as string;
+        const scope = body.scope as string;
+        const checks = (body.checks || {}) as Record<string, boolean>;
 
-      if (!contextType || !scope) {
-        return json(res, 400, { error: 'context_type and scope are required' });
+        if (!contextType || !scope) {
+          return reply.code(400).send({ error: 'context_type and scope are required' });
+        }
+
+        const result = svc.evaluatePolicies({
+          type: contextType as 'gate' | 'pr' | 'deploy' | 'artifact' | 'schedule',
+          scope: scope as 'global' | 'org' | 'team' | 'repo' | 'sprint',
+          checks,
+        });
+
+        structuredLog('INFO', 'policies_evaluated', {
+          total: result.evaluation.summary.total,
+          blocking: result.evaluation.summary.blocking_failures,
+        });
+        ctx.sseNotify('policy_evaluation', {
+          type: 'policy_evaluation',
+          summary: result.evaluation.summary,
+        });
+        return reply.send(result);
+      } catch (err) {
+        structuredLog('ERROR', 'policies_evaluate_failed', { error: (err as Error).message });
+        return reply.code(500).send(errorResponse('INTERNAL_ERROR', (err as Error).message));
       }
-
-      const result = svc.evaluatePolicies({
-        type: contextType as 'gate' | 'pr' | 'deploy' | 'artifact' | 'schedule',
-        scope: scope as 'global' | 'org' | 'team' | 'repo' | 'sprint',
-        checks,
-      });
-
-      structuredLog('INFO', 'policies_evaluated', {
-        total: result.evaluation.summary.total,
-        blocking: result.evaluation.summary.blocking_failures,
-      });
-      sseNotify?.({ type: 'policy_evaluation', summary: result.evaluation.summary });
-      return json(res, 200, result);
-    } catch (err) {
-      structuredLog('ERROR', 'policies_evaluate_failed', { error: (err as Error).message });
-      return json(res, 500, errorResponse('INTERNAL_ERROR', (err as Error).message));
     }
-  }
+  );
 
   /* ── POST /api/v1/policies/exceptions ────────────────────── */
 
-  async function createException(req, res) {
-    try {
-      const body = await parseBody(req);
-      const result = svc.createException({
-        policy_id: body.policy_id as string,
-        reason: body.reason as string,
-        approved_by: body.approved_by as string,
-        expires: body.expires as string,
-        scope_override: body.scope_override as string | undefined,
-      });
+  app.post(
+    '/api/v1/policies/exceptions',
+    { schema: { tags: ['policies'] } },
+    async (request, reply) => {
+      try {
+        const body = request.body as Record<string, unknown>;
+        const result = svc.createException({
+          policy_id: body.policy_id as string,
+          reason: body.reason as string,
+          approved_by: body.approved_by as string,
+          expires: body.expires as string,
+          scope_override: body.scope_override as string | undefined,
+        });
 
-      structuredLog('INFO', 'policy_exception_created', {
-        policy_id: body.policy_id,
-        exception_id: result.exception.id,
-      });
-      sseNotify?.({ type: 'policy_exception', action: 'created', exception: result.exception });
-      return json(res, 201, result);
-    } catch (err) {
-      if (err instanceof PolicyValidationError) {
-        return json(res, 400, { error: (err as Error).message });
+        structuredLog('INFO', 'policy_exception_created', {
+          policy_id: body.policy_id,
+          exception_id: result.exception.id,
+        });
+        ctx.sseNotify('policy_exception', {
+          type: 'policy_exception',
+          action: 'created',
+          exception: result.exception,
+        });
+        return reply.code(201).send(result);
+      } catch (err) {
+        if (err instanceof PolicyValidationError) {
+          return reply.code(400).send({ error: (err as Error).message });
+        }
+        if (err instanceof PolicyNotFoundError) {
+          return reply.code(404).send({ error: (err as Error).message });
+        }
+        structuredLog('ERROR', 'policy_exception_failed', { error: (err as Error).message });
+        return reply.code(500).send(errorResponse('INTERNAL_ERROR', (err as Error).message));
       }
-      if (err instanceof PolicyNotFoundError) {
-        return json(res, 404, { error: (err as Error).message });
-      }
-      structuredLog('ERROR', 'policy_exception_failed', { error: (err as Error).message });
-      return json(res, 500, errorResponse('INTERNAL_ERROR', (err as Error).message));
     }
-  }
-
-  return {
-    'GET /api/v1/policies': listPolicies,
-    'POST /api/v1/policies/evaluate': evaluatePolicies,
-    'POST /api/v1/policies/exceptions': createException,
-  };
-};
+  );
+}

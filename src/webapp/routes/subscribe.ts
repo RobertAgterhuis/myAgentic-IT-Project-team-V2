@@ -8,12 +8,14 @@
  * @returns {object} Route map { 'METHOD /path': handler }.
  */
 
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { ServerContext } from '../context';
 import path from 'path';
 import crypto from 'crypto';
 import { getStore } from '../store';
 import { withFileLock } from '../file-lock';
 import { errorResponse } from '../utils/errors';
-import { structuredLog, json, parseBody } from '../middleware';
+import { structuredLog } from '../middleware';
 
 const BUTTONDOWN_API = 'https://api.buttondown.email/v1/subscribers';
 const VALID_SEGMENTS = ['engineering-leaders', 'product-managers', 'developers', 'evaluators'];
@@ -27,21 +29,25 @@ const LOCAL_SUBS_FILE = path.resolve(
   'local-subscriptions.json'
 );
 
-function isValidEmail(email) {
+function isValidEmail(email: unknown) {
   return typeof email === 'string' && EMAIL_RE.test(email);
 }
 
-function pickMetadataString(metadata, key, fallback) {
+function pickMetadataString(
+  metadata: Record<string, unknown> | undefined,
+  key: string,
+  fallback: string
+) {
   const value = metadata?.[key];
   return typeof value === 'string' ? value : fallback;
 }
 
-function parseAndValidateInput(parsed) {
+function parseAndValidateInput(parsed: { email?: string; metadata?: Record<string, unknown> }) {
   const { email, metadata } = parsed;
 
   if (!isValidEmail(email)) {
     return {
-      ok: false,
+      ok: false as const,
       response: {
         status: 400,
         body: errorResponse('INVALID_INPUT', 'Please provide a valid email address.'),
@@ -52,7 +58,7 @@ function parseAndValidateInput(parsed) {
   const segment = pickMetadataString(metadata, 'segment', 'evaluators');
   if (!VALID_SEGMENTS.includes(segment)) {
     return {
-      ok: false,
+      ok: false as const,
       response: {
         status: 400,
         body: errorResponse(
@@ -66,12 +72,12 @@ function parseAndValidateInput(parsed) {
   const source = pickMetadataString(metadata, 'source', 'direct').slice(0, 100);
 
   return {
-    ok: true,
-    value: { email, segment, source },
+    ok: true as const,
+    value: { email: email as string, segment, source },
   };
 }
 
-function hashEmail(email) {
+function hashEmail(email: string) {
   return crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex');
 }
 
@@ -83,45 +89,55 @@ function readLocalSubscriptions() {
   return JSON.parse(store.readFile(LOCAL_SUBS_FILE));
 }
 
-async function handleLocalFallback(res, email, segment, source) {
+async function handleLocalFallback(
+  reply: FastifyReply,
+  email: string,
+  segment: string,
+  source: string
+) {
   structuredLog('info', 'subscribe_local_fallback', { email: '[redacted]', segment, source });
   try {
     const emailHash = hashEmail(email);
     return await withFileLock(LOCAL_SUBS_FILE, () => {
       const subs = readLocalSubscriptions();
-      if (subs.some((s) => s.emailHash === emailHash)) {
-        return json(res, 409, {
+      if (subs.some((s: { emailHash: string }) => s.emailHash === emailHash)) {
+        return reply.code(409).send({
           error: 'already_subscribed',
           message: 'This email is already subscribed (local).',
         });
       }
       subs.push({ emailHash, segment, source, subscribedAt: new Date().toISOString() });
       getStore().writeFile(LOCAL_SUBS_FILE, JSON.stringify(subs, null, 2));
-      return json(res, 201, {
+      return reply.code(201).send({
         status: 'stored_locally',
         message: 'Newsletter service not configured. Subscription recorded locally.',
       });
     });
   } catch (writeErr) {
-    structuredLog('error', 'subscribe_local_write_error', { message: writeErr.message });
-    return json(res, 201, {
+    structuredLog('error', 'subscribe_local_write_error', { message: (writeErr as Error).message });
+    return reply.code(201).send({
       status: 'stored_locally',
       message: 'Newsletter service not configured. Subscription recorded locally.',
     });
   }
 }
 
-async function handleUpstreamResponse(res, upstream, segment, source) {
+async function handleUpstreamResponse(
+  reply: FastifyReply,
+  upstream: Response,
+  segment: string,
+  source: string
+) {
   if (upstream.status === 201) {
     structuredLog('info', 'subscribe_success', { segment, source });
-    return json(res, 201, {
+    return reply.code(201).send({
       status: 'pending_confirmation',
       message: 'Please check your email to confirm subscription.',
     });
   }
 
   if (upstream.status === 409) {
-    return json(res, 409, {
+    return reply.code(409).send({
       error: 'already_subscribed',
       message: 'This email is already subscribed.',
     });
@@ -133,70 +149,69 @@ async function handleUpstreamResponse(res, upstream, segment, source) {
     body: text.slice(0, 200),
   });
 
-  return json(
-    res,
-    502,
-    errorResponse('INTERNAL_ERROR', 'Newsletter service returned an error. Please try again later.')
-  );
+  return reply
+    .code(502)
+    .send(
+      errorResponse(
+        'INTERNAL_ERROR',
+        'Newsletter service returned an error. Please try again later.'
+      )
+    );
 }
 
-export = function createSubscribeRoutes(_ctx): Record<string, unknown> {
-  async function handleSubscribe(req, res) {
-    let parsed;
-    try {
-      parsed = await parseBody(req);
-    } catch (err) {
-      const code = err.errorCode || 'VALIDATION_ERROR';
-      const status = err.status || 400;
-      return json(res, status, errorResponse(code, err.message));
+export async function registerRoutes(app: FastifyInstance, _ctx: ServerContext): Promise<void> {
+  app.post<{ Body: { email?: string; metadata?: Record<string, unknown> } }>(
+    '/api/subscribe',
+    { schema: { tags: ['subscribe'] } },
+    async (
+      request: FastifyRequest<{ Body: { email?: string; metadata?: Record<string, unknown> } }>,
+      reply: FastifyReply
+    ) => {
+      const parsed = request.body ?? {};
+
+      const validation = parseAndValidateInput(parsed);
+      if (!validation.ok) {
+        return reply.code(validation.response.status).send(validation.response.body);
+      }
+
+      const { email, segment, source } = validation.value;
+
+      const apiKey = process.env.BUTTONDOWN_API_KEY;
+      if (!apiKey) {
+        return await handleLocalFallback(reply, email, segment, source);
+      }
+
+      const controller = new AbortController();
+      const fetchTimeout = setTimeout(() => controller.abort(), 10_000);
+      try {
+        const upstream = await fetch(BUTTONDOWN_API, {
+          method: 'POST',
+          headers: {
+            Authorization: `Token ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email,
+            tags: [segment],
+            metadata: { source },
+            referrer_url: source,
+          }),
+          signal: controller.signal,
+        });
+        return handleUpstreamResponse(reply, upstream, segment, source);
+      } catch (err) {
+        structuredLog('error', 'subscribe_network_error', { message: (err as Error).message });
+        return reply
+          .code(502)
+          .send(
+            errorResponse(
+              'INTERNAL_ERROR',
+              'Could not reach newsletter service. Please try again later.'
+            )
+          );
+      } finally {
+        clearTimeout(fetchTimeout);
+      }
     }
-
-    const validation = parseAndValidateInput(parsed);
-    if (!validation.ok) {
-      return json(res, validation.response.status, validation.response.body);
-    }
-
-    const { email, segment, source } = validation.value;
-
-    const apiKey = process.env.BUTTONDOWN_API_KEY;
-    if (!apiKey) {
-      return await handleLocalFallback(res, email, segment, source);
-    }
-
-    const controller = new AbortController();
-    const fetchTimeout = setTimeout(() => controller.abort(), 10_000);
-    try {
-      const upstream = await fetch(BUTTONDOWN_API, {
-        method: 'POST',
-        headers: {
-          Authorization: `Token ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          tags: [segment],
-          metadata: { source },
-          referrer_url: source,
-        }),
-        signal: controller.signal,
-      });
-      return handleUpstreamResponse(res, upstream, segment, source);
-    } catch (err) {
-      structuredLog('error', 'subscribe_network_error', { message: err.message });
-      return json(
-        res,
-        502,
-        errorResponse(
-          'INTERNAL_ERROR',
-          'Could not reach newsletter service. Please try again later.'
-        )
-      );
-    } finally {
-      clearTimeout(fetchTimeout);
-    }
-  }
-
-  return {
-    'POST /api/subscribe': handleSubscribe,
-  };
-};
+  );
+}

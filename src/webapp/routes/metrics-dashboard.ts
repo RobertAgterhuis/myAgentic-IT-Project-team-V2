@@ -11,7 +11,6 @@
 
 import path from 'path';
 import { getStore } from '../store';
-import { json } from '../middleware';
 
 const KPI_FILE_RE = /^sprint-SP-\d+-kpi\.json$/;
 const SPRINT_DIR_RE = /^sprint-SP-\d+$/;
@@ -370,8 +369,12 @@ function buildHeatmapData(velocity, kpis) {
 
 /* ── Route factory ─────────────────────────────────────────────── */
 
-export = function createMetricsDashboardRoutes(ctx): Record<string, unknown> {
-  const { _cache, BUSINESS_DOCS, getStorageProvider } = ctx;
+import type { FastifyInstance, FastifyReply } from 'fastify';
+import type { ServerContext } from '../context';
+
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  const { _cache, BUSINESS_DOCS } = ctx;
+  const getStorageProvider = ctx.getStorageProvider;
   const VELOCITY_FILE = path.join(BUSINESS_DOCS, 'retrospectives', 'velocity-log.json');
 
   function percentile(sorted: number[], p: number): number {
@@ -476,42 +479,40 @@ export = function createMetricsDashboardRoutes(ctx): Record<string, unknown> {
     };
   }
 
-  async function apiGetDashboard(req, res) {
-    const store = getStore();
-    const velocity = readVelocity(store);
-    const kpis = collectKpis(store);
-    const sorted = [...(velocity.sprints || [])].sort(sortBySprint);
+  app.get<{ Querystring: { lastN?: string } }>(
+    '/api/metrics/dashboard',
+    { schema: { tags: ['metrics'] } },
+    async (request, reply: FastifyReply) => {
+      const store = getStore();
+      const velocity = readVelocity(store);
+      const kpis = collectKpis(store);
+      const sorted = [...(velocity.sprints || [])].sort(sortBySprint);
 
-    /* FEAT-01-U: Configurable date range — filter last N sprints */
-    const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-    const lastN = parseInt(url.searchParams.get('lastN'), 10);
-    const filtered = sliceLast(sorted, lastN);
-    const burnup = buildBurnup(sorted);
-    const m = computeAllMetrics(sorted, kpis);
-    const storageMetrics = buildStorageMetrics();
+      const lastN = parseInt(request.query.lastN as string, 10);
+      const filtered = sliceLast(sorted, lastN);
+      const burnup = buildBurnup(sorted);
+      const m = computeAllMetrics(sorted, kpis);
+      const storageMetrics = buildStorageMetrics();
 
-    json(res, 200, {
-      velocity: filtered,
-      burnup: sliceLast(burnup, lastN),
-      idealBurnup: sliceLast(m.idealBurnup, lastN),
-      kpis,
-      qualityTrend: m.qualityTrend,
-      estimation: buildEstimation(filtered),
-      rollingAverages: sliceLast(m.rollingAverages, lastN),
-      healthScorecard: m.healthScorecard,
-      deltas: sliceLast(m.deltas, lastN),
-      forecast: m.forecast,
-      defectDensity: m.defectDensity,
-      scopeCreep: m.scopeCreep,
-      estimationHistogram: m.estimationHistogram,
-      riskTrend: m.riskTrend,
-      heatmapData: m.heatmapData,
-      ...(storageMetrics ? { storage: storageMetrics } : {}),
-      generated_at: new Date().toISOString(),
-    });
-  }
-
-  return {
-    'GET /api/metrics/dashboard': apiGetDashboard,
-  };
-};
+      return reply.send({
+        velocity: filtered,
+        burnup: sliceLast(burnup, lastN),
+        idealBurnup: sliceLast(m.idealBurnup, lastN),
+        kpis,
+        qualityTrend: m.qualityTrend,
+        estimation: buildEstimation(filtered),
+        rollingAverages: sliceLast(m.rollingAverages, lastN),
+        healthScorecard: m.healthScorecard,
+        deltas: sliceLast(m.deltas, lastN),
+        forecast: m.forecast,
+        defectDensity: m.defectDensity,
+        scopeCreep: m.scopeCreep,
+        estimationHistogram: m.estimationHistogram,
+        riskTrend: m.riskTrend,
+        heatmapData: m.heatmapData,
+        ...(storageMetrics ? { storage: storageMetrics } : {}),
+        generated_at: new Date().toISOString(),
+      });
+    }
+  );
+}

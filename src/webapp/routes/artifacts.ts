@@ -14,20 +14,11 @@
  * @returns {object} Route map { 'METHOD /path': handler }
  */
 
-import http from 'http';
-import { json } from '../middleware';
+import type { FastifyInstance } from 'fastify';
+import type { ServerContext } from '../context';
 import { errorResponse } from '../utils/errors';
 
-function extractArtifactId(req: http.IncomingMessage): string {
-  const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
-  const parts = url.pathname.split('/').filter(Boolean);
-  // Pattern: /api/v1/artifacts/:id  →  parts = ['api', 'v1', 'artifacts', ':id']
-  return parts.length >= 4 ? decodeURIComponent(parts[3]) : '';
-}
-
-export = function createArtifactRoutes(
-  ctx: Record<string, unknown>
-): Record<string, (req: http.IncomingMessage, res: http.ServerResponse) => void> {
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   /**
    * Lazy accessor for the artifact registry.
    * The engine (and its registry) may not exist until the first orchestrator request.
@@ -50,100 +41,96 @@ export = function createArtifactRoutes(
 
   // ── GET /api/v1/artifacts ────────────────────────────────
 
-  function handleList(req: http.IncomingMessage, res: http.ServerResponse) {
-    const registry = getRegistry();
-    if (!registry) {
-      return json(
-        res,
-        503,
-        errorResponse('REGISTRY_UNAVAILABLE', 'Artifact registry not initialized')
-      );
+  app.get<{ Querystring: { stage?: string; type?: string; status?: string } }>(
+    '/api/v1/artifacts',
+    { schema: { tags: ['artifacts'] } },
+    async (request, reply) => {
+      const registry = getRegistry();
+      if (!registry) {
+        return reply
+          .code(503)
+          .send(errorResponse('REGISTRY_UNAVAILABLE', 'Artifact registry not initialized'));
+      }
+
+      const { stage, type, status } = request.query;
+      const filter: Record<string, string> = {};
+      if (stage) filter.stage = stage;
+      if (type) filter.artifact_type = type;
+      if (status) filter.status = status;
+
+      const artifacts = registry.list(Object.keys(filter).length > 0 ? filter : undefined);
+      return reply.send({ ok: true, count: artifacts.length, artifacts });
     }
-
-    const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
-    const filter: Record<string, string> = {};
-    const stage = url.searchParams.get('stage');
-    const type = url.searchParams.get('type');
-    const status = url.searchParams.get('status');
-    if (stage) filter.stage = stage;
-    if (type) filter.artifact_type = type;
-    if (status) filter.status = status;
-
-    const artifacts = registry.list(Object.keys(filter).length > 0 ? filter : undefined);
-    return json(res, 200, { ok: true, count: artifacts.length, artifacts });
-  }
+  );
 
   // ── GET /api/v1/artifacts/stats ──────────────────────────
 
-  function handleStats(_req: http.IncomingMessage, res: http.ServerResponse) {
-    const registry = getRegistry();
-    if (!registry) {
-      return json(
-        res,
-        503,
-        errorResponse('REGISTRY_UNAVAILABLE', 'Artifact registry not initialized')
-      );
+  app.get(
+    '/api/v1/artifacts/stats',
+    { schema: { tags: ['artifacts'] } },
+    async (_request, reply) => {
+      const registry = getRegistry();
+      if (!registry) {
+        return reply
+          .code(503)
+          .send(errorResponse('REGISTRY_UNAVAILABLE', 'Artifact registry not initialized'));
+      }
+      return reply.send({ ok: true, stats: registry.stats() });
     }
-    return json(res, 200, { ok: true, stats: registry.stats() });
-  }
+  );
 
   // ── GET /api/v1/artifacts/:id ────────────────────────────
 
-  function handleGet(req: http.IncomingMessage, res: http.ServerResponse) {
-    const registry = getRegistry();
-    if (!registry) {
-      return json(
-        res,
-        503,
-        errorResponse('REGISTRY_UNAVAILABLE', 'Artifact registry not initialized')
-      );
-    }
+  app.get<{ Params: { id: string } }>(
+    '/api/v1/artifacts/:id',
+    { schema: { tags: ['artifacts'] } },
+    async (request, reply) => {
+      const registry = getRegistry();
+      if (!registry) {
+        return reply
+          .code(503)
+          .send(errorResponse('REGISTRY_UNAVAILABLE', 'Artifact registry not initialized'));
+      }
 
-    const id = extractArtifactId(req);
-    if (!id) {
-      return json(res, 400, errorResponse('MISSING_ID', 'Artifact ID is required'));
-    }
+      const id = decodeURIComponent(request.params.id);
+      if (!id) {
+        return reply.code(400).send(errorResponse('MISSING_ID', 'Artifact ID is required'));
+      }
 
-    const artifact = registry.get(id);
-    if (!artifact) {
-      return json(res, 404, errorResponse('NOT_FOUND', `Artifact not found: ${id}`));
-    }
+      const artifact = registry.get(id);
+      if (!artifact) {
+        return reply.code(404).send(errorResponse('NOT_FOUND', `Artifact not found: ${id}`));
+      }
 
-    return json(res, 200, { ok: true, artifact });
-  }
+      return reply.send({ ok: true, artifact });
+    }
+  );
 
   // ── GET /api/v1/artifacts/:id/lineage ────────────────────
 
-  function handleLineage(req: http.IncomingMessage, res: http.ServerResponse) {
-    const registry = getRegistry();
-    if (!registry) {
-      return json(
-        res,
-        503,
-        errorResponse('REGISTRY_UNAVAILABLE', 'Artifact registry not initialized')
-      );
+  app.get<{ Params: { id: string } }>(
+    '/api/v1/artifacts/:id/lineage',
+    { schema: { tags: ['artifacts'] } },
+    async (request, reply) => {
+      const registry = getRegistry();
+      if (!registry) {
+        return reply
+          .code(503)
+          .send(errorResponse('REGISTRY_UNAVAILABLE', 'Artifact registry not initialized'));
+      }
+
+      const id = decodeURIComponent(request.params.id);
+      if (!id) {
+        return reply.code(400).send(errorResponse('MISSING_ID', 'Artifact ID is required'));
+      }
+
+      const artifact = registry.get(id);
+      if (!artifact) {
+        return reply.code(404).send(errorResponse('NOT_FOUND', `Artifact not found: ${id}`));
+      }
+
+      const lineage = registry.getLineage(id);
+      return reply.send({ ok: true, artifact_id: id, lineage });
     }
-
-    const id = extractArtifactId(req);
-    if (!id) {
-      return json(res, 400, errorResponse('MISSING_ID', 'Artifact ID is required'));
-    }
-
-    const artifact = registry.get(id);
-    if (!artifact) {
-      return json(res, 404, errorResponse('NOT_FOUND', `Artifact not found: ${id}`));
-    }
-
-    const lineage = registry.getLineage(id);
-    return json(res, 200, { ok: true, artifact_id: id, lineage });
-  }
-
-  // ── Route table ──────────────────────────────────────────
-
-  return {
-    'GET /api/v1/artifacts': handleList,
-    'GET /api/v1/artifacts/stats': handleStats,
-    'GET /api/v1/artifacts/:id': handleGet,
-    'GET /api/v1/artifacts/:id/lineage': handleLineage,
-  };
-};
+  );
+}

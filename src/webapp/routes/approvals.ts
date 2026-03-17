@@ -10,6 +10,8 @@
  * @returns {object} Route map { 'METHOD /path': handler }.
  */
 
+import type { FastifyInstance } from 'fastify';
+import type { ServerContext } from '../context';
 import {
   GovernanceService,
   ServiceValidationError,
@@ -17,110 +19,106 @@ import {
   toServiceContext,
 } from '../services';
 import { errorResponse } from '../utils/errors';
-import { structuredLog, json, parseBody, assertString } from '../middleware';
+import { structuredLog, assertString } from '../middleware';
 
-export = function createApprovalRoutes(ctx): Record<string, unknown> {
-  const { sseNotify } = ctx;
-
-  const svc = new GovernanceService(toServiceContext(ctx), {
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  const svc = new GovernanceService(toServiceContext(ctx as unknown as Record<string, unknown>), {
     getEngine: ctx._getEngine as (() => unknown) | undefined,
   } as { getEngine?: () => unknown });
 
   /* ── GET /api/v1/approvals ───────────────────────────────── */
 
-  async function listApprovals(_req, res) {
+  app.get('/api/v1/approvals', { schema: { tags: ['approvals'] } }, async (_request, reply) => {
     try {
       const result = svc.listApprovals();
       structuredLog('INFO', 'approvals_list', { count: result.count });
-      return json(res, 200, result);
+      return reply.send(result);
     } catch (err) {
       if (err instanceof ServiceNotAvailableError) {
-        return json(res, 503, { error: 'Governance engine not available' });
+        return reply.code(503).send({ error: 'Governance engine not available' });
       }
       structuredLog('ERROR', 'approvals_list_failed', { error: (err as Error).message });
-      return json(res, 500, errorResponse('INTERNAL_ERROR', (err as Error).message));
+      return reply.code(500).send(errorResponse('INTERNAL_ERROR', (err as Error).message));
     }
-  }
+  });
 
   /* ── POST /api/v1/approvals/:id/approve ──────────────────── */
 
-  async function approveRequest(req, res) {
-    try {
-      const url = new URL(req.url, `http://${req.headers.host}`);
-      const segments = url.pathname.split('/').filter(Boolean);
-      const approvalId = segments[3];
-      if (!approvalId) {
-        return json(res, 400, { error: 'Approval ID required' });
-      }
+  app.post<{ Params: { id: string } }>(
+    '/api/v1/approvals/:id/approve',
+    { schema: { tags: ['approvals'] } },
+    async (request, reply) => {
+      try {
+        const approvalId = request.params.id;
+        if (!approvalId) {
+          return reply.code(400).send({ error: 'Approval ID required' });
+        }
 
-      const body = await parseBody(req);
-      const reason = (body.reason as string) || 'Approved via API';
-      const decidedBy = (body.user as string) || 'api-user';
-      assertString(reason, 'reason', 1000);
-      assertString(decidedBy, 'user', 200);
+        const body = request.body as Record<string, unknown>;
+        const reason = (body.reason as string) || 'Approved via API';
+        const decidedBy = (body.user as string) || 'api-user';
+        assertString(reason, 'reason', 1000);
+        assertString(decidedBy, 'user', 200);
 
-      const result = svc.approve(approvalId, decidedBy, reason);
-      structuredLog('INFO', 'approval_approved', { id: approvalId, decided_by: decidedBy });
-      sseNotify?.({ type: 'approval', action: 'approved', id: approvalId });
-      return json(res, 200, result);
-    } catch (err) {
-      if (err instanceof ServiceValidationError) {
-        return json(res, 400, { error: (err as Error).message });
+        const result = svc.approve(approvalId, decidedBy, reason);
+        structuredLog('INFO', 'approval_approved', { id: approvalId, decided_by: decidedBy });
+        ctx.sseNotify?.({ type: 'approval', action: 'approved', id: approvalId });
+        return reply.send(result);
+      } catch (err) {
+        if (err instanceof ServiceValidationError) {
+          return reply.code(400).send({ error: (err as Error).message });
+        }
+        if (err instanceof ServiceNotAvailableError) {
+          return reply.code(503).send({ error: (err as Error).message });
+        }
+        const msg = (err as Error).message;
+        structuredLog('ERROR', 'approval_approve_failed', { error: msg });
+        if (msg.includes('not found')) return reply.code(404).send({ error: msg });
+        if (msg.includes('already')) return reply.code(409).send({ error: msg });
+        return reply.code(500).send(errorResponse('INTERNAL_ERROR', msg));
       }
-      if (err instanceof ServiceNotAvailableError) {
-        return json(res, 503, { error: (err as Error).message });
-      }
-      const msg = (err as Error).message;
-      structuredLog('ERROR', 'approval_approve_failed', { error: msg });
-      if (msg.includes('not found')) return json(res, 404, { error: msg });
-      if (msg.includes('already')) return json(res, 409, { error: msg });
-      return json(res, 500, errorResponse('INTERNAL_ERROR', msg));
     }
-  }
+  );
 
   /* ── POST /api/v1/approvals/:id/reject ───────────────────── */
 
-  async function rejectRequest(req, res) {
-    try {
-      const url = new URL(req.url, `http://${req.headers.host}`);
-      const segments = url.pathname.split('/').filter(Boolean);
-      const approvalId = segments[3];
-      if (!approvalId) {
-        return json(res, 400, { error: 'Approval ID required' });
-      }
+  app.post<{ Params: { id: string } }>(
+    '/api/v1/approvals/:id/reject',
+    { schema: { tags: ['approvals'] } },
+    async (request, reply) => {
+      try {
+        const approvalId = request.params.id;
+        if (!approvalId) {
+          return reply.code(400).send({ error: 'Approval ID required' });
+        }
 
-      const body = await parseBody(req);
-      const reason = body.reason as string;
-      const decidedBy = (body.user as string) || 'api-user';
+        const body = request.body as Record<string, unknown>;
+        const reason = body.reason as string;
+        const decidedBy = (body.user as string) || 'api-user';
 
-      if (!reason || typeof reason !== 'string' || !reason.trim()) {
-        return json(res, 400, { error: 'Reason is required for rejection' });
-      }
-      assertString(reason, 'reason', 1000);
-      assertString(decidedBy, 'user', 200);
+        if (!reason || typeof reason !== 'string' || !reason.trim()) {
+          return reply.code(400).send({ error: 'Reason is required for rejection' });
+        }
+        assertString(reason, 'reason', 1000);
+        assertString(decidedBy, 'user', 200);
 
-      const result = svc.reject(approvalId, decidedBy, reason);
-      structuredLog('INFO', 'approval_rejected', { id: approvalId, decided_by: decidedBy });
-      sseNotify?.({ type: 'approval', action: 'rejected', id: approvalId });
-      return json(res, 200, result);
-    } catch (err) {
-      if (err instanceof ServiceValidationError) {
-        return json(res, 400, { error: (err as Error).message });
+        const result = svc.reject(approvalId, decidedBy, reason);
+        structuredLog('INFO', 'approval_rejected', { id: approvalId, decided_by: decidedBy });
+        ctx.sseNotify?.({ type: 'approval', action: 'rejected', id: approvalId });
+        return reply.send(result);
+      } catch (err) {
+        if (err instanceof ServiceValidationError) {
+          return reply.code(400).send({ error: (err as Error).message });
+        }
+        if (err instanceof ServiceNotAvailableError) {
+          return reply.code(503).send({ error: (err as Error).message });
+        }
+        const msg = (err as Error).message;
+        structuredLog('ERROR', 'approval_reject_failed', { error: msg });
+        if (msg.includes('not found')) return reply.code(404).send({ error: msg });
+        if (msg.includes('already')) return reply.code(409).send({ error: msg });
+        return reply.code(500).send(errorResponse('INTERNAL_ERROR', msg));
       }
-      if (err instanceof ServiceNotAvailableError) {
-        return json(res, 503, { error: (err as Error).message });
-      }
-      const msg = (err as Error).message;
-      structuredLog('ERROR', 'approval_reject_failed', { error: msg });
-      if (msg.includes('not found')) return json(res, 404, { error: msg });
-      if (msg.includes('already')) return json(res, 409, { error: msg });
-      return json(res, 500, errorResponse('INTERNAL_ERROR', msg));
     }
-  }
-
-  return {
-    'GET /api/v1/approvals': listApprovals,
-    'POST /api/v1/approvals/:id/approve': approveRequest,
-    'POST /api/v1/approvals/:id/reject': rejectRequest,
-  };
-};
+  );
+}

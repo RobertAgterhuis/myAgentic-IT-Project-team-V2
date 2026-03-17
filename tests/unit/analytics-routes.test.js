@@ -12,7 +12,8 @@
 
 const path = require('path');
 const { InMemoryStore, setStore, getStore } = require('../../src/webapp/store');
-const createAnalyticsRoutes = require('../../src/webapp/routes/analytics');
+const { registerRoutes } = require('../../src/webapp/routes/analytics');
+const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
 const {
   createMetricsStore,
   ensureMetric,
@@ -61,7 +62,7 @@ describe('Analytics API routes (M7 #375)', () => {
   beforeEach(() => {
     const store = new InMemoryStore();
     setStore(store);
-    routes = createAnalyticsRoutes({ PROJECT_ROOT: '' });
+    routes = createTestableRoutes(registerRoutes, { PROJECT_ROOT: '' });
   });
 
   // ── GET /api/v1/analytics/trends ─────────────
@@ -260,14 +261,17 @@ describe('Analytics API routes (M7 #375)', () => {
       expect(body.data.data_points[0].value).toBe(200);
     });
 
-    it('returns 400 when metric name is missing', () => {
+    // Note: In Fastify, a request to /api/v1/analytics/metrics (no :name)
+    // returns 404 at the framework level — the handler is never called.
+    // Instead, test that a non-existent metric name returns 404 from handler.
+    it('returns 404 when metric name does not exist', () => {
       const handler = routes['GET /api/v1/analytics/metrics/:name'];
       const res = createRes();
-      handler(createReq('/api/v1/analytics/metrics'), res);
+      handler(createReq('/api/v1/analytics/metrics/nonexistent'), res);
 
-      expect(res.statusCode).toBe(400);
+      expect(res.statusCode).toBe(404);
       const body = JSON.parse(res.body);
-      expect(body.message).toContain('Metric name is required');
+      expect(body.message).toContain('not found');
     });
   });
 

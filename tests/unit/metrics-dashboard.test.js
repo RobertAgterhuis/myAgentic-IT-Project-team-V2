@@ -3,7 +3,10 @@
 const path = require('path');
 const { InMemoryStore, setStore } = require('../../src/webapp/store');
 const { FileCache } = require('../../src/webapp/cache');
-const createMetricsDashboardRoutes = require('../../src/webapp/routes/metrics-dashboard');
+const { registerRoutes } = require('../../src/webapp/routes/metrics-dashboard');
+const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+
+const createMetricsDashboardRoutes = (ctx) => createTestableRoutes(registerRoutes, ctx);
 
 /* ── Test data ─────────────────────────────────────────────────── */
 

@@ -16,7 +16,9 @@ beforeAll(async () => {
   const authMod = await import('../../src/webapp/auth.ts');
   AuthManager = authMod.AuthManager;
   createAuthMiddleware = authMod.createAuthMiddleware;
-  createAuthRoutes = (await import('../../src/webapp/routes/auth.ts')).default;
+  const { registerRoutes } = await import('../../src/webapp/routes/auth.ts');
+  const { createTestableRoutes } = await import('../helpers/fastify-test-adapter.js');
+  createAuthRoutes = (ctx) => createTestableRoutes(registerRoutes, ctx);
 });
 
 /* ── Helpers ──────────────────────────────────────────────────── */

@@ -5,7 +5,10 @@ import { Readable } from 'stream';
 import * as fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import createOrchestratorRoutes from '../../src/webapp/routes/orchestrator.js';
+import { registerRoutes } from '../../src/webapp/routes/orchestrator.js';
+import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
+
+const createOrchestratorRoutes = (ctx) => createTestableRoutes(registerRoutes, ctx);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SESSION_FILE = path.resolve(
@@ -77,7 +80,7 @@ describe('orchestrator routes (integration)', () => {
     fs.mkdirSync(path.dirname(SESSION_FILE), { recursive: true });
     // Write clean IDLE state so each test starts fresh
     fs.writeFileSync(SESSION_FILE, IDLE_STATE);
-    routes = createOrchestratorRoutes({ sseNotify: vi.fn() });
+    routes = createTestableRoutes(registerRoutes, { sseNotify: vi.fn() });
   });
 
   it('exports all 10 route handlers', () => {

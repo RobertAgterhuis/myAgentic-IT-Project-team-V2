@@ -3,7 +3,10 @@
 import { mkdirSync, writeFileSync, rmSync } from 'fs';
 import path from 'path';
 import os from 'os';
-import createDashboardRoutes from '../../src/webapp/routes/dashboard.js';
+import { registerRoutes } from '../../src/webapp/routes/dashboard.js';
+import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
+
+const createDashboardRoutes = (ctx) => createTestableRoutes(registerRoutes, ctx);
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 

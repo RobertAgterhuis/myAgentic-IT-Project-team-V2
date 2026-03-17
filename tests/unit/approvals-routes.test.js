@@ -1,7 +1,10 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 'use strict';
 
-const createApprovalRoutes = require('../../src/webapp/routes/approvals');
+const { registerRoutes } = require('../../src/webapp/routes/approvals');
+const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+
+const createApprovalRoutes = (ctx) => createTestableRoutes(registerRoutes, ctx);
 
 /* ── Mock helpers ─────────────────────────────────────────────── */
 

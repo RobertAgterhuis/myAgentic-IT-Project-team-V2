@@ -4,7 +4,10 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from 'vites
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import createDecisionRoutes from '../../src/webapp/routes/decisions.js';
+import { registerRoutes } from '../../src/webapp/routes/decisions.js';
+import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
+
+const createDecisionRoutes = (ctx) => createTestableRoutes(registerRoutes, ctx);
 
 /* ── Temp dir for isolation (real FileStore, real withFileLock) ── */
 
@@ -123,7 +126,7 @@ describe('decision routes', () => {
   beforeEach(() => {
     if (fs.existsSync(DECISIONS_FILE)) fs.unlinkSync(DECISIONS_FILE);
     if (fs.existsSync(DECISIONS_DIR)) fs.rmSync(DECISIONS_DIR, { recursive: true, force: true });
-    routes = createDecisionRoutes(makeCtx());
+    routes = createTestableRoutes(registerRoutes, makeCtx());
   });
 
   it('exports 3 route handlers', () => {

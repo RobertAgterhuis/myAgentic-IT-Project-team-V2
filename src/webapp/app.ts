@@ -71,11 +71,10 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
   /* ── Decorate every request with typed ctx ────────────────── */
   app.decorateRequest('ctx', { getter: () => ctx });
 
-  /* ── Disable body parsing — legacy handlers read from raw stream ── */
-  app.removeAllContentTypeParsers();
+  /* ── Body parsing — Fastify's built-in JSON parser + text fallback ── */
   app.addContentTypeParser(
-    '*',
-    { parseAs: 'buffer', bodyLimit: 1048576 },
+    'text/plain',
+    { parseAs: 'string', bodyLimit: 1048576 },
     function (_req, body, done) {
       done(null, body);
     }
@@ -267,10 +266,15 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
       status?: number;
       statusCode?: number;
       errorCode?: string;
+      code?: string;
       message?: string;
     };
     const status = err.status || err.statusCode || 500;
-    const code = err.errorCode || 'INTERNAL_ERROR';
+
+    // Map Fastify built-in error codes to our error code taxonomy
+    let code = err.errorCode || 'INTERNAL_ERROR';
+    if (err.code?.startsWith('FST_ERR_CTP_')) code = 'INVALID_CONTENT_TYPE';
+    else if (err.code === 'FST_ERR_VALIDATION') code = 'VALIDATION_ERROR';
 
     if (status >= 500) {
       request.log.error(error, 'Unhandled route error');

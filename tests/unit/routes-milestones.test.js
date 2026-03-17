@@ -3,7 +3,10 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import createMilestoneRoutes from '../../src/webapp/routes/milestones.js';
+import { registerRoutes } from '../../src/webapp/routes/milestones.js';
+import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
+
+const createMilestoneRoutes = (ctx) => createTestableRoutes(registerRoutes, ctx);
 
 /* ── Temp dir for isolation (real FileStore, real withFileLock) ── */
 

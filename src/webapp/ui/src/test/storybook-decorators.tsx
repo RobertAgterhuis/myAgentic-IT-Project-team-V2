@@ -16,14 +16,26 @@ export function createStoryQueryClient() {
   });
 }
 
-export const withProviders: Decorator = (Story, context) => {
-  const initialEntries = context.parameters?.routerInitialEntries ?? ['/'];
-  const qc = React.useMemo(() => createStoryQueryClient(), []);
+function StoryProviders({
+  children,
+  initialEntries,
+}: {
+  children: React.ReactNode;
+  initialEntries: string[];
+}) {
+  const [qc] = React.useState(() => createStoryQueryClient());
   return (
     <QueryClientProvider client={qc}>
-      <MemoryRouter initialEntries={initialEntries}>
-        <Story />
-      </MemoryRouter>
+      <MemoryRouter initialEntries={initialEntries}>{children}</MemoryRouter>
     </QueryClientProvider>
+  );
+}
+
+export const withProviders: Decorator = (Story, context) => {
+  const initialEntries = context.parameters?.routerInitialEntries ?? ['/'];
+  return (
+    <StoryProviders initialEntries={initialEntries}>
+      <Story />
+    </StoryProviders>
   );
 };

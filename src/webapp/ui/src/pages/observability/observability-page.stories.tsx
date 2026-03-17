@@ -3,7 +3,7 @@
  * This is a tab container with lazy-loaded sub-pages; stories focus on tab rendering.
  */
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { http, HttpResponse, delay } from 'msw';
+import { http, HttpResponse } from 'msw';
 import ObservabilityPage from './observability-page';
 import { withProviders } from '@/test/storybook-decorators';
 

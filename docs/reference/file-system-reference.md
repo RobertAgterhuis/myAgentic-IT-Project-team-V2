@@ -1,7 +1,9 @@
 ---
 layout: default
 title: File System Reference
-nav_order: 10
+parent: Reference
+nav_order: 4
+permalink: /file-system-reference/
 description:
   Complete map of the repository — what each directory and key file does, which
   agents write where, and what's safe to modify.
@@ -52,14 +54,14 @@ GitHub issue templates for bugs, features, stories, and tasks.
 
 ### Workflows — `.github/workflows/`
 
-| File                             | Purpose                                 |
-| -------------------------------- | --------------------------------------- |
-| `ci.yml`                         | Vitest + npm audit + typecheck          |
-| `ci-pipeline.yml`                | Jest + ESLint + Prettier                |
-| `generate-and-validate.yml`      | Platform schema generation + validation |
-| `my-agentic-team-board-sync.yml` | GitHub Project board synchronization    |
-| `release.yml`                    | Release workflow                        |
-| `storybook.yml`                  | Storybook build + deploy                |
+| File                             | Purpose                                                      |
+| -------------------------------- | ------------------------------------------------------------ |
+| `ci.yml`                         | Vitest + npm audit + typecheck                               |
+| `ci-pipeline.yml`                | CI pipeline for lint, tests, security, and deployment checks |
+| `generate-and-validate.yml`      | Platform schema generation + validation                      |
+| `my-agentic-team-board-sync.yml` | GitHub Project board synchronization                         |
+| `release.yml`                    | Release workflow                                             |
+| `storybook.yml`                  | Storybook build + deploy                                     |
 
 ---
 
@@ -105,7 +107,6 @@ system itself.
 | `data-dictionary.md`         | Data entity catalog                                | System maintainers  | Yes           |
 | `domain-glossary.md`         | Domain terminology reference                       | System maintainers  | Yes           |
 | `file-system-reference.md`   | This file                                          | System maintainers  | Yes           |
-| `ga-definition.md`           | GA readiness criteria & deployment profiles        | System maintainers  | Yes           |
 | `index.md`                   | GitHub Pages landing page                          | System maintainers  | Yes           |
 | `mode-guide.md`              | CREATE vs AUDIT mode guidance                      | System maintainers  | No            |
 | `operating-handbook.md`      | Day-to-day operational procedures                  | System maintainers  | Yes           |
@@ -146,6 +147,16 @@ Key contracts:
 
 This is your primary communication channel with the agent team. See
 `docs/help/decisions.md` for details.
+
+### Governance artifacts — `BusinessDocs/`
+
+| Path                            | Purpose                                           | Written by         | Safe to edit? |
+| ------------------------------- | ------------------------------------------------- | ------------------ | ------------- |
+| `BusinessDocs/ga-definition.md` | Authoritative GA governance and go/no-go criteria | System maintainers | Yes           |
+
+This file is the source of truth for GA readiness, deployment profile, and
+release gating. The docs site may contain a summary page, but the full SDLC
+artifact belongs in `BusinessDocs/`.
 
 ### Guardrails — `templates/sdlc/guardrails/`
 
@@ -432,8 +443,7 @@ src/webapp/ui/
 
 ### Unit tests — `tests/unit/` (48 files)
 
-All unit tests live here. Run with Vitest (`npm run test:vitest`) or Jest
-(`npx jest --ci` for the Jest subset).
+All unit tests live here. Run them with Vitest from the repository root.
 
 Key test files:
 

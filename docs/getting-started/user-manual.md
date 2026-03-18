@@ -1,7 +1,9 @@
 ---
 layout: default
 title: User Manual
+parent: Getting Started
 nav_order: 2
+permalink: /user-manual/
 description: End-user guide for the Questionnaire & Decisions Manager web application.
 ---
 
@@ -364,7 +366,6 @@ sprint (configurable via decisions).
 ### Tests fail after pulling updates
 
 ```bash
-cd .github
 npm install          # Update dev dependencies
 npm test             # Re-run tests
 npm run lint         # Check for lint issues

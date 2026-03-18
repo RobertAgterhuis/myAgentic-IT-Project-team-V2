@@ -22,7 +22,7 @@ describe('Canonical agent schema validation', () => {
   });
 
   it('contains all agents listed in agent-index.md', () => {
-    const indexPath = path.resolve(__dirname, '..', '..', 'docs', 'agent-index.md');
+    const indexPath = path.resolve(__dirname, '..', '..', 'docs', 'reference', 'agent-index.md');
     const indexText = fs.readFileSync(indexPath, 'utf8');
     const ids = new Set();
 

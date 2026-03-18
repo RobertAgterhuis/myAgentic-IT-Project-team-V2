@@ -259,5 +259,5 @@ inventory** are your primary references during implementation.
 - [Quality Gates](quality-gates.md) — Critic + Risk validation that must pass
   before synthesis
 - [Sprints](sprints.md) — how synthesis outputs feed into sprint planning
-- [File System Reference](../../docs/file-system-reference.md) — where all
+- [File System Reference](../../docs/reference/file-system-reference.md) — where all
   synthesis files live on disk

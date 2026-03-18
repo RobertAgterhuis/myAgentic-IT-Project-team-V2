@@ -12,8 +12,7 @@
 
 ## Testing
 
-- [ ] Root tests pass (`npm test` — Jest, 363 tests)
-- [ ] Vitest tests pass (`npm run test:vitest` — 1239 tests)
+- [ ] All tests pass (`npm test` — Vitest)
 - [ ] New tests added for new functionality
 - [ ] Manual testing completed
 
@@ -28,5 +27,6 @@
 - [ ] No secrets or credentials committed (`detectSecrets()` check)
 - [ ] Security headers maintained on any new endpoints
 - [ ] Follows existing code conventions (ESLint 0 errors)
-- [ ] Documentation updated if needed
+- [ ] Documentation updated (if changing APIs, architecture, dependencies, or config)
+- [ ] `docs/` files checked for accuracy against this change
 - [ ] No `UNCERTAIN:` or `INSUFFICIENT_DATA:` items left unresolved

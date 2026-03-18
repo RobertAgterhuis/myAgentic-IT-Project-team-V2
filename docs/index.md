@@ -8,79 +8,67 @@ description:
 permalink: /
 ---
 
-# myAgentic-IT-Project-team
-
-A multi-agent system for creating complete, production-ready software solutions
-through a structured process across four phases — from requirements to
+A multi-agent system of 38+ specialized AI agents that creates complete,
+production-ready software solutions — or audits existing ones — through a
+structured four-phase analysis followed by supervised sprint-by-sprint
 implementation.
 
 ---
 
-## Documentation
+## Start Here
 
-| Document                                   | Description                                                          |
-| ------------------------------------------ | -------------------------------------------------------------------- |
-| [User Manual](user-manual)                 | Getting started, Command Center, questionnaires, decisions, commands |
-| [Technical Manual](technical-manual)       | Architecture, API reference, data model, configuration, security     |
-| [Data Dictionary](data-dictionary)         | Entity catalog, field schemas, ER diagram, validation rules          |
-| [Contributing Guide](contributing)         | Development setup, coding standards, PR process                      |
-| [Brand Guidelines](brand/brand-guidelines) | Colors, typography, design tokens, voice & tone                      |
+Use this documentation site as a hub, not a linear manual. Pick the section
+that matches what you are trying to do.
 
----
-
-## Quick Start
-
-### Prerequisites
-
-- **VS Code** with
-  [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
-- **Node.js ≥ 18** — [download here](https://nodejs.org/)
-- **Git** — [download here](https://git-scm.com/)
-
-### Launch
-
-```bash
-npm start
-```
-
-Open [http://127.0.0.1:3000](http://127.0.0.1:3000) — the server runs locally,
-no data leaves your machine.
-
-### Your First Project
-
-1. Open the **Command Center** tab.
-2. Click **CREATE** to start a new solution, or **AUDIT** to analyze existing
-   software.
-3. Enter a project name and paste your requirements.
-4. Click **Queue Command** — the command is copied to your clipboard.
-5. Paste into **Copilot Chat** in VS Code.
-
-Type **CONTINUE** after each agent completes to advance the pipeline.
+| If you want to…                          | Start here                          |
+| ---------------------------------------- | ----------------------------------- |
+| Run the platform for the first time      | [Getting Started](getting-started/) |
+| Understand the system design             | [Architecture](architecture/)       |
+| Look up technical details                | [Reference](reference/)             |
+| Operate, review, or release the platform | [Operations](operations/)           |
+| Contribute changes                       | [Contributing Guide](contributing)  |
 
 ---
 
-## How It Works
+## Documentation Areas
 
-The system uses specialized AI agents organized into phases:
-
-1. **Phase 1 — Requirements & Strategy** — Business Analyst, Domain Expert,
-   Sales Strategist, Financial Analyst, Product Manager
-2. **Phase 2 — Architecture & Design** — Software Architect, Senior Developer,
-   DevOps Engineer, Security Architect, Data Architect, Legal Counsel
-3. **Phase 3 — Experience Design** — UX Researcher, UX Designer, UI Designer,
-   Accessibility Specialist, Content Strategist, Localization Specialist
-4. **Phase 4 — Brand & Growth** — Brand Strategist, Growth Marketer, CRO
-   Specialist
-5. **Synthesis** — Cross-team integration and final reports
-6. **Phase 5 — Implementation** — Sprint-by-sprint coding with automated
-   testing, PR review, and KPI tracking
-
-Each phase produces **Analysis → Recommendations → Sprint Plan → Guardrails**,
-validated by Critic and Risk agents before handoff.
+| Area                                       | What belongs there                                                        |
+| ------------------------------------------ | ------------------------------------------------------------------------- |
+| [Getting Started](getting-started/)        | Quick start, user manual, operating modes, pilot onboarding, MCP setup    |
+| [Architecture](architecture/)              | Current system shape and how it evolved over milestones                   |
+| [Reference](reference/)                    | Deep technical references, terminology, repository structure, agent index |
+| [Operations](operations/)                  | Runbooks, release readiness, GA criteria, CI review, privacy              |
+| [API Reference](api/)                      | Endpoint-level contracts and examples                                     |
+| [Security](security/)                      | Security model, data inventory, and deployment considerations             |
+| [Help](help/)                              | Task-oriented how-to articles and troubleshooting                         |
+| [UX](ux/)                                  | UX, accessibility, and interface-related guidance                         |
+| [Brand Guidelines](brand/brand-guidelines) | Design tokens, colors, typography, and voice/tone                         |
 
 ---
 
-## Links
+## Suggested Paths
+
+### First-time user
+
+1. Read [Quick Start](getting-started/quick-start)
+2. Continue with the [User Manual](getting-started/user-manual)
+3. Use [Help](help/) if you get stuck
+
+### Contributor
+
+1. Read [Contributing Guide](contributing)
+2. Use [Reference](reference/) for detailed implementation context
+3. Review [Architecture](architecture/) before larger structural changes
+
+### Operator or reviewer
+
+1. Start in [Operations](operations/)
+2. Review [Security](security/)
+3. Use [API Reference](api/) for endpoint-level validation
+
+---
+
+## External Links
 
 - [GitHub Repository](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team)
 - [Security Policy](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team/blob/main/SECURITY.md)

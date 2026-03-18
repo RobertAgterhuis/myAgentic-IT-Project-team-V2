@@ -1,6 +1,8 @@
 ---
 title: Operating Handbook
-nav_order: 13
+parent: Operations
+nav_order: 1
+permalink: /operating-handbook/
 description: Day-to-day operational procedures for running the Agentic SDLC Platform.
 ---
 
@@ -132,7 +134,7 @@ Chat — the Orchestrator will re-create it from the last known phase outputs.
 npm install
 
 # Run tests
-npm test               # Vitest (1370 tests)
+npm test               # Vitest
 ```
 
 If `contrast.test.js` fails, verify that `src/webapp/brand/design-tokens.json`
@@ -255,5 +257,5 @@ npm test
 
 ---
 
-_For more details, see the [User Manual](../docs/user-manual.md) and
-[Technical Manual](../docs/technical-manual.md)._
+_For more details, see the [User Manual](../getting-started/user-manual) and
+[Technical Manual](../reference/technical-manual)._

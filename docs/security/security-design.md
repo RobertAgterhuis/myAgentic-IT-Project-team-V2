@@ -16,7 +16,7 @@ description: Security architecture, threat model, and middleware controls.
 | **Owner**         | Robert Agterhuis                                                            |
 | **Audit Finding** | F-02 (CRITICAL) — Security hardening beyond localhost is not fully designed |
 | **Issue**         | #138                                                                        |
-| **Depends on**    | `docs/ga-definition.md` (F-01 — deployment profiles)                        |
+| **Depends on**    | `BusinessDocs/ga-definition.md` (F-01 — deployment profiles)                |
 
 ---
 
@@ -57,8 +57,9 @@ Three deployment tiers are defined. v1 GA targets **Profile 1** only.
 | **Logging**                 | Centralized structured logs with user attribution       |
 | **Backup**                  | Automated daily backup of session/data directories      |
 
-**Current implementation status:** ❌ Not implemented. Requires: auth
-middleware, user context, HTTPS support, session isolation.
+**Current implementation status:** Partial. Authentication, RBAC, and user
+context are implemented; HTTPS termination and stronger multi-user isolation
+still require deployment infrastructure.
 
 ### Profile 3 — Internet-Exposed (v2.0+, post-GA)
 
@@ -75,8 +76,10 @@ middleware, user context, HTTPS support, session isolation.
 | **Backup**                  | Geo-redundant automated backups with point-in-time recovery |
 | **Additional**              | Rate limiting, WAF, DDoS protection, CSP hardening          |
 
-**Current implementation status:** ❌ Not implemented. Requires: full auth
-stack, database layer, cloud infrastructure, compliance certification.
+**Current implementation status:** Partial. The application now includes
+GitHub OAuth, RBAC, rate limiting, CSP, and audit logging. Internet-exposed
+deployment still requires managed TLS, cloud secret management, stronger data
+stores, and formal compliance controls.
 
 ---
 

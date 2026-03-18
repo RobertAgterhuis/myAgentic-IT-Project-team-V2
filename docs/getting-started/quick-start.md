@@ -1,6 +1,8 @@
 ---
 title: Quick Start
-nav_order: 5
+parent: Getting Started
+nav_order: 1
+permalink: /quick-start/
 description: Get the Agentic SDLC Platform running and create your first project in under 5 minutes.
 ---
 
@@ -69,8 +71,7 @@ and decision tracking tabs.
 npm test
 ```
 
-This runs the full Vitest suite (2,400+ tests across 96 files). All tests should
-pass with **0 failures**.
+This runs the full Vitest suite. All tests should pass with **0 failures**.
 
 ## Step 5: Create Your First Project
 

@@ -7,16 +7,16 @@ description: Data categories, retention model, and PII inventory.
 
 # Data Inventory — Agentic SDLC Platform
 
-| Field             | Value                                                                                           |
-| ----------------- | ----------------------------------------------------------------------------------------------- |
-| **Document**      | Data Inventory and Retention Model                                                              |
-| **Version**       | 1.0                                                                                             |
-| **Status**        | DRAFT                                                                                           |
-| **Created**       | 2026-03-12                                                                                      |
-| **Owner**         | Robert Agterhuis                                                                                |
-| **Audit Finding** | F-03 (CRITICAL) — Privacy/compliance operations are not finished                                |
-| **Issue**         | #139                                                                                            |
-| **Depends on**    | `docs/ga-definition.md` (deployment profile), `docs/security/security-design.md` (data-at-rest) |
+| Field             | Value                                                                                                   |
+| ----------------- | ------------------------------------------------------------------------------------------------------- |
+| **Document**      | Data Inventory and Retention Model                                                                      |
+| **Version**       | 1.0                                                                                                     |
+| **Status**        | DRAFT                                                                                                   |
+| **Created**       | 2026-03-12                                                                                              |
+| **Owner**         | Robert Agterhuis                                                                                        |
+| **Audit Finding** | F-03 (CRITICAL) — Privacy/compliance operations are not finished                                        |
+| **Issue**         | #139                                                                                                    |
+| **Depends on**    | `BusinessDocs/ga-definition.md` (deployment profile), `docs/security/security-design.md` (data-at-rest) |
 
 ---
 

@@ -1,6 +1,8 @@
 ---
 title: Privacy Policy
-nav_order: 18
+parent: Operations
+nav_order: 5
+permalink: /privacy-policy/
 description: Privacy policy for the localhost single-operator deployment.
 ---
 
@@ -136,7 +138,7 @@ We do not knowingly process data from minors.
 ## 8. Changes to This Policy
 
 Changes to this policy are tracked in Git history. Check the commit log for
-`docs/privacy-policy.md` to see all updates.
+`docs/operations/privacy-policy.md` to see all updates.
 
 ---
 

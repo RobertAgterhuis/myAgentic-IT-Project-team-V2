@@ -1,6 +1,8 @@
 ---
 title: Agent Index
-nav_order: 16
+parent: Reference
+nav_order: 5
+permalink: /agent-index/
 description: Lookup table for all agent skill files, guardrail scopes, and contract paths.
 ---
 

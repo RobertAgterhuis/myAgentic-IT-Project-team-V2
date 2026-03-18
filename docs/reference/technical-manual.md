@@ -1,7 +1,9 @@
 ---
 layout: default
 title: Technical Manual
-nav_order: 3
+parent: Reference
+nav_order: 1
+permalink: /technical-manual/
 description:
   Developer reference for the MCP server, HTTP endpoints, file-based storage,
   and test infrastructure.
@@ -9,7 +11,7 @@ description:
 
 # Technical Manual — myAgentic-IT-Project-team
 
-> Version 2.0 | Last updated: 2026-03-30 (Sprint 2 Day 6)
+> Version 3.0 | Last updated: 2026-03-18 (M34 Documentation Remediation)
 
 This manual covers the server architecture, API reference, data model,
 configuration, deployment, and development practices for the Questionnaire &
@@ -45,19 +47,31 @@ Decisions Manager web application.
 └─────────────────────────────────────────────────────┘
                         │
 ┌───────────────────────┼─────────────────────────────┐
-│            server.ts (Coordinator, 189 LOC)          │
-│  Imports + config + shared state + ctx + routing     │
+│            Fastify 5 Application (server.ts)          │
+│  Plugin architecture · typed context · 127.0.0.1:3000│
 │                                                      │
 │  ┌────────────────┐  ┌──────────────────────────┐    │
-│  │ middleware.ts   │  │ routes/                   │   │
-│  │ (pure funcs)   │  │  questionnaires.ts        │   │
-│  │ sanitization   │  │  decisions.ts             │   │
-│  │ logging        │  │  commands.ts              │   │
-│  │ security hdrs  │  │  progress.ts              │   │
-│  │ error handling │  │  misc.ts (SSE, metrics,   │   │
-│  └────────────────┘  │   export, help, health,   │   │
-│                       │   analytics, audit, static)│  │
+│  │ plugins/       │  │ routes/                   │   │
+│  │  body-parser   │  │  questionnaires.ts        │   │
+│  │  rate-limit    │  │  decisions.ts             │   │
+│  │  security-hdrs │  │  commands.ts              │   │
+│  │  index.ts      │  │  progress.ts              │   │
+│  └────────────────┘  │  misc.ts (SSE, metrics,   │   │
+│                       │   export, help, health,   │   │
+│  ┌────────────────┐  │   analytics, audit, static)│  │
+│  │ auth.ts        │  └──────────────────────────┘   │
+│  │ GitHub OAuth   │                                  │
+│  │ RBAC           │  ┌──────────────────────────┐   │
+│  │ session cookies│  │ context.ts               │   │
+│  └────────────────┘  │ typed request context     │   │
 │                       └──────────────────────────┘   │
+│  ┌────────────────┐                                  │
+│  │ middleware.ts  │  ┌──────────────────────────┐   │
+│  │ (pure funcs)   │  │ redis.ts (optional)      │   │
+│  │ sanitization   │  │ session-store-redis.ts   │   │
+│  │ logging        │  │ sse-manager-redis.ts     │   │
+│  │ error handling │  │ bullmq queue (optional)  │   │
+│  └────────────────┘  └──────────────────────────┘   │
 │      │                                               │
 │  ┌───┴───┐ ┌────────┐ ┌────────┐ ┌───────────────┐  │
 │  │models │ │ cache  │ │schemas │ │  audit         │  │
@@ -77,29 +91,32 @@ Decisions Manager web application.
 
 ### Design Principles
 
-- **Minimal runtime dependencies** — Node.js built-in modules (`http`, `fs`,
-  `path`, `url`, `crypto`) for the web UI, plus MCP SDK, Ajv (schema
-  validation), and tsx (TypeScript runner).
+- **Fastify 5 plugin architecture** — Encapsulated plugins for rate limiting,
+  security headers, body parsing, CORS, static file serving, and Swagger docs.
+- **Typed context** — `context.ts` provides a strongly-typed request context
+  shared across route handlers.
 - **MCP integration** — MCP server uses `@modelcontextprotocol/sdk` for
   cross-IDE support via stdio transport.
 - **Store abstraction** — All filesystem I/O goes through the Store interface.
   `FileStore` for production, `InMemoryStore` for testing.
-- **Atomic writes** — `safeWriteSync()` (server.ts) and `store.writeFile()`
-  (mcp-server.ts) write to a temp file, then rename. A backup is created before
-  overwriting existing files.
-- **Unified store writes** — As of SP-2, `mcp-server.ts` delegates all writes
-  through `store.writeFile()` instead of its own `safeWrite()` implementation,
-  ensuring identical backup, atomic-rename, and directory-creation behavior
-  across both entry points.
+- **GitHub OAuth + RBAC** — `auth.ts` handles GitHub OAuth authentication;
+  role-based access control enforces per-endpoint permissions.
+- **Optional Redis** — Redis is used for session storage (`session-store-redis.ts`),
+  SSE pub/sub (`sse-manager-redis.ts`), and BullMQ job queues when available.
+  The system gracefully degrades to in-memory alternatives.
+- **Atomic writes** — `store.writeFile()` writes to a temp file, then rename.
+  A backup is created before overwriting existing files.
+- **Unified store writes** — `mcp-server.ts` delegates all writes through
+  `store.writeFile()` instead of its own implementation, ensuring identical
+  backup, atomic-rename, and directory-creation behavior across both entry points.
 - **Shared file locking** — All JSON write paths are serialized per file via
   `withFileLock()` from `file-lock.ts`. Uses promise-chaining (no OS-level
-  locks) to prevent concurrent write corruption. Both `server.ts` (11 call
-  sites) and `mcp-server.ts` (6 call sites) share the same lock Map through
-  Node.js require cache.
+  locks) to prevent concurrent write corruption.
 - **Localhost only** — Server binds to `127.0.0.1:3000`. No external network
   exposure.
 - **React SPA** — Vite + React + TypeScript front-end in `src/webapp/ui/`.
   Built with TanStack Query, Zustand, and Tailwind CSS.
+- **Structured logging** — pino JSON logger for structured request/error logging.
 
 ---
 
@@ -130,26 +147,61 @@ corruption across both server.ts and mcp-server.ts.
 
 **Added in:** SP-1 (TECH-01 — P2-R01: file corruption prevention).
 
-### server.ts (~189 lines) — Coordinator
+### server.ts — Fastify Application Factory
 
-The main application coordinator. Initializes shared state, builds the context
-object, wires route modules, and creates the HTTP server.
+The main Fastify application factory. Registers plugins, builds the typed
+context, wires route modules, and creates the Fastify server instance.
 
-**Decomposed in:** SP-4 (TECH-02 — server.ts decomposition). Previously ~1370
-LOC.
+**Key exports:**
 
-**Key exports:** (backward-compatible with mcp-server.ts and test imports)
+- `buildApp()` — Creates and configures the Fastify application
+- `server` — The Fastify server instance
 
-- `server` — Node.js `http.Server` instance
-- `withFileLock(filePath, fn)` — Re-exported from `file-lock.ts`
-- `sanitizeMarkdown(text)`, `sanitizeQID(text)`, `detectSecrets(text)`,
-  `checkSecretsInBody(body, fields)`, `safePath(base, relative)`,
-  `setSecurityHeaders(res)` — Re-exported from `middleware.ts`
-- `structuredLog(level, message, fields)` — Re-exported from `middleware.ts`
-- `recordMetric(method, path, duration, status)` — Records request metric
-- `computePercentiles(arr)` — Returns `{ p50, p95, p99 }`
-- `sseNotify(channel, data)` — Broadcasts SSE event to connected clients
-- `_sseClients`, `_cache`, `_metrics`, `_audit` — Shared state instances
+### app.ts — Application Bootstrap
+
+Application entry point that bootstraps the Fastify server with all plugins
+and routes registered.
+
+### context.ts — Typed Request Context
+
+Provides a strongly-typed request context object shared across all route
+handlers. Encapsulates store, cache, audit, SSE manager, metrics, and
+configuration.
+
+### auth.ts — Authentication & Authorization
+
+GitHub OAuth authentication flow with session cookie management and role-based
+access control (RBAC).
+
+**Key features:**
+
+- GitHub OAuth callback handling
+- Session cookie creation and validation
+- Role-based permission checks per endpoint
+- Session store abstraction (Redis or in-memory)
+
+### plugins/ — Fastify Plugin Modules
+
+| Plugin                | Purpose                                      |
+| --------------------- | -------------------------------------------- |
+| `body-parser.ts`      | JSON body parsing with size limits           |
+| `rate-limit.ts`       | Per-IP rate limiting via @fastify/rate-limit |
+| `security-headers.ts` | CSP, X-Frame-Options, HSTS security headers  |
+| `index.ts`            | Plugin registration orchestrator             |
+
+### redis.ts — Redis Client
+
+Optional Redis client with graceful degradation. When Redis is not configured
+(no `REDIS_URL` env var), the system falls back to in-memory alternatives.
+
+### session-store-redis.ts — Redis Session Store
+
+Redis-backed session storage for multi-instance deployments.
+
+### sse-manager-redis.ts — Redis SSE Pub/Sub
+
+Redis pub/sub-backed SSE manager for broadcasting events across multiple
+server instances.
 
 ### middleware.ts (~262 lines)
 
@@ -191,7 +243,7 @@ map (`{ 'METHOD /path': handler }`).
 MCP (Model Context Protocol) server for cross-IDE integration. Exposes the
 Command Center functionality as MCP tools and resources via stdio transport.
 
-**Dependency:** `@modelcontextprotocol/sdk` (the only runtime npm dependency).
+**Dependency:** `@modelcontextprotocol/sdk` for MCP protocol support.
 
 **Concurrency:** All 6 write paths use `withFileLock()` from `file-lock.ts` to
 serialize file mutations, sharing the same lock Map as `server.ts`.
@@ -944,19 +996,18 @@ directory.
 ### Localhost (Production)
 
 ```bash
-# Install dependencies (only needed once, from .github/ directory)
-cd .github
+# Install dependencies
 npm install
 
-# Start the server (from repo root — also works via root package.json)
+# Start the server
 npm start
 # or:
 npx tsx src/webapp/server.ts
 ```
 
-The server is designed for **localhost use only**. It does not implement
-authentication, rate limiting, or TLS — these would be needed for any
-network-exposed deployment.
+The server is designed for **localhost use only**. Authentication (GitHub OAuth)
+and rate limiting are included, but TLS is not — a reverse proxy (nginx, Caddy)
+is required for any network-exposed deployment.
 
 ### Docker Compose (Full Stack)
 
@@ -1120,11 +1171,10 @@ tests/
 
 ### Running Tests
 
-All dev commands run from the `.github/` directory:
+All dev commands run from the repository root:
 
 ```bash
-cd .github
-npm test                  # All tests
+npm test                  # All tests (Vitest)
 npm run test:coverage     # With coverage report
 npm run test:watch        # Watch mode
 npx vitest run tests/unit # Only unit tests
@@ -1139,16 +1189,16 @@ Configured in `vitest.config.mjs`:
 - Functions: ≥ 70%
 - Lines: ≥ 70%
 
-### Webapp Test Suite (Root)
+### Full Test Suite
 
-The root project uses **Jest 29** with an 80% coverage gate for the webapp
-server and middleware.
+The project uses **Vitest** for all tests. The suite covers unit, integration,
+smoke, and end-to-end tests.
 
 #### Test Structure
 
 ```
 tests/
-  example.test.js                        — Baseline validation (15 tests)
+  example.test.js                        — Baseline validation
   unit/
     middleware.test.js                   — Pure middleware functions (27 tests)
     matomo-analytics.test.js             — Matomo Docker stack validation (32 tests)
@@ -1168,23 +1218,21 @@ tests/
     landing.smoke.test.js               — HTTP-based smoke tests (29 tests)
 ```
 
-**Total: 323 tests across 15 suites.**
-
-#### Running Webapp Tests
+#### Running Tests
 
 ```bash
 # From repository root:
 npm test                  # All tests (unit + integration + smoke)
-npm run test:coverage     # With coverage report (80% gate)
+npm run test:coverage     # With coverage report
 npm run test:integration  # Integration tests only
 npm run test:smoke        # Smoke tests only
 ```
 
 #### Smoke Test Architecture (SP-11-613)
 
-HTTP-based tests using Node `http` module + Jest. No Playwright dependency — the
-smoke suite validates critical user journeys at the HTTP level using the same
-server-import pattern proven in integration tests.
+HTTP-based tests using Vitest. No Playwright dependency — the smoke suite
+validates critical user journeys at the HTTP level using the same server-import
+pattern proven in integration tests.
 
 **8 smoke test groups (29 tests):**
 
@@ -1209,8 +1257,7 @@ uploaded with 30-day retention.
 A+AA scan + Lighthouse accessibility audit with a 90% score threshold. Triggers
 on `main` push and all PRs.
 
-Actual coverage (as of Sprint 1 Close): **87.40% statements, 76.45% branches,
-92.15% functions, 88.94% lines** (649 tests across 22 test files).
+Run `npm run test:coverage` for current coverage metrics.
 
 ### Test Conventions
 
@@ -1246,7 +1293,7 @@ security scanning, and deployment for all PRs and pushes to `main`.
 | Job | Name                 | Trigger           | Purpose                                         |
 | --- | -------------------- | ----------------- | ----------------------------------------------- |
 | 1   | `lint`               | All pushes + PRs  | ESLint + Prettier code quality                  |
-| 2   | `test`               | All pushes + PRs  | Jest unit tests + 80% coverage gate             |
+| 2   | `test`               | All pushes + PRs  | Vitest unit tests + coverage gate               |
 | 3   | `security`           | All pushes + PRs  | Gitleaks secret scan + Trivy vulnerability scan |
 | 4   | `build`              | After Jobs 1-3    | `npm run build` + Docker image (GHCR)           |
 | 5   | `deploy-staging`     | `main` push only  | Docker Compose health-checked deployment        |
@@ -1373,15 +1420,14 @@ All empty state text is sourced from the `STRINGS` constant for i18n readiness.
 
 ```bash
 # Clone
-git clone https://github.com/RobertAgterhuis/myAgentic-IT-Project-team.git
-cd myAgentic-IT-Project-team
+git clone https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2.git
+cd myAgentic-IT-Project-team-V2
 
-# Install (tooling lives in .github/)
-cd .github
+# Install
 npm install
 
 # Verify
-npm test        # Should show 506 passing
+npm test        # Vitest — all tests should pass
 npm run lint    # Should show 0 errors
 
 # Develop

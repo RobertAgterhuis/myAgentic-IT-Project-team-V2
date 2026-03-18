@@ -548,7 +548,7 @@ curl -X PATCH http://127.0.0.1:3000/api/milestones/milestone-20260309-002/archiv
 
 - File-based storage (JSON)
 - No concurrency locking (last-write-wins)
-- No user authentication/authorization
+- Authentication and RBAC apply at the webapp layer
 - No pagination for large milestone lists
 
 **Planned (SP-9.2+)**:

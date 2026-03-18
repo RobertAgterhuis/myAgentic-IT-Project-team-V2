@@ -1,6 +1,8 @@
 ---
 title: Domain Glossary
-nav_order: 11
+parent: Reference
+nav_order: 3
+permalink: /domain-glossary/
 description: Protocol markers, output types, orchestration states, and domain terms used across the platform.
 ---
 

@@ -1,6 +1,8 @@
 ---
 title: MCP Server Setup
-nav_order: 6
+parent: Getting Started
+nav_order: 5
+permalink: /mcp-setup/
 description: Configure the MCP server for VS Code, Visual Studio, JetBrains, and other MCP-compatible IDEs.
 ---
 

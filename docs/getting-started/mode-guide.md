@@ -1,6 +1,8 @@
 ---
 title: Mode Guide
-nav_order: 12
+parent: Getting Started
+nav_order: 3
+permalink: /mode-guide/
 description: Differences between CREATE mode (new software) and AUDIT mode (existing software analysis).
 ---
 

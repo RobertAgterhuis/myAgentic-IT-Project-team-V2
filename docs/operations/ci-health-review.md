@@ -1,3 +1,15 @@
+# front matter inserted for navigation
+
+---
+
+title: CI Health Review
+parent: Operations
+nav_order: 4
+permalink: /ci-health-review/
+description: Monthly review process and baseline indicators for CI pipeline health.
+
+---
+
 # CI Health Dashboard — Monthly Review Process
 
 > **Owner:** DevOps Engineer | **Frequency:** Monthly (1st week) | **Ref:**
@@ -55,9 +67,9 @@
 | Metric              | Value                                          |
 | ------------------- | ---------------------------------------------- |
 | CI workflows        | `ci.yml`, `ci-pipeline.yml`, `storybook.yml`   |
-| Unit tests          | ~1370 passing                                  |
-| Integration tests   | 352 passing (13 files)                         |
-| Smoke tests         | 42 passing (2 files)                           |
+| Unit tests          | 3,000+ passing                                 |
+| Integration tests   | 350+ passing                                   |
+| Smoke tests         | 40+ passing                                    |
 | Coverage thresholds | 75% lines / 75% stmts / 75% fns / 60% branches |
 | Disabled gates      | None (all re-enabled per M16)                  |
 | Quarantined tests   | 2 excluded (git-adapter, testing-adapter)      |

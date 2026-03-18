@@ -1,6 +1,8 @@
 ---
 title: Release Checklist
-nav_order: 15
+parent: Operations
+nav_order: 2
+permalink: /release-checklist/
 description: Pre-release verification checklist for every version bump.
 ---
 
@@ -18,15 +20,15 @@ description: Pre-release verification checklist for every version bump.
 
 ## Pre-Release
 
-- [ ] All tests pass: `npm test` (1370 Vitest tests)
+- [ ] All tests pass: `npm test` (Vitest)
 - [ ] ESLint clean: `npm run lint` reports 0 errors
-- [ ] Coverage thresholds met (`npm run test:vitest:coverage` — 88%+ statements)
+- [ ] Coverage thresholds met (`npm run test:coverage` — 75%+ enforced)
 - [ ] `npm audit` shows no critical/high vulnerabilities
 - [ ] Secret scan passes (`detectSecrets()` on all staged files)
 - [ ] CHANGELOG.md updated with all changes since last release
 - [ ] Version bumped in `package.json`
 - [ ] All `UNCERTAIN:` and `INSUFFICIENT_DATA:` items resolved or documented
-- [ ] GA go/no-go criteria checked (see `docs/phase-5/ga-definition.md`
+- [ ] GA go/no-go criteria checked (see `BusinessDocs/ga-definition.md`
       Section 3)
 
 ## Release

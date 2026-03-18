@@ -193,7 +193,7 @@ the agent. Type `CONTINUE` and the Orchestrator will detect the gap.
 
 ```bash
 npm install          # Update dev dependencies
-npm test             # Re-run Vitest suite (1370 tests)
+npm test             # Re-run Vitest suite
 npm run lint         # Check for lint issues
 ```
 

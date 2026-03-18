@@ -132,7 +132,7 @@ Chat — the Orchestrator will re-create it from the last known phase outputs.
 npm install
 
 # Run tests
-npm test               # Vitest (1370 tests)
+npm test               # Vitest
 ```
 
 If `contrast.test.js` fails, verify that `src/webapp/brand/design-tokens.json`

@@ -86,7 +86,7 @@ has a measurable threshold.
 | --- | ----------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------- |
 | G1  | All CRITICAL audit findings resolved            | F-01, F-02, F-03 closed                                              | Issue status = CLOSED on GitHub                         |
 | G2  | All HIGH audit findings resolved                | F-04, F-05, F-06, F-07 closed or mitigated                           | Issue status = CLOSED or MITIGATED with documented plan |
-| G3  | Test suite passes                               | 0 failures across both Jest and Vitest                               | `npm test` (root) + `npm test` (.github/) exit code 0   |
+| G3  | Test suite passes                               | 0 failures across the Vitest suite                                   | `npm test` exit code 0                                  |
 | G4  | Evidence consistency verified                   | 0 discrepancies between README and actual metrics                    | Manual review against truth-source checklist            |
 | G5  | First release published                         | GitHub Releases shows ≥1 release with tag, notes, known issues       | Release exists on GitHub Releases page                  |
 | G6  | Security design documented                      | `docs/security/security-design.md` exists with 3 deployment profiles | File exists and reviewed                                |

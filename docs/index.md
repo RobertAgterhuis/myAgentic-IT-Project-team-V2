@@ -10,21 +10,26 @@ permalink: /
 
 # myAgentic-IT-Project-team
 
-A multi-agent system for creating complete, production-ready software solutions
-through a structured process across four phases — from requirements to
+A multi-agent system of 38+ specialized AI agents that creates complete,
+production-ready software solutions — or audits existing ones — through a
+structured four-phase analysis followed by supervised sprint-by-sprint
 implementation.
 
 ---
 
 ## Documentation
 
-| Document                                   | Description                                                          |
-| ------------------------------------------ | -------------------------------------------------------------------- |
-| [User Manual](user-manual)                 | Getting started, Command Center, questionnaires, decisions, commands |
-| [Technical Manual](technical-manual)       | Architecture, API reference, data model, configuration, security     |
-| [Data Dictionary](data-dictionary)         | Entity catalog, field schemas, ER diagram, validation rules          |
-| [Contributing Guide](contributing)         | Development setup, coding standards, PR process                      |
-| [Brand Guidelines](brand/brand-guidelines) | Colors, typography, design tokens, voice & tone                      |
+| Document                                         | Description                                                          |
+| ------------------------------------------------ | -------------------------------------------------------------------- |
+| [User Manual](user-manual)                       | Getting started, Command Center, questionnaires, decisions, commands |
+| [Technical Manual](technical-manual)             | Architecture, API reference, data model, configuration, security     |
+| [Architecture Overview](architecture)            | Layer diagram, data flow, module inventory, tech decisions           |
+| [Architecture Evolution](architecture-evolution) | Architectural changes by milestone (M29–M33)                         |
+| [Data Dictionary](data-dictionary)               | Entity catalog, field schemas, ER diagram, validation rules          |
+| [Contributing Guide](contributing)               | Development setup, coding standards, PR process                      |
+| [MCP Setup](mcp-setup)                           | Cross-IDE MCP server configuration and troubleshooting               |
+| [Release Checklist](release-checklist)           | Pre-release verification steps                                       |
+| [Brand Guidelines](brand/brand-guidelines)       | Colors, typography, design tokens, voice & tone                      |
 
 ---
 
@@ -37,9 +42,12 @@ implementation.
 - **Node.js ≥ 18** — [download here](https://nodejs.org/)
 - **Git** — [download here](https://git-scm.com/)
 
-### Launch
+### Install & Launch
 
 ```bash
+npm install
+cd src/webapp/ui && npm install && cd ../../..
+npm run build
 npm start
 ```
 
@@ -56,6 +64,54 @@ no data leaves your machine.
 5. Paste into **Copilot Chat** in VS Code.
 
 Type **CONTINUE** after each agent completes to advance the pipeline.
+
+---
+
+## Technology Stack
+
+| Layer     | Technology                                                             |
+| --------- | ---------------------------------------------------------------------- |
+| Runtime   | Node.js ≥ 18                                                           |
+| Server    | Fastify 5 with plugin architecture (cors, rate-limit, static, swagger) |
+| Auth      | GitHub OAuth + session cookies + RBAC                                  |
+| Queue     | BullMQ (optional Redis-backed, graceful degradation to sync)           |
+| Data      | File-based JSON/Markdown + better-sqlite3 + optional Redis             |
+| MCP       | Model Context Protocol via stdio transport                             |
+| Testing   | Vitest (large automated test suite, coverage 75%+ enforced)            |
+| Linting   | ESLint flat config (0 errors)                                          |
+| AI Agents | GitHub Copilot agents in VS Code, Visual Studio, JetBrains             |
+
+---
+
+## Available Commands
+
+| Command                                          | Purpose                                             |
+| ------------------------------------------------ | --------------------------------------------------- |
+| `CREATE [project]`                               | Build a complete new software solution              |
+| `AUDIT [project]`                                | Comprehensive analysis of existing software         |
+| `CREATE BUSINESS\|TECH\|UX\|MARKETING [project]` | Partial run per discipline                          |
+| `CREATE SYNTHESIS`                               | Merge previously completed partial designs          |
+| `FEATURE [name]: [description]`                  | Add new functionality (isolated full cycle)         |
+| `REEVALUATE [scope]`                             | Reassess after incremental changes                  |
+| `SCOPE CHANGE [DIMENSION]: [description]`        | Handle fundamental premise changes                  |
+| `HOTFIX [description]`                           | Critical production fix (bypasses Sprint Gate)      |
+| `REFRESH ONBOARDING`                             | Re-scan codebase without re-asking intake questions |
+
+---
+
+## Key Concepts
+
+- **Phases 1–4** produce Analysis → Recommendations → Sprint Plan → Guardrails
+  per discipline
+- **Phase 5** implements the solution sprint-by-sprint with automated testing,
+  PR review, and KPI tracking
+- **Critic + Risk Agents** validate every phase before handoff
+- **`decisions.md`** is your direct communication channel — `DECIDED` entries
+  become hard constraints; `HIGH` + `OPEN` entries block sprint start
+- **Questionnaires** are generated for missing data — answer them, then
+  `REEVALUATE` for improved results
+- **All findings cite sources** — file, line number, or document reference
+  (Anti-Hallucination Protocol)
 
 ---
 

@@ -52,14 +52,14 @@ GitHub issue templates for bugs, features, stories, and tasks.
 
 ### Workflows — `.github/workflows/`
 
-| File                             | Purpose                                 |
-| -------------------------------- | --------------------------------------- |
-| `ci.yml`                         | Vitest + npm audit + typecheck          |
-| `ci-pipeline.yml`                | Jest + ESLint + Prettier                |
-| `generate-and-validate.yml`      | Platform schema generation + validation |
-| `my-agentic-team-board-sync.yml` | GitHub Project board synchronization    |
-| `release.yml`                    | Release workflow                        |
-| `storybook.yml`                  | Storybook build + deploy                |
+| File                             | Purpose                                                      |
+| -------------------------------- | ------------------------------------------------------------ |
+| `ci.yml`                         | Vitest + npm audit + typecheck                               |
+| `ci-pipeline.yml`                | CI pipeline for lint, tests, security, and deployment checks |
+| `generate-and-validate.yml`      | Platform schema generation + validation                      |
+| `my-agentic-team-board-sync.yml` | GitHub Project board synchronization                         |
+| `release.yml`                    | Release workflow                                             |
+| `storybook.yml`                  | Storybook build + deploy                                     |
 
 ---
 
@@ -432,8 +432,7 @@ src/webapp/ui/
 
 ### Unit tests — `tests/unit/` (48 files)
 
-All unit tests live here. Run with Vitest (`npm run test:vitest`) or Jest
-(`npx jest --ci` for the Jest subset).
+All unit tests live here. Run them with Vitest from the repository root.
 
 Key test files:
 

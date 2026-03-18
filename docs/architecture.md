@@ -9,6 +9,9 @@ description: System architecture, layer diagram, data flow, and module inventory
 This document describes the layered architecture of the Agentic SDLC Platform,
 how data flows through the system, and how the MCP integration works.
 
+> For a chronological view of architectural changes, see
+> [Architecture Evolution](architecture-evolution).
+
 ---
 
 ## Layer Diagram
@@ -27,11 +30,16 @@ how data flows through the system, and how the MCP integration works.
              │                             │ HTTP/SSE
              ▼                             ▼
 ┌──────────────────────────────────────────────────────────┐
-│              src/webapp/server.ts  (HTTP API)            │
-│     Native http module · 127.0.0.1:3000 · 16 routes     │
+│          Fastify 5 Application (src/webapp/)             │
+│  Plugin architecture · 127.0.0.1:3000 · typed context    │
 ├──────────────────────────────────────────────────────────┤
-│  routes/   │  models.ts  │  store.ts  │  middleware.ts   │
-│  schemas.ts│  cache.ts   │  audit.ts  │  sse-manager.ts  │
+│  plugins/   │  routes/    │  auth.ts    │  middleware.ts  │
+│  context.ts │  models/    │  store.ts   │  schemas.ts     │
+│  cache.ts   │  audit.ts   │  redis.ts   │  sse-manager.ts │
+├──────────────────────────────────────────────────────────┤
+│  Optional Infrastructure                                  │
+│  Redis (sessions, SSE pub/sub) · BullMQ (job queue)       │
+│  better-sqlite3 (structured data) · pino (logging)        │
 └─────────────────────┬────────────────────────────────────┘
                       │ file I/O (JSON/Markdown)
                       ▼
@@ -51,7 +59,7 @@ how data flows through the system, and how the MCP integration works.
                       ▼
 ┌──────────────────────────────────────────────────────────┐
 │              templates/sdlc                               │
-│  39 agent skill files · contracts · guardrails · playbooks│
+│  38+ agent skill files · contracts · guardrails · playbooks│
 └──────────────────────────────────────────────────────────┘
                       │
                       ▼
@@ -73,33 +81,43 @@ User clicks in Command Center UI
 React SPA (src/webapp/ui)
   │  fetch('/api/…')
   ▼
-HTTP API (src/webapp/server.ts)
-  │  resolveRoute() → route handler
+Fastify Application (src/webapp/server.ts)
+  │  Fastify route matching → handler
   ▼
 Route handler (src/webapp/routes/*.ts)
-  │  validates input via schemas.ts (Ajv)
+  │  validates input via route-schemas.ts / schemas.ts (Ajv)
+  │  checks auth & RBAC permissions (auth.ts)
   │  reads/writes via store.ts (atomic file I/O)
   │  logs mutation via audit.ts (append-only JSONL)
   ▼
 File system (BusinessDocs/, session/)
   │  JSON and Markdown files
   ▼
-SSE broadcast (sse-manager.ts)
+SSE broadcast (sse-manager.ts / sse-manager-redis.ts)
   │  notifies connected UI clients of changes
   ▼
 UI reactively updates via React Query
 ```
 
-### Key mechanisms
+### Key Mechanisms
 
+- **Fastify plugin architecture** — Encapsulated plugins for rate limiting,
+  security headers, body parsing, CORS, static file serving, and Swagger docs.
+- **Typed context** — `context.ts` provides a strongly-typed request context
+  shared across all route handlers.
+- **Authentication** — GitHub OAuth flow in `auth.ts` with session cookies.
+  RBAC enforces per-endpoint permissions.
 - **Atomic writes** — `store.ts` writes to a temp file then renames, preventing
   partial writes.
-- **File locking** — `file-lock.ts` serialises concurrent writes to the same
-  file.
+- **File locking** — `file-lock.ts` serializes concurrent writes to the same
+  file via promise-chaining.
 - **Audit trail** — Every mutation is logged to `BusinessDocs/audit/audit-log.jsonl`
   (append-only JSON Lines).
-- **Rate limiting** — `rate-limiter.ts` enforces per-IP request limits.
-- **Security headers** — `middleware.ts` sets CSP, X-Frame-Options, etc.
+- **Rate limiting** — Fastify rate-limit plugin enforces per-IP request limits.
+- **Security headers** — Fastify security-headers plugin sets CSP,
+  X-Frame-Options, etc.
+- **Graceful degradation** — Redis, BullMQ, and SQLite are optional. The system
+  falls back to in-memory alternatives when external services are unavailable.
 
 ---
 
@@ -113,7 +131,7 @@ src/webapp/mcp-server.ts
   │  McpServer from @modelcontextprotocol/sdk
   │  17 tools + 3 resources registered
   ▼
-Shared modules (models.ts, store.ts, schemas.ts)
+Shared modules (models/, store.ts, schemas.ts)
   │  Same validation and persistence as HTTP API
   ▼
 BusinessDocs/ (file system)
@@ -127,31 +145,59 @@ or an IDE tool call.
 
 ## Module Inventory
 
-| Layer        | Path                         | Files | Purpose                                                                                                                          |       Test files |
-| ------------ | ---------------------------- | ----: | -------------------------------------------------------------------------------------------------------------------------------- | ---------------: |
-| Engine       | `platform/engine/`           |    20 | Domain-agnostic pipeline engine: state machine, dispatcher, gate validator, flow loader, tool executor, sprint gate, persistence |        81 (unit) |
-| Schema       | `platform/schema/`           |    11 | Canonical JSON Schema definitions + registry data (agents, flows, tools)                                                         |                — |
-| SDLC         | `platform/sdlc/`             |     7 | SDLC lifecycle bindings: governance, traceability, observability, artifacts                                                      |                — |
-| Server       | `src/webapp/*.ts`            |    20 | HTTP API server: config, router, middleware, models, store, cache, audit, SSE, metrics                                           | 15 (integration) |
-| Routes       | `src/webapp/routes/`         |    16 | API route handlers: questionnaires, decisions, commands, progress, analytics, etc.                                               |                — |
-| UI           | `src/webapp/ui/src/`         |   151 | React SPA: pages, components, hooks, stores (Vite + TailwindCSS + Radix UI)                                                      |     59 (UI unit) |
-| Agent skills | `templates/sdlc/agents/`     |    39 | Agent skill files (00-orchestrator through 37-scope-change-agent + index)                                                        |                — |
-| Contracts    | `templates/sdlc/contracts/`  |     — | Output contracts per deliverable type                                                                                            |                — |
-| Guardrails   | `templates/sdlc/guardrails/` |     — | Domain guardrails (global, business, tech, UX, marketing, questionnaire)                                                         |                — |
-| Tests        | `tests/`                     |    98 | Unit (81), integration (15), smoke (2)                                                                                           |                — |
+| Layer        | Path                     | Key Files | Purpose                                                                       |
+| ------------ | ------------------------ | --------: | ----------------------------------------------------------------------------- |
+| Engine       | `platform/engine/`       |       20+ | Domain-agnostic pipeline engine: state machine, dispatcher, gate validator    |
+| Schema       | `platform/schema/`       |       10+ | Canonical JSON Schema definitions + registry data                             |
+| SDLC         | `platform/sdlc/`         |        7+ | SDLC lifecycle bindings: governance, traceability, observability              |
+| Server       | `src/webapp/*.ts`        |       25+ | Fastify app: config, context, auth, plugins, middleware, models, store, cache |
+| Plugins      | `src/webapp/plugins/`    |         4 | Fastify plugins: body-parser, rate-limit, security-headers, index             |
+| Routes       | `src/webapp/routes/`     |       16+ | API route handlers per domain                                                 |
+| Models       | `src/webapp/models/`     |         — | Domain parsing (questionnaires, decisions, session state)                     |
+| Services     | `src/webapp/services/`   |         — | Business logic services                                                       |
+| Types        | `src/webapp/types/`      |         — | TypeScript type definitions                                                   |
+| Auth         | `src/webapp/auth.ts`     |         1 | GitHub OAuth + session cookies + RBAC                                         |
+| Redis        | `src/webapp/redis.ts`    |         1 | Redis client with graceful degradation                                        |
+| UI           | `src/webapp/ui/src/`     |      150+ | React SPA: pages, components, hooks, stores                                   |
+| Agent skills | `templates/sdlc/agents/` |       38+ | Agent skill files (00-orchestrator through 37-scope-change-agent)             |
+| Tests        | `tests/`                 |      100+ | Unit, integration, e2e, smoke                                                 |
 
-**Total tests:** 2,420 passing across 96 test files (Vitest 4).
+**Total tests:** Thousands of passing tests across many test files (Vitest).
 
 ---
 
 ## Technology Decisions
 
-| Concern           | Choice                   | Rationale                                                        |
-| ----------------- | ------------------------ | ---------------------------------------------------------------- |
-| HTTP server       | Native `http` module     | No web framework required; full control over headers and routing |
-| Data storage      | File-based JSON/Markdown | No database required; human-readable; Git-trackable              |
-| UI framework      | React 18 + Vite          | Fast HMR in dev; optimised production builds                     |
-| MCP transport     | stdio (JSON-RPC)         | IDE-native; no network port required                             |
-| Schema validation | Ajv + JSON Schema        | Shared validation between server and MCP; compile-time schemas   |
-| Testing           | Vitest 4                 | Fast, ESM-native, compatible with the project's TypeScript setup |
-| Design tokens     | Custom build script      | Generates CSS custom properties from `design-tokens.json`        |
+| Concern           | Choice                    | Rationale                                                        |
+| ----------------- | ------------------------- | ---------------------------------------------------------------- |
+| HTTP server       | Fastify 5                 | Plugin architecture, JSON Schema validation, high performance    |
+| Authentication    | GitHub OAuth + RBAC       | Secure session-based auth with role-based permissions            |
+| Job queue         | BullMQ (optional)         | Redis-backed job queue with graceful degradation to synchronous  |
+| Data storage      | File-based JSON/Markdown  | No database required; human-readable; Git-trackable              |
+| Structured data   | better-sqlite3 (optional) | Embedded SQL for structured queries when needed                  |
+| Session store     | Redis or in-memory        | Redis for multi-instance, in-memory for single-instance          |
+| UI framework      | React 18 + Vite           | Fast HMR in dev; optimized production builds                     |
+| MCP transport     | stdio (JSON-RPC)          | IDE-native; no network port required                             |
+| Schema validation | Ajv + JSON Schema         | Shared validation between server and MCP; compile-time schemas   |
+| Testing           | Vitest                    | Fast, ESM-native, compatible with the project's TypeScript setup |
+| Logging           | pino                      | Structured JSON logging, high throughput                         |
+| Design tokens     | Custom build script       | Generates CSS custom properties from `design-tokens.json`        |
+
+---
+
+## Design Principles
+
+- **Plugin encapsulation** — Each Fastify plugin encapsulates a concern (rate
+  limiting, security headers, body parsing) and is registered independently.
+- **Typed context** — Route handlers receive a typed context object rather than
+  reaching into global state.
+- **Store abstraction** — All filesystem I/O goes through the Store interface.
+  `FileStore` for production, `InMemoryStore` for testing.
+- **Graceful degradation** — Redis, BullMQ, and SQLite are optional. The system
+  detects availability at startup and falls back to in-memory alternatives.
+- **Atomic writes** — All file mutations use write-to-temp + rename to prevent
+  partial writes. Backups are created before overwriting.
+- **Shared file locking** — All write paths are serialized per file via
+  `withFileLock()`. Both server and MCP server share the same lock Map.
+- **Localhost only** — Server binds to `127.0.0.1:3000`. No external network
+  exposure by default.

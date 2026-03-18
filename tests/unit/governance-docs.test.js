@@ -12,8 +12,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const DOCS_DIR = path.resolve(__dirname, '../../docs');
+const BUSINESS_DOCS_DIR = path.resolve(__dirname, '../../BusinessDocs');
 const GOVERNANCE_DOC_PATHS = {
-  gaDefinition: path.join(DOCS_DIR, 'operations', 'ga-definition.md'),
+  gaDefinition: path.join(BUSINESS_DOCS_DIR, 'ga-definition.md'),
   dataInventory: path.join(DOCS_DIR, 'security', 'data-inventory.md'),
   securityDesign: path.join(DOCS_DIR, 'security', 'security-design.md'),
 };

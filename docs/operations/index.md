@@ -24,3 +24,5 @@ compliance posture, CI review, privacy posture, and operator runbooks.
 - [GA Definition](ga-definition)
 - [CI Health Review](ci-health-review)
 - [Privacy Policy](privacy-policy)
+
+The full GA governance record is maintained in `BusinessDocs/ga-definition.md`.

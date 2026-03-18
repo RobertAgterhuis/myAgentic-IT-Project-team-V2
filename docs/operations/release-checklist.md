@@ -28,7 +28,7 @@ description: Pre-release verification checklist for every version bump.
 - [ ] CHANGELOG.md updated with all changes since last release
 - [ ] Version bumped in `package.json`
 - [ ] All `UNCERTAIN:` and `INSUFFICIENT_DATA:` items resolved or documented
-- [ ] GA go/no-go criteria checked (see `docs/phase-5/ga-definition.md`
+- [ ] GA go/no-go criteria checked (see `BusinessDocs/ga-definition.md`
       Section 3)
 
 ## Release

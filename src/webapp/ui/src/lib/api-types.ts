@@ -920,10 +920,10 @@ export interface ApprovalHistoryResponse extends OkResponse {
 }
 
 /* ──────────────────────────────────────────────
- * Agent Execution (M31-001)
+ * Agent Execution (M31-001 … M31-009)
  * ────────────────────────────────────────────── */
 
-export type AgentExecutionStatus = 'running' | 'completed' | 'failed';
+export type AgentExecutionStatus = 'running' | 'completed' | 'failed' | 'cancelled';
 
 export interface AgentExecutionContext {
   predecessorPaths?: string[];
@@ -934,7 +934,14 @@ export interface AgentExecutePayload {
   context?: AgentExecutionContext;
 }
 
+export interface ExecutionLogEntry {
+  timestamp: string;
+  level: 'info' | 'warn' | 'error';
+  message: string;
+}
+
 export interface AgentExecutionResult {
+  job_id: string;
   agent_id: string;
   agent_name: string;
   status: AgentExecutionStatus;
@@ -943,8 +950,33 @@ export interface AgentExecutionResult {
   duration_ms?: number;
   output_path?: string;
   error?: string;
+  logs: ExecutionLogEntry[];
 }
 
 export interface AgentExecuteResponse extends OkResponse {
   execution: AgentExecutionResult;
+}
+
+/** M31-002 — GET /api/agents/jobs/:jobId/status */
+export interface AgentJobStatusResponse extends OkResponse {
+  job_id: string;
+  agent_id: string;
+  agent_name: string;
+  status: AgentExecutionStatus;
+  started_at: string;
+  completed_at?: string;
+  duration_ms?: number;
+}
+
+/** M31-004 — GET /api/agents/jobs/:jobId/result (202 if running) */
+export interface AgentJobResultResponse extends OkResponse {
+  status?: 'running';
+  message?: string;
+  execution?: AgentExecutionResult;
+}
+
+/** M31-009 — GET /api/agents/executions */
+export interface AgentExecutionHistoryResponse extends OkResponse {
+  count: number;
+  executions: AgentExecutionResult[];
 }

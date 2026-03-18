@@ -137,4 +137,147 @@ describe('AgentExecutionService', () => {
       expect(err.message).toBe('test');
     });
   });
+
+  /* ── M31-002: getJobStatus ──────────────────────────────── */
+  describe('getJobStatus (M31-002)', () => {
+    let invokeSpy;
+    let buildContextSpy;
+
+    beforeEach(() => {
+      buildContextSpy = vi
+        .spyOn(Dispatcher.prototype, 'buildContext')
+        .mockReturnValue({ agentId: '05' });
+      invokeSpy = vi
+        .spyOn(Dispatcher.prototype, 'invoke')
+        .mockResolvedValue({ success: true, outputPath: '/output/test.md' });
+    });
+
+    afterEach(() => {
+      invokeSpy.mockRestore();
+      buildContextSpy.mockRestore();
+    });
+
+    it('returns job after execute', async () => {
+      const result = await svc.execute({ agentId: '05' });
+      const status = svc.getJobStatus(result.job_id);
+      expect(status).toBeDefined();
+      expect(status.agent_id).toBe('05');
+    });
+
+    it('returns undefined for unknown job', () => {
+      expect(svc.getJobStatus('nonexistent-job')).toBeUndefined();
+    });
+  });
+
+  /* ── M31-004: getJobResult ──────────────────────────────── */
+  describe('getJobResult (M31-004)', () => {
+    let invokeSpy;
+    let buildContextSpy;
+
+    beforeEach(() => {
+      buildContextSpy = vi
+        .spyOn(Dispatcher.prototype, 'buildContext')
+        .mockReturnValue({ agentId: '05' });
+      invokeSpy = vi
+        .spyOn(Dispatcher.prototype, 'invoke')
+        .mockResolvedValue({ success: true, outputPath: '/output/test.md' });
+    });
+
+    afterEach(() => {
+      invokeSpy.mockRestore();
+      buildContextSpy.mockRestore();
+    });
+
+    it('returns completed result with output_path', async () => {
+      const result = await svc.execute({ agentId: '05' });
+      const fetched = svc.getJobResult(result.job_id);
+      expect(fetched).toBeDefined();
+      expect(fetched.status).toBe('completed');
+      expect(fetched.output_path).toBe('/output/test.md');
+    });
+
+    it('returns undefined for unknown job', () => {
+      expect(svc.getJobResult('unknown-job')).toBeUndefined();
+    });
+  });
+
+  /* ── M31-005: cancelJob ─────────────────────────────────── */
+  describe('cancelJob (M31-005)', () => {
+    it('returns false for unknown job', () => {
+      expect(svc.cancelJob('nonexistent-job')).toBe(false);
+    });
+  });
+
+  /* ── M31-009: listExecutionHistory ──────────────────────── */
+  describe('listExecutionHistory (M31-009)', () => {
+    let invokeSpy;
+    let buildContextSpy;
+
+    beforeEach(() => {
+      buildContextSpy = vi
+        .spyOn(Dispatcher.prototype, 'buildContext')
+        .mockReturnValue({ agentId: '05' });
+      invokeSpy = vi
+        .spyOn(Dispatcher.prototype, 'invoke')
+        .mockResolvedValue({ success: true, outputPath: '/output/test.md' });
+    });
+
+    afterEach(() => {
+      invokeSpy.mockRestore();
+      buildContextSpy.mockRestore();
+    });
+
+    it('returns an array', () => {
+      const history = svc.listExecutionHistory();
+      expect(Array.isArray(history)).toBe(true);
+    });
+
+    it('includes executed jobs', async () => {
+      await svc.execute({ agentId: '05' });
+      const history = svc.listExecutionHistory();
+      expect(history.length).toBeGreaterThanOrEqual(1);
+      expect(history[0].agent_id).toBe('05');
+    });
+  });
+
+  /* ── Execution logs ─────────────────────────────────────── */
+  describe('execution logs', () => {
+    let invokeSpy;
+    let buildContextSpy;
+
+    beforeEach(() => {
+      buildContextSpy = vi
+        .spyOn(Dispatcher.prototype, 'buildContext')
+        .mockReturnValue({ agentId: '05' });
+      invokeSpy = vi
+        .spyOn(Dispatcher.prototype, 'invoke')
+        .mockResolvedValue({ success: true, outputPath: '/output/test.md' });
+    });
+
+    afterEach(() => {
+      invokeSpy.mockRestore();
+      buildContextSpy.mockRestore();
+    });
+
+    it('result includes logs array', async () => {
+      const result = await svc.execute({ agentId: '05' });
+      expect(Array.isArray(result.logs)).toBe(true);
+      expect(result.logs.length).toBeGreaterThanOrEqual(1);
+    });
+
+    it('each log entry has timestamp, level, and message', async () => {
+      const result = await svc.execute({ agentId: '05' });
+      for (const entry of result.logs) {
+        expect(entry).toHaveProperty('timestamp');
+        expect(entry).toHaveProperty('level');
+        expect(entry).toHaveProperty('message');
+      }
+    });
+
+    it('result includes job_id', async () => {
+      const result = await svc.execute({ agentId: '05' });
+      expect(result.job_id).toBeDefined();
+      expect(result.job_id).toMatch(/^exec-/);
+    });
+  });
 });

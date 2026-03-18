@@ -13,7 +13,12 @@ export { CommandService } from './commands-service';
 export { GovernanceService, ServiceNotAvailableError } from './governance-service';
 export { PolicyService, PolicyValidationError, PolicyNotFoundError } from './policy-service';
 export { SessionService } from './session-service';
-export { AgentExecutionService, AgentNotFoundError } from './agent-execution-service';
+export {
+  AgentExecutionService,
+  AgentNotFoundError,
+  AgentCancelledError,
+} from './agent-execution-service';
+export type { ExecuteAgentResult, ExecutionLogEntry } from './agent-execution-service';
 export { toServiceContext } from './context-adapter';
 export type {
   ServiceContext,

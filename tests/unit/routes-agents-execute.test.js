@@ -153,4 +153,72 @@ describe('agents execute route (M31)', () => {
       ).toBe(true);
     });
   });
+
+  /* ── M31-002: GET status ─────────────────────────────────── */
+
+  it('registers GET /api/agents/jobs/:jobId/status', () => {
+    expect(routes).toHaveProperty('GET /api/agents/jobs/:jobId/status');
+  });
+
+  describe('GET /api/agents/jobs/:jobId/status', () => {
+    it('returns 404 for unknown job', async () => {
+      const res = createRes();
+      await routes['GET /api/agents/jobs/:jobId/status'](
+        createReq('/api/agents/jobs/nonexistent/status'),
+        res
+      );
+      expect(res.statusCode).toBe(404);
+    });
+  });
+
+  /* ── M31-004: GET result ─────────────────────────────────── */
+
+  it('registers GET /api/agents/jobs/:jobId/result', () => {
+    expect(routes).toHaveProperty('GET /api/agents/jobs/:jobId/result');
+  });
+
+  describe('GET /api/agents/jobs/:jobId/result', () => {
+    it('returns 404 for unknown job', async () => {
+      const res = createRes();
+      await routes['GET /api/agents/jobs/:jobId/result'](
+        createReq('/api/agents/jobs/nonexistent/result'),
+        res
+      );
+      expect(res.statusCode).toBe(404);
+    });
+  });
+
+  /* ── M31-005: POST cancel ────────────────────────────────── */
+
+  it('registers POST /api/agents/jobs/:jobId/cancel', () => {
+    expect(routes).toHaveProperty('POST /api/agents/jobs/:jobId/cancel');
+  });
+
+  describe('POST /api/agents/jobs/:jobId/cancel', () => {
+    it('returns 404 for unknown job', async () => {
+      const res = createRes();
+      await routes['POST /api/agents/jobs/:jobId/cancel'](
+        createReq('/api/agents/jobs/nonexistent/cancel', 'POST'),
+        res
+      );
+      expect(res.statusCode).toBe(404);
+    });
+  });
+
+  /* ── M31-009: GET execution history ──────────────────────── */
+
+  it('registers GET /api/agents/executions', () => {
+    expect(routes).toHaveProperty('GET /api/agents/executions');
+  });
+
+  describe('GET /api/agents/executions', () => {
+    it('returns executions array', async () => {
+      const res = createRes();
+      await routes['GET /api/agents/executions'](createReq('/api/agents/executions'), res);
+      expect(res.statusCode).toBe(200);
+      const body = parsed(res);
+      expect(body).toHaveProperty('executions');
+      expect(Array.isArray(body.executions)).toBe(true);
+    });
+  });
 });

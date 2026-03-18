@@ -1,6 +1,6 @@
 /**
  * Agents page — list all tracked agents with activity status and detail panel.
- * M15 / Issue #M15-030, M31-001
+ * M15 / Issue #M15-030, M31-001 … M31-006
  */
 import { useState } from 'react';
 import { Heading, Text } from '@/components/ui/typography';
@@ -24,6 +24,7 @@ import {
   RotateCcw,
   RefreshCw,
   Play,
+  Loader2,
 } from 'lucide-react';
 
 const statusConfig: Record<
@@ -41,6 +42,15 @@ export default function AgentsPage() {
   const { data, isLoading, error, refetch } = useAgents();
   const [selectedAgent, setSelectedAgent] = useState<AgentDetailEntry | null>(null);
   const [executeAgent, setExecuteAgent] = useState<AgentDetailEntry | null>(null);
+  const [runningAgentIds, setRunningAgentIds] = useState<Set<string>>(new Set());
+
+  const markRunning = (id: string) => setRunningAgentIds((prev) => new Set(prev).add(id));
+  const clearRunning = (id: string) =>
+    setRunningAgentIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
 
   if (isLoading) {
     return (
@@ -166,13 +176,22 @@ export default function AgentsPage() {
                           variant="outline"
                           size="sm"
                           className="h-6 px-2 text-[10px]"
+                          disabled={agent.status === 'running' || runningAgentIds.has(agent.id)}
                           onClick={(e) => {
                             e.stopPropagation();
                             setExecuteAgent(agent);
                           }}
                           aria-label={`Execute ${agent.name}`}
                         >
-                          <Play className="size-3 mr-1" /> Execute
+                          {runningAgentIds.has(agent.id) ? (
+                            <>
+                              <Loader2 className="size-3 mr-1 animate-spin" /> Running…
+                            </>
+                          ) : (
+                            <>
+                              <Play className="size-3 mr-1" /> Execute
+                            </>
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -224,6 +243,8 @@ export default function AgentsPage() {
           onOpenChange={(open) => {
             if (!open) setExecuteAgent(null);
           }}
+          onExecutionStart={() => markRunning(executeAgent.id)}
+          onExecutionEnd={() => clearRunning(executeAgent.id)}
         />
       )}
     </div>

@@ -22,6 +22,7 @@ const LineagePage = lazy(() => import('@/pages/artifacts/lineage-page'));
 const ObservabilityPage = lazy(() => import('@/pages/observability/observability-page'));
 const GovernanceDashboardPage = lazy(() => import('@/pages/governance/governance-dashboard-page'));
 const CockpitDashboardPage = lazy(() => import('@/pages/cockpit/cockpit-dashboard-page'));
+const ExecutionHistoryPage = lazy(() => import('@/pages/agents/execution-history-page'));
 const ApprovalDetailPage = lazy(() => import('@/pages/cockpit/approval-detail-page'));
 
 const router = createBrowserRouter([
@@ -40,6 +41,7 @@ const router = createBrowserRouter([
       /* Operations */
       { path: 'commands', element: <CommandsPage /> },
       { path: 'agents', element: <AgentsPage /> },
+      { path: 'agents/executions', element: <ExecutionHistoryPage /> },
       { path: 'decisions', element: <DecisionsPage /> },
 
       /* Data */

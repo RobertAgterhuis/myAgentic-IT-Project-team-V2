@@ -19,6 +19,12 @@ export const routes = {
   /* Operations */
   commands: { path: '/commands', label: 'Commands', icon: 'Terminal', section: 'Operations' },
   agents: { path: '/agents', label: 'Agents', icon: 'Bot', section: 'Operations' },
+  executionHistory: {
+    path: '/agents/executions',
+    label: 'Execution History',
+    icon: 'History',
+    section: 'Operations',
+  },
   decisions: { path: '/decisions', label: 'Decisions', icon: 'Scale', section: 'Operations' },
 
   /* Data */

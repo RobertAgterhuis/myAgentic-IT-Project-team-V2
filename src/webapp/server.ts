@@ -45,9 +45,12 @@ import {
   RATE_LIMIT_MAX,
   STORAGE_PROVIDER,
   STORAGE_PATH,
+  REDIS_URL,
 } from './config';
 import { createStorageProvider } from '../../platform/engine/persistence';
 import type { StorageProvider } from '../../platform/engine/persistence';
+import { getRedisConnection, createRedisConnection } from './redis';
+import { createRedisPubSubSSEManager } from './sse-manager-redis';
 
 import { buildApp } from './app';
 import type { ServerContext } from './context';
@@ -80,7 +83,23 @@ const rateLimiter = createRateLimiter({
   windowMs: RATE_LIMIT_WINDOW_MS,
   maxRequests: RATE_LIMIT_MAX,
 });
-const sseManager = createSSEManager({ heartbeatMs: SSE_HEARTBEAT_MS });
+
+/* ── SSE Manager (M33-003: Redis pub/sub when available) ──────── */
+const sseManager = (() => {
+  const redis = getRedisConnection(REDIS_URL);
+  if (redis) {
+    const subscriber = createRedisConnection(REDIS_URL);
+    if (subscriber) {
+      structuredLog('info', 'sse_pubsub_redis', { url: REDIS_URL ? '***' : 'none' });
+      return createRedisPubSubSSEManager({
+        heartbeatMs: SSE_HEARTBEAT_MS,
+        publisher: redis,
+        subscriber,
+      });
+    }
+  }
+  return createSSEManager({ heartbeatMs: SSE_HEARTBEAT_MS });
+})();
 const store = () => getStore();
 
 /* ── StorageProvider (M23-005) ────────────────────────────────── */

@@ -1,0 +1,61 @@
+## Docker Compose — Horizontal Scaling (M33-007)
+##
+## Multi-instance deployment with Redis message broker, nginx
+## reverse proxy, and shared state. Demonstrates horizontal scaling.
+##
+## Usage:
+##   docker compose -f docker-compose.yml -f docker-compose.scale.yml up --scale command-center=3
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: myagentic-redis
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.5"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+  command-center:
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - QUEUE_PROVIDER=bullmq
+      - SESSION_STORE=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  nginx:
+    image: nginx:1-alpine
+    container_name: myagentic-nginx
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./nginx-scale.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - command-center
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+          cpus: "0.25"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:80/health/live"]
+      interval: 15s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+
+volumes:
+  redis-data:

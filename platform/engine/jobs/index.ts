@@ -14,6 +14,8 @@ export { MemoryQueue } from './memory-queue';
 export type { MemoryQueueConfig } from './memory-queue';
 export { PersistentQueue } from './persistent-queue';
 export type { PersistentQueueConfig } from './persistent-queue';
+export { BullMQQueue } from './bullmq-queue';
+export type { BullMQQueueConfig } from './bullmq-queue';
 export { JobWorker } from './worker';
 export type { JobExecutor, WorkerHealth, WorkerConfig, JobEvent } from './worker';
 export { collectJobMetrics, flushJobMetrics } from './job-metrics';

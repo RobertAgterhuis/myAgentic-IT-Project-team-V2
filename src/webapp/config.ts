@@ -48,3 +48,21 @@ export const STORAGE_PROVIDER: StorageProviderType = (() => {
   return 'file';
 })();
 export const STORAGE_PATH: string | undefined = process.env.STORAGE_PATH || undefined;
+
+/* ── Redis / BullMQ (M33-002) ─────────────────────────────────── */
+export const REDIS_URL: string | undefined = process.env.REDIS_URL || undefined;
+export type QueueProviderType = 'memory' | 'persistent' | 'bullmq';
+export const QUEUE_PROVIDER: QueueProviderType = (() => {
+  const v = process.env.QUEUE_PROVIDER;
+  if (v === 'bullmq') return 'bullmq';
+  if (v === 'persistent') return 'persistent';
+  return 'memory';
+})();
+
+/* ── Session store (M33-004) ──────────────────────────────────── */
+export type SessionStoreType = 'sqlite' | 'redis';
+export const SESSION_STORE: SessionStoreType = (() => {
+  const v = process.env.SESSION_STORE;
+  if (v === 'redis') return 'redis';
+  return 'sqlite';
+})();

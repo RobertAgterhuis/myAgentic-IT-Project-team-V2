@@ -253,7 +253,7 @@ function mapSprintDefects(s, kpiMap: Map<string, unknown>) {
 }
 
 function buildDefectDensity(velocity, kpis) {
-  const kpiMap = new Map(kpis.map((k) => [k.sprint_id, k]));
+  const kpiMap: Map<string, unknown> = new Map(kpis.map((k) => [k.sprint_id, k]));
   return velocity.map((s) => mapSprintDefects(s, kpiMap));
 }
 

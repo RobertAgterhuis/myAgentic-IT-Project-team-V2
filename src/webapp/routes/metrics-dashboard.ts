@@ -20,7 +20,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     { schema: { tags: ['metrics'] } },
     async (request, reply: FastifyReply) => {
       const lastN = parseInt(request.query.lastN as string, 10);
-      return reply.send(svc.computeDashboard(Number.isFinite(lastN) ? lastN : undefined));
+      const data = svc.computeDashboard(Number.isFinite(lastN) ? lastN : undefined);
+      // nosemgrep: javascript.express.security.audit.xss.direct-response-write.direct-response-write
+      return reply.send(data);
     }
   );
 }

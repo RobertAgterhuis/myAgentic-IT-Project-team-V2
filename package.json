@@ -29,6 +29,7 @@
     "audit:github": "node scripts/github-config-audit.js",
     "snapshot:github": "node scripts/github-state-snapshot.js",
     "generate:platform": "node scripts/generate-platform.js all",
+    "generate:openapi": "tsx scripts/generate-openapi.ts",
     "postinstall": "node scripts/generate-platform.js all"
   },
   "repository": {

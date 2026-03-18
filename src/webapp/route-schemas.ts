@@ -25,6 +25,40 @@ const idParam = {
   },
 };
 
+/* ── Shared response schemas (M30-008) ────────────────────────── */
+
+const r200Ok = {
+  200: { description: 'Success' },
+};
+const r400 = {
+  400: { description: 'Validation error' },
+};
+const r403 = {
+  403: { description: 'Forbidden' },
+};
+const r404 = {
+  404: { description: 'Not found' },
+};
+const r429 = {
+  429: { description: 'Rate limited' },
+};
+
+/** Common mutation responses: 200 ok + 400 + 403 + 429. */
+const mutationResponses = { ...r200Ok, ...r400, ...r403, ...r429 };
+
+/** Common read responses: 200 + 403 + 404. */
+const readResponses = {
+  200: { description: 'Success' },
+  ...r403,
+  ...r404,
+};
+
+/** Common list responses: 200 + 403. */
+const listResponses = {
+  200: { description: 'Success' },
+  ...r403,
+};
+
 /* ── commands ─────────────────────────────────────────────────── */
 
 export const commandCreate = {
@@ -41,16 +75,19 @@ export const commandCreate = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 export const commandGet = {
   tags: ['commands'],
+  response: listResponses,
 };
 
 /* ── approvals ────────────────────────────────────────────────── */
 
 export const approvalsList = {
   tags: ['approvals'],
+  response: listResponses,
 };
 
 export const approvalApprove = {
@@ -64,6 +101,7 @@ export const approvalApprove = {
     },
     additionalProperties: false,
   },
+  response: { ...mutationResponses, ...r404 },
 };
 
 export const approvalReject = {
@@ -78,12 +116,14 @@ export const approvalReject = {
     },
     additionalProperties: false,
   },
+  response: { ...mutationResponses, ...r404 },
 };
 
 /* ── decisions ────────────────────────────────────────────────── */
 
 export const decisionsList = {
   tags: ['decisions'],
+  response: listResponses,
 };
 
 export const decisionMutate = {
@@ -104,6 +144,7 @@ export const decisionMutate = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 export const decisionActivateCategory = {
@@ -136,6 +177,7 @@ export const decisionPromoteLesson = {
 
 export const questionnairesList = {
   tags: ['questionnaires'],
+  response: listResponses,
 };
 
 export const questionnaireSave = {
@@ -166,6 +208,7 @@ export const questionnaireSave = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 /* ── subscribe ────────────────────────────────────────────────── */
@@ -191,6 +234,7 @@ export const subscribe = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 /* ── milestones ───────────────────────────────────────────────── */
@@ -211,6 +255,7 @@ export const milestoneCreate = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 export const milestoneUpdate = {
@@ -229,11 +274,13 @@ export const milestoneUpdate = {
     },
     additionalProperties: false,
   },
+  response: { ...mutationResponses, ...r404 },
 };
 
 export const milestoneArchive = {
   tags: ['milestones'],
   params: idParam,
+  response: { ...mutationResponses, ...r404 },
 };
 
 export const milestoneTemplateCreate = {
@@ -264,6 +311,7 @@ export const milestoneTemplateCreate = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 /* ── workspaces ───────────────────────────────────────────────── */
@@ -280,6 +328,7 @@ export const workspaceCreate = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 export const workspaceUpdate = {
@@ -293,6 +342,7 @@ export const workspaceUpdate = {
     },
     additionalProperties: false,
   },
+  response: { ...mutationResponses, ...r404 },
 };
 
 export const workspaceAddRepository = {
@@ -357,6 +407,7 @@ export const policyEvaluate = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 export const policyCreateException = {
@@ -373,6 +424,7 @@ export const policyCreateException = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 /* ── jobs ─────────────────────────────────────────────────────── */
@@ -388,11 +440,13 @@ export const jobsList = {
     },
     additionalProperties: false,
   },
+  response: listResponses,
 };
 
 export const jobDetail = {
   tags: ['jobs'],
   params: idParam,
+  response: readResponses,
 };
 
 export const jobCancel = {
@@ -405,6 +459,7 @@ export const jobCancel = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 /* ── orchestrator ─────────────────────────────────────────────── */
@@ -418,6 +473,7 @@ export const orchestratorAdvance = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 export const orchestratorError = {
@@ -430,6 +486,7 @@ export const orchestratorError = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 export const orchestratorReset = {
@@ -447,6 +504,7 @@ export const orchestratorReset = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 /* ── misc ─────────────────────────────────────────────────────── */
@@ -463,6 +521,7 @@ export const reevaluate = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 export const analyticsPost = {
@@ -502,6 +561,7 @@ export const analyticsPost = {
     },
     additionalProperties: false,
   },
+  response: mutationResponses,
 };
 
 export const analyticsGet = {
@@ -514,6 +574,7 @@ export const analyticsGet = {
     },
     additionalProperties: false,
   },
+  response: listResponses,
 };
 
 export const auditGet = {
@@ -525,6 +586,7 @@ export const auditGet = {
     },
     additionalProperties: false,
   },
+  response: listResponses,
 };
 
 export const helpGet = {
@@ -536,6 +598,7 @@ export const helpGet = {
     },
     additionalProperties: false,
   },
+  response: readResponses,
 };
 
 /* ── analytics v1 ─────────────────────────────────────────────── */
@@ -549,6 +612,7 @@ export const analyticsV1MetricQuery = {
       name: { type: 'string' as const, minLength: 1 },
     },
   },
+  response: readResponses,
 };
 
 /* ── artifacts ────────────────────────────────────────────────── */
@@ -564,11 +628,13 @@ export const artifactsList = {
     },
     additionalProperties: false,
   },
+  response: listResponses,
 };
 
 export const artifactDetail = {
   tags: ['artifacts'],
   params: idParam,
+  response: readResponses,
 };
 
 /* ── agents ───────────────────────────────────────────────────── */
@@ -576,6 +642,7 @@ export const artifactDetail = {
 export const agentDetail = {
   tags: ['agents'],
   params: idParam,
+  response: readResponses,
 };
 
 /* ── sessions ─────────────────────────────────────────────────── */
@@ -583,12 +650,14 @@ export const agentDetail = {
 export const sessionDetail = {
   tags: ['sessions'],
   params: idParam,
+  response: readResponses,
 };
 
 /* ── policies (list) ──────────────────────────────────────────── */
 
 export const policiesList = {
   tags: ['policies'],
+  response: listResponses,
 };
 
 /* ── auth ──────────────────────────────────────────────────────── */
@@ -604,4 +673,5 @@ export const authUpdateRole = {
     },
     additionalProperties: false,
   },
+  response: { ...mutationResponses, ...r404 },
 };

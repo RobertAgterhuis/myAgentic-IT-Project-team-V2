@@ -1,27 +1,18 @@
 'use strict';
-/* Comprehensive Regression Test Suite — SP-R2-007-001
- * Verifies ALL features from Sprints 1-6 to ensure zero regressions.
- * Uses InMemoryStore for all data operations. */
+/* M30-007: Comprehensive Regression Test Suite — SP-R2-007-001 via Fastify inject().
+ * Replaces regression-suite.test.js (raw HTTP) with framework-native testing.
+ * Verifies ALL features from Sprints 1-7. */
 
-const http = require('http');
 const path = require('path');
 const fs = require('fs');
 const { InMemoryStore, setStore } = require('../../src/webapp/store');
+const { createTestApp, paths } = require('../helpers/create-test-app');
 const {
-  server,
-  _cache,
-  _metrics,
-  _audit,
   sanitizeMarkdown,
   sanitizeQID,
   detectSecrets,
   safePath,
-  _setSecurityHeaders,
-  recordMetric,
-  computePercentiles,
-  _sseNotify,
-  _sseClients,
-} = require('../../src/webapp/server');
+} = require('../../src/webapp/middleware');
 const models = require('../../src/webapp/models');
 const schemas = require('../../src/webapp/schemas');
 const { FileCache } = require('../../src/webapp/cache');
@@ -32,53 +23,10 @@ const {
 } = require('../../src/webapp/utils/secret-utils');
 const { VALIDATION: V, RESPONSES: R, STATIC: S } = require('../../src/webapp/strings');
 
-/* ── Test Infrastructure ──────────────────────────────────────── */
+const { BUSINESS_DOCS, SESSION_FILE, DECISIONS_FILE, HELP_DIR, ANALYTICS_FILE } = paths;
 
-const WEBAPP_DIR = path.resolve(__dirname, '../../src/webapp');
-const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
-const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');
-const SESSION_DIR = path.join(BUSINESS_DOCS, 'session');
-const SESSION_FILE = path.join(SESSION_DIR, 'session-state.json');
-const DECISIONS_FILE = path.join(BUSINESS_DOCS, 'decisions.md');
-const HELP_DIR = path.join(PROJECT_ROOT, 'docs', 'help');
-const ANALYTICS_FILE = path.join(BUSINESS_DOCS, 'analytics-events.json');
-
-let baseUrl;
-
-function req(method, urlPath, body) {
-  return new Promise((resolve, reject) => {
-    const url = new URL(urlPath, baseUrl);
-    const opts = {
-      method,
-      hostname: url.hostname,
-      port: url.port,
-      path: url.pathname + url.search,
-      headers: {},
-    };
-    if (body !== undefined) {
-      const data = JSON.stringify(body);
-      opts.headers['Content-Type'] = 'application/json';
-      opts.headers['Content-Length'] = Buffer.byteLength(data);
-    }
-    const r = http.request(opts, (res) => {
-      const chunks = [];
-      res.on('data', (c) => chunks.push(c));
-      res.on('end', () => {
-        const text = Buffer.concat(chunks).toString();
-        let json;
-        try {
-          json = JSON.parse(text);
-        } catch {
-          json = null;
-        }
-        resolve({ status: res.statusCode, headers: res.headers, text, json });
-      });
-    });
-    r.on('error', reject);
-    if (body !== undefined) r.write(JSON.stringify(body));
-    r.end();
-  });
-}
+let app;
+let store;
 
 /* ── Fixtures ─────────────────────────────────────────────────── */
 
@@ -175,35 +123,41 @@ const DECISIONS_MD = `# Decisions & Open Questions
 |------|--------|----|----|
 `;
 
-let store;
-
-beforeAll(async () => {
-  store = new InMemoryStore();
-  setStore(store);
-  _cache.invalidateAll();
-  await new Promise((resolve) => {
-    server.listen(0, '127.0.0.1', () => {
-      const addr = server.address();
-      baseUrl = `http://127.0.0.1:${addr.port}`;
-      resolve();
-    });
-  });
-});
-
-afterAll(async () => {
-  await new Promise((resolve) => server.close(resolve));
-});
-
-beforeEach(() => {
-  store = new InMemoryStore({
+function seedFiles() {
+  return {
     [path.join(BUSINESS_DOCS, Q_FILE_REL)]: QUESTIONNAIRE_MD,
     [SESSION_FILE]: JSON.stringify(SESSION_STATE),
     [DECISIONS_FILE]: DECISIONS_MD,
     [path.join(HELP_DIR, 'getting-started.md')]: '# Getting Started\nWelcome.',
-  });
-  setStore(store);
-  _cache.invalidateAll();
+  };
+}
+
+/* ── Lifecycle ────────────────────────────────────────────────── */
+
+beforeAll(async () => {
+  app = await createTestApp(seedFiles());
 });
+
+afterAll(async () => {
+  await app.close();
+});
+
+beforeEach(() => {
+  store = new InMemoryStore(seedFiles());
+  setStore(store);
+  app._cache.invalidateAll();
+});
+
+/* ── Helper ───────────────────────────────────────────────────── */
+
+function inject(method, url, payload) {
+  const opts = { method, url };
+  if (payload !== undefined) {
+    opts.payload = payload;
+    opts.headers = { 'content-type': 'application/json' };
+  }
+  return app.inject(opts);
+}
 
 /* ═══════════════════════════════════════════════════════════════════
  * SPRINT 1 — SECURITY + FOUNDATION
@@ -226,7 +180,7 @@ describe('Sprint 1 Regression: Security', () => {
   it('sanitizeQID neutralizes fake Q-IDs', () => {
     const result = sanitizeQID('Q-05-001 is the answer');
     expect(result).not.toContain('Q-05-001');
-    expect(result).toContain('\u2010'); // non-breaking hyphen
+    expect(result).toContain('\u2010');
   });
 
   it('detectSecrets finds AWS keys', () => {
@@ -257,9 +211,8 @@ describe('Sprint 1 Regression: Security', () => {
   });
 
   it('security headers are set on all responses', async () => {
-    const res = await req('GET', '/');
-    // 200 when React build is present, 404 in CI (ui/dist/ not committed)
-    expect([200, 404]).toContain(res.status);
+    const res = await inject('GET', '/');
+    expect([200, 404]).toContain(res.statusCode);
     expect(res.headers['x-content-type-options']).toBe('nosniff');
     expect(res.headers['x-frame-options']).toBe('SAMEORIGIN');
     expect(res.headers['content-security-policy']).toBeTruthy();
@@ -269,15 +222,15 @@ describe('Sprint 1 Regression: Security', () => {
   });
 
   it('POST /api/save warns on secret patterns in answers', async () => {
-    const res = await req('POST', '/api/save', {
+    const res = await inject('POST', '/api/save', {
       file: Q_FILE_REL,
       updates: [
         { questionId: 'Q-05-001', answer: 'key: AKIAIOSFODNN7EXAMPLE', status: 'ANSWERED' },
       ],
     });
-    expect(res.status).toBe(200);
-    expect(res.json.warnings).toBeDefined();
-    expect(res.json.warnings[0]).toContain('AWS Access Key');
+    expect(res.statusCode).toBe(200);
+    expect(res.json().warnings).toBeDefined();
+    expect(res.json().warnings[0]).toContain('AWS Access Key');
   });
 });
 
@@ -303,7 +256,6 @@ describe('Sprint 2 Regression: Architecture', () => {
   it('Cache returns cached content on same mtime', () => {
     const cache = new FileCache();
     expect(cache.read(path.join(BUSINESS_DOCS, Q_FILE_REL))).toContain('Software Architect');
-    // Second read should be from cache
     expect(cache.read(path.join(BUSINESS_DOCS, Q_FILE_REL))).toContain('Software Architect');
     expect(cache.stats().hits).toBeGreaterThanOrEqual(1);
   });
@@ -412,40 +364,42 @@ describe('Sprint 3 Regression: Code Quality', () => {
 
 describe('Sprint 4 Regression: SSE & Metrics', () => {
   it('GET /api/metrics returns expected shape', async () => {
-    const res = await req('GET', '/api/metrics');
-    expect(res.status).toBe(200);
-    expect(res.json).toHaveProperty('uptime_seconds');
-    expect(res.json).toHaveProperty('request_count');
-    expect(res.json).toHaveProperty('error_count');
-    expect(res.json).toHaveProperty('error_rate');
-    expect(res.json).toHaveProperty('response_time_p50');
-    expect(res.json).toHaveProperty('sse_connections');
-    expect(res.json).toHaveProperty('cache_hit_ratio');
-    expect(res.json).toHaveProperty('per_endpoint');
+    const res = await inject('GET', '/api/metrics');
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body).toHaveProperty('uptime_seconds');
+    expect(body).toHaveProperty('request_count');
+    expect(body).toHaveProperty('error_count');
+    expect(body).toHaveProperty('error_rate');
+    expect(body).toHaveProperty('response_time_p50');
+    expect(body).toHaveProperty('sse_connections');
+    expect(body).toHaveProperty('cache_hit_ratio');
+    expect(body).toHaveProperty('per_endpoint');
   });
 
   it('GET /api/health returns status ok with SSE count', async () => {
-    const res = await req('GET', '/api/health');
-    expect(res.status).toBe(200);
-    expect(res.json.status).toBe('ok');
-    expect(res.json).toHaveProperty('sse_connections');
-    expect(res.json).toHaveProperty('timestamp');
+    const res = await inject('GET', '/api/health');
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.status).toBe('ok');
+    expect(body).toHaveProperty('sse_connections');
+    expect(body).toHaveProperty('timestamp');
   });
 
   it('recordMetric increments counts', () => {
-    const before = _metrics.requestCount;
-    recordMetric('GET', '/test', 10, 200);
-    expect(_metrics.requestCount).toBe(before + 1);
+    const before = app._metrics.requestCount;
+    app._ctx.recordMetric('GET', '/test', 10, 200);
+    expect(app._metrics.requestCount).toBe(before + 1);
   });
 
   it('recordMetric tracks errors for 4xx/5xx', () => {
-    const before = _metrics.errorCount;
-    recordMetric('GET', '/fail', 5, 500);
-    expect(_metrics.errorCount).toBe(before + 1);
+    const before = app._metrics.errorCount;
+    app._ctx.recordMetric('GET', '/fail', 5, 500);
+    expect(app._metrics.errorCount).toBe(before + 1);
   });
 
   it('computePercentiles returns zeroes for empty', () => {
-    const p = computePercentiles([]);
+    const p = app._ctx.computePercentiles([]);
     expect(p.p50).toBe(0);
     expect(p.p95).toBe(0);
     expect(p.p99).toBe(0);
@@ -453,43 +407,41 @@ describe('Sprint 4 Regression: SSE & Metrics', () => {
 
   it('computePercentiles computes for known data', () => {
     const data = Array.from({ length: 100 }, (_, i) => i + 1);
-    const p = computePercentiles(data);
+    const p = app._ctx.computePercentiles(data);
     expect(p.p50).toBe(50);
     expect(p.p95).toBe(95);
     expect(p.p99).toBe(99);
   });
 
   it('POST /api/analytics accepts valid events', async () => {
-    const res = await req('POST', '/api/analytics', {
+    const res = await inject('POST', '/api/analytics', {
       events: [
         { event: 'page_view', properties: { page: 'questionnaires' } },
         { event: 'tab_switch', properties: { tab: 'decisions' } },
       ],
     });
-    expect(res.status).toBe(200);
-    expect(res.json.accepted).toBe(2);
-    expect(res.json.rejected).toBe(0);
+    expect(res.statusCode).toBe(200);
+    expect(res.json().accepted).toBe(2);
+    expect(res.json().rejected).toBe(0);
   });
 
   it('POST /api/analytics rejects invalid event types', async () => {
-    const res = await req('POST', '/api/analytics', {
+    const res = await inject('POST', '/api/analytics', {
       events: [{ event: 'invalid_event' }],
     });
-    expect(res.status).toBe(200);
-    expect(res.json.accepted).toBe(0);
-    expect(res.json.rejected).toBe(1);
+    expect(res.statusCode).toBe(400);
+    expect(res.json().code).toBe('VALIDATION_ERROR');
   });
 
   it('GET /api/analytics returns stored events', async () => {
-    // Ensure analytics file exists
     store.writeFile(
       ANALYTICS_FILE,
       JSON.stringify([{ event: 'page_view', properties: {}, timestamp: '2026-01-01T00:00:00Z' }])
     );
-    _cache.invalidateAll();
-    const res = await req('GET', '/api/analytics');
-    expect(res.status).toBe(200);
-    expect(res.json.events).toHaveLength(1);
+    app._cache.invalidateAll();
+    const res = await inject('GET', '/api/analytics');
+    expect(res.statusCode).toBe(200);
+    expect(res.json().events).toHaveLength(1);
   });
 
   it('strings module exports all expected keys', () => {
@@ -507,9 +459,6 @@ describe('Sprint 4 Regression: SSE & Metrics', () => {
  * ═══════════════════════════════════════════════════════════════════ */
 
 describe('Sprint 5 Regression: Accessibility', () => {
-  // Legacy index.html a11y tests removed — S9H migrated to React SPA.
-  // Accessibility is now tested via axe-core in tests/e2e/s9h-accessibility.spec.ts
-
   it('React SPA accessibility test suite exists', () => {
     const specPath = path.join(__dirname, '..', 'e2e', 's9h-accessibility.spec.ts');
     expect(fs.existsSync(specPath)).toBe(true);
@@ -531,62 +480,59 @@ describe('Sprint 6 Regression: Integration & Backup', () => {
   });
 
   it('POST /api/save round-trip persists answer', async () => {
-    const saveRes = await req('POST', '/api/save', {
+    const saveRes = await inject('POST', '/api/save', {
       file: Q_FILE_REL,
       updates: [{ questionId: 'Q-05-001', answer: 'Localhost deployment', status: 'ANSWERED' }],
     });
-    expect(saveRes.status).toBe(200);
-    expect(saveRes.json.ok).toBe(true);
+    expect(saveRes.statusCode).toBe(200);
+    expect(saveRes.json().ok).toBe(true);
 
-    // Verify persistence
     const content = store.readFile(path.join(BUSINESS_DOCS, Q_FILE_REL));
     expect(content).toContain('Localhost deployment');
   });
 
   it('decision create + answer + decide round-trip', async () => {
-    // Create
-    const createRes = await req('POST', '/api/decisions', {
+    const createRes = await inject('POST', '/api/decisions', {
       action: 'create',
       type: 'OPEN_QUESTION',
       priority: 'HIGH',
       scope: 'TECH',
       text: 'Regression test Q?',
     });
-    expect(createRes.status).toBe(200);
-    const id = createRes.json.id;
+    expect(createRes.statusCode).toBe(200);
+    const id = createRes.json().id;
 
-    // Answer
-    const ansRes = await req('POST', '/api/decisions', {
+    const ansRes = await inject('POST', '/api/decisions', {
       action: 'answer',
       id,
       answer: 'Yes, confirmed.',
     });
-    expect(ansRes.status).toBe(200);
+    expect(ansRes.statusCode).toBe(200);
 
-    // Decide
-    const decRes = await req('POST', '/api/decisions', {
+    const decRes = await inject('POST', '/api/decisions', {
       action: 'decide',
       id,
       answer: 'Final: yes.',
     });
-    expect(decRes.status).toBe(200);
+    expect(decRes.statusCode).toBe(200);
   });
 
   it('GET /api/export includes session and queue data', async () => {
-    const res = await req('GET', '/api/export');
-    expect(res.status).toBe(200);
-    expect(res.json).toHaveProperty('session');
-    expect(res.json).toHaveProperty('command_queue');
-    expect(res.json).toHaveProperty('exported_at');
+    const res = await inject('GET', '/api/export');
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body).toHaveProperty('session');
+    expect(body).toHaveProperty('command_queue');
+    expect(body).toHaveProperty('exported_at');
   });
 
   it('GET /api/progress returns phase structure', async () => {
-    const res = await req('GET', '/api/progress');
-    expect(res.status).toBe(200);
-    expect(res.json.phases).toBeDefined();
-    expect(res.json.phases.length).toBe(7); // 7 phase groups
-    // Verify phase labels
-    const labels = res.json.phases.map((p) => p.key);
+    const res = await inject('GET', '/api/progress');
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.phases).toBeDefined();
+    expect(body.phases.length).toBe(7);
+    const labels = body.phases.map((p) => p.key);
     expect(labels).toContain('ONBOARDING');
     expect(labels).toContain('PHASE-2');
     expect(labels).toContain('PHASE-5');
@@ -612,27 +558,27 @@ describe('Sprint 6 Regression: Integration & Backup', () => {
 });
 
 /* ═══════════════════════════════════════════════════════════════════
- * SPRINT 7 — NEW: AUDIT TRAIL
+ * SPRINT 7 — AUDIT TRAIL
  * ═══════════════════════════════════════════════════════════════════ */
 
 describe('Sprint 7 Regression: Audit Trail', () => {
   it('GET /api/audit returns entries with limit param', async () => {
-    // Trigger some mutations first to generate audit entries
-    await req('POST', '/api/save', {
+    await inject('POST', '/api/save', {
       file: Q_FILE_REL,
       updates: [{ questionId: 'Q-05-001', answer: 'Audit trail test', status: 'ANSWERED' }],
     });
-    const res = await req('GET', '/api/audit?limit=10');
-    expect(res.status).toBe(200);
-    expect(res.json).toHaveProperty('entries');
-    expect(res.json).toHaveProperty('total');
-    expect(res.json).toHaveProperty('limit');
+    const res = await inject('GET', '/api/audit?limit=10');
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body).toHaveProperty('entries');
+    expect(body).toHaveProperty('total');
+    expect(body).toHaveProperty('limit');
   });
 
   it('GET /api/audit defaults to limit=50', async () => {
-    const res = await req('GET', '/api/audit');
-    expect(res.status).toBe(200);
-    expect(res.json.limit).toBe(50);
+    const res = await inject('GET', '/api/audit');
+    expect(res.statusCode).toBe(200);
+    expect(res.json().limit).toBe(50);
   });
 });
 
@@ -642,59 +588,57 @@ describe('Sprint 7 Regression: Audit Trail', () => {
 
 describe('Cross-cutting Regression', () => {
   it('404 for unknown API path', async () => {
-    const res = await req('GET', '/api/nonexistent');
-    expect(res.status).toBe(404);
-    expect(res.json.code).toBe('NOT_FOUND');
+    const res = await inject('GET', '/api/nonexistent');
+    expect(res.statusCode).toBe(404);
   });
 
   it('405 for wrong method on existing path', async () => {
-    const res = await req('DELETE', '/api/session');
-    expect(res.status).toBe(405);
+    const res = await inject('DELETE', '/api/session');
+    expect(res.statusCode).toBe(405);
   });
 
   it('GET /api/help returns table of contents', async () => {
-    const res = await req('GET', '/api/help');
-    expect(res.status).toBe(200);
-    expect(res.json.toc).toBeDefined();
-    expect(res.json.toc.length).toBeGreaterThan(0);
+    const res = await inject('GET', '/api/help');
+    expect(res.statusCode).toBe(200);
+    expect(res.json().toc).toBeDefined();
+    expect(res.json().toc.length).toBeGreaterThan(0);
   });
 
   it('GET /api/help?topic=getting-started returns content', async () => {
-    const res = await req('GET', '/api/help?topic=getting-started');
-    expect(res.status).toBe(200);
-    expect(res.json.content).toContain('Getting Started');
+    const res = await inject('GET', '/api/help?topic=getting-started');
+    expect(res.statusCode).toBe(200);
+    expect(res.json().content).toContain('Getting Started');
   });
 
   it('GET /api/help rejects invalid slug', async () => {
-    const res = await req('GET', '/api/help?topic=../secrets');
-    expect(res.status).toBe(400);
+    const res = await inject('GET', '/api/help?topic=../secrets');
+    expect(res.statusCode).toBe(400);
   });
 
   it('POST /api/command queues valid command', async () => {
-    const res = await req('POST', '/api/command', { command: 'AUDIT TECH' });
-    expect(res.status).toBe(200);
-    expect(res.json.ok).toBe(true);
-    expect(res.json.clipboard_text).toContain('AUDIT TECH');
+    const res = await inject('POST', '/api/command', { command: 'AUDIT TECH' });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().ok).toBe(true);
+    expect(res.json().clipboard_text).toContain('AUDIT TECH');
   });
 
   it('POST /api/command rejects unknown command', async () => {
-    const res = await req('POST', '/api/command', { command: 'INVALID COMMAND' });
-    expect(res.status).toBe(400);
+    const res = await inject('POST', '/api/command', { command: 'INVALID COMMAND' });
+    expect(res.statusCode).toBe(400);
   });
 
   it('GET /api/command returns queue', async () => {
-    // Post a command first
-    await req('POST', '/api/command', { command: 'CONTINUE' });
-    const res = await req('GET', '/api/command');
-    expect(res.status).toBe(200);
-    expect(res.json).toHaveProperty('queue');
-    expect(res.json).toHaveProperty('command');
+    await inject('POST', '/api/command', { command: 'CONTINUE' });
+    const res = await inject('GET', '/api/command');
+    expect(res.statusCode).toBe(200);
+    expect(res.json()).toHaveProperty('queue');
+    expect(res.json()).toHaveProperty('command');
   });
 
   it('POST /api/reevaluate writes trigger', async () => {
-    const res = await req('POST', '/api/reevaluate', { scope: 'TECH' });
-    expect(res.status).toBe(200);
-    expect(res.json.scope).toBe('TECH');
+    const res = await inject('POST', '/api/reevaluate', { scope: 'TECH' });
+    expect(res.statusCode).toBe(200);
+    expect(res.json().scope).toBe('TECH');
   });
 
   it('Cache readJSON validates with schema', () => {

@@ -86,8 +86,8 @@ export { useTraceability } from './use-traceability';
 /* Sessions (M15) */
 export { useSessions, useSession, useSessionTimeline } from './use-sessions';
 
-/* Agents (M15) */
-export { useAgents, useAgent } from './use-agents';
+/* Agents (M15, M31) */
+export { useAgents, useAgent, useExecuteAgent } from './use-agents';
 
 /* Runtime Events (M15) */
 export { useRuntimeEvents } from './use-runtime-events';

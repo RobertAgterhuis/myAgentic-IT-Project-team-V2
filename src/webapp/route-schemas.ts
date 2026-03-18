@@ -654,6 +654,30 @@ export const agentDetail = {
   response: readResponses,
 };
 
+export const agentExecute = {
+  tags: ['agents'],
+  params: idParam,
+  body: {
+    type: 'object' as const,
+    properties: {
+      context: {
+        type: 'object' as const,
+        properties: {
+          predecessorPaths: {
+            type: 'array' as const,
+            items: { type: 'string' as const, minLength: 1, maxLength: 500 },
+            maxItems: 50,
+          },
+          questionnairePath: { type: 'string' as const, minLength: 1, maxLength: 500 },
+        },
+        additionalProperties: false,
+      },
+    },
+    additionalProperties: false,
+  },
+  response: { ...mutationResponses, ...r404, ...r500 },
+};
+
 /* ── sessions ─────────────────────────────────────────────────── */
 
 export const sessionDetail = {

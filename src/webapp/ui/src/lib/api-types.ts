@@ -918,3 +918,33 @@ export interface ApprovalHistoryEntry {
 export interface ApprovalHistoryResponse extends OkResponse {
   history: ApprovalHistoryEntry[];
 }
+
+/* ──────────────────────────────────────────────
+ * Agent Execution (M31-001)
+ * ────────────────────────────────────────────── */
+
+export type AgentExecutionStatus = 'running' | 'completed' | 'failed';
+
+export interface AgentExecutionContext {
+  predecessorPaths?: string[];
+  questionnairePath?: string;
+}
+
+export interface AgentExecutePayload {
+  context?: AgentExecutionContext;
+}
+
+export interface AgentExecutionResult {
+  agent_id: string;
+  agent_name: string;
+  status: AgentExecutionStatus;
+  started_at: string;
+  completed_at?: string;
+  duration_ms?: number;
+  output_path?: string;
+  error?: string;
+}
+
+export interface AgentExecuteResponse extends OkResponse {
+  execution: AgentExecutionResult;
+}

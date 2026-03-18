@@ -1,6 +1,6 @@
 /**
  * Agents page — list all tracked agents with activity status and detail panel.
- * M15 / Issue #M15-030
+ * M15 / Issue #M15-030, M31-001
  */
 import { useState } from 'react';
 import { Heading, Text } from '@/components/ui/typography';
@@ -12,9 +12,19 @@ import { AlertBanner } from '@/components/ui/alert-banner';
 import { Button } from '@/components/ui/button';
 import { MetricCard } from '@/components/ui/metric-card';
 import { ExplainabilityPanel } from '@/components/runtime/explainability-panel';
+import { AgentExecuteModal } from '@/components/runtime/agent-execute-modal';
 import { useAgents } from '@/hooks';
 import type { AgentDetailStatus, AgentDetailEntry } from '@/lib/api-types';
-import { Bot, Activity, CheckCircle, XCircle, Clock, RotateCcw, RefreshCw } from 'lucide-react';
+import {
+  Bot,
+  Activity,
+  CheckCircle,
+  XCircle,
+  Clock,
+  RotateCcw,
+  RefreshCw,
+  Play,
+} from 'lucide-react';
 
 const statusConfig: Record<
   AgentDetailStatus,
@@ -30,6 +40,7 @@ const statusConfig: Record<
 export default function AgentsPage() {
   const { data, isLoading, error, refetch } = useAgents();
   const [selectedAgent, setSelectedAgent] = useState<AgentDetailEntry | null>(null);
+  const [executeAgent, setExecuteAgent] = useState<AgentDetailEntry | null>(null);
 
   if (isLoading) {
     return (
@@ -151,6 +162,18 @@ export default function AgentsPage() {
                             {agent.retry_count} retries
                           </Badge>
                         )}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-6 px-2 text-[10px]"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExecuteAgent(agent);
+                          }}
+                          aria-label={`Execute ${agent.name}`}
+                        >
+                          <Play className="size-3 mr-1" /> Execute
+                        </Button>
                       </div>
                     </div>
                   </Card>
@@ -192,6 +215,17 @@ export default function AgentsPage() {
           )}
         </section>
       </div>
+
+      {/* Agent Execute Modal (M31-001) */}
+      {executeAgent && (
+        <AgentExecuteModal
+          agent={executeAgent}
+          open={!!executeAgent}
+          onOpenChange={(open) => {
+            if (!open) setExecuteAgent(null);
+          }}
+        />
+      )}
     </div>
   );
 }

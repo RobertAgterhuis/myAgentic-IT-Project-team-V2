@@ -53,6 +53,10 @@ function getInvalidationKeys(eventType: string): readonly (readonly string[])[] 
     case 'agent_start':
     case 'agent_complete':
       return [queryKeys.agents.all, queryKeys.sessions.all];
+    case 'agent_execution_start':
+    case 'agent_execution_complete':
+    case 'agent_execution_failed':
+      return [queryKeys.agents.all, queryKeys.sessions.all];
     case 'gate_passed':
     case 'gate_failed':
       return [queryKeys.sessions.all, queryKeys.progress.all];
@@ -78,6 +82,14 @@ function notifyUser(event: SSEEvent) {
       break;
     case 'command_queued':
       showToast.info(`Command queued: ${String(event.command ?? 'unknown')}`);
+      break;
+    case 'agent_execution_complete':
+      showToast.success(
+        `Agent executed: ${String(event.agent_name ?? event.agent_id ?? 'unknown')}`
+      );
+      break;
+    case 'agent_execution_failed':
+      showToast.error(`Agent failed: ${String(event.agent_name ?? event.agent_id ?? 'unknown')}`);
       break;
   }
 }

@@ -12,14 +12,18 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const DOCS_DIR = path.resolve(__dirname, '../../docs');
+const GOVERNANCE_DOC_PATHS = {
+  gaDefinition: path.join(DOCS_DIR, 'operations', 'ga-definition.md'),
+  dataInventory: path.join(DOCS_DIR, 'security', 'data-inventory.md'),
+  securityDesign: path.join(DOCS_DIR, 'security', 'security-design.md'),
+};
 
 /**
  * Read a markdown file and return its content.
- * @param {string} filename - Name of the file in the docs directory
+ * @param {string} filePath - Absolute path to a markdown file
  * @returns {string} File content
  */
-function readDoc(filename, baseDir = DOCS_DIR) {
-  const filePath = path.join(baseDir, filename);
+function readDoc(filePath) {
   return fs.readFileSync(filePath, 'utf-8');
 }
 
@@ -41,7 +45,7 @@ describe('ga-definition.md — structure validation', () => {
   let headings;
 
   beforeAll(() => {
-    content = readDoc('ga-definition.md');
+    content = readDoc(GOVERNANCE_DOC_PATHS.gaDefinition);
     headings = extractH2Headings(content);
   });
 
@@ -92,7 +96,7 @@ describe('data-inventory.md — structure validation', () => {
   let headings;
 
   beforeAll(() => {
-    content = readDoc('security/data-inventory.md');
+    content = readDoc(GOVERNANCE_DOC_PATHS.dataInventory);
     headings = extractH2Headings(content);
   });
 
@@ -140,7 +144,7 @@ describe('security-design.md — structure validation', () => {
   let headings;
 
   beforeAll(() => {
-    content = readDoc('security/security-design.md');
+    content = readDoc(GOVERNANCE_DOC_PATHS.securityDesign);
     headings = extractH2Headings(content);
   });
 

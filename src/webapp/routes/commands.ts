@@ -10,26 +10,24 @@
  * @returns {object} Route map { 'METHOD /path': handler }.
  */
 
+import type { FastifyInstance } from 'fastify';
+import type { ServerContext } from '../context';
 import { CommandService, ServiceValidationError, toServiceContext } from '../services';
 import { attachSecretWarnings } from '../utils/secret-utils';
 import { errorResponse } from '../utils/errors';
 import { RESPONSES as R } from '../strings';
-import { structuredLog, json, parseBody, assertString, checkSecretsInBody } from '../middleware';
+import { structuredLog, checkSecretsInBody } from '../middleware';
+import * as RS from '../route-schemas';
 
-const COMMAND_OPT_FIELDS = ['project', 'description', 'scope', 'brief'];
-const COMMAND_OPT_LIMITS = { project: 200, description: 2000, scope: 200, brief: 200000 };
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  const svc = new CommandService(toServiceContext(ctx as unknown as Record<string, unknown>));
 
-export = function createCommandRoutes(ctx): Record<string, unknown> {
-  const { sseNotify } = ctx;
+  // Expose helpers for cross-module use (progress needs getLatestCommand + readCommandQueue)
+  ctx._readCommandQueue = () => svc.getQueue();
+  ctx._getLatestCommand = () => svc.getLatest();
 
-  const svc = new CommandService(toServiceContext(ctx));
-
-  async function apiPostCommand(req, res) {
-    const body = await parseBody(req);
-    assertString(body.command, 'command', 100);
-    for (const f of COMMAND_OPT_FIELDS) {
-      if (body[f]) assertString(body[f], f, COMMAND_OPT_LIMITS[f]);
-    }
+  app.post('/api/command', { schema: RS.commandCreate }, async (request, reply) => {
+    const body = request.body as Record<string, unknown>;
 
     const cmdSecrets = checkSecretsInBody(body, ['description', 'brief']);
     if (cmdSecrets.length > 0)
@@ -50,7 +48,7 @@ export = function createCommandRoutes(ctx): Record<string, unknown> {
         'webapp'
       );
 
-      sseNotify('command_queued', {
+      ctx.sseNotify('command_queued', {
         type: 'command_queued',
         command: (body.command as string).trim(),
         project: result.clipboard_text,
@@ -64,30 +62,19 @@ export = function createCommandRoutes(ctx): Record<string, unknown> {
         message: R.commandQueued(result.clipboard_text),
       };
       attachSecretWarnings(cmdResponse, cmdSecrets);
-      json(res, 200, cmdResponse);
+      return reply.type('application/json').send(cmdResponse);
     } catch (e) {
       if (e instanceof ServiceValidationError) {
-        return json(
-          res,
-          400,
-          errorResponse('UNKNOWN_COMMAND', R.unknownCommand(body.command as string))
-        );
+        return reply
+          .code(400)
+          .send(errorResponse('UNKNOWN_COMMAND', R.unknownCommand(body.command as string)));
       }
       throw e;
     }
-  }
+  });
 
-  async function apiGetCommand(_req, res) {
+  app.get('/api/command', { schema: RS.commandGet }, async (_request, reply) => {
     const queue = svc.getQueue();
-    json(res, 200, { command: svc.getLatest(), queue });
-  }
-
-  // Expose helpers for cross-module use (progress needs getLatestCommand + readCommandQueue)
-  const routes: Record<string, unknown> = {
-    'POST /api/command': apiPostCommand,
-    'GET /api/command': apiGetCommand,
-  };
-  routes._readCommandQueue = () => svc.getQueue();
-  routes._getLatestCommand = () => svc.getLatest();
-  return routes;
-};
+    return reply.send({ command: svc.getLatest(), queue });
+  });
+}

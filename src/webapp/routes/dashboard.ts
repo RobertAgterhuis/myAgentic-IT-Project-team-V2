@@ -19,7 +19,8 @@
 import fs from 'fs';
 import path from 'path';
 import { execFile } from 'child_process';
-import { json } from '../middleware';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { ServerContext } from '../context';
 
 /* ── Async git helper with TTL cache ──────────────────────────── */
 
@@ -361,16 +362,16 @@ async function computeQuickStats(ctx) {
  * GET /api/dashboard/health
  * Returns project health indicators: code quality, test coverage, build status, deployment.
  */
-async function getHealth(req, res, ctx) {
+async function getHealth(ctx: ServerContext, reply: FastifyReply) {
   try {
     const health = computeHealthStatus(ctx);
-    json(res, 200, {
+    reply.send({
       ok: true,
       data: health,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    json(res, 500, { error: 'Failed to compute health status', details: err.message });
+    reply.code(500).send({ error: 'Failed to compute health status', details: err.message });
   }
 }
 
@@ -378,16 +379,16 @@ async function getHealth(req, res, ctx) {
  * GET /api/dashboard/metrics
  * Returns key metrics: HTTP requests, error rate, response time.
  */
-async function getMetrics(req, res, ctx) {
+async function getMetrics(ctx: ServerContext, reply: FastifyReply) {
   try {
     const metrics = computeKeyMetrics(ctx);
-    json(res, 200, {
+    reply.send({
       ok: true,
       data: metrics,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    json(res, 500, { error: 'Failed to compute metrics', details: err.message });
+    reply.code(500).send({ error: 'Failed to compute metrics', details: err.message });
   }
 }
 
@@ -395,16 +396,16 @@ async function getMetrics(req, res, ctx) {
  * GET /api/dashboard/activity
  * Returns recent activity feed: commits, tests, milestones.
  */
-async function getActivity(req, res, ctx) {
+async function getActivity(ctx: ServerContext, reply: FastifyReply) {
   try {
     const activity = computeActivityFeed(ctx);
-    json(res, 200, {
+    reply.send({
       ok: true,
       data: activity,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    json(res, 500, { error: 'Failed to fetch activity feed', details: err.message });
+    reply.code(500).send({ error: 'Failed to fetch activity feed', details: err.message });
   }
 }
 
@@ -412,31 +413,40 @@ async function getActivity(req, res, ctx) {
  * GET /api/dashboard/stats
  * Returns quick statistics: files, team, sprint, stars.
  */
-async function getStats(req, res, ctx) {
+async function getStats(ctx: ServerContext, reply: FastifyReply) {
   try {
     const stats = await computeQuickStats(ctx);
-    json(res, 200, {
+    reply.send({
       ok: true,
       data: stats,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    json(res, 500, { error: 'Failed to compute statistics', details: err.message });
+    reply.code(500).send({ error: 'Failed to compute statistics', details: err.message });
   }
 }
 
 /* ── Module Export ───────────────────────────────────────────── */
 
-export = function dashboardRoutes(
-  ctx
-): Record<
-  string,
-  (req: import('http').IncomingMessage, res: import('http').ServerResponse) => void
-> {
-  return {
-    'GET /api/dashboard/health': (req, res) => getHealth(req, res, ctx),
-    'GET /api/dashboard/metrics': (req, res) => getMetrics(req, res, ctx),
-    'GET /api/dashboard/activity': (req, res) => getActivity(req, res, ctx),
-    'GET /api/dashboard/stats': (req, res) => getStats(req, res, ctx),
-  };
-};
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  app.get(
+    '/api/dashboard/health',
+    { schema: { tags: ['dashboard'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => getHealth(ctx, reply)
+  );
+  app.get(
+    '/api/dashboard/metrics',
+    { schema: { tags: ['dashboard'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => getMetrics(ctx, reply)
+  );
+  app.get(
+    '/api/dashboard/activity',
+    { schema: { tags: ['dashboard'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => getActivity(ctx, reply)
+  );
+  app.get(
+    '/api/dashboard/stats',
+    { schema: { tags: ['dashboard'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => getStats(ctx, reply)
+  );
+}

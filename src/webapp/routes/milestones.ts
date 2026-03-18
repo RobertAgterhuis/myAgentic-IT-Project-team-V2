@@ -16,9 +16,11 @@
  */
 
 import path from 'path';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { ServerContext } from '../context';
 import { withFileLock } from '../file-lock';
-import { json, parseBody } from '../middleware';
 import { getStore } from '../store';
+import * as RS from '../route-schemas';
 
 const VALID_STATUSES = ['not started', 'in progress', 'complete', 'blocked'];
 
@@ -29,12 +31,6 @@ function getPaths(ctx) {
     milestonesFile: path.join(dataDir, 'milestones.json'),
     templatesFile: path.join(dataDir, 'milestone-templates.json'),
   };
-}
-
-function normalizeMilestoneId(reqUrl, reqHost) {
-  const pathname = new URL(reqUrl, `http://${reqHost}`).pathname;
-  const parts = pathname.split('/').filter(Boolean);
-  return parts.length >= 3 ? parts[2] : '';
 }
 
 function generateMilestoneId() {
@@ -150,14 +146,16 @@ function collectMilestoneUpdates(data, milestones, milestoneId) {
   return updatedFields;
 }
 
-async function createMilestone(req, res, ctx) {
+async function createMilestone(request: FastifyRequest, reply: FastifyReply, ctx) {
   const paths = getPaths(ctx);
 
   try {
-    const data = await parseBody(req);
+    const data = request.body as Record<string, unknown>;
     const validation = validateMilestone(data);
     if (!validation.valid) {
-      return json(res, 400, { ok: false, error: 'Validation failed', details: validation.errors });
+      return reply
+        .code(400)
+        .send({ ok: false, error: 'Validation failed', details: validation.errors });
     }
 
     let createdMilestone = null;
@@ -166,7 +164,7 @@ async function createMilestone(req, res, ctx) {
     await withFileLock(paths.milestonesFile, () => {
       const milestones = readMilestones(paths, ctx._cache);
       if (milestoneNameExists(milestones, data.name, null)) {
-        return json(res, 409, {
+        return reply.code(409).send({
           ok: false,
           error: 'Milestone already exists',
           details: [`Milestone with name "${data.name}" already exists`],
@@ -198,7 +196,7 @@ async function createMilestone(req, res, ctx) {
 
     if (!createdMilestone) return;
 
-    return json(res, 201, {
+    return reply.code(201).send({
       ok: true,
       data: createdMilestone,
       message: `Milestone "${createdMilestone.name}" created successfully`,
@@ -206,9 +204,9 @@ async function createMilestone(req, res, ctx) {
     });
   } catch (err) {
     if (err && err.status) {
-      return json(res, err.status, { ok: false, error: err.message });
+      return reply.code(err.status).send({ ok: false, error: err.message });
     }
-    return json(res, 500, {
+    return reply.code(500).send({
       ok: false,
       error: 'Failed to create milestone',
       details: err.message,
@@ -216,21 +214,20 @@ async function createMilestone(req, res, ctx) {
   }
 }
 
-async function listMilestones(req, res, ctx) {
+async function listMilestones(request: FastifyRequest, reply: FastifyReply, ctx) {
   try {
-    const url = new URL(req.url, `http://${req.headers.host}`);
-    const includeArchived = url.searchParams.get('include_archived') === 'true';
+    const includeArchived = (request.query as Record<string, string>).include_archived === 'true';
     const milestones = readMilestones(getPaths(ctx), ctx._cache);
     const filtered = includeArchived ? milestones : milestones.filter((m) => !m.archived);
 
-    return json(res, 200, {
+    return reply.send({
       ok: true,
       data: filtered,
       count: filtered.length,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    return json(res, 500, {
+    return reply.code(500).send({
       ok: false,
       error: 'Failed to list milestones',
       details: err.message,
@@ -238,27 +235,31 @@ async function listMilestones(req, res, ctx) {
   }
 }
 
-async function getMilestone(req, res, ctx) {
+async function getMilestone(
+  request: FastifyRequest<{ Params: { id: string } }>,
+  reply: FastifyReply,
+  ctx
+) {
   try {
-    const milestoneId = normalizeMilestoneId(req.url, req.headers.host);
+    const milestoneId = request.params.id;
     const milestones = readMilestones(getPaths(ctx), ctx._cache);
     const milestone = milestones.find((m) => m.id === milestoneId);
 
     if (!milestone) {
-      return json(res, 404, {
+      return reply.code(404).send({
         ok: false,
         error: 'Milestone not found',
         details: [`Milestone with ID "${milestoneId}" does not exist`],
       });
     }
 
-    return json(res, 200, {
+    return reply.send({
       ok: true,
       data: milestone,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    return json(res, 500, {
+    return reply.code(500).send({
       ok: false,
       error: 'Failed to get milestone',
       details: err.message,
@@ -266,12 +267,16 @@ async function getMilestone(req, res, ctx) {
   }
 }
 
-async function updateMilestone(req, res, ctx) {
+async function updateMilestone(
+  request: FastifyRequest<{ Params: { id: string } }>,
+  reply: FastifyReply,
+  ctx
+) {
   const paths = getPaths(ctx);
 
   try {
-    const milestoneId = normalizeMilestoneId(req.url, req.headers.host);
-    const data = await parseBody(req);
+    const milestoneId = request.params.id;
+    const data = request.body as Record<string, unknown>;
 
     let updatedMilestone = null;
     await withFileLock(paths.milestonesFile, () => {
@@ -309,7 +314,7 @@ async function updateMilestone(req, res, ctx) {
 
     if (!updatedMilestone) return;
 
-    return json(res, 200, {
+    return reply.send({
       ok: true,
       data: updatedMilestone,
       message: `Milestone "${updatedMilestone.name}" updated successfully`,
@@ -317,13 +322,13 @@ async function updateMilestone(req, res, ctx) {
     });
   } catch (err) {
     if (err && err.status) {
-      return json(res, err.status, {
+      return reply.code(err.status).send({
         ok: false,
         error: err.error || err.message,
         details: err.details,
       });
     }
-    return json(res, 500, {
+    return reply.code(500).send({
       ok: false,
       error: 'Failed to update milestone',
       details: err.message,
@@ -331,11 +336,15 @@ async function updateMilestone(req, res, ctx) {
   }
 }
 
-async function archiveMilestone(req, res, ctx) {
+async function archiveMilestone(
+  request: FastifyRequest<{ Params: { id: string } }>,
+  reply: FastifyReply,
+  ctx
+) {
   const paths = getPaths(ctx);
 
   try {
-    const milestoneId = normalizeMilestoneId(req.url, req.headers.host);
+    const milestoneId = request.params.id;
 
     let archivedMilestone = null;
     await withFileLock(paths.milestonesFile, () => {
@@ -343,7 +352,7 @@ async function archiveMilestone(req, res, ctx) {
       const index = milestones.findIndex((m) => m.id === milestoneId);
 
       if (index === -1) {
-        return json(res, 404, {
+        return reply.code(404).send({
           ok: false,
           error: 'Milestone not found',
           details: [`Milestone with ID "${milestoneId}" does not exist`],
@@ -374,7 +383,7 @@ async function archiveMilestone(req, res, ctx) {
 
     if (!archivedMilestone) return;
 
-    return json(res, 200, {
+    return reply.send({
       ok: true,
       data: archivedMilestone,
       message: `Milestone "${archivedMilestone.name}" archived successfully`,
@@ -382,9 +391,9 @@ async function archiveMilestone(req, res, ctx) {
     });
   } catch (err) {
     if (err && err.status) {
-      return json(res, err.status, { ok: false, error: err.message });
+      return reply.code(err.status).send({ ok: false, error: err.message });
     }
-    return json(res, 500, {
+    return reply.code(500).send({
       ok: false,
       error: 'Failed to archive milestone',
       details: err.message,
@@ -436,14 +445,16 @@ function validateTemplate(data) {
   return { valid: errors.length === 0, errors };
 }
 
-async function createTemplate(req, res, ctx) {
+async function createTemplate(request: FastifyRequest, reply: FastifyReply, ctx) {
   const paths = getPaths(ctx);
 
   try {
-    const data = await parseBody(req);
+    const data = request.body as Record<string, unknown>;
     const validation = validateTemplate(data);
     if (!validation.valid) {
-      return json(res, 400, { ok: false, error: 'Validation failed', details: validation.errors });
+      return reply
+        .code(400)
+        .send({ ok: false, error: 'Validation failed', details: validation.errors });
     }
 
     let createdTemplate = null;
@@ -457,7 +468,7 @@ async function createTemplate(req, res, ctx) {
         (t) => t.name.toLowerCase() === (data.name as string).toLowerCase()
       );
       if (existingTemplate) {
-        return json(res, 409, {
+        return reply.code(409).send({
           ok: false,
           error: 'Template already exists',
           details: [`Template with name "${data.name}" already exists`],
@@ -488,7 +499,7 @@ async function createTemplate(req, res, ctx) {
 
     if (!createdTemplate) return;
 
-    return json(res, 201, {
+    return reply.code(201).send({
       ok: true,
       data: createdTemplate,
       message: `Template "${createdTemplate.name}" created successfully`,
@@ -496,9 +507,9 @@ async function createTemplate(req, res, ctx) {
     });
   } catch (err) {
     if (err && err.status) {
-      return json(res, err.status, { ok: false, error: err.message });
+      return reply.code(err.status).send({ ok: false, error: err.message });
     }
-    return json(res, 500, {
+    return reply.code(500).send({
       ok: false,
       error: 'Failed to create template',
       details: err.message,
@@ -506,18 +517,18 @@ async function createTemplate(req, res, ctx) {
   }
 }
 
-async function listTemplates(req, res, ctx) {
+async function listTemplates(_request: FastifyRequest, reply: FastifyReply, ctx) {
   try {
     const templates = readTemplates(getPaths(ctx), ctx._cache);
 
-    return json(res, 200, {
+    return reply.send({
       ok: true,
       data: templates,
       count: templates.length,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    return json(res, 500, {
+    return reply.code(500).send({
       ok: false,
       error: 'Failed to list templates',
       details: err.message,
@@ -525,11 +536,15 @@ async function listTemplates(req, res, ctx) {
   }
 }
 
-async function deleteTemplate(req, res, ctx) {
+async function deleteTemplate(
+  request: FastifyRequest<{ Params: { id: string } }>,
+  reply: FastifyReply,
+  ctx
+) {
   const paths = getPaths(ctx);
 
   try {
-    const templateId = normalizeMilestoneId(req.url, req.headers.host);
+    const templateId = request.params.id;
 
     let deletedTemplate = null;
     await withFileLock(paths.templatesFile, () => {
@@ -537,7 +552,7 @@ async function deleteTemplate(req, res, ctx) {
       const index = templates.findIndex((t) => t.id === templateId);
 
       if (index === -1) {
-        return json(res, 404, {
+        return reply.code(404).send({
           ok: false,
           error: 'Template not found',
           details: [`Template with ID "${templateId}" does not exist`],
@@ -560,16 +575,16 @@ async function deleteTemplate(req, res, ctx) {
 
     if (!deletedTemplate) return;
 
-    return json(res, 200, {
+    return reply.send({
       ok: true,
       message: `Template "${deletedTemplate.name}" deleted successfully`,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
     if (err && err.status) {
-      return json(res, err.status, { ok: false, error: err.message });
+      return reply.code(err.status).send({ ok: false, error: err.message });
     }
-    return json(res, 500, {
+    return reply.code(500).send({
       ok: false,
       error: 'Failed to delete template',
       details: err.message,
@@ -577,19 +592,23 @@ async function deleteTemplate(req, res, ctx) {
   }
 }
 
-async function applyTemplate(req, res, ctx) {
+async function applyTemplate(
+  request: FastifyRequest<{ Params: { id: string } }>,
+  reply: FastifyReply,
+  ctx
+) {
   const paths = getPaths(ctx);
 
   try {
-    const templateId = normalizeMilestoneId(req.url, req.headers.host);
-    const data = await parseBody(req);
+    const templateId = request.params.id;
+    const data = request.body as Record<string, unknown>;
 
     // Read template
     const templates = readTemplates(paths, ctx._cache);
     const template = templates.find((t) => t.id === templateId);
 
     if (!template) {
-      return json(res, 404, {
+      return reply.code(404).send({
         ok: false,
         error: 'Template not found',
         details: [`Template with ID "${templateId}" does not exist`],
@@ -602,7 +621,7 @@ async function applyTemplate(req, res, ctx) {
 
     // Validate completion date if provided
     if (!completion) {
-      return json(res, 400, {
+      return reply.code(400).send({
         ok: false,
         error: 'Validation failed',
         details: ['completion: required field when applying template'],
@@ -611,7 +630,7 @@ async function applyTemplate(req, res, ctx) {
 
     const completionError = validateCompletion(completion);
     if (completionError) {
-      return json(res, 400, {
+      return reply.code(400).send({
         ok: false,
         error: 'Validation failed',
         details: [completionError],
@@ -622,7 +641,7 @@ async function applyTemplate(req, res, ctx) {
     await withFileLock(paths.milestonesFile, () => {
       const milestones = readMilestones(paths, ctx._cache);
       if (milestoneNameExists(milestones, milestoneName, null)) {
-        return json(res, 409, {
+        return reply.code(409).send({
           ok: false,
           error: 'Milestone already exists',
           details: [`Milestone with name "${milestoneName}" already exists`],
@@ -655,7 +674,7 @@ async function applyTemplate(req, res, ctx) {
 
     if (!createdMilestone) return;
 
-    return json(res, 201, {
+    return reply.code(201).send({
       ok: true,
       data: createdMilestone,
       message: `Milestone "${createdMilestone.name}" created from template "${template.name}"`,
@@ -663,13 +682,13 @@ async function applyTemplate(req, res, ctx) {
     });
   } catch (err) {
     if (err && err.status) {
-      return json(res, err.status, {
+      return reply.code(err.status).send({
         ok: false,
         error: err.error || err.message,
         details: err.details,
       });
     }
-    return json(res, 500, {
+    return reply.code(500).send({
       ok: false,
       error: 'Failed to apply template',
       details: err.message,
@@ -677,16 +696,42 @@ async function applyTemplate(req, res, ctx) {
   }
 }
 
-export = function milestonesRoutes(ctx): Record<string, unknown> {
-  return {
-    'POST /api/milestones': (req, res) => createMilestone(req, res, ctx),
-    'GET /api/milestones': (req, res) => listMilestones(req, res, ctx),
-    'GET /api/milestones/:id': (req, res) => getMilestone(req, res, ctx),
-    'PUT /api/milestones/:id': (req, res) => updateMilestone(req, res, ctx),
-    'PATCH /api/milestones/:id/archive': (req, res) => archiveMilestone(req, res, ctx),
-    'POST /api/milestone-templates': (req, res) => createTemplate(req, res, ctx),
-    'GET /api/milestone-templates': (req, res) => listTemplates(req, res, ctx),
-    'DELETE /api/milestone-templates/:id': (req, res) => deleteTemplate(req, res, ctx),
-    'POST /api/milestone-templates/:id/apply': (req, res) => applyTemplate(req, res, ctx),
-  };
-};
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  app.post('/api/milestones', { schema: RS.milestoneCreate }, (req, reply) =>
+    createMilestone(req, reply, ctx)
+  );
+  app.get('/api/milestones', { schema: { tags: ['milestones'] } }, (req, reply) =>
+    listMilestones(req, reply, ctx)
+  );
+  app.get<{ Params: { id: string } }>(
+    '/api/milestones/:id',
+    { schema: { tags: ['milestones'] } },
+    (req, reply) => getMilestone(req, reply, ctx)
+  );
+  app.put<{ Params: { id: string } }>(
+    '/api/milestones/:id',
+    { schema: RS.milestoneUpdate },
+    (req, reply) => updateMilestone(req, reply, ctx)
+  );
+  app.patch<{ Params: { id: string } }>(
+    '/api/milestones/:id/archive',
+    { schema: RS.milestoneArchive },
+    (req, reply) => archiveMilestone(req, reply, ctx)
+  );
+  app.post('/api/milestone-templates', { schema: RS.milestoneTemplateCreate }, (req, reply) =>
+    createTemplate(req, reply, ctx)
+  );
+  app.get('/api/milestone-templates', { schema: { tags: ['milestones'] } }, (req, reply) =>
+    listTemplates(req, reply, ctx)
+  );
+  app.delete<{ Params: { id: string } }>(
+    '/api/milestone-templates/:id',
+    { schema: { tags: ['milestones'] } },
+    (req, reply) => deleteTemplate(req, reply, ctx)
+  );
+  app.post<{ Params: { id: string } }>(
+    '/api/milestone-templates/:id/apply',
+    { schema: { tags: ['milestones'] } },
+    (req, reply) => applyTemplate(req, reply, ctx)
+  );
+}

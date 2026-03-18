@@ -8,52 +8,41 @@
  *   GET  /api/agents/:id  — Agent detail (prompt summary, outputs, history)
  *
  * @module routes/agents
- * @param {object} _ctx - Shared server context
- * @returns {object} Route map { 'METHOD /path': handler }
  */
 
-import http from 'http';
-import { json } from '../middleware';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { ServerContext } from '../context';
 import { errorResponse } from '../utils/errors';
 import { sessionTracker } from '../session-tracker';
+import * as RS from '../route-schemas';
 
-function extractAgentId(req: http.IncomingMessage): string {
-  const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
-  const parts = url.pathname.split('/').filter(Boolean);
-  // Pattern: /api/agents/:id  →  parts = ['api', 'agents', ':id']
-  return parts.length >= 3 ? decodeURIComponent(parts[2]) : '';
-}
-
-export = function createAgentRoutes(
-  _ctx: Record<string, unknown>
-): Record<string, (req: http.IncomingMessage, res: http.ServerResponse) => void> {
+export async function registerRoutes(app: FastifyInstance, _ctx: ServerContext): Promise<void> {
   // ── GET /api/agents ──────────────────────────────────────
 
-  function handleList(_req: http.IncomingMessage, res: http.ServerResponse) {
-    const agents = sessionTracker.listAgents();
-    return json(res, 200, { ok: true, count: agents.length, agents });
-  }
+  app.get(
+    '/api/agents',
+    { schema: { tags: ['agents'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      const agents = sessionTracker.listAgents();
+      return reply.send({ ok: true, count: agents.length, agents });
+    }
+  );
 
   // ── GET /api/agents/:id ──────────────────────────────────
 
-  function handleDetail(req: http.IncomingMessage, res: http.ServerResponse) {
-    const id = extractAgentId(req);
-    if (!id) {
-      return json(res, 400, errorResponse('MISSING_ID', 'Agent ID is required'));
+  app.get<{ Params: { id: string } }>(
+    '/api/agents/:id',
+    { schema: RS.agentDetail },
+    async (request, reply) => {
+      const id = decodeURIComponent(request.params.id);
+      if (!id) {
+        return reply.code(400).send(errorResponse('MISSING_ID', 'Agent ID is required'));
+      }
+      const agent = sessionTracker.getAgent(id);
+      if (!agent) {
+        return reply.code(404).send(errorResponse('NOT_FOUND', `Agent not found: ${id}`));
+      }
+      return reply.send({ ok: true, agent });
     }
-
-    const agent = sessionTracker.getAgent(id);
-    if (!agent) {
-      return json(res, 404, errorResponse('NOT_FOUND', `Agent not found: ${id}`));
-    }
-
-    return json(res, 200, { ok: true, agent });
-  }
-
-  // ── Route table ──────────────────────────────────────────
-
-  return {
-    'GET /api/agents': handleList,
-    'GET /api/agents/:id': handleDetail,
-  };
-};
+  );
+}

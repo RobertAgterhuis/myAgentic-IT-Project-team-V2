@@ -1,7 +1,6 @@
 #!/usr/bin/env tsx
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-// Questionnaire Manager — Local API server (composition root)
-import http from 'http';
+// Agentic SDLC Platform — Fastify-based API server (M30-003, composition root)
 import path from 'path';
 import { getStore } from './store';
 import { FileCache } from './cache';
@@ -9,29 +8,18 @@ import { AuditTrail } from './audit';
 import { createRateLimiter } from './rate-limiter';
 import { createSSEManager } from './sse-manager';
 import { createMetricsCollector } from './metrics-collector';
-import { resolveRoute, findRouteTemplate, type RouteTable } from './router';
 import { resolveSessionFile } from './session-state-resolver';
-import { errorResponse } from './utils/errors';
 import { withFileLock } from './file-lock';
 import {
   structuredLog,
-  log,
-  json,
   setSecurityHeaders,
   safePath,
   sanitizeMarkdown,
   sanitizeQID,
   detectSecrets,
   checkSecretsInBody,
-  handleMethodNotAllowed,
-  handleRouteError,
 } from './middleware';
-import {
-  AuthManager,
-  createAuthMiddleware,
-  loadAuthConfig,
-  type AuthenticatedRequest,
-} from './auth';
+import { AuthManager, createAuthMiddleware, loadAuthConfig } from './auth';
 import {
   PORT,
   HOST,
@@ -60,6 +48,31 @@ import {
 } from './config';
 import { createStorageProvider } from '../../platform/engine/persistence';
 import type { StorageProvider } from '../../platform/engine/persistence';
+
+import { buildApp } from './app';
+import type { ServerContext } from './context';
+
+/* ── Native Fastify route plugins (M30-004) ───────────────────── */
+import { registerRoutes as registerQuestionnaireRoutes } from './routes/questionnaires';
+import { registerRoutes as registerDecisionRoutes } from './routes/decisions';
+import { registerRoutes as registerCommandRoutes } from './routes/commands';
+import { registerRoutes as registerProgressRoutes } from './routes/progress';
+import { registerRoutes as registerDriftRoutes } from './routes/drift';
+import { registerRoutes as registerMetricsDashboardRoutes } from './routes/metrics-dashboard';
+import { registerRoutes as registerDashboardRoutes } from './routes/dashboard';
+import { registerRoutes as registerMilestonesRoutes } from './routes/milestones';
+import { registerRoutes as registerSubscribeRoutes } from './routes/subscribe';
+import { registerRoutes as registerOrchestratorRoutes } from './routes/orchestrator';
+import { registerRoutes as registerApprovalRoutes } from './routes/approvals';
+import { registerRoutes as registerPolicyRoutes } from './routes/policies';
+import { registerRoutes as registerArtifactRoutes } from './routes/artifacts';
+import { registerRoutes as registerAnalyticsRoutes } from './routes/analytics';
+import { registerRoutes as registerSessionRoutes } from './routes/sessions';
+import { registerRoutes as registerAgentRoutes } from './routes/agents';
+import { registerRoutes as registerWorkspaceRoutes } from './routes/workspaces';
+import { registerRoutes as registerCockpitRoutes } from './routes/cockpit';
+import { registerRoutes as registerAuthRoutes } from './routes/auth';
+import { registerRoutes as registerMiscRoutes } from './routes/misc';
 
 const _cache = new FileCache();
 const _audit = new AuditTrail({ logDir: path.join(BUSINESS_DOCS, 'audit') });
@@ -176,21 +189,9 @@ function safeWriteSync(
   });
 }
 
-let _rebuildTimer: ReturnType<typeof setTimeout> | null = null;
-function scheduleRebuildIndex(): void {
-  if (_rebuildTimer) clearTimeout(_rebuildTimer);
-  _rebuildTimer = setTimeout(() => {
-    _rebuildTimer = null;
-    const rebuild = (ctx as Record<string, unknown>)._rebuildQuestionnaireIndex as
-      | (() => Promise<void>)
-      | undefined;
-    rebuild?.().catch((e: Error) =>
-      structuredLog('error', 'rebuild_index_failed', { error: e.message })
-    );
-  }, 500);
-}
+/* ── Typed Server Context (M30-002) ───────────────────────────── */
 
-const ctx: Record<string, unknown> = {
+const ctx: ServerContext = {
   _cache,
   sseManager,
   _metrics,
@@ -220,205 +221,162 @@ const ctx: Record<string, unknown> = {
   SSE_HEARTBEAT_MS,
   ANALYTICS_MAX_EVENTS,
   resolveSessionFile: () => resolveSessionFile(getStore(), _cache, SESSION_DIR),
-  /** StorageProvider getter — returns null pre-init, provider post-init (M23-005). */
   getStorageProvider,
   STORAGE_PROVIDER,
-  /** Auth (M29) */
   _authManager,
   _authMiddleware,
 };
 
-const questionnaireRoutes = require('./routes/questionnaires')(ctx);
-const decisionRoutes = require('./routes/decisions')(ctx);
-const commandRoutes = require('./routes/commands')(ctx);
-ctx._getLatestCommand = commandRoutes._getLatestCommand;
-ctx._readCommandQueue = commandRoutes._readCommandQueue;
-const progressRoutes = require('./routes/progress')(ctx);
-const driftRoutes = require('./routes/drift')(ctx);
-const metricsDashboardRoutes = require('./routes/metrics-dashboard')(ctx);
-const dashboardRoutes = require('./routes/dashboard')(ctx);
-const milestonesRoutes = require('./routes/milestones')(ctx);
-const subscribeRoutes = require('./routes/subscribe')(ctx);
-const orchestratorRoutes = require('./routes/orchestrator')(ctx);
-ctx._getEngine = orchestratorRoutes._getEngine;
-const approvalRoutes = require('./routes/approvals')(ctx);
-const policyRoutes = require('./routes/policies')(ctx);
-const artifactRoutes = require('./routes/artifacts')(ctx);
-const analyticsRoutes = require('./routes/analytics')(ctx);
-const sessionRoutes = require('./routes/sessions')(ctx);
-const agentRoutes = require('./routes/agents')(ctx);
-const workspaceRoutes = require('./routes/workspaces')(ctx);
-const cockpitRoutes = require('./routes/cockpit')(ctx);
-const authRoutes = require('./routes/auth')(ctx);
-const miscRoutes = require('./routes/misc')(ctx);
-const serveStatic = miscRoutes._serveStatic;
-Object.freeze(ctx);
-
-const ROUTES: RouteTable = {
-  ...questionnaireRoutes,
-  ...decisionRoutes,
-  ...commandRoutes,
-  ...progressRoutes,
-  ...driftRoutes,
-  ...metricsDashboardRoutes,
-  ...dashboardRoutes,
-  ...milestonesRoutes,
-  ...subscribeRoutes,
-  ...orchestratorRoutes,
-  ...approvalRoutes,
-  ...policyRoutes,
-  ...artifactRoutes,
-  ...analyticsRoutes,
-  ...sessionRoutes,
-  ...agentRoutes,
-  ...workspaceRoutes,
-  ...cockpitRoutes,
-  ...authRoutes,
-  ...orchestratorRoutes,
-  ...miscRoutes,
-};
-for (const k of [
-  '_readCommandQueue',
-  '_getLatestCommand',
-  '_getEngine',
-  '_serveStatic',
-  '_rebuildQuestionnaireIndex',
-])
-  delete ROUTES[k];
-
-function serveLocaleFile(pathname: string, res: http.ServerResponse): void {
-  try {
-    const lp = safePath(path.join(WEBAPP_DIR, 'locales'), pathname.replace(/^\/locales\//, ''));
-    const c = store().readFile(lp);
-    JSON.parse(c);
-    res.writeHead(200, {
-      'Content-Type': 'application/json; charset=utf-8',
-      'Content-Length': Buffer.byteLength(c, 'utf-8'),
-      'X-Content-Type-Options': 'nosniff',
-      'Cache-Control': 'public, max-age=3600',
-    });
-    res.end(c);
-  } catch (err: unknown) {
-    structuredLog('warn', 'locale_serve_failed', { error: (err as Error).message, pathname });
-    setSecurityHeaders(res);
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('Not found');
-  }
+let _rebuildTimer: ReturnType<typeof setTimeout> | null = null;
+function scheduleRebuildIndex(): void {
+  if (_rebuildTimer) clearTimeout(_rebuildTimer);
+  _rebuildTimer = setTimeout(() => {
+    _rebuildTimer = null;
+    ctx
+      ._rebuildQuestionnaireIndex?.()
+      .catch((e: Error) => structuredLog('error', 'rebuild_index_failed', { error: e.message }));
+  }, 500);
 }
 
-const server = http.createServer(async (req, res) => {
-  const start = Date.now();
-  const pathname = new URL(req.url!, `http://${HOST}:${PORT}`).pathname.replace(/\/+$/, '') || '/';
+/* (Cross-route wiring for _getLatestCommand, _readCommandQueue, _getEngine
+   is now handled inside registerRoutes() of commands.ts and orchestrator.ts) */
 
-  if (req.method === 'GET' && pathname.startsWith('/locales/') && pathname.endsWith('.json')) {
-    serveLocaleFile(pathname, res);
-    return;
-  }
-  if (pathname.startsWith('/api') && req.method !== 'GET') {
-    const ip = req.socket.remoteAddress || 'unknown';
-    const { allowed, retryAfter } = rateLimiter.check(ip);
-    if (!allowed) {
-      setSecurityHeaders(res);
-      res.setHeader('Retry-After', String(retryAfter ?? 60));
-      json(res, 429, errorResponse('RATE_LIMITED', 'Too many requests. Please try again later.'));
-      return;
+/* ── Build Fastify app ────────────────────────────────────────── */
+let _app: Awaited<ReturnType<typeof buildApp>> | null = null;
+
+async function createApp() {
+  const app = await buildApp({ ctx, disableRequestLogging: false });
+
+  // Register native Fastify route plugins (M30-004)
+  // Commands must register before orchestrator (cross-route wiring order)
+  await registerCommandRoutes(app, ctx);
+  await registerOrchestratorRoutes(app, ctx);
+
+  await registerQuestionnaireRoutes(app, ctx);
+  await registerDecisionRoutes(app, ctx);
+  await registerProgressRoutes(app, ctx);
+  await registerDriftRoutes(app, ctx);
+  await registerMetricsDashboardRoutes(app, ctx);
+  await registerDashboardRoutes(app, ctx);
+  await registerMilestonesRoutes(app, ctx);
+  await registerSubscribeRoutes(app, ctx);
+  await registerApprovalRoutes(app, ctx);
+  await registerPolicyRoutes(app, ctx);
+  await registerArtifactRoutes(app, ctx);
+  await registerAnalyticsRoutes(app, ctx);
+  await registerSessionRoutes(app, ctx);
+  await registerAgentRoutes(app, ctx);
+  await registerWorkspaceRoutes(app, ctx);
+  await registerCockpitRoutes(app, ctx);
+  await registerAuthRoutes(app, ctx);
+  // misc registers last — includes catch-all SPA static handler
+  await registerMiscRoutes(app, ctx);
+
+  _app = app;
+  return app;
+}
+
+/** Get the raw Node http.Server for backward-compatible test imports. */
+function getNodeServer() {
+  return _app?.server ?? null;
+}
+
+/* ── Expose legacy `server` property for existing test imports ── */
+const _listeners: Record<string, Array<(...args: unknown[]) => void>> = {};
+
+const server = {
+  /**
+   * Backward-compatible `listen()`. Supports two call styles:
+   *   server.listen(0, '127.0.0.1', cb)   – server-api test style
+   *   server.listen(0)                     – milestones test style (returns this)
+   */
+  listen(port: number, host?: string | (() => void), cb?: () => void) {
+    let resolvedHost = '127.0.0.1';
+    let resolvedCb: (() => void) | undefined;
+    if (typeof host === 'function') {
+      resolvedCb = host;
+    } else if (typeof host === 'string') {
+      resolvedHost = host;
+      resolvedCb = cb;
     }
-  }
 
-  /* ── Auth gate (M29-005: replaces localhost trust bypass) ──── */
-  if (_authMiddleware && pathname.startsWith('/api')) {
-    const authed = await _authMiddleware.authenticate(req as AuthenticatedRequest, res, pathname);
-    if (!authed) return;
+    createApp()
+      .then(async (app) => {
+        await initStorageProvider().catch((err: Error) => {
+          structuredLog('error', 'storage_provider_init_failed', { error: err.message });
+        });
+        await app.listen({ port, host: resolvedHost });
+        resolvedCb?.();
+        // Emit 'listening' for tests that use server.once('listening', ...)
+        const cbs = _listeners['listening'];
+        if (cbs) {
+          for (const fn of cbs.splice(0)) fn();
+        }
+      })
+      .catch((err) => {
+        structuredLog('error', 'server_start_failed', { error: (err as Error).message });
+      });
+    return this;
+  },
+  close(cb?: () => void) {
+    _app?.close().then(cb).catch(cb);
+  },
+  get listening() {
+    return !!_app?.server?.listening;
+  },
+  address() {
+    return _app?.server?.address() ?? null;
+  },
+  on(event: string, handler: (...args: unknown[]) => void) {
+    (_listeners[event] ??= []).push(handler);
+  },
+  once(event: string, handler: (...args: unknown[]) => void) {
+    (_listeners[event] ??= []).push(handler);
+  },
+  setTimeout(_ms: number) {
+    // Handled via Fastify requestTimeout
+  },
+  set keepAliveTimeout(_ms: number) {
+    // Handled via Fastify keepAliveTimeout
+  },
+};
 
-    /* ── RBAC enforcement (M29-009/010/011) ──────────────────── */
-    const method = req.method || 'GET';
-    const aReq = req as AuthenticatedRequest;
-    if (method !== 'GET' && method !== 'HEAD' && method !== 'OPTIONS') {
-      // Admin-only endpoints
-      if (
-        pathname.startsWith('/api/admin') ||
-        pathname.startsWith('/api/sessions') ||
-        pathname.startsWith('/api/workspaces')
-      ) {
-        if (!_authMiddleware.requireRole(aReq, res, 'admin', pathname)) return;
-      }
-      // Policy management requires admin
-      else if (pathname.startsWith('/api/v1/policies') && !pathname.includes('/evaluate')) {
-        if (!_authMiddleware.requireRole(aReq, res, 'admin', pathname)) return;
-      }
-      // All other mutating endpoints require operator
-      else {
-        if (!_authMiddleware.requireRole(aReq, res, 'operator', pathname)) return;
-      }
-    }
-  } else if (!_authMiddleware && pathname.startsWith('/api') && req.method !== 'GET') {
-    // Fallback: API key guard when auth is disabled (backward compat)
-    if (HOST !== '127.0.0.1' && HOST !== 'localhost') {
-      const expected = process.env.API_KEY;
-      if (!expected || req.headers['x-api-key'] !== expected) {
-        setSecurityHeaders(res);
-        json(res, 403, errorResponse('FORBIDDEN', 'API key required for mutating requests'));
-        return;
-      }
-    }
-  }
-
-  const handler = resolveRoute(ROUTES, req.method!, pathname);
-  if (handler) {
-    try {
-      await handler(req, res);
-    } catch (err) {
-      handleRouteError(err, res);
-    }
-  } else if (req.method === 'GET' && !pathname.startsWith('/api')) {
-    serveStatic(req, res);
-  } else if (!handleMethodNotAllowed(res, pathname, ROUTES)) {
-    json(res, 404, errorResponse('NOT_FOUND', 'Not found'));
-  }
-
-  const duration = Date.now() - start;
-  if (pathname !== '/api/events') {
-    const routeKey = findRouteTemplate(ROUTES, req.method!, pathname) || pathname;
-    recordMetric(req.method!, routeKey, duration, res.statusCode);
-    log(req.method!, pathname, res.statusCode, duration);
-  }
-});
-server.setTimeout(30000);
-server.keepAliveTimeout = 5000;
 /* istanbul ignore next */
 if (require.main === module) {
-  server.on('error', (err: NodeJS.ErrnoException) => {
-    structuredLog('error', err.code === 'EADDRINUSE' ? 'port_in_use' : 'server_error', {
-      port: PORT,
-      error: err.message,
-    });
-    process.exit(1);
-  });
-  // Initialize StorageProvider before accepting requests (M23-005)
   initStorageProvider()
-    .then(() => {
-      server.listen(PORT, HOST, () => {
-        structuredLog('info', 'server_started', {
-          host: HOST,
-          port: PORT,
-          url: `http://${HOST}:${PORT}`,
-          storageProvider: STORAGE_PROVIDER,
-        });
-        if (!_authManager && HOST !== '127.0.0.1' && HOST !== 'localhost' && !process.env.API_KEY)
-          structuredLog('warn', 'auth_guard_no_api_key', { host: HOST });
+    .then(() => createApp())
+    .then(async (app) => {
+      await app.listen({ port: PORT, host: HOST });
+      structuredLog('info', 'server_started', {
+        host: HOST,
+        port: PORT,
+        url: `http://${HOST}:${PORT}`,
+        framework: 'fastify',
+        storageProvider: STORAGE_PROVIDER,
+        docs: `http://${HOST}:${PORT}/docs`,
       });
+      if (!_authManager && HOST !== '127.0.0.1' && HOST !== 'localhost' && !process.env.API_KEY)
+        structuredLog('warn', 'auth_guard_no_api_key', { host: HOST });
     })
     .catch((err: Error) => {
       structuredLog('error', 'storage_provider_init_failed', { error: err.message });
       // Fall back to starting without StorageProvider — FileStore still works
-      server.listen(PORT, HOST, () => {
-        structuredLog('warn', 'server_started_without_storage_provider', {
-          host: HOST,
-          port: PORT,
-          url: `http://${HOST}:${PORT}`,
+      createApp()
+        .then((app) => app.listen({ port: PORT, host: HOST }))
+        .then(() => {
+          structuredLog('warn', 'server_started_without_storage_provider', {
+            host: HOST,
+            port: PORT,
+            url: `http://${HOST}:${PORT}`,
+            framework: 'fastify',
+          });
+        })
+        .catch((e: Error) => {
+          structuredLog('error', 'server_start_failed', { error: e.message });
+          process.exit(1);
         });
-      });
     });
+
   const flushTimer = setInterval(() => metricsCollector.flush(), METRICS_FLUSH_INTERVAL_MS);
   flushTimer.unref();
   let _snap: { createSnapshot(): void } | undefined;
@@ -449,15 +407,16 @@ if (require.main === module) {
     clearInterval(flushTimer);
     clearInterval(snapTimer);
     metricsCollector.flush();
-    // Close StorageProvider gracefully (M23-005)
     const sp = getStorageProvider();
     if (sp) sp.close().catch(() => {});
-    // Close auth DB (M29)
     if (_authManager) _authManager.close();
-    server.close(() => {
-      structuredLog('info', 'server_closed');
-      process.exit(0);
-    });
+    _app
+      ?.close()
+      .then(() => {
+        structuredLog('info', 'server_closed');
+        process.exit(0);
+      })
+      .catch(() => process.exit(1));
     setTimeout(() => process.exit(1), 5000).unref();
   };
   process.on('SIGTERM', shutdown);
@@ -495,4 +454,7 @@ export {
   _rateLimitMap,
   getStorageProvider,
   initStorageProvider,
+  createApp,
+  getNodeServer,
+  ctx,
 };

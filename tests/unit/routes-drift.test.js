@@ -4,7 +4,10 @@
 import path from 'path';
 import os from 'os';
 import { mkdirSync, writeFileSync, rmSync } from 'fs';
-import createDriftRoutes from '../../src/webapp/routes/drift.js';
+import { registerRoutes } from '../../src/webapp/routes/drift.js';
+import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
+
+const createDriftRoutes = (ctx) => createTestableRoutes(registerRoutes, ctx);
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 
@@ -96,7 +99,7 @@ describe('drift routes', () => {
   let routes, handler;
 
   beforeEach(() => {
-    routes = createDriftRoutes(makeCtx());
+    routes = createTestableRoutes(registerRoutes, makeCtx());
     handler = routes['GET /api/drift'];
   });
 

@@ -10,6 +10,8 @@
  * @returns {object} Route map { 'METHOD /path': handler }.
  */
 
+import type { FastifyInstance } from 'fastify';
+import type { ServerContext } from '../context';
 import path from 'path';
 import { getStore } from '../store';
 import * as models from '../models';
@@ -21,8 +23,6 @@ import { errorResponse } from '../utils/errors';
 import { VALIDATION as V } from '../strings';
 import {
   structuredLog,
-  json,
-  parseBody,
   assertString,
   sanitizeMarkdown,
   sanitizeQID,
@@ -33,11 +33,10 @@ import {
   markLessonPromoted,
   buildDecisionFromLesson,
 } from '../lesson-promotion';
+import * as RS from '../route-schemas';
 
-export = function createDecisionRoutes(ctx): Record<string, unknown> {
-  const { sseNotify, DECISIONS_FILE } = ctx;
-
-  const svc = new DecisionService(toServiceContext(ctx));
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  const svc = new DecisionService(toServiceContext(ctx as unknown as Record<string, unknown>));
 
   /* ── HTTP-level validation & sanitization ────────────────── */
 
@@ -66,14 +65,14 @@ export = function createDecisionRoutes(ctx): Record<string, unknown> {
 
   /* ── Decisions API handlers ─────────────────────────────────── */
 
-  async function apiGetDecisions(_req, res) {
-    json(res, 200, svc.list());
-  }
+  app.get('/api/decisions', { schema: RS.decisionsList }, async (_request, reply) => {
+    return reply.send(svc.list());
+  });
 
-  async function apiPostDecision(req, res) {
-    const body = await parseBody(req);
+  app.post('/api/decisions', { schema: RS.decisionMutate }, async (request, reply) => {
+    const body = request.body as Record<string, unknown>;
     const valErr = validateDecisionBody(body);
-    if (valErr) return json(res, 400, errorResponse('VALIDATION_ERROR', valErr));
+    if (valErr) return reply.code(400).send(errorResponse('VALIDATION_ERROR', valErr));
     sanitizeDecisionFields(body);
     const secretWarnings = detectDecisionSecrets(body);
     if (secretWarnings.length > 0)
@@ -94,137 +93,142 @@ export = function createDecisionRoutes(ctx): Record<string, unknown> {
           'webapp'
         );
       }
-      sseNotify('decision_update', { action: body.action, id: result.id });
-      return json(res, 200, attachSecretWarnings(result, secretWarnings));
+      ctx.sseNotify('decision_update', { action: body.action as string, id: result.id });
+      return reply.type('application/json').send(attachSecretWarnings(result, secretWarnings));
     } catch (e) {
       if (e instanceof ServiceValidationError) {
-        return json(res, 400, errorResponse('INVALID_ACTION', e.message));
+        return reply.code(400).send(errorResponse('INVALID_ACTION', e.message));
       }
       if (e && typeof e === 'object' && 'code' in e && (e as { code: string }).code === 'ENOENT') {
-        return json(res, 404, errorResponse('DECISIONS_NOT_FOUND', 'decisions.md not found'));
+        return reply.code(404).send(errorResponse('DECISIONS_NOT_FOUND', 'decisions.md not found'));
       }
       throw e;
     }
-  }
+  });
 
   /* ── Activate Category API ──────────────────────────────────── */
 
-  async function apiPostActivateCategory(req, res) {
-    const body = await parseBody(req);
-    assertString(body.file, 'file', 100);
-    const fname = path.basename(body.file as string);
-    if (!fname.endsWith('.md') || fname.includes('..') || fname.includes(path.sep)) {
-      return json(res, 400, errorResponse('INVALID_FILE', 'Invalid category filename'));
-    }
+  app.post(
+    '/api/decisions/activate-category',
+    { schema: RS.decisionActivateCategory },
+    async (request, reply) => {
+      const body = request.body as Record<string, unknown>;
+      const fname = path.basename(body.file as string);
+      if (!fname.endsWith('.md') || fname.includes('..') || fname.includes(path.sep)) {
+        return reply.code(400).send(errorResponse('INVALID_FILE', 'Invalid category filename'));
+      }
 
-    try {
-      const result = await svc.activateCategory(fname, 'webapp');
-      sseNotify('decision_update', {
-        action: result.action === 'already_active' ? 'already_active' : 'activate_category',
-        file: fname,
-        name: result.name,
-      });
-      return json(res, 200, result);
-    } catch (e) {
-      if (e instanceof ServiceValidationError) {
-        return json(res, 400, errorResponse('INVALID_FILE', e.message));
+      try {
+        const result = await svc.activateCategory(fname, 'webapp');
+        ctx.sseNotify('decision_update', {
+          action: result.action === 'already_active' ? 'already_active' : 'activate_category',
+          file: fname,
+          name: result.name,
+        });
+        return reply.type('application/json').send(result);
+      } catch (e) {
+        if (e instanceof ServiceValidationError) {
+          return reply.code(400).send(errorResponse('INVALID_FILE', e.message));
+        }
+        if (
+          e &&
+          typeof e === 'object' &&
+          'code' in e &&
+          (e as { code: string }).code === 'ENOENT'
+        ) {
+          return reply
+            .code(404)
+            .send(errorResponse('FILE_NOT_FOUND', `Category file ${fname} not found`));
+        }
+        throw e;
       }
-      if (e && typeof e === 'object' && 'code' in e && (e as { code: string }).code === 'ENOENT') {
-        return json(res, 404, errorResponse('FILE_NOT_FOUND', `Category file ${fname} not found`));
-      }
-      throw e;
     }
-  }
+  );
 
   /* ── Promote Lesson API (HTTP-only, no MCP equivalent) ────── */
 
   const LESSONS_FILE = path.join(
-    path.dirname(DECISIONS_FILE),
+    path.dirname(ctx.DECISIONS_FILE),
     'retrospectives',
     'lessons-learned.md'
   );
 
-  async function apiPostPromoteLesson(req, res) {
-    const body = await parseBody(req);
-    if (!body.lessonId || typeof body.lessonId !== 'string') {
-      return json(res, 400, errorResponse('VALIDATION_ERROR', V.MISSING_LESSON_ID));
-    }
+  app.post(
+    '/api/decisions/promote-lesson',
+    { schema: RS.decisionPromoteLesson },
+    async (request, reply) => {
+      const body = request.body as Record<string, unknown>;
+      const lessonId = sanitizeMarkdown((body.lessonId as string).trim());
+      if (!/^L\d+$/.test(lessonId)) {
+        return reply.code(400).send(errorResponse('VALIDATION_ERROR', V.INVALID_LESSON_ID));
+      }
 
-    const lessonId = sanitizeMarkdown(body.lessonId.trim());
-    if (!/^L\d+$/.test(lessonId)) {
-      return json(res, 400, errorResponse('VALIDATION_ERROR', V.INVALID_LESSON_ID));
-    }
+      const store = getStore();
+      if (!store.exists(LESSONS_FILE)) {
+        return reply
+          .code(404)
+          .send(errorResponse('LESSONS_NOT_FOUND', 'lessons-learned.md not found'));
+      }
+      if (!store.exists(ctx.DECISIONS_FILE)) {
+        return reply.code(404).send(errorResponse('DECISIONS_NOT_FOUND', 'decisions.md not found'));
+      }
 
-    const store = getStore();
-    if (!store.exists(LESSONS_FILE)) {
-      return json(res, 404, errorResponse('LESSONS_NOT_FOUND', 'lessons-learned.md not found'));
-    }
-    if (!store.exists(DECISIONS_FILE)) {
-      return json(res, 404, errorResponse('DECISIONS_NOT_FOUND', 'decisions.md not found'));
-    }
+      const priority = (body.priority as string) || 'MEDIUM';
+      const scope = sanitizeMarkdown((body.scope as string) || 'All');
 
-    const priority = (body.priority as string) || 'MEDIUM';
-    const scope = sanitizeMarkdown((body.scope as string) || 'All');
+      const lessonsContent = store.readFile(LESSONS_FILE);
+      const candidates = findPromotionCandidates(lessonsContent);
+      const lesson = candidates.find((c) => c.id === lessonId);
+      if (!lesson) {
+        return reply
+          .code(404)
+          .send(
+            errorResponse(
+              'LESSON_NOT_FOUND',
+              `Lesson ${lessonId} not found or not flagged for promotion`
+            )
+          );
+      }
 
-    const lessonsContent = store.readFile(LESSONS_FILE);
-    const candidates = findPromotionCandidates(lessonsContent);
-    const lesson = candidates.find((c) => c.id === lessonId);
-    if (!lesson) {
-      return json(
-        res,
-        404,
-        errorResponse(
-          'LESSON_NOT_FOUND',
-          `Lesson ${lessonId} not found or not flagged for promotion`
-        )
-      );
-    }
-
-    // Step 1: Create decision under DECISIONS_FILE lock
-    const id = await withFileLock(DECISIONS_FILE, () => {
-      let decContent = store.readFile(DECISIONS_FILE);
-      const { decision, notes } = buildDecisionFromLesson(lesson);
-      const newId = models.nextDecisionId(decContent, 'DEC-');
-      decContent = models.addOperationalDecision(decContent, {
-        id: newId,
-        priority,
-        scope,
-        decision,
-        notes,
-        date: models.today(),
+      // Step 1: Create decision under DECISIONS_FILE lock
+      const id = await withFileLock(ctx.DECISIONS_FILE, () => {
+        let decContent = store.readFile(ctx.DECISIONS_FILE);
+        const { decision, notes } = buildDecisionFromLesson(lesson);
+        const newId = models.nextDecisionId(decContent, 'DEC-');
+        decContent = models.addOperationalDecision(decContent, {
+          id: newId,
+          priority,
+          scope,
+          decision,
+          notes,
+          date: models.today(),
+        });
+        decContent = models.appendAuditTrail(decContent, 'promote-lesson', newId);
+        ctx.safeWriteSync(ctx.DECISIONS_FILE, decContent, undefined, {
+          operation: 'create',
+          entityType: 'decision',
+          entityId: newId,
+          user: 'webapp',
+          summary: `Decision promoted from lesson ${lessonId}: ${newId}`,
+        });
+        return newId;
       });
-      decContent = models.appendAuditTrail(decContent, 'promote-lesson', newId);
-      ctx.safeWriteSync(DECISIONS_FILE, decContent, undefined, {
-        operation: 'create',
-        entityType: 'decision',
-        entityId: newId,
-        user: 'webapp',
-        summary: `Decision promoted from lesson ${lessonId}: ${newId}`,
+
+      // Step 2: Mark lesson as PROMOTED under a separate (non-nested) lock
+      await withFileLock(LESSONS_FILE, () => {
+        const currentLessons = store.readFile(LESSONS_FILE);
+        const updatedLessons = markLessonPromoted(currentLessons, lessonId);
+        ctx.safeWriteSync(LESSONS_FILE, updatedLessons, undefined, {
+          operation: 'update',
+          entityType: 'lesson',
+          entityId: lessonId,
+          user: 'webapp',
+          summary: `Lesson ${lessonId} promoted to decision ${id}`,
+        });
       });
-      return newId;
-    });
 
-    // Step 2: Mark lesson as PROMOTED under a separate (non-nested) lock
-    await withFileLock(LESSONS_FILE, () => {
-      const currentLessons = store.readFile(LESSONS_FILE);
-      const updatedLessons = markLessonPromoted(currentLessons, lessonId);
-      ctx.safeWriteSync(LESSONS_FILE, updatedLessons, undefined, {
-        operation: 'update',
-        entityType: 'lesson',
-        entityId: lessonId,
-        user: 'webapp',
-        summary: `Lesson ${lessonId} promoted to decision ${id}`,
-      });
-    });
-
-    sseNotify('decision_update', { action: 'promote-lesson', id, lessonId });
-    return json(res, 200, { ok: true, id, lessonId, action: 'promoted' });
-  }
-
-  return {
-    'GET /api/decisions': apiGetDecisions,
-    'POST /api/decisions': apiPostDecision,
-    'POST /api/decisions/activate-category': apiPostActivateCategory,
-    'POST /api/decisions/promote-lesson': apiPostPromoteLesson,
-  };
-};
+      ctx.sseNotify('decision_update', { action: 'promote-lesson', id, lessonId });
+      return reply.send({ ok: true, id, lessonId, action: 'promoted' });
+    }
+  );
+}

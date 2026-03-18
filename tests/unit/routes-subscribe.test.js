@@ -5,7 +5,8 @@ import path from 'path';
 import crypto from 'crypto';
 import { existsSync, readFileSync, writeFileSync, unlinkSync } from 'fs';
 import { fileURLToPath } from 'url';
-import createSubscribeRoutes from '../../src/webapp/routes/subscribe.js';
+import { registerRoutes } from '../../src/webapp/routes/subscribe.js';
+import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const LOCAL_SUBS_FILE = path.resolve(
@@ -72,7 +73,7 @@ describe('subscribe routes', () => {
   beforeEach(() => {
     cleanupSubsFile();
     delete process.env.BUTTONDOWN_API_KEY;
-    routes = createSubscribeRoutes({});
+    routes = createTestableRoutes(registerRoutes, {});
     handler = routes['POST /api/subscribe'];
   });
 
@@ -139,18 +140,22 @@ describe('subscribe routes', () => {
   });
 
   /* ── Content-Type handling ──────────────────────────────────── */
+  // Note: In Fastify, Content-Type enforcement is handled at the framework
+  // level (built-in content-type parser). Non-JSON requests never reach
+  // the route handler. This is covered by integration/e2e tests.
 
-  it('rejects non-JSON content type', async () => {
+  it('returns 400 when body is unparseable (undefined)', async () => {
+    // Simulates what the handler sees when Fastify rejects the body parse
     const req = {
-      headers: { 'content-type': 'text/plain', host: 'localhost:3000' },
+      headers: { 'content-type': 'application/json', host: 'localhost:3000' },
       on(event, cb) {
-        if (event === 'data') cb(Buffer.from('hello'));
+        if (event === 'data') cb(Buffer.from('not-json'));
         if (event === 'end') cb();
       },
     };
     const res = fakeRes();
     await handler(req, res);
-    expect(res.status).toBe(415);
+    expect(res.status).toBe(400);
   });
 
   /* ── Local fallback (no API key) ───────────────────────────── */
@@ -343,24 +348,18 @@ describe('subscribe routes', () => {
     expect(written[0].source).toBe('direct');
   });
 
-  it('returns 413 for payload exceeding 1 MB', async () => {
-    // middleware.ts MAX_BODY = 1_048_576 bytes
-    const bigBody = Buffer.alloc(1_048_577, 0x41); // 1 byte over limit
-    const req = {
-      headers: { 'content-type': 'application/json', host: 'localhost:3000' },
-      destroy() {},
-      on(event, cb) {
-        if (event === 'data') cb(bigBody);
-        if (event === 'end') cb();
-        if (event === 'error') {
-          /* store for potential use */
-        }
-      },
-    };
+  // Note: Payload size limits (413) are enforced by Fastify's bodyLimit
+  // option at the server/route level, not in the handler. Oversized requests
+  // never reach the handler. This is covered by integration/e2e tests.
+
+  it('returns 400 when email is missing from large valid payload', async () => {
     const res = fakeRes();
-    await handler(req, res);
-    expect(res.status).toBe(413);
-    expect(res.json.code).toBe('PAYLOAD_TOO_LARGE');
+    await handler(
+      fakeReq({ metadata: { segment: 'developers', source: 'test', extra: 'x'.repeat(1000) } }),
+      res
+    );
+    expect(res.status).toBe(400);
+    expect(res.json.code).toBe('INVALID_INPUT');
   });
 
   it('handles upstream text() rejection gracefully', async () => {

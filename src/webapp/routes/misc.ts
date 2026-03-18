@@ -9,6 +9,8 @@
  */
 
 import path from 'path';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { ServerContext } from '../context';
 import { getStore } from '../store';
 import * as models from '../models';
 import * as schemas from '../schemas';
@@ -16,7 +18,8 @@ import { withFileLock } from '../file-lock';
 import { SessionService, toServiceContext } from '../services';
 import { errorResponse } from '../utils/errors';
 import { VALIDATION as V, RESPONSES as R, STATIC as S } from '../strings';
-import { structuredLog, json, parseBody, safePath, setSecurityHeaders } from '../middleware';
+import { structuredLog, safePath, setSecurityHeaders } from '../middleware';
+import * as RS from '../route-schemas';
 
 const HELP_TOC = [
   { slug: 'getting-started', title: 'Getting Started', icon: '🚀' },
@@ -30,7 +33,7 @@ const HELP_TOC = [
 
 const MAX_EXPORT_SIZE = 10 * 1024 * 1024;
 
-export = function createMiscRoutes(ctx): Record<string, unknown> {
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const {
     _cache,
     sseManager,
@@ -43,8 +46,6 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     resolveSessionFile,
     ANALYTICS_FILE,
     PROJECT_ROOT,
-    HOST,
-    PORT,
     WEBAPP_DIR,
     ANALYTICS_MAX_EVENTS,
     _readCommandQueue,
@@ -66,13 +67,13 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
 
   /* ── Session API ──────────────────────────────────────────────── */
 
-  async function apiGetSession(_req, res) {
+  async function apiGetSession(_request: FastifyRequest, reply: FastifyReply) {
     const session = svc.readSessionState();
-    json(res, 200, { session: session || null });
+    reply.send({ session: session || null });
   }
 
-  async function apiReevaluate(req, res) {
-    const body = await parseBody(req);
+  async function apiReevaluate(request: FastifyRequest, reply: FastifyReply) {
+    const body = (request.body as Record<string, unknown>) || {};
     const rawScope = body.scope as string;
     const scope = ['ALL', 'BUSINESS', 'TECH', 'UX', 'MARKETING'].includes(rawScope)
       ? rawScope
@@ -88,11 +89,13 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     };
     const triggerCheck = schemas.validateReevaluateTrigger(triggerData);
     if (!triggerCheck.valid)
-      return json(res, 400, errorResponse('VALIDATION_ERROR', triggerCheck.errors.join('; ')));
+      return reply
+        .code(400)
+        .send(errorResponse('VALIDATION_ERROR', triggerCheck.errors.join('; ')));
     await withFileLock(triggerPath, async () => {
       safeWriteSync(triggerPath, JSON.stringify(triggerData, null, 2));
     });
-    json(res, 200, { ok: true, scope, message: R.reevaluateTrigger(scope) });
+    reply.send({ ok: true, scope, message: R.reevaluateTrigger(scope) });
   }
 
   /* ── Export API ───────────────────────────────────────────────── */
@@ -150,7 +153,7 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     return result;
   }
 
-  async function apiGetExport(_req, res) {
+  async function apiGetExport(_request: FastifyRequest, reply: FastifyReply) {
     const store = getStore();
     const sessionFile =
       typeof resolveSessionFile === 'function' ? resolveSessionFile() : SESSION_FILE;
@@ -172,39 +175,39 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
       bundle.phase_outputs = collectPhaseOutputs(bundle.session.phase_outputs, store);
     }
 
-    json(res, 200, bundle);
+    reply.send(bundle);
   }
 
   /* ── Help API ─────────────────────────────────────────────────── */
 
-  async function apiGetHelp(req, res) {
-    const url = new URL(req.url, `http://${HOST}:${PORT}`);
-    const slug = url.searchParams.get('topic');
+  async function apiGetHelp(request: FastifyRequest, reply: FastifyReply) {
+    const slug = (request.query as Record<string, string>).topic;
 
     if (!slug) {
-      return json(res, 200, { toc: HELP_TOC });
+      return reply.send({ toc: HELP_TOC });
     }
 
     if (!/^[a-z0-9-]+$/.test(slug)) {
-      return json(res, 400, errorResponse('INVALID_TOPIC', 'Invalid topic slug'));
+      return reply.code(400).send(errorResponse('INVALID_TOPIC', 'Invalid topic slug'));
     }
 
     const result = svc.getHelpTopic(slug);
     if (!result) {
-      return json(res, 404, errorResponse('TOPIC_NOT_FOUND', 'Help topic not found'));
+      return reply.code(404).send(errorResponse('TOPIC_NOT_FOUND', 'Help topic not found'));
     }
     const entry = HELP_TOC.find((t) => t.slug === slug);
-    json(res, 200, { slug, title: entry ? entry.title : slug, content: result.content });
+    reply.send({ slug, title: entry ? entry.title : slug, content: result.content });
   }
 
   /* ── SSE Endpoint (SP-R2-004-005) ─────────────────────────────── */
 
   const MAX_SSE_CLIENTS = 50;
 
-  async function apiGetEvents(req, res) {
+  async function apiGetEvents(request: FastifyRequest, reply: FastifyReply) {
     if (sseManager.size >= MAX_SSE_CLIENTS) {
-      return json(res, 503, errorResponse('SSE_LIMIT', 'Too many SSE connections'));
+      return reply.code(503).send(errorResponse('SSE_LIMIT', 'Too many SSE connections'));
     }
+    const res = reply.raw;
     setSecurityHeaders(res);
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
@@ -215,13 +218,15 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     res.write(
       `event: connected\ndata: ${JSON.stringify({ timestamp: new Date().toISOString() })}\n\n`
     );
-    sseManager.addClient(req, res);
+    sseManager.addClient(request.raw, res);
     structuredLog('info', 'sse_client_connected', { clients: sseManager.size });
+    // Tell Fastify we're handling the response manually
+    reply.hijack();
   }
 
   /* ── Metrics Endpoint (SP-R2-004-007) ─────────────────────────── */
 
-  async function apiGetMetrics(_req, res) {
+  async function apiGetMetrics(_request: FastifyRequest, reply: FastifyReply) {
     const uptimeS = Math.round((Date.now() - _metrics.startedAt) / 1000);
     const pcts = computePercentiles(_metrics.responseTimes);
     const cacheStats = _cache.stats ? _cache.stats() : { hits: 0, misses: 0 };
@@ -240,10 +245,7 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
       cache_hit_ratio: totalCache > 0 ? +((cacheStats.hits || 0) / totalCache).toFixed(4) : 0,
       per_endpoint: {},
     };
-    for (const [ep, data] of Object.entries(_metrics.perEndpoint) as [
-      string,
-      Record<string, unknown>,
-    ][]) {
+    for (const [ep, data] of Object.entries(_metrics.perEndpoint)) {
       const epPcts = computePercentiles(data.times);
       result.per_endpoint[ep] = {
         count: data.count,
@@ -252,16 +254,16 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
         p99: epPcts.p99,
       };
     }
-    json(res, 200, result);
+    reply.send(result);
   }
 
-  async function apiFlushMetrics(_req, res) {
+  async function apiFlushMetrics(_request: FastifyRequest, reply: FastifyReply) {
     flushMetrics();
-    json(res, 200, { ok: true, flushed_at: new Date().toISOString() });
+    reply.send({ ok: true, flushed_at: new Date().toISOString() });
   }
 
   /** Readiness probe — used by Docker HEALTHCHECK and Playwright webServer. */
-  async function apiGetHealth(_req, res) {
+  async function apiGetHealth(_request: FastifyRequest, reply: FastifyReply) {
     let store_status = 'ok';
     try {
       const store = getStore();
@@ -284,7 +286,7 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
         storage_health = { status: 'unhealthy', provider: _storageProviderType || 'unknown' };
       }
     }
-    json(res, 200, {
+    reply.send({
       status: 'ok',
       version: _version,
       uptime: Math.round(process.uptime()),
@@ -302,10 +304,10 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     return r.valid ? null : r.errors[0];
   }
 
-  async function apiPostAnalytics(req, res) {
-    const body = await parseBody(req);
+  async function apiPostAnalytics(request: FastifyRequest, reply: FastifyReply) {
+    const body = request.body as Record<string, unknown>;
     if (!Array.isArray(body.events) || body.events.length === 0 || body.events.length > 100) {
-      return json(res, 400, errorResponse('VALIDATION_ERROR', V.EVENTS_RANGE));
+      return reply.code(400).send(errorResponse('VALIDATION_ERROR', V.EVENTS_RANGE));
     }
     const errors = [];
     const valid = [];
@@ -340,31 +342,31 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
       });
     }
 
-    json(res, 200, { ok: true, accepted: valid.length, rejected: errors.length });
+    reply.send({ ok: true, accepted: valid.length, rejected: errors.length });
   }
 
-  async function apiGetAnalytics(req, res) {
-    if (!getStore().exists(ANALYTICS_FILE)) return json(res, 200, { events: [], total: 0 });
+  async function apiGetAnalytics(request: FastifyRequest, reply: FastifyReply) {
+    if (!getStore().exists(ANALYTICS_FILE)) return reply.send({ events: [], total: 0 });
     let events = [];
     try {
       events = JSON.parse(_cache.read(ANALYTICS_FILE));
     } catch {}
-    const url = new URL(req.url, `http://${HOST}:${PORT}`);
+    const q = request.query as Record<string, string>;
     const total = events.length;
-    const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit'), 10) || 100, 1), 1000);
-    const offset = Math.max(parseInt(url.searchParams.get('offset'), 10) || 0, 0);
+    const limit = Math.min(Math.max(parseInt(q.limit, 10) || 100, 1), 1000);
+    const offset = Math.max(parseInt(q.offset, 10) || 0, 0);
     const page = events.slice(offset, offset + limit);
-    json(res, 200, { events: page, total, limit, offset });
+    reply.send({ events: page, total, limit, offset });
   }
 
   /* ── Audit Trail Endpoint (SP-R2-007-005) ─────────────────────── */
 
-  async function apiGetAudit(req, res) {
-    const url = new URL(req.url, `http://${HOST}:${PORT}`);
-    const limitParam = parseInt(url.searchParams.get('limit'), 10);
+  async function apiGetAudit(request: FastifyRequest, reply: FastifyReply) {
+    const q = request.query as Record<string, string>;
+    const limitParam = parseInt(q.limit, 10);
     const limit = limitParam >= 1 && limitParam <= 1000 ? limitParam : 50;
     const result = svc.readAuditLog(limit);
-    json(res, 200, { entries: result.entries, total: result.total, limit });
+    reply.send({ entries: result.entries, total: result.total, limit });
   }
 
   /* ── Static file serving (React SPA from ui/dist/) ──────────── */
@@ -391,7 +393,7 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
     /* React build not present — run `npm run build` in src/webapp/ui/ */
   }
 
-  function serveDistFile(pathname, res) {
+  function serveDistFile(pathname: string, reply: FastifyReply): boolean {
     try {
       const filePath = safePath(UI_DIST, pathname.startsWith('/') ? pathname.slice(1) : pathname);
       if (!getStore().exists(filePath)) return false;
@@ -399,68 +401,76 @@ export = function createMiscRoutes(ctx): Record<string, unknown> {
       const ext = path.extname(filePath).toLowerCase();
       const mime = MIME_TYPES[ext] || 'application/octet-stream';
       const isHashed = pathname.startsWith('/assets/');
-      setSecurityHeaders(res);
-      res.writeHead(200, {
+      const raw = reply.raw;
+      setSecurityHeaders(raw);
+      raw.writeHead(200, {
         'Content-Type': mime,
         'Content-Length': Buffer.byteLength(content),
         'Cache-Control': isHashed ? 'public, max-age=31536000, immutable' : 'public, max-age=3600',
       });
-      res.end(content);
+      raw.end(content);
+      reply.hijack();
       return true;
     } catch {
       return false;
     }
   }
 
-  function serveStatic(req, res) {
-    const url = new URL(req.url, `http://${HOST}:${PORT}`);
-    const pathname = url.pathname;
+  function serveStatic(request: FastifyRequest, reply: FastifyReply) {
+    const pathname = (request.url || '/').split('?')[0];
 
     // Try serving a real file from ui/dist/
-    if (serveDistFile(pathname, res)) return;
+    if (serveDistFile(pathname, reply)) return;
 
     // SPA fallback — serve index.html for client-side routing
-    setSecurityHeaders(res);
+    const raw = reply.raw;
+    setSecurityHeaders(raw);
     if (!cachedSpaHtml) {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      return res.end(S.NOT_FOUND);
+      raw.writeHead(404, { 'Content-Type': 'text/plain' });
+      raw.end(S.NOT_FOUND);
+      reply.hijack();
+      return;
     }
-    res.writeHead(200, {
+    raw.writeHead(200, {
       'Content-Type': 'text/html; charset=utf-8',
       'Content-Length': cachedSpaHtml.length,
     });
-    res.end(cachedSpaHtml);
+    raw.end(cachedSpaHtml);
+    reply.hijack();
   }
 
-  return {
-    'GET /api/session': apiGetSession,
-    'POST /api/reevaluate': apiReevaluate,
-    'GET /api/export': apiGetExport,
-    'GET /api/help': apiGetHelp,
-    'GET /api/events': apiGetEvents,
-    'GET /api/metrics': apiGetMetrics,
-    'POST /api/metrics/flush': apiFlushMetrics,
-    'GET /api/health': apiGetHealth,
-    'POST /api/analytics': apiPostAnalytics,
-    'GET /api/analytics': apiGetAnalytics,
-    'GET /api/audit': apiGetAudit,
-    /** Liveness probe — lightweight check that the process is running. */
-    'GET /health': (_req, res) => {
-      let store_status = 'ok';
-      try {
-        getStore().exists(SESSION_DIR);
-      } catch {
-        store_status = 'degraded';
-      }
-      const sp = typeof getStorageProvider === 'function' ? getStorageProvider() : null;
-      json(res, 200, {
-        status: 'ok',
-        version: _version,
-        uptime: Math.round(process.uptime()),
-        store_status,
-        storage_provider: sp ? sp.name : 'none',
-      });
-    },
-    _serveStatic: serveStatic,
-  };
-};
+  /* ── Register routes ────────────────────────────────────────── */
+
+  app.get('/api/session', apiGetSession);
+  app.post('/api/reevaluate', { schema: RS.reevaluate }, apiReevaluate);
+  app.get('/api/export', apiGetExport);
+  app.get('/api/help', { schema: RS.helpGet }, apiGetHelp);
+  app.get('/api/events', apiGetEvents);
+  app.get('/api/metrics', apiGetMetrics);
+  app.post('/api/metrics/flush', apiFlushMetrics);
+  app.get('/api/health', apiGetHealth);
+  app.post('/api/analytics', { schema: RS.analyticsPost }, apiPostAnalytics);
+  app.get('/api/analytics', { schema: RS.analyticsGet }, apiGetAnalytics);
+  app.get('/api/audit', { schema: RS.auditGet }, apiGetAudit);
+
+  /** Liveness probe — lightweight check that the process is running. */
+  app.get('/health', async (_request: FastifyRequest, reply: FastifyReply) => {
+    let store_status = 'ok';
+    try {
+      getStore().exists(SESSION_DIR);
+    } catch {
+      store_status = 'degraded';
+    }
+    const sp = typeof getStorageProvider === 'function' ? getStorageProvider() : null;
+    reply.send({
+      status: 'ok',
+      version: _version,
+      uptime: Math.round(process.uptime()),
+      store_status,
+      storage_provider: sp ? sp.name : 'none',
+    });
+  });
+
+  // SPA static fallback — catch-all for non-API routes
+  app.get('*', serveStatic);
+}

@@ -15,10 +15,10 @@
  * @returns {object} Route map { 'METHOD /path': handler }
  */
 
-import http from 'http';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { ServerContext } from '../context';
 import fs from 'fs';
 import path from 'path';
-import { json } from '../middleware';
 import { errorResponse } from '../utils/errors';
 
 function getRepoRoot(ctx: Record<string, unknown>): string {
@@ -43,351 +43,321 @@ function computeScore(factors: { label: string; value: number; weight: number }[
   return Math.round(weighted / totalWeight);
 }
 
-export = function createCockpitRoutes(
-  ctx: Record<string, unknown>
-): Record<string, (req: http.IncomingMessage, res: http.ServerResponse) => void> {
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  const legacyCtx = ctx as unknown as Record<string, unknown>;
+
   // ── GET /api/v1/cockpit/health ───────────────────────────
 
-  function handleHealth(_req: http.IncomingMessage, res: http.ServerResponse) {
-    const root = getRepoRoot(ctx);
-    const sessionState = safeReadJson(
-      path.join(root, 'BusinessDocs', 'session', 'session-state.json'),
-      {}
-    ) as Record<string, unknown>;
+  app.get(
+    '/api/v1/cockpit/health',
+    { schema: { tags: ['cockpit'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      const root = getRepoRoot(legacyCtx);
+      const sessionState = safeReadJson(
+        path.join(root, 'BusinessDocs', 'session', 'session-state.json'),
+        {}
+      ) as Record<string, unknown>;
 
-    // Session health factors
-    const gatesPassed = Number(sessionState.gates_passed ?? 0);
-    const gatesTotal = Math.max(Number(sessionState.gates_total ?? 1), 1);
-    const decisionsResolved = Number(sessionState.decisions_resolved ?? 0);
-    const decisionsTotal = Math.max(Number(sessionState.decisions_total ?? 1), 1);
-    const questionnairesComplete = Number(sessionState.questionnaires_complete ?? 0);
-    const questionnairesTotal = Math.max(Number(sessionState.questionnaires_total ?? 1), 1);
-    const errorCount = Number(sessionState.error_count ?? 0);
+      const gatesPassed = Number(sessionState.gates_passed ?? 0);
+      const gatesTotal = Math.max(Number(sessionState.gates_total ?? 1), 1);
+      const decisionsResolved = Number(sessionState.decisions_resolved ?? 0);
+      const decisionsTotal = Math.max(Number(sessionState.decisions_total ?? 1), 1);
+      const questionnairesComplete = Number(sessionState.questionnaires_complete ?? 0);
+      const questionnairesTotal = Math.max(Number(sessionState.questionnaires_total ?? 1), 1);
+      const errorCount = Number(sessionState.error_count ?? 0);
 
-    const sessionFactors = [
-      { label: 'Gates passed', value: Math.round((gatesPassed / gatesTotal) * 100), weight: 3 },
-      {
-        label: 'Decisions resolved',
-        value: Math.round((decisionsResolved / decisionsTotal) * 100),
-        weight: 2,
-      },
-      {
-        label: 'Questionnaires complete',
-        value: Math.round((questionnairesComplete / questionnairesTotal) * 100),
-        weight: 2,
-      },
-      { label: 'Error-free', value: Math.max(0, 100 - errorCount * 10), weight: 1 },
-    ];
+      const sessionFactors = [
+        { label: 'Gates passed', value: Math.round((gatesPassed / gatesTotal) * 100), weight: 3 },
+        {
+          label: 'Decisions resolved',
+          value: Math.round((decisionsResolved / decisionsTotal) * 100),
+          weight: 2,
+        },
+        {
+          label: 'Questionnaires complete',
+          value: Math.round((questionnairesComplete / questionnairesTotal) * 100),
+          weight: 2,
+        },
+        { label: 'Error-free', value: Math.max(0, 100 - errorCount * 10), weight: 1 },
+      ];
 
-    // Sprint readiness factors
-    const storiesReady = Number(sessionState.stories_ready ?? 0);
-    const storiesTotal = Math.max(Number(sessionState.stories_total ?? 1), 1);
-    const blockingItems = Number(sessionState.blocking_items ?? 0);
+      const storiesReady = Number(sessionState.stories_ready ?? 0);
+      const storiesTotal = Math.max(Number(sessionState.stories_total ?? 1), 1);
+      const blockingItems = Number(sessionState.blocking_items ?? 0);
 
-    const sprintFactors = [
-      {
-        label: 'Stories ready',
-        value: Math.round((storiesReady / storiesTotal) * 100),
-        weight: 3,
-      },
-      {
-        label: 'No blockers',
-        value: blockingItems === 0 ? 100 : Math.max(0, 50 - blockingItems * 10),
-        weight: 2,
-      },
-      {
-        label: 'Dependencies resolved',
-        value: Math.round((decisionsResolved / decisionsTotal) * 100),
-        weight: 1,
-      },
-    ];
+      const sprintFactors = [
+        {
+          label: 'Stories ready',
+          value: Math.round((storiesReady / storiesTotal) * 100),
+          weight: 3,
+        },
+        {
+          label: 'No blockers',
+          value: blockingItems === 0 ? 100 : Math.max(0, 50 - blockingItems * 10),
+          weight: 2,
+        },
+        {
+          label: 'Dependencies resolved',
+          value: Math.round((decisionsResolved / decisionsTotal) * 100),
+          weight: 1,
+        },
+      ];
 
-    // Agent confidence factors
-    const uncertainCount = Number(sessionState.uncertain_count ?? 0);
-    const insufficientCount = Number(sessionState.insufficient_data_count ?? 0);
-    const agentTotal = Math.max(Number(sessionState.agents_total ?? 1), 1);
+      const uncertainCount = Number(sessionState.uncertain_count ?? 0);
+      const insufficientCount = Number(sessionState.insufficient_data_count ?? 0);
+      const agentTotal = Math.max(Number(sessionState.agents_total ?? 1), 1);
 
-    const agentFactors = [
-      {
-        label: 'No UNCERTAIN markers',
-        value: Math.max(0, 100 - uncertainCount * 15),
-        weight: 2,
-      },
-      {
-        label: 'No INSUFFICIENT_DATA markers',
-        value: Math.max(0, 100 - insufficientCount * 15),
-        weight: 2,
-      },
-      {
-        label: 'Agents completed',
-        value: Math.round(((agentTotal - errorCount) / agentTotal) * 100),
-        weight: 1,
-      },
-    ];
+      const agentFactors = [
+        { label: 'No UNCERTAIN markers', value: Math.max(0, 100 - uncertainCount * 15), weight: 2 },
+        {
+          label: 'No INSUFFICIENT_DATA markers',
+          value: Math.max(0, 100 - insufficientCount * 15),
+          weight: 2,
+        },
+        {
+          label: 'Agents completed',
+          value: Math.round(((agentTotal - errorCount) / agentTotal) * 100),
+          weight: 1,
+        },
+      ];
 
-    return json(res, 200, {
-      ok: true,
-      session_health: {
-        label: 'Session Health',
-        score: computeScore(sessionFactors),
-        factors: sessionFactors,
-      },
-      sprint_readiness: {
-        label: 'Sprint Readiness',
-        score: computeScore(sprintFactors),
-        factors: sprintFactors,
-      },
-      agent_confidence: {
-        label: 'Agent Confidence',
-        score: computeScore(agentFactors),
-        factors: agentFactors,
-      },
-    });
-  }
-
-  // ── GET /api/v1/cockpit/dependencies ─────────────────────
-
-  function handleDependencies(_req: http.IncomingMessage, res: http.ServerResponse) {
-    const root = getRepoRoot(ctx);
-    const _decisionsData = safeReadJson(path.join(root, 'BusinessDocs', 'decisions.md'), null);
-
-    // Build dependency graph from available data
-    const nodes: Array<{
-      id: string;
-      type: string;
-      label: string;
-      status: string;
-    }> = [];
-    const edges: Array<{
-      source: string;
-      target: string;
-      relationship: string;
-      critical: boolean;
-    }> = [];
-    const criticalPath: string[] = [];
-
-    // Add sprint nodes
-    const phases = ['PHASE-1', 'PHASE-2', 'PHASE-3', 'PHASE-4', 'PHASE-5'];
-    phases.forEach((phase) => {
-      nodes.push({
-        id: `sprint-${phase}`,
-        type: 'sprint',
-        label: phase.replace('-', ' '),
-        status: 'pending',
-      });
-    });
-
-    // Add gate nodes for each phase
-    phases.forEach((phase) => {
-      const gateId = `gate-${phase}`;
-      nodes.push({
-        id: gateId,
-        type: 'gate',
-        label: `${phase} Gate`,
-        status: 'pending',
-      });
-      edges.push({
-        source: gateId,
-        target: `sprint-${phase}`,
-        relationship: 'blocks',
-        critical: true,
-      });
-    });
-
-    // Read session state for actual completion status
-    const sessionState = safeReadJson(
-      path.join(root, 'BusinessDocs', 'session', 'session-state.json'),
-      {}
-    ) as Record<string, unknown>;
-
-    const currentPhase = String(sessionState.current_phase ?? 'PHASE-1');
-
-    // Update statuses based on current phase
-    for (const node of nodes) {
-      if (node.type === 'sprint') {
-        const phase = node.id.replace('sprint-', '');
-        const phaseIdx = phases.indexOf(phase);
-        const currentIdx = phases.indexOf(currentPhase);
-        if (phaseIdx < currentIdx) node.status = 'resolved';
-        else if (phaseIdx === currentIdx) node.status = 'pending';
-        else node.status = 'blocked';
-      }
-      if (node.type === 'gate') {
-        const phase = node.id.replace('gate-', '');
-        const phaseIdx = phases.indexOf(phase);
-        const currentIdx = phases.indexOf(currentPhase);
-        if (phaseIdx < currentIdx) node.status = 'passed';
-        else node.status = 'pending';
-      }
-    }
-
-    // Build critical path (blocking chain to next sprint)
-    const currentGate = `gate-${currentPhase}`;
-    criticalPath.push(currentGate, `sprint-${currentPhase}`);
-
-    return json(res, 200, {
-      ok: true,
-      nodes,
-      edges,
-      critical_path: criticalPath,
-    });
-  }
-
-  // ── GET /api/v1/cockpit/root-cause ───────────────────────
-
-  function handleRootCause(req: http.IncomingMessage, res: http.ServerResponse) {
-    const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
-    const sessionId = url.searchParams.get('session_id') || undefined;
-    const root = getRepoRoot(ctx);
-    const items: Array<{
-      id: string;
-      type: string;
-      summary: string;
-      source_agent?: string;
-      source_file?: string;
-      cause_chain: string[];
-      actionable_link?: string;
-      actionable_type?: string;
-      timestamp: string;
-    }> = [];
-
-    // Scan audit log for gate failures and errors
-    const auditPath = path.join(root, 'BusinessDocs', 'audit', 'audit-log.jsonl');
-    try {
-      const lines = fs.readFileSync(auditPath, 'utf8').split('\n').filter(Boolean);
-      let idx = 0;
-      for (const line of lines) {
-        try {
-          const entry = JSON.parse(line) as Record<string, unknown>;
-          if (sessionId && entry.session_id !== sessionId) continue;
-
-          if (entry.event === 'gate_failed' || entry.event === 'error') {
-            items.push({
-              id: `rc-${idx++}`,
-              type: entry.event === 'gate_failed' ? 'gate_failure' : 'uncertain',
-              summary: String(entry.description || entry.message || 'Unknown failure'),
-              source_agent: entry.agent as string | undefined,
-              source_file: entry.file as string | undefined,
-              cause_chain: (entry.cause_chain as string[]) || [
-                String(entry.description || 'Root cause unknown'),
-              ],
-              actionable_link: entry.actionable_link as string | undefined,
-              actionable_type: entry.actionable_type as string | undefined,
-              timestamp: String(entry.timestamp || new Date().toISOString()),
-            });
-          }
-        } catch {
-          /* skip malformed lines */
-        }
-      }
-    } catch {
-      /* audit log may not exist yet */
-    }
-
-    return json(res, 200, {
-      ok: true,
-      items,
-      session_id: sessionId,
-    });
-  }
-
-  // ── GET /api/v1/approvals/:id/detail ─────────────────────
-
-  function handleApprovalDetail(req: http.IncomingMessage, res: http.ServerResponse) {
-    const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
-    const parts = url.pathname.split('/').filter(Boolean);
-    // /api/v1/approvals/:id/detail → parts[3] = :id
-    const id = parts.length >= 4 ? decodeURIComponent(parts[3]) : '';
-
-    if (!id) {
-      return json(res, 400, errorResponse('MISSING_ID', 'Approval ID is required'));
-    }
-
-    // Attempt to find the approval from the approval registry
-    const getEngine = ctx._getEngine as
-      | (() => { approvalRegistry?: { get: (id: string) => unknown } })
-      | undefined;
-    const engine = getEngine?.();
-    const registry = engine?.approvalRegistry;
-
-    if (!registry) {
-      // Return a synthetic detail for demo purposes
-      return json(res, 200, {
+      return reply.send({
         ok: true,
-        approval: {
-          id,
-          entity_id: id,
-          gate_id: 'unknown',
-          stage: 'unknown',
-          requested_by: 'system',
-          requested_at: new Date().toISOString(),
-          required_role: 'operator',
-          status: 'PENDING',
-          context: 'Approval context not available — engine not initialized.',
-          risk_assessment: 'Unable to assess risk without engine context.',
-          recommended_action: 'Review manually.',
-          related_artifacts: [],
+        session_health: {
+          label: 'Session Health',
+          score: computeScore(sessionFactors),
+          factors: sessionFactors,
+        },
+        sprint_readiness: {
+          label: 'Sprint Readiness',
+          score: computeScore(sprintFactors),
+          factors: sprintFactors,
+        },
+        agent_confidence: {
+          label: 'Agent Confidence',
+          score: computeScore(agentFactors),
+          factors: agentFactors,
         },
       });
     }
+  );
 
-    const approval = registry.get(id);
-    if (!approval) {
-      return json(res, 404, errorResponse('NOT_FOUND', `Approval not found: ${id}`));
+  // ── GET /api/v1/cockpit/dependencies ─────────────────────
+
+  app.get(
+    '/api/v1/cockpit/dependencies',
+    { schema: { tags: ['cockpit'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      const root = getRepoRoot(legacyCtx);
+
+      const nodes: Array<{ id: string; type: string; label: string; status: string }> = [];
+      const edges: Array<{
+        source: string;
+        target: string;
+        relationship: string;
+        critical: boolean;
+      }> = [];
+      const criticalPath: string[] = [];
+
+      const phases = ['PHASE-1', 'PHASE-2', 'PHASE-3', 'PHASE-4', 'PHASE-5'];
+      phases.forEach((phase) => {
+        nodes.push({
+          id: `sprint-${phase}`,
+          type: 'sprint',
+          label: phase.replace('-', ' '),
+          status: 'pending',
+        });
+      });
+
+      phases.forEach((phase) => {
+        const gateId = `gate-${phase}`;
+        nodes.push({ id: gateId, type: 'gate', label: `${phase} Gate`, status: 'pending' });
+        edges.push({
+          source: gateId,
+          target: `sprint-${phase}`,
+          relationship: 'blocks',
+          critical: true,
+        });
+      });
+
+      const sessionState = safeReadJson(
+        path.join(root, 'BusinessDocs', 'session', 'session-state.json'),
+        {}
+      ) as Record<string, unknown>;
+
+      const currentPhase = String(sessionState.current_phase ?? 'PHASE-1');
+
+      for (const node of nodes) {
+        if (node.type === 'sprint') {
+          const phase = node.id.replace('sprint-', '');
+          const phaseIdx = phases.indexOf(phase);
+          const currentIdx = phases.indexOf(currentPhase);
+          if (phaseIdx < currentIdx) node.status = 'resolved';
+          else if (phaseIdx === currentIdx) node.status = 'pending';
+          else node.status = 'blocked';
+        }
+        if (node.type === 'gate') {
+          const phase = node.id.replace('gate-', '');
+          const phaseIdx = phases.indexOf(phase);
+          const currentIdx = phases.indexOf(currentPhase);
+          if (phaseIdx < currentIdx) node.status = 'passed';
+          else node.status = 'pending';
+        }
+      }
+
+      const currentGate = `gate-${currentPhase}`;
+      criticalPath.push(currentGate, `sprint-${currentPhase}`);
+
+      return reply.send({ ok: true, nodes, edges, critical_path: criticalPath });
     }
+  );
 
-    return json(res, 200, { ok: true, approval });
-  }
+  // ── GET /api/v1/cockpit/root-cause ───────────────────────
+
+  app.get(
+    '/api/v1/cockpit/root-cause',
+    { schema: { tags: ['cockpit'] } },
+    async (
+      request: FastifyRequest<{ Querystring: { session_id?: string } }>,
+      reply: FastifyReply
+    ) => {
+      const sessionId = request.query.session_id || undefined;
+      const root = getRepoRoot(legacyCtx);
+      const items: Array<{
+        id: string;
+        type: string;
+        summary: string;
+        source_agent?: string;
+        source_file?: string;
+        cause_chain: string[];
+        actionable_link?: string;
+        actionable_type?: string;
+        timestamp: string;
+      }> = [];
+
+      const auditPath = path.join(root, 'BusinessDocs', 'audit', 'audit-log.jsonl');
+      try {
+        const lines = fs.readFileSync(auditPath, 'utf8').split('\n').filter(Boolean);
+        let idx = 0;
+        for (const line of lines) {
+          try {
+            const entry = JSON.parse(line) as Record<string, unknown>;
+            if (sessionId && entry.session_id !== sessionId) continue;
+            if (entry.event === 'gate_failed' || entry.event === 'error') {
+              items.push({
+                id: `rc-${idx++}`,
+                type: entry.event === 'gate_failed' ? 'gate_failure' : 'uncertain',
+                summary: String(entry.description || entry.message || 'Unknown failure'),
+                source_agent: entry.agent as string | undefined,
+                source_file: entry.file as string | undefined,
+                cause_chain: (entry.cause_chain as string[]) || [
+                  String(entry.description || 'Root cause unknown'),
+                ],
+                actionable_link: entry.actionable_link as string | undefined,
+                actionable_type: entry.actionable_type as string | undefined,
+                timestamp: String(entry.timestamp || new Date().toISOString()),
+              });
+            }
+          } catch {
+            /* skip malformed lines */
+          }
+        }
+      } catch {
+        /* audit log may not exist yet */
+      }
+
+      return reply.send({ ok: true, items, session_id: sessionId });
+    }
+  );
+
+  // ── GET /api/v1/approvals/:id/detail ─────────────────────
+
+  app.get<{ Params: { id: string } }>(
+    '/api/v1/approvals/:id/detail',
+    { schema: { tags: ['cockpit'] } },
+    async (request, reply) => {
+      const id = decodeURIComponent(request.params.id);
+      if (!id) {
+        return reply.code(400).send(errorResponse('MISSING_ID', 'Approval ID is required'));
+      }
+
+      const getEngine = legacyCtx._getEngine as
+        | (() => { approvalRegistry?: { get: (id: string) => unknown } })
+        | undefined;
+      const engine = getEngine?.();
+      const registry = engine?.approvalRegistry;
+
+      if (!registry) {
+        return reply.send({
+          ok: true,
+          approval: {
+            id,
+            entity_id: id,
+            gate_id: 'unknown',
+            stage: 'unknown',
+            requested_by: 'system',
+            requested_at: new Date().toISOString(),
+            required_role: 'operator',
+            status: 'PENDING',
+            context: 'Approval context not available — engine not initialized.',
+            risk_assessment: 'Unable to assess risk without engine context.',
+            recommended_action: 'Review manually.',
+            related_artifacts: [],
+          },
+        });
+      }
+
+      const approval = registry.get(id);
+      if (!approval) {
+        return reply.code(404).send(errorResponse('NOT_FOUND', `Approval not found: ${id}`));
+      }
+
+      return reply.send({ ok: true, approval });
+    }
+  );
 
   // ── GET /api/v1/approvals/history ────────────────────────
 
-  function handleApprovalHistory(_req: http.IncomingMessage, res: http.ServerResponse) {
-    const root = getRepoRoot(ctx);
-    const history: Array<{
-      id: string;
-      approval_id: string;
-      action: string;
-      user: string;
-      reason: string;
-      decided_at: string;
-    }> = [];
+  app.get(
+    '/api/v1/approvals/history',
+    { schema: { tags: ['cockpit'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      const root = getRepoRoot(legacyCtx);
+      const history: Array<{
+        id: string;
+        approval_id: string;
+        action: string;
+        user: string;
+        reason: string;
+        decided_at: string;
+      }> = [];
 
-    // Scan audit log for approval events
-    const auditPath = path.join(root, 'BusinessDocs', 'audit', 'audit-log.jsonl');
-    try {
-      const lines = fs.readFileSync(auditPath, 'utf8').split('\n').filter(Boolean);
-      let idx = 0;
-      for (const line of lines) {
-        try {
-          const entry = JSON.parse(line) as Record<string, unknown>;
-          if (entry.event === 'approval_decided') {
-            history.push({
-              id: `ah-${idx++}`,
-              approval_id: String(entry.approval_id || ''),
-              action: String(entry.action || 'APPROVED'),
-              user: String(entry.user || 'system'),
-              reason: String(entry.reason || ''),
-              decided_at: String(entry.timestamp || new Date().toISOString()),
-            });
+      const auditPath = path.join(root, 'BusinessDocs', 'audit', 'audit-log.jsonl');
+      try {
+        const lines = fs.readFileSync(auditPath, 'utf8').split('\n').filter(Boolean);
+        let idx = 0;
+        for (const line of lines) {
+          try {
+            const entry = JSON.parse(line) as Record<string, unknown>;
+            if (entry.event === 'approval_decided') {
+              history.push({
+                id: `ah-${idx++}`,
+                approval_id: String(entry.approval_id || ''),
+                action: String(entry.action || 'APPROVED'),
+                user: String(entry.user || 'system'),
+                reason: String(entry.reason || ''),
+                decided_at: String(entry.timestamp || new Date().toISOString()),
+              });
+            }
+          } catch {
+            /* skip malformed */
           }
-        } catch {
-          /* skip malformed */
         }
+      } catch {
+        /* audit log may not exist */
       }
-    } catch {
-      /* audit log may not exist */
+
+      return reply.send({ ok: true, history });
     }
-
-    return json(res, 200, { ok: true, history });
-  }
-
-  // ── Route table ──────────────────────────────────────────
-
-  return {
-    'GET /api/v1/cockpit/health': handleHealth,
-    'GET /api/v1/cockpit/dependencies': handleDependencies,
-    'GET /api/v1/cockpit/root-cause': handleRootCause,
-    'GET /api/v1/approvals/:id/detail': handleApprovalDetail,
-    'GET /api/v1/approvals/history': handleApprovalHistory,
-  };
-};
+  );
+}

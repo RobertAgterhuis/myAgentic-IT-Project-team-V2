@@ -10,7 +10,8 @@
  * @returns {object} Route map { 'METHOD /path': handler }.
  */
 
-import * as schemas from '../schemas';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { ServerContext } from '../context';
 import {
   QuestionnaireService,
   ServiceValidationError,
@@ -19,47 +20,21 @@ import {
 } from '../services';
 import { attachSecretWarnings } from '../utils/secret-utils';
 import { errorResponse } from '../utils/errors';
-import { VALIDATION as V } from '../strings';
-import {
-  structuredLog,
-  json,
-  parseBody,
-  assertString,
-  safePath,
-  detectSecrets,
-} from '../middleware';
+import { structuredLog, safePath, detectSecrets } from '../middleware';
+import * as RS from '../route-schemas';
 
-export = function createQuestionnaireRoutes(ctx): Record<string, unknown> {
-  const { sseNotify, scheduleRebuildIndex, BUSINESS_DOCS } = ctx;
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  const legacyCtx = ctx as unknown as Record<string, unknown>;
+  const sseNotify = legacyCtx.sseNotify as (event: string, data: unknown) => void;
+  const scheduleRebuildIndex = legacyCtx.scheduleRebuildIndex as () => void;
+  const BUSINESS_DOCS = legacyCtx.BUSINESS_DOCS as string;
 
-  const svc = new QuestionnaireService(toServiceContext(ctx));
+  const svc = new QuestionnaireService(toServiceContext(legacyCtx));
 
   // Expose for ctx.scheduleRebuildIndex wiring
-  ctx._rebuildQuestionnaireIndex = () => svc.rebuildIndex(ctx.Q_INDEX_FILE as string);
+  legacyCtx._rebuildQuestionnaireIndex = () => svc.rebuildIndex(legacyCtx.Q_INDEX_FILE as string);
 
-  async function apiGetQuestionnaires(_req, res) {
-    const result = svc.listWithCorruptionCheck();
-    const response: Record<string, unknown> = { questionnaires: result.questionnaires };
-    if (result.corruptionWarnings.length > 0) {
-      for (const w of result.corruptionWarnings) {
-        structuredLog('warn', 'markdown_corruption', { file: w.file, issues: w.issues });
-      }
-      response.corruptionWarnings = result.corruptionWarnings;
-    }
-    json(res, 200, response);
-  }
-
-  function validateSaveUpdates(updates) {
-    if (!Array.isArray(updates) || updates.length === 0 || updates.length > 200)
-      return V.UPDATES_RANGE;
-    for (const u of updates) {
-      const r = schemas.validateQuestionnaireUpdate(u);
-      if (!r.valid) return r.errors[0];
-    }
-    return null;
-  }
-
-  function detectSaveSecrets(updates) {
+  function detectSaveSecrets(updates: Array<{ answer?: string }>) {
     const warnings: string[] = [];
     for (const u of updates) {
       if (u.answer) warnings.push(...detectSecrets(u.answer));
@@ -69,23 +44,45 @@ export = function createQuestionnaireRoutes(ctx): Record<string, unknown> {
     return unique;
   }
 
-  async function apiSave(req, res) {
-    const body = await parseBody(req);
-    assertString(body.file, 'file', 500);
-    const updates = body.updates as Array<{ questionId: string; answer: string; status: string }>;
-    const validationError = validateSaveUpdates(updates);
-    if (validationError) return json(res, 400, errorResponse('VALIDATION_ERROR', validationError));
+  // ── GET /api/questionnaires ──────────────────────────────
 
-    const filePath = safePath(BUSINESS_DOCS as string, body.file as string);
+  app.get(
+    '/api/questionnaires',
+    { schema: RS.questionnairesList },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      const result = svc.listWithCorruptionCheck();
+      const response: Record<string, unknown> = { questionnaires: result.questionnaires };
+      if (result.corruptionWarnings.length > 0) {
+        for (const w of result.corruptionWarnings) {
+          structuredLog('warn', 'markdown_corruption', { file: w.file, issues: w.issues });
+        }
+        response.corruptionWarnings = result.corruptionWarnings;
+      }
+      return reply.send(response);
+    }
+  );
+
+  // ── POST /api/save ───────────────────────────────────────
+
+  app.post<{
+    Body: {
+      file?: string;
+      updates?: Array<{ questionId: string; answer: string; status: string }>;
+    };
+  }>('/api/save', { schema: RS.questionnaireSave }, async (request, reply) => {
+    const body = request.body ?? {};
+    const updates = body.updates as Array<{ questionId: string; answer: string; status: string }>;
+
+    const filePath = safePath(BUSINESS_DOCS, body.file as string);
 
     try {
       await svc.saveAnswers(filePath, updates, 'webapp');
     } catch (e) {
       if (e instanceof ServiceNotFoundError) {
-        return json(res, 404, errorResponse('FILE_NOT_FOUND', e.message));
+        return reply.code(404).send(errorResponse('FILE_NOT_FOUND', e.message));
       }
       if (e instanceof ServiceValidationError) {
-        return json(res, 400, errorResponse('VALIDATION_ERROR', e.message));
+        return reply.code(400).send(errorResponse('VALIDATION_ERROR', e.message));
       }
       throw e;
     }
@@ -94,13 +91,8 @@ export = function createQuestionnaireRoutes(ctx): Record<string, unknown> {
     svc.invalidateDiscoveryCache();
     scheduleRebuildIndex();
     sseNotify('questionnaire_save', { file: body.file, count: updates.length });
-    const response = { ok: true, saved: updates.length };
+    const response: Record<string, unknown> = { ok: true, saved: updates.length };
     attachSecretWarnings(response, uniqueWarnings);
-    json(res, 200, response);
-  }
-
-  return {
-    'GET /api/questionnaires': apiGetQuestionnaires,
-    'POST /api/save': apiSave,
-  };
-};
+    return reply.type('application/json').send(response);
+  });
+}

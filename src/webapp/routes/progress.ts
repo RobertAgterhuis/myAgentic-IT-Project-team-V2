@@ -6,50 +6,45 @@
  * Thin HTTP wrapper over SessionService (M20-003).
  *
  * @module routes/progress
- * @param {object} ctx - Shared server context.
- * @returns {object} Route map { 'METHOD /path': handler }.
  */
 
+import type { FastifyInstance, FastifyReply } from 'fastify';
+import type { ServerContext } from '../context';
 import { SessionService, toServiceContext } from '../services';
-import { json } from '../middleware';
 
-function createProgressRoutes(ctx): Record<string, unknown> {
-  const { _getLatestCommand } = ctx;
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  const svc = new SessionService(toServiceContext(ctx as unknown as Record<string, unknown>));
 
-  const svc = new SessionService(toServiceContext(ctx));
+  app.get(
+    '/api/progress',
+    { schema: { tags: ['progress'] } },
+    async (_request, reply: FastifyReply) => {
+      const command = ctx._getLatestCommand?.();
+      const session = svc.readSessionState();
 
-  async function apiGetProgress(_req, res) {
-    const command = _getLatestCommand();
-    const session = svc.readSessionState();
+      if (!session) {
+        return reply.send({
+          active: false,
+          phases: svc.buildEmptyPhases(),
+          session: null,
+          command,
+        });
+      }
 
-    if (!session) {
-      return json(res, 200, {
-        active: false,
-        phases: svc.buildEmptyPhases(),
-        session: null,
+      const sprints = session.sprint_backlog
+        ? {
+            total: session.sprint_backlog.total_sprints || 0,
+            statuses: session.sprint_backlog.sprint_statuses || {},
+          }
+        : null;
+
+      return reply.send({
+        active: true,
+        session: svc.buildSessionSummary(session),
+        phases: svc.buildPhaseProgress(session),
+        sprints,
         command,
       });
     }
-
-    const sprints = session.sprint_backlog
-      ? {
-          total: session.sprint_backlog.total_sprints || 0,
-          statuses: session.sprint_backlog.sprint_statuses || {},
-        }
-      : null;
-
-    json(res, 200, {
-      active: true,
-      session: svc.buildSessionSummary(session),
-      phases: svc.buildPhaseProgress(session),
-      sprints,
-      command,
-    });
-  }
-
-  return {
-    'GET /api/progress': apiGetProgress,
-  };
+  );
 }
-
-export = createProgressRoutes;

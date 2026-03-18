@@ -10,81 +10,78 @@
  * @returns {object} Route map { 'METHOD /path': handler }.
  */
 
-import { json, parseBody, assertString } from '../middleware';
+import type { FastifyInstance } from 'fastify';
+import type { ServerContext } from '../context';
 import { errorResponse } from '../utils/errors';
 import { PersistentQueue } from '../../../platform/engine/jobs';
 import type { StorageProvider } from '../../../platform/engine/persistence';
 import type { JobFilter, JobStatus, JobType } from '../../../platform/engine/jobs';
+import * as RS from '../route-schemas';
 
-export = function createJobRoutes(ctx): Record<string, unknown> {
-  const { sseNotify, storageProvider } = ctx as {
-    sseNotify: (event: string, data: unknown) => void;
-    storageProvider?: StorageProvider;
-  };
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  const storageProvider = ctx.getStorageProvider() as StorageProvider | undefined;
 
   function getQueue() {
     if (!storageProvider) throw new Error('StorageProvider not initialised');
     return new PersistentQueue(storageProvider);
   }
 
-  async function apiListJobs(_req, res) {
-    try {
-      const q = getQueue();
-      // Parse optional query params from URL
-      const url = new URL(_req.url, 'http://localhost');
-      const filter: JobFilter = {};
-      const status = url.searchParams.get('status');
-      const type = url.searchParams.get('type');
-      const limit = url.searchParams.get('limit');
-      if (status) filter.status = status as JobStatus;
-      if (type) filter.type = type as JobType;
-      if (limit) filter.limit = parseInt(limit, 10);
+  app.get<{ Querystring: { status?: string; type?: string; limit?: string } }>(
+    '/api/jobs',
+    { schema: RS.jobsList },
+    async (request, reply) => {
+      try {
+        const q = getQueue();
+        const filter: JobFilter = {};
+        const { status, type, limit } = request.query;
+        if (status) filter.status = status as JobStatus;
+        if (type) filter.type = type as JobType;
+        if (limit) filter.limit = parseInt(limit, 10);
 
-      const jobs = await q.list(filter);
-      json(res, 200, { ok: true, total: jobs.length, jobs });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      json(res, 500, errorResponse('JOB_LIST_ERROR', message));
+        const jobs = await q.list(filter);
+        return reply.send({ ok: true, total: jobs.length, jobs });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return reply.code(500).send(errorResponse('JOB_LIST_ERROR', message));
+      }
     }
-  }
+  );
 
-  async function apiGetJob(req, res) {
-    try {
-      const q = getQueue();
-      const id = req.params?.id || req.url.split('/').pop();
-      const job = await q.status(id);
-      if (!job) return json(res, 404, errorResponse('JOB_NOT_FOUND', `Job not found: ${id}`));
-      json(res, 200, { ok: true, job });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      json(res, 500, errorResponse('JOB_GET_ERROR', message));
+  app.get<{ Params: { id: string } }>(
+    '/api/jobs/:id',
+    { schema: RS.jobDetail },
+    async (request, reply) => {
+      try {
+        const q = getQueue();
+        const id = request.params.id;
+        const job = await q.status(id);
+        if (!job)
+          return reply.code(404).send(errorResponse('JOB_NOT_FOUND', `Job not found: ${id}`));
+        return reply.send({ ok: true, job });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        return reply.code(500).send(errorResponse('JOB_GET_ERROR', message));
+      }
     }
-  }
+  );
 
-  async function apiCancelJob(req, res) {
+  app.post('/api/jobs/cancel', { schema: RS.jobCancel }, async (request, reply) => {
     try {
       const q = getQueue();
-      const body = await parseBody(req);
-      assertString(body.job_id, 'job_id', 100);
+      const body = request.body as Record<string, unknown>;
       await q.cancel(body.job_id as string);
 
-      sseNotify('job_cancelled', {
+      ctx.sseNotify('job_cancelled', {
         type: 'job_cancelled',
-        job_id: body.job_id,
+        job_id: body.job_id as string,
         timestamp: new Date().toISOString(),
       });
 
-      json(res, 200, { ok: true, message: `Job ${body.job_id} cancelled` });
+      return reply.send({ ok: true, message: `Job ${body.job_id} cancelled` });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       const status = message.includes('not found') ? 404 : 400;
-      json(res, status, errorResponse('JOB_CANCEL_ERROR', message));
+      return reply.code(status).send(errorResponse('JOB_CANCEL_ERROR', message));
     }
-  }
-
-  return {
-    'GET /api/jobs': apiListJobs,
-    'GET /api/jobs/:id': apiGetJob,
-    'POST /api/jobs/cancel': apiCancelJob,
-  };
-};
+  });
+}

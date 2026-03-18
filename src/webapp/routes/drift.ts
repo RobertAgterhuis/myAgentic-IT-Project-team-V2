@@ -6,23 +6,18 @@
  * Thin HTTP wrapper over SessionService (M20-003).
  *
  * @module routes/drift
- * @param {object} ctx - Shared server context.
- * @returns {object} Route map { 'METHOD /path': handler }.
  */
 
+import type { FastifyInstance, FastifyReply } from 'fastify';
+import type { ServerContext } from '../context';
 import { detectDrift } from '../drift-detector';
 import { SessionService, toServiceContext } from '../services';
-import { json } from '../middleware';
 
-export = function createDriftRoutes(ctx): Record<string, unknown> {
-  const svc = new SessionService(toServiceContext(ctx));
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  const svc = new SessionService(toServiceContext(ctx as unknown as Record<string, unknown>));
 
-  function handleGetDrift(_req, res) {
+  app.get('/api/drift', { schema: { tags: ['drift'] } }, async (_request, reply: FastifyReply) => {
     const report = svc.checkDrift(detectDrift);
-    json(res, 200, report);
-  }
-
-  return {
-    'GET /api/drift': handleGetDrift,
-  };
-};
+    return reply.send(report);
+  });
+}

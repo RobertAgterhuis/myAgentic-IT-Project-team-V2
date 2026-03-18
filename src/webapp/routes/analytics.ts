@@ -12,15 +12,14 @@
  * M7 / Issue #375
  *
  * @module routes/analytics
- * @param {object} ctx - Shared server context
- * @returns {object} Route map { 'METHOD /path': handler }
  */
 
-import http from 'http';
+import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import type { ServerContext } from '../context';
 import path from 'path';
 import { getStore } from '../store';
-import { json } from '../middleware';
 import { errorResponse } from '../utils/errors';
+import * as RS from '../route-schemas';
 import {
   deserializeMetricsStore,
   createMetricsStore,
@@ -33,10 +32,8 @@ import type { MetricsStore, SprintMetrics } from '../../../platform/sdlc/observa
 const METRICS_STORE_REL = 'BusinessDocs/metrics/time-series-metrics.json';
 const VELOCITY_LOG_REL = 'BusinessDocs/retrospectives/velocity-log.json';
 
-export = function createAnalyticsRoutes(
-  ctx: Record<string, unknown>
-): Record<string, (req: http.IncomingMessage, res: http.ServerResponse) => void> {
-  const PROJECT_ROOT = ctx.PROJECT_ROOT as string;
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  const PROJECT_ROOT = ctx.PROJECT_ROOT;
 
   /** Load the time-series metrics store from disk. */
   function loadMetricsStore(): MetricsStore {
@@ -76,156 +73,150 @@ export = function createAnalyticsRoutes(
 
   // ── GET /api/v1/analytics/trends ─────────────────────────
 
-  function handleTrends(_req: http.IncomingMessage, res: http.ServerResponse) {
-    try {
-      const metricsStore = loadMetricsStore();
-      const sprintHistory = loadSprintHistory();
+  app.get(
+    '/api/v1/analytics/trends',
+    { schema: { tags: ['analytics'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const metricsStore = loadMetricsStore();
+        const sprintHistory = loadSprintHistory();
+        const velocityTrends = computeVelocityTrendEntry(sprintHistory);
+        const doraLeadTime = queryMetric(metricsStore, 'dora_lead_time_hours');
+        const doraDeployFreq = queryMetric(metricsStore, 'dora_deploy_frequency');
+        const doraFailureRate = queryMetric(metricsStore, 'dora_change_failure_rate');
+        const doraMttr = queryMetric(metricsStore, 'dora_mttr_hours');
+        const sprintPlanned = queryMetric(metricsStore, 'sprint_planned_points');
+        const sprintCompleted = queryMetric(metricsStore, 'sprint_completed_points');
+        const sprintDefects = queryMetric(metricsStore, 'sprint_defects_found');
 
-      // Velocity trends from sprint history
-      const velocityTrends = computeVelocityTrendEntry(sprintHistory);
-
-      // DORA trends from time-series store
-      const doraLeadTime = queryMetric(metricsStore, 'dora_lead_time_hours');
-      const doraDeployFreq = queryMetric(metricsStore, 'dora_deploy_frequency');
-      const doraFailureRate = queryMetric(metricsStore, 'dora_change_failure_rate');
-      const doraMttr = queryMetric(metricsStore, 'dora_mttr_hours');
-
-      // Sprint-level metrics from time-series
-      const sprintPlanned = queryMetric(metricsStore, 'sprint_planned_points');
-      const sprintCompleted = queryMetric(metricsStore, 'sprint_completed_points');
-      const sprintDefects = queryMetric(metricsStore, 'sprint_defects_found');
-
-      return json(res, 200, {
-        ok: true,
-        data: {
-          velocity: velocityTrends,
-          dora: {
-            lead_time: doraLeadTime,
-            deployment_frequency: doraDeployFreq,
-            change_failure_rate: doraFailureRate,
-            mttr: doraMttr,
+        return reply.send({
+          ok: true,
+          data: {
+            velocity: velocityTrends,
+            dora: {
+              lead_time: doraLeadTime,
+              deployment_frequency: doraDeployFreq,
+              change_failure_rate: doraFailureRate,
+              mttr: doraMttr,
+            },
+            sprints: {
+              planned_points: sprintPlanned,
+              completed_points: sprintCompleted,
+              defects_found: sprintDefects,
+            },
           },
-          sprints: {
-            planned_points: sprintPlanned,
-            completed_points: sprintCompleted,
-            defects_found: sprintDefects,
-          },
-        },
-        timestamp: new Date().toISOString(),
-      });
-    } catch (err) {
-      return json(
-        res,
-        500,
-        errorResponse('TRENDS_ERROR', `Failed to compute trends: ${(err as Error).message}`)
-      );
+          timestamp: new Date().toISOString(),
+        });
+      } catch (err) {
+        return reply
+          .code(500)
+          .send(
+            errorResponse('TRENDS_ERROR', `Failed to compute trends: ${(err as Error).message}`)
+          );
+      }
     }
-  }
+  );
 
   // ── GET /api/v1/analytics/agents ─────────────────────────
 
-  function handleAgents(_req: http.IncomingMessage, res: http.ServerResponse) {
-    try {
-      const metricsStore = loadMetricsStore();
-      const stats = computeAgentStats(metricsStore);
-
-      return json(res, 200, {
-        ok: true,
-        data: stats,
-        count: stats.length,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (err) {
-      return json(
-        res,
-        500,
-        errorResponse(
-          'AGENT_STATS_ERROR',
-          `Failed to compute agent stats: ${(err as Error).message}`
-        )
-      );
+  app.get(
+    '/api/v1/analytics/agents',
+    { schema: { tags: ['analytics'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const metricsStore = loadMetricsStore();
+        const stats = computeAgentStats(metricsStore);
+        return reply.send({
+          ok: true,
+          data: stats,
+          count: stats.length,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (err) {
+        return reply
+          .code(500)
+          .send(
+            errorResponse(
+              'AGENT_STATS_ERROR',
+              `Failed to compute agent stats: ${(err as Error).message}`
+            )
+          );
+      }
     }
-  }
+  );
 
   // ── GET /api/v1/analytics/metrics ────────────────────────
 
-  function handleMetricsList(_req: http.IncomingMessage, res: http.ServerResponse) {
-    try {
-      const metricsStore = loadMetricsStore();
-      const metrics = Object.values(metricsStore.metrics).map((m) => ({
-        name: m.name,
-        unit: m.unit,
-        data_points_count: m.data_points.length,
-        latest: m.data_points.length > 0 ? m.data_points[m.data_points.length - 1] : null,
-      }));
-
-      return json(res, 200, {
-        ok: true,
-        data: metrics,
-        count: metrics.length,
-        last_updated: metricsStore.last_updated,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (err) {
-      return json(
-        res,
-        500,
-        errorResponse('METRICS_LIST_ERROR', `Failed to list metrics: ${(err as Error).message}`)
-      );
+  app.get(
+    '/api/v1/analytics/metrics',
+    { schema: { tags: ['analytics'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const metricsStore = loadMetricsStore();
+        const metrics = Object.values(metricsStore.metrics).map((m) => ({
+          name: m.name,
+          unit: m.unit,
+          data_points_count: m.data_points.length,
+          latest: m.data_points.length > 0 ? m.data_points[m.data_points.length - 1] : null,
+        }));
+        return reply.send({
+          ok: true,
+          data: metrics,
+          count: metrics.length,
+          last_updated: metricsStore.last_updated,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (err) {
+        return reply
+          .code(500)
+          .send(
+            errorResponse('METRICS_LIST_ERROR', `Failed to list metrics: ${(err as Error).message}`)
+          );
+      }
     }
-  }
+  );
 
   // ── GET /api/v1/analytics/metrics/:name ──────────────────
 
-  function handleMetricQuery(req: http.IncomingMessage, res: http.ServerResponse) {
-    const url = new URL(req.url || '', `http://${req.headers.host || 'localhost'}`);
-    const parts = url.pathname.split('/').filter(Boolean);
-    // Pattern: /api/v1/analytics/metrics/:name → parts[4]
-    const metricName = parts.length >= 5 ? decodeURIComponent(parts[4]) : '';
-
-    if (!metricName) {
-      return json(res, 400, errorResponse('MISSING_METRIC_NAME', 'Metric name is required'));
-    }
-
-    try {
-      const metricsStore = loadMetricsStore();
-      const from = url.searchParams.get('from') || undefined;
-      const to = url.searchParams.get('to') || undefined;
-      const dataPoints = queryMetric(metricsStore, metricName, from, to);
-
-      const metric = metricsStore.metrics[metricName];
-      if (!metric) {
-        return json(
-          res,
-          404,
-          errorResponse('METRIC_NOT_FOUND', `Metric "${metricName}" not found`)
-        );
+  app.get<{ Params: { name: string }; Querystring: { from?: string; to?: string } }>(
+    '/api/v1/analytics/metrics/:name',
+    { schema: RS.analyticsV1MetricQuery },
+    async (request, reply: FastifyReply) => {
+      const metricName = decodeURIComponent(request.params.name);
+      if (!metricName) {
+        return reply
+          .code(400)
+          .send(errorResponse('MISSING_METRIC_NAME', 'Metric name is required'));
       }
-
-      return json(res, 200, {
-        ok: true,
-        data: {
-          name: metric.name,
-          unit: metric.unit,
-          data_points: dataPoints,
-          total_count: metric.data_points.length,
-          filtered_count: dataPoints.length,
-        },
-        timestamp: new Date().toISOString(),
-      });
-    } catch (err) {
-      return json(
-        res,
-        500,
-        errorResponse('METRIC_QUERY_ERROR', `Failed to query metric: ${(err as Error).message}`)
-      );
+      try {
+        const metricsStore = loadMetricsStore();
+        const from = request.query.from || undefined;
+        const to = request.query.to || undefined;
+        const dataPoints = queryMetric(metricsStore, metricName, from, to);
+        const metric = metricsStore.metrics[metricName];
+        if (!metric) {
+          return reply
+            .code(404)
+            .send(errorResponse('METRIC_NOT_FOUND', `Metric "${metricName}" not found`));
+        }
+        return reply.send({
+          ok: true,
+          data: {
+            name: metric.name,
+            unit: metric.unit,
+            data_points: dataPoints,
+            total_count: metric.data_points.length,
+            filtered_count: dataPoints.length,
+          },
+          timestamp: new Date().toISOString(),
+        });
+      } catch (err) {
+        return reply
+          .code(500)
+          .send(
+            errorResponse('METRIC_QUERY_ERROR', `Failed to query metric: ${(err as Error).message}`)
+          );
+      }
     }
-  }
-
-  return {
-    'GET /api/v1/analytics/trends': handleTrends,
-    'GET /api/v1/analytics/agents': handleAgents,
-    'GET /api/v1/analytics/metrics': handleMetricsList,
-    'GET /api/v1/analytics/metrics/:name': handleMetricQuery,
-  };
-};
+  );
+}

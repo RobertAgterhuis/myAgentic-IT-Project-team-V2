@@ -453,3 +453,153 @@ describe('metrics-dashboard route (FEAT-01)', () => {
     expect(data.storage.error).toBe('metrics_unavailable');
   });
 });
+
+/* ── Extended coverage: richer data via route handler ──────────── */
+
+describe('metrics-dashboard extended scenarios', () => {
+  const richVelocity = {
+    sprints: [
+      ...velocityLog.sprints,
+      {
+        sprint_id: 'SP-5',
+        planned_points: 30,
+        realized_points: 12,
+        velocity_ratio: null,
+        implemented: 4,
+        blocked: 3,
+        scope_change_excluded_points: 5,
+      },
+      {
+        sprint_id: 'SP-6',
+        planned_points: 15,
+        realized_points: 20,
+        velocity_ratio: 1.33,
+        implemented: 10,
+        blocked: 0,
+        scope_change_excluded_points: 0,
+      },
+    ],
+  };
+
+  const kpiSP2 = {
+    sprint_id: 'SP-2',
+    measured_on: '2026-01-22T12:00:00Z',
+    summary: { on_track: 1, at_risk: 1, off_track: 5, insufficient_data: 0 },
+    kpis: [{ id: 'K2', status: 'off_track' }],
+  };
+
+  const kpiSP5 = {
+    sprint: 'SP-5',
+    date: '2026-03-01',
+    tests: { total: 80, passed: 40, failed: 40 },
+    quality: { regressions: 10, security_findings: 5 },
+  };
+
+  const kpiSP6 = {
+    sprint_id: 'SP-6',
+    measured_on: '2026-03-15T12:00:00Z',
+    summary: { on_track: 3, at_risk: 5, off_track: 0, insufficient_data: 0 },
+    kpis: [{ id: 'K6', status: 'at_risk' }],
+  };
+
+  function buildRichFiles() {
+    const files = {};
+    files[path.join(BUSINESS_DOCS, 'retrospectives', 'velocity-log.json')] =
+      JSON.stringify(richVelocity);
+    files[path.join(BUSINESS_DOCS, 'metrics', 'sprint-SP-1-kpi.json')] = JSON.stringify(kpiSP1);
+    files[path.join(BUSINESS_DOCS, 'metrics', 'sprint-SP-2-kpi.json')] = JSON.stringify(kpiSP2);
+    files[path.join(BUSINESS_DOCS, 'metrics', 'sprint-SP-6-kpi.json')] = JSON.stringify(kpiSP6);
+    files[path.join(BUSINESS_DOCS, 'phase-5', 'sprint-SP-3', 'sprint-SP-3-kpi.json')] =
+      JSON.stringify({
+        sprint: 'SP-3',
+        date: '2026-02-01',
+        tests: { total: 50, passed: 45, failed: 5 },
+        quality: { regressions: 3, security_findings: 2 },
+      });
+    files[path.join(BUSINESS_DOCS, 'phase-5', 'sprint-SP-4', 'sprint-SP-4-kpi.json')] =
+      JSON.stringify(kpiSP4);
+    files[path.join(BUSINESS_DOCS, 'phase-5', 'sprint-SP-5', 'sprint-SP-5-kpi.json')] =
+      JSON.stringify(kpiSP5);
+    return files;
+  }
+
+  let handler;
+  beforeEach(() => {
+    const store = new InMemoryStore(buildRichFiles());
+    setStore(store);
+    const cache = new FileCache();
+    const r = createMetricsDashboardRoutes({ _cache: cache, BUSINESS_DOCS });
+    handler = r['GET /api/metrics/dashboard'];
+  });
+
+  it('rates red velocity when computed ratio < 0.7', async () => {
+    const res = fakeRes();
+    await handler(fakeReq(), res);
+    const sp5 = res.json.healthScorecard.find((s) => s.sprint_id === 'SP-5');
+    expect(sp5.velocity).toBe('red');
+  });
+
+  it('rates red quality when test fail rate > 5%', async () => {
+    const res = fakeRes();
+    await handler(fakeReq(), res);
+    const sp5 = res.json.healthScorecard.find((s) => s.sprint_id === 'SP-5');
+    expect(sp5.quality).toBe('red');
+  });
+
+  it('rates red kpis when off_track > 20%', async () => {
+    const res = fakeRes();
+    await handler(fakeReq(), res);
+    const sp2 = res.json.healthScorecard.find((s) => s.sprint_id === 'SP-2');
+    expect(sp2.kpis).toBe('red');
+  });
+
+  it('rates amber kpis when at_risk > 30%', async () => {
+    const res = fakeRes();
+    await handler(fakeReq(), res);
+    const sp6 = res.json.healthScorecard.find((s) => s.sprint_id === 'SP-6');
+    expect(sp6.kpis).toBe('amber');
+  });
+
+  it('overall RAG is red when any component is red', async () => {
+    const res = fakeRes();
+    await handler(fakeReq(), res);
+    const sp5 = res.json.healthScorecard.find((s) => s.sprint_id === 'SP-5');
+    expect(sp5.overall).toBe('red');
+  });
+
+  it('estimation histogram includes over bucket', async () => {
+    const res = fakeRes();
+    await handler(fakeReq(), res);
+    expect(res.json.estimationHistogram.over).toBeGreaterThanOrEqual(1);
+  });
+
+  it('risk trend includes worsening direction', async () => {
+    const res = fakeRes();
+    await handler(fakeReq(), res);
+    const sp2 = res.json.riskTrend.find((r) => r.sprint_id === 'SP-2');
+    if (sp2) expect(sp2.direction).toBe('worsening');
+  });
+
+  it('heatmap includes test pass rate for phase5 KPI sprints', async () => {
+    const res = fakeRes();
+    await handler(fakeReq(), res);
+    const sp4 = res.json.heatmapData.find((h) => h.sprint_id === 'SP-4');
+    expect(sp4.test_pass_rate).toBeCloseTo(0.98, 2);
+  });
+
+  it('computes defect density per story point', async () => {
+    const res = fakeRes();
+    await handler(fakeReq(), res);
+    const sp3 = res.json.defectDensity.find((d) => d.sprint_id === 'SP-3');
+    expect(sp3.defects_per_sp).toBeCloseTo(0.25, 2);
+  });
+
+  it('quality trend covers sprints with high failure rates', async () => {
+    const res = fakeRes();
+    await handler(fakeReq(), res);
+    const sp5 = res.json.qualityTrend.find((q) => q.sprint_id === 'SP-5');
+    expect(sp5).toBeTruthy();
+    expect(sp5.tests_skipped).toBe(0);
+    expect(sp5.regressions).toBe(10);
+  });
+});

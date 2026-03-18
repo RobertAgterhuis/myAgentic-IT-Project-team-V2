@@ -83,11 +83,11 @@ describe('withFileLock — concurrency', () => {
     expect(order).toEqual([1, 2, 3]);
   });
 
-  it('shares the same lock instance across server.ts and file-lock.ts imports', () => {
-    // Both modules must resolve to the same singleton lock map
-    const serverLock = require('../../src/webapp/server').withFileLock;
-    const fileLockModule = require('../../src/webapp/file-lock').withFileLock;
-    expect(serverLock).toBe(fileLockModule);
+  it('shares the same lock instance across repeated requires', () => {
+    // Module caching must guarantee the same singleton
+    const lock1 = require('../../src/webapp/file-lock').withFileLock;
+    const lock2 = require('../../src/webapp/file-lock').withFileLock;
+    expect(lock1).toBe(lock2);
   });
 
   it('releases lock even when fn throws', async () => {

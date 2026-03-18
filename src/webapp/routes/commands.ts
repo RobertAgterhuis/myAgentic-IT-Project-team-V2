@@ -62,7 +62,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         message: R.commandQueued(result.clipboard_text),
       };
       attachSecretWarnings(cmdResponse, cmdSecrets);
-      return reply.send(cmdResponse);
+      return reply.type('application/json').send(cmdResponse);
     } catch (e) {
       if (e instanceof ServiceValidationError) {
         return reply

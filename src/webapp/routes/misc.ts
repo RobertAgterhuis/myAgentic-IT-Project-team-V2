@@ -245,10 +245,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       cache_hit_ratio: totalCache > 0 ? +((cacheStats.hits || 0) / totalCache).toFixed(4) : 0,
       per_endpoint: {},
     };
-    for (const [ep, data] of Object.entries(_metrics.perEndpoint) as [
-      string,
-      Record<string, unknown>,
-    ][]) {
+    for (const [ep, data] of Object.entries(_metrics.perEndpoint)) {
       const epPcts = computePercentiles(data.times);
       result.per_endpoint[ep] = {
         count: data.count,

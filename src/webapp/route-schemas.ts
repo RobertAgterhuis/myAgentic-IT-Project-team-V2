@@ -30,6 +30,9 @@ const idParam = {
 const r200Ok = {
   200: { description: 'Success' },
 };
+const r201 = {
+  201: { description: 'Created' },
+};
 const r400 = {
   400: { description: 'Validation error' },
 };
@@ -41,6 +44,12 @@ const r404 = {
 };
 const r429 = {
   429: { description: 'Rate limited' },
+};
+const r500 = {
+  500: { description: 'Internal server error' },
+};
+const r503 = {
+  503: { description: 'Service unavailable' },
 };
 
 /** Common mutation responses: 200 ok + 400 + 403 + 429. */
@@ -87,7 +96,7 @@ export const commandGet = {
 
 export const approvalsList = {
   tags: ['approvals'],
-  response: listResponses,
+  response: { ...listResponses, ...r500, ...r503 },
 };
 
 export const approvalApprove = {
@@ -101,7 +110,7 @@ export const approvalApprove = {
     },
     additionalProperties: false,
   },
-  response: { ...mutationResponses, ...r404 },
+  response: { ...mutationResponses, ...r404, ...r500, ...r503 },
 };
 
 export const approvalReject = {
@@ -116,7 +125,7 @@ export const approvalReject = {
     },
     additionalProperties: false,
   },
-  response: { ...mutationResponses, ...r404 },
+  response: { ...mutationResponses, ...r404, ...r500, ...r503 },
 };
 
 /* ── decisions ────────────────────────────────────────────────── */
@@ -144,7 +153,7 @@ export const decisionMutate = {
     },
     additionalProperties: false,
   },
-  response: mutationResponses,
+  response: { ...mutationResponses, ...r404 },
 };
 
 export const decisionActivateCategory = {
@@ -328,7 +337,7 @@ export const workspaceCreate = {
     },
     additionalProperties: false,
   },
-  response: mutationResponses,
+  response: { ...mutationResponses, ...r201, ...r503 },
 };
 
 export const workspaceUpdate = {
@@ -407,7 +416,7 @@ export const policyEvaluate = {
     },
     additionalProperties: false,
   },
-  response: mutationResponses,
+  response: { ...mutationResponses, ...r500 },
 };
 
 export const policyCreateException = {
@@ -424,7 +433,7 @@ export const policyCreateException = {
     },
     additionalProperties: false,
   },
-  response: mutationResponses,
+  response: { ...mutationResponses, ...r201, ...r404, ...r500 },
 };
 
 /* ── jobs ─────────────────────────────────────────────────────── */
@@ -459,7 +468,7 @@ export const jobCancel = {
     },
     additionalProperties: false,
   },
-  response: mutationResponses,
+  response: { ...mutationResponses, ...r404 },
 };
 
 /* ── orchestrator ─────────────────────────────────────────────── */
@@ -657,7 +666,7 @@ export const sessionDetail = {
 
 export const policiesList = {
   tags: ['policies'],
-  response: listResponses,
+  response: { ...listResponses, ...r500 },
 };
 
 /* ── auth ──────────────────────────────────────────────────────── */

@@ -94,7 +94,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         );
       }
       ctx.sseNotify('decision_update', { action: body.action as string, id: result.id });
-      return reply.send(attachSecretWarnings(result, secretWarnings));
+      return reply.type('application/json').send(attachSecretWarnings(result, secretWarnings));
     } catch (e) {
       if (e instanceof ServiceValidationError) {
         return reply.code(400).send(errorResponse('INVALID_ACTION', e.message));
@@ -125,7 +125,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           file: fname,
           name: result.name,
         });
-        return reply.send(result);
+        return reply.type('application/json').send(result);
       } catch (e) {
         if (e instanceof ServiceValidationError) {
           return reply.code(400).send(errorResponse('INVALID_FILE', e.message));

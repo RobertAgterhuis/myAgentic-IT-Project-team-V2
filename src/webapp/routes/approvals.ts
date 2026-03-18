@@ -61,8 +61,8 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
         const result = svc.approve(approvalId, decidedBy, reason);
         structuredLog('INFO', 'approval_approved', { id: approvalId, decided_by: decidedBy });
-        ctx.sseNotify?.({ type: 'approval', action: 'approved', id: approvalId });
-        return reply.send(result);
+        ctx.sseNotify?.('approval', { action: 'approved', id: approvalId });
+        return reply.type('application/json').send(result);
       } catch (err) {
         if (err instanceof ServiceValidationError) {
           return reply.code(400).send({ error: (err as Error).message });
@@ -97,8 +97,8 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
         const result = svc.reject(approvalId, decidedBy, reason);
         structuredLog('INFO', 'approval_rejected', { id: approvalId, decided_by: decidedBy });
-        ctx.sseNotify?.({ type: 'approval', action: 'rejected', id: approvalId });
-        return reply.send(result);
+        ctx.sseNotify?.('approval', { action: 'rejected', id: approvalId });
+        return reply.type('application/json').send(result);
       } catch (err) {
         if (err instanceof ServiceValidationError) {
           return reply.code(400).send({ error: (err as Error).message });

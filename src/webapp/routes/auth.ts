@@ -58,7 +58,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       }
       const redirectTo = request.query.redirect || undefined;
       const loginUrl = authManager.getLoginUrl(redirectTo);
-      return reply.redirect(302, loginUrl);
+      return reply.redirect(loginUrl, 302);
     }
   );
 
@@ -81,14 +81,14 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
       if (!code || !state) {
         structuredLog('warn', 'oauth_callback_missing_params');
-        return reply.redirect(302, '/login?error=missing_params');
+        return reply.redirect('/login?error=missing_params', 302);
       }
 
       // Verify state (CSRF protection for OAuth)
       const stateResult = authManager.verifyState(state);
       if (!stateResult.valid) {
         structuredLog('warn', 'oauth_state_invalid');
-        return reply.redirect(302, '/login?error=invalid_state');
+        return reply.redirect('/login?error=invalid_state', 302);
       }
 
       try {
@@ -117,10 +117,10 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         });
 
         const redirectTo = safeRedirect(stateResult.redirectTo);
-        return reply.redirect(302, redirectTo);
+        return reply.redirect(redirectTo, 302);
       } catch (err) {
         structuredLog('error', 'oauth_callback_failed', { error: (err as Error).message });
-        return reply.redirect(302, '/login?error=auth_failed');
+        return reply.redirect('/login?error=auth_failed', 302);
       }
     }
   );

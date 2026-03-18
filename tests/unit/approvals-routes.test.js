@@ -80,7 +80,7 @@ function createCtx(governance = null) {
   const notified = [];
   return {
     _getEngine: governance ? () => ({ getGovernance: () => governance }) : () => null,
-    sseNotify: (evt) => notified.push(evt),
+    sseNotify: (_eventType, data) => notified.push(data),
     _notified: notified,
   };
 }

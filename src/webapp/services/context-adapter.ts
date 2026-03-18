@@ -9,6 +9,7 @@ import path from 'path';
 import { getStore } from '../store';
 import { FileCache } from '../cache';
 import type { ServiceContext } from './types';
+import type { ServerContext } from '../context';
 
 /** Lazily created fallback cache for contexts that don't provide one. */
 let _fallbackCache: FileCache | null = null;
@@ -23,7 +24,7 @@ function fallbackCache(): FileCache {
  * no-op defaults for optional dependencies (audit, cache).
  * Derives sessionDir from SESSION_FILE when SESSION_DIR is absent.
  */
-export function toServiceContext(ctx: Record<string, unknown>): ServiceContext {
+export function toServiceContext(ctx: ServerContext | Record<string, unknown>): ServiceContext {
   const sessionDir =
     (ctx.SESSION_DIR as string) ||
     (ctx.SESSION_FILE ? path.dirname(ctx.SESSION_FILE as string) : '');

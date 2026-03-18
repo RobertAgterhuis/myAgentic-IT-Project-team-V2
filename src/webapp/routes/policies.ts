@@ -59,7 +59,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         type: 'policy_evaluation',
         summary: result.evaluation.summary,
       });
-      return reply.send(result);
+      return reply.type('application/json').send(result);
     } catch (err) {
       structuredLog('ERROR', 'policies_evaluate_failed', { error: (err as Error).message });
       return reply.code(500).send(errorResponse('INTERNAL_ERROR', (err as Error).message));

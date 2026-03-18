@@ -93,6 +93,6 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     sseNotify('questionnaire_save', { file: body.file, count: updates.length });
     const response: Record<string, unknown> = { ok: true, saved: updates.length };
     attachSecretWarnings(response, uniqueWarnings);
-    return reply.send(response);
+    return reply.type('application/json').send(response);
   });
 }

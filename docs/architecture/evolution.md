@@ -1,6 +1,8 @@
 ---
 title: Architecture Evolution
-nav_order: 5
+parent: Architecture
+nav_order: 2
+permalink: /architecture-evolution/
 ---
 
 # Architecture Evolution

@@ -37,8 +37,8 @@
 - `README.md` line 217 — "server.ts ← Native http server entrypoint"
 - `CONTRIBUTING.md` line 54 — "server.ts ← HTTP server, route handlers, SSE, metrics"
 - `CONTRIBUTING.md` line 80–84 — Key Design Decisions reference raw http
-- `docs/architecture.md` line 31 — "Native http module · 127.0.0.1:3000 · 16 routes"
-- `docs/architecture.md` line 151 — "No web framework required"
+- `docs/architecture/overview.md` line 31 — "Native http module · 127.0.0.1:3000 · 16 routes"
+- `docs/architecture/overview.md` line 151 — "No web framework required"
 - `BusinessDocs/Phase2-Tech/phase2-tech-audit.md` line 35 — "raw `http` module"
 - `BusinessDocs/Phase2-Tech/phase2-tech-audit.md` line 44 — "not Express/Fastify/Koa"
 - `BusinessDocs/onboarding/onboarding-output.md` line 56 — "custom http, minimal runtime deps"
@@ -58,10 +58,10 @@
 - `CONTRIBUTING.md` line 42 — "Run vitest tests (1239 tests)"
 - `.github/PULL_REQUEST_TEMPLATE.md` line 15 — "Jest, 363 tests"
 - `.github/PULL_REQUEST_TEMPLATE.md` line 16 — "1239 tests"
-- `docs/architecture.md` line 143 — "2,420 passing across 96 test files"
-- `docs/ci-health-review.md` line 58 — "~1370 passing"
-- `docs/operating-handbook.md` line 135 — "1370 tests"
-- `docs/release-checklist.md` line 21 — "1370 Vitest tests"
+- `docs/architecture/overview.md` line 143 — "2,420 passing across 96 test files"
+- `docs/operations/ci-health-review.md` line 58 — "~1370 passing"
+- `docs/operations/operating-handbook.md` line 135 — "1370 tests"
+- `docs/operations/release-checklist.md` line 21 — "1370 Vitest tests"
 - `docs/help/troubleshooting.md` line 196 — "1370 tests"
 
 **Root cause:** Test counts were snapshot-in-time values never updated. Jest references are from pre-consolidation era.
@@ -75,7 +75,7 @@
 
 - `README.md` line 48 — "minimal runtime dependencies: MCP SDK, Ajv, tsx"
 - `CONTRIBUTING.md` line 76–79 — "Minimal runtime dependencies" / "only Node.js built-in modules"
-- `docs/architecture.md` line 151 — Tech choices table
+- `docs/architecture/overview.md` line 151 — Tech choices table
 
 ### DRIFT-004: Authentication & RBAC not reflected in general docs (LOW)
 
@@ -108,8 +108,8 @@
 **Affected files:**
 
 - `CONTRIBUTING.md` lines 173–191 — PR process instructs `cd .github && npm test`
-- `docs/technical-manual.md` lines 948, 1126, 1380 — reference `.github` test paths
-- `docs/user-manual.md` line 367 — references `cd .github`
+- `docs/reference/technical-manual.md` lines 948, 1126, 1380 — reference `.github` test paths
+- `docs/getting-started/user-manual.md` line 367 — references `cd .github`
 
 ---
 

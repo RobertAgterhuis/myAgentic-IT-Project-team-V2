@@ -1,6 +1,8 @@
 ---
 title: Release Checklist
-nav_order: 15
+parent: Operations
+nav_order: 2
+permalink: /release-checklist/
 description: Pre-release verification checklist for every version bump.
 ---
 

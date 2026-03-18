@@ -53,7 +53,7 @@ Open a [GitHub Issue](https://github.com/RobertAgterhuis/myAgentic-IT-Project-te
 ## CI Health Review
 
 A monthly CI health review process is documented in
-[`docs/ci-health-review.md`](docs/ci-health-review.md). It tracks pipeline
+[`docs/operations/ci-health-review.md`](docs/operations/ci-health-review.md). It tracks pipeline
 success rate, duration trends, flaky tests, disabled gates, and coverage.
 
 ---

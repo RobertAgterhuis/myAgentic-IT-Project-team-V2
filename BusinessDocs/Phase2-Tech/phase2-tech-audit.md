@@ -359,7 +359,7 @@ Source: absence in `ci.yml`
 
 - **No user data collected** — system operates as a developer tool with no end-user PII
 - **IMPL-CONSTRAINT-006 documented:** "No PII in logs" (source: `middleware.ts` L15)
-- **Privacy policy exists:** `docs/privacy-policy.md`
+- **Privacy policy exists:** `docs/operations/privacy-policy.md`
 - **Data inventory exists:** `docs/security/data-inventory.md`
 
 ### 6.3 Security Documentation

@@ -1,6 +1,8 @@
 ---
 title: Operating Handbook
-nav_order: 13
+parent: Operations
+nav_order: 1
+permalink: /operating-handbook/
 description: Day-to-day operational procedures for running the Agentic SDLC Platform.
 ---
 
@@ -255,5 +257,5 @@ npm test
 
 ---
 
-_For more details, see the [User Manual](../docs/user-manual.md) and
-[Technical Manual](../docs/technical-manual.md)._
+_For more details, see the [User Manual](../getting-started/user-manual) and
+[Technical Manual](../reference/technical-manual)._

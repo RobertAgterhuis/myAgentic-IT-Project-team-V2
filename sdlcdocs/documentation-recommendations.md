@@ -31,9 +31,9 @@
 ### R2.1: HTTP Framework (DRIFT-001)
 
 - Update all references from "Native `http` module" to "Fastify 5"
-- Update tech stack table in README (until slimmed) and `docs/architecture.md`
+- Update tech stack table in README (until slimmed) and `docs/architecture/overview.md`
 - Remove "No Express or web framework dependency" claims
-- Update `docs/architecture.md` layer diagram
+- Update `docs/architecture/overview.md` layer diagram
 - Update project structure references in CONTRIBUTING.md
 
 ### R2.2: Test Count (DRIFT-002)
@@ -62,7 +62,7 @@
 
 - Remove all `cd .github && npm test` references
 - Update commands table in CONTRIBUTING.md
-- Fix `docs/technical-manual.md`, `docs/operating-handbook.md`, `docs/release-checklist.md`, `docs/help/troubleshooting.md`
+- Fix `docs/reference/technical-manual.md`, `docs/operations/operating-handbook.md`, `docs/operations/release-checklist.md`, `docs/help/troubleshooting.md`
 
 ---
 
@@ -74,7 +74,7 @@
 ### Actions:
 
 1. **`CONTRIBUTING.md`** — Slim root version to "See `docs/contributing.md`" with just the essentials (clone, install, test). Move detailed coding standards, architecture overview, and PR process into `docs/contributing.md`.
-2. **`src/webapp/README.md`** — Merge content into `docs/technical-manual.md` or `docs/architecture.md`. Remove or replace with a pointer.
+2. **`src/webapp/README.md`** — Merge content into `docs/reference/technical-manual.md` or `docs/architecture/overview.md`. Remove or replace with a pointer.
 3. **Keep in root** (GitHub convention): `README.md`, `LICENSE`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `CHANGELOG.md`
 4. **Do NOT move `BusinessDocs/`** — this is runtime project data consumed by agents, not documentation
 
@@ -111,10 +111,10 @@
 
 ---
 
-## R6: Add M29–M33 Architecture Changes to `docs/architecture.md`
+## R6: Add M29–M33 Architecture Changes to `docs/architecture/overview.md`
 
 **Priority:** HIGH  
-**Rationale:** `docs/architecture.md` is the primary architecture reference but reflects pre-M29 state.
+**Rationale:** `docs/architecture/overview.md` is the primary architecture reference but reflects pre-M29 state.
 
 ### Actions:
 
@@ -144,7 +144,7 @@
 
 ---
 
-## R8: Update `docs/technical-manual.md`
+## R8: Update `docs/reference/technical-manual.md`
 
 **Priority:** HIGH  
 **Rationale:** Version 2.0 (dated 2026-03-30) predates M29–M33 and contains outdated module descriptions.

@@ -1,7 +1,9 @@
 ---
 layout: default
 title: User Manual
+parent: Getting Started
 nav_order: 2
+permalink: /user-manual/
 description: End-user guide for the Questionnaire & Decisions Manager web application.
 ---
 

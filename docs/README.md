@@ -188,7 +188,7 @@ Use this as a decision guide:
 > partial cycles:** If you previously ran `CREATE BUSINESS` and `CREATE TECH` on
 > the same project, run `CREATE SYNTHESIS` to produce a combined report and the
 > Cross-Team Blocker Matrix (once all 4 phases are present). **For a full guide
-> on CREATE vs AUDIT mode**, see [docs/mode-guide.md](mode-guide.md).
+> on CREATE vs AUDIT mode**, see [docs/getting-started/mode-guide.md](getting-started/mode-guide.md).
 
 ---
 

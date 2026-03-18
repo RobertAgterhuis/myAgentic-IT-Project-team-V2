@@ -1,6 +1,6 @@
 # myAgentic-IT-Project-team — Command Center
 
-For full documentation, see **[docs/technical-manual.md](../../docs/technical-manual.md)**.
+For full documentation, see **[docs/reference/technical-manual.md](../../docs/reference/technical-manual.md)**.
 the agentic system uses
 
 - **No database** — all state lives in your `BusinessDocs/` folder as JSON and

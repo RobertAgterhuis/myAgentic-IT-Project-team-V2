@@ -17,19 +17,20 @@ implementation.
 
 ---
 
-## Documentation
+## Documentation Areas
 
-| Document                                         | Description                                                          |
-| ------------------------------------------------ | -------------------------------------------------------------------- |
-| [User Manual](user-manual)                       | Getting started, Command Center, questionnaires, decisions, commands |
-| [Technical Manual](technical-manual)             | Architecture, API reference, data model, configuration, security     |
-| [Architecture Overview](architecture)            | Layer diagram, data flow, module inventory, tech decisions           |
-| [Architecture Evolution](architecture-evolution) | Architectural changes by milestone (M29–M33)                         |
-| [Data Dictionary](data-dictionary)               | Entity catalog, field schemas, ER diagram, validation rules          |
-| [Contributing Guide](contributing)               | Development setup, coding standards, PR process                      |
-| [MCP Setup](mcp-setup)                           | Cross-IDE MCP server configuration and troubleshooting               |
-| [Release Checklist](release-checklist)           | Pre-release verification steps                                       |
-| [Brand Guidelines](brand/brand-guidelines)       | Colors, typography, design tokens, voice & tone                      |
+| Area                                       | Contents                                                                        |
+| ------------------------------------------ | ------------------------------------------------------------------------------- |
+| [Getting Started](getting-started/)        | Quick start, user manual, mode guide, pilot guide, MCP setup                    |
+| [Architecture](architecture/)              | Architecture overview and architectural evolution                               |
+| [Reference](reference/)                    | Technical manual, data dictionary, glossary, file system reference, agent index |
+| [Operations](operations/)                  | Operating handbook, release checklist, GA definition, CI review, privacy policy |
+| [Contributing Guide](contributing)         | Development workflow, standards, and PR process                                 |
+| [API Reference](api/)                      | Endpoint contracts and examples                                                 |
+| [Security](security/)                      | Security design, data inventory, and privacy/security guidance                  |
+| [Help](help/)                              | Task-oriented help topics                                                       |
+| [UX](ux/)                                  | UX documentation and design-system material                                     |
+| [Brand Guidelines](brand/brand-guidelines) | Colors, typography, design tokens, voice & tone                                 |
 
 ---
 

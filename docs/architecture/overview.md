@@ -1,6 +1,8 @@
 ---
 title: Architecture Overview
-nav_order: 3
+parent: Architecture
+nav_order: 1
+permalink: /architecture/overview/
 description: System architecture, layer diagram, data flow, and module inventory.
 ---
 
@@ -10,7 +12,7 @@ This document describes the layered architecture of the Agentic SDLC Platform,
 how data flows through the system, and how the MCP integration works.
 
 > For a chronological view of architectural changes, see
-> [Architecture Evolution](architecture-evolution).
+> [Architecture Evolution](evolution).
 
 ---
 

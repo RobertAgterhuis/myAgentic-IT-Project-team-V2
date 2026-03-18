@@ -1,7 +1,9 @@
 ---
 layout: default
 title: File System Reference
-nav_order: 10
+parent: Reference
+nav_order: 4
+permalink: /file-system-reference/
 description:
   Complete map of the repository — what each directory and key file does, which
   agents write where, and what's safe to modify.

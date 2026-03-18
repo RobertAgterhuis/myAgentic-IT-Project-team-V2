@@ -31,8 +31,8 @@ Stories that fix factual inaccuracies in high-visibility files. No structural ch
 - [ ] `README.md` project structure tree updated for current file layout
 - [ ] `CONTRIBUTING.md` architecture overview references Fastify, plugins, routes
 - [ ] `CONTRIBUTING.md` key design decisions section updated
-- [ ] `docs/architecture.md` layer diagram shows Fastify
-- [ ] `docs/architecture.md` tech choices table updated
+- [ ] `docs/architecture/overview.md` layer diagram shows Fastify
+- [ ] `docs/architecture/overview.md` tech choices table updated
 - [ ] No remaining references to "native http" or "no framework" in any `.md` file
 - [ ] All tests still pass after changes
 
@@ -40,7 +40,7 @@ Stories that fix factual inaccuracies in high-visibility files. No structural ch
 
 - `README.md`
 - `CONTRIBUTING.md`
-- `docs/architecture.md`
+- `docs/architecture/overview.md`
 
 **Labels:** `documentation`, `drift-fix`, `priority:critical`
 
@@ -56,10 +56,10 @@ Stories that fix factual inaccuracies in high-visibility files. No structural ch
 - [ ] All references to "1239 tests", "1370 tests", "2,420 tests" replaced with "3,000+" or removed
 - [ ] `CONTRIBUTING.md` commands table shows only `npm test` (Vitest)
 - [ ] `.github/PULL_REQUEST_TEMPLATE.md` checklist updated to single Vitest check
-- [ ] `docs/release-checklist.md` test count updated
-- [ ] `docs/operating-handbook.md` test command updated
+- [ ] `docs/operations/release-checklist.md` test count updated
+- [ ] `docs/operations/operating-handbook.md` test command updated
 - [ ] `docs/help/troubleshooting.md` test count updated
-- [ ] `docs/ci-health-review.md` test count updated
+- [ ] `docs/operations/ci-health-review.md` test count updated
 - [ ] No remaining references to Jest in any documentation file
 
 **Files to modify:**
@@ -67,10 +67,10 @@ Stories that fix factual inaccuracies in high-visibility files. No structural ch
 - `README.md`
 - `CONTRIBUTING.md`
 - `.github/PULL_REQUEST_TEMPLATE.md`
-- `docs/architecture.md`
-- `docs/release-checklist.md`
-- `docs/operating-handbook.md`
-- `docs/ci-health-review.md`
+- `docs/architecture/overview.md`
+- `docs/operations/release-checklist.md`
+- `docs/operations/operating-handbook.md`
+- `docs/operations/ci-health-review.md`
 - `docs/help/troubleshooting.md`
 
 **Labels:** `documentation`, `drift-fix`, `priority:critical`
@@ -85,14 +85,14 @@ Stories that fix factual inaccuracies in high-visibility files. No structural ch
 
 - [ ] `README.md` tech stack accurately lists Fastify, BullMQ, ioredis, better-sqlite3, pino
 - [ ] `CONTRIBUTING.md` design decisions section updated
-- [ ] `docs/architecture.md` tech choices table lists all production dependencies
+- [ ] `docs/architecture/overview.md` tech choices table lists all production dependencies
 - [ ] No remaining "only MCP SDK, Ajv, tsx" claims
 
 **Files to modify:**
 
 - `README.md`
 - `CONTRIBUTING.md`
-- `docs/architecture.md`
+- `docs/architecture/overview.md`
 
 **Labels:** `documentation`, `drift-fix`, `priority:medium`
 
@@ -105,14 +105,14 @@ Stories that fix factual inaccuracies in high-visibility files. No structural ch
 **Acceptance Criteria:**
 
 - [ ] `CONTRIBUTING.md` removes "no authentication required" statement
-- [ ] `docs/architecture.md` mentions auth layer
+- [ ] `docs/architecture/overview.md` mentions auth layer
 - [ ] Any remaining "no auth" references in cross-cutting docs are updated or annotated with historical context
 - [ ] Auth is mentioned in the technology stack / architecture overview sections
 
 **Files to modify:**
 
 - `CONTRIBUTING.md`
-- `docs/architecture.md`
+- `docs/architecture/overview.md`
 
 **Labels:** `documentation`, `drift-fix`, `priority:low`
 
@@ -126,16 +126,16 @@ Stories that fix factual inaccuracies in high-visibility files. No structural ch
 
 - [ ] All `cd .github` instructions removed from documentation
 - [ ] `CONTRIBUTING.md` PR process uses root-level `npm test` only
-- [ ] `docs/technical-manual.md` test instructions updated
-- [ ] `docs/user-manual.md` developer instructions updated (if applicable)
-- [ ] `docs/operating-handbook.md` commands updated
+- [ ] `docs/reference/technical-manual.md` test instructions updated
+- [ ] `docs/getting-started/user-manual.md` developer instructions updated (if applicable)
+- [ ] `docs/operations/operating-handbook.md` commands updated
 
 **Files to modify:**
 
 - `CONTRIBUTING.md`
-- `docs/technical-manual.md`
-- `docs/user-manual.md`
-- `docs/operating-handbook.md`
+- `docs/reference/technical-manual.md`
+- `docs/getting-started/user-manual.md`
+- `docs/operations/operating-handbook.md`
 
 **Labels:** `documentation`, `drift-fix`, `priority:medium`
 
@@ -190,18 +190,18 @@ Stories that restructure where documentation lives to create a single source of 
 
 #### Story M34-008: Merge src/webapp/README.md into docs/
 
-**Description:** Consolidate `src/webapp/README.md` content into `docs/technical-manual.md` or `docs/architecture.md`.
+**Description:** Consolidate `src/webapp/README.md` content into `docs/reference/technical-manual.md` or `docs/architecture/overview.md`.
 
 **Acceptance Criteria:**
 
 - [ ] All unique content from `src/webapp/README.md` present in `docs/`
-- [ ] `src/webapp/README.md` replaced with one-liner pointing to `docs/technical-manual.md`
+- [ ] `src/webapp/README.md` replaced with one-liner pointing to `docs/reference/technical-manual.md`
 - [ ] No orphaned references to `src/webapp/README.md`
 
 **Files to modify:**
 
 - `src/webapp/README.md`
-- `docs/technical-manual.md`
+- `docs/reference/technical-manual.md`
 
 **Labels:** `documentation`, `structural`, `priority:medium`
 
@@ -213,7 +213,7 @@ Stories that bring core architecture docs up to date with M29–M33 changes.
 
 ---
 
-#### Story M34-009: Update docs/architecture.md for Post-M33 State
+#### Story M34-009: Update docs/architecture/overview.md for Post-M33 State
 
 **Description:** Rewrite the architecture document to reflect current Fastify + Redis + BullMQ + Auth architecture.
 
@@ -229,13 +229,13 @@ Stories that bring core architecture docs up to date with M29–M33 changes.
 
 **Files to modify:**
 
-- `docs/architecture.md`
+- `docs/architecture/overview.md`
 
 **Labels:** `documentation`, `architecture`, `priority:high`
 
 ---
 
-#### Story M34-010: Update docs/technical-manual.md to v3.0
+#### Story M34-010: Update docs/reference/technical-manual.md to v3.0
 
 **Description:** Bring the technical manual up to date with M29–M33 architectural changes.
 
@@ -251,7 +251,7 @@ Stories that bring core architecture docs up to date with M29–M33 changes.
 
 **Files to modify:**
 
-- `docs/technical-manual.md`
+- `docs/reference/technical-manual.md`
 
 **Labels:** `documentation`, `architecture`, `priority:high`
 
@@ -259,11 +259,11 @@ Stories that bring core architecture docs up to date with M29–M33 changes.
 
 #### Story M34-011: Create Architecture Evolution Page
 
-**Description:** Create `docs/architecture-evolution.md` documenting architectural changes by milestone.
+**Description:** Create `docs/architecture/evolution.md` documenting architectural changes by milestone.
 
 **Acceptance Criteria:**
 
-- [ ] Page created at `docs/architecture-evolution.md`
+- [ ] Page created at `docs/architecture/evolution.md`
 - [ ] Entries for M29 (Auth), M30 (Fastify), M31 (Agent Execution), M32 (Domain Model), M33 (Scalability)
 - [ ] Each entry links to relevant ADR in `BusinessDocs/decisions/`
 - [ ] Added to `docs/` Jekyll navigation
@@ -271,7 +271,7 @@ Stories that bring core architecture docs up to date with M29–M33 changes.
 
 **Files to create:**
 
-- `docs/architecture-evolution.md`
+- `docs/architecture/evolution.md`
 
 **Labels:** `documentation`, `architecture`, `priority:low`
 

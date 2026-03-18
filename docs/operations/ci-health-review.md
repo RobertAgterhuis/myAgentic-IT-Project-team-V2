@@ -1,3 +1,15 @@
+# front matter inserted for navigation
+
+---
+
+title: CI Health Review
+parent: Operations
+nav_order: 4
+permalink: /ci-health-review/
+description: Monthly review process and baseline indicators for CI pipeline health.
+
+---
+
 # CI Health Dashboard — Monthly Review Process
 
 > **Owner:** DevOps Engineer | **Frequency:** Monthly (1st week) | **Ref:**

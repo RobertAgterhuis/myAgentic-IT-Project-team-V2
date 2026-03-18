@@ -9,7 +9,7 @@ and framework extraction.
 ### Agent Schema (S4-1)
 
 - `agent-canonical.schema.json`: JSON Schema definition for canonical agents.
-- `agents.json`: Current mapped agent registry (38 agents from `docs/agent-index.md`).
+- `agents.json`: Current mapped agent registry (38 agents from `docs/reference/agent-index.md`).
 
 ### Flow Schema (S4-2)
 

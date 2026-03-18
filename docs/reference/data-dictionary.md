@@ -1,7 +1,9 @@
 ---
 layout: default
 title: Data Dictionary
-nav_order: 4
+parent: Reference
+nav_order: 2
+permalink: /data-dictionary/
 description:
   Schema definitions for questionnaires, decisions, session state, and all
   persistent data structures.

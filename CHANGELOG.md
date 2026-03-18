@@ -24,18 +24,18 @@ and this project adheres to
     - OpenAI/Codex: `.codex/instructions.md` + `.codex/agents.json`
   - `--dry-run` flag for transpiler CLI
   - `npm run generate:platform` script + postinstall hook
-- GA definition document (`docs/ga-definition.md`) — defines v1 GA as
+- GA definition document (`docs/operations/ga-definition.md`) — defines v1 GA as
   localhost/single-operator with supervised autonomy posture
 - Security design document (`docs/security-design.md`) — STRIDE threat
   model, 3 deployment profiles, hardening checklist
 - Data inventory (`docs/data-inventory.md`) — all data categories,
   retention policy, DSAR procedure, ROPA skeleton
-- Privacy policy (`docs/privacy-policy.md`) — user-facing localhost privacy
+- Privacy policy (`docs/operations/privacy-policy.md`) — user-facing localhost privacy
   policy
 - Truth-source policy (`docs/truth-source-policy.md`) — evidence
   accuracy rules and enforcement
 - CHANGELOG.md (this file)
-- Release checklist document (`docs/release-checklist.md`)
+- Release checklist document (`docs/operations/release-checklist.md`)
 - Light/dark theme color tokens in design-tokens.json
 
 ### Changed

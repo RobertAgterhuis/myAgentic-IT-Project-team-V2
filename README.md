@@ -52,15 +52,15 @@ agent completes.
 
 ## Documentation
 
-| Document                                       | Description                                          |
-| ---------------------------------------------- | ---------------------------------------------------- |
-| [User Manual](docs/user-manual.md)             | Getting started, commands, questionnaires, decisions |
-| [Technical Manual](docs/technical-manual.md)   | Architecture, API reference, configuration, security |
-| [Architecture](docs/architecture.md)           | Layer diagram, data flow, module inventory           |
-| [Contributing](docs/contributing.md)           | Development setup, coding standards, PR process      |
-| [Data Dictionary](docs/data-dictionary.md)     | Entity catalog, field schemas, validation rules      |
-| [MCP Setup](docs/mcp-setup.md)                 | Cross-IDE MCP server configuration                   |
-| [Release Checklist](docs/release-checklist.md) | Pre-release verification steps                       |
+| Document                                                  | Description                                          |
+| --------------------------------------------------------- | ---------------------------------------------------- |
+| [User Manual](docs/getting-started/user-manual.md)        | Getting started, commands, questionnaires, decisions |
+| [Technical Manual](docs/reference/technical-manual.md)    | Architecture, API reference, configuration, security |
+| [Architecture](docs/architecture/overview.md)             | Layer diagram, data flow, module inventory           |
+| [Contributing](docs/contributing.md)                      | Development setup, coding standards, PR process      |
+| [Data Dictionary](docs/reference/data-dictionary.md)      | Entity catalog, field schemas, validation rules      |
+| [MCP Setup](docs/getting-started/mcp-setup.md)            | Cross-IDE MCP server configuration                   |
+| [Release Checklist](docs/operations/release-checklist.md) | Pre-release verification steps                       |
 
 ---
 

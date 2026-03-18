@@ -203,8 +203,8 @@ After the PR/Review Agent merges code, several things happen automatically:
 
 1. **KPI Agent** measures sprint metrics (velocity, defect rate, code coverage,
    etc.) and writes a report to `BusinessDocs/metrics/sprint-[SP-N]-kpi.json`.
-2. **Documentation Agent** updates `docs/user-manual.md`,
-   `docs/technical-manual.md`, and `CHANGELOG.md` based on what was implemented.
+2. **Documentation Agent** updates `docs/getting-started/user-manual.md`,
+   `docs/reference/technical-manual.md`, and `CHANGELOG.md` based on what was implemented.
 3. **GitHub Integration Agent** closes completed issues and updates the board.
 4. **Retrospective Agent** analyzes the sprint, calculates velocity, detects
    patterns, and writes lessons learned.

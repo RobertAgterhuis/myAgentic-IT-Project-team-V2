@@ -1,7 +1,9 @@
 ---
 layout: default
 title: Technical Manual
-nav_order: 3
+parent: Reference
+nav_order: 1
+permalink: /technical-manual/
 description:
   Developer reference for the MCP server, HTTP endpoints, file-based storage,
   and test infrastructure.

@@ -1,6 +1,8 @@
 ---
 title: Pilot Participant Guide
-nav_order: 17
+parent: Getting Started
+nav_order: 4
+permalink: /pilot-participant-guide/
 description: Orientation guide for pilot participants evaluating the platform.
 ---
 
@@ -212,8 +214,8 @@ Submit within **5 business days** of completing your mini-cycle.
 
 | Document                  | Path                                                | Purpose                    |
 | ------------------------- | --------------------------------------------------- | -------------------------- |
-| User Manual               | `docs/user-manual.md`                               | Platform usage guide       |
-| Technical Manual          | `docs/technical-manual.md`                          | Architecture reference     |
+| User Manual               | `docs/getting-started/user-manual.md`               | Platform usage guide       |
+| Technical Manual          | `docs/reference/technical-manual.md`                | Architecture reference     |
 | Sample Brief (Scenario A) | `docs/phase-5/sp-2-201p-sample-project-brief.md`    | Task Management API brief  |
 | Feedback Rubric           | `docs/phase-5/sp-2-202-pilot-feedback-rubric.md`    | Structured evaluation form |
 | Distribution Plan         | `docs/phase-5/sp-2-201p-pilot-distribution-plan.md` | Pilot logistics            |

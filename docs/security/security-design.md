@@ -16,7 +16,7 @@ description: Security architecture, threat model, and middleware controls.
 | **Owner**         | Robert Agterhuis                                                            |
 | **Audit Finding** | F-02 (CRITICAL) — Security hardening beyond localhost is not fully designed |
 | **Issue**         | #138                                                                        |
-| **Depends on**    | `docs/ga-definition.md` (F-01 — deployment profiles)                        |
+| **Depends on**    | `docs/operations/ga-definition.md` (F-01 — deployment profiles)             |
 
 ---
 

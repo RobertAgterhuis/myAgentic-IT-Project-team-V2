@@ -1,6 +1,8 @@
 ---
 title: Quick Start
-nav_order: 5
+parent: Getting Started
+nav_order: 1
+permalink: /quick-start/
 description: Get the Agentic SDLC Platform running and create your first project in under 5 minutes.
 ---
 

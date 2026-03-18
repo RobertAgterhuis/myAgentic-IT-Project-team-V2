@@ -1,0 +1,88 @@
+{
+  "pack_id": "testing-baseline",
+  "pack_name": "Testing Baseline",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "id": "POL-TEST-001",
+      "name": "Critical user path regression suite passes before release",
+      "description": "Critical user journeys must pass regression coverage before a production deployment proceeds.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "blocking",
+      "condition": {
+        "type": "deploy",
+        "check": "critical_path_tests_passed",
+        "parameters": {
+          "environment": "production"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Critical user path regression tests must pass before production deployment.",
+        "notify_roles": ["QA_ENGINEER", "RELEASE_MANAGER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "quality-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["testing", "regression", "release"]
+      }
+    },
+    {
+      "id": "POL-TEST-002",
+      "name": "Contract tests required for external integrations",
+      "description": "Changes that affect external integrations should include contract tests to prevent drift between systems.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "warning",
+      "condition": {
+        "type": "pr",
+        "check": "integration_contract_tests_present",
+        "parameters": {
+          "scope": "external_integrations"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Add or update contract tests for changed external integrations.",
+        "notify_roles": ["QA_ENGINEER", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "quality-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["contract-tests", "integration", "quality"]
+      }
+    },
+    {
+      "id": "POL-TEST-003",
+      "name": "Flaky test rate tracked within threshold",
+      "description": "The recurring flaky test rate should remain within the agreed threshold to keep CI trustworthy.",
+      "scope": "global",
+      "category": "process",
+      "severity": "advisory",
+      "condition": {
+        "type": "schedule",
+        "check": "flaky_test_rate_within_threshold",
+        "parameters": {
+          "max_percent": 2
+        }
+      },
+      "action": {
+        "type": "notify",
+        "message": "Review flaky test trends and prioritize stabilization work if the threshold is exceeded.",
+        "notify_roles": ["QA_ENGINEER", "ENGINEERING_MANAGER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "quality-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["ci", "testing", "reliability"]
+      }
+    }
+  ]
+}

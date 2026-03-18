@@ -1,0 +1,88 @@
+{
+  "pack_id": "architecture-baseline",
+  "pack_name": "Architecture Baseline",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "id": "POL-ARCH-001",
+      "name": "Architecture decision record required for cross-cutting changes",
+      "description": "Cross-cutting architecture changes must be linked to an ADR before merge so rationale and constraints stay explicit.",
+      "scope": "global",
+      "category": "architecture",
+      "severity": "warning",
+      "condition": {
+        "type": "pr",
+        "check": "adr_linked_for_arch_change",
+        "parameters": {
+          "change_scope": "cross_cutting"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Cross-cutting architecture changes should reference an ADR before merge.",
+        "notify_roles": ["SOFTWARE_ARCHITECT", "TECH_LEAD"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "architecture-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["adr", "architecture", "governance"]
+      }
+    },
+    {
+      "id": "POL-ARCH-002",
+      "name": "Module boundaries documented for new services",
+      "description": "New services and modules should document ownership and dependency boundaries before they are merged.",
+      "scope": "global",
+      "category": "architecture",
+      "severity": "warning",
+      "condition": {
+        "type": "artifact",
+        "check": "module_boundaries_documented",
+        "parameters": {
+          "artifact": "service_or_module"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Document module boundaries and ownership for new services or modules.",
+        "notify_roles": ["SOFTWARE_ARCHITECT", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "architecture-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["boundaries", "ownership", "modularity"]
+      }
+    },
+    {
+      "id": "POL-ARCH-003",
+      "name": "No circular dependencies in production code",
+      "description": "Production modules must remain free of circular dependencies to keep the architecture maintainable and testable.",
+      "scope": "global",
+      "category": "architecture",
+      "severity": "blocking",
+      "condition": {
+        "type": "artifact",
+        "check": "no_circular_dependencies",
+        "parameters": {
+          "scope": "production_code"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Resolve circular dependencies before promoting the artifact.",
+        "notify_roles": ["SOFTWARE_ARCHITECT", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "architecture-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["dependencies", "maintainability", "fitness-function"]
+      }
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "pack_id": "data-baseline",
+  "pack_name": "Data Baseline",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "id": "POL-DATA-001",
+      "name": "Database migrations require rollback guidance",
+      "description": "Schema or data migrations must document rollback or recovery guidance before merge.",
+      "scope": "global",
+      "category": "architecture",
+      "severity": "blocking",
+      "condition": {
+        "type": "pr",
+        "check": "migration_rollback_documented",
+        "parameters": {
+          "change_type": "schema_or_data"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Document rollback or recovery guidance for migration changes before merge.",
+        "notify_roles": ["DATA_ARCHITECT", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "data-platform-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["database", "migrations", "rollback"]
+      }
+    },
+    {
+      "id": "POL-DATA-002",
+      "name": "PII fields classified before release",
+      "description": "New or changed personal data fields must be classified so privacy controls and retention can be applied correctly.",
+      "scope": "global",
+      "category": "compliance",
+      "severity": "blocking",
+      "condition": {
+        "type": "artifact",
+        "check": "pii_fields_classified",
+        "parameters": {
+          "classification": ["none", "internal", "confidential", "pii"]
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Classify new or changed data fields before release.",
+        "notify_roles": ["DATA_ARCHITECT", "PRIVACY_COUNSEL"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "data-platform-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["data-classification", "privacy", "pii"]
+      }
+    },
+    {
+      "id": "POL-DATA-003",
+      "name": "Backfill and repair jobs must be idempotent",
+      "description": "Operational data repair or backfill jobs should be safe to retry before deployment.",
+      "scope": "global",
+      "category": "process",
+      "severity": "warning",
+      "condition": {
+        "type": "deploy",
+        "check": "data_backfill_idempotent",
+        "parameters": {
+          "job_type": "backfill_or_repair"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Validate idempotency for backfill or repair jobs before deployment.",
+        "notify_roles": ["DATA_ARCHITECT", "DEVOPS_ENGINEER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "data-platform-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["data-jobs", "idempotency", "operations"]
+      }
+    }
+  ]
+}

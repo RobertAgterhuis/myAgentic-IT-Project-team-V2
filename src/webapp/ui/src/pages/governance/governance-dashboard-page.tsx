@@ -11,6 +11,9 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
 import { Button } from '@/components/ui/button';
+import { MissionControlHero } from '@/components/ui/mission-control-hero';
+import { StatusMotif } from '@/components/ui/status-motif';
+import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { getPendingColumns, historyColumns } from './columns';
 import { useApprovals, useApproveRequest, useRejectRequest } from '@/hooks';
 import {
@@ -19,7 +22,6 @@ import {
   XCircle,
   Clock,
   AlertTriangle,
-  Shield,
   RefreshCw,
   FileCheck,
 } from 'lucide-react';
@@ -88,19 +90,77 @@ export default function GovernanceDashboardPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="governance-dashboard-page">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Heading level={1}>
-            <ShieldCheck className="size-5 inline mr-2" />
-            Governance Dashboard
-          </Heading>
-          <Text muted>Manage approvals, monitor policy compliance, and review history</Text>
-        </div>
-        <Badge variant="info" className="text-sm">
-          <Shield className="size-3 mr-1" /> Mode: Advisory
-        </Badge>
-      </div>
+      <MissionControlHero
+        eyebrow="Governance command layer"
+        title="Keep approvals, policy, and release discipline in one governed surface"
+        description="Governance makes the system trustworthy by ensuring every phase gate, approval request, and policy outcome stays visible while delivery continues."
+        badges={
+          <>
+            <ControlSignalBadge signal="governed" />
+            {counts.pending > 0 && <ControlSignalBadge signal="needs-human-input" />}
+            <Badge variant="outline">Advisory mode</Badge>
+          </>
+        }
+        metrics={[
+          {
+            label: 'Pending',
+            value: String(counts.pending),
+            detail: 'Approvals waiting on a human',
+          },
+          {
+            label: 'Approved',
+            value: String(counts.approved),
+            detail: 'Completed governance reviews',
+          },
+          {
+            label: 'Rejected',
+            value: String(counts.rejected),
+            detail: 'Items blocked by governance',
+          },
+          {
+            label: 'Policy coverage',
+            value: activeTab === 'policies' ? 'Live' : 'Ready',
+            detail: 'Policy tab available for deeper review',
+          },
+        ]}
+        motifs={
+          <>
+            <StatusMotif
+              kind="governance"
+              title="Approvals stay explicit"
+              description="Pending and historical governance decisions are visible as operational workload, not hidden metadata."
+            />
+            <StatusMotif
+              kind="agent"
+              title="Automation respects oversight"
+              description="Governance sits alongside orchestration so automated progress does not bypass accountability."
+            />
+            <StatusMotif
+              kind="human-loop"
+              title="Human review is first-class"
+              description="Anything requiring acceptance or rejection is surfaced as a clear intervention point."
+            />
+          </>
+        }
+        asideTitle="Review rule"
+        asideDescription="Start with Pending Approvals when something is blocked, then switch to Policy Compliance when you need systemic assurance rather than a single decision."
+        asideContent={
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                Current mode
+              </div>
+              <div className="mt-2 text-sm font-medium">
+                {activeTab === 'approvals' ? 'Approval operations' : 'Policy compliance review'}
+              </div>
+              <Text muted className="mt-1 text-xs">
+                Use approvals for case-by-case intervention and policy compliance for systemic
+                conformance.
+              </Text>
+            </div>
+          </div>
+        }
+      />
 
       {/* Tab navigation */}
       <div className="flex gap-2 border-b pb-1" role="tablist" aria-label="Governance sections">

@@ -1,0 +1,88 @@
+{
+  "pack_id": "observability-baseline",
+  "pack_name": "Observability Baseline",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "id": "POL-OBS-001",
+      "name": "Structured logging enabled for production services",
+      "description": "Production services should emit structured logs with stable fields to support diagnostics and auditability.",
+      "scope": "global",
+      "category": "process",
+      "severity": "warning",
+      "condition": {
+        "type": "artifact",
+        "check": "structured_logging_enabled",
+        "parameters": {
+          "environment": "production"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Enable structured logging for the changed production service.",
+        "notify_roles": ["DEVOPS_ENGINEER", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "observability-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["observability", "logging", "operations"]
+      }
+    },
+    {
+      "id": "POL-OBS-002",
+      "name": "SLO and alert coverage defined before production deploy",
+      "description": "Production-facing services must define service objectives and actionable alerting before deployment.",
+      "scope": "global",
+      "category": "process",
+      "severity": "blocking",
+      "condition": {
+        "type": "deploy",
+        "check": "slo_alerts_defined",
+        "parameters": {
+          "environment": "production"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Define SLOs and alert coverage before deploying to production.",
+        "notify_roles": ["DEVOPS_ENGINEER", "RELEASE_MANAGER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "observability-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["observability", "slo", "alerts"]
+      }
+    },
+    {
+      "id": "POL-OBS-003",
+      "name": "Trace propagation verified across async boundaries",
+      "description": "Services should preserve correlation and trace context across async or queued boundaries.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "warning",
+      "condition": {
+        "type": "artifact",
+        "check": "trace_propagation_verified",
+        "parameters": {
+          "scope": "async_boundaries"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Verify trace propagation across async boundaries for the changed flow.",
+        "notify_roles": ["DEVOPS_ENGINEER", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "observability-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["tracing", "observability", "diagnostics"]
+      }
+    }
+  ]
+}

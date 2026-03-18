@@ -1,0 +1,88 @@
+{
+  "pack_id": "documentation-baseline",
+  "pack_name": "Documentation Baseline",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "id": "POL-DOC-001",
+      "name": "Runbook updated for operationally significant changes",
+      "description": "Operationally significant changes should update the relevant runbook before merge.",
+      "scope": "global",
+      "category": "process",
+      "severity": "warning",
+      "condition": {
+        "type": "pr",
+        "check": "runbook_updated",
+        "parameters": {
+          "change_scope": "operational"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Update the operational runbook for this change before merge.",
+        "notify_roles": ["DEVOPS_ENGINEER", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "documentation-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["documentation", "runbook", "operations"]
+      }
+    },
+    {
+      "id": "POL-DOC-002",
+      "name": "Release documentation updated for behavior changes",
+      "description": "Behavioral changes should update release notes or user-facing documentation before the release artifact is approved.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "warning",
+      "condition": {
+        "type": "artifact",
+        "check": "release_docs_updated",
+        "parameters": {
+          "scope": "behavior_changes"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Update release or user-facing documentation for the changed behavior.",
+        "notify_roles": ["DOCUMENTATION_AGENT", "PRODUCT_MANAGER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "documentation-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["documentation", "release-notes", "user-guidance"]
+      }
+    },
+    {
+      "id": "POL-DOC-003",
+      "name": "Ownership metadata present for operational artifacts",
+      "description": "Operational artifacts should declare an owner so support and escalation paths remain clear.",
+      "scope": "global",
+      "category": "process",
+      "severity": "advisory",
+      "condition": {
+        "type": "artifact",
+        "check": "ownership_metadata_present",
+        "parameters": {
+          "artifact_scope": "operational"
+        }
+      },
+      "action": {
+        "type": "notify",
+        "message": "Add ownership metadata to the changed operational artifact.",
+        "notify_roles": ["DOCUMENTATION_AGENT", "ENGINEERING_MANAGER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "documentation-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["ownership", "documentation", "operations"]
+      }
+    }
+  ]
+}

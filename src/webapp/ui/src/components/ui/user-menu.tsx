@@ -6,7 +6,8 @@ import * as React from 'react';
 import { useAuthStore } from '@/stores/auth-store';
 import { useLogout } from '@/hooks/use-auth';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, User } from 'lucide-react';
+import { Check, LogOut, Monitor, Moon, Sun, User } from 'lucide-react';
+import { useTheme } from './theme-provider';
 
 const roleBadgeVariant: Record<string, 'default' | 'secondary' | 'info'> = {
   admin: 'default',
@@ -18,6 +19,7 @@ export function UserMenu() {
   const user = useAuthStore((s) => s.user);
   const loading = useAuthStore((s) => s.loading);
   const logoutMutation = useLogout();
+  const { theme, setTheme } = useTheme();
   const [open, setOpen] = React.useState(false);
   const menuRef = React.useRef<HTMLDivElement>(null);
 
@@ -83,6 +85,38 @@ export function UserMenu() {
             <Badge variant={roleBadgeVariant[user.role] ?? 'secondary'} className="mt-1 text-xs">
               {user.role}
             </Badge>
+          </div>
+          <div className="px-1 py-1 border-b">
+            <p className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Theme
+            </p>
+            {(
+              [
+                { value: 'light', label: 'Light', icon: Sun },
+                { value: 'dark', label: 'Dark', icon: Moon },
+                { value: 'system', label: 'System', icon: Monitor },
+              ] as const
+            ).map((option) => {
+              const Icon = option.icon;
+              const selected = theme === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={selected}
+                  onClick={() => {
+                    setTheme(option.value);
+                    setOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-muted transition-colors"
+                >
+                  <Icon className="size-4" />
+                  <span className="flex-1 text-left">{option.label}</span>
+                  {selected ? <Check className="size-4 text-primary" /> : null}
+                </button>
+              );
+            })}
           </div>
           <button
             type="button"

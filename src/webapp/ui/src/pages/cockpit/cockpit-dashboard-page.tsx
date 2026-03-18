@@ -5,10 +5,13 @@
  */
 import { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Heading, Text } from '@/components/ui/typography';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { MissionControlHero } from '@/components/ui/mission-control-hero';
+import { StatusMotif } from '@/components/ui/status-motif';
+import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { ConfidencePanel } from '@/components/cockpit/confidence-indicators';
 import { DependencyGraph } from '@/components/cockpit/dependency-graph';
 import { RootCauseView } from '@/components/cockpit/root-cause-view';
@@ -61,22 +64,67 @@ export default function CockpitDashboardPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="cockpit-dashboard-page">
-      {/* Header */}
-      <div>
-        <Heading level={1}>
-          <Gauge className="size-5 inline mr-2" />
-          Operational Cockpit
-        </Heading>
-        <Text muted>
-          Live confidence scores, dependency tracking, root-cause analysis, and approval history
-        </Text>
-      </div>
+      <MissionControlHero
+        eyebrow="Operational cockpit"
+        title="Investigate confidence, dependencies, and approvals from a single cockpit"
+        description="Cockpit is the analytical control room for the platform: it combines machine confidence, dependency context, root-cause analysis, and approval history into one operator-facing surface."
+        badges={
+          <>
+            <ControlSignalBadge signal="governed" />
+            <ControlSignalBadge signal="active-agent" />
+            <Badge variant="outline">Cockpit</Badge>
+          </>
+        }
+        metrics={[
+          {
+            label: 'Sections',
+            value: String(tabs.length),
+            detail: 'Health, dependencies, root-cause, approvals',
+          },
+          {
+            label: 'Active tab',
+            value: tabs.find((tab) => tab.id === activeTab)?.label ?? 'Health',
+            detail: 'Current cockpit lens',
+          },
+          {
+            label: 'Primary use',
+            value: 'Diagnosis',
+            detail: 'Understand why the system behaves as it does',
+          },
+          {
+            label: 'Operator mode',
+            value: 'Investigate',
+            detail: 'Use when runtime needs explanation',
+          },
+        ]}
+        motifs={
+          <>
+            <StatusMotif
+              kind="governance"
+              title="Approval history remains visible"
+              description="Cockpit analysis does not lose governance context; approvals remain part of the diagnostic story."
+            />
+            <StatusMotif
+              kind="agent"
+              title="Confidence ties back to execution"
+              description="This view helps operators connect agent behavior, dependency structure, and confidence signals."
+            />
+            <StatusMotif
+              kind="human-loop"
+              title="Diagnosis informs human action"
+              description="Root-cause and dependency views exist to help a person decide what to do next, not just to display data."
+            />
+          </>
+        }
+        asideTitle="Investigation path"
+        asideDescription="Start with Health & Confidence, then move into Dependencies or Root-Cause Analysis when the system needs explanation rather than status tracking."
+      />
 
       {/* Tab bar */}
       <div
         role="tablist"
         aria-label="Cockpit sections"
-        className="flex items-center gap-1 border-b"
+        className="flex items-center gap-1 rounded-2xl border border-border/70 bg-card/72 p-1.5 shadow-sm backdrop-blur-sm"
       >
         {tabs.map((tab) => (
           <button
@@ -85,10 +133,10 @@ export default function CockpitDashboardPage() {
             aria-selected={activeTab === tab.id}
             aria-controls={`cockpit-panel-${tab.id}`}
             id={`cockpit-tab-${tab.id}`}
-            className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
+            className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
               activeTab === tab.id
-                ? 'border-primary text-foreground'
-                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/50'
+                ? 'bg-background/80 text-foreground shadow-sm'
+                : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
             }`}
             onClick={() => setActiveTab(tab.id)}
           >

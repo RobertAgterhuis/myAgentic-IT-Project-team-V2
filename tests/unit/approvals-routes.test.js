@@ -88,13 +88,13 @@ function createCtx(governance = null) {
 /* ── listApprovals ────────────────────────────────────────────── */
 
 describe('listApprovals', () => {
-  it('returns 503 when governance is not available', async () => {
+  it('returns an empty list when governance is not available', async () => {
     const routes = createApprovalRoutes(createCtx(null));
     const handler = routes['GET /api/v1/approvals'];
     const res = createRes();
     await handler(createReq('/api/v1/approvals'), res);
-    expect(res.statusCode).toBe(503);
-    expect(parsed(res).error).toContain('not available');
+    expect(res.statusCode).toBe(200);
+    expect(parsed(res)).toEqual({ approvals: [], count: 0 });
   });
 
   it('returns pending approvals list', async () => {
@@ -137,12 +137,12 @@ describe('listApprovals', () => {
 /* ── approveRequest ───────────────────────────────────────────── */
 
 describe('approveRequest', () => {
-  it('returns 503 when governance is not available', async () => {
+  it('returns 404 when no approval exists in a bootstrapped governance state', async () => {
     const routes = createApprovalRoutes(createCtx(null));
     const handler = routes['POST /api/v1/approvals/:id/approve'];
     const res = createRes();
     await handler(createReq('/api/v1/approvals/APR-001/approve', 'POST', { reason: 'LGTM' }), res);
-    expect(res.statusCode).toBe(503);
+    expect(res.statusCode).toBe(404);
   });
 
   it('returns 400 when approval ID is missing', async () => {
@@ -231,12 +231,12 @@ describe('approveRequest', () => {
 /* ── rejectRequest ────────────────────────────────────────────── */
 
 describe('rejectRequest', () => {
-  it('returns 503 when governance is not available', async () => {
+  it('returns 404 when no approval exists in a bootstrapped governance state', async () => {
     const routes = createApprovalRoutes(createCtx(null));
     const handler = routes['POST /api/v1/approvals/:id/reject'];
     const res = createRes();
     await handler(createReq('/api/v1/approvals/APR-001/reject', 'POST', { reason: 'No' }), res);
-    expect(res.statusCode).toBe(503);
+    expect(res.statusCode).toBe(404);
   });
 
   it('returns 400 when approval ID is missing', async () => {

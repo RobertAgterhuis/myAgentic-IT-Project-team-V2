@@ -1,0 +1,88 @@
+{
+  "pack_id": "frontend-baseline",
+  "pack_name": "Frontend Baseline",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "id": "POL-FE-001",
+      "name": "Shared design tokens used for new UI surfaces",
+      "description": "New UI work should use shared tokens and primitives instead of one-off styling to preserve consistency.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "warning",
+      "condition": {
+        "type": "pr",
+        "check": "design_tokens_used",
+        "parameters": {
+          "surface": "ui_changes"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Use shared design tokens or document why a one-off UI treatment is required.",
+        "notify_roles": ["UI_DESIGNER", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "frontend-platform-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["frontend", "design-system", "tokens"]
+      }
+    },
+    {
+      "id": "POL-FE-002",
+      "name": "Responsive layout validated for changed routes",
+      "description": "Changed application routes must be validated on mobile and desktop breakpoints before release.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "blocking",
+      "condition": {
+        "type": "artifact",
+        "check": "responsive_layout_validated",
+        "parameters": {
+          "breakpoints": ["mobile", "desktop"]
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Validate changed routes on mobile and desktop breakpoints before release.",
+        "notify_roles": ["UI_DESIGNER", "QA_ENGINEER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "frontend-platform-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["responsive", "frontend", "ux"]
+      }
+    },
+    {
+      "id": "POL-FE-003",
+      "name": "Route performance budget met for user-facing pages",
+      "description": "User-facing routes should stay within the agreed performance budget to prevent regressions in perceived speed.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "warning",
+      "condition": {
+        "type": "artifact",
+        "check": "route_performance_budget_met",
+        "parameters": {
+          "budget": "route_load"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Review the route performance budget and optimize the changed UI path.",
+        "notify_roles": ["DEVELOPER", "QA_ENGINEER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "frontend-platform-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["performance", "frontend", "budget"]
+      }
+    }
+  ]
+}

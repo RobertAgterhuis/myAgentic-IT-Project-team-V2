@@ -5,6 +5,7 @@
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { ControlSignalBadge } from '@/components/ui/control-signal';
 import type { ConfidenceScore } from '@/lib/api-types';
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 
@@ -56,19 +57,31 @@ interface ConfidenceCardProps {
 
 export function ConfidenceCard({ score, className }: ConfidenceCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const variant = scoreVariant(score.score);
 
   return (
     <Card
-      elevation="flat"
-      className={`p-4 cursor-pointer transition-all hover:shadow-sm ${className ?? ''}`}
+      elevation="raised"
+      tone={variant === 'success' ? 'success' : variant === 'warning' ? 'warning' : 'error'}
+      className={`cursor-pointer overflow-hidden p-4 transition-all hover:-translate-y-0.5 hover:shadow-md ${className ?? ''}`}
       onClick={() => setExpanded(!expanded)}
       role="button"
       aria-expanded={expanded}
       aria-label={`${score.label}: ${score.score}%`}
     >
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <Badge variant="outline" className="border-border/60 bg-background/70 text-foreground">
+          Confidence signal
+        </Badge>
+        {score.score < 80 ? (
+          <ControlSignalBadge signal="needs-human-input" />
+        ) : (
+          <ControlSignalBadge signal="governed" />
+        )}
+      </div>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className={`p-1.5 rounded-full ${scoreBg(score.score)}`}>
+          <div className={`rounded-2xl border border-border/60 p-2 ${scoreBg(score.score)}`}>
             <span className={scoreColor(score.score)}>{scoreIcon(score.score)}</span>
           </div>
           <div>
@@ -83,14 +96,14 @@ export function ConfidenceCard({ score, className }: ConfidenceCardProps) {
 
       {/* Factor breakdown */}
       {expanded && (
-        <div className="mt-3 pt-3 border-t space-y-2">
+        <div className="mt-4 space-y-3 rounded-2xl border border-border/60 bg-background/62 p-3">
           {score.factors.map((factor, i) => (
             <div key={i} className="space-y-1">
               <div className="flex items-center justify-between text-xs">
                 <span>{factor.label}</span>
                 <span className={scoreColor(factor.value)}>{factor.value}%</span>
               </div>
-              <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+              <div className="h-1.5 overflow-hidden rounded-full bg-muted">
                 <div
                   className={`h-full rounded-full transition-all ${
                     factor.value >= 80

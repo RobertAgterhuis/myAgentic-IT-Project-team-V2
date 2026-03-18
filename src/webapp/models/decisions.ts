@@ -361,8 +361,8 @@ export function moveToDecided(content: string, id: string): string {
     id,
     priority,
     scope,
-    decision: question,
-    notes: answer,
+    decision: answer || question,
+    notes: '',
     date: today(),
   };
   const marker: RegExp =
@@ -477,6 +477,50 @@ export function editDecidedRow(content: string, id: string, fields: EditDecidedF
   const n: string = fields.notes !== undefined ? fields.notes : m[4].trim();
   const replacement: string = `| ${escPipe(id)} | ${escPipe(p)} | ${escPipe(s)} | ${escPipe(t)} | ${escPipe(n)} | ${today()} |`;
   return literalReplace(content, m[0], replacement);
+}
+
+export function migrateDecidedRowsToAnswerFormat(content: string): {
+  content: string;
+  changedRows: number;
+} {
+  const lines = content.split('\n');
+  let inDecidedTable = false;
+  let changedRows = 0;
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const trimmed = lines[index].trim();
+
+    if (/^#{1,6}\s/.test(trimmed) || trimmed === '---') {
+      inDecidedTable = false;
+    }
+
+    if (
+      /^\|\s*ID\s*\|\s*Priority\s*\|\s*Scope\s*\|\s*Decision\s*\|\s*Notes\s*\|\s*Date\s*\|$/i.test(
+        trimmed
+      )
+    ) {
+      inDecidedTable = true;
+      continue;
+    }
+
+    if (!inDecidedTable || !trimmed.startsWith('|')) continue;
+    if (/^\|\s*[-\s|]+\|$/.test(trimmed)) continue;
+
+    const cells = trimmed
+      .slice(1, -1)
+      .split('|')
+      .map((cell) => cell.trim());
+
+    if (cells.length !== 6) continue;
+    if (!/^DEC-[\w-]+$/.test(cells[0])) continue;
+    if (!cells[3].endsWith('?')) continue;
+    if (!cells[4]) continue;
+
+    lines[index] = `| ${cells[0]} | ${cells[1]} | ${cells[2]} | ${cells[4]} |  | ${cells[5]} |`;
+    changedRows += 1;
+  }
+
+  return { content: lines.join('\n'), changedRows };
 }
 
 export function insertDeferredRow(

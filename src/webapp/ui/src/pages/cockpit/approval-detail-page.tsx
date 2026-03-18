@@ -3,12 +3,15 @@
  * M27-005 / Approval Workflow UI
  */
 import { useParams, useNavigate } from 'react-router-dom';
-import { Heading } from '@/components/ui/typography';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ApprovalDetailPanel } from '@/components/cockpit/approval-workflow';
+import { MissionControlHero } from '@/components/ui/mission-control-hero';
+import { StatusMotif } from '@/components/ui/status-motif';
+import { ControlSignalBadge } from '@/components/ui/control-signal';
+import { Badge } from '@/components/ui/badge';
 import { useApprovalDetail } from '@/hooks';
 import { ArrowLeft, ShieldCheck, RefreshCw } from 'lucide-react';
 
@@ -59,12 +62,50 @@ export default function ApprovalDetailPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="approval-detail-page">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={() => navigate('/cockpit')}>
-          <ArrowLeft className="size-4" />
-        </Button>
-        <Heading level={1}>Approval Review</Heading>
-      </div>
+      <MissionControlHero
+        eyebrow="Approval review"
+        title="Resolve a governed checkpoint with full approval context"
+        description="This review surface brings together the gate, requester, risk context, related artifacts, and required human rationale before the approval can be closed."
+        badges={
+          <>
+            <ControlSignalBadge signal="governed" />
+            <ControlSignalBadge signal="needs-human-input" />
+            <Badge variant="outline">Approval</Badge>
+          </>
+        }
+        metrics={[
+          { label: 'Approval ID', value: data.approval.id, detail: 'Current decision object' },
+          { label: 'Status', value: data.approval.status, detail: 'Current approval state' },
+          { label: 'Gate', value: data.approval.gate_id, detail: 'Controlled checkpoint' },
+          { label: 'Stage', value: data.approval.stage, detail: 'Workflow stage in review' },
+        ]}
+        motifs={
+          <>
+            <StatusMotif
+              kind="governance"
+              title="Approvals remain first-class controls"
+              description="The review context makes governance explicit instead of burying approval work inside generic dialogs."
+            />
+            <StatusMotif
+              kind="agent"
+              title="Execution context stays attached"
+              description="Gate and stage metadata keep the approval tied to the execution path that triggered it."
+            />
+            <StatusMotif
+              kind="human-loop"
+              title="A person closes the loop"
+              description="Comments and decision actions make the human checkpoint visible and accountable."
+            />
+          </>
+        }
+        asideTitle="Review path"
+        asideDescription="Start with gate and risk context, inspect any recommended action or attached artifacts, then approve or reject with rationale."
+        asideContent={
+          <Button variant="outline" onClick={() => navigate('/cockpit')}>
+            <ArrowLeft className="size-4 mr-2" /> Back to Cockpit
+          </Button>
+        }
+      />
 
       <ApprovalDetailPanel approval={data.approval} onClose={() => navigate('/cockpit')} />
     </div>

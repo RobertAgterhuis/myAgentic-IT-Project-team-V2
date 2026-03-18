@@ -3,7 +3,7 @@
  * M15 / Issue #M15-030, M31-001 … M31-006
  */
 import { useState } from 'react';
-import { Heading, Text } from '@/components/ui/typography';
+import { Text } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -11,6 +11,9 @@ import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
 import { Button } from '@/components/ui/button';
 import { MetricCard } from '@/components/ui/metric-card';
+import { MissionControlHero } from '@/components/ui/mission-control-hero';
+import { StatusMotif } from '@/components/ui/status-motif';
+import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { ExplainabilityPanel } from '@/components/runtime/explainability-panel';
 import { AgentExecuteModal } from '@/components/runtime/agent-execute-modal';
 import { useAgents } from '@/hooks';
@@ -86,14 +89,46 @@ export default function AgentsPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="agents-page">
-      {/* Header */}
-      <div>
-        <Heading level={1}>
-          <Bot className="size-5 inline mr-2" />
-          Agents
-        </Heading>
-        <Text muted>All tracked agents — click an agent for details</Text>
-      </div>
+      <MissionControlHero
+        eyebrow="Agent operations"
+        title="Inspect active agents like operators, not just list items"
+        description="The agent surface shows which specialists are running, which have failed, and which executions need a human to diagnose or retry."
+        badges={
+          <>
+            <ControlSignalBadge signal="governed" />
+            {running > 0 && <ControlSignalBadge signal="active-agent" />}
+            {failed > 0 && <ControlSignalBadge signal="needs-human-input" />}
+            <Badge variant="outline">Agents</Badge>
+          </>
+        }
+        metrics={[
+          { label: 'Total invocations', value: String(total), detail: 'Tracked agent runs' },
+          { label: 'Running', value: String(running), detail: 'Currently executing agents' },
+          { label: 'Success rate', value: `${successRate}%`, detail: 'Completed without failure' },
+          { label: 'Failed', value: String(failed), detail: 'Runs likely needing human review' },
+        ]}
+        motifs={
+          <>
+            <StatusMotif
+              kind="governance"
+              title="Operational visibility stays controlled"
+              description="The page makes agent health and execution status visible without losing the disciplined tone of the product."
+            />
+            <StatusMotif
+              kind="agent"
+              title="Execution ownership is obvious"
+              description="Running and selected agents are easy to spot so the operator knows where runtime effort is concentrated."
+            />
+            <StatusMotif
+              kind="human-loop"
+              title="Failures imply intervention"
+              description="Retries, failed runs, and manual execution actions clearly read as human checkpoints rather than background noise."
+            />
+          </>
+        }
+        asideTitle="How to read this"
+        asideDescription="Scan the overview metrics first, then inspect the list for failures or retries, and finally use the side panel to understand a single agent in context."
+      />
 
       {/* Performance overview */}
       {agents.length > 0 && (

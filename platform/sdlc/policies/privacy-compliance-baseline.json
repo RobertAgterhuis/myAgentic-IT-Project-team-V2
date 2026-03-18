@@ -1,0 +1,88 @@
+{
+  "pack_id": "privacy-compliance-baseline",
+  "pack_name": "Privacy and Compliance Baseline",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "id": "POL-COMP-001",
+      "name": "Privacy review completed for personal data changes",
+      "description": "Changes involving personal data must complete a privacy review before merge.",
+      "scope": "global",
+      "category": "compliance",
+      "severity": "blocking",
+      "condition": {
+        "type": "pr",
+        "check": "privacy_review_completed",
+        "parameters": {
+          "data_scope": "personal_data"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Complete privacy review for personal data changes before merge.",
+        "notify_roles": ["PRIVACY_COUNSEL", "PRODUCT_MANAGER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "governance-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["privacy", "compliance", "review"]
+      }
+    },
+    {
+      "id": "POL-COMP-002",
+      "name": "Retention policy documented for governed data",
+      "description": "Governed datasets should document retention and deletion behavior before release.",
+      "scope": "global",
+      "category": "compliance",
+      "severity": "warning",
+      "condition": {
+        "type": "artifact",
+        "check": "retention_policy_documented",
+        "parameters": {
+          "scope": "governed_data"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Document retention and deletion handling for governed data before release.",
+        "notify_roles": ["PRIVACY_COUNSEL", "DATA_ARCHITECT"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "governance-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["retention", "privacy", "governance"]
+      }
+    },
+    {
+      "id": "POL-COMP-003",
+      "name": "Audit trail enabled for governance-critical actions",
+      "description": "Governance-critical approvals and overrides must be written to an audit trail to preserve accountability.",
+      "scope": "global",
+      "category": "compliance",
+      "severity": "blocking",
+      "condition": {
+        "type": "artifact",
+        "check": "audit_trail_enabled",
+        "parameters": {
+          "scope": "governance_critical_actions"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Enable audit trail coverage for governance-critical actions before release.",
+        "notify_roles": ["PRIVACY_COUNSEL", "SECURITY_REVIEWER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "governance-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["audit", "compliance", "governance"]
+      }
+    }
+  ]
+}

@@ -6,6 +6,7 @@
 import { useMemo } from 'react';
 import { Heading, Text } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { MetricCard, ActivityFeed, type ActivityItem } from '@/components/ui/metric-card';
 import { Spinner } from '@/components/ui/spinner';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -15,16 +16,30 @@ import { LiveStatusHero } from '@/components/runtime/live-status-hero';
 import { HealthCard } from '@/components/dashboard/health-card';
 import { QuickLinks } from '@/components/dashboard/quick-links';
 import { RecentCommands } from '@/components/dashboard/recent-commands';
+import { MissionControlHero } from '@/components/ui/mission-control-hero';
+import { StatusMotif } from '@/components/ui/status-motif';
 import {
   useDashboardHealth,
   useDashboardMetrics,
   useDashboardActivity,
   useDashboardStats,
   useCockpitHealth,
+  useSessions,
 } from '@/hooks';
 import type { HealthIndicator, DashboardMetrics } from '@/lib/api-types';
 import { ConfidencePanel } from '@/components/cockpit/confidence-indicators';
-import { Activity, BarChart3, Clock, FileText, Users, Target, Star, RefreshCw } from 'lucide-react';
+import {
+  Activity,
+  ArrowRight,
+  BarChart3,
+  Clock,
+  FileText,
+  ShieldCheck,
+  Users,
+  Target,
+  Star,
+  RefreshCw,
+} from 'lucide-react';
 
 /* ── Metric trend derivation ── */
 function deriveTrend(t: string): 'up' | 'down' | 'neutral' {
@@ -53,6 +68,7 @@ export default function DashboardPage() {
   const { data: activity } = useDashboardActivity();
   const { data: stats } = useDashboardStats();
   const { data: cockpitHealth } = useCockpitHealth();
+  const { data: sessionsData } = useSessions();
 
   // Map API activity to ActivityFeed shape with relative time
   const feedItems: ActivityItem[] = useMemo(() => {
@@ -81,6 +97,14 @@ export default function DashboardPage() {
     });
   }, [metrics]);
 
+  const activeSessions =
+    sessionsData?.sessions?.filter((session) => session.status === 'active').length ?? 0;
+  const openAttentionItems =
+    Object.values(health ?? {}).filter((indicator) => indicator.status !== 'good').length ?? 0;
+  const confidenceScore = cockpitHealth
+    ? `${Math.round(cockpitHealth.session_health.score)}%`
+    : 'Live';
+
   if (healthLoading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
@@ -106,11 +130,67 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="dashboard-page">
-      {/* Header */}
-      <div>
-        <Heading level={1}>Dashboard</Heading>
-        <Text muted>Real-time project overview and system health</Text>
-      </div>
+      <MissionControlHero
+        eyebrow="Runtime command deck"
+        title="Governed AI SDLC mission control"
+        description="Track delivery health, agent movement, and human checkpoints from a single control surface designed for evidence-backed execution."
+        badges={<Badge variant="outline">Dashboard</Badge>}
+        metrics={[
+          {
+            label: 'Active sessions',
+            value: String(activeSessions),
+            detail: 'Live orchestrations in motion',
+          },
+          {
+            label: 'Attention items',
+            value: String(openAttentionItems),
+            detail: 'Signals needing review',
+          },
+          {
+            label: 'Activity feed',
+            value: String(feedItems.length),
+            detail: 'Recent system events',
+          },
+          { label: 'Confidence', value: confidenceScore, detail: 'Current session health' },
+        ]}
+        motifs={
+          <>
+            <StatusMotif
+              kind="governance"
+              title="Guardrails stay visible"
+              description="Approvals, decisions, and quality signals remain present while delivery moves forward."
+            />
+            <StatusMotif
+              kind="agent"
+              title="Agent work is observable"
+              description="Execution status, runtime changes, and command flow read like an operating system, not a black box."
+            />
+            <StatusMotif
+              kind="human-loop"
+              title="Humans intervene with intent"
+              description="The interface highlights where judgment is required, so operators know exactly when to step in."
+            />
+          </>
+        }
+        asideTitle="Operator brief"
+        asideDescription="Use the deck below to inspect system health, jump into commands, and resume the most relevant workstream."
+        asideContent={
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <ShieldCheck className="size-4 text-info" /> Human oversight remains active
+              </div>
+              <Text muted className="mt-1 text-xs">
+                Decisions, questionnaires, and governance steps still define release readiness.
+              </Text>
+            </div>
+            <Button variant="outline" className="w-full justify-between">
+              Review operational signals
+              <ArrowRight className="size-4" />
+            </Button>
+          </div>
+        }
+      />
 
       {/* Live Status Hero */}
       <LiveStatusHero />

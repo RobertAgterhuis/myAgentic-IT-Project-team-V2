@@ -658,11 +658,13 @@ export interface ApprovalDecideResponse extends OkResponse {
 export interface PolicyEntry {
   id: string;
   name: string;
+  description?: string;
   scope: string;
   category: string;
   severity: string;
   condition_type: string;
   condition_check: string;
+  action_message?: string;
   exception_count: number;
   pack_id?: string;
 }
@@ -670,6 +672,35 @@ export interface PolicyEntry {
 export interface PolicyListResponse {
   policies: PolicyEntry[];
   count: number;
+}
+
+export interface PolicyPackSummary {
+  pack_id: string;
+  pack_name: string;
+  version?: string;
+  policy_count: number;
+  categories: string[];
+  severities: string[];
+}
+
+export interface PolicyPacksResponse {
+  packs: PolicyPackSummary[];
+  count: number;
+}
+
+export interface PolicySignal {
+  check: string;
+  passed: boolean;
+  source: string;
+  details?: string;
+  measured_at?: string | null;
+}
+
+export interface PolicySignalsResponse {
+  checks: Record<string, boolean>;
+  signals: PolicySignal[];
+  missing: string[];
+  generated_at: string;
 }
 
 export interface PolicyResult {
@@ -704,6 +735,22 @@ export interface ExceptionCreateResponse extends OkResponse {
     expires: string;
   };
   policy_id: string;
+}
+
+export interface PolicyUpdatePayload {
+  policy_id: string;
+  name?: string;
+  description?: string;
+  scope?: 'global' | 'org' | 'team' | 'repo' | 'sprint';
+  category?: 'security' | 'quality' | 'compliance' | 'process' | 'architecture';
+  severity?: 'blocking' | 'warning' | 'advisory';
+  condition_type?: 'gate' | 'pr' | 'deploy' | 'artifact' | 'schedule';
+  condition_check?: string;
+  action_message?: string;
+}
+
+export interface PolicyUpdateResponse extends OkResponse {
+  policy: PolicyEntry;
 }
 
 /* ──────────────────────────────────────────────

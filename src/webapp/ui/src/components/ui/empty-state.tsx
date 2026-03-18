@@ -1,6 +1,8 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from './button';
+import { Badge } from './badge';
+import { Sparkles } from 'lucide-react';
 
 /* ---------- EmptyState ---------- */
 
@@ -14,14 +16,31 @@ interface EmptyStateProps extends React.ComponentProps<'div'> {
 function EmptyState({ icon, title, description, action, className, ...props }: EmptyStateProps) {
   return (
     <div
-      className={cn('flex flex-col items-center justify-center gap-3 py-12 text-center', className)}
+      className={cn(
+        'relative flex flex-col items-center justify-center gap-4 overflow-hidden rounded-[28px] border border-border/70 bg-gradient-to-br from-card via-card to-info/6 px-6 py-12 text-center shadow-sm backdrop-blur-sm',
+        className
+      )}
       {...props}
     >
-      {icon && <div className="text-muted-foreground">{icon}</div>}
-      <p className="text-lg font-semibold text-foreground">{title}</p>
-      {description && <p className="max-w-sm text-sm text-muted-foreground">{description}</p>}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_srgb,var(--color-info)_10%,transparent)_0%,transparent_30%),radial-gradient(circle_at_bottom_right,color-mix(in_srgb,var(--color-secondary)_10%,transparent)_0%,transparent_28%)]"
+      />
+      <Badge variant="outline" className="relative border-info/20 bg-background/70 text-foreground">
+        <Sparkles className="size-3.5" />
+        Ready for next action
+      </Badge>
+      {icon && (
+        <div className="relative flex size-16 items-center justify-center rounded-2xl border border-border/70 bg-background/80 text-muted-foreground shadow-sm">
+          {icon}
+        </div>
+      )}
+      <p className="relative text-lg font-semibold text-foreground">{title}</p>
+      {description && (
+        <p className="relative max-w-sm text-sm leading-6 text-muted-foreground">{description}</p>
+      )}
       {action && (
-        <Button variant="outline" onClick={action.onClick} className="mt-2">
+        <Button variant="outline" onClick={action.onClick} className="relative mt-2">
           {action.label}
         </Button>
       )}

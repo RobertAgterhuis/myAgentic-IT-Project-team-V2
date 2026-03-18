@@ -73,7 +73,8 @@ describe('SessionDetailPage', () => {
   it('shows not found for unknown session', async () => {
     renderPage('unknown-id');
     await waitFor(() => {
-      expect(screen.getByText(/session not found/i)).toBeInTheDocument();
+      expect(screen.getByText(/Failed to load session:/i)).toBeInTheDocument();
+      expect(screen.getByText(/Not found/i)).toBeInTheDocument();
     });
   });
 });
@@ -132,7 +133,7 @@ describe('SessionDetailPage — M15-035: Agent click explainability', () => {
       expect(screen.getByTestId('session-detail-page')).toBeInTheDocument();
     });
 
-    const agentCard = screen.getByRole('button', { name: /Business Analyst/i });
+    const agentCard = screen.getByRole('button', { name: /Business Analyst — Running/i });
     await user.click(agentCard);
 
     expect(screen.getByText(/Agent: Business Analyst/)).toBeInTheDocument();
@@ -146,7 +147,7 @@ describe('SessionDetailPage — M15-035: Agent click explainability', () => {
       expect(screen.getByTestId('session-detail-page')).toBeInTheDocument();
     });
 
-    const agentCard = screen.getByRole('button', { name: /Business Analyst/i });
+    const agentCard = screen.getByRole('button', { name: /Business Analyst — Running/i });
     await user.click(agentCard);
     expect(screen.getByText(/Agent: Business Analyst/)).toBeInTheDocument();
 

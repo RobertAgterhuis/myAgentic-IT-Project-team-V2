@@ -415,6 +415,16 @@ export const workspaceCreateProject = {
 
 /* ── policies ─────────────────────────────────────────────────── */
 
+export const policyPacks = {
+  tags: ['policies'],
+  response: { ...listResponses, ...r500 },
+};
+
+export const policySignals = {
+  tags: ['policies'],
+  response: { ...listResponses, ...r500 },
+};
+
 export const policyEvaluate = {
   tags: ['policies'],
   body: {
@@ -451,6 +461,39 @@ export const policyCreateException = {
     additionalProperties: false,
   },
   response: { ...mutationResponses, ...r201, ...r404, ...r500 },
+};
+
+export const policyUpdate = {
+  tags: ['policies'],
+  body: {
+    type: 'object' as const,
+    required: ['policy_id'],
+    properties: {
+      policy_id: { type: 'string' as const, minLength: 1 },
+      name: { type: 'string' as const, minLength: 1 },
+      description: { type: 'string' as const },
+      scope: {
+        type: 'string' as const,
+        enum: ['global', 'org', 'team', 'repo', 'sprint'],
+      },
+      category: {
+        type: 'string' as const,
+        enum: ['security', 'quality', 'compliance', 'process', 'architecture'],
+      },
+      severity: {
+        type: 'string' as const,
+        enum: ['blocking', 'warning', 'advisory'],
+      },
+      condition_type: {
+        type: 'string' as const,
+        enum: ['gate', 'pr', 'deploy', 'artifact', 'schedule'],
+      },
+      condition_check: { type: 'string' as const, minLength: 1 },
+      action_message: { type: 'string' as const },
+    },
+    additionalProperties: false,
+  },
+  response: { ...mutationResponses, ...r404, ...r500 },
 };
 
 /* ── jobs ─────────────────────────────────────────────────────── */

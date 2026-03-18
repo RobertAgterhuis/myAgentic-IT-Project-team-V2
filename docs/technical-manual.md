@@ -389,6 +389,30 @@ Secret detection and warning utilities.
 All endpoints accept and return JSON. The server runs on
 `http://127.0.0.1:3000`.
 
+> **Comprehensive documentation:** Full endpoint details — including auth
+> requirements, request/response schemas, and example requests — are available
+> in the [`docs/api/`](api/index.md) directory. The sections below provide a
+> quick inline reference; see the per-group pages for complete coverage:
+>
+> | Group                  | Page                                               |
+> | ---------------------- | -------------------------------------------------- |
+> | Authentication & Users | [auth-api.md](api/auth-api.md)                     |
+> | Questionnaires         | [questionnaires-api.md](api/questionnaires-api.md) |
+> | Decisions              | [decisions-api.md](api/decisions-api.md)           |
+> | Commands               | [commands-api.md](api/commands-api.md)             |
+> | Orchestrator           | [orchestrator-api.md](api/orchestrator-api.md)     |
+> | Sessions & Progress    | [sessions-api.md](api/sessions-api.md)             |
+> | Milestones             | [milestones-api.md](api/milestones-api.md)         |
+> | Governance             | [governance-api.md](api/governance-api.md)         |
+> | Analytics & Metrics    | [analytics-api.md](api/analytics-api.md)           |
+> | Agents                 | [agents-api.md](api/agents-api.md)                 |
+> | Artifacts              | [artifacts-api.md](api/artifacts-api.md)           |
+> | Workspaces             | [workspaces-api.md](api/workspaces-api.md)         |
+> | Dashboard & Cockpit    | [dashboard-api.md](api/dashboard-api.md)           |
+> | Jobs                   | [jobs-api.md](api/jobs-api.md)                     |
+> | System & Health        | [system-api.md](api/system-api.md)                 |
+> | Newsletter             | [subscribe-api.md](api/subscribe-api.md)           |
+
 ### Questionnaires
 
 #### GET /api/questionnaires

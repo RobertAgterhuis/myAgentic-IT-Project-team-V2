@@ -23,7 +23,14 @@ function Heading({ level = 2, as, className, children, ...props }: HeadingProps)
   const Tag = `h${as ?? level}` as const;
   return React.createElement(
     Tag,
-    { className: cn('font-sans text-foreground', headingClasses[level], className), ...props },
+    {
+      className: cn(
+        '[font-family:var(--font-family-heading)] text-foreground',
+        headingClasses[level],
+        className
+      ),
+      ...props,
+    },
     children
   );
 }
@@ -61,7 +68,7 @@ function Text({
     as,
     {
       className: cn(
-        'font-sans',
+        '[font-family:var(--font-family-sans)]',
         textSizeClasses[size],
         `font-${weight}`,
         muted ? 'text-muted-foreground' : 'text-foreground',

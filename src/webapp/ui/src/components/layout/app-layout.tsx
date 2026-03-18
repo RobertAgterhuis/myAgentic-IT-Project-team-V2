@@ -81,7 +81,7 @@ function Breadcrumbs({ pathname }: { pathname: string }) {
 
   return (
     <nav aria-label="Breadcrumb" className="px-6 pt-4 text-sm text-muted-foreground">
-      <ol className="flex items-center gap-1.5">
+      <ol className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/70 px-3 py-1.5 shadow-sm backdrop-blur-sm">
         {crumbs.map((c, i) => (
           <li key={c.path + i} className="flex items-center gap-1.5">
             {i > 0 && <span aria-hidden>/</span>}
@@ -126,7 +126,14 @@ export function AppLayout() {
   useKeyboardShortcuts();
 
   return (
-    <div className="flex h-screen flex-col overflow-hidden bg-background text-foreground">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-transparent text-foreground">
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_srgb,var(--color-border)_30%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_srgb,var(--color-border)_20%,transparent)_1px,transparent_1px)] bg-[size:88px_88px] opacity-50" />
+        <div className="absolute -left-28 top-0 h-72 w-72 rounded-full bg-info/15 blur-3xl" />
+        <div className="absolute right-[-6rem] top-20 h-80 w-80 rounded-full bg-secondary/12 blur-3xl" />
+        <div className="absolute bottom-[-7rem] left-1/3 h-80 w-80 rounded-full bg-accent/8 blur-3xl" />
+      </div>
+
       <TopNavigation
         projectName="Agentic SDLC"
         orchestratorState={orchestratorStatus?.state}
@@ -134,7 +141,7 @@ export function AppLayout() {
         onMenuToggle={toggleSidebar}
       />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="relative z-10 flex flex-1 overflow-hidden">
         <SidePanel
           sections={navSections}
           activeItemId={location.pathname}
@@ -144,7 +151,7 @@ export function AppLayout() {
           className={cn('hidden md:flex', !sidebarOpen && 'md:hidden')}
         />
 
-        <main className="flex flex-1 flex-col overflow-y-auto">
+        <main className="scrollbar-surface relative flex flex-1 flex-col overflow-y-auto">
           <Breadcrumbs pathname={location.pathname} />
 
           <ErrorBoundary>

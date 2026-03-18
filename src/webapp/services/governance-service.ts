@@ -8,6 +8,7 @@
  */
 
 import path from 'path';
+import { GovernanceEngine as PersistedGovernanceEngine } from '../../../platform/sdlc/governance';
 import { ServiceValidationError } from './decisions-service';
 import type { ServiceContext, ApprovalItem, ApprovalDecisionResult } from './types';
 
@@ -27,6 +28,14 @@ interface GovernanceEngine {
     reason: string;
   };
   saveTo?(store: { writeFile(p: string, d: string): void }, path: string): void;
+}
+
+function isGovernanceEngine(value: unknown): value is GovernanceEngine {
+  if (!value || typeof value !== 'object') return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.getPendingApprovals === 'function' && typeof candidate.decide === 'function'
+  );
 }
 
 export class GovernanceService {
@@ -113,29 +122,52 @@ export class GovernanceService {
     // If an engine factory was provided (HTTP context), use it
     if (this._getEngine) {
       const raw = this._getEngine();
-      if (!raw) return null;
-      // The factory may return a wrapper with getGovernance() instead of the engine directly
+      if (!raw) {
+        return this.loadPersistedEngine();
+      }
+
+      if (isGovernanceEngine(raw)) {
+        return raw;
+      }
+
+      // Some callers pass an engine wrapper instead of the governance engine itself.
+      // Only use getGovernance() when it actually exists and returns the right shape.
       if (
+        typeof raw === 'object' &&
+        raw !== null &&
         'getGovernance' in raw &&
         typeof (raw as Record<string, unknown>).getGovernance === 'function'
       ) {
-        return (raw as unknown as { getGovernance(): GovernanceEngine | null }).getGovernance();
+        const governance = (raw as { getGovernance(): unknown }).getGovernance();
+        if (isGovernanceEngine(governance)) {
+          return governance;
+        }
       }
-      return raw;
+
+      // If the wrapper does not expose governance directly, fall back to the
+      // persisted governance-state.json instead of attempting to call methods on
+      // the orchestrator engine wrapper.
+      return this.loadPersistedEngine();
     }
 
-    // Otherwise, try to load from file (MCP context)
+    return this.loadPersistedEngine();
+  }
+
+  private loadPersistedEngine(): GovernanceEngine | null {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { GovernanceEngine: GE } = require('../../platform/sdlc/governance') as {
-        GovernanceEngine: {
-          loadFrom(
-            s: { exists(p: string): boolean; readFile(p: string): string },
-            p: string
-          ): GovernanceEngine | null;
-        };
-      };
-      return GE.loadFrom(this.ctx.store, this.governanceStatePath);
+      const existing = PersistedGovernanceEngine.loadFrom(this.ctx.store, this.governanceStatePath);
+      if (existing) {
+        return existing;
+      }
+
+      const initialized = new PersistedGovernanceEngine();
+      try {
+        initialized.saveTo?.(this.ctx.store, this.governanceStatePath);
+      } catch {
+        // In lightweight contexts (for example some route tests), persistence may
+        // be unavailable. The initialized engine is still valid for the current request.
+      }
+      return initialized;
     } catch {
       return null;
     }

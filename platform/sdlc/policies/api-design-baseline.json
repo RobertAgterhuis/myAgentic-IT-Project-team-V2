@@ -1,0 +1,88 @@
+{
+  "pack_id": "api-design-baseline",
+  "pack_name": "API Design Baseline",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "id": "POL-API-001",
+      "name": "OpenAPI or contract spec updated for public API changes",
+      "description": "Public API changes must update the contract specification so downstream consumers can review the exact delta.",
+      "scope": "global",
+      "category": "architecture",
+      "severity": "blocking",
+      "condition": {
+        "type": "pr",
+        "check": "api_contract_updated",
+        "parameters": {
+          "visibility": "public"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Update the public API contract before merging API changes.",
+        "notify_roles": ["API_OWNER", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "platform-api-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["api", "openapi", "contract"]
+      }
+    },
+    {
+      "id": "POL-API-002",
+      "name": "Breaking API changes require explicit compatibility approval",
+      "description": "Breaking API changes must be versioned or explicitly approved with a consumer impact assessment.",
+      "scope": "global",
+      "category": "architecture",
+      "severity": "blocking",
+      "condition": {
+        "type": "gate",
+        "check": "api_breaking_changes_approved",
+        "parameters": {
+          "requires_consumer_review": true
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Breaking API changes require explicit compatibility approval or versioning.",
+        "notify_roles": ["API_OWNER", "PRODUCT_MANAGER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "platform-api-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["api-versioning", "compatibility", "consumer-impact"]
+      }
+    },
+    {
+      "id": "POL-API-003",
+      "name": "Standard error contract validated for API artifacts",
+      "description": "API artifacts should expose a standard error envelope to keep integrations predictable across services.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "warning",
+      "condition": {
+        "type": "artifact",
+        "check": "api_error_contract_valid",
+        "parameters": {
+          "contract": "standard_error_envelope"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Validate the API error contract against the shared standard.",
+        "notify_roles": ["API_OWNER", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "platform-api-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["errors", "api", "consistency"]
+      }
+    }
+  ]
+}

@@ -46,9 +46,13 @@ function SectionGroup({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-2 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+        className="flex w-full items-center gap-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground transition-colors"
         aria-expanded={open}
       >
+        <span
+          className="size-1.5 rounded-full bg-secondary/80 shadow-[0_0_10px_currentColor]"
+          aria-hidden="true"
+        />
         {!collapsed && <span className="flex-1 text-left truncate">{section.title}</span>}
         {!collapsed && section.progress != null && (
           <span className="text-[10px] tabular-nums">{section.progress}%</span>
@@ -58,9 +62,9 @@ function SectionGroup({
 
       {/* Progress bar */}
       {!collapsed && section.progress != null && (
-        <div className="mx-3 mb-1 h-1 rounded-full bg-muted overflow-hidden">
+        <div className="mx-3 mb-2 h-1 rounded-full bg-muted/80 overflow-hidden">
           <div
-            className="h-full bg-primary transition-all"
+            className="h-full bg-gradient-to-r from-secondary via-info to-primary transition-all"
             style={{ width: `${Math.min(100, Math.max(0, section.progress))}%` }}
           />
         </div>
@@ -74,11 +78,11 @@ function SectionGroup({
                 type="button"
                 onClick={() => onItemSelect?.(item.id)}
                 className={cn(
-                  'flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-sm transition-all duration-150',
-                  'hover:bg-muted hover:translate-x-0.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                  'flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm transition-all duration-150',
+                  'hover:bg-background/80 hover:translate-x-0.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                   activeItemId === item.id
-                    ? 'bg-primary/10 text-primary font-medium border-l-2 border-primary'
-                    : 'text-foreground border-l-2 border-transparent'
+                    ? 'border border-info/20 bg-gradient-to-r from-primary/16 via-info/10 to-secondary/10 text-primary font-medium shadow-sm'
+                    : 'border border-transparent text-foreground/88'
                 )}
                 aria-current={activeItemId === item.id ? 'page' : undefined}
               >
@@ -117,18 +121,23 @@ function SidePanel({
     <nav
       aria-label="Side navigation"
       className={cn(
-        'flex flex-col border-r bg-card transition-[width] duration-200 shadow-sm',
+        'flex flex-col border-r border-border/70 bg-card/82 backdrop-blur-xl transition-[width] duration-200 shadow-md supports-[backdrop-filter]:bg-card/76',
         collapsed ? 'w-14' : 'w-60',
         className
       )}
       {...props}
     >
       {/* Collapse toggle */}
-      <div className="flex items-center justify-end p-2 border-b border-border/50">
+      <div className="flex items-center justify-between border-b border-border/50 px-2 py-2">
+        {!collapsed && (
+          <div className="pl-1 text-[11px] font-semibold uppercase tracking-[0.26em] text-muted-foreground">
+            Control surface
+          </div>
+        )}
         <button
           type="button"
           onClick={() => onCollapse?.(!collapsed)}
-          className="rounded-sm p-1 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none transition-colors"
+          className="rounded-lg p-1.5 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none transition-colors"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <ChevronLeft className={cn('size-4 transition-transform', collapsed && 'rotate-180')} />
@@ -136,7 +145,7 @@ function SidePanel({
       </div>
 
       {/* Sections */}
-      <div className="flex-1 overflow-y-auto space-y-4 py-2">
+      <div className="scrollbar-surface flex-1 overflow-y-auto space-y-4 py-3">
         {sections.map((section) => (
           <SectionGroup
             key={section.id}

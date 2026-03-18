@@ -1,0 +1,88 @@
+{
+  "pack_id": "accessibility-baseline",
+  "pack_name": "Accessibility Baseline",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "id": "POL-A11Y-001",
+      "name": "Keyboard navigation verified for interactive changes",
+      "description": "Interactive UI changes must support complete keyboard navigation before release.",
+      "scope": "global",
+      "category": "compliance",
+      "severity": "blocking",
+      "condition": {
+        "type": "artifact",
+        "check": "keyboard_navigation_verified",
+        "parameters": {
+          "standard": "wcag_2_2"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Verify keyboard navigation for all changed interactive UI before release.",
+        "notify_roles": ["ACCESSIBILITY_SPECIALIST", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "accessibility-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["a11y", "keyboard", "wcag"]
+      }
+    },
+    {
+      "id": "POL-A11Y-002",
+      "name": "Color contrast threshold met for changed components",
+      "description": "Changed components must meet minimum color contrast requirements to remain perceivable.",
+      "scope": "global",
+      "category": "compliance",
+      "severity": "blocking",
+      "condition": {
+        "type": "artifact",
+        "check": "color_contrast_passed",
+        "parameters": {
+          "minimum_ratio": "4.5:1"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Resolve color contrast failures before release.",
+        "notify_roles": ["ACCESSIBILITY_SPECIALIST", "UI_DESIGNER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "accessibility-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["a11y", "contrast", "visual-design"]
+      }
+    },
+    {
+      "id": "POL-A11Y-003",
+      "name": "Accessible names complete for forms and controls",
+      "description": "Forms and interactive controls should expose accessible names and descriptions for assistive technology.",
+      "scope": "global",
+      "category": "quality",
+      "severity": "warning",
+      "condition": {
+        "type": "artifact",
+        "check": "accessible_names_complete",
+        "parameters": {
+          "scope": "forms_and_controls"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Complete accessible labels and descriptions for changed forms and controls.",
+        "notify_roles": ["ACCESSIBILITY_SPECIALIST", "DEVELOPER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "accessibility-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["a11y", "forms", "assistive-tech"]
+      }
+    }
+  ]
+}

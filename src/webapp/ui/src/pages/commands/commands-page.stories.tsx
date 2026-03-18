@@ -24,7 +24,7 @@ export const Idle: Story = {
         http.get('/api/orchestrator/status', () =>
           HttpResponse.json({ state: 'IDLE', mode: 'CREATE', session_id: null })
         ),
-        http.get('/api/command', () => HttpResponse.json({ commands: [] })),
+        http.get('/api/command', () => HttpResponse.json({ command: null, queue: [] })),
       ],
     },
   },
@@ -40,20 +40,36 @@ export const WithQueue: Story = {
         ),
         http.get('/api/command', () =>
           HttpResponse.json({
-            commands: [
+            command: {
+              command: 'CREATE',
+              project: 'my-saas-app',
+              description: 'Kick off a full CREATE cycle for a new SaaS platform.',
+              scope: null,
+              requested_at: '2025-01-15T10:00:00Z',
+              status: 'PROCESSING',
+              source: 'ui',
+              clipboard_text: '',
+            },
+            queue: [
               {
-                id: 'cmd-001',
                 command: 'CREATE',
                 project: 'my-saas-app',
+                description: 'Kick off a full CREATE cycle for a new SaaS platform.',
+                scope: null,
                 status: 'PROCESSING',
-                queued_at: '2025-01-15T10:00:00Z',
+                requested_at: '2025-01-15T10:00:00Z',
+                source: 'ui',
+                clipboard_text: '',
               },
               {
-                id: 'cmd-002',
                 command: 'FEATURE',
                 project: 'payment-module',
+                description: 'Add a new payment module to the current product.',
+                scope: null,
                 status: 'PENDING',
-                queued_at: '2025-01-15T10:05:00Z',
+                requested_at: '2025-01-15T10:05:00Z',
+                source: 'ui',
+                clipboard_text: '',
               },
             ],
           })

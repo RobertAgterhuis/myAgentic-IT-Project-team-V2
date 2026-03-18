@@ -91,13 +91,15 @@ function DataTable<TData>({
     <div className={cn('space-y-3', className)}>
       {/* Global filter */}
       {enableFiltering && (
-        <Input
-          placeholder={filterPlaceholder}
-          value={globalFilter}
-          onChange={(e) => setGlobalFilter(e.target.value)}
-          className="max-w-sm h-8"
-          aria-label="Filter table"
-        />
+        <div className="rounded-2xl border border-border/70 bg-card/72 p-3 shadow-sm backdrop-blur-sm">
+          <Input
+            placeholder={filterPlaceholder}
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+            className="max-w-sm h-9"
+            aria-label="Filter table"
+          />
+        </div>
       )}
 
       {/* Table */}
@@ -151,7 +153,11 @@ function DataTable<TData>({
           ) : table.getRowModel().rows.length === 0 ? (
             <TableRow>
               <TableCell colSpan={columns.length}>
-                <EmptyState title={emptyTitle} description={emptyDescription} />
+                <EmptyState
+                  title={emptyTitle}
+                  description={emptyDescription}
+                  className="m-3 py-10"
+                />
               </TableCell>
             </TableRow>
           ) : (
@@ -170,7 +176,7 @@ function DataTable<TData>({
 
       {/* Pagination */}
       {enablePagination && !loading && table.getRowModel().rows.length > 0 && (
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between rounded-2xl border border-border/70 bg-card/72 px-4 py-3 shadow-sm backdrop-blur-sm">
           <div className="text-sm text-muted-foreground">
             Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
           </div>

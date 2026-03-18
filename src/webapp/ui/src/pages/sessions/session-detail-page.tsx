@@ -12,8 +12,10 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
-import { ProgressBar } from '@/components/ui/progress';
 import { EmptyState } from '@/components/ui/empty-state';
+import { MissionControlHero } from '@/components/ui/mission-control-hero';
+import { StatusMotif } from '@/components/ui/status-motif';
+import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { FlowTimeline, type FlowPhase } from '@/components/runtime/flow-timeline';
 import { AgentActivity, type AgentEntry } from '@/components/runtime/agent-activity';
 import { RuntimeLog, type RuntimeLogEvent } from '@/components/runtime/runtime-log';
@@ -232,34 +234,83 @@ export default function SessionDetailPage() {
   }
 
   const config = statusConfig[session.status];
+  const activeAgent = session.current_agent ?? 'No active agent';
+  const artifactCount = artifactEvents.length;
+  const decisionCount = decisionEvents.length;
+  const gateFailuresCount = mergedLogEvents.filter((e) => e.type === 'gate_failed').length;
 
   return (
     <div className="p-6 space-y-6" data-testid="session-detail-page">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/sessions')}>
-            <ArrowLeft className="size-4" />
-          </Button>
-          <div className="min-w-0">
-            <Heading level={1} className="truncate">
-              {session.project}
-            </Heading>
-            <div className="flex items-center gap-2 mt-1">
-              <Badge variant={config.variant} className="gap-1">
-                {config.icon}
-                {session.status}
-              </Badge>
-              <Text muted className="text-xs">
-                {session.flow} &middot; {session.phase}
+      <MissionControlHero
+        eyebrow="Session runtime"
+        title={`${session.project} is running as a governed execution record`}
+        description="Use this detail view to inspect the live phase, the active agent, produced evidence, and any failure or escalation that requires human intervention."
+        badges={
+          <>
+            <ControlSignalBadge signal="governed" />
+            {session.current_agent && <ControlSignalBadge signal="active-agent" />}
+            {gateFailuresCount > 0 && <ControlSignalBadge signal="needs-human-input" />}
+            <Badge variant={config.variant} className="gap-1">
+              {config.icon}
+              {session.status}
+            </Badge>
+          </>
+        }
+        metrics={[
+          { label: 'Flow', value: session.flow, detail: 'Execution mode for this session' },
+          { label: 'Current phase', value: session.phase, detail: 'Where the run is now' },
+          { label: 'Active agent', value: activeAgent, detail: 'Current responsible executor' },
+          {
+            label: 'Progress',
+            value: `${Math.round(session.progress)}%`,
+            detail: 'Observed completion',
+          },
+        ]}
+        motifs={
+          <>
+            <StatusMotif
+              kind="governance"
+              title="Runtime evidence stays attached"
+              description="Artifacts, decisions, and logs remain tied to the session instead of being scattered across views."
+            />
+            <StatusMotif
+              kind="agent"
+              title="Agent execution is inspectable"
+              description="Each agent card opens context, retries, and current work so intervention is evidence-based."
+            />
+            <StatusMotif
+              kind="human-loop"
+              title="Failure states call for a person"
+              description="Gate failures and blocked steps are surfaced as visible operational interruptions that need review."
+            />
+          </>
+        }
+        asideTitle="Session control"
+        asideDescription="Move from phase timeline to agent activity, then inspect artifacts, decisions, and the runtime log for the evidence behind the current state."
+        asideContent={
+          <div className="space-y-3">
+            <Button
+              variant="outline"
+              className="w-full justify-between"
+              onClick={() => navigate('/sessions')}
+            >
+              <span className="inline-flex items-center gap-2">
+                <ArrowLeft className="size-4" />
+                Back to Sessions
+              </span>
+            </Button>
+            <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                Evidence counts
+              </div>
+              <Text muted className="mt-2 text-xs">
+                {artifactCount} artifact signal(s), {decisionCount} decision event(s),{' '}
+                {gateFailuresCount} gate failure event(s).
               </Text>
             </div>
           </div>
-        </div>
-        <div className="w-40 shrink-0 hidden sm:block">
-          <ProgressBar value={session.progress} showPercentage />
-        </div>
-      </div>
+        }
+      />
 
       {/* Flow Timeline (top) — M15-034: phase click filters log */}
       <section aria-label="Phase timeline">

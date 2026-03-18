@@ -25,8 +25,21 @@ describe('OverviewPage', () => {
   it('renders page heading', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /overview/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', {
+          name: /see governed delivery, live agent motion, and human checkpoints in one view/i,
+        })
+      ).toBeInTheDocument();
     });
+  });
+
+  it('renders standardized control signal language', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getAllByText('Governed').length).toBeGreaterThanOrEqual(1);
+    });
+
+    expect(screen.getAllByText('Needs human input').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders active session section', async () => {
@@ -96,7 +109,7 @@ describe('OverviewPage', () => {
   it('shows session project name in status', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByText(/TestProject/)).toBeInTheDocument();
+      expect(screen.getAllByText(/TestProject/).length).toBeGreaterThanOrEqual(1);
     });
   });
 });

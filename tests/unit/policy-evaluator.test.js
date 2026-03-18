@@ -1,5 +1,9 @@
 'use strict';
 
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+
 /**
  * Policy Evaluator — Unit Tests (M22-004)
  *
@@ -8,12 +12,14 @@
  */
 
 const {
+  listPolicyPackPaths,
   loadPolicyPack,
   loadAllPolicyPacks,
   resolvePolicyInheritance,
   evaluatePolicies,
   runPolicyEvaluation,
   addPolicyException,
+  updatePolicyInPack,
 } = require('../../platform/engine/policy-evaluator');
 
 // ─── Helpers ─────────────────────────────────────────────────
@@ -101,6 +107,79 @@ describe('loadAllPolicyPacks', () => {
     const result = loadAllPolicyPacks(store, ['/valid.json', '/missing.json']);
     expect(result).toHaveLength(1);
   });
+
+  it('loads discovered pack paths from a policy directory', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'policy-pack-test-'));
+
+    try {
+      fs.writeFileSync(
+        path.join(tempDir, 'a-pack.json'),
+        JSON.stringify(makePack([makePolicy({ id: 'POL-A' })]))
+      );
+      fs.writeFileSync(
+        path.join(tempDir, 'b-pack.json'),
+        JSON.stringify(makePack([makePolicy({ id: 'POL-B' })]))
+      );
+      fs.writeFileSync(path.join(tempDir, 'notes.txt'), 'ignore');
+
+      const packPaths = listPolicyPackPaths(tempDir);
+      const store = createMockStore({
+        [packPaths[0]]: JSON.stringify(makePack([makePolicy({ id: 'POL-A' })])),
+        [packPaths[1]]: JSON.stringify(makePack([makePolicy({ id: 'POL-B' })])),
+      });
+
+      const result = loadAllPolicyPacks(store, packPaths);
+      expect(result).toHaveLength(2);
+      expect(result.flatMap((pack) => pack.policies.map((policy) => policy.id))).toEqual([
+        'POL-A',
+        'POL-B',
+      ]);
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('listPolicyPackPaths', () => {
+  it('returns sorted JSON files only', () => {
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'policy-pack-list-'));
+
+    try {
+      fs.writeFileSync(path.join(tempDir, 'zeta.json'), '{}');
+      fs.writeFileSync(path.join(tempDir, 'alpha.json'), '{}');
+      fs.writeFileSync(path.join(tempDir, 'readme.md'), '# ignore');
+
+      expect(listPolicyPackPaths(tempDir)).toEqual([
+        path.join(tempDir, 'alpha.json'),
+        path.join(tempDir, 'zeta.json'),
+      ]);
+    } finally {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
+  });
+
+  it('includes the full baseline pack set from the repo', () => {
+    const packPaths = listPolicyPackPaths();
+    const packNames = packPaths.map((packPath) => path.basename(packPath));
+
+    expect(packNames).toEqual(
+      expect.arrayContaining([
+        'security-baseline.json',
+        'quality-baseline.json',
+        'architecture-baseline.json',
+        'api-design-baseline.json',
+        'frontend-baseline.json',
+        'accessibility-baseline.json',
+        'data-baseline.json',
+        'testing-baseline.json',
+        'devops-baseline.json',
+        'observability-baseline.json',
+        'privacy-compliance-baseline.json',
+        'documentation-baseline.json',
+      ])
+    );
+    expect(packNames.length).toBeGreaterThanOrEqual(12);
+  });
 });
 
 // ─── resolvePolicyInheritance ────────────────────────────────
@@ -163,6 +242,14 @@ describe('evaluatePolicies', () => {
     const context = { type: 'gate', scope: 'global', checks: { secret_scan_passed: true } };
     const report = evaluatePolicies(policies, context);
     expect(report.skipped).toHaveLength(1);
+  });
+
+  it('skips policy when check signal is missing', () => {
+    const policies = [makePolicy({ condition: { type: 'gate', check: 'unknown_check' } })];
+    const context = { type: 'gate', scope: 'sprint', checks: { secret_scan_passed: true } };
+    const report = evaluatePolicies(policies, context);
+    expect(report.skipped).toHaveLength(1);
+    expect(report.skipped[0].message).toContain('unknown_check');
   });
 
   it('applies global policy to sprint scope', () => {
@@ -316,5 +403,40 @@ describe('addPolicyException', () => {
     const updated = JSON.parse(store._files['/pack.json']);
     expect(updated.policies[0].exceptions).toHaveLength(1);
     expect(updated.policies[0].exceptions[0].id).toBe('EXC-1');
+  });
+});
+
+describe('updatePolicyInPack', () => {
+  it('returns null when pack does not exist', () => {
+    const store = createMockStore();
+    expect(updatePolicyInPack(store, '/missing.json', 'POL-1', { name: 'Updated' })).toBeNull();
+  });
+
+  it('returns null when policy does not exist in pack', () => {
+    const pack = makePack([makePolicy({ id: 'POL-A' })]);
+    const store = createMockStore({ '/pack.json': JSON.stringify(pack) });
+    expect(updatePolicyInPack(store, '/pack.json', 'POL-B', { name: 'Updated' })).toBeNull();
+  });
+
+  it('updates the policy and persists to store', () => {
+    const pack = makePack([makePolicy({ id: 'POL-A' })]);
+    const store = createMockStore({ '/pack.json': JSON.stringify(pack) });
+
+    const result = updatePolicyInPack(store, '/pack.json', 'POL-A', {
+      name: 'Updated Policy',
+      severity: 'warning',
+      condition_check: 'updated_check',
+      action_message: 'Updated message',
+    });
+
+    expect(result).not.toBeNull();
+    expect(result.name).toBe('Updated Policy');
+    expect(result.severity).toBe('warning');
+    expect(result.condition.check).toBe('updated_check');
+
+    const updated = JSON.parse(store._files['/pack.json']);
+    expect(updated.policies[0].name).toBe('Updated Policy');
+    expect(updated.policies[0].action.message).toBe('Updated message');
+    expect(updated.policies[0].metadata.updated).toBeDefined();
   });
 });

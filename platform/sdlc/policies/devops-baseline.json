@@ -1,0 +1,88 @@
+{
+  "pack_id": "devops-baseline",
+  "pack_name": "DevOps Baseline",
+  "version": "1.0.0",
+  "policies": [
+    {
+      "id": "POL-DEVOPS-001",
+      "name": "CI dependencies pinned to deterministic versions",
+      "description": "CI/CD pipelines must pin action and tool versions to reduce supply-chain drift and unstable builds.",
+      "scope": "global",
+      "category": "security",
+      "severity": "blocking",
+      "condition": {
+        "type": "artifact",
+        "check": "ci_dependencies_pinned",
+        "parameters": {
+          "scope": "pipeline_definitions"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Pin CI/CD dependencies to explicit versions before release.",
+        "notify_roles": ["DEVOPS_ENGINEER", "SECURITY_REVIEWER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "platform-operations-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["devops", "ci", "supply-chain"]
+      }
+    },
+    {
+      "id": "POL-DEVOPS-002",
+      "name": "Rollback strategy validated for production deployments",
+      "description": "Production deployments must include a validated rollback or recovery strategy before execution.",
+      "scope": "global",
+      "category": "process",
+      "severity": "blocking",
+      "condition": {
+        "type": "deploy",
+        "check": "rollback_strategy_validated",
+        "parameters": {
+          "environment": "production"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "Validate the rollback strategy before production deployment.",
+        "notify_roles": ["DEVOPS_ENGINEER", "RELEASE_MANAGER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "platform-operations-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["devops", "rollback", "release"]
+      }
+    },
+    {
+      "id": "POL-DEVOPS-003",
+      "name": "Infrastructure change plan attached for infra updates",
+      "description": "Infrastructure changes should include a generated plan or diff artifact so reviewers can inspect impact.",
+      "scope": "global",
+      "category": "process",
+      "severity": "warning",
+      "condition": {
+        "type": "pr",
+        "check": "infra_plan_attached",
+        "parameters": {
+          "change_scope": "infrastructure"
+        }
+      },
+      "action": {
+        "type": "warn",
+        "message": "Attach an infrastructure plan or diff artifact for infrastructure changes.",
+        "notify_roles": ["DEVOPS_ENGINEER", "SOFTWARE_ARCHITECT"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "platform-operations-team",
+        "created": "2026-03-18T00:00:00.000Z",
+        "evidence_required": false,
+        "tags": ["iac", "plan", "reviewability"]
+      }
+    }
+  ]
+}

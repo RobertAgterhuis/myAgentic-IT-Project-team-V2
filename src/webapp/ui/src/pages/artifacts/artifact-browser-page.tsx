@@ -3,7 +3,6 @@
  * M10 / Issue #392
  */
 import { useState, useMemo } from 'react';
-import { Heading, Text } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,9 @@ import { MetricCard } from '@/components/ui/metric-card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
+import { MissionControlHero } from '@/components/ui/mission-control-hero';
+import { StatusMotif } from '@/components/ui/status-motif';
+import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { useArtifacts } from '@/hooks';
 import type { Artifact } from '@/lib/api-types';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -122,16 +124,64 @@ export default function ArtifactBrowserPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="artifact-browser-page">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Heading level={1}>Artifact Browser</Heading>
-          <Text muted>Browse all registered artifacts with metadata and status</Text>
-        </div>
-        <Button variant="outline" size="sm" onClick={() => refetch()}>
-          <RefreshCw className="size-4 mr-1" /> Refresh
-        </Button>
-      </div>
+      <MissionControlHero
+        eyebrow="Artifact registry"
+        title="Browse governed delivery artifacts as traceable evidence"
+        description="The artifact registry is where generated outputs become inspectable delivery evidence, with status, phase, and hash continuity across the workflow."
+        badges={
+          <>
+            <ControlSignalBadge signal="governed" />
+            <Badge variant="outline">Artifact registry</Badge>
+            {(filterPhase || filterType || filterStatus) && (
+              <ControlSignalBadge signal="active-agent" />
+            )}
+          </>
+        }
+        metrics={[
+          {
+            label: 'Artifacts',
+            value: String(artifacts.length),
+            detail: 'Registered outputs in scope',
+          },
+          { label: 'Types', value: String(types.length), detail: 'Distinct artifact categories' },
+          {
+            label: 'Phases',
+            value: String(phases.length),
+            detail: 'Phases represented in results',
+          },
+          {
+            label: 'Unique hashes',
+            value: String(new Set(artifacts.map((a) => a.content_hash)).size),
+            detail: 'Content fingerprint count',
+          },
+        ]}
+        motifs={
+          <>
+            <StatusMotif
+              kind="governance"
+              title="Evidence remains governed"
+              description="Status and phase metadata make each artifact usable for audits and delivery reviews, not just as a file list."
+            />
+            <StatusMotif
+              kind="agent"
+              title="Artifacts point back to execution"
+              description="Type, phase, and hash fields keep artifact inspection connected to the execution path that produced them."
+            />
+            <StatusMotif
+              kind="human-loop"
+              title="Filtering supports review"
+              description="Operators can narrow the evidence set quickly when a person needs to inspect specific phases or states."
+            />
+          </>
+        }
+        asideTitle="Registry controls"
+        asideDescription="Refresh the registry, apply phase or type filters, and inspect the table as an operational evidence view rather than a flat asset list."
+        asideContent={
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="size-4 mr-1" /> Refresh
+          </Button>
+        }
+      />
 
       {/* Stats */}
       <section aria-label="Artifact stats">
@@ -164,11 +214,11 @@ export default function ArtifactBrowserPage() {
       </section>
 
       {/* Filters */}
-      <Card elevation="flat" className="p-4">
+      <Card elevation="flat" className="p-4 bg-card/78">
         <div className="flex items-center gap-3 flex-wrap">
           <Filter className="size-4 text-muted-foreground" />
           <select
-            className="h-8 rounded-md border bg-background px-3 text-sm"
+            className="h-9 rounded-xl border border-border/70 bg-background/80 px-3 text-sm shadow-sm"
             value={filterPhase}
             onChange={(e) => setFilterPhase(e.target.value)}
             aria-label="Filter by phase"
@@ -181,7 +231,7 @@ export default function ArtifactBrowserPage() {
             ))}
           </select>
           <select
-            className="h-8 rounded-md border bg-background px-3 text-sm"
+            className="h-9 rounded-xl border border-border/70 bg-background/80 px-3 text-sm shadow-sm"
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
             aria-label="Filter by type"
@@ -194,7 +244,7 @@ export default function ArtifactBrowserPage() {
             ))}
           </select>
           <select
-            className="h-8 rounded-md border bg-background px-3 text-sm"
+            className="h-9 rounded-xl border border-border/70 bg-background/80 px-3 text-sm shadow-sm"
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
             aria-label="Filter by status"

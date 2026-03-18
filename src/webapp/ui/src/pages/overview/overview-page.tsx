@@ -12,6 +12,9 @@ import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { AlertBanner } from '@/components/ui/alert-banner';
+import { MissionControlHero } from '@/components/ui/mission-control-hero';
+import { StatusMotif } from '@/components/ui/status-motif';
+import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { SessionStatus, type SessionSummary } from '@/components/runtime/session-status';
 import { FlowTimeline, type FlowPhase } from '@/components/runtime/flow-timeline';
 import { AgentActivity, type AgentEntry } from '@/components/runtime/agent-activity';
@@ -22,7 +25,7 @@ import { useWelcomeWizard } from '@/components/onboarding/use-welcome-wizard';
 import { useSessions, useSession, useDecisions, useDashboardHealth } from '@/hooks';
 import { useUIStore } from '@/stores/ui-store';
 import type { Session, HealthIndicator, TimelineEvent, AgentDetailEntry } from '@/lib/api-types';
-import { Package, Scale, ArrowRight, Rocket, RefreshCw } from 'lucide-react';
+import { Package, Scale, ArrowRight, Rocket, RefreshCw, Activity, ShieldCheck } from 'lucide-react';
 
 /* ── Phase derivation (shared logic with session-detail) ── */
 const PHASE_ORDER = ['PHASE-1', 'PHASE-2', 'PHASE-3', 'PHASE-4', 'PHASE-5'];
@@ -116,6 +119,10 @@ export default function OverviewPage() {
   );
 
   const openDecisions = useMemo(() => decisionsData?.open ?? [], [decisionsData]);
+  const healthAttentionCount = useMemo(
+    () => Object.values(health ?? {}).filter((indicator) => indicator.status !== 'good').length,
+    [health]
+  );
 
   if (sessionsLoading || healthLoading) {
     return (
@@ -150,11 +157,82 @@ export default function OverviewPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="overview-page">
-      {/* Header */}
-      <div>
-        <Heading level={1}>Overview</Heading>
-        <Text muted>What&rsquo;s happening, where, and what&rsquo;s next</Text>
-      </div>
+      <MissionControlHero
+        eyebrow="Executive overview"
+        title="See governed delivery, live agent motion, and human checkpoints in one view"
+        description="Overview acts as the operator summary for the whole product: what is active now, what needs judgment next, and what evidence is accumulating behind each cycle."
+        badges={
+          <>
+            <ControlSignalBadge signal="governed" />
+            {activeSession?.current_agent && <ControlSignalBadge signal="active-agent" />}
+            {openDecisions.length > 0 && <ControlSignalBadge signal="needs-human-input" />}
+          </>
+        }
+        metrics={[
+          {
+            label: 'Active session',
+            value: activeSession?.project ?? 'None',
+            detail: 'Current primary workstream',
+          },
+          {
+            label: 'Current phase',
+            value: activeSession?.phase ?? 'Idle',
+            detail: 'Latest visible runtime phase',
+          },
+          {
+            label: 'Open decisions',
+            value: String(openDecisions.length),
+            detail: 'Human choices still pending',
+          },
+          {
+            label: 'Health signals',
+            value: String(healthAttentionCount),
+            detail: 'Non-green health indicators',
+          },
+        ]}
+        motifs={
+          <>
+            <StatusMotif
+              kind="governance"
+              title="Governance remains in the foreground"
+              description="Decision count, health signals, and next steps are visible before users dive into lower-level detail."
+            />
+            <StatusMotif
+              kind="agent"
+              title="Agent activity stays legible"
+              description="The active session, phase flow, and current executor are readable as one operational story."
+            />
+            <StatusMotif
+              kind="human-loop"
+              title="Human checkpoints are prioritized"
+              description="Open decisions and guidance keep the operator focused on interventions that unlock progress."
+            />
+          </>
+        }
+        asideTitle="Operator focus"
+        asideDescription="Start here when you need the fastest possible understanding of current delivery state and the next action that needs a human response."
+        asideContent={
+          <div className="space-y-3">
+            <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <Activity className="size-4 text-info" /> What this page answers
+              </div>
+              <Text muted className="mt-1 text-xs">
+                What is running, what is blocked, and what you should review next.
+              </Text>
+            </div>
+            <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <ShieldCheck className="size-4 text-info" /> Why it matters
+              </div>
+              <Text muted className="mt-1 text-xs">
+                It keeps strategic oversight and runtime evidence together instead of splitting them
+                across disconnected screens.
+              </Text>
+            </div>
+          </div>
+        }
+      />
 
       {/* Welcome Wizard — first-time users (M15-040) */}
       {!wizardDismissed && <WelcomeWizard onDismiss={dismissWizard} />}
@@ -224,7 +302,15 @@ export default function OverviewPage() {
                 <Scale className="size-4" />
                 <span className="text-sm font-semibold">Open Decisions</span>
               </div>
-              <Badge variant="secondary">{openDecisions.length}</Badge>
+              <div className="flex items-center gap-2">
+                {openDecisions.length > 0 && (
+                  <ControlSignalBadge
+                    signal="needs-human-input"
+                    className="hidden sm:inline-flex"
+                  />
+                )}
+                <Badge variant="secondary">{openDecisions.length}</Badge>
+              </div>
             </div>
             {openDecisions.length === 0 ? (
               <Text muted className="text-xs">

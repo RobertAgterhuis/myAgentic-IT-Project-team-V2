@@ -88,6 +88,7 @@ for (const [name, hex] of Object.entries(colorMap)) {
 
 // --- Typography ---
 lines.push('');
+lines.push(`  --font-family-heading: ${tokens.typography.fontFamilies.heading};`);
 lines.push(`  --font-family-sans: ${tokens.typography.fontFamilies.body};`);
 lines.push(`  --font-family-mono: ${tokens.typography.fontFamilies.mono};`);
 

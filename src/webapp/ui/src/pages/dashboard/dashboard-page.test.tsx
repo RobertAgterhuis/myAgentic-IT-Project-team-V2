@@ -25,8 +25,20 @@ describe('DashboardPage', () => {
   it('renders page heading', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /dashboard/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', { name: /governed ai sdlc mission control/i })
+      ).toBeInTheDocument();
     });
+  });
+
+  it('renders mission control motifs', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByText(/guardrails stay visible/i)).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/agent work is observable/i)).toBeInTheDocument();
+    expect(screen.getByText(/humans intervene with intent/i)).toBeInTheDocument();
   });
 
   it('renders health indicator section', async () => {

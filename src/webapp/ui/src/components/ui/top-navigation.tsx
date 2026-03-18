@@ -2,7 +2,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from './input';
 import { Badge } from './badge';
-import { Menu, Search, Wifi, WifiOff, Loader2 } from 'lucide-react';
+import { Menu, Search, ShieldCheck, Users, Wifi, WifiOff, Loader2 } from 'lucide-react';
 import { UserMenu } from './user-menu';
 
 type ConnectionStatus = 'connected' | 'disconnected' | 'connecting';
@@ -58,7 +58,10 @@ function TopNavigation({
   return (
     <header
       role="banner"
-      className={cn('flex h-14 items-center gap-4 border-b bg-card px-4 shadow-sm', className)}
+      className={cn(
+        'relative z-10 flex h-16 items-center gap-4 border-b border-border/70 bg-card/78 px-4 shadow-md backdrop-blur-xl supports-[backdrop-filter]:bg-card/72',
+        className
+      )}
       {...props}
     >
       {/* Mobile hamburger */}
@@ -73,9 +76,18 @@ function TopNavigation({
 
       {/* Project context */}
       {projectName && (
-        <div className="hidden sm:flex items-center gap-2">
-          <div className="size-2 rounded-full bg-primary animate-pulse" />
-          <span className="text-sm font-semibold truncate max-w-48">{projectName}</span>
+        <div className="hidden min-w-0 sm:flex items-center gap-3 rounded-full border border-border/70 bg-background/60 px-3 py-2 shadow-sm">
+          <div className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-sm ring-1 ring-white/35">
+            <ShieldCheck className="size-4" />
+          </div>
+          <div className="min-w-0">
+            <div className="truncate text-sm font-semibold tracking-tight max-w-48">
+              {projectName}
+            </div>
+            <div className="truncate text-[11px] text-muted-foreground max-w-72">
+              Governed human-in-the-loop SDLC control surface
+            </div>
+          </div>
         </div>
       )}
 
@@ -84,14 +96,22 @@ function TopNavigation({
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
         <Input
           ref={searchRef}
-          placeholder="Search… (Ctrl+K)"
-          className="pl-8 h-8"
+          placeholder="Search routes, sessions, commands… (Ctrl+K)"
+          className="h-10 border-border/70 bg-background/70 pl-8 shadow-sm"
           onChange={(e) => onSearch?.(e.target.value)}
           aria-label="Search"
         />
       </div>
 
       <div className="ml-auto flex items-center gap-2">
+        <Badge
+          variant="outline"
+          className="hidden gap-1 border-secondary/25 bg-secondary/10 text-secondary xl:inline-flex"
+        >
+          <Users className="size-3.5" />
+          Human checkpoints
+        </Badge>
+
         {/* Orchestrator state */}
         {orchestratorState && (
           <Badge
@@ -102,7 +122,7 @@ function TopNavigation({
                   ? 'secondary'
                   : 'info'
             }
-            className="hidden sm:inline-flex gap-1"
+            className="hidden gap-1 sm:inline-flex"
           >
             {orchestratorState !== 'IDLE' && (
               <span className="relative flex size-2">

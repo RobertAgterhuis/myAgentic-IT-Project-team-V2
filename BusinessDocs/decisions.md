@@ -84,6 +84,11 @@ categories, 163 category-deferred)
 > New decisions created via the webapp land here. Move them to a category file
 > when appropriate.
 
-| ID      | Priority | Scope | Decision           | Notes | Date |
-| ------- | -------- | ----- | ------------------ | ----- | ---- |
-| DEC-100 | —        | —     | _(Add a decision)_ |       |      |
+| ID  | Priority | Scope | Decision | Notes | Date |
+| --- | -------- | ----- | -------- | ----- | ---- |
+
+---
+
+## Change Log
+
+- 2026-03-18T18:17:30.800Z | `expire` | `DEC-100` | source: webapp

@@ -8,6 +8,7 @@
  * @module engine/policy-evaluator
  */
 
+import fs from 'fs';
 import path from 'path';
 
 // ─── Types ───────────────────────────────────────────────────
@@ -103,6 +104,17 @@ export interface EvaluationReport {
   };
 }
 
+export interface PolicyUpdateInput {
+  name?: string;
+  description?: string;
+  scope?: PolicyScope;
+  category?: PolicyCategory;
+  severity?: PolicySeverity;
+  condition_type?: PolicyCondition['type'];
+  condition_check?: string;
+  action_message?: string;
+}
+
 // ─── Store interface ─────────────────────────────────────────
 
 interface PolicyStore {
@@ -143,6 +155,16 @@ function findValidException(policy: Policy, now: Date): ExceptionRule | null {
 
 const DEFAULT_POLICIES_DIR = path.resolve(__dirname, '..', 'sdlc', 'policies');
 
+export function listPolicyPackPaths(policiesDir = DEFAULT_POLICIES_DIR): string[] {
+  if (!fs.existsSync(policiesDir)) return [];
+
+  return fs
+    .readdirSync(policiesDir, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.json'))
+    .map((entry) => path.join(policiesDir, entry.name))
+    .sort((left, right) => left.localeCompare(right));
+}
+
 /**
  * Load a policy pack from a JSON file.
  * Returns null if the file doesn't exist or is invalid.
@@ -167,10 +189,7 @@ export function loadPolicyPack(store: PolicyStore, packPath: string): PolicyPack
  * @param packPaths - Override list of policy pack file paths
  */
 export function loadAllPolicyPacks(store: PolicyStore, packPaths?: string[]): PolicyPack[] {
-  const paths = packPaths || [
-    path.join(DEFAULT_POLICIES_DIR, 'security-baseline.json'),
-    path.join(DEFAULT_POLICIES_DIR, 'quality-baseline.json'),
-  ];
+  const paths = packPaths || listPolicyPackPaths();
 
   const packs: PolicyPack[] = [];
   for (const p of paths) {
@@ -273,6 +292,16 @@ function evaluatePolicy(
 
   // Evaluate the check
   const checkResult = context.checks[policy.condition.check];
+  if (checkResult === undefined) {
+    return {
+      policy_id: policy.id,
+      policy_name: policy.name,
+      category: policy.category,
+      severity: policy.severity,
+      status: 'skipped',
+      message: `No signal provided for check '${policy.condition.check}'`,
+    };
+  }
   const passed = checkResult === true;
 
   if (passed) {
@@ -398,4 +427,36 @@ export function addPolicyException(
   policy.exceptions.push(exception);
   store.writeFile(packPath, JSON.stringify(pack, null, 2));
   return true;
+}
+
+export function updatePolicyInPack(
+  store: PolicyStore & { writeFile(path: string, data: string): void },
+  packPath: string,
+  policyId: string,
+  updates: PolicyUpdateInput
+): Policy | null {
+  const pack = loadPolicyPack(store, packPath);
+  if (!pack) return null;
+
+  const policy = pack.policies.find((p) => p.id === policyId);
+  if (!policy) return null;
+
+  if (updates.name !== undefined) policy.name = updates.name;
+  if (updates.description !== undefined) policy.description = updates.description;
+  if (updates.scope !== undefined) policy.scope = updates.scope;
+  if (updates.category !== undefined) policy.category = updates.category;
+  if (updates.severity !== undefined) policy.severity = updates.severity;
+  if (updates.condition_type !== undefined) policy.condition.type = updates.condition_type;
+  if (updates.condition_check !== undefined) policy.condition.check = updates.condition_check;
+  if (updates.action_message !== undefined) {
+    policy.action.message = updates.action_message;
+  }
+
+  policy.metadata = {
+    ...policy.metadata,
+    updated: new Date().toISOString(),
+  };
+
+  store.writeFile(packPath, JSON.stringify(pack, null, 2));
+  return policy;
 }

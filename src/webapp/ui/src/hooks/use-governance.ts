@@ -11,6 +11,10 @@ import type {
   PolicyListResponse,
   PolicyEvaluationResponse,
   ExceptionCreateResponse,
+  PolicyUpdatePayload,
+  PolicyUpdateResponse,
+  PolicyPacksResponse,
+  PolicySignalsResponse,
 } from '@/lib/api-types';
 
 /** List pending approvals. */
@@ -58,6 +62,22 @@ export function usePolicies() {
   });
 }
 
+/** List policy packs. */
+export function usePolicyPacks() {
+  return useQuery({
+    queryKey: queryKeys.governance.policyPacks,
+    queryFn: () => apiGet<PolicyPacksResponse>('/v1/policies/packs'),
+  });
+}
+
+/** Fetch policy signal checks. */
+export function usePolicySignals() {
+  return useQuery({
+    queryKey: queryKeys.governance.policySignals,
+    queryFn: () => apiGet<PolicySignalsResponse>('/v1/policies/signals'),
+  });
+}
+
 /** Evaluate policies against the current context. */
 export function usePolicyEvaluation() {
   const queryClient = useQueryClient();
@@ -83,6 +103,15 @@ export function useCreateException() {
       expires: string;
       scope_override?: string;
     }) => apiPost<ExceptionCreateResponse>('/v1/policies/exceptions', input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.governance.policies }),
+  });
+}
+
+export function useUpdatePolicy() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: PolicyUpdatePayload) =>
+      apiPost<PolicyUpdateResponse>('/v1/policies/update', input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.governance.policies }),
   });
 }

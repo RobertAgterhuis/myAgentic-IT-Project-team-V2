@@ -311,7 +311,8 @@ describe('moveToDecided — edge cases (M32-004)', () => {
     expect(openSection).not.toContain('Should we use X?');
     // But present in Operational Decisions
     expect(result).toContain('DEC-OPEN-001');
-    expect(result).toContain('Should we use X?');
+    expect(result).toContain('Yes');
+    expect(result).not.toContain('| DEC-OPEN-001 | HIGH | Core | Should we use X? | Yes |');
   });
 
   it('returns content unchanged for non-existent ID', () => {
@@ -487,6 +488,12 @@ describe('answerOpenQuestion — edge cases (M32-004)', () => {
 
   it('returns unchanged for non-existent ID', () => {
     expect(models.answerOpenQuestion(base, 'DEC-NOPE', 'x')).toBe(base);
+  });
+
+  it('does not rewrite open-question tables during decision migration', () => {
+    const result = models.migrateDecidedRowsToAnswerFormat(base);
+    expect(result.changedRows).toBe(0);
+    expect(result.content).toBe(base);
   });
 });
 

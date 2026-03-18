@@ -1,45 +1,46 @@
 /* AUTO-GENERATED — do not edit manually. */
-/* Source: src/webapp/brand/design-tokens.json (v2.0.0) */
-/* Generated: 2026-03-17 */
+/* Source: src/webapp/brand/design-tokens.json (v2.1.0) */
+/* Generated: 2026-03-18 */
 
 @theme {
-  --color-background: hsl(204 45% 98%);
-  --color-foreground: hsl(209 61% 16%);
-  --color-card: hsl(0 0% 100%);
-  --color-card-foreground: hsl(209 61% 16%);
-  --color-popover: hsl(0 0% 100%);
-  --color-popover-foreground: hsl(209 61% 16%);
-  --color-primary: hsl(209 82% 22%);
+  --color-background: hsl(210 44% 94%);
+  --color-foreground: hsl(213 55% 13%);
+  --color-card: hsl(206 54% 97%);
+  --color-card-foreground: hsl(213 55% 13%);
+  --color-popover: hsl(206 54% 97%);
+  --color-popover-foreground: hsl(213 55% 13%);
+  --color-primary: hsl(213 65% 25%);
   --color-primary-foreground: hsl(0 0% 100%);
-  --color-secondary: hsl(170 60% 26%);
+  --color-secondary: hsl(185 77% 26%);
   --color-secondary-foreground: hsl(0 0% 100%);
-  --color-muted: hsl(212 33% 89%);
-  --color-muted-foreground: hsl(209 34% 30%);
-  --color-accent: hsl(26 81% 52%);
+  --color-muted: hsl(210 29% 78%);
+  --color-muted-foreground: hsl(212 19% 30%);
+  --color-accent: hsl(32 95% 44%);
   --color-accent-foreground: hsl(0 0% 100%);
-  --color-destructive: hsl(4 76% 40%);
+  --color-destructive: hsl(4 59% 45%);
   --color-destructive-foreground: hsl(0 0% 100%);
-  --color-border: hsl(212 33% 89%);
-  --color-input: hsl(212 33% 89%);
-  --color-ring: hsl(214 84% 56%);
-  --color-success: hsl(155 97% 24%);
+  --color-border: hsl(210 29% 78%);
+  --color-input: hsl(210 29% 78%);
+  --color-ring: hsl(204 79% 57%);
+  --color-success: hsl(162 88% 26%);
   --color-success-foreground: hsl(0 0% 100%);
-  --color-warning: hsl(22 92% 37%);
+  --color-warning: hsl(36 100% 33%);
   --color-warning-foreground: hsl(0 0% 100%);
-  --color-info: hsl(209 82% 22%);
+  --color-info: hsl(213 65% 25%);
   --color-info-foreground: hsl(0 0% 100%);
 
-  --font-family-sans: 'Segoe UI', Inter, Arial, sans-serif;
+  --font-family-heading: 'Sora', 'Segoe UI', Inter, Arial, sans-serif;
+  --font-family-sans: 'Manrope', 'Segoe UI', Inter, Arial, sans-serif;
   --font-family-mono: JetBrains Mono, Consolas, 'Courier New', monospace;
 
   --radius-none: 0px;
   --radius-xs: 2px;
   --radius-sm: 4px;
-  --radius-md: 8px;
+  --radius-md: 14px;
   --radius-pill: 9999px;
 
-  --shadow-sm: 0 1px 2px rgba(16, 42, 67, 0.12);
-  --shadow-md: 0 4px 12px rgba(16, 42, 67, 0.14);
-  --shadow-lg: 0 12px 24px rgba(16, 42, 67, 0.16);
-  --shadow-xl: 0 24px 48px rgba(16, 42, 67, 0.20);
+  --shadow-sm: 0 10px 24px rgba(15, 31, 51, 0.08);
+  --shadow-md: 0 18px 42px rgba(15, 31, 51, 0.14);
+  --shadow-lg: 0 28px 64px rgba(15, 31, 51, 0.18);
+  --shadow-xl: 0 40px 96px rgba(15, 31, 51, 0.24);
 }

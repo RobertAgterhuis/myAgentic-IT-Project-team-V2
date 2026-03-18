@@ -36,9 +36,11 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       return reply.send(result);
     } catch (err) {
       if (err instanceof ServiceNotAvailableError) {
-        return reply
-          .code(503)
-          .send(errorResponse('SERVICE_UNAVAILABLE', 'Governance engine not available'));
+        structuredLog('WARN', 'approvals_list_unavailable', {
+          fallback: 'empty-list',
+          error: (err as Error).message,
+        });
+        return reply.send({ approvals: [], count: 0 });
       }
       structuredLog('ERROR', 'approvals_list_failed', { error: (err as Error).message });
       return reply.code(500).send(errorResponse('INTERNAL_ERROR', (err as Error).message));

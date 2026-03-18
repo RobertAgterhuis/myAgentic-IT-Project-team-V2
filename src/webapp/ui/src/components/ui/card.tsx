@@ -6,17 +6,20 @@ type CardElevation = 'flat' | 'raised' | 'outlined';
 type CardTone = 'default' | 'info' | 'warning' | 'error' | 'success';
 
 const elevationClasses: Record<CardElevation, string> = {
-  flat: 'border-transparent shadow-none',
-  raised: 'border-transparent shadow-md',
-  outlined: 'border shadow-none',
+  flat: 'border-border/40 shadow-none',
+  raised: 'border-border/30 shadow-lg',
+  outlined: 'border border-border/60 shadow-sm',
 };
 
 const toneClasses: Record<CardTone, string> = {
-  default: 'bg-card text-card-foreground',
-  info: 'bg-info/10 border-info/30 text-card-foreground',
-  warning: 'bg-warning/10 border-warning/30 text-card-foreground',
-  error: 'bg-destructive/10 border-destructive/30 text-card-foreground',
-  success: 'bg-success/10 border-success/30 text-card-foreground',
+  default: 'bg-gradient-to-br from-card via-card to-info/6 text-card-foreground backdrop-blur-sm',
+  info: 'bg-gradient-to-br from-card via-info/8 to-info/14 border-info/25 text-card-foreground backdrop-blur-sm',
+  warning:
+    'bg-gradient-to-br from-card via-warning/8 to-warning/14 border-warning/30 text-card-foreground backdrop-blur-sm',
+  error:
+    'bg-gradient-to-br from-card via-destructive/8 to-destructive/14 border-destructive/30 text-card-foreground backdrop-blur-sm',
+  success:
+    'bg-gradient-to-br from-card via-success/8 to-success/14 border-success/28 text-card-foreground backdrop-blur-sm',
 };
 
 interface CardProps extends React.ComponentProps<'div'> {
@@ -40,11 +43,11 @@ function Card({
       role={clickable ? 'button' : undefined}
       tabIndex={clickable ? 0 : undefined}
       className={cn(
-        'flex flex-col gap-6 rounded-xl py-6',
+        'relative flex flex-col gap-6 overflow-hidden rounded-[calc(var(--radius-md)+2px)] py-6',
         elevationClasses[elevation],
         toneClasses[tone],
         clickable &&
-          'cursor-pointer transition-shadow hover:shadow-lg focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+          'cursor-pointer transition-[transform,box-shadow,border-color] hover:-translate-y-0.5 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
         className
       )}
       {...props}

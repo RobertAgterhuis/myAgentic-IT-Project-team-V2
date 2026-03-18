@@ -26,15 +26,29 @@ describe('DecisionsPage', () => {
   it('renders page heading', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /decisions/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('heading', {
+          name: /treat decisions as governed delivery objects, not scattered notes/i,
+        })
+      ).toBeInTheDocument();
     });
+  });
+
+  it('renders standardized signal language and decision motifs', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getAllByText('Governed').length).toBeGreaterThanOrEqual(1);
+    });
+
+    expect(screen.getByText(/decision history stays auditable/i)).toBeInTheDocument();
+    expect(screen.getAllByText('Needs human input').length).toBeGreaterThanOrEqual(1);
   });
 
   it('renders stat cards with counts', async () => {
     renderPage();
     await waitFor(() => {
       // The mock has 1 open, 1 decided, 0 deferred = 2 total
-      expect(screen.getByText('2')).toBeInTheDocument(); // total
+      expect(screen.getAllByText('2').length).toBeGreaterThanOrEqual(1); // total
     });
   });
 
@@ -60,6 +74,13 @@ describe('DecisionsPage', () => {
     await waitFor(() => {
       expect(screen.getByText('DEC-001')).toBeInTheDocument();
       expect(screen.getByText('DEC-002')).toBeInTheDocument();
+    });
+  });
+
+  it('renders an edit action for decided decisions', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /edit dec-002/i })).toBeInTheDocument();
     });
   });
 

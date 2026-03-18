@@ -3,7 +3,6 @@
  * M10 / Issue #396
  */
 import { useState, useMemo } from 'react';
-import { Heading, Text } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -13,6 +12,10 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
 import { Button } from '@/components/ui/button';
+import { Heading, Text } from '@/components/ui/typography';
+import { MissionControlHero } from '@/components/ui/mission-control-hero';
+import { StatusMotif } from '@/components/ui/status-motif';
+import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { useTraceability } from '@/hooks';
 import type { TraceEntity, TraceGap, TraceEntityType } from '@/lib/api-types';
 import type { ColumnDef } from '@tanstack/react-table';
@@ -235,14 +238,62 @@ export default function TraceabilityExplorerPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="traceability-explorer-page">
-      {/* Header */}
-      <div>
-        <Heading level={1}>
-          <GitPullRequest className="size-5 inline mr-2" />
-          Traceability Explorer
-        </Heading>
-        <Text muted>Navigate requirement → design → code → test chains end-to-end</Text>
-      </div>
+      <MissionControlHero
+        eyebrow="Traceability explorer"
+        title="Follow requirement-to-test chains as governed delivery pathways"
+        description="Traceability shows whether intent, design, implementation, and tests remain connected. Gaps here are delivery risks, not just missing rows."
+        badges={
+          <>
+            <ControlSignalBadge signal="governed" />
+            {gaps.length > 0 && <ControlSignalBadge signal="needs-human-input" />}
+            <Badge variant="outline">Traceability</Badge>
+          </>
+        }
+        metrics={[
+          {
+            label: 'Entities',
+            value: String(entities.length),
+            detail: 'Tracked traceability nodes',
+          },
+          {
+            label: 'Requirements',
+            value: String(typeCounts.requirement),
+            detail: 'Intent-level inputs',
+          },
+          { label: 'Tests', value: String(typeCounts.test), detail: 'Verification endpoints' },
+          {
+            label: 'Coverage gaps',
+            value: String(gaps.length),
+            detail: 'Broken or incomplete chains',
+          },
+        ]}
+        motifs={
+          <>
+            <StatusMotif
+              kind="governance"
+              title="Traceability is auditable"
+              description="Each entity is visible as part of a governed chain, making delivery lineage inspectable instead of assumed."
+            />
+            <StatusMotif
+              kind="agent"
+              title="Execution leaves links behind"
+              description="The explorer exposes how generated outputs connect across requirement, design, code, and test layers."
+            />
+            <StatusMotif
+              kind="human-loop"
+              title="Coverage gaps need review"
+              description="When links are missing, a person can quickly identify where the chain broke and what evidence is absent."
+            />
+          </>
+        }
+        asideTitle="Explorer controls"
+        asideDescription="Use chain overview for structure, coverage gaps for immediate risk, and the entity browser for targeted inspection."
+        asideContent={
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            <RefreshCw className="size-3 mr-1.5" /> Refresh
+          </Button>
+        }
+      />
 
       {/* Summary */}
       <section aria-label="Traceability summary">
@@ -304,18 +355,18 @@ export default function TraceabilityExplorerPage() {
         <Heading level={2} className="mb-3">
           All Entities
         </Heading>
-        <Card elevation="flat" className="p-4 mb-3">
+        <Card elevation="flat" className="mb-3 p-4 bg-card/78">
           <div className="flex items-center gap-3 flex-wrap">
             <Search className="size-4 text-muted-foreground" />
             <Input
               placeholder="Search entities…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="h-8 max-w-sm"
+              className="h-9 max-w-sm"
               aria-label="Search entities"
             />
             <select
-              className="h-8 rounded-md border bg-background px-3 text-sm"
+              className="h-9 rounded-xl border border-border/70 bg-background/80 px-3 text-sm shadow-sm"
               value={filterType}
               onChange={(e) => setFilterType(e.target.value as TraceEntityType | '')}
               aria-label="Filter by entity type"

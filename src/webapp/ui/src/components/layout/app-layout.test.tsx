@@ -28,7 +28,7 @@ describe('AppLayout', () => {
   });
 
   it('renders breadcrumbs for non-root routes', async () => {
-    renderLayout(['/command-center']);
+    renderLayout(['/commands']);
     await waitFor(() => {
       expect(screen.getByLabelText('Breadcrumb')).toBeInTheDocument();
     });

@@ -2,51 +2,60 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { TopNavigation } from './top-navigation';
+import { TestWrapper } from '@/test/test-wrapper';
+
+function renderNavigation(props: React.ComponentProps<typeof TopNavigation> = {}) {
+  return render(
+    <TestWrapper>
+      <TopNavigation {...props} />
+    </TestWrapper>
+  );
+}
 
 describe('TopNavigation', () => {
   it('renders with banner role', () => {
-    render(<TopNavigation />);
+    renderNavigation();
     expect(screen.getByRole('banner')).toBeInTheDocument();
   });
 
   it('displays project name', () => {
-    render(<TopNavigation projectName="My Project" />);
+    renderNavigation({ projectName: 'My Project' });
     expect(screen.getByText('My Project')).toBeInTheDocument();
   });
 
   it('renders search input', () => {
-    render(<TopNavigation />);
+    renderNavigation();
     expect(screen.getByRole('textbox', { name: 'Search' })).toBeInTheDocument();
   });
 
   it('calls onSearch when typing', async () => {
     const user = userEvent.setup();
     const onSearch = vi.fn();
-    render(<TopNavigation onSearch={onSearch} />);
+    renderNavigation({ onSearch });
     await user.type(screen.getByRole('textbox', { name: 'Search' }), 'hello');
     expect(onSearch).toHaveBeenLastCalledWith('hello');
   });
 
   it('shows orchestrator state badge', () => {
-    render(<TopNavigation orchestratorState="Phase 2" />);
+    renderNavigation({ orchestratorState: 'Phase 2' });
     expect(screen.getByText('Phase 2')).toBeInTheDocument();
   });
 
   it('shows connection status', () => {
-    render(<TopNavigation connectionStatus="disconnected" />);
+    renderNavigation({ connectionStatus: 'disconnected' });
     expect(screen.getByText('Offline')).toBeInTheDocument();
   });
 
   it('hamburger button calls onMenuToggle', async () => {
     const user = userEvent.setup();
     const onMenuToggle = vi.fn();
-    render(<TopNavigation onMenuToggle={onMenuToggle} />);
+    renderNavigation({ onMenuToggle });
     await user.click(screen.getByRole('button', { name: 'Toggle menu' }));
     expect(onMenuToggle).toHaveBeenCalledOnce();
   });
 
   it('shows Ctrl+K shortcut hint in search placeholder', () => {
-    render(<TopNavigation />);
+    renderNavigation();
     expect(screen.getByPlaceholderText(/Ctrl\+K/)).toBeInTheDocument();
   });
 });

@@ -27,11 +27,18 @@ describe('CommandsPage', () => {
     expect(screen.getByLabelText(/brief description/i)).toBeInTheDocument();
   });
 
+  it('renders explicit guidance for how to proceed', () => {
+    renderPage();
+    expect(screen.getByText(/how to proceed/i)).toBeInTheDocument();
+    expect(screen.getByText(/recommended next step/i)).toBeInTheDocument();
+    expect(screen.getByText(/what happens when you click submit brief/i)).toBeInTheDocument();
+  });
+
   it('renders quick action cards', () => {
     renderPage();
     expect(screen.getByText('CREATE')).toBeInTheDocument();
-    expect(screen.getByText('AUDIT')).toBeInTheDocument();
-    expect(screen.getByText('FEATURE')).toBeInTheDocument();
+    expect(screen.getAllByText('AUDIT').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('FEATURE').length).toBeGreaterThan(0);
     expect(screen.getByText('HOTFIX')).toBeInTheDocument();
   });
 
@@ -46,12 +53,17 @@ describe('CommandsPage', () => {
     expect(btn).toBeDisabled();
   });
 
-  it('submit button enables when brief has text', async () => {
+  it('submit button stays disabled until project name and brief are both filled', async () => {
     const user = userEvent.setup();
     renderPage();
+    const projectName = screen.getByLabelText(/project name/i);
     const textarea = screen.getByLabelText(/brief description/i);
+
     await user.type(textarea, 'Test project');
     const btn = screen.getByRole('button', { name: /submit brief/i });
+    expect(btn).toBeDisabled();
+
+    await user.type(projectName, 'My project');
     expect(btn).toBeEnabled();
   });
 });

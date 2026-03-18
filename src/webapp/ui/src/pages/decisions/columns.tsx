@@ -2,9 +2,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { LifecycleFlow } from '@/components/decisions/lifecycle-flow';
 import { statusBadge, priorityBadge } from './constants';
+import { getDecisionSubject } from './presentation';
 import type { ColumnDef } from '@tanstack/react-table';
 import type { DecisionItem } from './types';
-import { Eye, Trash2 } from 'lucide-react';
+import { Eye, Pencil, Trash2 } from 'lucide-react';
 
 export function getColumns(
   onAction: (item: DecisionItem, action: string) => void,
@@ -42,11 +43,7 @@ export function getColumns(
     {
       id: 'text',
       header: 'Subject',
-      accessorFn: (row) => {
-        if (row._kind === 'open') return row.question;
-        if (row._kind === 'decided') return row.decision;
-        return row.subject;
-      },
+      accessorFn: (row) => getDecisionSubject(row),
       cell: ({ getValue }) => (
         <span className="line-clamp-2 max-w-[300px]">{getValue() as string}</span>
       ),
@@ -74,6 +71,16 @@ export function getColumns(
           >
             <Eye className="size-3.5" />
           </Button>
+          {row.original._kind === 'decided' && (
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => onAction(row.original, 'edit')}
+              aria-label={`Edit ${row.original.id}`}
+            >
+              <Pencil className="size-3.5" />
+            </Button>
+          )}
           {row.original._kind === 'open' && (
             <Button
               size="sm"

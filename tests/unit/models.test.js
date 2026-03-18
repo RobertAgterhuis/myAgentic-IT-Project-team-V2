@@ -528,6 +528,8 @@ describe('moveToDecided', () => {
   it('moves an open question to the decided table', () => {
     const result = models.moveToDecided(fullDoc, 'DEC-Q-001');
     expect(result).toContain('DEC-Q-001');
+    expect(result).toContain('| DEC-Q-001 | HIGH | Tech | PostgreSQL |  |');
+    expect(result).not.toContain('| DEC-Q-001 | HIGH | Tech | Which DB? | PostgreSQL |');
     // The original placeholder row should be removed and question moved to operational
     const lines = result.split('\n');
     const opIdx = lines.findIndex((l) => l.includes('Operational Decisions'));
@@ -686,6 +688,29 @@ describe('editDecidedRow', () => {
 
   it('returns unchanged if invalid priority provided', () => {
     expect(models.editDecidedRow(doc, 'DEC-T-001', { priority: 'CRITICAL' })).toBe(doc);
+  });
+});
+
+describe('migrateDecidedRowsToAnswerFormat', () => {
+  it('rewrites decided rows that still store the question in the decision column', () => {
+    const doc = [
+      '### Operational Decisions',
+      '',
+      '| ID | Priority | Scope | Decision | Notes | Date |',
+      '|-----|----------|-------|----------|-------|------|',
+      '| DEC-T-001 | HIGH | Phase 2 | Which DB should we use? | PostgreSQL | 2026-03-01 |',
+      '| DEC-T-002 | MEDIUM | Phase 3 | Use React | Team decision | 2026-03-02 |',
+      '',
+      '---',
+    ].join('\n');
+
+    const result = models.migrateDecidedRowsToAnswerFormat(doc);
+
+    expect(result.changedRows).toBe(1);
+    expect(result.content).toContain('| DEC-T-001 | HIGH | Phase 2 | PostgreSQL |  | 2026-03-01 |');
+    expect(result.content).toContain(
+      '| DEC-T-002 | MEDIUM | Phase 3 | Use React | Team decision | 2026-03-02 |'
+    );
   });
 });
 

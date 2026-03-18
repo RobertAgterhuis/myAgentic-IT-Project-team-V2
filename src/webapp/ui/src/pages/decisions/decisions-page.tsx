@@ -3,7 +3,7 @@
  * Issue #243 (S9G-36)
  */
 import { useState, useMemo, useCallback } from 'react';
-import { Heading, Text } from '@/components/ui/typography';
+import { Text } from '@/components/ui/typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
@@ -12,13 +12,141 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
 import { ModalDialog } from '@/components/ui/modal-dialog';
+import { MissionControlHero } from '@/components/ui/mission-control-hero';
+import { StatusMotif } from '@/components/ui/status-motif';
+import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { LifecycleFlow } from '@/components/decisions/lifecycle-flow';
 import { CreateDecisionDialog } from '@/components/decisions/create-decision-dialog';
 import { getColumns } from './columns';
 import { statusBadge, priorityBadge } from './constants';
+import { getDecisionSubject } from './presentation';
 import type { DecisionItem, StatusFilter } from './types';
 import { useDecisions, useUpdateDecision, useDeleteDecision } from '@/hooks';
 import { Scale, Plus, Filter, X, RefreshCw } from 'lucide-react';
+
+type EditableDecision = Extract<DecisionItem, { _kind: 'decided' }>;
+
+function EditDecisionDialog({
+  decision,
+  onClose,
+}: {
+  decision: EditableDecision | null;
+  onClose: () => void;
+}) {
+  const updateDecision = useUpdateDecision();
+  const [text, setText] = useState('');
+  const [scope, setScope] = useState('');
+  const [priority, setPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');
+  const [notes, setNotes] = useState('');
+
+  useMemo(() => {
+    if (!decision) return;
+    setText(decision.decision);
+    setScope(decision.scope);
+    setPriority(decision.priority);
+    setNotes(decision.notes ?? '');
+  }, [decision]);
+
+  if (!decision) return null;
+
+  return (
+    <ModalDialog
+      title={`Edit ${decision.id}`}
+      description="Update the stored decision text, scope, priority, and notes."
+      open={!!decision}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+      size="lg"
+      footer={
+        <div className="flex justify-end gap-2">
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => {
+              if (!text.trim()) return;
+              updateDecision.mutate(
+                {
+                  action: 'edit',
+                  id: decision.id,
+                  text: text.trim(),
+                  scope: scope.trim(),
+                  priority,
+                  notes: notes.trim(),
+                },
+                { onSuccess: () => onClose() }
+              );
+            }}
+            disabled={!text.trim() || updateDecision.isPending}
+            loading={updateDecision.isPending}
+          >
+            Save changes
+          </Button>
+        </div>
+      }
+    >
+      <div className="space-y-4">
+        <div className="grid gap-1.5">
+          <label className="text-sm font-medium" htmlFor="decision-text">
+            Decision
+          </label>
+          <textarea
+            id="decision-text"
+            className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            placeholder="Describe the actual decision"
+          />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-1.5">
+            <label className="text-sm font-medium" htmlFor="decision-scope">
+              Scope
+            </label>
+            <input
+              id="decision-scope"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={scope}
+              onChange={(event) => setScope(event.target.value)}
+              placeholder="e.g. business, architecture"
+            />
+          </div>
+
+          <div className="grid gap-1.5">
+            <label className="text-sm font-medium" htmlFor="decision-priority">
+              Priority
+            </label>
+            <select
+              id="decision-priority"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              value={priority}
+              onChange={(event) => setPriority(event.target.value as 'HIGH' | 'MEDIUM' | 'LOW')}
+            >
+              <option value="HIGH">High</option>
+              <option value="MEDIUM">Medium</option>
+              <option value="LOW">Low</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="grid gap-1.5">
+          <label className="text-sm font-medium" htmlFor="decision-notes">
+            Notes
+          </label>
+          <textarea
+            id="decision-notes"
+            className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            placeholder="Optional rationale or implementation notes"
+          />
+        </div>
+      </div>
+    </ModalDialog>
+  );
+}
 
 /* ── Decision Detail Dialog ── */
 function DecisionDetailDialog({
@@ -30,12 +158,7 @@ function DecisionDetailDialog({
 }) {
   if (!decision) return null;
 
-  const subject =
-    decision._kind === 'open'
-      ? decision.question
-      : decision._kind === 'decided'
-        ? decision.decision
-        : decision.subject;
+  const subject = getDecisionSubject(decision);
 
   return (
     <ModalDialog
@@ -139,6 +262,7 @@ export default function DecisionsPage() {
   const [dateTo, setDateTo] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [selectedDecision, setSelectedDecision] = useState<DecisionItem | null>(null);
+  const [editingDecision, setEditingDecision] = useState<EditableDecision | null>(null);
 
   // Flatten decisions into a single list
   const allDecisions: DecisionItem[] = useMemo(() => {
@@ -188,6 +312,8 @@ export default function DecisionsPage() {
     (item: DecisionItem, action: string) => {
       if (action === 'delete') {
         deleteDecision.mutate(item.id);
+      } else if (action === 'edit' && item._kind === 'decided') {
+        setEditingDecision(item);
       } else if (action === 'decide' && item._kind === 'open') {
         updateDecision.mutate({ action: 'decide', id: item.id });
       }
@@ -233,17 +359,64 @@ export default function DecisionsPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="decisions-page">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Heading level={1}>Decisions</Heading>
-          <Text muted>Track project decisions through their lifecycle</Text>
-        </div>
-        <Button onClick={() => setShowCreate(true)}>
-          <Plus className="size-4 mr-2" />
-          New Decision
-        </Button>
-      </div>
+      <MissionControlHero
+        eyebrow="Decision ledger"
+        title="Treat decisions as governed delivery objects, not scattered notes"
+        description="The decision surface keeps open questions, resolved choices, and deferred items in one evidence trail so teams can see where human judgment is still shaping the outcome."
+        badges={
+          <>
+            <ControlSignalBadge signal="governed" />
+            {stats.open > 0 && <ControlSignalBadge signal="needs-human-input" />}
+            <Badge variant="outline">Decisions</Badge>
+          </>
+        }
+        metrics={[
+          { label: 'Total', value: String(stats.total), detail: 'Visible decision records' },
+          { label: 'Open', value: String(stats.open), detail: 'Questions awaiting a human answer' },
+          {
+            label: 'Decided',
+            value: String(stats.decided),
+            detail: 'Resolved choices with rationale',
+          },
+          {
+            label: 'Deferred',
+            value: String(stats.deferred),
+            detail: 'Choices postponed for later',
+          },
+        ]}
+        motifs={
+          <>
+            <StatusMotif
+              kind="governance"
+              title="Decision history stays auditable"
+              description="Open, decided, and deferred states are all visible in one governed lifecycle."
+            />
+            <StatusMotif
+              kind="agent"
+              title="Agents can escalate here safely"
+              description="When automation reaches uncertainty, this page becomes the controlled handoff for a human choice."
+            />
+            <StatusMotif
+              kind="human-loop"
+              title="Human judgment is preserved as evidence"
+              description="Answers, rationale, and deferrals remain attached to the delivery record instead of disappearing in chat."
+            />
+          </>
+        }
+        asideTitle="Decision rule"
+        asideDescription="Use open items to unblock active work, then keep decided items clean so later phases inherit clear rationale instead of ambiguity."
+        asideContent={
+          <div className="space-y-3">
+            <Button className="w-full justify-between" onClick={() => setShowCreate(true)}>
+              <span className="inline-flex items-center gap-2">
+                <Plus className="size-4" />
+                New Decision
+              </span>
+              <span className="text-xs opacity-80">Record choice</span>
+            </Button>
+          </div>
+        }
+      />
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
@@ -344,6 +517,9 @@ export default function DecisionsPage() {
 
       {/* Detail Dialog */}
       <DecisionDetailDialog decision={selectedDecision} onClose={() => setSelectedDecision(null)} />
+
+      {/* Edit Dialog */}
+      <EditDecisionDialog decision={editingDecision} onClose={() => setEditingDecision(null)} />
     </div>
   );
 }

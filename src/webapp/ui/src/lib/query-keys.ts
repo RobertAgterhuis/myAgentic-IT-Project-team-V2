@@ -75,6 +75,8 @@ export const queryKeys = {
   governance: {
     approvals: ['governance', 'approvals'] as const,
     policies: ['governance', 'policies'] as const,
+    policyPacks: ['governance', 'policy-packs'] as const,
+    policySignals: ['governance', 'policy-signals'] as const,
     policyEvaluation: ['governance', 'policy-evaluation'] as const,
   },
 

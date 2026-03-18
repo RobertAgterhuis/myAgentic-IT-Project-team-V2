@@ -1,37 +1,6 @@
 import * as React from 'react';
-
-export type ThemePreference = 'light' | 'dark' | 'system';
-
-interface ThemeContextValue {
-  theme: ThemePreference;
-  setTheme: (theme: ThemePreference) => void;
-}
-
-const ThemeContext = React.createContext<ThemeContextValue | undefined>(undefined);
-
-const STORAGE_KEY = 'agentic-ui-theme';
-
-function getStoredTheme(): ThemePreference {
-  if (typeof window === 'undefined') return 'system';
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  if (stored === 'light' || stored === 'dark' || stored === 'system') {
-    return stored;
-  }
-  return 'system';
-}
-
-function getSystemTheme(): 'light' | 'dark' {
-  if (typeof window === 'undefined') return 'light';
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-}
-
-function applyTheme(preference: ThemePreference) {
-  if (typeof document === 'undefined') return;
-  const resolved = preference === 'system' ? getSystemTheme() : preference;
-  const root = document.documentElement;
-  root.classList.toggle('dark', resolved === 'dark');
-  root.style.colorScheme = resolved;
-}
+import { ThemeContext, type ThemePreference } from './theme-context';
+import { applyTheme, getStoredTheme } from './theme-utils';
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = React.useState<ThemePreference>(() => getStoredTheme());
@@ -57,12 +26,4 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 }
 
-function useTheme() {
-  const ctx = React.useContext(ThemeContext);
-  if (!ctx) {
-    throw new Error('useTheme must be used within ThemeProvider');
-  }
-  return ctx;
-}
-
-export { ThemeProvider, useTheme, applyTheme, getStoredTheme };
+export { ThemeProvider };

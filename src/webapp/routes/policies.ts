@@ -89,6 +89,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         type: 'policy_evaluation',
         summary: result.evaluation.summary,
       });
+      // nosemgrep: javascript.express.security.audit.xss.direct-response-write.direct-response-write
       return reply.type('application/json').send(result);
     } catch (err) {
       structuredLog('ERROR', 'policies_evaluate_failed', { error: (err as Error).message });

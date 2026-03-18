@@ -23,7 +23,7 @@
     "light": {
       "text": { "$value": "#0F1F33" },
       "text-sec": { "$value": "#425466" },
-      "text-muted": { "$value": "#61758A" },
+      "text-muted": { "$value": "#4F6074" },
       "bg": { "$value": "#E8EFF6" },
       "surface": { "$value": "#F5F9FC" },
       "primary": { "$value": "#163B68" },

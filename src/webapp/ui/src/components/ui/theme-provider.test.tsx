@@ -2,7 +2,9 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import * as React from 'react';
-import { ThemeProvider, useTheme, applyTheme, getStoredTheme } from './theme-provider';
+import { ThemeProvider } from './theme-provider';
+import { useTheme } from './use-theme';
+import { applyTheme, getStoredTheme } from './theme-utils';
 
 function setMatchMedia(matches: boolean) {
   Object.defineProperty(window, 'matchMedia', {

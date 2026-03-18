@@ -7,7 +7,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useLogout } from '@/hooks/use-auth';
 import { Badge } from '@/components/ui/badge';
 import { Check, LogOut, Monitor, Moon, Sun, User } from 'lucide-react';
-import { useTheme } from './theme-provider';
+import { useTheme } from './use-theme';
 
 const roleBadgeVariant: Record<string, 'default' | 'secondary' | 'info'> = {
   admin: 'default',

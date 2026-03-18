@@ -145,7 +145,7 @@ function SidePanel({
       </div>
 
       {/* Sections */}
-      <div className="flex-1 overflow-y-auto space-y-4 py-3">
+      <div className="scrollbar-surface flex-1 overflow-y-auto space-y-4 py-3">
         {sections.map((section) => (
           <SectionGroup
             key={section.id}

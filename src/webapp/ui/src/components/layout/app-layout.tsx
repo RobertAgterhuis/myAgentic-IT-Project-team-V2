@@ -151,7 +151,7 @@ export function AppLayout() {
           className={cn('hidden md:flex', !sidebarOpen && 'md:hidden')}
         />
 
-        <main className="relative flex flex-1 flex-col overflow-y-auto">
+        <main className="scrollbar-surface relative flex flex-1 flex-col overflow-y-auto">
           <Breadcrumbs pathname={location.pathname} />
 
           <ErrorBoundary>

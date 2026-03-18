@@ -102,10 +102,9 @@ async function handleLocalFallback(
     return await withFileLock(LOCAL_SUBS_FILE, () => {
       const subs = readLocalSubscriptions();
       if (subs.some((s: { emailHash: string }) => s.emailHash === emailHash)) {
-        return reply.code(409).send({
-          error: 'already_subscribed',
-          message: 'This email is already subscribed (local).',
-        });
+        return reply
+          .code(409)
+          .send(errorResponse('CONFLICT', 'This email is already subscribed (local).'));
       }
       subs.push({ emailHash, segment, source, subscribedAt: new Date().toISOString() });
       getStore().writeFile(LOCAL_SUBS_FILE, JSON.stringify(subs, null, 2));
@@ -138,10 +137,7 @@ async function handleUpstreamResponse(
   }
 
   if (upstream.status === 409) {
-    return reply.code(409).send({
-      error: 'already_subscribed',
-      message: 'This email is already subscribed.',
-    });
+    return reply.code(409).send(errorResponse('CONFLICT', 'This email is already subscribed.'));
   }
 
   const text = await upstream.text().catch(() => '');

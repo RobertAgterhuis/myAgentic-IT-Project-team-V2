@@ -7,8 +7,8 @@ const {
   checkSecretsInBody,
   safePath,
   setSecurityHeaders,
-  withFileLock,
-} = require('../../src/webapp/server');
+} = require('../../src/webapp/middleware');
+const { withFileLock } = require('../../src/webapp/file-lock');
 
 /* ── Story #1: Content Sanitization (IMPL-CONSTRAINT-002) ─────── */
 describe('sanitizeMarkdown', () => {

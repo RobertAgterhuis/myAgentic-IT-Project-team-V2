@@ -306,10 +306,10 @@ describe('routes/auth handlers', () => {
       await handler(req, res);
 
       expect(res.statusCode).toBe(401);
-      expect(parsed(res).error).toBe('UNAUTHORIZED');
+      expect(parsed(res).code).toBe('UNAUTHORIZED');
     });
 
-    it('returns user info when authenticated', async () => {
+    it('returns user profile when authenticated', async () => {
       const user = manager.store.upsertUser({
         githubId: 9002,
         email: 'me@test.com',
@@ -354,7 +354,7 @@ describe('routes/auth handlers', () => {
       await handler(req, res);
 
       expect(res.statusCode).toBe(401);
-      expect(parsed(res).error).toBe('UNAUTHORIZED');
+      expect(parsed(res).code).toBe('UNAUTHORIZED');
     });
   });
 
@@ -468,7 +468,7 @@ describe('routes/auth handlers', () => {
       await handler(req, res);
 
       expect(res.statusCode).toBe(400);
-      expect(parsed(res).error).toBe('INVALID_INPUT');
+      expect(parsed(res).code).toBe('INVALID_INPUT');
     });
 
     it('returns 404 for non-existent user', async () => {
@@ -492,7 +492,7 @@ describe('routes/auth handlers', () => {
       await handler(req, res);
 
       expect(res.statusCode).toBe(404);
-      expect(parsed(res).error).toBe('NOT_FOUND');
+      expect(parsed(res).code).toBe('NOT_FOUND');
     });
 
     it('returns 400 when role is missing from body', async () => {

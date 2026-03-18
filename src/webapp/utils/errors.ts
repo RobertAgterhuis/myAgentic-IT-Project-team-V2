@@ -71,6 +71,22 @@ export const ERROR_CATALOG: Record<string, ErrorEntry> = {
     message: 'Too many requests — rate limit exceeded.',
     recovery: 'Wait a moment and try again.',
   },
+  AUTH_DISABLED: {
+    message: 'Authentication is not configured on this server.',
+    recovery: 'Contact the administrator to enable authentication.',
+  },
+  UNAUTHORIZED: {
+    message: 'You are not authenticated.',
+    recovery: 'Log in and try again.',
+  },
+  CONFLICT: {
+    message: 'The request conflicts with the current state.',
+    recovery: 'Refresh the data and try again.',
+  },
+  SERVICE_UNAVAILABLE: {
+    message: 'A required service is temporarily unavailable.',
+    recovery: 'Wait a moment and try again.',
+  },
   INTERNAL_ERROR: {
     message: 'An unexpected server error occurred.',
     recovery: 'Try again. If the problem persists, check server logs.',
@@ -79,12 +95,15 @@ export const ERROR_CATALOG: Record<string, ErrorEntry> = {
 
 const STATUS_TO_CODE: Record<number, string> = {
   400: 'VALIDATION_ERROR',
+  401: 'UNAUTHORIZED',
   403: 'PATH_TRAVERSAL',
   404: 'NOT_FOUND',
   405: 'METHOD_NOT_ALLOWED',
+  409: 'CONFLICT',
   413: 'PAYLOAD_TOO_LARGE',
   415: 'INVALID_CONTENT_TYPE',
   429: 'RATE_LIMITED',
+  503: 'SERVICE_UNAVAILABLE',
 };
 
 export function errorResponse(code: string, detail?: string) {

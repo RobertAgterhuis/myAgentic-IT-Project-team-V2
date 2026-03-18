@@ -118,5 +118,13 @@
     "progress": 100,
     "completion": "2026-03-14",
     "archived": false
+  },
+  {
+    "id": "M31",
+    "name": "M31: UI-Triggered Agent Execution",
+    "status": "in-progress",
+    "progress": 0,
+    "completion": null,
+    "archived": false
   }
 ]

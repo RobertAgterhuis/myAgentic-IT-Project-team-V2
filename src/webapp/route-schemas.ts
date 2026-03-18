@@ -654,6 +654,61 @@ export const agentDetail = {
   response: readResponses,
 };
 
+export const agentExecute = {
+  tags: ['agents'],
+  params: idParam,
+  body: {
+    type: 'object' as const,
+    properties: {
+      context: {
+        type: 'object' as const,
+        properties: {
+          predecessorPaths: {
+            type: 'array' as const,
+            items: { type: 'string' as const, minLength: 1, maxLength: 500 },
+            maxItems: 50,
+          },
+          questionnairePath: { type: 'string' as const, minLength: 1, maxLength: 500 },
+        },
+        additionalProperties: false,
+      },
+    },
+    additionalProperties: false,
+  },
+  response: { ...mutationResponses, ...r404, ...r500 },
+};
+
+const jobIdParam = {
+  type: 'object' as const,
+  required: ['jobId'],
+  properties: {
+    jobId: { type: 'string' as const, minLength: 1 },
+  },
+};
+
+export const agentJobStatus = {
+  tags: ['agents'],
+  params: jobIdParam,
+  response: { ...readResponses, ...r500 },
+};
+
+export const agentJobResult = {
+  tags: ['agents'],
+  params: jobIdParam,
+  response: { ...readResponses, ...r500 },
+};
+
+export const agentJobCancel = {
+  tags: ['agents'],
+  params: jobIdParam,
+  response: { ...mutationResponses, ...r404 },
+};
+
+export const agentExecutionHistory = {
+  tags: ['agents'],
+  response: listResponses,
+};
+
 /* ── sessions ─────────────────────────────────────────────────── */
 
 export const sessionDetail = {

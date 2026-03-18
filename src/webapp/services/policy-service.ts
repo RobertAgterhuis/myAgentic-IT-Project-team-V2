@@ -20,6 +20,7 @@ import {
   type EvaluationContext,
   type EvaluationReport,
   type ExceptionRule,
+  type Policy,
   type PolicyUpdateInput as EnginePolicyUpdateInput,
 } from '../../../platform/engine/policy-evaluator';
 

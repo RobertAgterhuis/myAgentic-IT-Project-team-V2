@@ -36,7 +36,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       return reply.send(result);
     } catch (err) {
       if (err instanceof ServiceNotAvailableError) {
-        return reply.code(503).send({ error: 'Governance engine not available' });
+        return reply
+          .code(503)
+          .send(errorResponse('SERVICE_UNAVAILABLE', 'Governance engine not available'));
       }
       structuredLog('ERROR', 'approvals_list_failed', { error: (err as Error).message });
       return reply.code(500).send(errorResponse('INTERNAL_ERROR', (err as Error).message));
@@ -52,7 +54,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       try {
         const approvalId = request.params.id;
         if (!approvalId) {
-          return reply.code(400).send({ error: 'Approval ID required' });
+          return reply.code(400).send(errorResponse('VALIDATION_ERROR', 'Approval ID required'));
         }
 
         const body = request.body as Record<string, unknown>;
@@ -65,15 +67,15 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         return reply.type('application/json').send(result);
       } catch (err) {
         if (err instanceof ServiceValidationError) {
-          return reply.code(400).send({ error: (err as Error).message });
+          return reply.code(400).send(errorResponse('VALIDATION_ERROR', (err as Error).message));
         }
         if (err instanceof ServiceNotAvailableError) {
-          return reply.code(503).send({ error: (err as Error).message });
+          return reply.code(503).send(errorResponse('SERVICE_UNAVAILABLE', (err as Error).message));
         }
         const msg = (err as Error).message;
         structuredLog('ERROR', 'approval_approve_failed', { error: msg });
-        if (msg.includes('not found')) return reply.code(404).send({ error: msg });
-        if (msg.includes('already')) return reply.code(409).send({ error: msg });
+        if (msg.includes('not found')) return reply.code(404).send(errorResponse('NOT_FOUND', msg));
+        if (msg.includes('already')) return reply.code(409).send(errorResponse('CONFLICT', msg));
         return reply.code(500).send(errorResponse('INTERNAL_ERROR', msg));
       }
     }
@@ -88,7 +90,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       try {
         const approvalId = request.params.id;
         if (!approvalId) {
-          return reply.code(400).send({ error: 'Approval ID required' });
+          return reply.code(400).send(errorResponse('VALIDATION_ERROR', 'Approval ID required'));
         }
 
         const body = request.body as Record<string, unknown>;
@@ -101,15 +103,15 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         return reply.type('application/json').send(result);
       } catch (err) {
         if (err instanceof ServiceValidationError) {
-          return reply.code(400).send({ error: (err as Error).message });
+          return reply.code(400).send(errorResponse('VALIDATION_ERROR', (err as Error).message));
         }
         if (err instanceof ServiceNotAvailableError) {
-          return reply.code(503).send({ error: (err as Error).message });
+          return reply.code(503).send(errorResponse('SERVICE_UNAVAILABLE', (err as Error).message));
         }
         const msg = (err as Error).message;
         structuredLog('ERROR', 'approval_reject_failed', { error: msg });
-        if (msg.includes('not found')) return reply.code(404).send({ error: msg });
-        if (msg.includes('already')) return reply.code(409).send({ error: msg });
+        if (msg.includes('not found')) return reply.code(404).send(errorResponse('NOT_FOUND', msg));
+        if (msg.includes('already')) return reply.code(409).send(errorResponse('CONFLICT', msg));
         return reply.code(500).send(errorResponse('INTERNAL_ERROR', msg));
       }
     }

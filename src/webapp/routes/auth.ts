@@ -18,6 +18,7 @@ import type { ServerContext } from '../context';
 import type { AuthManager, AuthenticatedRequest, Role } from '../auth';
 
 import { structuredLog } from '../middleware';
+import { errorResponse } from '../utils/errors';
 import * as RS from '../route-schemas';
 
 const VALID_ROLES: Role[] = ['admin', 'operator', 'viewer'];
@@ -154,18 +155,18 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       if (!authManager) {
         return reply
           .code(503)
-          .send({ error: 'AUTH_DISABLED', message: 'Authentication not configured' });
+          .send(errorResponse('AUTH_DISABLED', 'Authentication not configured'));
       }
 
       const session = authManager.getSessionFromRequest(request.raw);
       if (!session) {
-        return reply.code(401).send({ error: 'UNAUTHORIZED', message: 'Not authenticated' });
+        return reply.code(401).send(errorResponse('UNAUTHORIZED', 'Not authenticated'));
       }
       const user = authManager.getUserForSession(session);
       if (!user) {
         authManager.destroySession(session.id);
         authManager.clearSessionCookies(reply.raw);
-        return reply.code(401).send({ error: 'UNAUTHORIZED', message: 'Session invalid' });
+        return reply.code(401).send(errorResponse('UNAUTHORIZED', 'Session invalid'));
       }
 
       return reply.send({
@@ -187,7 +188,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       if (!authManager || !authMiddleware) {
         return reply
           .code(503)
-          .send({ error: 'AUTH_DISABLED', message: 'Authentication not configured' });
+          .send(errorResponse('AUTH_DISABLED', 'Authentication not configured'));
       }
       if (
         !authMiddleware.requireRole(
@@ -220,7 +221,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       if (!authManager || !authMiddleware) {
         return reply
           .code(503)
-          .send({ error: 'AUTH_DISABLED', message: 'Authentication not configured' });
+          .send(errorResponse('AUTH_DISABLED', 'Authentication not configured'));
       }
       if (
         !authMiddleware.requireRole(
@@ -235,20 +236,19 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
       const userId = decodeURIComponent(request.params.id);
       if (!userId) {
-        return reply.code(400).send({ error: 'INVALID_INPUT', message: 'User ID required' });
+        return reply.code(400).send(errorResponse('INVALID_INPUT', 'User ID required'));
       }
 
       const role = request.body?.role;
       if (!role || !VALID_ROLES.includes(role as Role)) {
-        return reply.code(400).send({
-          error: 'INVALID_INPUT',
-          message: `Role must be one of: ${VALID_ROLES.join(', ')}`,
-        });
+        return reply
+          .code(400)
+          .send(errorResponse('INVALID_INPUT', `Role must be one of: ${VALID_ROLES.join(', ')}`));
       }
 
       const success = authManager.updateUserRole(userId, role as Role);
       if (!success) {
-        return reply.code(404).send({ error: 'NOT_FOUND', message: 'User not found' });
+        return reply.code(404).send(errorResponse('NOT_FOUND', 'User not found'));
       }
 
       structuredLog('info', 'user_role_updated', {

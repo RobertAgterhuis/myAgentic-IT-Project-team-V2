@@ -192,7 +192,7 @@ describe('subscribe routes', () => {
     );
 
     expect(res.status).toBe(409);
-    expect(res.json.error).toBe('already_subscribed');
+    expect(res.json.code).toBe('CONFLICT');
   });
 
   it('returns 201 even when existing subscriptions file is corrupt', async () => {
@@ -254,7 +254,7 @@ describe('subscribe routes', () => {
     );
 
     expect(res.status).toBe(409);
-    expect(res.json.error).toBe('already_subscribed');
+    expect(res.json.code).toBe('CONFLICT');
 
     delete globalThis.fetch;
   });

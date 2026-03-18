@@ -94,10 +94,10 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         return reply.code(201).send(result);
       } catch (err) {
         if (err instanceof PolicyValidationError) {
-          return reply.code(400).send({ error: (err as Error).message });
+          return reply.code(400).send(errorResponse('VALIDATION_ERROR', (err as Error).message));
         }
         if (err instanceof PolicyNotFoundError) {
-          return reply.code(404).send({ error: (err as Error).message });
+          return reply.code(404).send(errorResponse('NOT_FOUND', (err as Error).message));
         }
         structuredLog('ERROR', 'policy_exception_failed', { error: (err as Error).message });
         return reply.code(500).send(errorResponse('INTERNAL_ERROR', (err as Error).message));

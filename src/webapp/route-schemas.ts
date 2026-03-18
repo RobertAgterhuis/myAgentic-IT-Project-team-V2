@@ -25,7 +25,18 @@ const idParam = {
   },
 };
 
-/* ── Shared response schemas (M30-008) ────────────────────────── */
+/* ── Shared response schemas (M30-008, M32-007) ──────────────── */
+
+/** Standard error body returned by errorResponse(). */
+const errorBody = {
+  type: 'object' as const,
+  properties: {
+    error: { type: 'string' as const },
+    code: { type: 'string' as const },
+    message: { type: 'string' as const },
+    recovery: { type: 'string' as const },
+  },
+};
 
 const r200Ok = {
   200: { description: 'Success' },
@@ -34,22 +45,28 @@ const r201 = {
   201: { description: 'Created' },
 };
 const r400 = {
-  400: { description: 'Validation error' },
+  400: { description: 'Validation error', ...errorBody },
+};
+const r401 = {
+  401: { description: 'Unauthorized', ...errorBody },
 };
 const r403 = {
-  403: { description: 'Forbidden' },
+  403: { description: 'Forbidden', ...errorBody },
 };
 const r404 = {
-  404: { description: 'Not found' },
+  404: { description: 'Not found', ...errorBody },
+};
+const r409 = {
+  409: { description: 'Conflict', ...errorBody },
 };
 const r429 = {
-  429: { description: 'Rate limited' },
+  429: { description: 'Rate limited', ...errorBody },
 };
 const r500 = {
-  500: { description: 'Internal server error' },
+  500: { description: 'Internal server error', ...errorBody },
 };
 const r503 = {
-  503: { description: 'Service unavailable' },
+  503: { description: 'Service unavailable', ...errorBody },
 };
 
 /** Common mutation responses: 200 ok + 400 + 403 + 429. */
@@ -110,7 +127,7 @@ export const approvalApprove = {
     },
     additionalProperties: false,
   },
-  response: { ...mutationResponses, ...r404, ...r500, ...r503 },
+  response: { ...mutationResponses, ...r404, ...r409, ...r500, ...r503 },
 };
 
 export const approvalReject = {
@@ -125,7 +142,7 @@ export const approvalReject = {
     },
     additionalProperties: false,
   },
-  response: { ...mutationResponses, ...r404, ...r500, ...r503 },
+  response: { ...mutationResponses, ...r404, ...r409, ...r500, ...r503 },
 };
 
 /* ── decisions ────────────────────────────────────────────────── */
@@ -243,7 +260,7 @@ export const subscribe = {
     },
     additionalProperties: false,
   },
-  response: mutationResponses,
+  response: { ...mutationResponses, ...r201, ...r409, ...r500, ...r503 },
 };
 
 /* ── milestones ───────────────────────────────────────────────── */
@@ -737,5 +754,27 @@ export const authUpdateRole = {
     },
     additionalProperties: false,
   },
-  response: { ...mutationResponses, ...r404 },
+  response: { ...mutationResponses, ...r401, ...r404, ...r503 },
+};
+
+/* ── dashboard ────────────────────────────────────────────────── */
+
+export const dashboardHealth = {
+  tags: ['dashboard'],
+  response: { ...r200Ok, ...r500 },
+};
+
+export const dashboardMetrics = {
+  tags: ['dashboard'],
+  response: { ...r200Ok, ...r500 },
+};
+
+export const dashboardActivity = {
+  tags: ['dashboard'],
+  response: { ...r200Ok, ...r500 },
+};
+
+export const dashboardStats = {
+  tags: ['dashboard'],
+  response: { ...r200Ok, ...r500 },
 };

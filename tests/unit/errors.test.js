@@ -65,6 +65,18 @@ describe('statusToCode', () => {
 
   it('returns INTERNAL_ERROR for unmapped status', () => {
     expect(statusToCode(500)).toBe('INTERNAL_ERROR');
-    expect(statusToCode(503)).toBe('INTERNAL_ERROR');
+    expect(statusToCode(999)).toBe('INTERNAL_ERROR');
+  });
+
+  it('maps 401 to UNAUTHORIZED', () => {
+    expect(statusToCode(401)).toBe('UNAUTHORIZED');
+  });
+
+  it('maps 409 to CONFLICT', () => {
+    expect(statusToCode(409)).toBe('CONFLICT');
+  });
+
+  it('maps 503 to SERVICE_UNAVAILABLE', () => {
+    expect(statusToCode(503)).toBe('SERVICE_UNAVAILABLE');
   });
 });

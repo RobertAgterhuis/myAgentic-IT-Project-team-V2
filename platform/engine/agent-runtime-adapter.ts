@@ -15,7 +15,11 @@
 import path from 'node:path';
 import { existsSync, readFileSync, promises as fs } from 'node:fs';
 import { createDefaultRegistry, type ProviderRegistry } from '../sdlc/adapters/registry.js';
-import type { LLMProvider, TokenUsage } from '../sdlc/adapters/contracts/llm-provider.js';
+import type {
+  LLMMessage,
+  LLMProvider,
+  TokenUsage,
+} from '../sdlc/adapters/contracts/llm-provider.js';
 import { loadContractSections, validateDocument } from './gate-validator.js';
 
 // ─── Interface ────────────────────────────────────────────────
@@ -337,7 +341,16 @@ function validateContractOutput(
   const documentValidation = validateDocument(content, {
     requiredSections: binding.requiredSections,
   });
-  findings.push(...(documentValidation.violations as ContractValidationFinding[]));
+  findings.push(
+    ...documentValidation.violations.map((violation) => ({
+      severity: typeof violation.severity === 'string' ? violation.severity : 'MAJOR',
+      rule: typeof violation.rule === 'string' ? violation.rule : 'VALIDATION_VIOLATION',
+      description:
+        typeof violation.description === 'string'
+          ? violation.description
+          : 'Contract validator reported a violation.',
+    }))
+  );
 
   const normalizedContent = normalizeForMatch(content);
   const isScopeChange =
@@ -441,6 +454,11 @@ function formatArtifact(
 
 abstract class FileProducingRuntimeAdapter implements AgentRuntimeAdapter {
   abstract readonly name: string;
+  abstract invoke(
+    agent: { id: string; name: string },
+    platform: string,
+    context: Record<string, unknown>
+  ): Promise<RuntimeAdapterResult>;
 
   protected readonly _outputDir: string;
 
@@ -595,7 +613,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
       timeout: this._timeout,
     }) as LLMProvider;
 
-    const messages = [
+    const messages: LLMMessage[] = [
       { role: 'system' as const, content: promptEnvelope.prompt.system },
       { role: 'user' as const, content: promptEnvelope.prompt.user },
     ];

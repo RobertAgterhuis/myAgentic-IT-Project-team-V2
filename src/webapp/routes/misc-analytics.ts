@@ -1,8 +1,7 @@
-// @ts-nocheck
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
 import path from 'path';
-import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyReply, FastifyRequest, FastifySchema } from 'fastify';
 import * as schemas from '../schemas';
 import { withFileLock } from '../file-lock';
 import { errorResponse } from '../utils/errors';
@@ -19,8 +18,8 @@ interface CacheLike {
 
 export interface RegisterAnalyticsRoutesOptions {
   app: FastifyInstance;
-  analyticsPostSchema?: unknown;
-  analyticsGetSchema?: unknown;
+  analyticsPostSchema?: FastifySchema;
+  analyticsGetSchema?: FastifySchema;
   analyticsFile: string;
   analyticsMaxEvents: number;
   getStore: () => StoreLike;

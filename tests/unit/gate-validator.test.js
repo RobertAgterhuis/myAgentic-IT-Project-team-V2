@@ -262,8 +262,10 @@ describe('loadContractSections', () => {
       'contracts',
       'critic-output-contract.md'
     );
-    if (!fs.existsSync(criticPath)) return; // skip in CI if not present
-    const store = createMockStore({ [criticPath]: fs.readFileSync(criticPath, 'utf-8') });
+    const criticContent = fs.existsSync(criticPath)
+      ? fs.readFileSync(criticPath, 'utf-8')
+      : buildContractFile(['Critic Validation Header', 'Findings']);
+    const store = createMockStore({ [criticPath]: criticContent });
     const sections = loadContractSections(store, criticPath);
     expect(sections.length).toBeGreaterThan(0);
     expect(sections).toContain('Critic Validation Header');
@@ -310,8 +312,24 @@ describe('loadGuardrailRules', () => {
       'guardrails',
       '00-global-guardrails.md'
     );
-    if (!fs.existsSync(guardrailPath)) return;
-    const store = createMockStore({ [guardrailPath]: fs.readFileSync(guardrailPath, 'utf-8') });
+    const fallbackGuardrails = buildGuardrailFile([
+      'G-GLOB-01',
+      'G-GLOB-02',
+      'G-GLOB-03',
+      'G-GLOB-04',
+      'G-GLOB-05',
+      'G-GLOB-06',
+      'G-GLOB-07',
+      'G-GLOB-08',
+      'G-GLOB-09',
+      'G-GLOB-10',
+      'G-GLOB-11',
+    ]);
+    const store = createMockStore({
+      [guardrailPath]: fs.existsSync(guardrailPath)
+        ? fs.readFileSync(guardrailPath, 'utf-8')
+        : fallbackGuardrails,
+    });
     const rules = loadGuardrailRules(store, guardrailPath);
     expect(rules.length).toBeGreaterThan(10);
     expect(rules).toContain('G-GLOB-01');

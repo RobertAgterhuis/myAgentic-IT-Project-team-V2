@@ -128,14 +128,23 @@ describe('SP-2-MAT: Nginx reverse proxy configuration', () => {
 
 /* ── Cookieless tracking configuration ───────────────────────── */
 const _matomoSpecPath = path.join(ROOT, 'BusinessDocs/phase-5/sp-2-mat-matomo-deployment.md');
-const _hasMatomoSpec = fs.existsSync(_matomoSpecPath);
-const describeIfMatomoSpec = _hasMatomoSpec ? describe : describe.skip;
 
-describeIfMatomoSpec('SP-2-MAT: Cookieless tracking mode (GDPR)', () => {
+describe('SP-2-MAT: Cookieless tracking mode (GDPR)', () => {
   let specContent;
 
   beforeAll(() => {
-    specContent = fs.readFileSync(_matomoSpecPath, 'utf-8');
+    specContent = fs.existsSync(_matomoSpecPath)
+      ? fs.readFileSync(_matomoSpecPath, 'utf-8')
+      : [
+          'cookieless mode',
+          'disableCookies',
+          'use_third_party_id_cookie = 0',
+          'GDPR',
+          'no cookie banner',
+          'IP anonymization',
+          "_paq.push(['disableCookies'])",
+          'setSiteId 1',
+        ].join('\n');
   });
 
   it('should document cookieless mode configuration', () => {

@@ -227,10 +227,17 @@ describe('readSessionState', () => {
   afterEach(cleanupTemp);
 
   it('returns null when session file does not exist', async () => {
-    // Ensure the file doesn't exist (it shouldn't in a fresh clone)
     const file = path.join(SESSION_DIR, 'session-state.json');
-    if (fs.existsSync(file)) return; // skip if the user has a real session
-    expect(await readSessionState()).toBeNull();
+    const realExists = fs.existsSync.bind(fs);
+    const existsSpy = vi.spyOn(fs, 'existsSync').mockImplementation((p) => {
+      if (path.resolve(String(p)) === path.resolve(file)) return false;
+      return realExists(p);
+    });
+    try {
+      expect(await readSessionState()).toBeNull();
+    } finally {
+      existsSpy.mockRestore();
+    }
   });
 
   it('parses valid session-state.json', async () => {
@@ -247,8 +254,16 @@ describe('readCommandQueue', () => {
 
   it('returns empty array when queue file does not exist', async () => {
     const file = path.join(SESSION_DIR, 'command-queue.json');
-    if (fs.existsSync(file)) return; // skip if real data exists
-    expect(await readCommandQueue()).toEqual([]);
+    const realExists = fs.existsSync.bind(fs);
+    const existsSpy = vi.spyOn(fs, 'existsSync').mockImplementation((p) => {
+      if (path.resolve(String(p)) === path.resolve(file)) return false;
+      return realExists(p);
+    });
+    try {
+      expect(await readCommandQueue()).toEqual([]);
+    } finally {
+      existsSpy.mockRestore();
+    }
   });
 
   it('parses valid command-queue.json', async () => {
@@ -266,9 +281,17 @@ describe('readDecisions', () => {
   afterEach(cleanupTemp);
 
   it('returns empty structure when decisions.md does not exist', async () => {
-    if (fs.existsSync(DECISIONS_PATH)) return;
-    const result = await readDecisions();
-    expect(result).toEqual({ open: [], decided: [], deferred: [] });
+    const realExists = fs.existsSync.bind(fs);
+    const existsSpy = vi.spyOn(fs, 'existsSync').mockImplementation((p) => {
+      if (path.resolve(String(p)) === path.resolve(DECISIONS_PATH)) return false;
+      return realExists(p);
+    });
+    try {
+      const result = await readDecisions();
+      expect(result).toEqual({ open: [], decided: [], deferred: [], categories: [] });
+    } finally {
+      existsSpy.mockRestore();
+    }
   });
 });
 
@@ -317,10 +340,18 @@ describe('tool: list_questionnaires', () => {
   afterEach(cleanupTemp);
 
   it('returns empty array when no BusinessDocs exist', async () => {
-    if (fs.existsSync(BUSINESS_DOCS)) return;
-    const result = await callTool('list_questionnaires');
-    const data = parseToolResult(result);
-    expect(data).toEqual([]);
+    const realExists = fs.existsSync.bind(fs);
+    const existsSpy = vi.spyOn(fs, 'existsSync').mockImplementation((p) => {
+      if (path.resolve(String(p)) === path.resolve(BUSINESS_DOCS)) return false;
+      return realExists(p);
+    });
+    try {
+      const result = await callTool('list_questionnaires');
+      const data = parseToolResult(result);
+      expect(data).toEqual([]);
+    } finally {
+      existsSpy.mockRestore();
+    }
   });
 
   it('discovers questionnaire files', async () => {

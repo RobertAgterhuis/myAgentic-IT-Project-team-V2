@@ -145,13 +145,11 @@ cd src/webapp/ui && npm run test:coverage && cd ../../..
 
 ### Root Exclusions
 
-| Exclusion                             | Reason                                    | Review Date |
-| ------------------------------------- | ----------------------------------------- | ----------- |
-| `src/webapp/ui/**`                    | Frontend has separate coverage reporting  | 2026-03-19  |
-| `src/webapp/services/index.ts`        | Pure re-export barrel file                | 2026-03-19  |
-| `src/webapp/services/types.ts`        | Type-only declarations (no runtime logic) | 2026-03-19  |
-| `platform/sdlc/adapters/providers/**` | Runtime fixture data, not production code | 2026-03-19  |
-| `**/*.d.ts`                           | Type definitions only                     | 2026-03-19  |
+| Exclusion                      | Reason                                    | Review Date |
+| ------------------------------ | ----------------------------------------- | ----------- |
+| `src/webapp/ui/**`             | Frontend has separate coverage reporting  | 2026-03-19  |
+| `src/webapp/services/types.ts` | Type-only declarations (no runtime logic) | 2026-03-19  |
+| `**/*.d.ts`                    | Type definitions only                     | 2026-03-19  |
 
 ### UI Exclusions
 

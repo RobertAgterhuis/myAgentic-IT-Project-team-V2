@@ -114,16 +114,6 @@ export default [
     },
   },
 
-  /* ── M3 strict rollout exceptions ───────────────────────────── */
-  {
-    files: [
-      'src/webapp/mcp-server.ts',
-    ],
-    rules: {
-      '@typescript-eslint/ban-ts-comment': 'off',
-    },
-  },
-
   /* ── Prettier must come last to disable conflicting rules ───── */
   prettierConfig,
 ];

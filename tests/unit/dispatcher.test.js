@@ -484,7 +484,7 @@ describe('Dispatcher — default invoker', () => {
     });
     const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
     expect(result.success).toBe(false);
-    expect(result.error).toContain('No invoker configured');
+    expect(result.error).toMatch(/No runtime adapter configured/);
   });
 });
 

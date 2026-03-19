@@ -13,6 +13,8 @@ import { Dispatcher, PHASE_AGENTS } from '../../../platform/engine/dispatcher';
 import { getStore } from '../store';
 import { sessionTracker } from '../session-tracker';
 import type { ServiceContext } from './types';
+import { resolveAdapter } from '../../../platform/engine/agent-runtime-adapter';
+import { AGENT_RUNTIME_ADAPTER } from '../config';
 
 /** All known agents from the PHASE_AGENTS registry, keyed by id. */
 const AGENT_INDEX = new Map<string, { id: string; name: string; phase: string }>();
@@ -118,8 +120,9 @@ export class AgentExecutionService {
       `Manual execution from UI`
     );
 
-    // Build dispatcher with the current store
-    const dispatcher = new Dispatcher({ store: getStore() });
+    // I-A1-003: resolve adapter from registry; Dispatcher uses it instead of bare throw.
+    const { adapter } = resolveAdapter({ adapterName: AGENT_RUNTIME_ADAPTER });
+    const dispatcher = new Dispatcher({ store: getStore(), adapter: adapter ?? undefined });
 
     // Build context
     const ctx = dispatcher.buildContext(info.id, {

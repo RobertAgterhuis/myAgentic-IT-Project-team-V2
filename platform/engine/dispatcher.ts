@@ -18,6 +18,7 @@
 import path from 'node:path';
 import { STATES } from './state-machine';
 import type { JobQueue, JobType } from './jobs/job-types';
+import type { AgentRuntimeAdapter } from './agent-runtime-adapter';
 
 // ─── Error Severity Classification (M5 / Evolution 5) ───────
 
@@ -212,6 +213,7 @@ class Dispatcher {
   _onLog: (...args: unknown[]) => void;
   _log: InvocationEntry[];
   _jobQueue: JobQueue | null;
+  _adapter: AgentRuntimeAdapter | null;
 
   /**
    * @param {object} options
@@ -243,9 +245,11 @@ class Dispatcher {
 
     if (!store) throw new Error('Dispatcher requires a store');
 
+    const { adapter } = options as { adapter?: AgentRuntimeAdapter };
     this._store = store;
     this._config = { ...DEFAULT_CONFIG, ...(config as Record<string, unknown>) };
     this._phaseAgents = phaseAgents || PHASE_AGENTS;
+    this._adapter = adapter ?? null;
     this._invoker = invoker || this._defaultInvoker.bind(this);
     this._onLog = onLog || (() => {});
     this._log = [];
@@ -513,7 +517,12 @@ class Dispatcher {
 
   /** @private — Default invoker (no-op for testing) */
   async _defaultInvoker(_agent: AgentRef, _platform: string, _context: Record<string, unknown>) {
-    throw new Error('No invoker configured. Provide an invoker function.');
+    if (this._adapter) {
+      return this._adapter.invoke(_agent, _platform, _context);
+    }
+    throw new Error(
+      'No runtime adapter configured. Set AGENT_RUNTIME_ADAPTER or pass an adapter to Dispatcher.'
+    );
   }
 
   /** @private — Promise with timeout */
@@ -746,3 +755,4 @@ export {
   TRANSIENT_PATTERNS,
   FATAL_PATTERNS,
 };
+export type { AgentRuntimeAdapter };

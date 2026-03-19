@@ -1,6 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
 import path from 'path';
+import type { ServerResponse } from 'http';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 
 export interface StaticStoreLike {
@@ -12,7 +13,7 @@ export interface CreateStaticHandlerOptions {
   webappDir: string;
   getStore: () => StaticStoreLike;
   safePath: (basePath: string, relativePath: string) => string;
-  setSecurityHeaders: (rawResponse: unknown) => void;
+  setSecurityHeaders: (res: ServerResponse) => void;
   notFoundText: string;
 }
 

@@ -31,7 +31,7 @@ interface CacheLike {
 
 interface SseManagerLike {
   size: number;
-  addClient: (request: unknown, response: unknown) => void;
+  addClient(request: unknown, response: unknown): void;
 }
 
 export interface RegisterObservabilityRoutesOptions {

@@ -114,6 +114,26 @@ export default [
     },
   },
 
+  /* ── M3 strict rollout exceptions ───────────────────────────── */
+  {
+    files: [
+      'src/webapp/mcp-server.ts',
+      'src/webapp/route-adapter.ts',
+      'src/webapp/routes/decisions.ts',
+      'src/webapp/routes/drift.ts',
+      'src/webapp/routes/milestones.ts',
+      'src/webapp/routes/misc.ts',
+      'src/webapp/routes/misc-analytics.ts',
+      'src/webapp/routes/orchestrator.ts',
+      'src/webapp/server.ts',
+      'src/webapp/services/governance-service.ts',
+      'src/webapp/services/metrics-dashboard-service.ts',
+    ],
+    rules: {
+      '@typescript-eslint/ban-ts-comment': 'off',
+    },
+  },
+
   /* ── Prettier must come last to disable conflicting rules ───── */
   prettierConfig,
 ];

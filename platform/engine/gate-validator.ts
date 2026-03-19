@@ -109,8 +109,8 @@ const HANDOFF_CHECKLIST_COUNT = 9;
  */
 function extractSections(markdown: string) {
   const lines = markdown.split('\n');
-  const sections = [];
-  let current = null;
+  const sections: Array<{ level: number; title: string; content: string }> = [];
+  let current: { level: number; title: string; content: string } | null = null;
 
   for (const line of lines) {
     const match = line.match(/^(#{1,6})\s+(.+)$/);
@@ -137,7 +137,7 @@ function extractSections(markdown: string) {
  * @returns {Array<{line: number, text: string, pattern: string}>}
  */
 function findPlaceholders(content: string) {
-  const found = [];
+  const found: Array<{ line: number; text: string; pattern: string }> = [];
   const lines = content.split('\n');
   for (let i = 0; i < lines.length; i++) {
     for (const pattern of PLACEHOLDER_PATTERNS) {
@@ -157,7 +157,7 @@ function findPlaceholders(content: string) {
  * @returns {Array<{line: number, tag: string, text: string, fullLine: string}>}
  */
 function extractTaggedItems(content: string, tag: string) {
-  const items = [];
+  const items: Array<{ line: number; tag: string; text: string; fullLine: string }> = [];
   const lines = content.split('\n');
   for (let i = 0; i < lines.length; i++) {
     const idx = lines[i].indexOf(tag);
@@ -185,7 +185,8 @@ function parseHandoffChecklist(content: string) {
     return { found: false, checked: 0, unchecked: 0, total: 0, items: [] };
   }
 
-  const afterChecklist = content.substring(checklistMatch.index + checklistMatch[0].length);
+  const checklistIndex = checklistMatch.index ?? 0;
+  const afterChecklist = content.substring(checklistIndex + checklistMatch[0].length);
 
   // Bound by next same-or-higher-level heading
   const nextHeading = afterChecklist.match(/\n#{1,2}\s+(?!#)/);
@@ -193,7 +194,7 @@ function parseHandoffChecklist(content: string) {
     ? afterChecklist.substring(0, nextHeading.index)
     : afterChecklist;
 
-  const items = [];
+  const items: Array<{ text: string; checked: boolean }> = [];
   const lines = checklistContent.split('\n');
   for (const line of lines) {
     const checkedMatch = line.match(/^\s*-\s*\[x\]\s*(.+)/i);
@@ -221,12 +222,13 @@ function parseHandoffChecklist(content: string) {
 function loadContractSections(store: GateStore, contractPath: string) {
   if (!store.exists(contractPath)) return [];
   const content = store.readFile(contractPath);
-  const sections = [];
+  const sections: string[] = [];
 
   const mandatoryMatch = content.match(/##\s*MANDATORY\s+(SECTIONS|SCHEMA)/i);
   if (!mandatoryMatch) return [];
 
-  const afterMandatory = content.substring(mandatoryMatch.index);
+  const mandatoryIndex = mandatoryMatch.index ?? 0;
+  const afterMandatory = content.substring(mandatoryIndex);
   const lines = afterMandatory.split('\n');
 
   for (let i = 1; i < lines.length; i++) {
@@ -247,7 +249,7 @@ function loadContractSections(store: GateStore, contractPath: string) {
 function loadGuardrailRules(store: GateStore, guardrailPath: string) {
   if (!store.exists(guardrailPath)) return [];
   const content = store.readFile(guardrailPath);
-  const rules = new Set();
+  const rules = new Set<string>();
   // Pattern 1: heading format — ### G-XXX-NN
   for (const m of content.matchAll(/###\s+(G-[A-Z]+-\d+)/g)) {
     rules.add(m[1]);
@@ -270,7 +272,7 @@ function loadGuardrailRules(store: GateStore, guardrailPath: string) {
  * @returns {{violations: Array, tags: object, handoff: object}}
  */
 function validateDocument(content: string, options: { requiredSections?: string[] } = {}) {
-  const violations = [];
+  const violations: Array<Record<string, unknown>> = [];
   const { requiredSections = [] } = options;
 
   if (!content || !content.trim()) {
@@ -324,7 +326,10 @@ function validateDocument(content: string, options: { requiredSections?: string[
   }
 
   // AC-3: Extract tagged items
-  const tags = {};
+  const tags: Record<
+    string,
+    Array<{ line: number; tag: string; text: string; fullLine: string }>
+  > = {};
   for (const tag of TRACKED_TAGS) {
     tags[tag] = extractTaggedItems(content, tag);
   }
@@ -413,9 +418,9 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
     identity?: ResolvedIdentity;
   };
 
-  const ctp = ctpOverride || CRITIC_TO_PHASE;
-  const pc = pcOverride || PHASE_CONTRACTS;
-  const pg = pgOverride || PHASE_GUARDRAILS;
+  const ctp: Record<string, string> = ctpOverride || CRITIC_TO_PHASE;
+  const pc: Record<string, string[]> = pcOverride || PHASE_CONTRACTS;
+  const pg: Record<string, string[]> = pgOverride || PHASE_GUARDRAILS;
 
   const phase = ctp[criticState];
   if (!phase) {
@@ -446,22 +451,22 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
 
   // AC-1: Load contract required sections
   const contractFiles = (pc[phase] || []).map((c) => path.join(contractsDir, c));
-  const allRequiredSections = [];
+  const allRequiredSections: string[] = [];
   for (const cp of contractFiles) {
     allRequiredSections.push(...loadContractSections(store, cp));
   }
 
   // AC-4: Load guardrail rules
   const guardrailFiles = (pg[phase] || []).map((g) => path.join(guardrailsDir, g));
-  const allRules = [];
+  const allRules: string[] = [];
   for (const gp of guardrailFiles) {
     allRules.push(...loadGuardrailRules(store, gp));
   }
 
   // Validate each deliverable
-  const allViolations = [];
-  const allQuestionnaireRequests = [];
-  const perDeliverable = [];
+  const allViolations: Array<Record<string, unknown>> = [];
+  const allQuestionnaireRequests: Array<Record<string, unknown>> = [];
+  const perDeliverable: Array<Record<string, unknown>> = [];
 
   if (deliverables.length === 0) {
     allViolations.push({
@@ -539,7 +544,16 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
 
   // M4: Generate governance report when mode is not 'off'
   const govMode = governanceConfig?.governance_mode || 'off';
-  let governance_report = undefined;
+  let governance_report:
+    | {
+        mode: string;
+        identity: ResolvedIdentity | null;
+        policies_evaluated: number;
+        advisories: Array<Record<string, unknown>>;
+        unsatisfied_count: number;
+        timestamp: string;
+      }
+    | undefined;
 
   if (govMode !== 'off' && governanceConfig) {
     const matchedPolicies = matchPolicies(governanceConfig.policies, criticState);
@@ -709,7 +723,7 @@ class RiskValidator {
     });
 
     // Extract risk-specific items from tags
-    const risks = [];
+    const risks: Array<Record<string, unknown>> = [];
     for (const del of deliverables) {
       if (!this._store.exists(del)) continue;
       const content = this._store.readFile(del);

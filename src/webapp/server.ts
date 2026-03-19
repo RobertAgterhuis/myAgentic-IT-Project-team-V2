@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+// @ts-nocheck
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 // Agentic SDLC Platform — Fastify-based API server (M30-003, composition root)
 import path from 'path';

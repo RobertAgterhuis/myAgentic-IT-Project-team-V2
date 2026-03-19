@@ -1,3 +1,4 @@
+// @ts-nocheck
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
 /**

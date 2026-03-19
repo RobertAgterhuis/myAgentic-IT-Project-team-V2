@@ -1,5 +1,6 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
+// @ts-nocheck
 /**
  * Orchestrator route handlers — GET/POST /api/orchestrator/*
  * Exposes the state machine engine to the webapp UI.

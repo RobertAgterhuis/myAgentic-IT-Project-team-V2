@@ -36,7 +36,7 @@ function validateCanonicalFlows(options: { schemaPath?: string; flowsPath?: stri
   const valid = validate(data);
 
   // Semantic checks: fullFlow states must exist in states
-  const semanticErrors = [];
+  const semanticErrors: Array<{ message: string }> = [];
   const d = data;
   if (valid && Array.isArray(d.states) && Array.isArray(d.fullFlow)) {
     const stateSet = new Set(d.states);

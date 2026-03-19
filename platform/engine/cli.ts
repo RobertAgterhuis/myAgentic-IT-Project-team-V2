@@ -37,7 +37,7 @@ import { MODE_CONFIGS as _MODE_CONFIGS } from './state-machine';
 
 const VALID_PLATFORMS = ['copilot', 'claude', 'codex'];
 
-const COMMAND_ALIASES = Object.freeze({
+const COMMAND_ALIASES: Readonly<Record<string, string>> = Object.freeze({
   create: 'CREATE',
   create_business: 'CREATE_BUSINESS',
   create_tech: 'CREATE_TECH',
@@ -57,14 +57,37 @@ const COMMAND_ALIASES = Object.freeze({
   approvals_reject: '_APPROVALS_REJECT',
 });
 
+interface ParsedArgs {
+  command: string | null;
+  project: string | null;
+  platform: string;
+  resume: boolean;
+  interactive: boolean;
+  singleStep: boolean;
+  checkpoint: boolean;
+  reason: string | null;
+  help: boolean;
+  error: string | null;
+}
+
+interface EngineApi {
+  status: () => Record<string, unknown>;
+  stop: () => Record<string, unknown>;
+  pauseAtCheckpoint: () => Record<string, unknown>;
+  sprintGate: (opts: Record<string, unknown>) => Record<string, unknown>;
+  reset: (mode: string) => void;
+  advance: () => Record<string, unknown>;
+  getGovernance?: () => unknown;
+}
+
 /**
  * Parse raw argv into a structured options object.
  *
  * @param {string[]} argv - process.argv.slice(2) or equivalent
  * @returns {{ command: string|null, project: string|null, platform: string, resume: boolean, interactive: boolean, help: boolean, error: string|null }}
  */
-function parseArgs(argv: string[]) {
-  const result = {
+function parseArgs(argv: string[]): ParsedArgs {
+  const result: ParsedArgs = {
     command: null,
     project: null,
     platform: 'copilot',
@@ -77,7 +100,7 @@ function parseArgs(argv: string[]) {
     error: null,
   };
 
-  const positional = [];
+  const positional: string[] = [];
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -238,8 +261,8 @@ Options:
  * @returns {{ ok: boolean, status?: object, error?: string }}
  */
 function executeCommand(
-  engine: Record<string, (...args: unknown[]) => unknown>,
-  parsed: Record<string, unknown>,
+  engine: EngineApi,
+  parsed: ParsedArgs,
   deps: { write?: (msg: string) => unknown; promptFn?: (...args: unknown[]) => unknown } = {}
 ) {
   const write = deps.write || ((msg: string) => process.stdout.write(msg));
@@ -370,8 +393,19 @@ function executeCommand(
       return { ok: false, error: 'Governance engine not available' };
     }
     try {
+      const reason = parsed.reason;
+      if (!reason) {
+        write(
+          JSON.stringify(
+            { ok: false, error: 'Reason required for rejection. Use --reason "..."' },
+            null,
+            2
+          ) + '\n'
+        );
+        return { ok: false, error: 'Reason required for rejection' };
+      }
       const gov = governance as { decide: (...args: unknown[]) => Record<string, unknown> };
-      const result = gov.decide(approvalId, 'cli-user', false, parsed.reason);
+      const result = gov.decide(approvalId, 'cli-user', false, reason);
       write(
         JSON.stringify(
           {
@@ -396,6 +430,9 @@ function executeCommand(
   }
 
   // Reset the engine to the requested mode (starts fresh or resumes)
+  if (!parsed.command) {
+    return { ok: false, error: 'No command specified' };
+  }
   if (!parsed.resume) {
     engine.reset(parsed.command);
   }
@@ -467,7 +504,7 @@ function run(
   argv: string[],
   deps: {
     write?: (msg: string) => unknown;
-    engine?: Record<string, (...args: unknown[]) => unknown>;
+    engine?: EngineApi;
     store?: unknown;
     sseNotify?: (...args: unknown[]) => void;
     promptFn?: (...args: unknown[]) => unknown;

@@ -44,6 +44,32 @@ interface SprintStory {
   dependencies?: Array<{ id?: string; description?: string; status?: string }>;
 }
 
+export interface ParsedDecision {
+  id?: string;
+  priority?: string;
+  scope?: string;
+  decision?: string;
+  notes?: string;
+  date?: string;
+}
+
+export interface ParsedOpenQuestion {
+  id?: string;
+  priority?: string;
+  scope?: string;
+  question?: string;
+  answer?: string;
+  date?: string;
+}
+
+export interface ParsedDecisionCategory {
+  stack?: string;
+  file?: string;
+  count?: number;
+  status?: string;
+  applicable?: string;
+}
+
 // ─── Constants ───────────────────────────────────────────────
 
 const DECISIONS_PATH = 'BusinessDocs/decisions.md';
@@ -67,9 +93,9 @@ const CAPACITY_THRESHOLD = 1.2;
  * @returns {{ decided: Array, openQuestions: Array, categories: Array }}
  */
 function parseDecisions(content: string) {
-  const decided = [];
-  const openQuestions = [];
-  const categories = [];
+  const decided: ParsedDecision[] = [];
+  const openQuestions: ParsedOpenQuestion[] = [];
+  const categories: ParsedDecisionCategory[] = [];
 
   const lines = content.split('\n');
 
@@ -146,7 +172,7 @@ function parseDecisions(content: string) {
         categories.push({
           stack,
           file: fileMatch ? fileMatch[2] : file || '',
-          count: parseInt(count, 10) || 0,
+          count: parseInt(count || '0', 10) || 0,
           status: status.toUpperCase(),
           applicable: applicable || '',
         });
@@ -198,7 +224,11 @@ function loadDecisionsAndTriggers(
   const decisionsPath = paths.decisionsPath || DECISIONS_PATH;
   const triggerPath = paths.triggerPath || REEVALUATE_TRIGGER_PATH;
 
-  let decisions = { decided: [], openQuestions: [], categories: [] };
+  let decisions: {
+    decided: ParsedDecision[];
+    openQuestions: ParsedOpenQuestion[];
+    categories: ParsedDecisionCategory[];
+  } = { decided: [], openQuestions: [], categories: [] };
   if (store.exists(decisionsPath)) {
     decisions = parseDecisions(store.readFile(decisionsPath));
   }
@@ -215,7 +245,7 @@ function loadDecisionsAndTriggers(
 
   // Merge template-defined categories with parsed categories from the markdown.
   // Template categories provide the authoritative defaultStatus when present.
-  let activeCategories;
+  let activeCategories: ParsedDecisionCategory[];
   if (
     templateConfig.decisionCategories &&
     Array.isArray(templateConfig.decisionCategories) &&
@@ -246,7 +276,7 @@ function loadDecisionsAndTriggers(
  * @returns {{ ready: boolean, issues: Array }}
  */
 function checkDefinitionOfReady(stories: SprintStory[]) {
-  const issues = [];
+  const issues: Array<Record<string, unknown>> = [];
 
   if (!stories || stories.length === 0) {
     issues.push({
@@ -316,7 +346,7 @@ function checkDefinitionOfReady(stories: SprintStory[]) {
  * @returns {Array<{id: string, lesson: string, type: string, appliesTo: string}>}
  */
 function parseLessonsLearned(content: string) {
-  const lessons = [];
+  const lessons: Array<{ id: string; lesson: string; type: string; appliesTo: string }> = [];
   const lines = content.split('\n');
 
   // First try: find "Top N Lessons" injection section
@@ -398,17 +428,17 @@ function loadLessonsLearned(store: SprintGateStore, lessonsPath: string) {
  * @param {number} [window] - Number of past sprints to average
  * @returns {{ sprints: Array, trailingAverage: number, sprintCount: number }}
  */
-function parseVelocityLog(jsonContent: string, window: number) {
+function parseVelocityLog(jsonContent: string, window?: number) {
   const w = window || VELOCITY_WINDOW;
 
-  let data;
+  let data: Record<string, unknown>;
   try {
     data = JSON.parse(jsonContent);
   } catch {
     return { sprints: [], trailingAverage: 0, sprintCount: 0 };
   }
 
-  const sprints = data.sprints || [];
+  const sprints = Array.isArray(data.sprints) ? data.sprints : [];
   if (sprints.length === 0) return { sprints: [], trailingAverage: 0, sprintCount: 0 };
 
   // Use the last `w` sprints for trailing average
@@ -433,7 +463,7 @@ function checkVelocityCapacity(
 ) {
   const velocityPath = (opts.velocityPath as string) || VELOCITY_LOG_PATH;
   const threshold = (opts.capacityThreshold as number) || CAPACITY_THRESHOLD;
-  const issues = [];
+  const issues: Array<Record<string, unknown>> = [];
 
   if (!store.exists(velocityPath)) {
     return {
@@ -503,7 +533,13 @@ function checkVelocityCapacity(
  * @returns {Array<{id: string, sourceTarget: string, description: string, classification: string, status: string}>}
  */
 function parseBlockerMatrix(content: string) {
-  const blockers = [];
+  const blockers: Array<{
+    id: string;
+    sourceTarget: string;
+    description: string;
+    classification: string;
+    status: string;
+  }> = [];
   const lines = content.split('\n');
   let inTable = false;
 
@@ -546,7 +582,7 @@ function parseBlockerMatrix(content: string) {
  */
 function checkBlockers(store: SprintGateStore, blockerPath: string) {
   const fp = blockerPath || BLOCKER_MATRIX_PATH;
-  const issues = [];
+  const issues: Array<Record<string, unknown>> = [];
 
   if (!store.exists(fp)) {
     return {
@@ -694,7 +730,7 @@ function runSprintGate(store: SprintGateStore, options: Record<string, unknown>)
   }
 
   // Collect all blocking issues
-  const allBlockers = [];
+  const allBlockers: Array<Record<string, unknown>> = [];
 
   // Step 0 blockers: HIGH-priority open questions and pending reevaluate
   for (const q of step0.blockingQuestions) {

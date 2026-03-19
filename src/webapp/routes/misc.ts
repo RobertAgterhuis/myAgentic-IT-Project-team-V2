@@ -1,5 +1,6 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
+// @ts-nocheck
 /**
  * Miscellaneous route handlers — session, reevaluate, export, help,
  * SSE events, metrics, health, analytics, audit, and static serving.

@@ -76,7 +76,8 @@ function discoverTemplates(templatesDir?: string) {
  */
 function loadManifest(templateName?: string, templatesDir?: string) {
   const dir = templatesDir || path.resolve(process.cwd(), DEFAULT_TEMPLATES_DIR);
-  const manifestPath = path.join(dir, templateName, MANIFEST_FILENAME);
+  const resolvedTemplateName = templateName || DEFAULT_TEMPLATE;
+  const manifestPath = path.join(dir, resolvedTemplateName, MANIFEST_FILENAME);
 
   if (!fs.existsSync(manifestPath)) {
     throw new Error(
@@ -89,7 +90,8 @@ function loadManifest(templateName?: string, templatesDir?: string) {
   try {
     return JSON.parse(raw);
   } catch (err) {
-    throw new Error(`Invalid JSON in template manifest '${manifestPath}': ${err.message}`);
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(`Invalid JSON in template manifest '${manifestPath}': ${message}`);
   }
 }
 
@@ -101,7 +103,7 @@ function loadManifest(templateName?: string, templatesDir?: string) {
  * @returns {{ valid: boolean, errors: string[] }}
  */
 function validateManifest(manifest: Record<string, unknown>) {
-  const errors = [];
+  const errors: string[] = [];
 
   if (!manifest || typeof manifest !== 'object') {
     return { valid: false, errors: ['Manifest must be a non-null object'] };
@@ -369,13 +371,14 @@ function listTemplates(templatesDir?: string) {
         errors: validation.errors,
       };
     } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
       return {
         name,
         displayName: name,
         version: 'unknown',
         description: '',
         valid: false,
-        errors: [err.message],
+        errors: [message],
       };
     }
   });
@@ -395,12 +398,13 @@ function listTemplates(templatesDir?: string) {
  */
 function seedDecisions(templateName?: string, targetDir?: string, templatesDir?: string) {
   const config = loadTemplate(templateName, templatesDir);
+  const resolvedTargetDir = targetDir || process.cwd();
 
   if (!config.decisionsDir || !fs.existsSync(config.decisionsDir)) {
     return { seeded: false, files: [], indexFile: null };
   }
 
-  const targetDecisionsDir = path.join(targetDir, 'decisions');
+  const targetDecisionsDir = path.join(resolvedTargetDir, 'decisions');
 
   // Never overwrite existing decisions
   if (fs.existsSync(targetDecisionsDir)) {
@@ -413,7 +417,7 @@ function seedDecisions(templateName?: string, targetDir?: string, templatesDir?:
   const seedFiles = fs
     .readdirSync(config.decisionsDir)
     .filter((f) => f.endsWith('.md') && !f.startsWith('_'));
-  const copiedFiles = [];
+  const copiedFiles: string[] = [];
 
   for (const file of seedFiles) {
     const srcPath = path.join(config.decisionsDir, file);
@@ -423,9 +427,9 @@ function seedDecisions(templateName?: string, targetDir?: string, templatesDir?:
   }
 
   // Copy index seed to target root as decisions.md
-  let indexFile = null;
+  let indexFile: string | null = null;
   if (config.decisionIndexSeed && fs.existsSync(config.decisionIndexSeed)) {
-    const destIndex = path.join(targetDir, 'decisions.md');
+    const destIndex = path.join(resolvedTargetDir, 'decisions.md');
     if (!fs.existsSync(destIndex)) {
       fs.copyFileSync(config.decisionIndexSeed, destIndex);
       indexFile = 'decisions.md';

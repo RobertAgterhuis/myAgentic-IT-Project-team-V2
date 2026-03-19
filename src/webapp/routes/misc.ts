@@ -21,6 +21,7 @@ import { VALIDATION as V, RESPONSES as R, STATIC as S } from '../strings';
 import { structuredLog, safePath, setSecurityHeaders } from '../middleware';
 import * as RS from '../route-schemas';
 import { collectPhaseOutputs } from './misc-export';
+import { registerHealthRoutes } from './misc-health';
 
 const HELP_TOC = [
   { slug: 'getting-started', title: 'Getting Started', icon: '🚀' },
@@ -217,40 +218,6 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
   }
 
   /** Readiness probe — used by Docker HEALTHCHECK and Playwright webServer. */
-  async function apiGetHealth(_request: FastifyRequest, reply: FastifyReply) {
-    let store_status = 'ok';
-    try {
-      const store = getStore();
-      store.exists(SESSION_DIR);
-    } catch {
-      store_status = 'degraded';
-    }
-    // StorageProvider health (M23-005 / M23-007)
-    let storage_health: Record<string, unknown> | undefined;
-    const sp = typeof getStorageProvider === 'function' ? getStorageProvider() : null;
-    if (sp) {
-      try {
-        const h = await sp.health();
-        storage_health = {
-          status: h.status,
-          provider: h.provider,
-          latencyMs: h.latencyMs,
-        };
-      } catch {
-        storage_health = { status: 'unhealthy', provider: _storageProviderType || 'unknown' };
-      }
-    }
-    reply.send({
-      status: 'ok',
-      version: _version,
-      uptime: Math.round(process.uptime()),
-      store_status,
-      sse_connections: sseManager.size,
-      timestamp: new Date().toISOString(),
-      ...(storage_health ? { storage: storage_health } : {}),
-    });
-  }
-
   /* ── Analytics Endpoint (SP-R2-004-008) ───────────────────────── */
 
   function validateAnalyticsEvent(evt) {
@@ -402,70 +369,18 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
   app.get('/api/events', apiGetEvents);
   app.get('/api/metrics', apiGetMetrics);
   app.post('/api/metrics/flush', apiFlushMetrics);
-  app.get('/api/health', apiGetHealth);
   app.post('/api/analytics', { schema: RS.analyticsPost }, apiPostAnalytics);
   app.get('/api/analytics', { schema: RS.analyticsGet }, apiGetAnalytics);
   app.get('/api/audit', { schema: RS.auditGet }, apiGetAudit);
 
-  /** Liveness probe — lightweight check that the process is running (M33-006). */
-  app.get('/health/live', async (_request: FastifyRequest, reply: FastifyReply) => {
-    reply.send({ status: 'ok' });
-  });
-
-  /** Readiness probe — checks DB + broker connectivity (M33-006). */
-  app.get('/health/ready', async (_request: FastifyRequest, reply: FastifyReply) => {
-    const checks: Record<string, unknown> = {};
-    let ready = true;
-
-    // Storage provider health
-    const sp = typeof getStorageProvider === 'function' ? getStorageProvider() : null;
-    if (sp) {
-      try {
-        const h = await sp.health();
-        checks.storage = { status: h.status, latencyMs: h.latencyMs };
-        if (h.status !== 'healthy') ready = false;
-      } catch {
-        checks.storage = { status: 'unhealthy' };
-        ready = false;
-      }
-    }
-
-    // Redis / broker health (if configured)
-    try {
-      const { getRedisConnection, redisHealthCheck } = await import('../redis');
-      const redis = getRedisConnection();
-      if (redis) {
-        const rh = await redisHealthCheck(redis);
-        checks.redis = rh;
-        if (rh.status !== 'ok') ready = false;
-      }
-    } catch {
-      // Redis module not available — not a failure if not configured
-    }
-
-    reply.status(ready ? 200 : 503).send({
-      status: ready ? 'ready' : 'not_ready',
-      checks,
-      timestamp: new Date().toISOString(),
-    });
-  });
-
-  /** Legacy liveness probe — lightweight check that the process is running. */
-  app.get('/health', async (_request: FastifyRequest, reply: FastifyReply) => {
-    let store_status = 'ok';
-    try {
-      getStore().exists(SESSION_DIR);
-    } catch {
-      store_status = 'degraded';
-    }
-    const sp = typeof getStorageProvider === 'function' ? getStorageProvider() : null;
-    reply.send({
-      status: 'ok',
-      version: _version,
-      uptime: Math.round(process.uptime()),
-      store_status,
-      storage_provider: sp ? sp.name : 'none',
-    });
+  registerHealthRoutes({
+    app,
+    version: _version,
+    sessionDir: SESSION_DIR,
+    storageProviderType: _storageProviderType,
+    sseConnections: () => sseManager.size,
+    getStore,
+    getStorageProvider,
   });
 
   // SPA static fallback — catch-all for non-API routes

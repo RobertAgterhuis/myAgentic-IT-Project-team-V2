@@ -20,6 +20,7 @@ import { errorResponse } from '../utils/errors';
 import { VALIDATION as V, RESPONSES as R, STATIC as S } from '../strings';
 import { structuredLog, safePath, setSecurityHeaders } from '../middleware';
 import * as RS from '../route-schemas';
+import { collectPhaseOutputs } from './misc-export';
 
 const HELP_TOC = [
   { slug: 'getting-started', title: 'Getting Started', icon: '🚀' },
@@ -100,59 +101,6 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   /* ── Export API ───────────────────────────────────────────────── */
 
-  function readSafeFile(store, basePath, relativePath) {
-    let fp;
-    try {
-      fp = safePath(basePath, relativePath);
-    } catch {
-      return null;
-    }
-    if (!store.exists(fp)) return null;
-    try {
-      return _cache.read(fp);
-    } catch {
-      return null;
-    }
-  }
-
-  function tryReadExportFile(store, filePath, sizeCtx) {
-    const txt = readSafeFile(store, PROJECT_ROOT, filePath);
-    if (!txt) return null;
-    sizeCtx.size += Buffer.byteLength(txt);
-    return sizeCtx.size <= MAX_EXPORT_SIZE ? txt : null;
-  }
-
-  function collectStringPhaseOutput(val, store, sizeCtx) {
-    if (typeof val !== 'string' || val === 'null' || !val) return null;
-    return tryReadExportFile(store, val, sizeCtx);
-  }
-
-  function collectObjectPhaseOutput(val, store, sizeCtx) {
-    if (!val || typeof val !== 'object') return null;
-    const entries = {};
-    for (const [agentId, filePath] of Object.entries(val)) {
-      if (sizeCtx.size > MAX_EXPORT_SIZE) break;
-      if (filePath && filePath !== 'null') {
-        const txt = tryReadExportFile(store, filePath, sizeCtx);
-        if (txt) entries[agentId] = txt;
-      }
-    }
-    return entries;
-  }
-
-  function collectPhaseOutputs(phaseOutputs, store) {
-    const result = {};
-    const sizeCtx = { size: 0 };
-    for (const [phase, val] of Object.entries(phaseOutputs)) {
-      if (sizeCtx.size > MAX_EXPORT_SIZE) break;
-      const out =
-        collectStringPhaseOutput(val, store, sizeCtx) ||
-        collectObjectPhaseOutput(val, store, sizeCtx);
-      if (out) result[phase] = out;
-    }
-    return result;
-  }
-
   async function apiGetExport(_request: FastifyRequest, reply: FastifyReply) {
     const store = getStore();
     const sessionFile =
@@ -172,7 +120,13 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     bundle.command_queue = _readCommandQueue();
 
     if (bundle.session && bundle.session.phase_outputs) {
-      bundle.phase_outputs = collectPhaseOutputs(bundle.session.phase_outputs, store);
+      bundle.phase_outputs = collectPhaseOutputs(bundle.session.phase_outputs, {
+        store,
+        cache: _cache,
+        projectRoot: PROJECT_ROOT,
+        maxExportSize: MAX_EXPORT_SIZE,
+        safePath,
+      });
     }
 
     reply.send(bundle);

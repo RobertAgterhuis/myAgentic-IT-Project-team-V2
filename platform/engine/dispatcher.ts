@@ -178,7 +178,11 @@ class Dispatcher {
   _store: DispatcherStore;
   _config: Record<string, unknown>;
   _phaseAgents: Record<string, AgentRef[]>;
-  _invoker: (...args: unknown[]) => unknown;
+  _invoker: (
+    agent: AgentRef,
+    platform: string,
+    context: Record<string, unknown>
+  ) => Promise<unknown>;
   _onLog: (...args: unknown[]) => void;
   _log: InvocationEntry[];
   _jobQueue: JobQueue | null;
@@ -201,7 +205,11 @@ class Dispatcher {
     } = options as {
       store?: DispatcherStore;
       config?: Record<string, unknown>;
-      invoker?: (...args: unknown[]) => unknown;
+      invoker?: (
+        agent: AgentRef,
+        platform: string,
+        context: Record<string, unknown>
+      ) => Promise<unknown>;
       onLog?: (...args: unknown[]) => void;
       phaseAgents?: Record<string, AgentRef[]>;
       jobQueue?: JobQueue;
@@ -254,7 +262,13 @@ class Dispatcher {
       questionnairePath?: string;
       sessionState?: unknown;
     };
-    const context = {
+    const context: {
+      agentId: string;
+      skillFile: string;
+      predecessorOutputs: Record<string, string>;
+      questionnaireInput: string | null;
+      sessionState: unknown;
+    } = {
       agentId,
       skillFile: path.join(this._config.skillsDir as string, `${agentId}-*.md`),
       predecessorOutputs: {},
@@ -419,9 +433,9 @@ class Dispatcher {
   ) {
     const { onFailure = 'continue' } = dispatchOptions;
     const agents = this.getAgentsForState(state);
-    const completed = [];
-    const failed = [];
-    const results = [];
+    const completed: string[] = [];
+    const failed: string[] = [];
+    const results: Array<Record<string, unknown>> = [];
     let escalated = false;
 
     for (const agent of agents) {

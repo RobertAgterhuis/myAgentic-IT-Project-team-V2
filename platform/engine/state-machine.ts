@@ -335,8 +335,8 @@ class StateMachine {
    * @returns {Array<{state: string, status: string, timestamp?: string}>}
    */
   stateMetadata() {
-    const flow = [];
-    let cursor = 'IDLE';
+    const flow: string[] = [];
+    let cursor: string | null = 'IDLE';
     while (cursor) {
       flow.push(cursor);
       cursor = this._transitionMap.get(cursor) || null;

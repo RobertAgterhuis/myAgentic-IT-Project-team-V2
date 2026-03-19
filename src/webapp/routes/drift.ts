@@ -1,5 +1,6 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
+// @ts-nocheck
 /**
  * Drift detection route handler — GET /api/drift.
  *

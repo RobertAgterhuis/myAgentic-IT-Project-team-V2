@@ -139,7 +139,7 @@ function saveRunHistory(store, runEntry, filePath) {
   const dir = path.dirname(target);
   store.mkdirp(dir);
 
-  let runs = [];
+  let runs: Array<Record<string, unknown>> = [];
   if (store.exists(target)) {
     try {
       runs = JSON.parse(store.readFile(target));
@@ -149,7 +149,7 @@ function saveRunHistory(store, runEntry, filePath) {
     }
   }
 
-  runs.push(runEntry);
+  runs.push(runEntry as Record<string, unknown>);
   if (runs.length > 50) runs = runs.slice(runs.length - 50);
 
   store.writeFile(target, JSON.stringify(runs, null, 2));
@@ -253,7 +253,15 @@ function addDegradationEntry(store, entry, filePath) {
     }
   }
 
-  const log = Array.isArray(existing.degradation_log) ? existing.degradation_log : [];
+  const log: Array<{ timestamp: string; component: string; reason: string; state: string | null }> =
+    Array.isArray(existing.degradation_log)
+      ? (existing.degradation_log as Array<{
+          timestamp: string;
+          component: string;
+          reason: string;
+          state: string | null;
+        }>)
+      : [];
   log.push({
     timestamp: new Date().toISOString(),
     component: entry.component,

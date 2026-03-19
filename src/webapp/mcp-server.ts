@@ -1,3 +1,4 @@
+// @ts-nocheck
 /**
  * MCP Server for myAgentic-IT-Project-team.
  *

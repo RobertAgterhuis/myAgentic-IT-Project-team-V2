@@ -45,8 +45,8 @@ function validateCanonicalTools(
 
   // Cross-reference: check that agent tools map to defined tool IDs
   const definedToolIds = new Set(((data.tools || []) as Array<{ id: string }>).map((t) => t.id));
-  const referencedToolIds = new Set();
-  const missingTools = [];
+  const referencedToolIds = new Set<string>();
+  const missingTools: string[] = [];
 
   if (fs.existsSync(agentsPath)) {
     const agents = readJson(agentsPath);

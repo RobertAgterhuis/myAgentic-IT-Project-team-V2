@@ -21,11 +21,21 @@ import path from 'path';
  * @param {string} content - Raw YAML content
  * @returns {object} Parsed flow definition
  */
-function parseFlowYaml(content: string) {
-  const result: Record<string, unknown> = {};
-  let currentKey = null;
-  let currentMode = null;
-  let modeKey = null;
+type ModeConfig = Record<string, string | string[]>;
+interface ParsedFlowYaml {
+  states?: string[];
+  full_flow?: string[];
+  structural_states?: string[];
+  events?: string[];
+  modes?: Record<string, ModeConfig>;
+  [key: string]: unknown;
+}
+
+function parseFlowYaml(content: string): ParsedFlowYaml {
+  const result: ParsedFlowYaml = {};
+  let currentKey: string | null = null;
+  let currentMode: string | null = null;
+  let modeKey: string | null = null;
 
   const lines = content.split('\n');
 
@@ -80,13 +90,20 @@ function parseFlowYaml(content: string) {
         .slice(colonIdx + 1)
         .trim();
 
-      if (propVal.length > 0 && propVal !== '') {
-        result.modes[currentMode][propName] = parseInlineValue(propVal);
+      if (!result.modes) {
+        result.modes = {};
+      }
+      if (!result.modes[currentMode]) {
+        result.modes[currentMode] = {};
+      }
+      const modeEntry = result.modes[currentMode];
+
+      if (propVal.length > 0) {
+        modeEntry[propName] = parseInlineValue(propVal) as string | string[];
         modeKey = null;
       } else {
-        // Property without inline value (array follows)
         modeKey = propName;
-        result.modes[currentMode][propName] = [];
+        modeEntry[propName] = [];
       }
       continue;
     }
@@ -94,7 +111,10 @@ function parseFlowYaml(content: string) {
     // Array item under mode property (indent 6, starts with "- ")
     if (indent === 6 && currentMode && modeKey && stripped.trimStart().startsWith('- ')) {
       const item = stripped.trimStart().slice(2).trim();
-      result.modes[currentMode][modeKey].push(item);
+      const modeEntry = result.modes?.[currentMode];
+      if (modeEntry && Array.isArray(modeEntry[modeKey])) {
+        (modeEntry[modeKey] as string[]).push(item);
+      }
       continue;
     }
 
@@ -152,25 +172,35 @@ function loadFlows(store: FlowStore, flowsPath?: string) {
   const parsed = parseFlowYaml(content);
 
   // Validate required sections
-  const required = ['states', 'full_flow', 'structural_states', 'modes', 'events'];
+  const required: Array<keyof ParsedFlowYaml> = [
+    'states',
+    'full_flow',
+    'structural_states',
+    'modes',
+    'events',
+  ];
   for (const key of required) {
     if (!parsed[key]) {
       throw new Error(`flows.yaml missing required section: ${key}`);
     }
   }
 
+  const states = Array.isArray(parsed.states) ? parsed.states : [];
+  const fullFlow = Array.isArray(parsed.full_flow) ? parsed.full_flow : [];
+  const structuralStates = Array.isArray(parsed.structural_states) ? parsed.structural_states : [];
+  const events = Array.isArray(parsed.events) ? parsed.events : [];
+  const modes = parsed.modes ?? {};
+
   // Validate that full_flow entries are in states
-  const stateSet = new Set(parsed.states as string[]);
-  for (const s of parsed.full_flow as string[]) {
+  const stateSet = new Set(states);
+  for (const s of fullFlow) {
     if (!stateSet.has(s)) {
       throw new Error(`full_flow references unknown state: ${s}`);
     }
   }
 
   // Validate mode phases reference real states
-  for (const [modeName, modeConfig] of Object.entries(
-    parsed.modes as Record<string, Record<string, unknown>>
-  ) as [string, Record<string, unknown>][]) {
+  for (const [modeName, modeConfig] of Object.entries(modes)) {
     if (!modeConfig.phases) {
       throw new Error(`Mode "${modeName}" missing phases property`);
     }
@@ -180,11 +210,11 @@ function loadFlows(store: FlowStore, flowsPath?: string) {
   }
 
   return {
-    states: parsed.states,
-    full_flow: parsed.full_flow,
-    structural_states: parsed.structural_states,
-    modes: parsed.modes,
-    events: parsed.events,
+    states,
+    full_flow: fullFlow,
+    structural_states: structuralStates,
+    modes,
+    events,
   };
 }
 

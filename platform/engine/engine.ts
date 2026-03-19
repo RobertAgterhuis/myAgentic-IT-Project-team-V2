@@ -35,11 +35,28 @@ import {
 import { runGate } from './gate-validator';
 import { runSprintGate } from './sprint-gate';
 import { loadTemplate } from './template-loader';
-import { createArtifactRegistrationHook } from './artifact-registration';
+import {
+  createArtifactRegistrationHook,
+  type ArtifactDeclaration,
+  type PhaseLineageConfig,
+} from './artifact-registration';
 import { ArtifactRegistry } from '../sdlc/artifacts';
 import { loadGovernancePolicies, type GovernancePoliciesConfig } from './governance-config';
 import { resolveIdentity, type ResolvedIdentity } from './identity';
 import type { ProjectContext } from './workspace/types';
+
+interface TemplateConfig {
+  name?: string;
+  modes?: Record<string, unknown>;
+  phaseArtifacts?: Record<string, ArtifactDeclaration[]>;
+  phaseLineage?: Record<string, PhaseLineageConfig>;
+  contractsDir?: string;
+  guardrailsDir?: string;
+  criticToPhase?: Record<string, unknown>;
+  phaseContracts?: Record<string, unknown>;
+  phaseGuardrails?: Record<string, unknown>;
+  decisionCategories?: Array<Record<string, unknown>>;
+}
 
 /**
  * Engine hook callbacks for extensibility without modifying the core loop.
@@ -126,9 +143,9 @@ function createEngine(options: Record<string, unknown>) {
   };
 
   // Load template manifest (defaults to 'sdlc')
-  let template = null;
+  let template: TemplateConfig | null = null;
   try {
-    template = loadTemplate(templateName, templatesDir);
+    template = loadTemplate(templateName, templatesDir) as unknown as TemplateConfig;
   } catch (_err) {
     // Template loading is optional — fall back to hardcoded defaults
     template = null;
@@ -156,7 +173,7 @@ function createEngine(options: Record<string, unknown>) {
   const mode = (sessionState && sessionState.mode) || 'CREATE';
 
   // Variable to hold the machine reference for autopersist closure
-  let machine = null;
+  let machine: StateMachine | null = null;
 
   // SSE bridge: forward state machine events to connected UI clients
   const sseForward =
@@ -215,7 +232,7 @@ function createEngine(options: Record<string, unknown>) {
     store,
     () => machine,
     sessionPath,
-    (serialized) => {
+    (serialized: Record<string, unknown>) => {
       sseForward('orchestrator:state_saved', {
         status: serialized.status,
         last_updated: serialized.last_updated,
@@ -264,8 +281,14 @@ function createEngine(options: Record<string, unknown>) {
    * @returns {{ from: string, to: string, timestamp: string }}
    */
   function advance(gateResult?: Record<string, unknown>) {
+    if (!machine) {
+      throw new Error('Engine machine is not initialized');
+    }
     const from = machine.state;
     const to = machine.nextState;
+    if (!to) {
+      throw new Error(`No valid transition target from state ${from}`);
+    }
 
     // Fire beforeTransition hooks (if any throws, abort + ERROR)
     for (const hook of resolvedHooks.beforeTransition) {
@@ -324,6 +347,9 @@ function createEngine(options: Record<string, unknown>) {
    * @param {string} reason
    */
   function error(reason: string) {
+    if (!machine) {
+      throw new Error('Engine machine is not initialized');
+    }
     const prevState = machine.state;
     machine.error(reason);
     for (const hook of resolvedHooks.onError) {
@@ -340,6 +366,9 @@ function createEngine(options: Record<string, unknown>) {
    * @returns {string} The state recovered to
    */
   function recover() {
+    if (!machine) {
+      throw new Error('Engine machine is not initialized');
+    }
     return machine.recover();
   }
 
@@ -348,6 +377,9 @@ function createEngine(options: Record<string, unknown>) {
    * @returns {object}
    */
   function status() {
+    if (!machine) {
+      throw new Error('Engine machine is not initialized');
+    }
     return {
       state: machine.state,
       mode: machine.mode,
@@ -369,6 +401,9 @@ function createEngine(options: Record<string, unknown>) {
    * @returns {object} Updated engine status
    */
   function stop() {
+    if (!machine) {
+      throw new Error('Engine machine is not initialized');
+    }
     archiveCurrentRun('STOPPED');
     machine.error('USER_STOPPED');
     sseForward('orchestrator:stopped', { state: machine.state, mode: machine.mode });
@@ -383,6 +418,9 @@ function createEngine(options: Record<string, unknown>) {
    * @param {{ component: string, reason: string, state?: string }} entry
    */
   function logDegradation(entry: { component: string; reason: string; state?: string }) {
+    if (!machine) {
+      throw new Error('Engine machine is not initialized');
+    }
     addDegradationEntry(store, { ...entry, state: entry.state || machine.state }, sessionPath);
     sseForward('orchestrator:degradation', { ...entry, state: entry.state || machine.state });
   }
@@ -394,6 +432,9 @@ function createEngine(options: Record<string, unknown>) {
    * @returns {object} Updated engine status
    */
   function pauseAtCheckpoint() {
+    if (!machine) {
+      throw new Error('Engine machine is not initialized');
+    }
     const serialized = machine.serialize();
     saveSessionState(store, serialized, sessionPath);
     saveTransitionComplete(store, sessionPath);
@@ -407,7 +448,7 @@ function createEngine(options: Record<string, unknown>) {
 
   /** Archive the current run into run-history.json (if non-trivial). */
   function archiveCurrentRun(endStatus: string) {
-    if (machine.history.length === 0) return; // nothing to archive
+    if (!machine || machine.history.length === 0) return; // nothing to archive
     const serialized = machine.serialize();
     saveRunHistory(
       store,
@@ -445,7 +486,7 @@ function createEngine(options: Record<string, unknown>) {
       smOpts.phases = phases;
       machine = new StateMachine(smOpts);
     } else {
-      machine = createStateMachine(newMode, null, smOpts);
+      machine = createStateMachine(newMode, undefined, smOpts);
     }
 
     // Persist the fresh state
@@ -465,6 +506,9 @@ function createEngine(options: Record<string, unknown>) {
    * @returns {{verdict: string, violations: Array, questionnaireRequests: Array, summary: object}}
    */
   function validateGate(deliverables: string[], opts: Record<string, unknown> = {}) {
+    if (!machine) {
+      throw new Error('Engine machine is not initialized');
+    }
     const criticState = machine.state;
     const gateOpts: Record<string, unknown> = { criticState, deliverables, ...opts };
     if (template) {
@@ -521,15 +565,24 @@ function createEngine(options: Record<string, unknown>) {
     }
 
     // M4: Emit governance audit event when governance is active
-    if (result.governance_report && governanceConfig.audit.log_governance_checks) {
+    const governanceReport = result.governance_report as
+      | {
+          mode?: string;
+          identity?: { user?: string } | null;
+          policies_evaluated?: number;
+          unsatisfied_count?: number;
+          timestamp?: string;
+        }
+      | undefined;
+    if (governanceReport && governanceConfig.audit.log_governance_checks) {
       sseForward('orchestrator:governance_check', {
         criticState,
-        mode: result.governance_report.mode,
-        identity: result.governance_report.identity?.user || 'unknown',
-        policies_evaluated: result.governance_report.policies_evaluated,
-        unsatisfied_count: result.governance_report.unsatisfied_count,
+        mode: governanceReport.mode,
+        identity: governanceReport.identity?.user || 'unknown',
+        policies_evaluated: governanceReport.policies_evaluated,
+        unsatisfied_count: governanceReport.unsatisfied_count,
         verdict: result.verdict,
-        timestamp: result.governance_report.timestamp,
+        timestamp: governanceReport.timestamp,
       });
     }
 

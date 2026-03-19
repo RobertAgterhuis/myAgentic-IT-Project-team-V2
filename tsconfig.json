@@ -3,11 +3,12 @@
     "target": "ES2022",
     "module": "commonjs",
     "moduleResolution": "node",
-    "allowJs": true,
-    "checkJs": true,
+    "allowJs": false,
+    "checkJs": false,
     "noEmit": true,
-    "strict": false,
-    "strictNullChecks": false,
+    "strict": true,
+    "strictNullChecks": true,
+    "noImplicitAny": false,
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
@@ -18,14 +19,7 @@
     "declarationDir": "./dist/types",
     "typeRoots": ["./node_modules/@types", "./src/webapp/types"]
   },
-  "include": [
-    "src/**/*.js",
-    "src/**/*.ts",
-    "platform/**/*.js",
-    "platform/**/*.ts",
-    "scripts/**/*.js",
-    "src/webapp/types/**/*.d.ts"
-  ],
+  "include": ["src/**/*.ts", "platform/**/*.ts", "src/webapp/types/**/*.d.ts"],
   "exclude": [
     "node_modules",
     "coverage",

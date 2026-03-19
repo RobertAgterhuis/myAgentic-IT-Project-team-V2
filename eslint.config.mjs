@@ -118,7 +118,6 @@ export default [
   {
     files: [
       'src/webapp/mcp-server.ts',
-      'src/webapp/server.ts',
     ],
     rules: {
       '@typescript-eslint/ban-ts-comment': 'off',

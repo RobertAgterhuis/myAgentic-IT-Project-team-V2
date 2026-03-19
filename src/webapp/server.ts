@@ -23,6 +23,7 @@ import { AuthManager, createAuthMiddleware, loadAuthConfig } from './auth';
 import {
   PORT,
   HOST,
+  TRUST_PROXY,
   WEBAPP_DIR,
   PROJECT_ROOT,
   BUSINESS_DOCS,
@@ -46,11 +47,14 @@ import {
   STORAGE_PROVIDER,
   STORAGE_PATH,
   REDIS_URL,
+  QUEUE_PROVIDER,
+  SESSION_STORE,
 } from './config';
 import { createStorageProvider } from '../../platform/engine/persistence';
 import type { StorageProvider } from '../../platform/engine/persistence';
 import { getRedisConnection, createRedisConnection } from './redis';
 import { createRedisPubSubSSEManager } from './sse-manager-redis';
+import { hasAuthConfigured, validateProfile } from './runtime-profiles';
 
 import { buildApp } from './app';
 import type { ServerContext } from './context';
@@ -244,6 +248,46 @@ function assertStartupSecurityModel(): void {
   });
 }
 
+function validateStartupRuntimeProfile(host: string = HOST): void {
+  const validation = validateProfile({
+    nodeEnv: process.env.NODE_ENV,
+    host,
+    storageProvider: STORAGE_PROVIDER,
+    queueProvider: QUEUE_PROVIDER,
+    sessionStore: SESSION_STORE,
+    redisUrl: REDIS_URL,
+    hasAuth: hasAuthConfigured({
+      githubClientId: process.env.GITHUB_CLIENT_ID,
+      apiKey: process.env.API_KEY,
+    }),
+    trustProxy: TRUST_PROXY,
+  });
+
+  for (const warning of validation.warnings) {
+    structuredLog('warn', 'startup_runtime_profile_warning', {
+      profile: validation.profile,
+      warning,
+    });
+  }
+
+  if (!validation.valid) {
+    throw Object.assign(
+      new Error(
+        `Runtime profile '${validation.profile}' is invalid: ${validation.errors.join(' | ')}`
+      ),
+      {
+        code: 'RUNTIME_PROFILE_INVALID',
+        profile: validation.profile,
+      }
+    );
+  }
+
+  structuredLog('info', 'startup_runtime_profile_validated', {
+    profile: validation.profile,
+    warnings: validation.warnings.length,
+  });
+}
+
 /* ── Typed Server Context (M30-002) ───────────────────────────── */
 
 const ctx: ServerContext = {
@@ -357,8 +401,17 @@ const server = {
 
     createApp()
       .then(async (app) => {
+        validateStartupRuntimeProfile(resolvedHost);
         await initStorageProvider().catch((err: Error) => {
           structuredLog('error', 'storage_provider_init_failed', { error: err.message });
+          if (isProductionContext()) {
+            structuredLog('error', 'startup_aborted_production_storage_required', {
+              host: resolvedHost,
+              nodeEnv: process.env.NODE_ENV,
+              error: err.message,
+            });
+            throw err;
+          }
         });
         await app.listen({ port, host: resolvedHost });
         resolvedCb?.();
@@ -399,6 +452,7 @@ const server = {
 /* istanbul ignore next */
 if (require.main === module) {
   try {
+    validateStartupRuntimeProfile();
     assertStartupSecurityModel();
   } catch (err) {
     const e = err as Error & { code?: string };
@@ -542,4 +596,5 @@ export {
   createApp,
   getNodeServer,
   ctx,
+  validateStartupRuntimeProfile,
 };

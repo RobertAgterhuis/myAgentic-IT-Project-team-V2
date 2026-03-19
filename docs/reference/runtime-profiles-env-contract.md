@@ -203,7 +203,11 @@ The `runtime-profiles` module provides:
 - `validateProfile()` — checks provider combinations against the profile and returns errors/warnings.
 - `hasAuthConfigured()` — checks for valid auth configuration.
 
-Startup code should call `validateProfile()` and abort with exit code 1 if `.valid === false`.
+Startup is enforced in [src/webapp/server.ts](../../src/webapp/server.ts) via `validateStartupRuntimeProfile()`,
+which calls `validateProfile()` before bind and aborts with exit code 1 if `.valid === false`.
+
+CI also includes a dedicated runtime profile contract gate in
+[.github/workflows/ci.yml](../../.github/workflows/ci.yml) to run profile validation tests on every PR.
 
 ---
 

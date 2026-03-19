@@ -98,7 +98,9 @@ Decisions Manager web application.
 - **MCP integration** — MCP server uses `@modelcontextprotocol/sdk` for
   cross-IDE support via stdio transport.
 - **Store abstraction** — All filesystem I/O goes through the Store interface.
-  `FileStore` for production, `InMemoryStore` for testing.
+  `FileStore` for local development, `SqliteStore` for production
+  (`STORAGE_PROVIDER=sqlite`), `InMemoryStore` for testing. The active backend
+  is selected by the `StorageProvider` abstraction in `platform/engine/persistence`.
 - **GitHub OAuth + RBAC** — `auth.ts` handles GitHub OAuth authentication;
   role-based access control enforces per-endpoint permissions.
 - **Optional Redis** — Redis is used for session storage (`session-store-redis.ts`),
@@ -112,8 +114,12 @@ Decisions Manager web application.
 - **Shared file locking** — All JSON write paths are serialized per file via
   `withFileLock()` from `file-lock.ts`. Uses promise-chaining (no OS-level
   locks) to prevent concurrent write corruption.
-- **Localhost only** — Server binds to `127.0.0.1:3000`. No external network
-  exposure.
+- **Configurable network binding** — Binds to `127.0.0.1:3000` by default (local
+  development). Production deployments may bind to non-local addresses; doing so
+  requires explicit `TRUST_PROXY` and at least one configured auth mechanism
+  (`GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET` or `API_KEY`). All non-local
+  `/api/*` requests require valid credentials. The runtime profile contract is
+  validated at startup before bind.
 - **React SPA** — Vite + React + TypeScript front-end in `src/webapp/ui/`.
   Built with TanStack Query, Zustand, and Tailwind CSS.
 - **Structured logging** — pino JSON logger for structured request/error logging.

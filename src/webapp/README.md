@@ -108,11 +108,14 @@ All configuration is environment-based. See `src/webapp/config.ts` for parsed de
 ### Startup Behavior
 
 - **Local development** (`localhost` binding, `NODE_ENV !== production`):
+  - Runtime profile contract is validated at startup; local-dev profile allows tolerant startup
   - Storage provider init failure logs warning but does not exit
   - Missing Redis/auth is allowed; system continues with fallback modes
 
 - **Production** (`non-localhost` binding or `NODE_ENV=production`):
+  - Runtime profile contract is validated before bind; invalid profile combinations abort startup
   - Requires auth: `GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET` OR `API_KEY` (minimum 24 chars)
+  - Requires explicit `TRUST_PROXY` configuration for production profiles
   - Storage provider init failure **aborts startup** (exit code 1)
   - No fallback to degraded mode
 

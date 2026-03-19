@@ -63,7 +63,7 @@ The system supports explicit runtime profiles for different deployment contexts:
 - **Sessions:** SQLite in `.agentic/sessions.db`
 - **Redis:** Not required
 - **Startup behavior:** Tolerates missing services; continues with fallback modes
-- **Auth:** GitHub OAuth optional; non-local access allowed without explicit key
+- **Auth:** GitHub OAuth optional for localhost development; non-local binding requires OAuth or API_KEY
 - **Characteristics:** Zero-config, ideal for single-operator development
 
 ### CI/Test
@@ -85,7 +85,7 @@ The system supports explicit runtime profiles for different deployment contexts:
 - **Redis:** Optional for pub/sub and metrics
 - **Startup behavior:** **Fails (exit 1) if storage provider cannot initialize** — no fallback allowed
 - **Auth:** Requires GitHub OAuth OR API_KEY (minimum 24 characters)
-- **Network:** Non-localhost binding requires `TRUST_PROXY`, `API_KEY`, or OAuth configured
+- **Network:** Runtime profile contract is validated at startup; non-localhost requires explicit `TRUST_PROXY` and auth
 - **Characteristics:** Single-instance deployment with durable state
 
 ### Production (Distributed)

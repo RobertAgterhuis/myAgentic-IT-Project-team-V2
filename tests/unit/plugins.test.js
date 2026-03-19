@@ -25,7 +25,10 @@ async function buildTestApp(plugins = []) {
   }
   // Simple echo route for testing
   app.get('/test', async () => ({ ok: true }));
+  app.get('/api/test', async () => ({ ok: true }));
+  app.get('/api/health', async () => ({ status: 'ok' }));
   app.post('/test', async (request) => ({ body: request.body }));
+  app.post('/api/test', async (request) => ({ body: request.body }));
   await app.ready();
   return app;
 }
@@ -63,6 +66,7 @@ describe('M30-005: securityHeadersPlugin', () => {
     const csp = res.headers['content-security-policy'];
     expect(csp).toContain("default-src 'self'");
     expect(csp).toContain("object-src 'none'");
+    expect(csp).not.toContain('unsafe-inline');
   });
 
   it('sets Permissions-Policy', async () => {
@@ -149,14 +153,14 @@ describe('M30-005: rateLimitPlugin', () => {
       const app = await buildTestApp([[rateLimitPlugin, { max: 2, timeWindow: '1 minute' }]]);
 
       // First two POST requests should succeed
-      const r1 = await app.inject({ method: 'POST', url: '/test', payload: {} });
+      const r1 = await app.inject({ method: 'POST', url: '/api/test', payload: {} });
       expect(r1.statusCode).toBe(200);
 
-      const r2 = await app.inject({ method: 'POST', url: '/test', payload: {} });
+      const r2 = await app.inject({ method: 'POST', url: '/api/test', payload: {} });
       expect(r2.statusCode).toBe(200);
 
       // Third POST should be rate-limited
-      const r3 = await app.inject({ method: 'POST', url: '/test', payload: {} });
+      const r3 = await app.inject({ method: 'POST', url: '/api/test', payload: {} });
       expect(r3.statusCode).toBe(429);
       const body = JSON.parse(r3.body);
       expect(body.code).toBe('RATE_LIMITED');
@@ -168,7 +172,7 @@ describe('M30-005: rateLimitPlugin', () => {
     }
   });
 
-  it('allows GET requests through the allowList', async () => {
+  it('allows non-API GET requests through the allowList', async () => {
     const prev = process.env.NODE_ENV;
     process.env.NODE_ENV = 'production';
     try {
@@ -183,6 +187,32 @@ describe('M30-005: rateLimitPlugin', () => {
 
       const r3 = await app.inject({ method: 'GET', url: '/test' });
       expect(r3.statusCode).toBe(200);
+
+      await app.close();
+    } finally {
+      process.env.NODE_ENV = prev;
+    }
+  });
+
+  it('rate-limits GET requests on API routes and exempts /api/health', async () => {
+    const prev = process.env.NODE_ENV;
+    process.env.NODE_ENV = 'production';
+    try {
+      const app = await buildTestApp([[rateLimitPlugin, { max: 1, timeWindow: '1 minute' }]]);
+
+      const api1 = await app.inject({ method: 'GET', url: '/api/test' });
+      expect(api1.statusCode).toBe(200);
+
+      const api2 = await app.inject({ method: 'GET', url: '/api/test' });
+      expect(api2.statusCode).toBe(429);
+
+      const h1 = await app.inject({ method: 'GET', url: '/api/health' });
+      const h2 = await app.inject({ method: 'GET', url: '/api/health' });
+      const h3 = await app.inject({ method: 'GET', url: '/api/health' });
+
+      expect(h1.statusCode).toBe(200);
+      expect(h2.statusCode).toBe(200);
+      expect(h3.statusCode).toBe(200);
 
       await app.close();
     } finally {

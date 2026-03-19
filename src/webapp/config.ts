@@ -18,6 +18,31 @@ export const HOST: string =
     ? process.env.HOST.trim()
     : '127.0.0.1';
 
+export type TrustedProxyConfig = boolean | number | string | string[];
+
+export function parseTrustedProxySetting(raw: string | undefined): TrustedProxyConfig {
+  if (!raw || !raw.trim()) return false;
+
+  const value = raw.trim();
+  const lower = value.toLowerCase();
+  if (lower === 'false' || lower === 'off' || lower === 'no') return false;
+  if (lower === 'true' || lower === 'on' || lower === 'yes') return true;
+
+  if (/^\d+$/.test(value)) return Number(value);
+
+  if (value.includes(',')) {
+    const list = value
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean);
+    return list.length > 0 ? list : false;
+  }
+
+  return value;
+}
+
+export const TRUST_PROXY: TrustedProxyConfig = parseTrustedProxySetting(process.env.TRUST_PROXY);
+
 export const WEBAPP_DIR = __dirname;
 export const PROJECT_ROOT = path.resolve(WEBAPP_DIR, '..', '..');
 export const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');

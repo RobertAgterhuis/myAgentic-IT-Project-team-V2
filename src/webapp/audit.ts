@@ -123,4 +123,67 @@ export class AuditTrail {
       summary: `mode=${entry.mode} policies=${entry.policiesEvaluated} unsatisfied=${entry.unsatisfiedCount} verdict=${entry.verdict}`,
     });
   }
+
+  /**
+   * Log an API key authentication event (M1#658: M2M API security).
+   * Tracks all API key authentication attempts (success / failed / blocked).
+   *
+   * @param entry - API key auth event details
+   */
+  logApiKeyAuth(entry: {
+    success: boolean;
+    apiKeyId: string; // Hashed/masked identifier
+    method: string; // HTTP method
+    route: string; // API endpoint
+    reason?: string; // Why blocked/failed (if applicable)
+    clientIp?: string;
+    userAgent?: string;
+  }): void {
+    const operation = entry.success ? 'API_KEY_AUTH_SUCCESS' : 'API_KEY_AUTH_FAILED';
+    const summary = [
+      `method=${entry.method}`,
+      `route=${entry.route}`,
+      entry.reason ? `reason=${entry.reason}` : '',
+      entry.clientIp ? `ip=${entry.clientIp}` : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    this.log({
+      operation,
+      entityType: 'auth_event',
+      entityId: entry.apiKeyId,
+      user: 'api-client',
+      summary,
+    });
+  }
+
+  /**
+   * Log OAuth authentication event.
+   * Tracks successful and failed OAuth attempts, MFA events.
+   */
+  logOAuthAuth(entry: {
+    success: boolean;
+    userId?: string;
+    provider: string; // 'github', etc.
+    reason?: string; // Why failed (if applicable)
+    clientIp?: string;
+  }): void {
+    const operation = entry.success ? 'OAUTH_AUTH_SUCCESS' : 'OAUTH_AUTH_FAILED';
+    const summary = [
+      `provider=${entry.provider}`,
+      entry.reason ? `reason=${entry.reason}` : '',
+      entry.clientIp ? `ip=${entry.clientIp}` : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    this.log({
+      operation,
+      entityType: 'auth_event',
+      entityId: entry.userId || null,
+      user: entry.userId || 'unknown',
+      summary,
+    });
+  }
 }

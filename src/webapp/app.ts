@@ -31,6 +31,7 @@ import type { AuthenticatedRequest } from './auth';
 import { structuredLog } from './middleware';
 import { errorResponse } from './utils/errors';
 import { securityHeadersPlugin, rateLimitPlugin, bodyParserPlugin } from './plugins';
+import { TRUST_PROXY } from './config';
 
 /* ── Fastify type augmentation ────────────────────────────────── */
 
@@ -56,6 +57,7 @@ export interface AppOptions {
 
 export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
   const { ctx } = options;
+  const isLocalBinding = ctx.HOST === '127.0.0.1' || ctx.HOST === 'localhost' || ctx.HOST === '::1';
 
   const app = Fastify({
     logger: {
@@ -65,7 +67,7 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
           ? { target: 'pino-pretty', options: { colorize: true } }
           : undefined,
     },
-    trustProxy: true,
+    trustProxy: TRUST_PROXY,
     requestTimeout: 30000,
     keepAliveTimeout: 5000,
   });
@@ -166,14 +168,14 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
           return;
         }
       }
-    } else if (pathname.startsWith('/api') && request.method !== 'GET') {
-      // Fallback: API key guard when auth disabled
-      if (ctx.HOST !== '127.0.0.1' && ctx.HOST !== 'localhost') {
+    } else {
+      // Fallback: on non-local hosts, every API route must be protected.
+      if (pathname.startsWith('/api') && !isLocalBinding) {
         const expected = process.env.API_KEY;
         if (!expected || request.headers['x-api-key'] !== expected) {
           reply
-            .status(403)
-            .send(errorResponse('FORBIDDEN', 'API key required for mutating requests'));
+            .status(401)
+            .send(errorResponse('UNAUTHORIZED', 'API key required for non-local API access'));
           return;
         }
       }

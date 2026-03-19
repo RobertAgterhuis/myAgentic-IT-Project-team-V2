@@ -1,6 +1,6 @@
 /* AUTO-GENERATED — do not edit manually. */
 /* Source: src/webapp/brand/design-tokens.json (v2.1.0) */
-/* Generated: 2026-03-18 */
+/* Generated: 2026-03-19 */
 
 @theme {
   --color-background: hsl(210 44% 94%);
@@ -14,7 +14,7 @@
   --color-secondary: hsl(185 77% 26%);
   --color-secondary-foreground: hsl(0 0% 100%);
   --color-muted: hsl(210 29% 78%);
-  --color-muted-foreground: hsl(212 19% 30%);
+  --color-muted-foreground: hsl(210 21% 33%);
   --color-accent: hsl(32 95% 44%);
   --color-accent-foreground: hsl(0 0% 100%);
   --color-destructive: hsl(4 59% 45%);

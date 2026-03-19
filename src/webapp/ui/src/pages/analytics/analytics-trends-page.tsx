@@ -115,6 +115,26 @@ export default function AnalyticsTrendChartsPage() {
   const isLoading = trendsLoading || agentsLoading;
   const error = trendsError || agentsError;
 
+  const runtimeTelemetry = useMemo(() => {
+    if (!agentPerf || agentPerf.length === 0) {
+      return {
+        totalTokens: 0,
+        avgLatencyMs: 0,
+        avgRetries: 0,
+        providerCount: 0,
+      };
+    }
+
+    const totalTokens = agentPerf.reduce((sum, agent) => sum + agent.total_tokens, 0);
+    const avgLatencyMs =
+      agentPerf.reduce((sum, agent) => sum + agent.avg_provider_latency_ms, 0) / agentPerf.length;
+    const avgRetries =
+      agentPerf.reduce((sum, agent) => sum + agent.avg_model_retries, 0) / agentPerf.length;
+    const providerCount = new Set(agentPerf.flatMap((agent) => agent.providers)).size;
+
+    return { totalTokens, avgLatencyMs, avgRetries, providerCount };
+  }, [agentPerf]);
+
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
@@ -150,25 +170,6 @@ export default function AnalyticsTrendChartsPage() {
     velocityData.length > 0
       ? velocityData.reduce((s, v) => s + v.velocity_ratio, 0) / velocityData.length
       : 0;
-  const runtimeTelemetry = useMemo(() => {
-    if (!agentPerf || agentPerf.length === 0) {
-      return {
-        totalTokens: 0,
-        avgLatencyMs: 0,
-        avgRetries: 0,
-        providerCount: 0,
-      };
-    }
-
-    const totalTokens = agentPerf.reduce((sum, agent) => sum + agent.total_tokens, 0);
-    const avgLatencyMs =
-      agentPerf.reduce((sum, agent) => sum + agent.avg_provider_latency_ms, 0) / agentPerf.length;
-    const avgRetries =
-      agentPerf.reduce((sum, agent) => sum + agent.avg_model_retries, 0) / agentPerf.length;
-    const providerCount = new Set(agentPerf.flatMap((agent) => agent.providers)).size;
-
-    return { totalTokens, avgLatencyMs, avgRetries, providerCount };
-  }, [agentPerf]);
 
   return (
     <div className="p-6 space-y-6" data-testid="analytics-trends-page">

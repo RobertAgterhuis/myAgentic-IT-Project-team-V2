@@ -152,6 +152,75 @@ describe('M5 Epic #665 orchestrator workflow automation', () => {
     expect(body.status.mode).toBe('AUDIT');
   });
 
+  it('automates state transitions across status, advance, error, recover, and reset', async () => {
+    await inject('POST', '/api/orchestrator/command', {
+      command: 'CREATE',
+      platform: 'copilot',
+      project: 'M5-Orchestrator-Transitions',
+    });
+
+    const initial = await inject('GET', '/api/orchestrator/status');
+    expect(initial.statusCode).toBe(200);
+    expect(initial.json().state).toBe('IDLE');
+    expect(initial.json().mode).toBe('CREATE');
+
+    const advanced = await inject('POST', '/api/orchestrator/advance', {});
+    expect(advanced.statusCode).toBe(200);
+    expect(advanced.json().ok).toBe(true);
+    expect(advanced.json().status.state).not.toBe('IDLE');
+
+    const errored = await inject('POST', '/api/orchestrator/error', {
+      reason: 'forced by integration test',
+    });
+    expect(errored.statusCode).toBe(200);
+    expect(errored.json().ok).toBe(true);
+    expect(errored.json().status.state).toBe('ERROR');
+
+    const recovered = await inject('POST', '/api/orchestrator/recover');
+    expect(recovered.statusCode).toBe(200);
+    expect(recovered.json().ok).toBe(true);
+    expect(recovered.json().status.state).not.toBe('ERROR');
+
+    const reset = await inject('POST', '/api/orchestrator/reset', {
+      mode: 'AUDIT',
+      phases: ['ONBOARDING', 'PHASE_2'],
+    });
+    expect(reset.statusCode).toBe(200);
+    expect(reset.json().ok).toBe(true);
+    expect(reset.json().status.mode).toBe('AUDIT');
+  });
+
+  it('exposes stop + run-history paths for automation observability', async () => {
+    await inject('POST', '/api/orchestrator/command', {
+      command: 'CREATE',
+      platform: 'copilot',
+      project: 'M5-Orchestrator-Stop',
+    });
+    await inject('POST', '/api/orchestrator/advance', {});
+
+    const stop = await inject('POST', '/api/orchestrator/stop');
+    expect(stop.statusCode).toBe(200);
+    expect(stop.json().ok).toBe(true);
+    expect(stop.json().stopped).toBe(true);
+    expect(stop.json().status.state).toBe('ERROR');
+
+    const history = await inject('GET', '/api/orchestrator/run-history');
+    expect(history.statusCode).toBe(200);
+    expect(history.json().ok).toBe(true);
+    expect(Array.isArray(history.json().runs)).toBe(true);
+  });
+
+  it('rejects recover when engine is not in error state', async () => {
+    await inject('POST', '/api/orchestrator/reset', {
+      mode: 'CREATE',
+    });
+
+    const res = await inject('POST', '/api/orchestrator/recover');
+    expect(res.statusCode).toBe(400);
+    expect(res.json().code).toBe('INTERNAL_ERROR');
+    expect(res.json().message).toContain('Can only recover from ERROR state');
+  });
+
   it('rejects unknown orchestrator commands with clear error', async () => {
     const res = await inject('POST', '/api/orchestrator/command', {
       command: 'UNKNOWN_MODE',

@@ -118,7 +118,6 @@ export default [
   {
     files: [
       'src/webapp/mcp-server.ts',
-      'src/webapp/route-adapter.ts',
       'src/webapp/routes/misc.ts',
       'src/webapp/routes/orchestrator.ts',
       'src/webapp/server.ts',

@@ -208,6 +208,42 @@ function safeWriteSync(
   });
 }
 
+function isLocalBinding(host: string): boolean {
+  return host === '127.0.0.1' || host === 'localhost' || host === '::1';
+}
+
+/**
+ * Determine if startup should enforce production-grade requirements.
+ * Returns true if NODE_ENV=production or the server is bound to a non-local address.
+ */
+function isProductionContext(): boolean {
+  if (process.env.NODE_ENV === 'production') return true;
+  return !isLocalBinding(HOST);
+}
+
+function assertStartupSecurityModel(): void {
+  if (isLocalBinding(HOST)) return;
+  if (_authManager) return;
+
+  const apiKey = process.env.API_KEY?.trim();
+  if (!apiKey) {
+    throw Object.assign(new Error('Non-local startup requires configured auth or API_KEY'), {
+      code: 'NON_LOCAL_AUTH_UNCONFIGURED',
+    });
+  }
+
+  if (apiKey.length < 24) {
+    throw Object.assign(new Error('API_KEY must be at least 24 characters for non-local startup'), {
+      code: 'API_KEY_TOO_WEAK',
+    });
+  }
+
+  structuredLog('warn', 'non_local_api_key_fallback_enabled', {
+    host: HOST,
+    apiKeyMinLength: 24,
+  });
+}
+
 /* ── Typed Server Context (M30-002) ───────────────────────────── */
 
 const ctx: ServerContext = {
@@ -362,6 +398,18 @@ const server = {
 
 /* istanbul ignore next */
 if (require.main === module) {
+  try {
+    assertStartupSecurityModel();
+  } catch (err) {
+    const e = err as Error & { code?: string };
+    structuredLog('error', 'startup_rejected_security_model', {
+      host: HOST,
+      error: e.message,
+      code: e.code || 'STARTUP_SECURITY_ERROR',
+    });
+    process.exit(1);
+  }
+
   initStorageProvider()
     .then(() => createApp())
     .then(async (app) => {
@@ -374,12 +422,30 @@ if (require.main === module) {
         storageProvider: STORAGE_PROVIDER,
         docs: `http://${HOST}:${PORT}/docs`,
       });
-      if (!_authManager && HOST !== '127.0.0.1' && HOST !== 'localhost' && !process.env.API_KEY)
-        structuredLog('warn', 'auth_guard_no_api_key', { host: HOST });
     })
     .catch((err: Error) => {
-      structuredLog('error', 'storage_provider_init_failed', { error: err.message });
-      // Fall back to starting without StorageProvider — FileStore still works
+      const inProduction = isProductionContext();
+      const logLevel = inProduction ? 'error' : 'warn';
+      const logEvent = inProduction
+        ? 'production_storage_init_failed'
+        : 'storage_provider_init_failed';
+      structuredLog(logLevel, logEvent, {
+        error: err.message,
+        host: HOST,
+        nodeEnv: process.env.NODE_ENV,
+      });
+
+      if (inProduction) {
+        // In production context, fail startup instead of falling back
+        structuredLog('error', 'startup_aborted_production_storage_required', {
+          host: HOST,
+          nodeEnv: process.env.NODE_ENV,
+          error: err.message,
+        });
+        process.exit(1);
+      }
+
+      // In local development, fall back to starting without StorageProvider (FileStore still works)
       createApp()
         .then((app) => app.listen({ port: PORT, host: HOST }))
         .then(() => {

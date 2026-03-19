@@ -50,6 +50,59 @@ agent completes.
 
 ---
 
+## Runtime Profiles
+
+The system supports explicit runtime profiles for different deployment contexts:
+
+### Local Development (Default)
+
+**Usage:** `npm start` (no environment variables needed)
+
+- **Storage:** File-based JSON in `BusinessDocs/` folder
+- **Queue:** In-memory (does not survive restart)
+- **Sessions:** SQLite in `.agentic/sessions.db`
+- **Redis:** Not required
+- **Startup behavior:** Tolerates missing services; continues with fallback modes
+- **Auth:** GitHub OAuth optional; non-local access allowed without explicit key
+- **Characteristics:** Zero-config, ideal for single-operator development
+
+### CI/Test
+
+**Usage:** `NODE_ENV=test npm test`
+
+- Same as Local Development
+- Rate limiting disabled in test environments
+- All providers use in-memory or local file storage
+- No external services required
+
+### Production (Single Node)
+
+**Usage:** `NODE_ENV=production STORAGE_PROVIDER=sqlite STORAGE_PATH=/data/agentic.db npm start`
+
+- **Storage:** SQLite (persistent database)
+- **Queue:** Persistent (on-disk state)
+- **Sessions:** SQLite
+- **Redis:** Optional for pub/sub and metrics
+- **Startup behavior:** **Fails (exit 1) if storage provider cannot initialize** — no fallback allowed
+- **Auth:** Requires GitHub OAuth OR API_KEY (minimum 24 characters)
+- **Network:** Non-localhost binding requires `TRUST_PROXY`, `API_KEY`, or OAuth configured
+- **Characteristics:** Single-instance deployment with durable state
+
+### Production (Distributed)
+
+**Usage:** Set `QUEUE_PROVIDER=bullmq`, `SESSION_STORE=redis`, `REDIS_URL=redis://...`
+
+- **Storage:** SQLite (shared database)
+- **Queue:** BullMQ (Redis-backed, survives restart, enables concurrency)
+- **Sessions:** Redis (distributed, shared across instances)
+- **Redis:** Required; startup fails if `REDIS_URL` is set but unreachable
+- **Startup behavior:** Strict fail-closed semantics; all services must be available
+- **Auth:** Requires GitHub OAuth OR API_KEY
+- **Network:** Load balancer in front; `TRUST_PROXY` must be configured
+- **Characteristics:** Multi-instance high-availability, shared state, horizontal scale
+
+---
+
 ## Documentation
 
 | Document                                                  | Description                                          |

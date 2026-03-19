@@ -120,6 +120,72 @@ Decisions Manager web application.
 
 ---
 
+## Runtime Profiles
+
+The system supports four explicit runtime profiles, determined by environment variables and network binding:
+
+### Local Development
+
+- **Detection:** `NODE_ENV !== 'production'` AND localhost binding (`127.0.0.1`, `localhost`, `::1`)
+- **Storage:** `STORAGE_PROVIDER=file` (default)
+- **Queue:** `QUEUE_PROVIDER=memory` (default)
+- **Sessions:** `SESSION_STORE=sqlite` (default)
+- **Redis:** Not required; omit `REDIS_URL`
+- **Startup behavior:** Tolerates missing services; logs warnings but continues with fallback modes
+- **Best for:** Single-operator development, zero-config testing, debug workflows
+- **Example:** `npm start` (no env vars needed)
+
+### CI/Test
+
+- **Detection:** `NODE_ENV=test`
+- **Storage:** File-based (`.agentic/storage/`)
+- **Queue:** In-memory job queue
+- **Sessions:** SQLite or in-memory
+- **Redis:** Disabled
+- **Startup behavior:** No external service requirements; all operations in-process
+- **Rate limiting:** Disabled (only in test environments)
+- **Best for:** Automated test suites, CI pipelines
+- **Example:** `NODE_ENV=test npm test`
+
+### Production (Single Node)
+
+- **Detection:** `NODE_ENV=production` OR non-localhost binding (e.g., `HOST=0.0.0.0`)
+- **Storage:** `STORAGE_PROVIDER=sqlite` (required)
+- **Queue:** `QUEUE_PROVIDER=persistent` (default for production)
+- **Sessions:** `SESSION_STORE=sqlite` (or `redis` if `REDIS_URL` set)
+- **Redis:** Optional; enables `QUEUE_PROVIDER=bullmq` and Redis-backed sessions/pub-sub
+- **Startup behavior:** **Fails (exit 1) if `STORAGE_PROVIDER` initialization fails** — no fallback allowed
+- **Auth requirement:** `GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET` OR `API_KEY` (minimum 24 characters)
+- **Network:** Non-localhost binding requires `TRUST_PROXY` and auth; all non-local `/api/*` requests require valid credentials
+- **Best for:** Single-instance production deployments with durable state
+- **Example:** `NODE_ENV=production STORAGE_PROVIDER=sqlite STORAGE_PATH=/data/agentic.db npm start`
+
+### Production (Distributed)
+
+- **Detection:** Multi-instance setup with shared `REDIS_URL`
+- **Storage:** `STORAGE_PROVIDER=sqlite` (shared database, managed separately)
+- **Queue:** `QUEUE_PROVIDER=bullmq` (Redis-backed, enables horizontal parallelism)
+- **Sessions:** `SESSION_STORE=redis` (shared session store)
+- **Redis:** Required; `REDIS_URL` must point to accessible instance
+- **Startup behavior:** **Fails if any required service is unreachable** — strict fail-closed semantics
+- **Auth:** Requires `GITHUB_CLIENT_ID` + `GITHUB_CLIENT_SECRET` OR `API_KEY`
+- **Network:** Load balancer in front; instances register via Redis pub/sub; `TRUST_PROXY` must be configured
+- **Best for:** High-availability, multi-instance deployments, shared state across clusters
+- **Example:**
+
+```bash
+NODE_ENV=production \
+  STORAGE_PROVIDER=sqlite \
+  STORAGE_PATH=/shared-nfs/agentic.db \
+  QUEUE_PROVIDER=bullmq \
+  SESSION_STORE=redis \
+  REDIS_URL=redis://redis-primary:6379 \
+  TRUST_PROXY=1 \
+  npm start
+```
+
+---
+
 ## Module Reference
 
 ### file-lock.ts
@@ -978,12 +1044,21 @@ JSON array of command entries:
 
 ## Configuration
 
-The server uses environment variables and sensible defaults:
+The server uses environment variables and sensible defaults. See [src/webapp/README.md](../../src/webapp/README.md) for complete configuration table and runtime profile setup instructions.
 
-| Variable      | Default     | Description                     |
-| ------------- | ----------- | ------------------------------- |
-| `SERVER_PORT` | `3000`      | HTTP server port                |
-| `SERVER_HOST` | `127.0.0.1` | Bind address (always localhost) |
+Key environment variables:
+
+| Variable           | Default       | Description                                                                    |
+| ------------------ | ------------- | ------------------------------------------------------------------------------ |
+| `PORT`             | `3000`        | HTTP server port (1–65535 validated at startup)                                |
+| `HOST`             | `127.0.0.1`   | Bind address; non-local requires auth or API_KEY                               |
+| `NODE_ENV`         | `development` | Controls startup strictness; `production` enforces storage provider success    |
+| `STORAGE_PROVIDER` | `file`        | Storage backend: `file` (JSON) or `sqlite` (database)                          |
+| `QUEUE_PROVIDER`   | `memory`      | Job queue: `memory` (in-process), `persistent` (disk), `bullmq` (Redis)        |
+| `SESSION_STORE`    | `sqlite`      | Session storage: `sqlite` (embedded) or `redis` (distributed)                  |
+| `REDIS_URL`        | _(unset)_     | Redis connection; if set, enables Redis features; startup fails if unreachable |
+| `TRUST_PROXY`      | `false`       | Trusted proxy configuration (explicit security-by-default)                     |
+| `API_KEY`          | _(unset)_     | API-only authentication for non-local access (minimum 24 characters if set)    |
 
 All file paths are computed relative to the repository root. The server expects
 to be launched from the repository root directory or with the correct working
@@ -993,37 +1068,65 @@ directory.
 
 ## Deployment
 
-### Localhost (Production)
+Choose a deployment profile matching your environment. See [Runtime Profiles](#runtime-profiles) above for detailed setup.
+
+### Development
 
 ```bash
-# Install dependencies
 npm install
-
-# Start the server
 npm start
-# or:
-npx tsx src/webapp/server.ts
 ```
 
-The server is designed for **localhost use only**. Authentication (GitHub OAuth)
-and rate limiting are included, but TLS is not — a reverse proxy (nginx, Caddy)
-is required for any network-exposed deployment.
+Listens on `http://127.0.0.1:3000`. All services use in-process/file-based defaults.
 
-### Docker Compose (Full Stack)
-
-The platform runs as a 7-container Docker stack (app + analytics + i18n):
+### Single-Node Production
 
 ```bash
-# Create .env with local credentials (see .env.example)
-# MATOMO_DB_PASSWORD, MATOMO_DB_ROOT_PASSWORD, WEBLATE_ADMIN_PASSWORD, WEBLATE_DB_PASSWORD
+NODE_ENV=production \
+  STORAGE_PROVIDER=sqlite \
+  STORAGE_PATH=/data/agentic.db \
+  GITHUB_CLIENT_ID=$YOUR_GITHUB_CLIENT_ID \
+  GITHUB_CLIENT_SECRET=$YOUR_GITHUB_CLIENT_SECRET \
+  npm start
+```
 
-# Start all services (full-stack developer mode)
+**Important:** Storage provider init failure **aborts startup** with exit code 1 (fail-closed). No fallback mode.
+
+### Docker (Single Node)
+
+Dockerfile is provided in `infra/Dockerfile`.
+
+```bash
+docker build -t agentic-sdlc:latest -f infra/Dockerfile .
+
+docker run \
+  -e NODE_ENV=production \
+  -e STORAGE_PROVIDER=sqlite \
+  -e STORAGE_PATH=/data/agentic.db \
+  -e GITHUB_CLIENT_ID=$YOUR_GITHUB_CLIENT_ID \
+  -e GITHUB_CLIENT_SECRET=$YOUR_GITHUB_CLIENT_SECRET \
+  -v /data:/data \
+  -p 3000:3000 \
+  agentic-sdlc:latest
+```
+
+The container includes a HEALTHCHECK using `/api/health` and `/health` endpoints.
+
+### Docker Compose (Development Full Stack)
+
+The platform runs as a multi-container stack (app + analytics + i18n):
+
+```bash
+# Install all dependencies first
+npm install
+
+# Start full-stack developer mode (includes Matomo analytics and Weblate i18n)
 docker compose -f infra/docker-compose.dev.yml up --build -d
 
-# Or webapp only (end-users)
+# Or webapp + analytics only
 docker compose -f infra/docker-compose.webapp.yml up --build -d
 
-# Verify all containers are healthy
+# Verify health
 docker compose -f infra/docker-compose.dev.yml ps
 ```
 
@@ -1033,9 +1136,11 @@ docker compose -f infra/docker-compose.dev.yml ps
 | matomo + matomo-db + matomo-web      | 8080 | Privacy-first analytics |
 | weblate + weblate-db + weblate-cache | 8081 | Translation management  |
 
-### Process Management
+### Distributed Production (Multi-Instance with Redis)
 
-For persistent operation, use a process manager:
+See [Runtime Profiles](#runtime-profiles) for `production-distributed` configuration (BullMQ, Redis sessions, shared database).
+
+### Process Management
 
 ```bash
 # Using PM2
@@ -1110,11 +1215,45 @@ validation-messages, doc-snippets). Vendor evaluation:
 
 ## Security Model
 
+### Non-local API Access Policy
+
+- Localhost bindings (`127.0.0.1`, `localhost`, `::1`) are the default and are
+  intended for single-operator runtime.
+- For non-local bindings, startup now fails closed unless one approved security
+  mode is configured:
+  - GitHub OAuth auth middleware enabled, or
+  - `API_KEY` configured (minimum 24 characters).
+- When running non-local without OAuth, all `/api/**` routes require
+  `x-api-key` and requests are rejected with `401` if the key is missing or
+  invalid.
+- Rate limiting applies to API routes by default (including selected GET APIs);
+  only explicit low-risk exceptions are exempt (`/api/health`, `/api/events`).
+
+### Production Startup Requirements
+
+Startup is determined to be in a **production context** when:
+
+- `NODE_ENV=production`, or
+- Server is bound to a non-local address (`HOST` is not `127.0.0.1`, `localhost`, or `::1`)
+
+In production context:
+
+- **Storage provider initialization is mandatory.** If `initStorageProvider()` fails, startup aborts with `exit(1)`.
+- Fallback to file-only storage (degraded mode) is **not allowed**.
+- This prevents cases where the database is unreachable but the server starts anyway
+  and silently accepts requests destined for persistent storage that will never be saved.
+
+In local development:
+
+- Storage provider initialization failures log a warning but do not prevent startup.
+- The server can continue with file-based storage or other fallback modes.
+- This allows development and testing without a full infrastructure stack.
+
 ### HTTP Security Headers
 
 Every response includes: | Header | Value | |--------|-------| |
 `X-Content-Type-Options` | `nosniff` | | `X-Frame-Options` | `DENY` | |
-`Content-Security-Policy` | Strict CSP with inline script hash | |
+`Content-Security-Policy` | `default-src 'self'; script-src 'self'; style-src 'self'; ...` | |
 `Referrer-Policy` | `strict-origin-when-cross-origin` | | `Permissions-Policy` |
 Restricts camera, microphone, geolocation | | `Cross-Origin-Opener-Policy` |
 `same-origin` |

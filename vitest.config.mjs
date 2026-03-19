@@ -70,7 +70,6 @@ export default defineConfig({
         'src/webapp/start.ps1',
         'src/webapp/services/index.ts',
         'src/webapp/services/types.ts',
-        'src/webapp/server.legacy.ts',
         'platform/sdlc/adapters/providers/**',
         'platform/engine/flows.yaml',
         '**/*.d.ts',

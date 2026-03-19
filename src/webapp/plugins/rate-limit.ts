@@ -4,8 +4,9 @@
  * Fastify plugin — Rate limiting (M30-005, M33-005).
  *
  * Wraps `@fastify/rate-limit` with project-specific defaults:
- *  - 30 requests / minute for mutating methods
- *  - GET requests and health checks are exempt
+ *  - 30 requests / minute for API routes by default
+ *  - Explicit exceptions for health and SSE endpoints only
+ *  - Non-API routes are exempt from this API abuse guard
  *  - Custom error body matching the platform error schema
  *  - Uses request.ip which respects Fastify's trustProxy setting
  *    for correct X-Forwarded-For extraction behind reverse proxies
@@ -17,6 +18,8 @@ import fp from 'fastify-plugin';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import fastifyRateLimit from '@fastify/rate-limit';
 import { errorResponse } from '../utils/errors';
+
+const EXEMPT_API_PATHS = new Set(['/api/health', '/api/events']);
 
 export interface RateLimitPluginOptions {
   /** Maximum requests per window (default: 30). */
@@ -35,8 +38,13 @@ async function rateLimitPlugin(app: FastifyInstance, opts: RateLimitPluginOption
     timeWindow: opts.timeWindow ?? '1 minute',
     keyGenerator: (req: FastifyRequest) => req.ip, // respects trustProxy / X-Forwarded-For
     allowList: (req) => {
-      // Don't rate-limit GET requests or health checks
-      return req.method === 'GET' || req.url === '/api/health';
+      const pathname = req.url.split('?')[0];
+
+      // Restrict this guard to API surface only.
+      if (!pathname.startsWith('/api')) return true;
+
+      // Explicitly exempt low-risk internal routes.
+      return EXEMPT_API_PATHS.has(pathname);
     },
     errorResponseBuilder: (_req, context) => {
       return {

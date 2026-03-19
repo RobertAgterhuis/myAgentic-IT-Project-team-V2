@@ -170,20 +170,21 @@ or an IDE tool call.
 
 ## Technology Decisions
 
-| Concern           | Choice                    | Rationale                                                        |
-| ----------------- | ------------------------- | ---------------------------------------------------------------- |
-| HTTP server       | Fastify 5                 | Plugin architecture, JSON Schema validation, high performance    |
-| Authentication    | GitHub OAuth + RBAC       | Secure session-based auth with role-based permissions            |
-| Job queue         | BullMQ (optional)         | Redis-backed job queue with graceful degradation to synchronous  |
-| Data storage      | File-based JSON/Markdown  | No database required; human-readable; Git-trackable              |
-| Structured data   | better-sqlite3 (optional) | Embedded SQL for structured queries when needed                  |
-| Session store     | Redis or in-memory        | Redis for multi-instance, in-memory for single-instance          |
-| UI framework      | React 18 + Vite           | Fast HMR in dev; optimized production builds                     |
-| MCP transport     | stdio (JSON-RPC)          | IDE-native; no network port required                             |
-| Schema validation | Ajv + JSON Schema         | Shared validation between server and MCP; compile-time schemas   |
-| Testing           | Vitest                    | Fast, ESM-native, compatible with the project's TypeScript setup |
-| Logging           | pino                      | Structured JSON logging, high throughput                         |
-| Design tokens     | Custom build script       | Generates CSS custom properties from `design-tokens.json`        |
+| Concern           | Choice                    | Rationale                                                           |
+| ----------------- | ------------------------- | ------------------------------------------------------------------- |
+| HTTP server       | Fastify 5                 | Plugin architecture, JSON Schema validation, high performance       |
+| Authentication    | GitHub OAuth + RBAC       | Secure session-based auth with role-based permissions               |
+| Job queue         | BullMQ (optional)         | Redis-backed job queue with graceful degradation to synchronous     |
+| Data storage      | File / SQLite (pluggable) | Local dev: file-based in BusinessDocs/; production: SQLite or Redis |
+| Audit trail       | JSON/Markdown in Git      | Immutable history of all changes; human-readable; version tracked   |
+| Structured data   | better-sqlite3 (optional) | Embedded SQL for structured persistence when needed                 |
+| Session store     | Redis or SQLite           | Redis for multi-instance; SQLite for single-instance local dev      |
+| UI framework      | React 18 + Vite           | Fast HMR in dev; optimized production builds                        |
+| MCP transport     | stdio (JSON-RPC)          | IDE-native; no network port required                                |
+| Schema validation | Ajv + JSON Schema         | Shared validation between server and MCP; compile-time schemas      |
+| Testing           | Vitest                    | Fast, ESM-native, compatible with the project's TypeScript setup    |
+| Logging           | pino                      | Structured JSON logging, high throughput                            |
+| Design tokens     | Custom build script       | Generates CSS custom properties from `design-tokens.json`           |
 
 ---
 

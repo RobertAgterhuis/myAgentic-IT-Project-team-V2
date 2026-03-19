@@ -128,6 +128,14 @@ describe('Analytics API routes (M7 #375)', () => {
         duration_ms: 5000,
         success: true,
         attempt: 1,
+        provider: 'openai',
+        model: 'gpt-4.1',
+        provider_latency_ms: 250,
+        model_attempts: 2,
+        model_retries: 1,
+        prompt_tokens: 120,
+        completion_tokens: 80,
+        total_tokens: 200,
       });
 
       const st = getStore();
@@ -144,6 +152,83 @@ describe('Analytics API routes (M7 #375)', () => {
       expect(body.ok).toBe(true);
       expect(body.count).toBe(1);
       expect(body.data[0].agent_id).toBe('BA-01');
+      expect(body.data[0]).toMatchObject({
+        total_tokens: 200,
+        total_prompt_tokens: 120,
+        total_completion_tokens: 80,
+        avg_total_tokens: 200,
+        avg_provider_latency_ms: 250,
+        avg_model_attempts: 2,
+        avg_model_retries: 1,
+        providers: ['openai'],
+        models: ['gpt-4.1'],
+      });
+    });
+
+    it('aggregates telemetry across multiple providers for one agent', () => {
+      const metricsStore = createMetricsStore();
+      recordAgentPerformance(metricsStore, {
+        agent_id: 'BA-01',
+        agent_name: 'Business Analyst',
+        state: 'P1',
+        started_at: '',
+        ended_at: '',
+        duration_ms: 4000,
+        success: true,
+        attempt: 1,
+        provider: 'openai',
+        model: 'gpt-4.1',
+        provider_latency_ms: 200,
+        model_attempts: 1,
+        model_retries: 0,
+        prompt_tokens: 100,
+        completion_tokens: 50,
+        total_tokens: 150,
+      });
+      recordAgentPerformance(metricsStore, {
+        agent_id: 'BA-01',
+        agent_name: 'Business Analyst',
+        state: 'P1',
+        started_at: '',
+        ended_at: '',
+        duration_ms: 5000,
+        success: true,
+        attempt: 1,
+        provider: 'copilot',
+        model: 'gpt-4o',
+        provider_latency_ms: 500,
+        model_attempts: 2,
+        model_retries: 1,
+        prompt_tokens: 120,
+        completion_tokens: 80,
+        total_tokens: 200,
+      });
+
+      const st = getStore();
+      st.writeFile(
+        path.resolve('BusinessDocs/metrics/time-series-metrics.json'),
+        serializeMetricsStore(metricsStore)
+      );
+
+      const handler = routes['GET /api/v1/analytics/agents'];
+      const res = createRes();
+      handler(createReq('/api/v1/analytics/agents'), res);
+
+      const body = JSON.parse(res.body);
+      expect(body.ok).toBe(true);
+      expect(body.count).toBe(1);
+      expect(body.data[0]).toMatchObject({
+        agent_id: 'BA-01',
+        total_tokens: 350,
+        total_prompt_tokens: 220,
+        total_completion_tokens: 130,
+        avg_total_tokens: 175,
+        avg_provider_latency_ms: 350,
+        avg_model_attempts: 1.5,
+        avg_model_retries: 0.5,
+        providers: ['copilot', 'openai'],
+        models: ['gpt-4.1', 'gpt-4o'],
+      });
     });
   });
 

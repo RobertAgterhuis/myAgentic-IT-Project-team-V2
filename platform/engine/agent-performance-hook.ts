@@ -36,6 +36,17 @@ interface InvocationLogEntry {
   status: string;
   attempt: number;
   error?: string;
+  provider?: string;
+  model?: string;
+  providerStatus?: string;
+  finishReason?: string;
+  providerLatencyMs?: number;
+  modelAttempts?: number;
+  modelRetries?: number;
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+  contractValidationPassed?: boolean;
 }
 
 /**
@@ -83,6 +94,17 @@ export function createAgentPerformanceHook(
         success: entry.status === 'success',
         attempt: entry.attempt,
         error: entry.error,
+        provider: entry.provider,
+        model: entry.model,
+        provider_status: entry.providerStatus,
+        finish_reason: entry.finishReason,
+        provider_latency_ms: entry.providerLatencyMs,
+        model_attempts: entry.modelAttempts,
+        model_retries: entry.modelRetries,
+        prompt_tokens: entry.promptTokens,
+        completion_tokens: entry.completionTokens,
+        total_tokens: entry.totalTokens,
+        contract_validation_passed: entry.contractValidationPassed,
       };
       recordAgentPerformance(metricsStore, record);
     }

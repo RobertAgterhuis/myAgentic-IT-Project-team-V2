@@ -267,9 +267,27 @@ describe('agent performance tracking', () => {
       duration_ms: 60000,
       success: true,
       attempt: 1,
+      provider: 'openai',
+      model: 'gpt-test',
+      provider_status: 'success',
+      finish_reason: 'stop',
+      provider_latency_ms: 420,
+      model_attempts: 2,
+      model_retries: 1,
+      prompt_tokens: 120,
+      completion_tokens: 80,
+      total_tokens: 200,
+      contract_validation_passed: true,
     });
     expect(store.metrics['agent_duration_ms'].data_points).toHaveLength(1);
     expect(store.metrics['agent_success'].data_points[0].value).toBe(1);
+    expect(store.metrics['agent_provider_latency_ms'].data_points[0].value).toBe(420);
+    expect(store.metrics['agent_model_attempts'].data_points[0].value).toBe(2);
+    expect(store.metrics['agent_model_retries'].data_points[0].value).toBe(1);
+    expect(store.metrics['agent_total_tokens'].data_points[0].value).toBe(200);
+    expect(store.metrics['agent_provider_status'].data_points[0].labels.provider_status).toBe(
+      'success'
+    );
   });
 
   it('computeAgentStats aggregates per agent', () => {
@@ -284,6 +302,14 @@ describe('agent performance tracking', () => {
         duration_ms: 100,
         success: true,
         attempt: 1,
+        provider: 'openai',
+        model: 'gpt-4.1',
+        provider_latency_ms: 50,
+        model_attempts: 1,
+        model_retries: 0,
+        prompt_tokens: 10,
+        completion_tokens: 5,
+        total_tokens: 15,
       },
       {
         agent_id: 'a1',
@@ -294,6 +320,14 @@ describe('agent performance tracking', () => {
         duration_ms: 200,
         success: false,
         attempt: 2,
+        provider: 'openai',
+        model: 'gpt-4.1',
+        provider_latency_ms: 70,
+        model_attempts: 2,
+        model_retries: 1,
+        prompt_tokens: 20,
+        completion_tokens: 15,
+        total_tokens: 35,
       },
       {
         agent_id: 'a2',
@@ -304,6 +338,14 @@ describe('agent performance tracking', () => {
         duration_ms: 50,
         success: true,
         attempt: 1,
+        provider: 'copilot',
+        model: 'gpt-4o-mini',
+        provider_latency_ms: 30,
+        model_attempts: 1,
+        model_retries: 0,
+        prompt_tokens: 8,
+        completion_tokens: 4,
+        total_tokens: 12,
       },
     ];
     for (const r of records) store = recordAgentPerformance(store, r);
@@ -315,6 +357,13 @@ describe('agent performance tracking', () => {
     expect(a1.successful).toBe(1);
     expect(a1.failed).toBe(1);
     expect(a1.avg_duration_ms).toBe(150);
+    expect(a1.total_tokens).toBe(50);
+    expect(a1.avg_total_tokens).toBe(25);
+    expect(a1.avg_provider_latency_ms).toBe(60);
+    expect(a1.avg_model_attempts).toBe(1.5);
+    expect(a1.avg_model_retries).toBe(0.5);
+    expect(a1.providers).toEqual(['openai']);
+    expect(a1.models).toEqual(['gpt-4.1']);
   });
 
   it('computeAgentStats returns empty for store without agent metrics', () => {

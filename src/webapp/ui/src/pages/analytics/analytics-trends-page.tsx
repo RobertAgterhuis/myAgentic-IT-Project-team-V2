@@ -115,6 +115,26 @@ export default function AnalyticsTrendChartsPage() {
   const isLoading = trendsLoading || agentsLoading;
   const error = trendsError || agentsError;
 
+  const runtimeTelemetry = useMemo(() => {
+    if (!agentPerf || agentPerf.length === 0) {
+      return {
+        totalTokens: 0,
+        avgLatencyMs: 0,
+        avgRetries: 0,
+        providerCount: 0,
+      };
+    }
+
+    const totalTokens = agentPerf.reduce((sum, agent) => sum + agent.total_tokens, 0);
+    const avgLatencyMs =
+      agentPerf.reduce((sum, agent) => sum + agent.avg_provider_latency_ms, 0) / agentPerf.length;
+    const avgRetries =
+      agentPerf.reduce((sum, agent) => sum + agent.avg_model_retries, 0) / agentPerf.length;
+    const providerCount = new Set(agentPerf.flatMap((agent) => agent.providers)).size;
+
+    return { totalTokens, avgLatencyMs, avgRetries, providerCount };
+  }, [agentPerf]);
+
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
@@ -215,6 +235,42 @@ export default function AnalyticsTrendChartsPage() {
             label="Agents Tracked"
             value={agentPerf?.length ?? 0}
             icon={<Activity className="size-4" />}
+            trend="neutral"
+          />
+        </div>
+      </section>
+
+      <section aria-label="Runtime telemetry">
+        <Heading level={2} className="mb-3">
+          Runtime Telemetry
+        </Heading>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <MetricCard
+            label="Total Tokens"
+            value={runtimeTelemetry.totalTokens.toLocaleString()}
+            icon={<Zap className="size-4" />}
+            trend="neutral"
+          />
+          <MetricCard
+            label="Avg Provider Latency"
+            value={
+              runtimeTelemetry.avgLatencyMs > 0
+                ? `${Math.round(runtimeTelemetry.avgLatencyMs)} ms`
+                : '—'
+            }
+            icon={<Clock className="size-4" />}
+            trend="neutral"
+          />
+          <MetricCard
+            label="Avg Validation Retries"
+            value={runtimeTelemetry.avgRetries.toFixed(2)}
+            icon={<RefreshCw className="size-4" />}
+            trend={runtimeTelemetry.avgRetries > 0 ? 'down' : 'neutral'}
+          />
+          <MetricCard
+            label="Providers Active"
+            value={runtimeTelemetry.providerCount}
+            icon={<Gauge className="size-4" />}
             trend="neutral"
           />
         </div>

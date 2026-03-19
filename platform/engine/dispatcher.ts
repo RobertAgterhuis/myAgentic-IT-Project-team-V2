@@ -70,6 +70,17 @@ interface InvocationEntry {
   error?: string;
   outputPath?: string;
   errorSeverity?: string;
+  provider?: string;
+  model?: string;
+  providerStatus?: string;
+  finishReason?: string;
+  providerLatencyMs?: number;
+  modelAttempts?: number;
+  modelRetries?: number;
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+  contractValidationPassed?: boolean;
 }
 
 // ─── Agent Registry ──────────────────────────────────────────
@@ -393,14 +404,55 @@ class Dispatcher {
           this._invoker(agent, platform, context) as Promise<unknown>,
           config.timeoutMs as number
         );
+        const runtimeResult = result as {
+          outputPath?: string;
+          response?: {
+            provider?: string;
+            model?: string;
+            status?: string;
+            finishReason?: string;
+            attempts?: number;
+            usage?: {
+              promptTokens?: number;
+              completionTokens?: number;
+              totalTokens?: number;
+            };
+            contractValidation?: { status?: string };
+            requestedAt?: string;
+            completedAt?: string;
+          };
+        };
+        const response = runtimeResult.response;
 
         entry.endTime = new Date().toISOString();
         entry.durationMs = +new Date(entry.endTime) - +new Date(entry.startTime);
-        entry.outputPath = (result as Record<string, unknown>).outputPath as string;
+        entry.outputPath = runtimeResult.outputPath as string;
         entry.status = 'success';
+        if (response) {
+          const requestedAtMs = response.requestedAt ? +new Date(response.requestedAt) : NaN;
+          const completedAtMs = response.completedAt ? +new Date(response.completedAt) : NaN;
+          entry.provider = response.provider;
+          entry.model = response.model;
+          entry.providerStatus = response.status;
+          entry.finishReason = response.finishReason;
+          entry.modelAttempts = response.attempts;
+          entry.modelRetries = Math.max(0, (response.attempts || 1) - 1);
+          entry.promptTokens = response.usage?.promptTokens;
+          entry.completionTokens = response.usage?.completionTokens;
+          entry.totalTokens = response.usage?.totalTokens;
+          entry.contractValidationPassed = response.contractValidation?.status === 'passed';
+          entry.providerLatencyMs =
+            Number.isFinite(requestedAtMs) && Number.isFinite(completedAtMs)
+              ? Math.max(0, completedAtMs - requestedAtMs)
+              : undefined;
+        }
 
         this._logEntry(entry);
-        return { success: true, outputPath: (result as Record<string, unknown>).outputPath };
+        return {
+          success: true,
+          outputPath: runtimeResult.outputPath,
+          response: runtimeResult.response,
+        };
       } catch (err) {
         lastError = err as { message: string };
         const severity = Dispatcher.classifyError(err as { message: string });

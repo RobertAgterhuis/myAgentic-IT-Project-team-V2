@@ -561,6 +561,15 @@ export interface AgentPerformanceStats {
   min_duration_ms: number;
   max_duration_ms: number;
   p95_duration_ms: number;
+  total_prompt_tokens: number;
+  total_completion_tokens: number;
+  total_tokens: number;
+  avg_total_tokens: number;
+  avg_provider_latency_ms: number;
+  avg_model_attempts: number;
+  avg_model_retries: number;
+  providers: string[];
+  models: string[];
 }
 
 export interface MetricSummary {

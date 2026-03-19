@@ -258,12 +258,12 @@ function extractContractPaths(skillContent: string): string[] {
     uniquePaths.add(path.resolve(process.cwd(), contractPath));
   }
 
-  const absoluteMatches =
-    skillContent.match(/[a-z]:\/[^\n`]+?-contract\.md/gi) ||
-    skillContent.match(/[a-z]:\\[^\n`]+?-contract\.md/gi) ||
-    [];
-  for (const contractPath of absoluteMatches) {
-    uniquePaths.add(path.resolve(contractPath));
+  const absolutePathPattern = /(?:^|[\s(])((?:\/[\w./-]*|[a-z]:[\\/][^\s`)]+)-contract\.md)/gim;
+  for (const match of skillContent.matchAll(absolutePathPattern)) {
+    const contractPath = match[1];
+    if (contractPath) {
+      uniquePaths.add(path.resolve(contractPath));
+    }
   }
 
   return [...uniquePaths];

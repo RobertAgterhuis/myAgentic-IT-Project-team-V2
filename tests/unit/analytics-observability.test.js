@@ -232,6 +232,12 @@ describe('recordAgentPerformance', () => {
       duration_ms: 300000,
       success: true,
       attempt: 1,
+      provider: 'openai',
+      model: 'gpt-test',
+      provider_latency_ms: 250,
+      model_attempts: 2,
+      model_retries: 1,
+      total_tokens: 210,
     });
 
     expect(store.metrics['agent_duration_ms'].data_points).toHaveLength(1);
@@ -240,6 +246,7 @@ describe('recordAgentPerformance', () => {
 
     expect(store.metrics['agent_success'].data_points).toHaveLength(1);
     expect(store.metrics['agent_success'].data_points[0].value).toBe(1);
+    expect(store.metrics['agent_total_tokens'].data_points[0].value).toBe(210);
   });
 
   it('records failure as 0', () => {
@@ -282,6 +289,12 @@ describe('computeAgentStats', () => {
         started_at: '2025-01-01T00:00:00Z',
         ended_at: '2025-01-01T00:01:00Z',
         attempt: 1,
+        provider: 'openai',
+        model: 'gpt-test',
+        provider_latency_ms: 100,
+        model_attempts: 1,
+        model_retries: 0,
+        total_tokens: 42,
       });
     }
 
@@ -296,6 +309,9 @@ describe('computeAgentStats', () => {
     expect(ba.avg_duration_ms).toBeCloseTo(267, 0);
     expect(ba.min_duration_ms).toBe(100);
     expect(ba.max_duration_ms).toBe(500);
+    expect(ba.total_tokens).toBe(126);
+    expect(ba.avg_provider_latency_ms).toBe(100);
+    expect(ba.providers).toEqual(['openai']);
 
     const sa = stats.find((s) => s.agent_id === 'SA-01');
     expect(sa.total_invocations).toBe(1);
@@ -359,6 +375,16 @@ describe('createAgentPerformanceHook', () => {
       durationMs: 300000,
       status: 'success',
       attempt: 1,
+      provider: 'openai',
+      model: 'gpt-test',
+      providerStatus: 'success',
+      providerLatencyMs: 275,
+      modelAttempts: 2,
+      modelRetries: 1,
+      promptTokens: 120,
+      completionTokens: 80,
+      totalTokens: 200,
+      contractValidationPassed: true,
     });
 
     hook({ from: 'ONBOARDING', to: 'PHASE_1', timestamp: '2025-01-01T00:05:00Z' });
@@ -368,6 +394,8 @@ describe('createAgentPerformanceHook', () => {
     const stored = JSON.parse(fileStore._files['test-metrics.json']);
     expect(stored.metrics['agent_duration_ms'].data_points).toHaveLength(1);
     expect(stored.metrics['agent_success'].data_points[0].value).toBe(1);
+    expect(stored.metrics['agent_total_tokens'].data_points[0].value).toBe(200);
+    expect(stored.metrics['agent_provider_latency_ms'].data_points[0].value).toBe(275);
   });
 
   it('only processes new entries (idempotent across calls)', () => {

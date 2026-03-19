@@ -14,7 +14,13 @@ export function AgentChart({ data }: { data: AgentPerformanceStats[] }) {
       {data.map((agent) => (
         <div key={agent.agent_id} className="space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium">{agent.agent_name}</span>
+            <div className="min-w-0">
+              <span className="text-xs font-medium">{agent.agent_name}</span>
+              <div className="text-[10px] text-muted-foreground truncate">
+                {agent.providers.length > 0 ? agent.providers.join(', ') : 'No provider data'}
+                {agent.models.length > 0 ? ` · ${agent.models.join(', ')}` : ''}
+              </div>
+            </div>
             <div className="flex items-center gap-2">
               <Badge
                 variant={
@@ -34,9 +40,11 @@ export function AgentChart({ data }: { data: AgentPerformanceStats[] }) {
             </div>
           </div>
           <MiniBar value={agent.total_invocations} max={maxInvocations} color="bg-violet-500/70" />
-          <div className="flex justify-between text-[10px] text-muted-foreground">
+          <div className="grid grid-cols-2 gap-2 text-[10px] text-muted-foreground sm:grid-cols-4">
             <span>{agent.total_invocations} invocations</span>
             <span>P95: {agent.p95_duration_ms.toFixed(0)} ms</span>
+            <span>Retries: {agent.avg_model_retries.toFixed(2)}</span>
+            <span>Tokens: {Math.round(agent.avg_total_tokens)} avg</span>
           </div>
         </div>
       ))}

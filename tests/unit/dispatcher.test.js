@@ -299,6 +299,44 @@ describe('Dispatcher — invoke (success)', () => {
     expect(logs[0].agentId).toBe('01');
     expect(logs[0].durationMs).toBeGreaterThanOrEqual(0);
   });
+
+  it('logs runtime adapter telemetry when present', async () => {
+    const logs = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/01.md',
+        response: {
+          provider: 'openai',
+          model: 'gpt-test',
+          status: 'success',
+          finishReason: 'stop',
+          attempts: 2,
+          usage: { promptTokens: 12, completionTokens: 8, totalTokens: 20 },
+          contractValidation: { status: 'passed' },
+          requestedAt: '2026-03-19T10:00:00.000Z',
+          completedAt: '2026-03-19T10:00:00.250Z',
+        },
+      }),
+      onLog: (e) => logs.push(e),
+    });
+
+    await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+    expect(logs).toHaveLength(1);
+    expect(logs[0]).toMatchObject({
+      provider: 'openai',
+      model: 'gpt-test',
+      providerStatus: 'success',
+      finishReason: 'stop',
+      modelAttempts: 2,
+      modelRetries: 1,
+      promptTokens: 12,
+      completionTokens: 8,
+      totalTokens: 20,
+      contractValidationPassed: true,
+    });
+    expect(logs[0].providerLatencyMs).toBe(250);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────

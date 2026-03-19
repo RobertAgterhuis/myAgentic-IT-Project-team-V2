@@ -12,6 +12,12 @@
  * I-A1-002: Dispatcher's default invoker delegates here.
  */
 
+import path from 'node:path';
+import { existsSync, readFileSync, promises as fs } from 'node:fs';
+import { createDefaultRegistry, type ProviderRegistry } from '../sdlc/adapters/registry.js';
+import type { LLMProvider, TokenUsage } from '../sdlc/adapters/contracts/llm-provider.js';
+import { loadContractSections, validateDocument } from './gate-validator.js';
+
 // ─── Interface ────────────────────────────────────────────────
 
 /**
@@ -34,6 +40,635 @@ export interface AgentRuntimeAdapter {
     platform: string,
     context: Record<string, unknown>
   ): Promise<{ outputPath?: string }>;
+}
+
+interface AgentInvocationContext {
+  agentId?: string;
+  skillFile?: string;
+  predecessorOutputs?: Record<string, string>;
+  questionnaireInput?: string | null;
+  sessionState?: unknown;
+}
+
+export interface AgentPromptEnvelope {
+  version: '2026-03-19';
+  requestId: string;
+  agent: { id: string; name: string };
+  platform: string;
+  prompt: {
+    system: string;
+    user: string;
+  };
+  context: {
+    skillFile: string | null;
+    predecessorOutputs: Array<{ source: string; excerpt: string }>;
+    questionnaireInput: string | null;
+    sessionState: string | null;
+  };
+  requestedAt: string;
+}
+
+export interface AgentResponseEnvelope {
+  version: '2026-03-19';
+  requestId: string;
+  adapter: string;
+  provider: string;
+  model: string;
+  status: 'success';
+  finishReason: string;
+  usage: TokenUsage;
+  content: string;
+  attempts: number;
+  contractValidation?: {
+    status: 'passed';
+    contractPaths: string[];
+    requiredMarkers: string[];
+    attempt: number;
+  };
+  requestedAt: string;
+  completedAt: string;
+}
+
+interface RuntimeAdapterResult {
+  outputPath?: string;
+  response?: AgentResponseEnvelope;
+  usage?: TokenUsage;
+}
+
+interface ProviderBackedRuntimeAdapterConfig {
+  name: string;
+  providerName: string;
+  model?: string;
+  maxTokens?: number;
+  temperature?: number;
+  timeout?: number;
+  validationMaxRetries?: number;
+  outputDir?: string;
+  providerRegistry?: Pick<ProviderRegistry, 'getProvider'>;
+}
+
+interface MockRuntimeAdapterConfig {
+  outputDir?: string;
+}
+
+const DEFAULT_OUTPUT_DIR = path.resolve(process.cwd(), 'BusinessDocs', 'session', 'agent-runs');
+const DEFAULT_PROVIDER_REGISTRY = createDefaultRegistry();
+const FILE_GATE_STORE = {
+  exists: existsSync,
+  readFile: (filePath: string) => readFileSync(filePath, 'utf8'),
+};
+
+interface ContractMarkerRequirement {
+  anyOf: string[];
+  optional: boolean;
+}
+
+interface ContractBinding {
+  contractPaths: string[];
+  requiredMarkers: ContractMarkerRequirement[];
+  requiredSections: string[];
+}
+
+interface ContractValidationFinding {
+  severity: string;
+  rule: string;
+  description: string;
+}
+
+interface ContractValidationResult {
+  valid: boolean;
+  findings: ContractValidationFinding[];
+}
+
+function truncate(value: string, maxLength: number): string {
+  if (value.length <= maxLength) return value;
+  return `${value.slice(0, maxLength)}\n...[truncated]`;
+}
+
+function stringifySessionState(value: unknown): string | null {
+  if (value === undefined || value === null) return null;
+  try {
+    return truncate(JSON.stringify(value, null, 2), 4000);
+  } catch {
+    return '[unserializable session state]';
+  }
+}
+
+async function resolveSkillFile(pattern: string | undefined): Promise<string | null> {
+  if (!pattern) return null;
+  if (!pattern.includes('*')) return pattern;
+
+  const directory = path.dirname(pattern);
+  const basename = path.basename(pattern);
+  const starIndex = basename.indexOf('*');
+  const prefix = basename.slice(0, starIndex);
+  const suffix = basename.slice(starIndex + 1);
+
+  try {
+    const entries = await fs.readdir(directory, { withFileTypes: true });
+    const match = entries
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .sort()
+      .find((entry) => entry.startsWith(prefix) && entry.endsWith(suffix));
+    return match ? path.join(directory, match) : null;
+  } catch {
+    return null;
+  }
+}
+
+async function readSkillInstructions(skillPattern: string | undefined): Promise<{
+  path: string | null;
+  content: string;
+}> {
+  const resolvedPath = await resolveSkillFile(skillPattern);
+  if (!resolvedPath) {
+    return { path: null, content: '' };
+  }
+
+  try {
+    const content = await fs.readFile(resolvedPath, 'utf8');
+    return { path: resolvedPath, content };
+  } catch {
+    return { path: resolvedPath, content: '' };
+  }
+}
+
+function createRequestId(agentId: string): string {
+  return `${agentId}-${Date.now()}`;
+}
+
+function normalizeForMatch(value: string): string {
+  return value
+    .replace(/[–—]/g, '-')
+    .replace(/[`*_]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase();
+}
+
+function cleanMarkerText(value: string): string {
+  let cleaned = value
+    .replace(/`/g, '')
+    .replace(/_[^_]+_/g, '')
+    .replace(/\[[^\]]+\]/g, '')
+    .replace(/\([^)]*\)/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  cleaned = cleaned.replace(/\s*[–—/-]\s*$/g, '').trim();
+  return cleaned;
+}
+
+function deriveHeadingAlternatives(line: string): string[] {
+  const match = line.match(/^(#{1,6})\s+(.+)$/);
+  if (!match) return [];
+
+  const headingPrefix = match[1];
+  const rawText = match[2].trim();
+  const numberedPrefix = rawText.match(/^(\d+(?:\.\d+)*)\s+/)?.[1] || '';
+  const parts = rawText.split('/').map((part) => cleanMarkerText(part));
+  const alternatives = new Set<string>();
+
+  for (const part of parts) {
+    if (!part) continue;
+    if (/^\d/.test(part)) {
+      alternatives.add(`${headingPrefix} ${part}`);
+      continue;
+    }
+
+    if (numberedPrefix) {
+      alternatives.add(`${headingPrefix} ${numberedPrefix} ${part}`);
+    }
+    alternatives.add(`${headingPrefix} ${part}`);
+  }
+
+  return [...alternatives];
+}
+
+function extractContractPaths(skillContent: string): string[] {
+  const uniquePaths = new Set<string>();
+
+  const relativeMatches = skillContent.match(/templates\/sdlc\/contracts\/[a-z0-9-]+\.md/gi) || [];
+  for (const contractPath of relativeMatches) {
+    uniquePaths.add(path.resolve(process.cwd(), contractPath));
+  }
+
+  const absoluteMatches =
+    skillContent.match(/[a-z]:\/[^\n`]+?-contract\.md/gi) ||
+    skillContent.match(/[a-z]:\\[^\n`]+?-contract\.md/gi) ||
+    [];
+  for (const contractPath of absoluteMatches) {
+    uniquePaths.add(path.resolve(contractPath));
+  }
+
+  return [...uniquePaths];
+}
+
+function extractContractMarkers(contractContent: string): ContractMarkerRequirement[] {
+  const requirements = new Map<string, ContractMarkerRequirement>();
+  const fencedBlocks = [...contractContent.matchAll(/```(?:[a-z]+)?\n([\s\S]*?)```/gi)];
+
+  for (const block of fencedBlocks) {
+    const lines = block[1].split('\n');
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line) continue;
+
+      const headingAlternatives = deriveHeadingAlternatives(line).filter(
+        (marker) => !normalizeForMatch(marker).includes('scope change impact')
+      );
+      if (headingAlternatives.length > 0) {
+        const key = headingAlternatives.map((marker) => normalizeForMatch(marker)).join('|');
+        requirements.set(key, { anyOf: headingAlternatives, optional: false });
+        continue;
+      }
+
+      const labelMatch = line.match(/^([A-Z][A-Z0-9-]+:)/);
+      if (labelMatch) {
+        const marker = cleanMarkerText(labelMatch[1]);
+        const key = normalizeForMatch(marker);
+        requirements.set(key, { anyOf: [marker], optional: false });
+      }
+    }
+  }
+
+  if (/##\s*HANDOFF\s+CHECKLIST/i.test(contractContent)) {
+    const marker = '## HANDOFF CHECKLIST';
+    requirements.set(normalizeForMatch(marker), { anyOf: [marker], optional: false });
+  }
+
+  return [...requirements.values()];
+}
+
+function loadContractBinding(skillContent: string): ContractBinding {
+  const contractPaths = extractContractPaths(skillContent).filter((contractPath) =>
+    existsSync(contractPath)
+  );
+
+  const requiredSections = new Set<string>();
+  const requiredMarkers = new Map<string, ContractMarkerRequirement>();
+
+  for (const contractPath of contractPaths) {
+    for (const section of loadContractSections(FILE_GATE_STORE, contractPath)) {
+      requiredSections.add(section);
+    }
+
+    const contractContent = readFileSync(contractPath, 'utf8');
+    for (const requirement of extractContractMarkers(contractContent)) {
+      const key = requirement.anyOf.map((marker) => normalizeForMatch(marker)).join('|');
+      requiredMarkers.set(key, requirement);
+    }
+  }
+
+  return {
+    contractPaths,
+    requiredSections: [...requiredSections],
+    requiredMarkers: [...requiredMarkers.values()],
+  };
+}
+
+function validateContractOutput(
+  content: string,
+  binding: ContractBinding,
+  context: AgentInvocationContext
+): ContractValidationResult {
+  const findings: ContractValidationFinding[] = [];
+  const documentValidation = validateDocument(content, {
+    requiredSections: binding.requiredSections,
+  });
+  findings.push(...(documentValidation.violations as ContractValidationFinding[]));
+
+  const normalizedContent = normalizeForMatch(content);
+  const isScopeChange =
+    typeof context.sessionState === 'object' &&
+    context.sessionState !== null &&
+    (context.sessionState as { cycle_type?: string }).cycle_type === 'SCOPE_CHANGE';
+
+  for (const requirement of binding.requiredMarkers) {
+    const includesScopeChangeMarker = requirement.anyOf.some((marker) =>
+      normalizeForMatch(marker).includes('scope change impact')
+    );
+    if (includesScopeChangeMarker && !isScopeChange) {
+      continue;
+    }
+
+    const satisfied = requirement.anyOf.some((marker) =>
+      normalizedContent.includes(normalizeForMatch(marker))
+    );
+    if (!satisfied) {
+      findings.push({
+        severity: 'MAJOR',
+        rule: 'MISSING_CONTRACT_MARKER',
+        description: `Missing contract marker: ${requirement.anyOf.join(' OR ')}`,
+      });
+    }
+  }
+
+  return { valid: findings.length === 0, findings };
+}
+
+function summarizeValidationFindings(findings: ContractValidationFinding[]): string[] {
+  return findings.slice(0, 12).map((finding) => `${finding.rule}: ${finding.description}`);
+}
+
+function buildRepairPrompt(
+  binding: ContractBinding,
+  findings: ContractValidationFinding[],
+  invalidContent: string,
+  attempt: number,
+  maxAttempts: number
+): string {
+  const requirementSummary = binding.requiredMarkers
+    .map((requirement) => `- ${requirement.anyOf.join(' OR ')}`)
+    .slice(0, 20)
+    .join('\n');
+
+  return [
+    `Your previous response did not satisfy the required output contract. Attempt ${attempt} of ${maxAttempts}.`,
+    'Regenerate the full deliverable from scratch and return only the corrected deliverable content.',
+    'Do not explain the fixes. Do not wrap the response in code fences.',
+    '',
+    'Validation failures:',
+    ...summarizeValidationFindings(findings).map((finding) => `- ${finding}`),
+    '',
+    'Required markers that must appear in the deliverable:',
+    requirementSummary ||
+      '- No explicit markers were derived; satisfy the contract sections and checklist.',
+    '',
+    'Previous invalid response:',
+    truncate(invalidContent, 4000),
+  ].join('\n');
+}
+
+function createValidationError(findings: ContractValidationFinding[], attempts: number): Error {
+  const details = summarizeValidationFindings(findings).join(' | ');
+  return new Error(
+    `Provider output failed contract validation after ${attempts} attempt(s). ${details}`.trim()
+  );
+}
+
+function formatArtifact(
+  agent: { id: string; name: string },
+  response: AgentResponseEnvelope
+): string {
+  const output = response.content.trim() || 'No content returned by runtime adapter.';
+  return [
+    `# ${agent.name}`,
+    '',
+    '## Invocation Metadata',
+    '',
+    `- Agent ID: ${agent.id}`,
+    `- Adapter: ${response.adapter}`,
+    `- Provider: ${response.provider}`,
+    `- Model: ${response.model}`,
+    `- Request ID: ${response.requestId}`,
+    `- Requested At: ${response.requestedAt}`,
+    `- Completed At: ${response.completedAt}`,
+    `- Finish Reason: ${response.finishReason}`,
+    `- Attempts: ${response.attempts}`,
+    `- Total Tokens: ${response.usage.totalTokens}`,
+    response.contractValidation
+      ? `- Contract Validation: passed on attempt ${response.contractValidation.attempt}`
+      : '- Contract Validation: not applied',
+    '',
+    '## Output',
+    '',
+    output,
+    '',
+  ].join('\n');
+}
+
+abstract class FileProducingRuntimeAdapter implements AgentRuntimeAdapter {
+  abstract readonly name: string;
+
+  protected readonly _outputDir: string;
+
+  constructor(outputDir?: string) {
+    this._outputDir = outputDir || DEFAULT_OUTPUT_DIR;
+  }
+
+  protected async _writeArtifact(
+    agent: { id: string; name: string },
+    response: AgentResponseEnvelope
+  ): Promise<string> {
+    await fs.mkdir(this._outputDir, { recursive: true });
+    const fileName = `${response.completedAt.replace(/[:.]/g, '-')}-${agent.id}.md`;
+    const filePath = path.join(this._outputDir, fileName);
+    await fs.writeFile(filePath, formatArtifact(agent, response), 'utf8');
+    return filePath;
+  }
+}
+
+export class MockLlmRuntimeAdapter extends FileProducingRuntimeAdapter {
+  readonly name = 'llm-mock';
+
+  constructor(config: MockRuntimeAdapterConfig = {}) {
+    super(config.outputDir);
+  }
+
+  async invoke(
+    agent: { id: string; name: string },
+    platform: string,
+    context: Record<string, unknown>
+  ): Promise<RuntimeAdapterResult> {
+    const runtimeContext = context as AgentInvocationContext;
+    const requestedAt = new Date().toISOString();
+    const completedAt = new Date().toISOString();
+    const requestId = createRequestId(agent.id);
+    const predecessorCount = Object.keys(runtimeContext.predecessorOutputs || {}).length;
+    const content = [
+      `Mock execution for ${agent.name}.`,
+      '',
+      `Platform: ${platform}`,
+      `Predecessor outputs: ${predecessorCount}`,
+      runtimeContext.questionnaireInput
+        ? 'Questionnaire input present.'
+        : 'No questionnaire input.',
+      '',
+      'This deterministic adapter is intended for local development and test flows.',
+    ].join('\n');
+
+    const response: AgentResponseEnvelope = {
+      version: '2026-03-19',
+      requestId,
+      adapter: this.name,
+      provider: 'mock',
+      model: 'deterministic-local',
+      status: 'success',
+      finishReason: 'stop',
+      usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+      content,
+      attempts: 1,
+      requestedAt,
+      completedAt,
+    };
+
+    const outputPath = await this._writeArtifact(agent, response);
+    return { outputPath, response, usage: response.usage };
+  }
+}
+
+export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter {
+  readonly name: string;
+
+  private readonly _providerName: string;
+  private readonly _model?: string;
+  private readonly _maxTokens: number;
+  private readonly _temperature: number;
+  private readonly _timeout?: number;
+  private readonly _validationMaxRetries: number;
+  private readonly _providerRegistry: Pick<ProviderRegistry, 'getProvider'>;
+
+  constructor(config: ProviderBackedRuntimeAdapterConfig) {
+    super(config.outputDir);
+    this.name = config.name;
+    this._providerName = config.providerName;
+    this._model = config.model;
+    this._maxTokens = config.maxTokens ?? 4096;
+    this._temperature = config.temperature ?? 0.1;
+    this._timeout = config.timeout;
+    this._validationMaxRetries = config.validationMaxRetries ?? 1;
+    this._providerRegistry = config.providerRegistry || DEFAULT_PROVIDER_REGISTRY;
+  }
+
+  async invoke(
+    agent: { id: string; name: string },
+    platform: string,
+    context: Record<string, unknown>
+  ): Promise<RuntimeAdapterResult> {
+    const runtimeContext = context as AgentInvocationContext;
+    const { path: skillPath, content: skillContent } = await readSkillInstructions(
+      runtimeContext.skillFile
+    );
+    const contractBinding = loadContractBinding(skillContent);
+
+    const requestedAt = new Date().toISOString();
+    const requestId = createRequestId(agent.id);
+    const predecessorOutputs = Object.entries(runtimeContext.predecessorOutputs || {}).map(
+      ([source, content]) => ({ source, excerpt: truncate(content, 2500) })
+    );
+
+    const systemPrompt = [
+      `You are executing SDLC agent ${agent.id} (${agent.name}).`,
+      'Follow the provided agent instructions precisely and produce the deliverable content that should be written to disk.',
+      'Do not describe what you would do. Output the deliverable content directly.',
+      contractBinding.requiredMarkers.length > 0
+        ? 'The response must satisfy the referenced output contracts and include the required structural markers.'
+        : 'No explicit output contract markers were resolved for this invocation.',
+      '',
+      'Agent instructions:',
+      truncate(skillContent || 'No agent instructions were resolved for this invocation.', 12000),
+    ].join('\n');
+
+    const promptEnvelope: AgentPromptEnvelope = {
+      version: '2026-03-19',
+      requestId,
+      agent,
+      platform,
+      prompt: {
+        system: systemPrompt,
+        user: '',
+      },
+      context: {
+        skillFile: skillPath,
+        predecessorOutputs,
+        questionnaireInput: runtimeContext.questionnaireInput || null,
+        sessionState: stringifySessionState(runtimeContext.sessionState),
+      },
+      requestedAt,
+    };
+
+    promptEnvelope.prompt.user = [
+      'Use the invocation envelope below as the full execution context.',
+      'Return only the deliverable content for the output artifact.',
+      contractBinding.contractPaths.length > 0
+        ? `Referenced contracts:\n${contractBinding.contractPaths.join('\n')}`
+        : 'Referenced contracts: none resolved.',
+      '',
+      JSON.stringify(promptEnvelope, null, 2),
+    ].join('\n');
+
+    const provider = this._providerRegistry.getProvider('llm', this._providerName, {
+      model: this._model,
+      maxTokens: this._maxTokens,
+      timeout: this._timeout,
+    }) as LLMProvider;
+
+    const messages = [
+      { role: 'system' as const, content: promptEnvelope.prompt.system },
+      { role: 'user' as const, content: promptEnvelope.prompt.user },
+    ];
+
+    let result;
+    let validation: ContractValidationResult = { valid: true, findings: [] };
+    let attempts = 0;
+
+    while (attempts <= this._validationMaxRetries) {
+      attempts += 1;
+      result = await provider.complete({
+        model: this._model,
+        maxTokens: this._maxTokens,
+        temperature: this._temperature,
+        messages,
+      });
+
+      validation = validateContractOutput(result.content, contractBinding, runtimeContext);
+      if (validation.valid) {
+        break;
+      }
+
+      if (attempts > this._validationMaxRetries) {
+        throw createValidationError(validation.findings, attempts);
+      }
+
+      messages.push({ role: 'assistant', content: result.content });
+      messages.push({
+        role: 'user',
+        content: buildRepairPrompt(
+          contractBinding,
+          validation.findings,
+          result.content,
+          attempts + 1,
+          this._validationMaxRetries + 1
+        ),
+      });
+    }
+
+    if (!result) {
+      throw new Error('Provider did not return a completion result.');
+    }
+
+    const completedAt = new Date().toISOString();
+    const response: AgentResponseEnvelope = {
+      version: '2026-03-19',
+      requestId,
+      adapter: this.name,
+      provider: provider.providerName,
+      model: result.model,
+      status: 'success',
+      finishReason: result.finishReason,
+      usage: result.usage,
+      content: result.content,
+      attempts,
+      contractValidation:
+        contractBinding.contractPaths.length > 0
+          ? {
+              status: 'passed',
+              contractPaths: contractBinding.contractPaths,
+              requiredMarkers: contractBinding.requiredMarkers.flatMap(
+                (requirement) => requirement.anyOf
+              ),
+              attempt: attempts,
+            }
+          : undefined,
+      requestedAt,
+      completedAt,
+    };
+
+    const outputPath = await this._writeArtifact(agent, response);
+    return { outputPath, response, usage: result.usage };
+  }
 }
 
 // ─── Built-in Adapters ────────────────────────────────────────
@@ -117,6 +752,13 @@ export class AdapterRegistry {
 export const DEFAULT_REGISTRY = new AdapterRegistry();
 DEFAULT_REGISTRY.register(new NullAdapter());
 DEFAULT_REGISTRY.register(new LogOnlyAdapter());
+DEFAULT_REGISTRY.register(new MockLlmRuntimeAdapter());
+DEFAULT_REGISTRY.register(
+  new ProviderBackedLlmRuntimeAdapter({ name: 'llm-openai', providerName: 'openai' })
+);
+DEFAULT_REGISTRY.register(
+  new ProviderBackedLlmRuntimeAdapter({ name: 'llm-copilot', providerName: 'copilot' })
+);
 
 // ─── Adapter Resolution ───────────────────────────────────────
 

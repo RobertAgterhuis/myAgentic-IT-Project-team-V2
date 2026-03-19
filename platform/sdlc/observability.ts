@@ -378,6 +378,17 @@ export interface AgentPerformanceRecord {
   success: boolean;
   attempt: number;
   error?: string;
+  provider?: string;
+  model?: string;
+  provider_status?: string;
+  finish_reason?: string;
+  provider_latency_ms?: number;
+  model_attempts?: number;
+  model_retries?: number;
+  prompt_tokens?: number;
+  completion_tokens?: number;
+  total_tokens?: number;
+  contract_validation_passed?: boolean;
 }
 
 /** Aggregated performance stats for an agent. */
@@ -392,6 +403,15 @@ export interface AgentPerformanceStats {
   min_duration_ms: number;
   max_duration_ms: number;
   p95_duration_ms: number;
+  total_prompt_tokens: number;
+  total_completion_tokens: number;
+  total_tokens: number;
+  avg_total_tokens: number;
+  avg_provider_latency_ms: number;
+  avg_model_attempts: number;
+  avg_model_retries: number;
+  providers: string[];
+  models: string[];
 }
 
 /**
@@ -406,9 +426,49 @@ export function recordAgentPerformance(
     agent_id: record.agent_id,
     agent_name: record.agent_name,
     state: record.state,
+    ...(record.provider ? { provider: record.provider } : {}),
+    ...(record.model ? { model: record.model } : {}),
+    ...(record.provider_status ? { provider_status: record.provider_status } : {}),
+    ...(record.finish_reason ? { finish_reason: record.finish_reason } : {}),
   };
   appendMetric(store, 'agent_duration_ms', 'ms', record.duration_ms, labels);
   appendMetric(store, 'agent_success', 'boolean', record.success ? 1 : 0, labels);
+  if (typeof record.provider_latency_ms === 'number') {
+    appendMetric(store, 'agent_provider_latency_ms', 'ms', record.provider_latency_ms, labels);
+  }
+  if (typeof record.model_attempts === 'number') {
+    appendMetric(store, 'agent_model_attempts', 'count', record.model_attempts, labels);
+  }
+  if (typeof record.model_retries === 'number') {
+    appendMetric(store, 'agent_model_retries', 'count', record.model_retries, labels);
+  }
+  if (typeof record.prompt_tokens === 'number') {
+    appendMetric(store, 'agent_prompt_tokens', 'tokens', record.prompt_tokens, labels);
+  }
+  if (typeof record.completion_tokens === 'number') {
+    appendMetric(store, 'agent_completion_tokens', 'tokens', record.completion_tokens, labels);
+  }
+  if (typeof record.total_tokens === 'number') {
+    appendMetric(store, 'agent_total_tokens', 'tokens', record.total_tokens, labels);
+  }
+  if (typeof record.contract_validation_passed === 'boolean') {
+    appendMetric(
+      store,
+      'agent_contract_validation_passed',
+      'boolean',
+      record.contract_validation_passed ? 1 : 0,
+      labels
+    );
+  }
+  if (record.provider_status) {
+    appendMetric(
+      store,
+      'agent_provider_status',
+      'boolean',
+      record.provider_status === 'success' ? 1 : 0,
+      labels
+    );
+  }
   return store;
 }
 
@@ -420,21 +480,88 @@ export function computeAgentStats(store: MetricsStore): AgentPerformanceStats[] 
   const successMetric = store.metrics['agent_success'];
   if (!durationMetric || !successMetric) return [];
 
+  type AgentAccumulator = {
+    durations: number[];
+    successes: number[];
+    promptTokens: number[];
+    completionTokens: number[];
+    totalTokens: number[];
+    providerLatencies: number[];
+    modelAttempts: number[];
+    modelRetries: number[];
+    providers: Set<string>;
+    models: Set<string>;
+    name: string;
+  };
+
   // Group by agent_id
-  const agentMap = new Map<string, { durations: number[]; successes: number[]; name: string }>();
+  const agentMap = new Map<string, AgentAccumulator>();
+
+  function ensureAgent(id: string, name: string): AgentAccumulator {
+    if (!agentMap.has(id)) {
+      agentMap.set(id, {
+        durations: [],
+        successes: [],
+        promptTokens: [],
+        completionTokens: [],
+        totalTokens: [],
+        providerLatencies: [],
+        modelAttempts: [],
+        modelRetries: [],
+        providers: new Set<string>(),
+        models: new Set<string>(),
+        name,
+      });
+    }
+    return agentMap.get(id)!;
+  }
+
+  function ingestMetric(metricName: string, sink: keyof AgentAccumulator) {
+    const metric = store.metrics[metricName];
+    if (!metric) return;
+    for (const dp of metric.data_points) {
+      const id = dp.labels?.agent_id ?? 'unknown';
+      const name = dp.labels?.agent_name ?? id;
+      const entry = ensureAgent(id, name);
+      const bucket = entry[sink] as number[];
+      bucket.push(dp.value);
+      if (dp.labels?.provider) entry.providers.add(dp.labels.provider);
+      if (dp.labels?.model) entry.models.add(dp.labels.model);
+    }
+  }
+
+  function average(values: number[]): number {
+    if (values.length === 0) return 0;
+    return Math.round((values.reduce((sum, value) => sum + value, 0) / values.length) * 100) / 100;
+  }
+
+  function sum(values: number[]): number {
+    return values.reduce((total, value) => total + value, 0);
+  }
 
   for (const dp of durationMetric.data_points) {
     const id = dp.labels?.agent_id ?? 'unknown';
     const name = dp.labels?.agent_name ?? id;
-    if (!agentMap.has(id)) agentMap.set(id, { durations: [], successes: [], name });
-    agentMap.get(id)!.durations.push(dp.value);
+    const entry = ensureAgent(id, name);
+    entry.durations.push(dp.value);
+    if (dp.labels?.provider) entry.providers.add(dp.labels.provider);
+    if (dp.labels?.model) entry.models.add(dp.labels.model);
   }
   for (const dp of successMetric.data_points) {
     const id = dp.labels?.agent_id ?? 'unknown';
     const name = dp.labels?.agent_name ?? id;
-    if (!agentMap.has(id)) agentMap.set(id, { durations: [], successes: [], name });
-    agentMap.get(id)!.successes.push(dp.value);
+    const entry = ensureAgent(id, name);
+    entry.successes.push(dp.value);
+    if (dp.labels?.provider) entry.providers.add(dp.labels.provider);
+    if (dp.labels?.model) entry.models.add(dp.labels.model);
   }
+
+  ingestMetric('agent_prompt_tokens', 'promptTokens');
+  ingestMetric('agent_completion_tokens', 'completionTokens');
+  ingestMetric('agent_total_tokens', 'totalTokens');
+  ingestMetric('agent_provider_latency_ms', 'providerLatencies');
+  ingestMetric('agent_model_attempts', 'modelAttempts');
+  ingestMetric('agent_model_retries', 'modelRetries');
 
   const stats: AgentPerformanceStats[] = [];
   for (const [id, data] of agentMap) {
@@ -454,6 +581,15 @@ export function computeAgentStats(store: MetricsStore): AgentPerformanceStats[] 
       min_duration_ms: sorted.length > 0 ? sorted[0] : 0,
       max_duration_ms: sorted.length > 0 ? sorted[sorted.length - 1] : 0,
       p95_duration_ms: sorted.length > 0 ? sorted[p95Idx] : 0,
+      total_prompt_tokens: sum(data.promptTokens),
+      total_completion_tokens: sum(data.completionTokens),
+      total_tokens: sum(data.totalTokens),
+      avg_total_tokens: average(data.totalTokens),
+      avg_provider_latency_ms: average(data.providerLatencies),
+      avg_model_attempts: average(data.modelAttempts),
+      avg_model_retries: average(data.modelRetries),
+      providers: [...data.providers].sort(),
+      models: [...data.models].sort(),
     });
   }
 

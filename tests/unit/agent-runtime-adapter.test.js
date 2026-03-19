@@ -1,5 +1,9 @@
 'use strict';
 
+const os = require('node:os');
+const path = require('node:path');
+const fs = require('node:fs/promises');
+
 /**
  * AgentRuntimeAdapter — Unit & Integration Tests (Epic E-A1 / I-A1-004)
  *
@@ -14,6 +18,8 @@
 const {
   NullAdapter,
   LogOnlyAdapter,
+  MockLlmRuntimeAdapter,
+  ProviderBackedLlmRuntimeAdapter,
   AdapterRegistry,
   DEFAULT_REGISTRY,
   resolveAdapter,
@@ -36,6 +42,40 @@ function createMockStore(files = {}) {
 const AGENT = { id: '01', name: 'Business Analyst' };
 const PLATFORM = 'copilot';
 const CONTEXT = { agentId: '01', predecessorOutputs: {}, questionnaireInput: null };
+
+let tmpRoot;
+
+async function writeContractFixture(name, content) {
+  const contractPath = path.join(tmpRoot, name);
+  await fs.writeFile(contractPath, content, 'utf8');
+  return contractPath;
+}
+
+async function writeSkillFixture(name, contractPath) {
+  const skillPath = path.join(tmpRoot, name);
+  const normalizedContractPath = contractPath.replace(/\\/g, '/');
+  const content = [
+    '# Skill Fixture',
+    '',
+    'Use this output contract:',
+    normalizedContractPath,
+    '',
+    'Return only the deliverable content.',
+  ].join('\n');
+  await fs.writeFile(skillPath, content, 'utf8');
+  return skillPath;
+}
+
+beforeEach(async () => {
+  tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-runtime-adapter-'));
+});
+
+afterEach(async () => {
+  if (tmpRoot) {
+    await fs.rm(tmpRoot, { recursive: true, force: true });
+    tmpRoot = null;
+  }
+});
 
 // ─────────────────────────────────────────────────────────────
 // NullAdapter
@@ -128,6 +168,18 @@ describe('DEFAULT_REGISTRY', () => {
   it('contains log-only adapter', () => {
     expect(DEFAULT_REGISTRY.get('log-only')).toBeInstanceOf(LogOnlyAdapter);
   });
+
+  it('contains llm-mock adapter', () => {
+    expect(DEFAULT_REGISTRY.get('llm-mock')).toBeInstanceOf(MockLlmRuntimeAdapter);
+  });
+
+  it('contains llm-openai adapter', () => {
+    expect(DEFAULT_REGISTRY.get('llm-openai')).toBeInstanceOf(ProviderBackedLlmRuntimeAdapter);
+  });
+
+  it('contains llm-copilot adapter', () => {
+    expect(DEFAULT_REGISTRY.get('llm-copilot')).toBeInstanceOf(ProviderBackedLlmRuntimeAdapter);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -144,6 +196,12 @@ describe('resolveAdapter', () => {
     const { adapter, error } = resolveAdapter({ adapterName: 'log-only' });
     expect(error).toBeNull();
     expect(adapter).toBeInstanceOf(LogOnlyAdapter);
+  });
+
+  it('returns llm-mock adapter when explicitly requested', () => {
+    const { adapter, error } = resolveAdapter({ adapterName: 'llm-mock' });
+    expect(error).toBeNull();
+    expect(adapter).toBeInstanceOf(MockLlmRuntimeAdapter);
   });
 
   it('returns error when adapterName is unknown — config error at startup, not invocation', () => {
@@ -251,5 +309,224 @@ describe('Dispatcher + AgentRuntimeAdapter integration', () => {
     const result = await dispatcher.invoke(AGENT, 'PHASE_1', CONTEXT);
     expect(result.success).toBe(false);
     expect(result.error).toBe('Provider unavailable');
+  });
+});
+
+describe('MockLlmRuntimeAdapter', () => {
+  it('writes a deterministic output artifact', async () => {
+    const adapter = new MockLlmRuntimeAdapter({ outputDir: tmpRoot });
+    const result = await adapter.invoke(AGENT, PLATFORM, {
+      predecessorOutputs: { '/tmp/previous.md': 'previous output' },
+      questionnaireInput: 'Q-01 answered',
+    });
+
+    expect(result.outputPath).toBeTruthy();
+    const artifact = await fs.readFile(result.outputPath, 'utf8');
+    expect(artifact).toContain('# Business Analyst');
+    expect(artifact).toContain('Provider: mock');
+    expect(artifact).toContain('Questionnaire input present.');
+  });
+});
+
+describe('ProviderBackedLlmRuntimeAdapter', () => {
+  it('calls the configured provider and writes the returned content to disk', async () => {
+    const contractPath = await writeContractFixture(
+      'business-analyst-contract.md',
+      [
+        '# Contract',
+        '',
+        '```markdown',
+        '# Analysis - [Discipline] - [Date]',
+        '## Metadata',
+        '## Findings',
+        '## HANDOFF CHECKLIST',
+        '```',
+      ].join('\n')
+    );
+    const skillPath = await writeSkillFixture('business-analyst-skill.md', contractPath);
+    const complete = vi.fn().mockResolvedValue({
+      content: [
+        '# Analysis - Business - 2026-03-19',
+        'Summary of the analysis deliverable.',
+        '',
+        '## Metadata',
+        '- Agent: Business Analyst',
+        '',
+        '## Findings',
+        '- Finding: Valid output',
+        '',
+        '## HANDOFF CHECKLIST',
+        '- [x] Item 1',
+        '- [x] Item 2',
+        '- [x] Item 3',
+        '- [x] Item 4',
+        '- [x] Item 5',
+        '- [x] Item 6',
+        '- [x] Item 7',
+        '- [x] Item 8',
+        '- [x] Item 9',
+      ].join('\n'),
+      model: 'gpt-test',
+      usage: { promptTokens: 11, completionTokens: 7, totalTokens: 18 },
+      finishReason: 'stop',
+    });
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-test',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      model: 'gpt-test',
+    });
+
+    const result = await adapter.invoke(AGENT, PLATFORM, {
+      skillFile: skillPath,
+      predecessorOutputs: { '/tmp/phase1.md': 'prior output' },
+      questionnaireInput: '## QUESTIONNAIRE INPUT',
+      sessionState: { mode: 'AUDIT' },
+    });
+
+    expect(providerRegistry.getProvider).toHaveBeenCalledWith('llm', 'openai', {
+      model: 'gpt-test',
+      maxTokens: 4096,
+      timeout: undefined,
+    });
+    expect(complete).toHaveBeenCalledTimes(1);
+    expect(result.response).toMatchObject({
+      adapter: 'llm-openai-test',
+      provider: 'openai',
+      model: 'gpt-test',
+      attempts: 1,
+    });
+    expect(result.response.contractValidation).toMatchObject({
+      status: 'passed',
+      attempt: 1,
+    });
+
+    const artifact = await fs.readFile(result.outputPath, 'utf8');
+    expect(artifact).toContain('Provider: openai');
+    expect(artifact).toContain('Model: gpt-test');
+    expect(artifact).toContain('Attempts: 1');
+    expect(artifact).toContain('## HANDOFF CHECKLIST');
+  });
+
+  it('retries once when the first provider response fails contract validation', async () => {
+    const contractPath = await writeContractFixture(
+      'retry-contract.md',
+      [
+        '# Contract',
+        '',
+        '```markdown',
+        '## Metadata',
+        '## Findings',
+        '## HANDOFF CHECKLIST',
+        '```',
+      ].join('\n')
+    );
+    const skillPath = await writeSkillFixture('retry-skill.md', contractPath);
+    const complete = vi
+      .fn()
+      .mockResolvedValueOnce({
+        content: 'invalid output',
+        model: 'gpt-test',
+        usage: { promptTokens: 10, completionTokens: 4, totalTokens: 14 },
+        finishReason: 'stop',
+      })
+      .mockResolvedValueOnce({
+        content: [
+          '## Metadata',
+          '- Agent: Business Analyst',
+          '',
+          '## Findings',
+          '- Finding: repaired output',
+          '',
+          '## HANDOFF CHECKLIST',
+          '- [x] Item 1',
+          '- [x] Item 2',
+          '- [x] Item 3',
+          '- [x] Item 4',
+          '- [x] Item 5',
+          '- [x] Item 6',
+          '- [x] Item 7',
+          '- [x] Item 8',
+          '- [x] Item 9',
+        ].join('\n'),
+        model: 'gpt-test',
+        usage: { promptTokens: 16, completionTokens: 8, totalTokens: 24 },
+        finishReason: 'stop',
+      });
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'copilot',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-copilot-test',
+      providerName: 'copilot',
+      outputDir: tmpRoot,
+      providerRegistry,
+      validationMaxRetries: 1,
+    });
+
+    const result = await adapter.invoke(AGENT, PLATFORM, {
+      skillFile: skillPath,
+      predecessorOutputs: {},
+      questionnaireInput: null,
+      sessionState: { mode: 'AUDIT' },
+    });
+
+    expect(complete).toHaveBeenCalledTimes(2);
+    expect(complete.mock.calls[1][0].messages.at(-1).content).toContain('Validation failures:');
+    expect(result.response.attempts).toBe(2);
+    expect(result.response.content).toContain('repaired output');
+  });
+
+  it('fails when the provider exhausts the validation retry budget', async () => {
+    const contractPath = await writeContractFixture(
+      'failure-contract.md',
+      ['# Contract', '', '```markdown', '## Metadata', '## HANDOFF CHECKLIST', '```'].join('\n')
+    );
+    const skillPath = await writeSkillFixture('failure-skill.md', contractPath);
+    const complete = vi.fn().mockResolvedValue({
+      content: 'still invalid',
+      model: 'gpt-test',
+      usage: { promptTokens: 10, completionTokens: 4, totalTokens: 14 },
+      finishReason: 'stop',
+    });
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-failure',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      validationMaxRetries: 1,
+    });
+
+    await expect(
+      adapter.invoke(AGENT, PLATFORM, {
+        skillFile: skillPath,
+        predecessorOutputs: {},
+        questionnaireInput: null,
+        sessionState: { mode: 'AUDIT' },
+      })
+    ).rejects.toThrow(/failed contract validation/);
+    expect(complete).toHaveBeenCalledTimes(2);
   });
 });

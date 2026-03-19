@@ -83,30 +83,56 @@ export const velocityColumns: ColumnDef<VelocityTrendEntry, unknown>[] = [
 
 /* ── Agent performance table columns ── */
 export const agentColumns: ColumnDef<AgentPerformanceStats, unknown>[] = [
-  { accessorKey: 'agentName', header: 'Agent' },
-  { accessorKey: 'invocations', header: 'Invocations' },
+  { accessorKey: 'agent_name', header: 'Agent' },
+  { accessorKey: 'total_invocations', header: 'Invocations' },
   {
-    accessorKey: 'successRate',
+    accessorKey: 'success_rate_pct',
     header: 'Success Rate',
-    cell: ({ getValue }) => `${((getValue() as number) * 100).toFixed(1)}%`,
+    cell: ({ getValue }) => `${(getValue() as number).toFixed(1)}%`,
   },
   {
-    accessorKey: 'avgDurationMs',
+    accessorKey: 'avg_duration_ms',
     header: 'Avg Duration',
     cell: ({ getValue }) => `${Math.round(getValue() as number)} ms`,
   },
   {
-    accessorKey: 'p95DurationMs',
+    accessorKey: 'avg_provider_latency_ms',
+    header: 'Provider Latency',
+    cell: ({ getValue }) => {
+      const value = getValue() as number;
+      return value > 0 ? `${Math.round(value)} ms` : '—';
+    },
+  },
+  {
+    accessorKey: 'avg_model_retries',
+    header: 'Avg Retries',
+    cell: ({ getValue }) => (getValue() as number).toFixed(2),
+  },
+  {
+    accessorKey: 'avg_total_tokens',
+    header: 'Avg Tokens',
+    cell: ({ getValue }) => `${Math.round(getValue() as number)}`,
+  },
+  {
+    accessorKey: 'providers',
+    header: 'Providers',
+    cell: ({ getValue }) => {
+      const providers = getValue() as string[];
+      return providers.length > 0 ? providers.join(', ') : '—';
+    },
+  },
+  {
+    accessorKey: 'p95_duration_ms',
     header: 'P95',
     cell: ({ getValue }) => `${Math.round(getValue() as number)} ms`,
   },
   {
-    accessorKey: 'minDurationMs',
+    accessorKey: 'min_duration_ms',
     header: 'Min',
     cell: ({ getValue }) => `${Math.round(getValue() as number)} ms`,
   },
   {
-    accessorKey: 'maxDurationMs',
+    accessorKey: 'max_duration_ms',
     header: 'Max',
     cell: ({ getValue }) => `${Math.round(getValue() as number)} ms`,
   },

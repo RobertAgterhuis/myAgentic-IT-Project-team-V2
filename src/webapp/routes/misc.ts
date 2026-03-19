@@ -17,12 +17,14 @@ import * as schemas from '../schemas';
 import { withFileLock } from '../file-lock';
 import { SessionService, toServiceContext } from '../services';
 import { errorResponse } from '../utils/errors';
-import { VALIDATION as V, RESPONSES as R, STATIC as S } from '../strings';
-import { structuredLog, safePath, setSecurityHeaders } from '../middleware';
+import { RESPONSES as R, STATIC as S } from '../strings';
+import { safePath, setSecurityHeaders } from '../middleware';
 import * as RS from '../route-schemas';
 import { collectPhaseOutputs } from './misc-export';
 import { registerHealthRoutes } from './misc-health';
 import { registerStaticFallback } from './misc-static';
+import { registerObservabilityRoutes } from './misc-observability';
+import { registerAnalyticsRoutes } from './misc-analytics';
 
 const HELP_TOC = [
   { slug: 'getting-started', title: 'Getting Started', icon: '🚀' },
@@ -155,131 +157,25 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     reply.send({ slug, title: entry ? entry.title : slug, content: result.content });
   }
 
-  /* ── SSE Endpoint (SP-R2-004-005) ─────────────────────────────── */
+  registerObservabilityRoutes({
+    app,
+    sseManager,
+    metrics: _metrics,
+    cache: _cache,
+    computePercentiles,
+    flushMetrics,
+  });
 
-  const MAX_SSE_CLIENTS = 50;
-
-  async function apiGetEvents(request: FastifyRequest, reply: FastifyReply) {
-    if (sseManager.size >= MAX_SSE_CLIENTS) {
-      return reply.code(503).send(errorResponse('SSE_LIMIT', 'Too many SSE connections'));
-    }
-    const res = reply.raw;
-    setSecurityHeaders(res);
-    res.writeHead(200, {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache',
-      Connection: 'keep-alive',
-      'X-Accel-Buffering': 'no',
-    });
-    res.write(
-      `event: connected\ndata: ${JSON.stringify({ timestamp: new Date().toISOString() })}\n\n`
-    );
-    sseManager.addClient(request.raw, res);
-    structuredLog('info', 'sse_client_connected', { clients: sseManager.size });
-    // Tell Fastify we're handling the response manually
-    reply.hijack();
-  }
-
-  /* ── Metrics Endpoint (SP-R2-004-007) ─────────────────────────── */
-
-  async function apiGetMetrics(_request: FastifyRequest, reply: FastifyReply) {
-    const uptimeS = Math.round((Date.now() - _metrics.startedAt) / 1000);
-    const pcts = computePercentiles(_metrics.responseTimes);
-    const cacheStats = _cache.stats ? _cache.stats() : { hits: 0, misses: 0 };
-    const totalCache = (cacheStats.hits || 0) + (cacheStats.misses || 0);
-    const result = {
-      uptime_seconds: uptimeS,
-      request_count: _metrics.requestCount,
-      error_count: _metrics.errorCount,
-      error_rate:
-        _metrics.requestCount > 0 ? +(_metrics.errorCount / _metrics.requestCount).toFixed(4) : 0,
-      response_time_p50: pcts.p50,
-      response_time_p95: pcts.p95,
-      response_time_p99: pcts.p99,
-      sse_connections: sseManager.size,
-      file_ops_count: _metrics.fileOpsCount,
-      cache_hit_ratio: totalCache > 0 ? +((cacheStats.hits || 0) / totalCache).toFixed(4) : 0,
-      per_endpoint: {},
-    };
-    for (const [ep, data] of Object.entries(_metrics.perEndpoint)) {
-      const epPcts = computePercentiles(data.times);
-      result.per_endpoint[ep] = {
-        count: data.count,
-        p50: epPcts.p50,
-        p95: epPcts.p95,
-        p99: epPcts.p99,
-      };
-    }
-    reply.send(result);
-  }
-
-  async function apiFlushMetrics(_request: FastifyRequest, reply: FastifyReply) {
-    flushMetrics();
-    reply.send({ ok: true, flushed_at: new Date().toISOString() });
-  }
-
-  /** Readiness probe — used by Docker HEALTHCHECK and Playwright webServer. */
-  /* ── Analytics Endpoint (SP-R2-004-008) ───────────────────────── */
-
-  function validateAnalyticsEvent(evt) {
-    const r = schemas.validateAnalyticsEvent(evt);
-    return r.valid ? null : r.errors[0];
-  }
-
-  async function apiPostAnalytics(request: FastifyRequest, reply: FastifyReply) {
-    const body = request.body as Record<string, unknown>;
-    if (!Array.isArray(body.events) || body.events.length === 0 || body.events.length > 100) {
-      return reply.code(400).send(errorResponse('VALIDATION_ERROR', V.EVENTS_RANGE));
-    }
-    const errors = [];
-    const valid = [];
-    for (const evt of body.events) {
-      const err = validateAnalyticsEvent(evt);
-      if (err) {
-        errors.push(err);
-        continue;
-      }
-      valid.push({
-        event: evt.event,
-        properties: evt.properties || {},
-        timestamp: new Date().toISOString(),
-      });
-    }
-
-    if (valid.length > 0) {
-      await withFileLock(ANALYTICS_FILE, () => {
-        let existing = [];
-        if (getStore().exists(ANALYTICS_FILE)) {
-          try {
-            existing = JSON.parse(_cache.read(ANALYTICS_FILE));
-          } catch {
-            existing = [];
-          }
-        }
-        existing.push(...valid);
-        if (existing.length > ANALYTICS_MAX_EVENTS)
-          existing = existing.slice(-ANALYTICS_MAX_EVENTS);
-        getStore().mkdirp(path.dirname(ANALYTICS_FILE));
-        safeWriteSync(ANALYTICS_FILE, JSON.stringify(existing, null, 2));
-      });
-    }
-
-    reply.send({ ok: true, accepted: valid.length, rejected: errors.length });
-  }
-
-  async function apiGetAnalytics(request: FastifyRequest, reply: FastifyReply) {
-    if (!getStore().exists(ANALYTICS_FILE)) return reply.send({ events: [], total: 0 });
-    let events = [];
-    try {
-      events = JSON.parse(_cache.read(ANALYTICS_FILE));
-    } catch {}
-    const q = request.query as Record<string, string>;
-    const total = events.length;
-    const limit = Math.min(Math.max(parseInt(q.limit, 10) || 100, 1), 1000);
-    const offset = Math.max(parseInt(q.offset, 10) || 0, 0);
-    const page = events.slice(offset, offset + limit);
-    reply.send({ events: page, total, limit, offset });
-  }
+  registerAnalyticsRoutes({
+    app,
+    analyticsPostSchema: RS.analyticsPost,
+    analyticsGetSchema: RS.analyticsGet,
+    analyticsFile: ANALYTICS_FILE,
+    analyticsMaxEvents: ANALYTICS_MAX_EVENTS,
+    getStore,
+    cache: _cache,
+    safeWriteSync,
+  });
 
   /* ── Audit Trail Endpoint (SP-R2-007-005) ─────────────────────── */
 
@@ -297,11 +193,6 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
   app.post('/api/reevaluate', { schema: RS.reevaluate }, apiReevaluate);
   app.get('/api/export', apiGetExport);
   app.get('/api/help', { schema: RS.helpGet }, apiGetHelp);
-  app.get('/api/events', apiGetEvents);
-  app.get('/api/metrics', apiGetMetrics);
-  app.post('/api/metrics/flush', apiFlushMetrics);
-  app.post('/api/analytics', { schema: RS.analyticsPost }, apiPostAnalytics);
-  app.get('/api/analytics', { schema: RS.analyticsGet }, apiGetAnalytics);
   app.get('/api/audit', { schema: RS.auditGet }, apiGetAudit);
 
   registerHealthRoutes({

@@ -4,7 +4,12 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { FileStore, InMemoryStore, BACKUPS_DIR_NAME } = require('../../src/webapp/store');
+const {
+  FileStore,
+  InMemoryStore,
+  BACKUPS_DIR_NAME,
+  MAX_BACKUPS_PER_FILE,
+} = require('../../src/webapp/store');
 
 /**
  * Store async variants — Unit Tests (M4/Epic-663)
@@ -77,6 +82,36 @@ describe('Store async variants (M4/Epic-663)', () => {
         expect(fs.readFileSync(fp, 'utf8')).toBe('v2');
       } finally {
         mkdirSpy.mockRestore();
+      }
+    });
+
+    it('prunes async backups beyond the configured limit', async () => {
+      const fp = path.join(tmpDir, 'async-prune.txt');
+      fs.writeFileSync(fp, 'v0', 'utf8');
+
+      for (let i = 1; i <= MAX_BACKUPS_PER_FILE + 2; i++) {
+        await store.writeFileAsync(fp, `v${i}`, 'utf8');
+      }
+
+      const backupDir = path.join(tmpDir, BACKUPS_DIR_NAME, path.basename(fp));
+      expect(fs.readdirSync(backupDir).length).toBeLessThanOrEqual(MAX_BACKUPS_PER_FILE);
+    });
+
+    it('cleans up the async temp file when rename fails', async () => {
+      const fp = path.join(tmpDir, 'async-rename-fail.txt');
+      const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(54321);
+      const renameSpy = vi
+        .spyOn(fs.promises, 'rename')
+        .mockRejectedValueOnce(new Error('rename failed'));
+      const unlinkSpy = vi.spyOn(fs.promises, 'unlink').mockResolvedValueOnce(undefined);
+
+      try {
+        await expect(store.writeFileAsync(fp, 'data', 'utf8')).rejects.toThrow(/File write failed/);
+        expect(unlinkSpy).toHaveBeenCalledWith(`${fp}.tmp.${process.pid}.54321`);
+      } finally {
+        nowSpy.mockRestore();
+        renameSpy.mockRestore();
+        unlinkSpy.mockRestore();
       }
     });
   });

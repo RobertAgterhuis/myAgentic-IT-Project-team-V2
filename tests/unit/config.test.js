@@ -161,4 +161,40 @@ describe('config.ts exported environment constants', () => {
 
     expect(config.QUEUE_PROVIDER).toBe('persistent');
   });
+
+  it('reads host, port, trust proxy, and redis settings from env', async () => {
+    process.env.PORT = '8080';
+    process.env.HOST = ' 0.0.0.0 ';
+    process.env.TRUST_PROXY = '10.0.0.1, 10.0.0.2';
+    process.env.REDIS_URL = 'redis://cache';
+
+    const config = await loadFreshConfig();
+
+    expect(config.PORT).toBe(8080);
+    expect(config.HOST).toBe('0.0.0.0');
+    expect(config.TRUST_PROXY).toEqual(['10.0.0.1', '10.0.0.2']);
+    expect(config.REDIS_URL).toBe('redis://cache');
+  });
+
+  it('falls back for invalid port and empty host values', async () => {
+    process.env.PORT = '99999';
+    process.env.HOST = '   ';
+
+    const config = await loadFreshConfig();
+
+    expect(config.PORT).toBe(3000);
+    expect(config.HOST).toBe('127.0.0.1');
+  });
+
+  it('exports expected path constants', async () => {
+    const config = await loadFreshConfig();
+
+    expect(config.BUSINESS_DOCS).toContain('BusinessDocs');
+    expect(config.SESSION_DIR).toContain('BusinessDocs');
+    expect(config.SESSION_FILE).toContain('session-state.json');
+    expect(config.SESSION_AUDIT_FILE).toContain('session-state-audit.json');
+    expect(config.COMMAND_QUEUE).toContain('command-queue.json');
+    expect(config.HELP_DIR).toContain('docs');
+    expect(config.METRICS_FILE).toContain('runtime-metrics.json');
+  });
 });

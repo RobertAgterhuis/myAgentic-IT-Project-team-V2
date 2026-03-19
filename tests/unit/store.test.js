@@ -114,6 +114,23 @@ describe('FileStore', () => {
         unlinkSpy.mockRestore();
       }
     });
+
+    it('continues when old backup cleanup fails', () => {
+      const fp = path.join(tmpDir, 'cleanup-fail.txt');
+      store.writeFile(fp, 'v0');
+      const unlinkSpy = vi.spyOn(fs, 'unlinkSync').mockImplementationOnce(() => {
+        throw new Error('cannot delete backup');
+      });
+
+      try {
+        for (let i = 1; i <= MAX_BACKUPS_PER_FILE + 2; i++) {
+          store.writeFile(fp, `v${i}`);
+        }
+        expect(store.readFile(fp)).toBe(`v${MAX_BACKUPS_PER_FILE + 2}`);
+      } finally {
+        unlinkSpy.mockRestore();
+      }
+    });
   });
 
   describe('readdir', () => {
@@ -122,6 +139,18 @@ describe('FileStore', () => {
       fs.writeFileSync(path.join(tmpDir, 'b.txt'), 'b');
       const entries = store.readdir(tmpDir);
       expect(entries.sort()).toEqual(['a.txt', 'b.txt']);
+    });
+
+    it('supports withFileTypes for files and directories', () => {
+      fs.writeFileSync(path.join(tmpDir, 'plain.txt'), 'a');
+      fs.mkdirSync(path.join(tmpDir, 'nested'));
+
+      const entries = store.readdir(tmpDir, { withFileTypes: true });
+      const nested = entries.find((entry) => entry.name === 'nested');
+      const plain = entries.find((entry) => entry.name === 'plain.txt');
+
+      expect(nested.isDirectory()).toBe(true);
+      expect(plain.isFile()).toBe(true);
     });
   });
 
@@ -171,6 +200,12 @@ describe('InMemoryStore', () => {
   describe('exists / readFile / writeFile', () => {
     it('returns false for non-existent file', () => {
       expect(store.exists('/tmp/no-such-file.txt')).toBe(false);
+    });
+
+    it('tracks parent directories after writing a file', () => {
+      store.writeFile('/tmp/deep/path/test.txt', 'hello');
+      expect(store.exists(path.resolve('/tmp/deep'))).toBe(true);
+      expect(store.exists(path.resolve('/tmp/deep/path'))).toBe(true);
     });
 
     it('writes and reads a file', () => {
@@ -292,6 +327,18 @@ describe('InMemoryStore', () => {
       store.writeFile('/root/file.txt', 'data');
       const entries = store.readdir('/root');
       expect(entries.sort()).toEqual(['file.txt', 'subdir']);
+    });
+
+    it('deduplicates nested directory names across files and tracked dirs', () => {
+      store.mkdirp('/root/shared');
+      store.writeFile('/root/shared/a.txt', 'a');
+      store.writeFile('/root/shared/b.txt', 'b');
+
+      const entries = store.readdir('/root', { withFileTypes: true });
+      const sharedEntries = entries.filter((entry) => entry.name === 'shared');
+
+      expect(sharedEntries).toHaveLength(1);
+      expect(sharedEntries[0].isDirectory()).toBe(true);
     });
   });
 });

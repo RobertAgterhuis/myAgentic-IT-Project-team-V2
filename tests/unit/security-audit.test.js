@@ -117,11 +117,12 @@ describe('M5 Security Hardening', () => {
       expect(fs.existsSync(path.join(ROOT, 'tsconfig.json'))).toBe(true);
     });
 
-    it('tsconfig enables checkJs for incremental adoption', () => {
+    it('tsconfig enforces strict TypeScript baseline', () => {
       const tsconfig = JSON.parse(fs.readFileSync(path.join(ROOT, 'tsconfig.json'), 'utf8'));
-      expect(tsconfig.compilerOptions.allowJs).toBe(true);
-      expect(tsconfig.compilerOptions.checkJs).toBe(true);
-      expect(tsconfig.compilerOptions.noEmit).toBe(true);
+      expect(tsconfig.compilerOptions.strict).toBe(true);
+      expect(tsconfig.compilerOptions.strictNullChecks).toBe(true);
+      expect(tsconfig.compilerOptions.allowJs).toBe(false);
+      expect(tsconfig.compilerOptions.checkJs).toBe(false);
     });
 
     it('type definitions directory exists', () => {

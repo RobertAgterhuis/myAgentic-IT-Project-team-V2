@@ -14,6 +14,7 @@
     "test:smoke": "vitest run tests/smoke/",
     "test:translations": "vitest run tests/unit/translation-validation.test.js",
     "test:a11y": "echo 'Accessibility gate: start server then run npx @axe-core/cli http://127.0.0.1:3000 --tags wcag2a,wcag2aa --exit'",
+    "test:autonomous-lane": "vitest run tests/integration/autonomous-lane.test.js --reporter=verbose",
     "tms:validate": "node scripts/weblate-sync.js validate",
     "tms:pull": "node scripts/weblate-sync.js pull",
     "tms:push": "node scripts/weblate-sync.js push",

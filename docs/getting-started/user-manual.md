@@ -41,7 +41,7 @@ Command Center, and troubleshooting common issues.
 
 - **VS Code** with
   [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
-- **Node.js ≥ 18** — [download here](https://nodejs.org/)
+- **Node.js 22** — [download here](https://nodejs.org/)
 - **Git** — [download here](https://git-scm.com/)
 
 ### 2. Launch the Web UI
@@ -344,7 +344,7 @@ sprint (configurable via decisions).
 
 ### Server won't start
 
-- Ensure Node.js ≥ 18 is installed: `node --version`
+- Ensure Node.js 22 is installed: `node --version`
 - Check port 3000 is available: `lsof -i :3000` (macOS/Linux) or
   `netstat -ano | findstr :3000` (Windows)
 - The server binds to `127.0.0.1` only — if you need a different port, set the

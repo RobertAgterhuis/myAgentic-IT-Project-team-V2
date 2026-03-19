@@ -4,7 +4,7 @@
 [![Storybook CI](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/storybook.yml/badge.svg)](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/storybook.yml)
 [![Coverage: 75%+ enforced](https://img.shields.io/badge/Coverage-75%25%2B%20enforced-brightgreen.svg)](#testing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Node.js ≥ 18](https://img.shields.io/badge/Node.js-%E2%89%A518-green.svg)](https://nodejs.org/)
+[![Node.js 22](https://img.shields.io/badge/Node.js-22-green.svg)](https://nodejs.org/)
 [![ESLint: 0 errors](https://img.shields.io/badge/ESLint-0%20errors-brightgreen.svg)](#code-quality)
 
 A **multi-agent system** of 38+ specialized AI agents that creates complete,
@@ -42,7 +42,7 @@ Copilot and older clients.
 
 | Layer      | Technology                                                                                                                    |
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Runtime    | Node.js ≥ 18                                                                                                                  |
+| Runtime    | Node.js 22                                                                                                                    |
 | Server     | [Fastify 5](https://fastify.dev/) with plugin architecture (cors, rate-limit, static, swagger)                                |
 | Auth       | GitHub OAuth + session cookies + RBAC (role-based access control)                                                             |
 | Queue      | [BullMQ](https://docs.bullmq.io/) (optional Redis-backed job queue, graceful degradation to sync)                             |

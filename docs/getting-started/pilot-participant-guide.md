@@ -26,12 +26,12 @@ and submit your feedback.
 
 ### Prerequisites
 
-| Requirement         | Version  | Check Command            |
-| ------------------- | -------- | ------------------------ |
-| Node.js             | ≥ 18.0.0 | `node --version`         |
-| VS Code             | Latest   | —                        |
-| GitHub Copilot Chat | Latest   | VS Code Extensions panel |
-| Git                 | ≥ 2.30   | `git --version`          |
+| Requirement         | Version | Check Command            |
+| ------------------- | ------- | ------------------------ |
+| Node.js             | 22      | `node --version`         |
+| VS Code             | Latest  | —                        |
+| GitHub Copilot Chat | Latest  | VS Code Extensions panel |
+| Git                 | ≥ 2.30  | `git --version`          |
 
 ### Quick Start
 
@@ -202,7 +202,7 @@ Submit within **5 business days** of completing your mini-cycle.
 
 | Problem                     | Solution                                                              |
 | --------------------------- | --------------------------------------------------------------------- |
-| `npm ci` fails              | Ensure Node.js ≥ 18. Delete `node_modules` and retry.                 |
+| `npm ci` fails              | Ensure Node.js 22 is installed. Delete `node_modules` and retry.      |
 | Copilot Chat not responding | Reload VS Code window (`Ctrl+Shift+P` → "Reload Window")              |
 | Phase agent seems stuck     | Start a fresh Copilot Chat conversation — state is preserved in files |
 | Test failures on setup      | Run `npm test -- --passWithNoTests` to see which specific test fails  |

@@ -165,7 +165,7 @@ the agent. Type `CONTINUE` and the Orchestrator will detect the gap.
 
 ### Server won't start (webapp)
 
-- Ensure Node.js ≥ 18 is installed: `node --version`
+- Ensure Node.js 22 is installed: `node --version`
 - Check port 3000 is available: `netstat -ano | findstr :3000` (Windows) or
   `lsof -i :3000` (macOS/Linux)
 - Set a different port: `$env:SERVER_PORT = 3001; npx tsx src/webapp/server.ts`

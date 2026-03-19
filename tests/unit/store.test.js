@@ -292,3 +292,52 @@ describe('getStore / setStore', () => {
     expect(getStore()).toBe(original);
   });
 });
+
+describe('Store async variants (M4/Epic-663)', () => {
+  describe('FileStore async API', () => {
+    let store;
+    let tmpDir;
+
+    beforeEach(() => {
+      store = new FileStore();
+      tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'store-async-test-'));
+    });
+
+    afterEach(() => {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    });
+
+    it('writes asynchronously and creates a backup when overwriting', async () => {
+      const fp = path.join(tmpDir, 'async.txt');
+      fs.writeFileSync(fp, 'v1', 'utf8');
+
+      await store.writeFileAsync(fp, 'v2', 'utf8');
+
+      expect(fs.readFileSync(fp, 'utf8')).toBe('v2');
+      const backupDir = path.join(tmpDir, BACKUPS_DIR_NAME, path.basename(fp));
+      expect(fs.existsSync(backupDir)).toBe(true);
+      const backups = fs.readdirSync(backupDir);
+      expect(backups.length).toBeGreaterThan(0);
+    });
+
+    it('reads and checks file existence asynchronously', async () => {
+      const fp = path.join(tmpDir, 'readme.txt');
+      fs.writeFileSync(fp, 'payload', 'utf8');
+
+      await expect(store.existsAsync(fp)).resolves.toBe(true);
+      await expect(store.existsAsync(path.join(tmpDir, 'missing.txt'))).resolves.toBe(false);
+      await expect(store.readFileAsync(fp, 'utf8')).resolves.toBe('payload');
+    });
+  });
+
+  describe('InMemoryStore async API', () => {
+    it('async methods delegate to sync internals', async () => {
+      const store = new InMemoryStore();
+
+      await store.writeFileAsync('/tmp/async-mem.txt', 'memory-data', 'utf8');
+
+      await expect(store.existsAsync('/tmp/async-mem.txt')).resolves.toBe(true);
+      await expect(store.readFileAsync('/tmp/async-mem.txt', 'utf8')).resolves.toBe('memory-data');
+    });
+  });
+});

@@ -621,3 +621,126 @@ describe('Dispatcher — phaseAgents injection (S5)', () => {
     expect(result.failed).toEqual([]);
   });
 });
+
+describe('Dispatcher — dispatchStateParallel (M4/Epic-661)', () => {
+  it('runs agents in the same group concurrently', async () => {
+    let active = 0;
+    let observedOverlap = false;
+
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        active += 1;
+        if (active > 1) observedOverlap = true;
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        active -= 1;
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+    });
+
+    const result = await d.dispatchStateParallel(STATES.CRITIC_1, {}, {}, { maxConcurrency: 2 });
+
+    expect(observedOverlap).toBe(true);
+    expect(result.completed.sort()).toEqual(['18', '19']);
+    expect(result.failed).toEqual([]);
+    expect(result.concurrencyHighWaterMark).toBeGreaterThan(1);
+  });
+
+  it('respects the maxConcurrency cap', async () => {
+    let active = 0;
+    let peak = 0;
+
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        active += 1;
+        peak = Math.max(peak, active);
+        await new Promise((resolve) => setTimeout(resolve, 15));
+        active -= 1;
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+    });
+
+    const result = await d.dispatchStateParallel(STATES.PHASE_1, {}, {}, { maxConcurrency: 2 });
+
+    expect(result.completed.length).toBe(5);
+    expect(result.failed).toEqual([]);
+    expect(peak).toBeLessThanOrEqual(2);
+    expect(result.concurrencyHighWaterMark).toBeLessThanOrEqual(2);
+  });
+
+  it('falls back to dispatchState for states without group config', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: createSuccessInvoker('/out/custom.md'),
+      phaseAgents: {
+        CUSTOM_STATE: [{ id: '99', name: 'Custom' }],
+      },
+    });
+
+    const result = await d.dispatchStateParallel('CUSTOM_STATE');
+
+    expect(result.completed).toEqual(['99']);
+    expect(result.failed).toEqual([]);
+    expect(result.concurrencyHighWaterMark).toBe(1);
+    expect(result.totalWaitMs).toBe(0);
+  });
+
+  it('supports onFailure=abort', async () => {
+    const calledIds = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        calledIds.push(agent.id);
+        if (agent.id === '20') throw new Error('group-1 failed');
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.dispatchStateParallel(
+      STATES.PHASE_5_EXECUTING,
+      {},
+      {},
+      {
+        onFailure: 'abort',
+        maxConcurrency: 1,
+      }
+    );
+
+    expect(calledIds).toEqual(['20', '21', '38']);
+    expect(result.completed).toEqual([]);
+    expect(result.failed).toEqual(['20']);
+    expect(calledIds.includes('22')).toBe(false);
+    expect(result.escalated).toBe(false);
+  });
+
+  it('supports onFailure=escalate', async () => {
+    const calledIds = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        calledIds.push(agent.id);
+        if (agent.id === '20') throw new Error('group-1 failed');
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.dispatchStateParallel(
+      STATES.PHASE_5_EXECUTING,
+      {},
+      {},
+      {
+        onFailure: 'escalate',
+        maxConcurrency: 1,
+      }
+    );
+
+    expect(calledIds).toEqual(['20', '21', '38']);
+    expect(result.completed).toEqual([]);
+    expect(result.failed).toEqual(['20']);
+    expect(calledIds.includes('22')).toBe(false);
+    expect(result.escalated).toBe(true);
+  });
+});

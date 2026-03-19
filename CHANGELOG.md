@@ -12,6 +12,13 @@ and this project adheres to
 
 ### Added
 
+- M4: Production scalability profile implementation
+  - Bounded parallel orchestration groups with configurable per-group concurrency
+    in [platform/engine/dispatcher.ts](platform/engine/dispatcher.ts)
+  - Async store I/O API (`existsAsync`, `readFileAsync`, `writeFileAsync`) for
+    filesystem and in-memory stores in [src/webapp/store.ts](src/webapp/store.ts)
+  - Startup scale prerequisite enforcement (`assertScalePrerequisites`) with
+    profile-aware Redis connectivity checks in [src/webapp/runtime-profiles.ts](src/webapp/runtime-profiles.ts)
 - M28: Multi-platform instruction migration
   - `platform/schema/protocols.json` — canonical protocol data (6 protocols,
     handoff checklist, definition of done) with JSON Schema
@@ -40,6 +47,11 @@ and this project adheres to
 
 ### Changed
 
+- Startup bootstrap sequence now validates runtime profile/security model,
+  enforces scale prerequisites, and then initializes storage/app startup
+  in [src/webapp/server.ts](src/webapp/server.ts)
+- Server context now exposes non-blocking `safeWriteAsync` in
+  [src/webapp/context.ts](src/webapp/context.ts)
 - M28: 14 agent skill files now reference `templates/sdlc/guardrails/00-global-guardrails.md`
   instead of `.github/copilot-instructions.md`
 - M28: Handoff checklist canonical template embedded directly in guardrails (G-GLOB-20)
@@ -56,6 +68,10 @@ and this project adheres to
 
 ### Fixed
 
+- Added focused unit coverage for M4 scalability features:
+  - Parallel dispatcher behavior in [tests/unit/dispatcher.test.js](tests/unit/dispatcher.test.js)
+  - Async store behavior in [tests/unit/store.test.js](tests/unit/store.test.js)
+  - Scale prerequisite enforcement in [tests/unit/runtime-profiles.test.js](tests/unit/runtime-profiles.test.js)
 - design-tokens.json: text-muted color (#627D98 → #546A7B) to pass WCAG AA 4.5:1
   contrast ratio on light backgrounds
 - contrast.test.js: all 29 tests now pass (previously failing due to missing

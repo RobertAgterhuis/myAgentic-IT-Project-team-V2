@@ -143,6 +143,31 @@ const PLATFORMS = Object.freeze({
   OPENAI: 'openai',
 });
 
+// ─── Parallel Execution Groups ───────────────────────────────
+// Maps state → list of groups. Each group is an array of agent IDs
+// that can execute concurrently. Groups run serially — outputs of
+// one group feed into the next as predecessor paths.
+
+const AGENT_GROUPS: Record<string, string[][]> = Object.freeze({
+  [STATES.ONBOARDING]: [['25']],
+  [STATES.PHASE_1]: [['01', '02', '03', '04', '34']],
+  [STATES.CRITIC_1]: [['18', '19']],
+  [STATES.PHASE_2]: [['05', '06', '07', '08', '09', '33']],
+  [STATES.CRITIC_2]: [['18', '19']],
+  [STATES.PHASE_3]: [['10', '11', '12', '13', '32', '35']],
+  [STATES.CRITIC_3]: [['18', '19']],
+  [STATES.PHASE_4]: [['14', '15', '16', '30', '31']],
+  [STATES.CRITIC_4]: [['18', '19']],
+  [STATES.SYNTHESIS]: [['17']],
+  [STATES.SPRINT_GATE]: [['00']],
+  // PHASE_5: implementation/test/review can run together; then the
+  // reporting agents run after they have something to work from.
+  [STATES.PHASE_5_EXECUTING]: [
+    ['20', '21', '38'],
+    ['22', '29', '26', '27', '28'],
+  ],
+} as Record<string, string[][]>);
+
 // ─── Default Configuration ───────────────────────────────────
 const DEFAULT_CONFIG = Object.freeze({
   platform: PLATFORMS.COPILOT,
@@ -153,6 +178,7 @@ const DEFAULT_CONFIG = Object.freeze({
   backoffCapMs: 30000,
   skillsDir: 'templates/sdlc/agents',
   docsDir: 'docs',
+  maxConcurrency: 3, // bounded parallelism ceiling per group
 });
 
 // ─── Invocation Log Entry ────────────────────────────────────
@@ -517,10 +543,202 @@ class Dispatcher {
     this._log.push(entry);
     this._onLog(entry);
   }
+
+  // ─── Bounded Parallelism ─────────────────────────────────────
+
+  /**
+   * Run a list of agents as a bounded-parallel group.
+   *
+   * Agents within the group execute concurrently up to `maxConcurrency`.
+   * A semaphore gates admission so that at most `maxConcurrency` invocations
+   * run at any one time. All agents share the same `contextOptions` (predecessor
+   * paths from previous groups are already included by the caller).
+   *
+   * @returns {Promise<{results, concurrency, waitMs}>}
+   *   results              — per-agent invocation results (in submission order)
+   *   concurrency          — high-water mark of simultaneously active agents
+   *   waitMs               — total accumulated queue-wait time across all agents
+   * @private
+   */
+  async _runBoundedGroup(
+    groupIds: string[],
+    state: string,
+    contextOptions: Record<string, unknown>,
+    agentConfigs: Record<string, Record<string, unknown>>,
+    maxConcurrency: number
+  ): Promise<{
+    results: Array<Record<string, unknown>>;
+    concurrency: number;
+    waitMs: number;
+  }> {
+    const phaseAgents = this._phaseAgents[state] || [];
+    const agentMap = new Map<string, AgentRef>(phaseAgents.map((a) => [a.id, a]));
+
+    let activeCount = 0;
+    let highWaterMark = 0;
+    let totalWaitMs = 0;
+    const semaphoreQueue: Array<() => void> = [];
+
+    const acquire = async (): Promise<void> => {
+      if (activeCount < maxConcurrency) {
+        activeCount++;
+        highWaterMark = Math.max(highWaterMark, activeCount);
+        return;
+      }
+      const waitStart = Date.now();
+      await new Promise<void>((resolve) => semaphoreQueue.push(resolve));
+      totalWaitMs += Date.now() - waitStart;
+      activeCount++;
+      highWaterMark = Math.max(highWaterMark, activeCount);
+    };
+
+    const release = (): void => {
+      activeCount--;
+      const next = semaphoreQueue.shift();
+      if (next) next();
+    };
+
+    const tasks = groupIds.map(async (agentId) => {
+      const agent = agentMap.get(agentId);
+      if (!agent) {
+        return {
+          agent: { id: agentId, name: agentId },
+          success: false,
+          error: `Agent '${agentId}' not found in registry for state '${state}'`,
+        };
+      }
+
+      await acquire();
+      try {
+        const context = this.buildContext(agentId, contextOptions);
+        const agentConfig = agentConfigs[agentId] || {};
+        const result = await this.invoke(agent, state, context, agentConfig);
+        return { agent, ...result };
+      } finally {
+        release();
+      }
+    });
+
+    const settled = await Promise.allSettled(tasks);
+    const results: Array<Record<string, unknown>> = [];
+    for (const outcome of settled) {
+      if (outcome.status === 'fulfilled') {
+        results.push(outcome.value as Record<string, unknown>);
+      } else {
+        results.push({
+          agent: { id: 'unknown', name: 'unknown' },
+          success: false,
+          error: String(outcome.reason),
+        });
+      }
+    }
+
+    return { results, concurrency: highWaterMark, waitMs: totalWaitMs };
+  }
+
+  /**
+   * Dispatch agents for a state using bounded parallel execution groups.
+   *
+   * Groups defined in AGENT_GROUPS run serially — the predecessor paths
+   * collected from one group are passed to the next. Within each group,
+   * agents run concurrently up to `maxConcurrency` (default from config).
+   * States without a group config fall back to sequential `dispatchState()`.
+   *
+   * Returned result includes observability fields:
+   *   concurrencyHighWaterMark — peak simultaneous agent executions
+   *   totalWaitMs              — sum of time agents spent waiting to acquire a slot
+   *
+   * @param {string} state
+   * @param {object} contextOptions - Options for buildContext
+   * @param {object} [agentConfigs] - Per-agent config overrides
+   * @param {object} [dispatchOptions] - { onFailure, maxConcurrency }
+   */
+  async dispatchStateParallel(
+    state: string,
+    contextOptions: Record<string, unknown> = {},
+    agentConfigs: Record<string, Record<string, unknown>> = {},
+    dispatchOptions: Record<string, unknown> = {}
+  ): Promise<{
+    completed: string[];
+    failed: string[];
+    results: Array<Record<string, unknown>>;
+    escalated: boolean;
+    concurrencyHighWaterMark: number;
+    totalWaitMs: number;
+  }> {
+    const groups = AGENT_GROUPS[state];
+    if (!groups) {
+      const r = await this.dispatchState(state, contextOptions, agentConfigs, dispatchOptions);
+      return { ...r, concurrencyHighWaterMark: 1, totalWaitMs: 0 };
+    }
+
+    const { onFailure = 'continue', maxConcurrency: overrideConcurrency } = dispatchOptions as {
+      onFailure?: string;
+      maxConcurrency?: number;
+    };
+    const maxConcurrency: number =
+      overrideConcurrency ?? (this._config.maxConcurrency as number) ?? 3;
+
+    const completed: string[] = [];
+    const failed: string[] = [];
+    const results: Array<Record<string, unknown>> = [];
+    let escalated = false;
+    let concurrencyHighWaterMark = 0;
+    let totalWaitMs = 0;
+
+    let predecessorPaths: string[] = [...((contextOptions.predecessorPaths as string[]) || [])];
+
+    for (const group of groups) {
+      if (escalated) break;
+
+      const groupContext: Record<string, unknown> = {
+        ...contextOptions,
+        predecessorPaths: [...predecessorPaths],
+      };
+
+      const groupResult = await this._runBoundedGroup(
+        group,
+        state,
+        groupContext,
+        agentConfigs,
+        maxConcurrency
+      );
+
+      concurrencyHighWaterMark = Math.max(concurrencyHighWaterMark, groupResult.concurrency);
+      totalWaitMs += groupResult.waitMs;
+
+      let aborted = false;
+      for (const r of groupResult.results) {
+        results.push(r);
+        const agentId = (r.agent as AgentRef).id;
+        if ((r as { success: boolean }).success) {
+          completed.push(agentId);
+          if (r.outputPath) {
+            predecessorPaths.push(r.outputPath as string);
+          }
+        } else {
+          failed.push(agentId);
+          if (onFailure === 'abort') {
+            aborted = true;
+            break;
+          }
+          if (onFailure === 'escalate') {
+            escalated = true;
+            aborted = true;
+            break;
+          }
+        }
+      }
+      if (aborted) break;
+    }
+
+    return { completed, failed, results, escalated, concurrencyHighWaterMark, totalWaitMs };
+  }
 }
 
 export {
   PHASE_AGENTS,
+  AGENT_GROUPS,
   PLATFORMS,
   DEFAULT_CONFIG,
   Dispatcher,

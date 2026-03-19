@@ -54,7 +54,7 @@ import { createStorageProvider } from '../../platform/engine/persistence';
 import type { StorageProvider } from '../../platform/engine/persistence';
 import { getRedisConnection, createRedisConnection } from './redis';
 import { createRedisPubSubSSEManager } from './sse-manager-redis';
-import { hasAuthConfigured, validateProfile } from './runtime-profiles';
+import { hasAuthConfigured, validateProfile, assertScalePrerequisites } from './runtime-profiles';
 
 import { buildApp } from './app';
 import type { ServerContext } from './context';
@@ -212,6 +212,35 @@ function safeWriteSync(
   });
 }
 
+/**
+ * Non-blocking async write — preferred for production request paths (M4/Epic-663).
+ * Uses fs.promises internally to avoid blocking the Node.js event loop.
+ */
+async function safeWriteAsync(
+  filePath: string,
+  data: string,
+  encoding?: BufferEncoding,
+  auditMeta?: Record<string, unknown>
+): Promise<void> {
+  await store().writeFileAsync(filePath, data, encoding);
+  _cache.invalidate(filePath);
+  metricsCollector.incrementFileOps();
+  const rel = path.relative(PROJECT_ROOT, filePath).replace(/\\/g, '/');
+  sseNotify('file_change', { file: rel, timestamp: new Date().toISOString() });
+  _audit.log({
+    operation: (auditMeta?.operation as string) || 'update',
+    entityType:
+      (auditMeta?.entityType as string) ||
+      rel
+        .split('/')
+        .pop()!
+        .replace(/\.\w+$/, ''),
+    entityId: (auditMeta?.entityId as string | null) || null,
+    user: (auditMeta?.user as string) || 'system',
+    summary: (auditMeta?.summary as string) || `File written: ${rel}`,
+  });
+}
+
 function isLocalBinding(host: string): boolean {
   return host === '127.0.0.1' || host === 'localhost' || host === '::1';
 }
@@ -296,6 +325,7 @@ const ctx: ServerContext = {
   _metrics,
   _audit,
   safeWriteSync,
+  safeWriteAsync,
   sseNotify,
   computePercentiles,
   recordMetric,
@@ -464,10 +494,37 @@ if (require.main === module) {
     process.exit(1);
   }
 
-  initStorageProvider()
-    .then(() => createApp())
+  // M4/Epic-659: verify actual Redis connectivity for the detected runtime profile
+  const _redisPing = async (): Promise<void> => {
+    const redis = getRedisConnection(REDIS_URL);
+    if (!redis) throw new Error('Redis connection not available');
+    const result = await redis.ping();
+    if (result !== 'PONG') throw new Error(`Unexpected ping response: ${result}`);
+  };
+
+  assertScalePrerequisites(
+    {
+      nodeEnv: process.env.NODE_ENV,
+      host: HOST,
+      storageProvider: STORAGE_PROVIDER,
+      queueProvider: QUEUE_PROVIDER,
+      sessionStore: SESSION_STORE,
+      redisUrl: REDIS_URL,
+      hasAuth: hasAuthConfigured({
+        githubClientId: process.env.GITHUB_CLIENT_ID,
+        apiKey: process.env.API_KEY,
+      }),
+    },
+    _redisPing,
+    structuredLog
+  )
+    .catch((err: Error) => {
+      structuredLog('error', 'startup_scale_prerequisites_failed', { error: err.message });
+      process.exit(1);
+    })
+    .then(() => initStorageProvider().then(() => createApp()))
     .then(async (app) => {
-      await app.listen({ port: PORT, host: HOST });
+      await app!.listen({ port: PORT, host: HOST });
       structuredLog('info', 'server_started', {
         host: HOST,
         port: PORT,
@@ -597,4 +654,5 @@ export {
   getNodeServer,
   ctx,
   validateStartupRuntimeProfile,
+  safeWriteAsync,
 };

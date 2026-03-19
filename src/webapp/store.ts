@@ -102,6 +102,85 @@ export class FileStore {
       return 0;
     }
   }
+
+  // ── Async variants (M4/Epic-663) ───────────────────────────
+  // Use fs.promises to avoid blocking the Node.js event loop on
+  // production-critical persistence paths.
+
+  async existsAsync(filePath: string): Promise<boolean> {
+    try {
+      await fs.promises.access(filePath);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async readFileAsync(filePath: string, encoding?: string): Promise<string> {
+    return fs.promises.readFile(filePath, (encoding || 'utf8') as BufferEncoding);
+  }
+
+  /** Async backup: copy existing file to the .backups sub-directory. */
+  async _createBackupAsync(filePath: string): Promise<void> {
+    try {
+      await fs.promises.access(filePath);
+    } catch {
+      return; // file does not exist — no backup needed
+    }
+    const dir = path.dirname(filePath);
+    const base = path.basename(filePath);
+    const bkDir = path.join(dir, BACKUPS_DIR_NAME, base);
+    try {
+      await fs.promises.mkdir(bkDir, { recursive: true });
+    } catch {
+      /* ignore */
+    }
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const bkPath = path.join(bkDir, stamp);
+    try {
+      await fs.promises.copyFile(filePath, bkPath);
+    } catch {
+      /* backup failure is non-fatal */
+    }
+    try {
+      const files = (await fs.promises.readdir(bkDir)).sort();
+      while (files.length > MAX_BACKUPS_PER_FILE) {
+        const oldest = files.shift()!;
+        try {
+          await fs.promises.unlink(path.join(bkDir, oldest));
+        } catch {
+          /* ignore */
+        }
+      }
+    } catch {
+      /* ignore prune errors */
+    }
+  }
+
+  /**
+   * Atomic async write. Backs up the existing file, writes to a temp path,
+   * then renames atomically — safe for concurrent processes.
+   */
+  async writeFileAsync(filePath: string, data: string, encoding?: string): Promise<void> {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    await this._createBackupAsync(filePath);
+    const tmpPath = `${filePath}.tmp.${process.pid}.${Date.now()}`;
+    try {
+      await fs.promises.writeFile(tmpPath, data, (encoding || 'utf8') as BufferEncoding);
+      await fs.promises.rename(tmpPath, filePath);
+    } catch (err: unknown) {
+      try {
+        await fs.promises.unlink(tmpPath);
+      } catch {
+        /* ignore cleanup error */
+      }
+      const message = err instanceof Error ? err.message : String(err);
+      throw Object.assign(new Error(`File write failed (${path.basename(filePath)}): ${message}`), {
+        status: 500,
+      });
+    }
+  }
 }
 
 /* ── InMemoryStore helpers ─────────────────────────────────────── */
@@ -244,6 +323,19 @@ export class InMemoryStore {
     const resolved = path.resolve(filePath);
     const entry = this._files.get(resolved);
     return entry ? entry.mtime : 0;
+  }
+
+  // ── Async variants (M4/Epic-663) — delegate to sync internals ─
+  async existsAsync(filePath: string): Promise<boolean> {
+    return this.exists(filePath);
+  }
+
+  async readFileAsync(filePath: string, encoding?: string): Promise<string> {
+    return this.readFile(filePath, encoding);
+  }
+
+  async writeFileAsync(filePath: string, data: string, encoding?: string): Promise<void> {
+    this.writeFile(filePath, data, encoding);
   }
 }
 

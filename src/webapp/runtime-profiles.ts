@@ -417,3 +417,68 @@ export function hasAuthConfigured(config: { githubClientId?: string; apiKey?: st
   const hasApiKey = config.apiKey && config.apiKey.length >= 24;
   return !!(hasGithub || hasApiKey);
 }
+
+/**
+ * Scale prerequisites check (M4/Epic-659).
+ *
+ * Verifies that infrastructure required by the detected runtime profile is
+ * actually reachable at startup — not just that the right env vars are set.
+ *
+ * For `production-distributed`: Redis connectivity is mandatory. If the ping
+ * fails, this function throws so the process exits before accepting traffic.
+ *
+ * For `production-single-node` with Redis configured: Redis connectivity is
+ * checked but only logged as a warning on failure (Redis is optional there).
+ *
+ * A `ping` function is injected for testability.
+ *
+ * @param config  - Same shape as the one used for detectProfile.
+ * @param ping    - Async function that resolves on success or rejects on failure.
+ * @param log     - Optional structured logger (level, event, data).
+ */
+export async function assertScalePrerequisites(
+  config: {
+    nodeEnv?: string;
+    host: string;
+    storageProvider: StorageProviderType;
+    queueProvider: QueueProviderType;
+    sessionStore: SessionStoreType;
+    redisUrl?: string;
+    hasAuth: boolean;
+  },
+  ping: () => Promise<void>,
+  log?: (level: string, event: string, data: Record<string, unknown>) => void
+): Promise<void> {
+  const profile = detectProfile(config);
+  const _log = log ?? (() => {});
+
+  if (profile === 'production-distributed') {
+    // Redis is required — fail startup if unreachable
+    try {
+      await ping();
+      _log('info', 'startup_redis_connectivity_ok', { profile });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      _log('error', 'startup_redis_unreachable', { profile, error: message });
+      throw Object.assign(
+        new Error(
+          `Profile '${profile}' requires Redis but the connectivity check failed: ${message}`
+        ),
+        { code: 'REDIS_UNREACHABLE', profile }
+      );
+    }
+  } else if ((profile === 'production-single-node' || profile === 'local-dev') && config.redisUrl) {
+    // Redis is configured but optional — warn on failure, continue
+    try {
+      await ping();
+      _log('info', 'startup_redis_connectivity_ok', { profile });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      _log('warn', 'startup_redis_unreachable_optional', {
+        profile,
+        error: message,
+        consequence: 'Redis-backed SSE and queueing will not be available',
+      });
+    }
+  }
+}

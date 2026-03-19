@@ -88,7 +88,7 @@ interface DriftReport {
 
 interface DetectDriftParams {
   sessionState: unknown;
-  sprintPlanContent: string;
+  sprintPlanContent: string | null;
   syncReports: Record<string, string | null>;
 }
 

@@ -1,6 +1,5 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
-// @ts-nocheck
 /**
  * Milestone management API routes.
  *
@@ -23,9 +22,80 @@ import { withFileLock } from '../file-lock';
 import { getStore } from '../store';
 import * as RS from '../route-schemas';
 
-const VALID_STATUSES = ['not started', 'in progress', 'complete', 'blocked'];
+const VALID_STATUSES = ['not started', 'in progress', 'complete', 'blocked'] as const;
 
-function getPaths(ctx) {
+type MilestoneStatus = (typeof VALID_STATUSES)[number];
+
+interface MilestonePaths {
+  dataDir: string;
+  milestonesFile: string;
+  templatesFile: string;
+}
+
+interface MilestoneRecord {
+  id: string;
+  name: string;
+  status: MilestoneStatus;
+  progress: number;
+  completion: string;
+  created_at: string;
+  updated_at: string;
+  archived: boolean;
+  template_id?: string;
+}
+
+interface MilestoneTemplateRecord {
+  id: string;
+  name: string;
+  namePattern: string;
+  defaultStatus: MilestoneStatus;
+  defaultProgress: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface MilestoneInput {
+  name: string;
+  status: string;
+  progress: number;
+  completion: string;
+}
+
+interface MilestoneUpdateInput {
+  name?: string;
+  status?: string;
+  progress?: number;
+  completion?: string;
+}
+
+interface MilestoneTemplateInput {
+  name: string;
+  namePattern?: string;
+  defaultStatus: string;
+  defaultProgress: number;
+}
+
+interface ApplyTemplateInput {
+  name?: string;
+  completion?: string;
+}
+
+interface RouteErrorShape {
+  status: number;
+  error: string;
+  details?: string[];
+  message?: string;
+}
+
+function isRouteError(err: unknown): err is RouteErrorShape {
+  return typeof err === 'object' && err !== null && 'status' in err && 'error' in err;
+}
+
+function getErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+function getPaths(ctx: ServerContext): MilestonePaths {
   const dataDir = ctx.BUSINESS_DOCS || path.join(ctx.PROJECT_ROOT, 'BusinessDocs');
   return {
     dataDir,
@@ -41,47 +111,47 @@ function generateMilestoneId() {
   return `milestone-${date}-${random}`;
 }
 
-function ensureMilestoneStore(paths) {
+function ensureMilestoneStore(paths: MilestonePaths): void {
   const store = getStore();
   if (store.exists(paths.milestonesFile)) return;
   store.mkdirp(paths.dataDir);
   store.writeFile(paths.milestonesFile, JSON.stringify([], null, 2), 'utf8');
 }
 
-function readMilestones(paths, cache) {
+function readMilestones(paths: MilestonePaths, cache: ServerContext['_cache']): MilestoneRecord[] {
   ensureMilestoneStore(paths);
   try {
-    return JSON.parse(cache.read(paths.milestonesFile));
+    return JSON.parse(cache.read(paths.milestonesFile)) as MilestoneRecord[];
   } catch {
     return [];
   }
 }
 
-function validateName(name) {
+function validateName(name: unknown): string | null {
   if (typeof name !== 'string') return 'name: required string field';
   if (name.trim().length === 0) return 'name: cannot be empty';
   if (name.length > 255) return 'name: maximum 255 characters';
   return null;
 }
 
-function validateStatus(status) {
+function validateStatus(status: unknown): string | null {
   if (typeof status !== 'string') {
     return `status: must be one of ${VALID_STATUSES.join(', ')}`;
   }
-  if (!VALID_STATUSES.includes(status.toLowerCase())) {
+  if (!VALID_STATUSES.includes(status.toLowerCase() as MilestoneStatus)) {
     return `status: must be one of ${VALID_STATUSES.join(', ')}`;
   }
   return null;
 }
 
-function validateProgress(progress) {
+function validateProgress(progress: unknown): string | null {
   if (typeof progress !== 'number') return 'progress: required number field';
   if (!Number.isInteger(progress)) return 'progress: must be an integer';
   if (progress < 0 || progress > 100) return 'progress: must be between 0 and 100';
   return null;
 }
 
-function validateCompletion(completion) {
+function validateCompletion(completion: unknown): string | null {
   if (typeof completion !== 'string') return 'completion: required string field (ISO 8601 date)';
   if (!/^\d{4}-\d{2}-\d{2}$/.test(completion)) {
     return 'completion: must be ISO 8601 format (YYYY-MM-DD)';
@@ -91,27 +161,35 @@ function validateCompletion(completion) {
   return null;
 }
 
-function validateMilestone(data) {
+function validateMilestone(data: Partial<MilestoneInput>): { valid: boolean; errors: string[] } {
   const checks = [
     validateName(data && data.name),
     validateStatus(data && data.status),
     validateProgress(data && data.progress),
     validateCompletion(data && data.completion),
   ];
-  const errors = checks.filter(Boolean);
+  const errors = checks.filter((value): value is string => value !== null);
   return { valid: errors.length === 0, errors };
 }
 
-function milestoneNameExists(milestones, name, excludeId) {
+function milestoneNameExists(
+  milestones: MilestoneRecord[],
+  name: string,
+  excludeId: string | null
+): boolean {
   const normalized = name.toLowerCase();
   return milestones.some((m) => m.id !== excludeId && m.name.toLowerCase() === normalized);
 }
 
-function createRouteError(status, error, details) {
+function createRouteError(status: number, error: string, details?: string[]): RouteErrorShape {
   return { status, error, details };
 }
 
-function validateOptionalField(data, field, validator) {
+function validateOptionalField(
+  data: MilestoneUpdateInput,
+  field: keyof MilestoneUpdateInput,
+  validator: (value: unknown) => string | null
+): true | null {
   if (data[field] === undefined) return null;
   const fieldError = validator(data[field]);
   if (fieldError) {
@@ -120,20 +198,26 @@ function validateOptionalField(data, field, validator) {
   return true;
 }
 
-function collectMilestoneUpdates(data, milestones, milestoneId) {
-  const updatedFields: Record<string, unknown> = {};
+function collectMilestoneUpdates(
+  data: MilestoneUpdateInput,
+  milestones: MilestoneRecord[],
+  milestoneId: string
+): Partial<Pick<MilestoneRecord, 'name' | 'status' | 'progress' | 'completion'>> {
+  const updatedFields: Partial<
+    Pick<MilestoneRecord, 'name' | 'status' | 'progress' | 'completion'>
+  > = {};
 
   if (validateOptionalField(data, 'name', validateName)) {
-    if (milestoneNameExists(milestones, data.name, milestoneId)) {
+    if (milestoneNameExists(milestones, data.name!, milestoneId)) {
       throw createRouteError(409, 'Milestone already exists', [
         `Milestone with name "${data.name}" already exists`,
       ]);
     }
-    updatedFields.name = data.name;
+    updatedFields.name = data.name!;
   }
 
   if (validateOptionalField(data, 'status', validateStatus)) {
-    updatedFields.status = data.status.toLowerCase();
+    updatedFields.status = data.status!.toLowerCase() as MilestoneStatus;
   }
 
   if (validateOptionalField(data, 'progress', validateProgress)) {
@@ -151,7 +235,7 @@ async function createMilestone(request: FastifyRequest, reply: FastifyReply, ctx
   const paths = getPaths(ctx);
 
   try {
-    const data = request.body as Record<string, unknown>;
+    const data = request.body as Partial<MilestoneInput>;
     const validation = validateMilestone(data);
     if (!validation.valid) {
       return reply
@@ -159,12 +243,12 @@ async function createMilestone(request: FastifyRequest, reply: FastifyReply, ctx
         .send({ ok: false, error: 'Validation failed', details: validation.errors });
     }
 
-    let createdMilestone = null;
-    const normalizedStatus = (data.status as string).toLowerCase();
+    let createdMilestone: MilestoneRecord | null = null;
+    const normalizedStatus = data.status!.toLowerCase() as MilestoneStatus;
 
     await withFileLock(paths.milestonesFile, () => {
       const milestones = readMilestones(paths, ctx._cache);
-      if (milestoneNameExists(milestones, data.name, null)) {
+      if (milestoneNameExists(milestones, data.name!, null)) {
         return reply.code(409).send({
           ok: false,
           error: 'Milestone already exists',
@@ -175,10 +259,10 @@ async function createMilestone(request: FastifyRequest, reply: FastifyReply, ctx
       const now = new Date().toISOString();
       createdMilestone = {
         id: generateMilestoneId(),
-        name: data.name,
+        name: data.name!,
         status: normalizedStatus,
-        progress: data.progress,
-        completion: data.completion,
+        progress: data.progress!,
+        completion: data.completion!,
         created_at: now,
         updated_at: now,
         archived: false,
@@ -196,21 +280,22 @@ async function createMilestone(request: FastifyRequest, reply: FastifyReply, ctx
     });
 
     if (!createdMilestone) return;
+    const created = createdMilestone as MilestoneRecord;
 
     return reply.code(201).send({
       ok: true,
-      data: createdMilestone,
-      message: `Milestone "${createdMilestone.name}" created successfully`,
-      timestamp: createdMilestone.created_at,
+      data: created,
+      message: `Milestone "${created.name}" created successfully`,
+      timestamp: created.created_at,
     });
   } catch (err) {
-    if (err && err.status) {
-      return reply.code(err.status).send({ ok: false, error: err.message });
+    if (isRouteError(err)) {
+      return reply.code(err.status).send({ ok: false, error: err.error });
     }
     return reply.code(500).send({
       ok: false,
       error: 'Failed to create milestone',
-      details: err.message,
+      details: getErrorMessage(err),
     });
   }
 }
@@ -231,7 +316,7 @@ async function listMilestones(request: FastifyRequest, reply: FastifyReply, ctx)
     return reply.code(500).send({
       ok: false,
       error: 'Failed to list milestones',
-      details: err.message,
+      details: getErrorMessage(err),
     });
   }
 }
@@ -263,7 +348,7 @@ async function getMilestone(
     return reply.code(500).send({
       ok: false,
       error: 'Failed to get milestone',
-      details: err.message,
+      details: getErrorMessage(err),
     });
   }
 }
@@ -277,9 +362,9 @@ async function updateMilestone(
 
   try {
     const milestoneId = request.params.id;
-    const data = request.body as Record<string, unknown>;
+    const data = request.body as MilestoneUpdateInput;
 
-    let updatedMilestone = null;
+    let updatedMilestone: MilestoneRecord | null = null;
     await withFileLock(paths.milestonesFile, () => {
       const milestones = readMilestones(paths, ctx._cache);
       const index = milestones.findIndex((m) => m.id === milestoneId);
@@ -314,25 +399,26 @@ async function updateMilestone(
     });
 
     if (!updatedMilestone) return;
+    const updated = updatedMilestone as MilestoneRecord;
 
     return reply.send({
       ok: true,
-      data: updatedMilestone,
-      message: `Milestone "${updatedMilestone.name}" updated successfully`,
-      timestamp: updatedMilestone.updated_at,
+      data: updated,
+      message: `Milestone "${updated.name}" updated successfully`,
+      timestamp: updated.updated_at,
     });
   } catch (err) {
-    if (err && err.status) {
+    if (isRouteError(err)) {
       return reply.code(err.status).send({
         ok: false,
-        error: err.error || err.message,
+        error: err.error,
         details: err.details,
       });
     }
     return reply.code(500).send({
       ok: false,
       error: 'Failed to update milestone',
-      details: err.message,
+      details: getErrorMessage(err),
     });
   }
 }
@@ -347,7 +433,7 @@ async function archiveMilestone(
   try {
     const milestoneId = request.params.id;
 
-    let archivedMilestone = null;
+    let archivedMilestone: MilestoneRecord | null = null;
     await withFileLock(paths.milestonesFile, () => {
       const milestones = readMilestones(paths, ctx._cache);
       const index = milestones.findIndex((m) => m.id === milestoneId);
@@ -383,21 +469,22 @@ async function archiveMilestone(
     });
 
     if (!archivedMilestone) return;
+    const archived = archivedMilestone as MilestoneRecord;
 
     return reply.send({
       ok: true,
-      data: archivedMilestone,
-      message: `Milestone "${archivedMilestone.name}" archived successfully`,
-      timestamp: archivedMilestone.updated_at,
+      data: archived,
+      message: `Milestone "${archived.name}" archived successfully`,
+      timestamp: archived.updated_at,
     });
   } catch (err) {
-    if (err && err.status) {
-      return reply.code(err.status).send({ ok: false, error: err.message });
+    if (isRouteError(err)) {
+      return reply.code(err.status).send({ ok: false, error: err.error });
     }
     return reply.code(500).send({
       ok: false,
       error: 'Failed to archive milestone',
-      details: err.message,
+      details: getErrorMessage(err),
     });
   }
 }
@@ -406,17 +493,20 @@ async function archiveMilestone(
 // TEMPLATE MANAGEMENT (SP-9.9)
 // ============================================================================
 
-function ensureTemplateStore(paths) {
+function ensureTemplateStore(paths: MilestonePaths): void {
   const store = getStore();
   if (store.exists(paths.templatesFile)) return;
   store.mkdirp(paths.dataDir);
   store.writeFile(paths.templatesFile, JSON.stringify([], null, 2), 'utf8');
 }
 
-function readTemplates(paths, cache) {
+function readTemplates(
+  paths: MilestonePaths,
+  cache: ServerContext['_cache']
+): MilestoneTemplateRecord[] {
   ensureTemplateStore(paths);
   try {
-    return JSON.parse(cache.read(paths.templatesFile));
+    return JSON.parse(cache.read(paths.templatesFile)) as MilestoneTemplateRecord[];
   } catch {
     return [];
   }
@@ -429,20 +519,23 @@ function generateTemplateId() {
   return `template-${date}-${random}`;
 }
 
-function validateTemplateName(name) {
+function validateTemplateName(name: unknown): string | null {
   if (typeof name !== 'string') return 'name: required string field';
   if (name.trim().length === 0) return 'name: cannot be empty';
   if (name.length > 100) return 'name: maximum 100 characters';
   return null;
 }
 
-function validateTemplate(data) {
+function validateTemplate(data: Partial<MilestoneTemplateInput>): {
+  valid: boolean;
+  errors: string[];
+} {
   const checks = [
     validateTemplateName(data && data.name),
     validateStatus(data && data.defaultStatus),
     validateProgress(data && data.defaultProgress),
   ];
-  const errors = checks.filter(Boolean);
+  const errors = checks.filter((value): value is string => value !== null);
   return { valid: errors.length === 0, errors };
 }
 
@@ -450,7 +543,7 @@ async function createTemplate(request: FastifyRequest, reply: FastifyReply, ctx)
   const paths = getPaths(ctx);
 
   try {
-    const data = request.body as Record<string, unknown>;
+    const data = request.body as Partial<MilestoneTemplateInput>;
     const validation = validateTemplate(data);
     if (!validation.valid) {
       return reply
@@ -458,15 +551,15 @@ async function createTemplate(request: FastifyRequest, reply: FastifyReply, ctx)
         .send({ ok: false, error: 'Validation failed', details: validation.errors });
     }
 
-    let createdTemplate = null;
-    const normalizedStatus = (data.defaultStatus as string).toLowerCase();
+    let createdTemplate: MilestoneTemplateRecord | null = null;
+    const normalizedStatus = data.defaultStatus!.toLowerCase() as MilestoneStatus;
 
     await withFileLock(paths.templatesFile, () => {
       const templates = readTemplates(paths, ctx._cache);
 
       // Check for duplicate template name
       const existingTemplate = templates.find(
-        (t) => t.name.toLowerCase() === (data.name as string).toLowerCase()
+        (t) => t.name.toLowerCase() === data.name!.toLowerCase()
       );
       if (existingTemplate) {
         return reply.code(409).send({
@@ -479,10 +572,10 @@ async function createTemplate(request: FastifyRequest, reply: FastifyReply, ctx)
       const now = new Date().toISOString();
       createdTemplate = {
         id: generateTemplateId(),
-        name: data.name,
-        namePattern: data.namePattern || data.name,
+        name: data.name!,
+        namePattern: data.namePattern || data.name!,
         defaultStatus: normalizedStatus,
-        defaultProgress: data.defaultProgress,
+        defaultProgress: data.defaultProgress!,
         created_at: now,
         updated_at: now,
       };
@@ -499,21 +592,22 @@ async function createTemplate(request: FastifyRequest, reply: FastifyReply, ctx)
     });
 
     if (!createdTemplate) return;
+    const created = createdTemplate as MilestoneTemplateRecord;
 
     return reply.code(201).send({
       ok: true,
-      data: createdTemplate,
-      message: `Template "${createdTemplate.name}" created successfully`,
-      timestamp: createdTemplate.created_at,
+      data: created,
+      message: `Template "${created.name}" created successfully`,
+      timestamp: created.created_at,
     });
   } catch (err) {
-    if (err && err.status) {
-      return reply.code(err.status).send({ ok: false, error: err.message });
+    if (isRouteError(err)) {
+      return reply.code(err.status).send({ ok: false, error: err.error });
     }
     return reply.code(500).send({
       ok: false,
       error: 'Failed to create template',
-      details: err.message,
+      details: getErrorMessage(err),
     });
   }
 }
@@ -532,7 +626,7 @@ async function listTemplates(_request: FastifyRequest, reply: FastifyReply, ctx)
     return reply.code(500).send({
       ok: false,
       error: 'Failed to list templates',
-      details: err.message,
+      details: getErrorMessage(err),
     });
   }
 }
@@ -547,7 +641,7 @@ async function deleteTemplate(
   try {
     const templateId = request.params.id;
 
-    let deletedTemplate = null;
+    let deletedTemplate: MilestoneTemplateRecord | null = null;
     await withFileLock(paths.templatesFile, () => {
       const templates = readTemplates(paths, ctx._cache);
       const index = templates.findIndex((t) => t.id === templateId);
@@ -575,20 +669,21 @@ async function deleteTemplate(
     });
 
     if (!deletedTemplate) return;
+    const deleted = deletedTemplate as MilestoneTemplateRecord;
 
     return reply.send({
       ok: true,
-      message: `Template "${deletedTemplate.name}" deleted successfully`,
+      message: `Template "${deleted.name}" deleted successfully`,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
-    if (err && err.status) {
-      return reply.code(err.status).send({ ok: false, error: err.message });
+    if (isRouteError(err)) {
+      return reply.code(err.status).send({ ok: false, error: err.error });
     }
     return reply.code(500).send({
       ok: false,
       error: 'Failed to delete template',
-      details: err.message,
+      details: getErrorMessage(err),
     });
   }
 }
@@ -602,7 +697,7 @@ async function applyTemplate(
 
   try {
     const templateId = request.params.id;
-    const data = request.body as Record<string, unknown>;
+    const data = request.body as ApplyTemplateInput;
 
     // Read template
     const templates = readTemplates(paths, ctx._cache);
@@ -638,7 +733,7 @@ async function applyTemplate(
       });
     }
 
-    let createdMilestone = null;
+    let createdMilestone: MilestoneRecord | null = null;
     await withFileLock(paths.milestonesFile, () => {
       const milestones = readMilestones(paths, ctx._cache);
       if (milestoneNameExists(milestones, milestoneName, null)) {
@@ -652,10 +747,10 @@ async function applyTemplate(
       const now = new Date().toISOString();
       createdMilestone = {
         id: generateMilestoneId(),
-        name: milestoneName,
+        name: String(milestoneName),
         status: template.defaultStatus,
         progress: template.defaultProgress,
-        completion: completion,
+        completion,
         created_at: now,
         updated_at: now,
         archived: false,
@@ -674,25 +769,26 @@ async function applyTemplate(
     });
 
     if (!createdMilestone) return;
+    const created = createdMilestone as MilestoneRecord;
 
     return reply.code(201).send({
       ok: true,
-      data: createdMilestone,
-      message: `Milestone "${createdMilestone.name}" created from template "${template.name}"`,
-      timestamp: createdMilestone.created_at,
+      data: created,
+      message: `Milestone "${created.name}" created from template "${template.name}"`,
+      timestamp: created.created_at,
     });
   } catch (err) {
-    if (err && err.status) {
+    if (isRouteError(err)) {
       return reply.code(err.status).send({
         ok: false,
-        error: err.error || err.message,
+        error: err.error,
         details: err.details,
       });
     }
     return reply.code(500).send({
       ok: false,
       error: 'Failed to apply template',
-      details: err.message,
+      details: getErrorMessage(err),
     });
   }
 }

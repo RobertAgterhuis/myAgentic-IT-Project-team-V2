@@ -1,6 +1,5 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
-// @ts-nocheck
 /**
  * Decision route handlers — GET/POST /api/decisions, POST /api/decisions/activate-category.
  *

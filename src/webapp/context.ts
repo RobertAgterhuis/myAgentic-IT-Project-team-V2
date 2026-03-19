@@ -68,6 +68,19 @@ export interface ServerContext {
       summary?: string;
     }
   ): void;
+  /** Non-blocking async write — preferred for production request paths (M4/Epic-663). */
+  safeWriteAsync(
+    filePath: string,
+    data: string,
+    encoding?: BufferEncoding,
+    auditMeta?: {
+      operation?: string;
+      entityType?: string;
+      entityId?: string | null;
+      user?: string;
+      summary?: string;
+    }
+  ): Promise<void>;
   sseNotify(eventType: string, data: Record<string, unknown>): void;
 
   /* ── Metrics helpers ───────────────────────────────────────── */

@@ -2,7 +2,7 @@
 /* Unit tests for the shared file-lock module.
  * Tests concurrency primitives and cross-module lock coordination. */
 
-const { withFileLock, _writeLocks } = require('../../src/webapp/file-lock');
+const { withFileLock, _writeLocks, LOCK_TIMEOUT_MS } = require('../../src/webapp/file-lock');
 
 describe('withFileLock — concurrency', () => {
   it('serializes concurrent writes to the same path', async () => {
@@ -100,5 +100,23 @@ describe('withFileLock — concurrency', () => {
     // Subsequent lock on same path should still work
     const result = await withFileLock('/test/err.md', async () => 'ok');
     expect(result).toBe('ok');
+  });
+
+  it('replaces a stale predecessor lock when waiting times out', async () => {
+    vi.useFakeTimers();
+    const filePath = '/test/timeout.md';
+    const key = require('node:path').resolve(filePath);
+    const staleLock = new Promise(() => {});
+    _writeLocks.set(key, staleLock);
+
+    const pending = withFileLock(filePath, async () => 'never');
+    pending.catch(() => {});
+    await vi.advanceTimersByTimeAsync(LOCK_TIMEOUT_MS + 1);
+
+    await expect(pending).rejects.toThrow(/File lock timeout/);
+    expect(_writeLocks.get(key)).not.toBe(staleLock);
+
+    _writeLocks.delete(key);
+    vi.useRealTimers();
   });
 });

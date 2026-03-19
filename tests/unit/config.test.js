@@ -9,6 +9,11 @@
 
 const { parseTrustedProxySetting } = require('../../src/webapp/config');
 
+async function loadFreshConfig() {
+  vi.resetModules();
+  return import('../../src/webapp/config.ts');
+}
+
 describe('SP-11-612: config.ts — parseTrustedProxySetting', () => {
   describe('falsy / empty inputs', () => {
     it('returns false for undefined', () => {
@@ -108,5 +113,88 @@ describe('SP-11-612: config.ts — parseTrustedProxySetting', () => {
     it('returns the trimmed string value', () => {
       expect(parseTrustedProxySetting('  loopback  ')).toBe('loopback');
     });
+  });
+});
+
+describe('config.ts exported environment constants', () => {
+  const originalEnv = { ...process.env };
+
+  afterEach(() => {
+    for (const key of Object.keys(process.env)) {
+      if (!(key in originalEnv)) delete process.env[key];
+    }
+    Object.assign(process.env, originalEnv);
+  });
+
+  it('defaults storage, queue, session, and path settings when env is absent', async () => {
+    delete process.env.STORAGE_PROVIDER;
+    delete process.env.STORAGE_PATH;
+    delete process.env.QUEUE_PROVIDER;
+    delete process.env.SESSION_STORE;
+
+    const config = await loadFreshConfig();
+
+    expect(config.STORAGE_PROVIDER).toBe('file');
+    expect(config.STORAGE_PATH).toBeUndefined();
+    expect(config.QUEUE_PROVIDER).toBe('memory');
+    expect(config.SESSION_STORE).toBe('sqlite');
+  });
+
+  it('reads explicit storage, queue, and session provider env values', async () => {
+    process.env.STORAGE_PROVIDER = 'sqlite';
+    process.env.STORAGE_PATH = '/tmp/app.db';
+    process.env.QUEUE_PROVIDER = 'bullmq';
+    process.env.SESSION_STORE = 'redis';
+
+    const config = await loadFreshConfig();
+
+    expect(config.STORAGE_PROVIDER).toBe('sqlite');
+    expect(config.STORAGE_PATH).toBe('/tmp/app.db');
+    expect(config.QUEUE_PROVIDER).toBe('bullmq');
+    expect(config.SESSION_STORE).toBe('redis');
+  });
+
+  it('accepts the persistent queue provider', async () => {
+    process.env.QUEUE_PROVIDER = 'persistent';
+
+    const config = await loadFreshConfig();
+
+    expect(config.QUEUE_PROVIDER).toBe('persistent');
+  });
+
+  it('reads host, port, trust proxy, and redis settings from env', async () => {
+    process.env.PORT = '8080';
+    process.env.HOST = ' 0.0.0.0 ';
+    process.env.TRUST_PROXY = '10.0.0.1, 10.0.0.2';
+    process.env.REDIS_URL = 'redis://cache';
+
+    const config = await loadFreshConfig();
+
+    expect(config.PORT).toBe(8080);
+    expect(config.HOST).toBe('0.0.0.0');
+    expect(config.TRUST_PROXY).toEqual(['10.0.0.1', '10.0.0.2']);
+    expect(config.REDIS_URL).toBe('redis://cache');
+  });
+
+  it('falls back for invalid port and empty host values', async () => {
+    process.env.PORT = '99999';
+    process.env.HOST = '   ';
+
+    const config = await loadFreshConfig();
+
+    expect(config.PORT).toBe(3000);
+    expect(config.HOST).toBe('127.0.0.1');
+  });
+
+  it('exports expected path constants', async () => {
+    const config = await loadFreshConfig();
+
+    expect(config.BUSINESS_DOCS).toContain('BusinessDocs');
+    expect(config.SESSION_DIR).toContain('BusinessDocs');
+    expect(config.SESSION_FILE).toContain('session-state.json');
+    expect(config.SESSION_AUDIT_FILE).toContain('session-state-audit.json');
+    expect(config.COMMAND_QUEUE).toContain('command-queue.json');
+    expect(config.HELP_DIR).toContain('docs');
+    expect(config.METRICS_FILE).toContain('runtime-metrics.json');
   });
 });

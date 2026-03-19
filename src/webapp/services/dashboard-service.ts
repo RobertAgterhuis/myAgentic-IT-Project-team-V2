@@ -13,6 +13,8 @@ import fs from 'fs';
 import path from 'path';
 import { execFile } from 'child_process';
 
+type ExecFileFn = typeof execFile;
+
 /* ── Git helpers with TTL cache ───────────────────────────────── */
 
 const _gitCache = new Map<string, { lines: string[]; ts: number }>();
@@ -23,7 +25,11 @@ const ALLOWED_GIT_SPEC: Record<string, [string, string[]]> = {
   'recent-contributors': ['git', ['log', '--since=180 days ago', '--format=%aN']],
 };
 
-function gitLinesAsync(commandKey: string, cwd: string): Promise<string[]> {
+function gitLinesAsync(
+  commandKey: string,
+  cwd: string,
+  execFileFn: ExecFileFn = execFile
+): Promise<string[]> {
   const spec = ALLOWED_GIT_SPEC[commandKey];
   if (!spec) return Promise.resolve([]);
 
@@ -32,7 +38,7 @@ function gitLinesAsync(commandKey: string, cwd: string): Promise<string[]> {
   if (cached && Date.now() - cached.ts < GIT_CACHE_TTL_MS) return Promise.resolve(cached.lines);
 
   return new Promise((resolve) => {
-    execFile(spec[0], spec[1], { cwd, encoding: 'utf8', timeout: 10_000 }, (err, stdout) => {
+    execFileFn(spec[0], spec[1], { cwd, encoding: 'utf8', timeout: 10_000 }, (err, stdout) => {
       if (err) return resolve([]);
       const lines = stdout
         .split(/\r?\n/)
@@ -97,6 +103,7 @@ function mapAuditEntryToActivity(entry: AuditEntry) {
 interface DashboardContext {
   PROJECT_ROOT?: string;
   BUSINESS_DOCS?: string;
+  _execFile?: ExecFileFn;
   _metrics?: {
     startedAt: number;
     requestCount: number;
@@ -271,9 +278,11 @@ export class DashboardService {
     const totalCount = milestones.length;
     const sprintPercent = totalCount > 0 ? Math.round((completeCount / totalCount) * 100) : 0;
 
-    const trackedFiles = (await gitLinesAsync('ls-files', repoRoot)).length;
+    const trackedFiles = (await gitLinesAsync('ls-files', repoRoot, this.ctx?._execFile)).length;
     const contributors = new Set(
-      (await gitLinesAsync('recent-contributors', repoRoot)).map((n) => n.toLowerCase())
+      (await gitLinesAsync('recent-contributors', repoRoot, this.ctx?._execFile)).map((n) =>
+        n.toLowerCase()
+      )
     ).size;
     const auditContributors = new Set(
       this.getAuditEntries(200)

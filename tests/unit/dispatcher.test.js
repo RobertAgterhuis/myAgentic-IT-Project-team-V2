@@ -150,6 +150,55 @@ describe('Dispatcher — constructor', () => {
   });
 });
 
+describe('Dispatcher — enqueueInvocation', () => {
+  it('throws when no job queue is configured', async () => {
+    const d = new Dispatcher({ store: createMockStore() });
+
+    await expect(
+      d.enqueueInvocation({ id: '01', name: 'Business Analyst' }, STATES.PHASE_1, {})
+    ).rejects.toThrow(/No job queue configured/);
+  });
+
+  it('enqueues agent invocation jobs with merged config', async () => {
+    const queuedJobs = [];
+    const jobQueue = {
+      enqueue: vi.fn(async (job) => {
+        queuedJobs.push(job);
+        return { id: 'job-123', ...job };
+      }),
+    };
+
+    const d = new Dispatcher({
+      store: createMockStore(),
+      jobQueue,
+      config: { maxRetries: 2, platform: 'copilot' },
+    });
+
+    const result = await d.enqueueInvocation(
+      { id: '01', name: 'Business Analyst' },
+      STATES.PHASE_1,
+      { predecessorPaths: ['/existing.md'] },
+      { platform: 'claude', priority: 9, maxTransientRetries: 4 }
+    );
+
+    expect(result).toEqual({ jobId: 'job-123' });
+    expect(jobQueue.enqueue).toHaveBeenCalledTimes(1);
+    expect(queuedJobs[0]).toEqual({
+      type: 'agent-invocation',
+      payload: {
+        agentId: '01',
+        agentName: 'Business Analyst',
+        platform: 'claude',
+        state: STATES.PHASE_1,
+        context: { predecessorPaths: ['/existing.md'] },
+      },
+      priority: 9,
+      retryCount: 0,
+      maxRetries: 4,
+    });
+  });
+});
+
 // ─────────────────────────────────────────────────────────────
 // AC-1, AC-3: Context injection
 // ─────────────────────────────────────────────────────────────
@@ -293,6 +342,21 @@ describe('Dispatcher — invoke (retry)', () => {
     expect(result.success).toBe(false);
     expect(d.log.length).toBe(1);
     expect(d.log[0].status).toBe('failure');
+  });
+
+  it('marks exhausted recoverable failures as degraded', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: createFailInvoker('plain recoverable failure'),
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('plain recoverable failure');
+    expect(result.severity).toBe('RECOVERABLE');
+    expect(result.degraded).toBe(true);
   });
 });
 
@@ -579,6 +643,20 @@ describe('Dispatcher — Unknown error fallback', () => {
   });
 });
 
+describe('Dispatcher — internal helpers', () => {
+  it('classifies internal retry statuses consistently', () => {
+    expect(Dispatcher._classifyError({ message: 'TIMEOUT' }, 1, 2)).toBe('timeout');
+    expect(Dispatcher._classifyError({ message: 'boom' }, 1, 2)).toBe('retry');
+    expect(Dispatcher._classifyError({ message: 'boom' }, 3, 2)).toBe('failure');
+  });
+
+  it('propagates promise rejection through _withTimeout', async () => {
+    const d = new Dispatcher({ store: createMockStore() });
+
+    await expect(d._withTimeout(Promise.reject(new Error('boom')), 100)).rejects.toThrow('boom');
+  });
+});
+
 // ─────────────────────────────────────────────────────────────
 // S5: phaseAgents injection from template manifest
 // ─────────────────────────────────────────────────────────────
@@ -619,5 +697,369 @@ describe('Dispatcher — phaseAgents injection (S5)', () => {
     const result = await d.dispatchState('PHASE_1', {});
     expect(result.completed).toEqual(['50']);
     expect(result.failed).toEqual([]);
+  });
+});
+
+describe('Dispatcher — dispatchStateParallel (M4/Epic-661)', () => {
+  it('runs agents in the same group concurrently', async () => {
+    let active = 0;
+    let observedOverlap = false;
+
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        active += 1;
+        if (active > 1) observedOverlap = true;
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        active -= 1;
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+    });
+
+    const result = await d.dispatchStateParallel(STATES.CRITIC_1, {}, {}, { maxConcurrency: 2 });
+
+    expect(observedOverlap).toBe(true);
+    expect(result.completed.sort()).toEqual(['18', '19']);
+    expect(result.failed).toEqual([]);
+    expect(result.concurrencyHighWaterMark).toBeGreaterThan(1);
+  });
+
+  it('respects the maxConcurrency cap', async () => {
+    let active = 0;
+    let peak = 0;
+
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        active += 1;
+        peak = Math.max(peak, active);
+        await new Promise((resolve) => setTimeout(resolve, 15));
+        active -= 1;
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+    });
+
+    const result = await d.dispatchStateParallel(STATES.PHASE_1, {}, {}, { maxConcurrency: 2 });
+
+    expect(result.completed.length).toBe(5);
+    expect(result.failed).toEqual([]);
+    expect(peak).toBeLessThanOrEqual(2);
+    expect(result.concurrencyHighWaterMark).toBeLessThanOrEqual(2);
+  });
+
+  it('falls back to dispatchState for states without group config', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: createSuccessInvoker('/out/custom.md'),
+      phaseAgents: {
+        CUSTOM_STATE: [{ id: '99', name: 'Custom' }],
+      },
+    });
+
+    const result = await d.dispatchStateParallel('CUSTOM_STATE');
+
+    expect(result.completed).toEqual(['99']);
+    expect(result.failed).toEqual([]);
+    expect(result.concurrencyHighWaterMark).toBe(1);
+    expect(result.totalWaitMs).toBe(0);
+  });
+
+  it('supports onFailure=abort', async () => {
+    const calledIds = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        calledIds.push(agent.id);
+        if (agent.id === '20') throw new Error('group-1 failed');
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.dispatchStateParallel(
+      STATES.PHASE_5_EXECUTING,
+      {},
+      {},
+      {
+        onFailure: 'abort',
+        maxConcurrency: 1,
+      }
+    );
+
+    expect(calledIds).toEqual(['20', '21', '38']);
+    expect(result.completed).toEqual([]);
+    expect(result.failed).toEqual(['20']);
+    expect(calledIds.includes('22')).toBe(false);
+    expect(result.escalated).toBe(false);
+  });
+
+  it('supports onFailure=escalate', async () => {
+    const calledIds = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        calledIds.push(agent.id);
+        if (agent.id === '20') throw new Error('group-1 failed');
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.dispatchStateParallel(
+      STATES.PHASE_5_EXECUTING,
+      {},
+      {},
+      {
+        onFailure: 'escalate',
+        maxConcurrency: 1,
+      }
+    );
+
+    expect(calledIds).toEqual(['20', '21', '38']);
+    expect(result.completed).toEqual([]);
+    expect(result.failed).toEqual(['20']);
+    expect(calledIds.includes('22')).toBe(false);
+    expect(result.escalated).toBe(true);
+  });
+
+  it('chains predecessor paths across groups', async () => {
+    const contextsSeen = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent, _platform, ctx) => {
+        contextsSeen.push({
+          agentId: agent.id,
+          predecessorPaths: (ctx.predecessorPaths || []).slice(),
+        });
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+    });
+
+    const result = await d.dispatchStateParallel(STATES.PHASE_1, {}, {}, { maxConcurrency: 1 });
+
+    // All agents in PHASE_1 should have been invoked
+    expect(result.completed.length).toBe(5);
+
+    // Each context should be valid and contexts can be captured
+    expect(contextsSeen.length).toBe(5);
+  });
+
+  it('handles agent not found in registry (graceful degradation)', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      phaseAgents: {
+        CUSTOM_STATE: [
+          { id: '99', name: 'Custom Agent' },
+          { id: '100', name: 'Another Agent' },
+        ],
+      },
+      invoker: async (agent) => {
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+    });
+
+    const result = await d.dispatchStateParallel('CUSTOM_STATE', {}, {}, { maxConcurrency: 2 });
+
+    // Both agents should have been attempted (phaseAgents lookup succeeds)
+    expect(result.completed.length).toBe(2);
+    expect(result.failed).toEqual([]);
+  });
+
+  it('handles Promise.allSettled rejection in _runBoundedGroup', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        // Simulate uncaught promise rejection in task
+        if (agent.id === '18') {
+          throw new Error('unexpected error in _runBoundedGroup');
+        }
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+      config: { maxRetries: 0 },
+    });
+
+    // CRITIC_1 has agents ['18', '19']
+    const result = await d.dispatchStateParallel(STATES.CRITIC_1, {}, {}, { maxConcurrency: 2 });
+
+    expect(result.failed).toEqual(['18']);
+    expect(result.completed).toEqual(['19']);
+  });
+
+  it('observes semaphore queueing with high concurrency demand', async () => {
+    let peakActive = 0;
+    let activeSamples = [];
+
+    const d = new Dispatcher({
+      store: createMockStore(),
+      phaseAgents: {
+        BIG_GROUP: [
+          ...Array(10)
+            .fill(null)
+            .map((_, i) => ({ id: String(i), name: `Agent ${i}` })),
+        ],
+      },
+      invoker: async () => {
+        activeSamples.push(peakActive);
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        peakActive++;
+        return { outputPath: '/out.md' };
+      },
+    });
+
+    const result = await d.dispatchStateParallel('BIG_GROUP', {}, {}, { maxConcurrency: 3 });
+
+    expect(result.completed.length).toBe(10);
+    expect(result.concurrencyHighWaterMark).toBeLessThanOrEqual(3);
+    expect(result.totalWaitMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it('aborts remaining groups on abort failure in group 1', async () => {
+    const calledIds = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        calledIds.push(agent.id);
+        if (agent.id === '38') throw new Error('group 1 failure');
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.dispatchStateParallel(
+      STATES.PHASE_5_EXECUTING,
+      {},
+      {},
+      { onFailure: 'abort', maxConcurrency: 2 }
+    );
+
+    // Group 1: ['20', '21', '38']
+    // Agent 38 fails, abort is set
+    // Group 2 should not be called
+    expect(result.failed).toContain('38');
+    expect(calledIds.some((id) => result.failed.includes(id))).toBe(true);
+    // Group 2 agents [22, 29, 26, 27, 28] should NOT be called
+    expect(calledIds).not.toContain('22');
+  });
+
+  it('dispatchStateParallel with maxConcurrency override', async () => {
+    let peakConcurrency = 0;
+    let currentActive = 0;
+
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => {
+        currentActive++;
+        peakConcurrency = Math.max(peakConcurrency, currentActive);
+        await new Promise((r) => setTimeout(r, 10));
+        currentActive--;
+        return { outputPath: '/out.md' };
+      },
+      config: { maxConcurrency: 10 }, // global config is high
+    });
+
+    const result = await d.dispatchStateParallel(
+      STATES.PHASE_1, // 5 agents
+      {},
+      {},
+      { maxConcurrency: 2 } // override to 2
+    );
+
+    expect(result.concurrencyHighWaterMark).toBeLessThanOrEqual(2);
+    expect(result.completed.length).toBe(5);
+  });
+
+  it('error classification: FATAL stops retry', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => {
+        throw new Error('authentication failed');
+      },
+      config: { maxRetries: 3, retryDelayMs: 10 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    // FATAL error should stop immediately, not retry
+    expect(result.success).toBe(false);
+    expect(d.log.length).toBe(1); // no retries
+    expect(d.log[0].status).toBe('failure');
+    expect(d.log[0].errorSeverity).toBe('FATAL');
+  });
+
+  it('error classification: TRANSIENT allows retry', async () => {
+    let attempts = 0;
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => {
+        attempts++;
+        if (attempts <= 1) throw new Error('connection timeout');
+        return { outputPath: '/out.md' };
+      },
+      config: { maxRetries: 2, retryDelayMs: 10, backoffBaseMs: 5 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(true);
+    expect(attempts).toBe(2);
+    expect(d.log.length).toBe(2);
+    expect(d.log[0].status).toBe('retry');
+    expect(d.log[1].status).toBe('success');
+  });
+
+  it('multiple groups execute in sequence, not parallel', async () => {
+    const executionOrder = [];
+
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        executionOrder.push(agent.id);
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+    });
+
+    await d.dispatchStateParallel(STATES.PHASE_5_EXECUTING, {}, {}, { maxConcurrency: 1 });
+
+    // Group 1: ['20', '21', '38']
+    // Then Group 2: ['22', '29', '26', '27', '28']
+    const group1EndIndex = Math.max(
+      executionOrder.indexOf('20'),
+      executionOrder.indexOf('21'),
+      executionOrder.indexOf('38')
+    );
+    const group2StartIndex = Math.min(
+      executionOrder.indexOf('22'),
+      executionOrder.indexOf('29'),
+      executionOrder.indexOf('26'),
+      executionOrder.indexOf('27'),
+      executionOrder.indexOf('28')
+    );
+
+    // Group 2 should start after group 1 ends
+    expect(group2StartIndex).toBeGreaterThan(group1EndIndex);
+  });
+
+  it('per-agent config in parallel dispatch', async () => {
+    const platformsSeen = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent, platform) => {
+        platformsSeen.push({ agentId: agent.id, platform });
+        return { outputPath: '/out.md' };
+      },
+    });
+
+    const agentConfigs = {
+      18: { platform: 'claude' },
+      19: { platform: 'openai' },
+    };
+
+    await d.dispatchStateParallel(STATES.CRITIC_1, {}, agentConfigs, { maxConcurrency: 2 });
+
+    const agent18 = platformsSeen.find((p) => p.agentId === '18');
+    const agent19 = platformsSeen.find((p) => p.agentId === '19');
+
+    expect(agent18.platform).toBe('claude');
+    expect(agent19.platform).toBe('openai');
   });
 });

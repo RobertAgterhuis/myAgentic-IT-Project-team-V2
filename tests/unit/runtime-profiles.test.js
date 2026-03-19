@@ -6,6 +6,7 @@ const {
   validateProfile,
   hasAuthConfigured,
   PROFILE_CONTRACTS,
+  assertScalePrerequisites,
 } = require('../../src/webapp/runtime-profiles');
 
 describe('Runtime Profiles', () => {
@@ -348,6 +349,98 @@ describe('Runtime Profiles', () => {
       expect(contract.redis.required).toBe(true);
       expect(contract.auth.required).toBe(true);
       expect(contract.trustProxy.required).toBe(true);
+    });
+  });
+
+  describe('assertScalePrerequisites (M4/Epic-659)', () => {
+    const distributedConfig = {
+      nodeEnv: 'production',
+      host: '0.0.0.0',
+      storageProvider: 'sqlite',
+      queueProvider: 'bullmq',
+      sessionStore: 'redis',
+      redisUrl: 'redis://localhost:6379',
+      hasAuth: true,
+    };
+
+    it('throws REDIS_UNREACHABLE for production-distributed when ping fails', async () => {
+      const logs = [];
+
+      await expect(
+        assertScalePrerequisites(
+          distributedConfig,
+          async () => {
+            throw new Error('connection refused');
+          },
+          (level, event, data) => logs.push({ level, event, data })
+        )
+      ).rejects.toMatchObject({ code: 'REDIS_UNREACHABLE' });
+
+      expect(logs.some((l) => l.event === 'startup_redis_unreachable')).toBe(true);
+    });
+
+    it('resolves for production-distributed when ping succeeds', async () => {
+      const logs = [];
+
+      await expect(
+        assertScalePrerequisites(
+          distributedConfig,
+          async () => {
+            return;
+          },
+          (level, event, data) => logs.push({ level, event, data })
+        )
+      ).resolves.toBeUndefined();
+
+      expect(logs.some((l) => l.event === 'startup_redis_connectivity_ok')).toBe(true);
+    });
+
+    it('warns but continues for production-single-node with optional redis and failed ping', async () => {
+      const logs = [];
+
+      await expect(
+        assertScalePrerequisites(
+          {
+            nodeEnv: 'production',
+            host: '0.0.0.0',
+            storageProvider: 'sqlite',
+            queueProvider: 'persistent',
+            sessionStore: 'sqlite',
+            redisUrl: 'redis://localhost:6379',
+            hasAuth: true,
+          },
+          async () => {
+            throw new Error('redis unavailable');
+          },
+          (level, event, data) => logs.push({ level, event, data })
+        )
+      ).resolves.toBeUndefined();
+
+      expect(
+        logs.some((l) => l.level === 'warn' && l.event === 'startup_redis_unreachable_optional')
+      ).toBe(true);
+    });
+
+    it('does not call ping for local-dev without redis URL', async () => {
+      let pingCalls = 0;
+
+      await expect(
+        assertScalePrerequisites(
+          {
+            nodeEnv: 'development',
+            host: '127.0.0.1',
+            storageProvider: 'file',
+            queueProvider: 'memory',
+            sessionStore: 'sqlite',
+            hasAuth: false,
+          },
+          async () => {
+            pingCalls += 1;
+          }
+        )
+      ).resolves.toBeUndefined();
+
+      expect(pingCalls).toBe(0);
     });
   });
 });

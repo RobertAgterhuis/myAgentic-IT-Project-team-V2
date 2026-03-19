@@ -88,34 +88,81 @@ function renderProtocols(protocols) {
   return lines;
 }
 
+function renderCopilotCommandContext(agents, flows) {
+  const lines = [];
+
+  lines.push('## Command Modes');
+  lines.push('');
+  for (const [modeName, modeDef] of Object.entries(flows.modes)) {
+    const phaseList = modeDef.phases.length > 0 ? modeDef.phases.join(' → ') : '(none)';
+    lines.push(`- **${modeName}**: ${modeDef.label} — ${phaseList}`);
+  }
+  lines.push('');
+
+  lines.push('## Agent Roster');
+  lines.push('');
+  lines.push('| ID | Name | Phase | Dependencies |');
+  lines.push('| --- | --- | --- | --- |');
+  for (const agent of agents.agents) {
+    const deps = agent.dependencies.length > 0 ? agent.dependencies.join(', ') : 'none';
+    lines.push(`| ${agent.id} | ${agent.name} | ${agent.phase} | ${deps} |`);
+  }
+  lines.push('');
+
+  lines.push('## Gates');
+  lines.push('');
+  for (const gate of flows.gates) {
+    lines.push(`### ${gate.id}`);
+    lines.push(`- After: ${gate.after} | Before: ${gate.before} | Type: ${gate.type}`);
+    lines.push('- Conditions:');
+    for (const condition of gate.conditions) {
+      lines.push(`  - ${condition}`);
+    }
+    lines.push('');
+  }
+
+  return lines;
+}
+
 // ─── Copilot Target (S4-4) ──────────────────────────────────
-// Outputs to: .github/instructions/*.instructions.md
+// Outputs to: .github/copilot-instructions.md + .github/instructions/*.instructions.md
 
 function generateCopilot(canonical, dryRun) {
   const outDir = path.join(ROOT, '.github', 'instructions');
+  const copilotInstructionsPath = path.join(ROOT, '.github', 'copilot-instructions.md');
   const files = [];
 
   const { agents, flows, tools, protocols, manifest } = canonical;
 
-  // 1. protocols.instructions.md — no applyTo = always loaded
+  const protoBodyLines = [];
+  protoBodyLines.push('# Universal Agent Protocols (Auto-Generated)');
+  protoBodyLines.push('');
+  protoBodyLines.push(`> Generated from canonical schema v${agents.schemaVersion}`);
+  protoBodyLines.push(`> Source: platform/schema/protocols.json`);
+  protoBodyLines.push('');
+  protoBodyLines.push(...renderProtocols(protocols));
+  protoBodyLines.push(...renderCopilotCommandContext(agents, flows));
+
+  // 1. copilot-instructions.md — GitHub/browser fallback + older clients
+  files.push({
+    path: copilotInstructionsPath,
+    content: protoBodyLines.join('\n'),
+  });
+
+  // 2. protocols.instructions.md — no applyTo = always loaded in VS Code
   const protoLines = [];
   protoLines.push('---');
   protoLines.push('# No applyTo — always loaded in every Copilot conversation');
   protoLines.push('---');
   protoLines.push('');
-  protoLines.push('# Universal Agent Protocols (Auto-Generated)');
-  protoLines.push('');
-  protoLines.push(`> Generated from canonical schema v${agents.schemaVersion}`);
-  protoLines.push(`> Source: platform/schema/protocols.json`);
-  protoLines.push('');
-  protoLines.push(...renderProtocols(protocols));
+  protoLines.push(...protoBodyLines);
 
   files.push({
     path: path.join(outDir, 'protocols.instructions.md'),
     content: protoLines.join('\n'),
   });
 
-  // 2. phase-agents.instructions.md — scoped to templates/sdlc/
+  // 3. phase-agents.instructions.md — scoped to templates/sdlc/
   const agentLines = [];
   agentLines.push('---');
   agentLines.push('applyTo: "templates/sdlc/**"');
@@ -239,7 +286,7 @@ function generateCopilot(canonical, dryRun) {
     content: agentLines.join('\n'),
   });
 
-  // 3. webapp.instructions.md — scoped to src/webapp/
+  // 4. webapp.instructions.md — scoped to src/webapp/
   const webappLines = [];
   webappLines.push('---');
   webappLines.push('applyTo: "src/webapp/**"');
@@ -322,6 +369,14 @@ function generateClaude(canonical, dryRun) {
   lines.push('```');
   lines.push(flows.fullFlow.join(' → '));
   lines.push('```');
+  lines.push('');
+
+  lines.push('## Command Modes');
+  lines.push('');
+  for (const [modeName, modeDef] of Object.entries(flows.modes)) {
+    const phaseList = modeDef.phases.length > 0 ? modeDef.phases.join(' → ') : '(none)';
+    lines.push(`- **${modeName}**: ${modeDef.label} — ${phaseList}`);
+  }
   lines.push('');
 
   // Agent list

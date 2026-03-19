@@ -36,6 +36,7 @@ BusinessDocs/analytics-events.json
 BusinessDocs/session/command-queue.json
 
 # Generated platform instruction files (regenerated via npm run generate:platform)
+.github/copilot-instructions.md
 .github/instructions/
 CLAUDE.md
 .claude/

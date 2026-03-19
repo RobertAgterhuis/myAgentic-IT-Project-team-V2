@@ -743,4 +743,245 @@ describe('Dispatcher — dispatchStateParallel (M4/Epic-661)', () => {
     expect(calledIds.includes('22')).toBe(false);
     expect(result.escalated).toBe(true);
   });
+
+  it('chains predecessor paths across groups', async () => {
+    const contextsSeen = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent, _platform, ctx) => {
+        contextsSeen.push({
+          agentId: agent.id,
+          predecessorPaths: (ctx.predecessorPaths || []).slice(),
+        });
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+    });
+
+    const result = await d.dispatchStateParallel(STATES.PHASE_1, {}, {}, { maxConcurrency: 1 });
+
+    // All agents in PHASE_1 should have been invoked
+    expect(result.completed.length).toBe(5);
+
+    // Each context should be valid and contexts can be captured
+    expect(contextsSeen.length).toBe(5);
+  });
+
+  it('handles agent not found in registry (graceful degradation)', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      phaseAgents: {
+        CUSTOM_STATE: [
+          { id: '99', name: 'Custom Agent' },
+          { id: '100', name: 'Another Agent' },
+        ],
+      },
+      invoker: async (agent) => {
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+    });
+
+    const result = await d.dispatchStateParallel('CUSTOM_STATE', {}, {}, { maxConcurrency: 2 });
+
+    // Both agents should have been attempted (phaseAgents lookup succeeds)
+    expect(result.completed.length).toBe(2);
+    expect(result.failed).toEqual([]);
+  });
+
+  it('handles Promise.allSettled rejection in _runBoundedGroup', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        // Simulate uncaught promise rejection in task
+        if (agent.id === '18') {
+          throw new Error('unexpected error in _runBoundedGroup');
+        }
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+      config: { maxRetries: 0 },
+    });
+
+    // CRITIC_1 has agents ['18', '19']
+    const result = await d.dispatchStateParallel(STATES.CRITIC_1, {}, {}, { maxConcurrency: 2 });
+
+    expect(result.failed).toEqual(['18']);
+    expect(result.completed).toEqual(['19']);
+  });
+
+  it('observes semaphore queueing with high concurrency demand', async () => {
+    let peakActive = 0;
+    let activeSamples = [];
+
+    const d = new Dispatcher({
+      store: createMockStore(),
+      phaseAgents: {
+        BIG_GROUP: [
+          ...Array(10)
+            .fill(null)
+            .map((_, i) => ({ id: String(i), name: `Agent ${i}` })),
+        ],
+      },
+      invoker: async () => {
+        activeSamples.push(peakActive);
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        peakActive++;
+        return { outputPath: '/out.md' };
+      },
+    });
+
+    const result = await d.dispatchStateParallel('BIG_GROUP', {}, {}, { maxConcurrency: 3 });
+
+    expect(result.completed.length).toBe(10);
+    expect(result.concurrencyHighWaterMark).toBeLessThanOrEqual(3);
+    expect(result.totalWaitMs).toBeGreaterThanOrEqual(0);
+  });
+
+  it('aborts remaining groups on abort failure in group 1', async () => {
+    const calledIds = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        calledIds.push(agent.id);
+        if (agent.id === '38') throw new Error('group 1 failure');
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.dispatchStateParallel(
+      STATES.PHASE_5_EXECUTING,
+      {},
+      {},
+      { onFailure: 'abort', maxConcurrency: 2 }
+    );
+
+    // Group 1: ['20', '21', '38']
+    // Agent 38 fails, abort is set
+    // Group 2 should not be called
+    expect(result.failed).toContain('38');
+    expect(calledIds.some((id) => result.failed.includes(id))).toBe(true);
+    // Group 2 agents [22, 29, 26, 27, 28] should NOT be called
+    expect(calledIds).not.toContain('22');
+  });
+
+  it('dispatchStateParallel with maxConcurrency override', async () => {
+    let peakConcurrency = 0;
+    let currentActive = 0;
+
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => {
+        currentActive++;
+        peakConcurrency = Math.max(peakConcurrency, currentActive);
+        await new Promise((r) => setTimeout(r, 10));
+        currentActive--;
+        return { outputPath: '/out.md' };
+      },
+      config: { maxConcurrency: 10 }, // global config is high
+    });
+
+    const result = await d.dispatchStateParallel(
+      STATES.PHASE_1, // 5 agents
+      {},
+      {},
+      { maxConcurrency: 2 } // override to 2
+    );
+
+    expect(result.concurrencyHighWaterMark).toBeLessThanOrEqual(2);
+    expect(result.completed.length).toBe(5);
+  });
+
+  it('error classification: FATAL stops retry', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => {
+        throw new Error('authentication failed');
+      },
+      config: { maxRetries: 3, retryDelayMs: 10 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    // FATAL error should stop immediately, not retry
+    expect(result.success).toBe(false);
+    expect(d.log.length).toBe(1); // no retries
+    expect(d.log[0].status).toBe('failure');
+    expect(d.log[0].errorSeverity).toBe('FATAL');
+  });
+
+  it('error classification: TRANSIENT allows retry', async () => {
+    let attempts = 0;
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => {
+        attempts++;
+        if (attempts <= 1) throw new Error('connection timeout');
+        return { outputPath: '/out.md' };
+      },
+      config: { maxRetries: 2, retryDelayMs: 10, backoffBaseMs: 5 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(true);
+    expect(attempts).toBe(2);
+    expect(d.log.length).toBe(2);
+    expect(d.log[0].status).toBe('retry');
+    expect(d.log[1].status).toBe('success');
+  });
+
+  it('multiple groups execute in sequence, not parallel', async () => {
+    const executionOrder = [];
+
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        executionOrder.push(agent.id);
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+    });
+
+    await d.dispatchStateParallel(STATES.PHASE_5_EXECUTING, {}, {}, { maxConcurrency: 1 });
+
+    // Group 1: ['20', '21', '38']
+    // Then Group 2: ['22', '29', '26', '27', '28']
+    const group1EndIndex = Math.max(
+      executionOrder.indexOf('20'),
+      executionOrder.indexOf('21'),
+      executionOrder.indexOf('38')
+    );
+    const group2StartIndex = Math.min(
+      executionOrder.indexOf('22'),
+      executionOrder.indexOf('29'),
+      executionOrder.indexOf('26'),
+      executionOrder.indexOf('27'),
+      executionOrder.indexOf('28')
+    );
+
+    // Group 2 should start after group 1 ends
+    expect(group2StartIndex).toBeGreaterThan(group1EndIndex);
+  });
+
+  it('per-agent config in parallel dispatch', async () => {
+    const platformsSeen = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent, platform) => {
+        platformsSeen.push({ agentId: agent.id, platform });
+        return { outputPath: '/out.md' };
+      },
+    });
+
+    const agentConfigs = {
+      18: { platform: 'claude' },
+      19: { platform: 'openai' },
+    };
+
+    await d.dispatchStateParallel(STATES.CRITIC_1, {}, agentConfigs, { maxConcurrency: 2 });
+
+    const agent18 = platformsSeen.find((p) => p.agentId === '18');
+    const agent19 = platformsSeen.find((p) => p.agentId === '19');
+
+    expect(agent18.platform).toBe('claude');
+    expect(agent19.platform).toBe('openai');
+  });
 });

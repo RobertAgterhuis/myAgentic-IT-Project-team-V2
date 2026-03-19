@@ -14,7 +14,34 @@ const {
   detectSecrets,
   safePath,
   assertString,
+  structuredLog,
+  log,
+  checkSecretsInBody,
+  handleRouteError,
+  handleMethodNotAllowed,
+  setSecurityHeaders,
 } = require('../../src/webapp/middleware');
+
+function makeMockRes(opts = {}) {
+  const headers = {};
+  const res = {
+    headersSent: opts.headersSent ?? false,
+    _status: null,
+    _body: null,
+    _headers: headers,
+    setHeader(k, v) {
+      headers[k] = v;
+    },
+    writeHead(status, hdrs) {
+      this._status = status;
+      Object.assign(headers, hdrs);
+    },
+    end(body) {
+      this._body = body ?? null;
+    },
+  };
+  return res;
+}
 
 describe('SP-11-612: Middleware Utility Tests', () => {
   describe('safePath — Path traversal prevention (RISK-801)', () => {
@@ -171,6 +198,165 @@ describe('SP-11-612: Middleware Utility Tests', () => {
 
     it('should accept empty strings', () => {
       expect(() => assertString('', 'field')).not.toThrow();
+    });
+  });
+
+  describe('structuredLog — structured output', () => {
+    it('writes to stdout for info level', () => {
+      const lines = [];
+      const orig = process.stdout.write.bind(process.stdout);
+      process.stdout.write = (s) => {
+        lines.push(s);
+        return true;
+      };
+      structuredLog('info', 'test_event', { key: 'val' });
+      process.stdout.write = orig;
+      expect(lines.length).toBeGreaterThan(0);
+      const parsed = JSON.parse(lines[0]);
+      expect(parsed.message).toBe('test_event');
+      expect(parsed.key).toBe('val');
+    });
+
+    it('writes to stderr for error level', () => {
+      const lines = [];
+      const orig = process.stderr.write.bind(process.stderr);
+      process.stderr.write = (s) => {
+        lines.push(s);
+        return true;
+      };
+      structuredLog('error', 'err_event');
+      process.stderr.write = orig;
+      expect(lines.length).toBeGreaterThan(0);
+      const parsed = JSON.parse(lines[0]);
+      expect(parsed.level).toBe('error');
+    });
+
+    it('suppresses messages below configured log level', () => {
+      const lines = [];
+      const orig = process.stdout.write.bind(process.stdout);
+      process.stdout.write = (s) => {
+        lines.push(s);
+        return true;
+      };
+      structuredLog('debug', 'should_be_suppressed');
+      process.stdout.write = orig;
+      // debug is below default 'info' level — nothing written
+      expect(lines.length).toBe(0);
+    });
+  });
+
+  describe('log — HTTP request logging', () => {
+    it('produces a structured log entry with request fields', () => {
+      const lines = [];
+      const orig = process.stdout.write.bind(process.stdout);
+      process.stdout.write = (s) => {
+        lines.push(s);
+        return true;
+      };
+      log('GET', '/api/ping', 200, 12);
+      process.stdout.write = orig;
+      expect(lines.length).toBeGreaterThan(0);
+      const parsed = JSON.parse(lines[0]);
+      expect(parsed.method).toBe('GET');
+      expect(parsed.url).toBe('/api/ping');
+      expect(parsed.status).toBe(200);
+    });
+  });
+
+  describe('checkSecretsInBody — multi-field secret scan', () => {
+    it('returns empty array for clean body', () => {
+      const result = checkSecretsInBody({ answer: 'All good' }, ['answer']);
+      expect(result).toEqual([]);
+    });
+
+    it('detects secrets in specified fields', () => {
+      const result = checkSecretsInBody({ answer: '-----BEGIN RSA PRIVATE KEY-----' }, ['answer']);
+      expect(result).toContain('Private Key');
+    });
+
+    it('ignores fields not listed in fieldsToCheck', () => {
+      const result = checkSecretsInBody(
+        { hidden: '-----BEGIN RSA PRIVATE KEY-----', answer: 'clean' },
+        ['answer']
+      );
+      expect(result).toEqual([]);
+    });
+
+    it('deduplicates repeated pattern matches across fields', () => {
+      const result = checkSecretsInBody(
+        { a: 'key=AKIAIOSFODNN7EXAMPLE', b: 'key2=AKIAIOSFODNN7EXAMPLE' },
+        ['a', 'b']
+      );
+      expect(result.filter((r) => r === 'AWS Access Key').length).toBe(1);
+    });
+  });
+
+  describe('setSecurityHeaders — security header injection', () => {
+    it('sets all required headers on the response', () => {
+      const res = makeMockRes();
+      setSecurityHeaders(res);
+      expect(res._headers['X-Content-Type-Options']).toBe('nosniff');
+      expect(res._headers['X-Frame-Options']).toBe('SAMEORIGIN');
+      expect(res._headers['Content-Security-Policy']).toBeDefined();
+    });
+  });
+
+  describe('handleRouteError — error response writing', () => {
+    it('writes JSON error when headers not yet sent', () => {
+      const res = makeMockRes({ headersSent: false });
+      handleRouteError(
+        Object.assign(new Error('bad'), { status: 400, errorCode: 'INVALID_INPUT' }),
+        res
+      );
+      expect(res._status).toBe(400);
+      expect(JSON.parse(res._body).code).toBe('INVALID_INPUT');
+    });
+
+    it('calls res.end() without writing when headers already sent', () => {
+      const res = makeMockRes({ headersSent: true });
+      handleRouteError(new Error('late'), res);
+      expect(res._status).toBeNull(); // writeHead not called
+    });
+
+    it('defaults to 500 when no status on error', () => {
+      const res = makeMockRes();
+      handleRouteError(new Error('unknown'), res);
+      expect(res._status).toBe(500);
+    });
+  });
+
+  describe('handleMethodNotAllowed — 405 detection', () => {
+    const routes = {
+      'GET /api/items': true,
+      'POST /api/items': true,
+      'GET /api/items/:id': true,
+    };
+
+    it('returns false when no route matches the path at all', () => {
+      const res = makeMockRes();
+      const matched = handleMethodNotAllowed(res, '/api/unknown', routes);
+      expect(matched).toBe(false);
+      expect(res._status).toBeNull();
+    });
+
+    it('returns true and writes 405 when path exists but method not allowed', () => {
+      const res = makeMockRes();
+      const matched = handleMethodNotAllowed(res, '/api/items', routes);
+      expect(matched).toBe(true);
+      expect(res._status).toBe(405);
+    });
+
+    it('includes allowed methods in the Allow header', () => {
+      const res = makeMockRes();
+      handleMethodNotAllowed(res, '/api/items', routes);
+      expect(res._headers['Allow']).toContain('GET');
+      expect(res._headers['Allow']).toContain('POST');
+    });
+
+    it('matches parameterised route templates', () => {
+      const res = makeMockRes();
+      const matched = handleMethodNotAllowed(res, '/api/items/123', routes);
+      expect(matched).toBe(true);
     });
   });
 });

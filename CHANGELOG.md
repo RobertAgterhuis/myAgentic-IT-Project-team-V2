@@ -12,6 +12,22 @@ and this project adheres to
 
 ### Added
 
+- M1/E-A1: Dispatcher Runtime Adapter Integration (closes #683, #697, #698, #699, #700)
+  - `AgentRuntimeAdapter` interface + `AdapterRegistry` with `NullAdapter`
+    (`ci-test`) and `LogOnlyAdapter` (`local-dev`) built-ins in
+    [platform/engine/agent-runtime-adapter.ts](platform/engine/agent-runtime-adapter.ts)
+  - `resolveAdapter()` returns config-time error for unknown adapter names,
+    surfacing misconfiguration at startup rather than first invocation
+  - `Dispatcher._defaultInvoker` delegates to configured adapter instead of
+    unconditionally throwing, wiring the invoke path end-to-end
+  - `agent-execution-service` resolves adapter via registry on every manual
+    execution — no external invoker monkey-patch required
+  - `AGENT_RUNTIME_ADAPTER` env-var constant added to
+    [src/webapp/config.ts](src/webapp/config.ts)
+  - 26 new integration tests covering adapter contract, registry, profile
+    defaults, and dispatcher wiring in
+    [tests/unit/agent-runtime-adapter.test.js](tests/unit/agent-runtime-adapter.test.js)
+
 - M4: Production scalability profile implementation
   - Bounded parallel orchestration groups with configurable per-group concurrency
     in [platform/engine/dispatcher.ts](platform/engine/dispatcher.ts)

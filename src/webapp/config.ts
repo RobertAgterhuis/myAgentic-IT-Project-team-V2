@@ -91,3 +91,8 @@ export const SESSION_STORE: SessionStoreType = (() => {
   if (v === 'redis') return 'redis';
   return 'sqlite';
 })();
+
+/* ── Agent Runtime Adapter (Epic E-A1) ───────────────────────────── */
+/** Name of the AgentRuntimeAdapter to use. Resolved via AdapterRegistry at startup. */
+export const AGENT_RUNTIME_ADAPTER: string | undefined =
+  process.env.AGENT_RUNTIME_ADAPTER || undefined;

@@ -4,6 +4,7 @@ import { mkdirSync, writeFileSync, rmSync } from 'fs';
 import path from 'path';
 import os from 'os';
 import { registerRoutes } from '../../src/webapp/routes/dashboard.js';
+import { DashboardService } from '../../src/webapp/services/dashboard-service.js';
 import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
 
 const createDashboardRoutes = (ctx) => createTestableRoutes(registerRoutes, ctx);
@@ -98,6 +99,23 @@ describe('dashboard routes', () => {
         expect(data[key]).toHaveProperty('status');
       }
     });
+
+    it('returns 500 when health computation throws', async () => {
+      const spy = vi
+        .spyOn(DashboardService.prototype, 'computeHealthStatus')
+        .mockImplementation(() => {
+          throw new Error('boom');
+        });
+
+      try {
+        const res = fakeRes();
+        await routes['GET /api/dashboard/health'](fakeReq(), res);
+        expect(res.status).toBe(500);
+        expect(res.json.code).toBe('INTERNAL_ERROR');
+      } finally {
+        spy.mockRestore();
+      }
+    });
   });
 
   /* ── Metrics ─────────────────────────────────────────────────── */
@@ -159,6 +177,23 @@ describe('dashboard routes', () => {
       const res = fakeRes();
       await routes['GET /api/dashboard/metrics'](fakeReq(), res);
       expect(res.json.data.response_time.status).toBe('warning');
+    });
+
+    it('returns 500 when metrics computation throws', async () => {
+      const spy = vi
+        .spyOn(DashboardService.prototype, 'computeKeyMetrics')
+        .mockImplementation(() => {
+          throw new Error('boom');
+        });
+
+      try {
+        const res = fakeRes();
+        await routes['GET /api/dashboard/metrics'](fakeReq(), res);
+        expect(res.status).toBe(500);
+        expect(res.json.code).toBe('INTERNAL_ERROR');
+      } finally {
+        spy.mockRestore();
+      }
     });
   });
 
@@ -267,6 +302,23 @@ describe('dashboard routes', () => {
       await routes['GET /api/dashboard/activity'](fakeReq(), res);
       expect(res.status).toBe(200);
       expect(res.json.data[0].action).toContain('No audit events');
+    });
+
+    it('returns 500 when activity feed computation throws', async () => {
+      const spy = vi
+        .spyOn(DashboardService.prototype, 'computeActivityFeed')
+        .mockImplementation(() => {
+          throw new Error('boom');
+        });
+
+      try {
+        const res = fakeRes();
+        await routes['GET /api/dashboard/activity'](fakeReq(), res);
+        expect(res.status).toBe(500);
+        expect(res.json.code).toBe('INTERNAL_ERROR');
+      } finally {
+        spy.mockRestore();
+      }
     });
   });
 
@@ -425,6 +477,23 @@ describe('dashboard routes', () => {
       const res = fakeRes();
       await routes['GET /api/dashboard/stats'](fakeReq(), res);
       expect(res.json.data.github_stars.value).toBe('—');
+    });
+
+    it('returns 500 when quick stats computation throws', async () => {
+      const spy = vi
+        .spyOn(DashboardService.prototype, 'computeQuickStats')
+        .mockImplementation(() => {
+          throw new Error('boom');
+        });
+
+      try {
+        const res = fakeRes();
+        await routes['GET /api/dashboard/stats'](fakeReq(), res);
+        expect(res.status).toBe(500);
+        expect(res.json.code).toBe('INTERNAL_ERROR');
+      } finally {
+        spy.mockRestore();
+      }
     });
   });
 

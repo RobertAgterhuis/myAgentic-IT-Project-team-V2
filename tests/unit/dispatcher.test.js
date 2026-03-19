@@ -150,6 +150,55 @@ describe('Dispatcher — constructor', () => {
   });
 });
 
+describe('Dispatcher — enqueueInvocation', () => {
+  it('throws when no job queue is configured', async () => {
+    const d = new Dispatcher({ store: createMockStore() });
+
+    await expect(
+      d.enqueueInvocation({ id: '01', name: 'Business Analyst' }, STATES.PHASE_1, {})
+    ).rejects.toThrow(/No job queue configured/);
+  });
+
+  it('enqueues agent invocation jobs with merged config', async () => {
+    const queuedJobs = [];
+    const jobQueue = {
+      enqueue: vi.fn(async (job) => {
+        queuedJobs.push(job);
+        return { id: 'job-123', ...job };
+      }),
+    };
+
+    const d = new Dispatcher({
+      store: createMockStore(),
+      jobQueue,
+      config: { maxRetries: 2, platform: 'copilot' },
+    });
+
+    const result = await d.enqueueInvocation(
+      { id: '01', name: 'Business Analyst' },
+      STATES.PHASE_1,
+      { predecessorPaths: ['/existing.md'] },
+      { platform: 'claude', priority: 9, maxTransientRetries: 4 }
+    );
+
+    expect(result).toEqual({ jobId: 'job-123' });
+    expect(jobQueue.enqueue).toHaveBeenCalledTimes(1);
+    expect(queuedJobs[0]).toEqual({
+      type: 'agent-invocation',
+      payload: {
+        agentId: '01',
+        agentName: 'Business Analyst',
+        platform: 'claude',
+        state: STATES.PHASE_1,
+        context: { predecessorPaths: ['/existing.md'] },
+      },
+      priority: 9,
+      retryCount: 0,
+      maxRetries: 4,
+    });
+  });
+});
+
 // ─────────────────────────────────────────────────────────────
 // AC-1, AC-3: Context injection
 // ─────────────────────────────────────────────────────────────
@@ -293,6 +342,21 @@ describe('Dispatcher — invoke (retry)', () => {
     expect(result.success).toBe(false);
     expect(d.log.length).toBe(1);
     expect(d.log[0].status).toBe('failure');
+  });
+
+  it('marks exhausted recoverable failures as degraded', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: createFailInvoker('plain recoverable failure'),
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('plain recoverable failure');
+    expect(result.severity).toBe('RECOVERABLE');
+    expect(result.degraded).toBe(true);
   });
 });
 
@@ -576,6 +640,20 @@ describe('Dispatcher — Unknown error fallback', () => {
     expect(result.success).toBe(false);
     // Error message is empty string, which is falsy
     expect(typeof result.error).toBe('string');
+  });
+});
+
+describe('Dispatcher — internal helpers', () => {
+  it('classifies internal retry statuses consistently', () => {
+    expect(Dispatcher._classifyError({ message: 'TIMEOUT' }, 1, 2)).toBe('timeout');
+    expect(Dispatcher._classifyError({ message: 'boom' }, 1, 2)).toBe('retry');
+    expect(Dispatcher._classifyError({ message: 'boom' }, 3, 2)).toBe('failure');
+  });
+
+  it('propagates promise rejection through _withTimeout', async () => {
+    const d = new Dispatcher({ store: createMockStore() });
+
+    await expect(d._withTimeout(Promise.reject(new Error('boom')), 100)).rejects.toThrow('boom');
   });
 });
 

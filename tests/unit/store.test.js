@@ -96,6 +96,24 @@ describe('FileStore', () => {
         spy.mockRestore();
       }
     });
+
+    it('cleans up the temp file when rename fails', () => {
+      const fp = path.join(tmpDir, 'rename-fail.txt');
+      const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(12345);
+      const renameSpy = vi.spyOn(fs, 'renameSync').mockImplementationOnce(() => {
+        throw new Error('rename failed');
+      });
+      const unlinkSpy = vi.spyOn(fs, 'unlinkSync');
+
+      try {
+        expect(() => store.writeFile(fp, 'data')).toThrow(/File write failed/);
+        expect(unlinkSpy).toHaveBeenCalledWith(`${fp}.tmp.${process.pid}.12345`);
+      } finally {
+        nowSpy.mockRestore();
+        renameSpy.mockRestore();
+        unlinkSpy.mockRestore();
+      }
+    });
   });
 
   describe('readdir', () => {

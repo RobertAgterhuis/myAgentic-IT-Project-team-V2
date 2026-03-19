@@ -48,6 +48,10 @@ describe('Store async variants (M4/Epic-663)', () => {
       await expect(store.readFileAsync(fp, 'utf8')).resolves.toBe('payload');
     });
 
+    it('rejects async reads for missing files', async () => {
+      await expect(store.readFileAsync(path.join(tmpDir, 'missing.txt'), 'utf8')).rejects.toThrow();
+    });
+
     it('handles concurrent async operations', async () => {
       const promises = Array.from({ length: 3 }, (_, i) =>
         store.writeFileAsync(path.join(tmpDir, `file${i}.txt`), `content${i}`, 'utf8')
@@ -58,6 +62,21 @@ describe('Store async variants (M4/Epic-663)', () => {
       for (let i = 0; i < 3; i++) {
         const result = await store.readFileAsync(path.join(tmpDir, `file${i}.txt`), 'utf8');
         expect(result).toBe(`content${i}`);
+      }
+    });
+
+    it('continues writing when async backup directory creation fails', async () => {
+      const fp = path.join(tmpDir, 'backup-error.txt');
+      fs.writeFileSync(fp, 'v1', 'utf8');
+      const mkdirSpy = vi
+        .spyOn(fs.promises, 'mkdir')
+        .mockRejectedValueOnce(new Error('mkdir failed'));
+
+      try {
+        await store.writeFileAsync(fp, 'v2', 'utf8');
+        expect(fs.readFileSync(fp, 'utf8')).toBe('v2');
+      } finally {
+        mkdirSpy.mockRestore();
       }
     });
   });

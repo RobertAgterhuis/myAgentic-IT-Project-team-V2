@@ -152,6 +152,63 @@ describe('M5 Epic #665 orchestrator workflow automation', () => {
     expect(body.status.mode).toBe('AUDIT');
   });
 
+  it('hands off queued CREATE command to orchestrator while preserving queue visibility', async () => {
+    const queued = await inject('POST', '/api/command', {
+      command: 'CREATE',
+      project: 'M5-Handoff-Create',
+      description: 'Queue to orchestrator handoff test',
+    });
+    expect(queued.statusCode).toBe(200);
+    expect(queued.json().ok).toBe(true);
+
+    const queueBefore = await inject('GET', '/api/command');
+    expect(queueBefore.statusCode).toBe(200);
+    expect(queueBefore.json().queue.length).toBeGreaterThan(0);
+    expect(queueBefore.json().command.command).toBe('CREATE');
+    expect(queueBefore.json().command.status).toBe('PENDING');
+
+    const handoff = await inject('POST', '/api/orchestrator/command', {
+      command: 'CREATE',
+      platform: 'copilot',
+      project: 'M5-Handoff-Create',
+    });
+    expect(handoff.statusCode).toBe(200);
+    expect(handoff.json().ok).toBe(true);
+    expect(handoff.json().status.mode).toBe('CREATE');
+
+    const progress = await inject('GET', '/api/progress');
+    expect(progress.statusCode).toBe(200);
+    expect(progress.json().command).toBeDefined();
+    expect(progress.json().command.command).toBe('CREATE');
+
+    const exported = await inject('GET', '/api/export');
+    expect(exported.statusCode).toBe(200);
+    expect(Array.isArray(exported.json().command_queue)).toBe(true);
+    expect(exported.json().command_queue.length).toBeGreaterThan(0);
+  });
+
+  it('hands off queued AUDIT command to orchestrator with matching mode and queue record', async () => {
+    const queued = await inject('POST', '/api/command', {
+      command: 'AUDIT',
+      project: 'M5-Handoff-Audit',
+      description: 'Queue to orchestrator handoff test for audit',
+    });
+    expect(queued.statusCode).toBe(200);
+
+    const handoff = await inject('POST', '/api/orchestrator/command', {
+      command: 'AUDIT',
+      platform: 'claude',
+      project: 'M5-Handoff-Audit',
+    });
+    expect(handoff.statusCode).toBe(200);
+    expect(handoff.json().status.mode).toBe('AUDIT');
+
+    const queueAfter = await inject('GET', '/api/command');
+    expect(queueAfter.statusCode).toBe(200);
+    expect(queueAfter.json().command.command).toBe('AUDIT');
+    expect(queueAfter.json().command.status).toBe('PENDING');
+  });
+
   it('automates state transitions across status, advance, error, recover, and reset', async () => {
     await inject('POST', '/api/orchestrator/command', {
       command: 'CREATE',

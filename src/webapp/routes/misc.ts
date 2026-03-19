@@ -22,6 +22,7 @@ import { structuredLog, safePath, setSecurityHeaders } from '../middleware';
 import * as RS from '../route-schemas';
 import { collectPhaseOutputs } from './misc-export';
 import { registerHealthRoutes } from './misc-health';
+import { registerStaticFallback } from './misc-static';
 
 const HELP_TOC = [
   { slug: 'getting-started', title: 'Getting Started', icon: '🚀' },
@@ -290,76 +291,6 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     reply.send({ entries: result.entries, total: result.total, limit });
   }
 
-  /* ── Static file serving (React SPA from ui/dist/) ──────────── */
-
-  const UI_DIST = path.join(WEBAPP_DIR, 'ui', 'dist');
-
-  const MIME_TYPES = {
-    '.html': 'text/html; charset=utf-8',
-    '.js': 'application/javascript; charset=utf-8',
-    '.css': 'text/css; charset=utf-8',
-    '.json': 'application/json; charset=utf-8',
-    '.svg': 'image/svg+xml',
-    '.png': 'image/png',
-    '.ico': 'image/x-icon',
-    '.woff': 'font/woff',
-    '.woff2': 'font/woff2',
-  };
-
-  let cachedSpaHtml = null;
-  try {
-    const spaPath = path.join(UI_DIST, 'index.html');
-    if (getStore().exists(spaPath)) cachedSpaHtml = Buffer.from(getStore().readFile(spaPath));
-  } catch {
-    /* React build not present — run `npm run build` in src/webapp/ui/ */
-  }
-
-  function serveDistFile(pathname: string, reply: FastifyReply): boolean {
-    try {
-      const filePath = safePath(UI_DIST, pathname.startsWith('/') ? pathname.slice(1) : pathname);
-      if (!getStore().exists(filePath)) return false;
-      const content = getStore().readFile(filePath);
-      const ext = path.extname(filePath).toLowerCase();
-      const mime = MIME_TYPES[ext] || 'application/octet-stream';
-      const isHashed = pathname.startsWith('/assets/');
-      const raw = reply.raw;
-      setSecurityHeaders(raw);
-      raw.writeHead(200, {
-        'Content-Type': mime,
-        'Content-Length': Buffer.byteLength(content),
-        'Cache-Control': isHashed ? 'public, max-age=31536000, immutable' : 'public, max-age=3600',
-      });
-      raw.end(content);
-      reply.hijack();
-      return true;
-    } catch {
-      return false;
-    }
-  }
-
-  function serveStatic(request: FastifyRequest, reply: FastifyReply) {
-    const pathname = (request.url || '/').split('?')[0];
-
-    // Try serving a real file from ui/dist/
-    if (serveDistFile(pathname, reply)) return;
-
-    // SPA fallback — serve index.html for client-side routing
-    const raw = reply.raw;
-    setSecurityHeaders(raw);
-    if (!cachedSpaHtml) {
-      raw.writeHead(404, { 'Content-Type': 'text/plain' });
-      raw.end(S.NOT_FOUND);
-      reply.hijack();
-      return;
-    }
-    raw.writeHead(200, {
-      'Content-Type': 'text/html; charset=utf-8',
-      'Content-Length': cachedSpaHtml.length,
-    });
-    raw.end(cachedSpaHtml);
-    reply.hijack();
-  }
-
   /* ── Register routes ────────────────────────────────────────── */
 
   app.get('/api/session', apiGetSession);
@@ -383,6 +314,12 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     getStorageProvider,
   });
 
-  // SPA static fallback — catch-all for non-API routes
-  app.get('*', serveStatic);
+  registerStaticFallback({
+    app,
+    webappDir: WEBAPP_DIR,
+    getStore,
+    safePath,
+    setSecurityHeaders,
+    notFoundText: S.NOT_FOUND,
+  });
 }

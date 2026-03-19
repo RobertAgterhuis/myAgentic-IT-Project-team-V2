@@ -125,7 +125,6 @@ export default [
       'src/webapp/routes/misc-analytics.ts',
       'src/webapp/routes/orchestrator.ts',
       'src/webapp/server.ts',
-      'src/webapp/services/governance-service.ts',
     ],
     rules: {
       '@typescript-eslint/ban-ts-comment': 'off',

@@ -8,6 +8,7 @@ const ROOT = path.resolve(__dirname, '..', '..');
 
 // Directories written by the generators
 const COPILOT_DIR = path.join(ROOT, '.github', 'instructions');
+const COPILOT_INSTRUCTIONS = path.join(ROOT, '.github', 'copilot-instructions.md');
 const CLAUDE_DIR = path.join(ROOT, '.claude');
 const CLAUDE_MD = path.join(ROOT, 'CLAUDE.md');
 const CODEX_DIR = path.join(ROOT, '.codex');
@@ -19,6 +20,7 @@ describe('Platform transpiler (S4-4/S4-5/S4-6)', () => {
       if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true });
     }
     if (fs.existsSync(CLAUDE_MD)) fs.unlinkSync(CLAUDE_MD);
+    if (fs.existsSync(COPILOT_INSTRUCTIONS)) fs.unlinkSync(COPILOT_INSTRUCTIONS);
   });
 
   it('loads canonical data without errors', () => {
@@ -43,6 +45,7 @@ describe('Platform transpiler (S4-4/S4-5/S4-6)', () => {
         if (fs.existsSync(dir)) fs.rmSync(dir, { recursive: true });
       }
       if (fs.existsSync(CLAUDE_MD)) fs.unlinkSync(CLAUDE_MD);
+      if (fs.existsSync(COPILOT_INSTRUCTIONS)) fs.unlinkSync(COPILOT_INSTRUCTIONS);
     });
 
     it('returns file list without writing to disk', () => {
@@ -74,7 +77,7 @@ describe('Platform transpiler (S4-4/S4-5/S4-6)', () => {
       const results = generate('copilot');
       expect(results).toHaveLength(1);
       expect(results[0].target).toBe('copilot');
-      expect(results[0].fileCount).toBe(3);
+      expect(results[0].fileCount).toBe(4);
 
       const protocols = path.join(COPILOT_DIR, 'protocols.instructions.md');
       expect(fs.existsSync(protocols)).toBe(true);

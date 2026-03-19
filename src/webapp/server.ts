@@ -404,6 +404,14 @@ const server = {
         validateStartupRuntimeProfile(resolvedHost);
         await initStorageProvider().catch((err: Error) => {
           structuredLog('error', 'storage_provider_init_failed', { error: err.message });
+          if (isProductionContext()) {
+            structuredLog('error', 'startup_aborted_production_storage_required', {
+              host: resolvedHost,
+              nodeEnv: process.env.NODE_ENV,
+              error: err.message,
+            });
+            throw err;
+          }
         });
         await app.listen({ port, host: resolvedHost });
         resolvedCb?.();

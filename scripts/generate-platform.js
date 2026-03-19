@@ -89,33 +89,43 @@ function renderProtocols(protocols) {
 }
 
 // ─── Copilot Target (S4-4) ──────────────────────────────────
-// Outputs to: .github/instructions/*.instructions.md
+// Outputs to: .github/copilot-instructions.md + .github/instructions/*.instructions.md
 
 function generateCopilot(canonical, dryRun) {
   const outDir = path.join(ROOT, '.github', 'instructions');
+  const copilotInstructionsPath = path.join(ROOT, '.github', 'copilot-instructions.md');
   const files = [];
 
   const { agents, flows, tools, protocols, manifest } = canonical;
 
-  // 1. protocols.instructions.md — no applyTo = always loaded
+  const protoBodyLines = [];
+  protoBodyLines.push('# Universal Agent Protocols (Auto-Generated)');
+  protoBodyLines.push('');
+  protoBodyLines.push(`> Generated from canonical schema v${agents.schemaVersion}`);
+  protoBodyLines.push(`> Source: platform/schema/protocols.json`);
+  protoBodyLines.push('');
+  protoBodyLines.push(...renderProtocols(protocols));
+
+  // 1. copilot-instructions.md — GitHub/browser fallback + older clients
+  files.push({
+    path: copilotInstructionsPath,
+    content: protoBodyLines.join('\n'),
+  });
+
+  // 2. protocols.instructions.md — no applyTo = always loaded in VS Code
   const protoLines = [];
   protoLines.push('---');
   protoLines.push('# No applyTo — always loaded in every Copilot conversation');
   protoLines.push('---');
   protoLines.push('');
-  protoLines.push('# Universal Agent Protocols (Auto-Generated)');
-  protoLines.push('');
-  protoLines.push(`> Generated from canonical schema v${agents.schemaVersion}`);
-  protoLines.push(`> Source: platform/schema/protocols.json`);
-  protoLines.push('');
-  protoLines.push(...renderProtocols(protocols));
+  protoLines.push(...protoBodyLines);
 
   files.push({
     path: path.join(outDir, 'protocols.instructions.md'),
     content: protoLines.join('\n'),
   });
 
-  // 2. phase-agents.instructions.md — scoped to templates/sdlc/
+  // 3. phase-agents.instructions.md — scoped to templates/sdlc/
   const agentLines = [];
   agentLines.push('---');
   agentLines.push('applyTo: "templates/sdlc/**"');
@@ -239,7 +249,7 @@ function generateCopilot(canonical, dryRun) {
     content: agentLines.join('\n'),
   });
 
-  // 3. webapp.instructions.md — scoped to src/webapp/
+  // 4. webapp.instructions.md — scoped to src/webapp/
   const webappLines = [];
   webappLines.push('---');
   webappLines.push('applyTo: "src/webapp/**"');

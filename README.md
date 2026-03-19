@@ -31,6 +31,11 @@ Open [http://127.0.0.1:3000](http://127.0.0.1:3000) — select **CREATE** or
 **AUDIT**, paste the command into Copilot Chat, and type **CONTINUE** after each
 agent completes.
 
+Platform-specific AI instruction files are generated during `npm install`.
+For GitHub Copilot, this project intentionally keeps both `.github/instructions/*.instructions.md`
+for modern VS Code clients and `.github/copilot-instructions.md` for GitHub-hosted
+Copilot and older clients.
+
 ---
 
 ## Technology Stack

@@ -1502,10 +1502,10 @@ security scanning, and deployment for all PRs and pushes to `main`.
 
 ### Environment
 
-| Variable          | Value  | Purpose                     |
-| ----------------- | ------ | --------------------------- |
-| `NODE_VERSION`    | `20.x` | Node.js runtime version     |
-| `DOCKER_BUILDKIT` | `1`    | Docker BuildKit for caching |
+| Variable          | Value | Purpose                     |
+| ----------------- | ----- | --------------------------- |
+| `NODE_VERSION`    | `22`  | Node.js runtime version     |
+| `DOCKER_BUILDKIT` | `1`   | Docker BuildKit for caching |
 
 ### Required Secrets
 

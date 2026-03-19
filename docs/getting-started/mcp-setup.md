@@ -68,7 +68,7 @@ Configure an MCP stdio server in your IDE's MCP settings with:
 
 ### Prerequisites
 
-- **Node.js ≥ 18** must be on your PATH
+- **Node.js 22** must be on your PATH
 - **Dependencies installed** — run `npm install` at the repository root first
   (this installs `tsx` and `@modelcontextprotocol/sdk`)
 

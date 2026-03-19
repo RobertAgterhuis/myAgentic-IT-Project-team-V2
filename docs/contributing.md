@@ -17,7 +17,7 @@ Complete guide for contributing to myAgentic-IT-Project-team.
 
 ### Prerequisites
 
-- **Node.js ≥ 18** — [download](https://nodejs.org/)
+- **Node.js 22** — [download](https://nodejs.org/)
 - **Git** — [download](https://git-scm.com/)
 - **VS Code** with
   [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)

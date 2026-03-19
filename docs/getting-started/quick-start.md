@@ -17,7 +17,7 @@ minutes.
 
 | Requirement        | Version                                                                                           | Check           |
 | ------------------ | ------------------------------------------------------------------------------------------------- | --------------- |
-| **Node.js**        | ≥ 18 (22 recommended)                                                                             | `node -v`       |
+| **Node.js**        | 22                                                                                                | `node -v`       |
 | **npm**            | ≥ 9                                                                                               | `npm -v`        |
 | **Git**            | any recent version                                                                                | `git --version` |
 | **VS Code**        | latest, with [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) | —               |

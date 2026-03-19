@@ -1,6 +1,5 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
-// @ts-nocheck
 /**
  * Miscellaneous route handlers — session, reevaluate, export, help,
  * SSE events, metrics, health, analytics, audit, and static serving.
@@ -110,7 +109,12 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     const store = getStore();
     const sessionFile =
       typeof resolveSessionFile === 'function' ? resolveSessionFile() : SESSION_FILE;
-    const bundle = {
+    const bundle: {
+      exported_at: string;
+      session: Record<string, unknown> | null;
+      command_queue: unknown[];
+      phase_outputs: Record<string, unknown>;
+    } = {
       exported_at: models.isoNow(),
       session: null,
       command_queue: [],
@@ -119,19 +123,22 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
     if (sessionFile && store.exists(sessionFile)) {
       try {
-        bundle.session = JSON.parse(_cache.read(sessionFile));
+        bundle.session = JSON.parse(_cache.read(sessionFile)) as Record<string, unknown>;
       } catch {}
     }
-    bundle.command_queue = _readCommandQueue();
+    bundle.command_queue = _readCommandQueue?.() ?? [];
 
     if (bundle.session && bundle.session.phase_outputs) {
-      bundle.phase_outputs = collectPhaseOutputs(bundle.session.phase_outputs, {
-        store,
-        cache: _cache,
-        projectRoot: PROJECT_ROOT,
-        maxExportSize: MAX_EXPORT_SIZE,
-        safePath,
-      });
+      bundle.phase_outputs = collectPhaseOutputs(
+        bundle.session.phase_outputs as Record<string, unknown>,
+        {
+          store,
+          cache: _cache,
+          projectRoot: PROJECT_ROOT,
+          maxExportSize: MAX_EXPORT_SIZE,
+          safePath,
+        }
+      );
     }
 
     reply.send(bundle);

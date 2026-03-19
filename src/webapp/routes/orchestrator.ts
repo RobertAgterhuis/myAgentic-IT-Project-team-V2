@@ -1,6 +1,5 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
-// @ts-nocheck
 /**
  * Orchestrator route handlers — GET/POST /api/orchestrator/*
  * Exposes the state machine engine to the webapp UI.
@@ -22,30 +21,90 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { ServerContext } from '../context';
 import { getStore } from '../store';
 import { createEngine } from '../../../platform/engine/engine';
+import { PHASE_AGENTS } from '../../../platform/engine/dispatcher';
 import { listTemplates, seedDecisions } from '../../../platform/engine/template-loader';
 import { errorResponse } from '../utils/errors';
 import { structuredLog } from '../middleware';
 import { sessionTracker } from '../session-tracker';
 import * as RS from '../route-schemas';
 
+type OrchestratorEngine = ReturnType<typeof createEngine>;
+type OrchestratorStatus = ReturnType<OrchestratorEngine['status']>;
+type PhaseAgent = { id: string; name: string };
+
+function getErrorMessage(err: unknown): string {
+  return err instanceof Error ? err.message : String(err);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function toSessionPhase(state: string): string | null {
+  switch (state) {
+    case 'ONBOARDING':
+      return 'ONBOARDING';
+    case 'PHASE_1':
+    case 'CRITIC_1':
+      return 'PHASE-1';
+    case 'PHASE_2':
+    case 'CRITIC_2':
+      return 'PHASE-2';
+    case 'PHASE_3':
+    case 'CRITIC_3':
+      return 'PHASE-3';
+    case 'PHASE_4':
+    case 'CRITIC_4':
+      return 'PHASE-4';
+    case 'SYNTHESIS':
+      return 'SYNTHESIS';
+    case 'SPRINT_GATE':
+      return 'SPRINT_GATE';
+    case 'PHASE_5_EXECUTING':
+      return 'PHASE-5';
+    default:
+      return null;
+  }
+}
+
+function toTrackedAgentId(agent: PhaseAgent): string {
+  return `${agent.id}-${agent.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+}
+
+function getPrimaryAgent(state: string): string | null {
+  const agents = PHASE_AGENTS[state as keyof typeof PHASE_AGENTS] as PhaseAgent[] | undefined;
+  return agents && agents.length > 0 ? toTrackedAgentId(agents[0]) : null;
+}
+
+function getSessionRuntime(status: OrchestratorStatus): {
+  phase: string | null;
+  agent: string | null;
+} {
+  return {
+    phase: toSessionPhase(status.state),
+    agent: getPrimaryAgent(status.state),
+  };
+}
+
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const { sseNotify } = ctx;
 
   // Lazy-initialized engine (created on first request)
-  let _engine = null;
-  let _templateName = undefined;
+  let _engine: OrchestratorEngine | null = null;
+  let _templateName: string | undefined = undefined;
 
-  function getEngine() {
+  function getEngine(): OrchestratorEngine {
     if (!_engine) {
-      _engine = createEngine({
+      const engine = createEngine({
         store: getStore(),
         sseNotify,
         templateName: _templateName,
       });
+      _engine = engine;
       structuredLog('info', 'orchestrator_engine_initialized', {
-        state: _engine.status().state,
-        mode: _engine.status().mode,
-        templateName: _engine.status().templateName,
+        state: engine.status().state,
+        mode: engine.status().mode,
+        templateName: engine.status().templateName,
       });
     }
     return _engine;
@@ -61,8 +120,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const templates = listTemplates();
         return reply.send({ ok: true, templates });
       } catch (err) {
-        structuredLog('error', 'orchestrator_templates_error', { error: err.message });
-        return reply.code(500).send(errorResponse('TEMPLATE_ERROR', err.message));
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_templates_error', { error: message });
+        return reply.code(500).send(errorResponse('TEMPLATE_ERROR', message));
       }
     }
   );
@@ -77,8 +137,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const engine = getEngine();
         return reply.send(engine.status());
       } catch (err) {
-        structuredLog('error', 'orchestrator_status_error', { error: err.message });
-        return reply.code(500).send(errorResponse('ENGINE_ERROR', err.message));
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_status_error', { error: message });
+        return reply.code(500).send(errorResponse('ENGINE_ERROR', message));
       }
     }
   );
@@ -90,19 +151,20 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     { schema: RS.orchestratorAdvance },
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
-        const body = (request.body as Record<string, unknown>) || {};
+        const body = isRecord(request.body) ? request.body : {};
         const engine = getEngine();
-        const gateResult = body && body.gateResult ? body.gateResult : undefined;
-        const prevState = engine.status().state;
-        const prevPhase = engine.status().phase;
-        const prevAgent = engine.status().agent;
+        const prevStatus = engine.status();
+        const prevState = prevStatus.state;
+        const prevRuntime = getSessionRuntime(prevStatus);
+        const gateResult = isRecord(body.gateResult) ? body.gateResult : undefined;
         const result = engine.advance(gateResult);
         const newStatus = engine.status();
+        const nextRuntime = getSessionRuntime(newStatus);
 
         // Session tracking: start session on first advance from IDLE/READY
         const activeSession = sessionTracker.listSessions().find((s) => s.status === 'active');
         if (!activeSession && (prevState === 'IDLE' || prevState === 'READY')) {
-          const project = newStatus.templateName || 'default';
+          const project = newStatus.templateName ?? 'default';
           const flow = newStatus.mode || 'CREATE';
           sessionTracker.startSession(project, flow);
         }
@@ -110,71 +172,71 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         // Track phase transitions
         const currentSession = sessionTracker.listSessions().find((s) => s.status === 'active');
         if (currentSession) {
-          if (prevPhase !== newStatus.phase && newStatus.phase) {
-            if (prevPhase) {
+          if (prevRuntime.phase !== nextRuntime.phase && nextRuntime.phase) {
+            if (prevRuntime.phase) {
               sessionTracker.addTimelineEvent(currentSession.id, {
                 type: 'phase_complete',
-                description: `Phase completed: ${prevPhase}`,
-                phase: prevPhase,
+                description: `Phase completed: ${prevRuntime.phase}`,
+                phase: prevRuntime.phase,
               });
               sseNotify('phase_complete', {
                 type: 'phase_complete',
                 session_id: currentSession.id,
-                phase: prevPhase,
+                phase: prevRuntime.phase,
                 timestamp: new Date().toISOString(),
               });
             }
             sessionTracker.addTimelineEvent(currentSession.id, {
               type: 'phase_start',
-              description: `Phase started: ${newStatus.phase}`,
-              phase: newStatus.phase,
+              description: `Phase started: ${nextRuntime.phase}`,
+              phase: nextRuntime.phase,
             });
             sseNotify('phase_start', {
               type: 'phase_start',
               session_id: currentSession.id,
-              phase: newStatus.phase,
+              phase: nextRuntime.phase,
               timestamp: new Date().toISOString(),
             });
-            sessionTracker.updateSession(currentSession.id, { phase: newStatus.phase });
+            sessionTracker.updateSession(currentSession.id, { phase: nextRuntime.phase });
           }
 
           // Track agent transitions
-          if (prevAgent !== newStatus.agent && newStatus.agent) {
-            if (prevAgent) {
-              sessionTracker.completeAgent(prevAgent);
+          if (prevRuntime.agent !== nextRuntime.agent && nextRuntime.agent) {
+            if (prevRuntime.agent) {
+              sessionTracker.completeAgent(prevRuntime.agent);
               sessionTracker.addTimelineEvent(currentSession.id, {
                 type: 'agent_complete',
-                description: `Agent completed: ${prevAgent}`,
-                agent: prevAgent,
-                phase: newStatus.phase,
+                description: `Agent completed: ${prevRuntime.agent}`,
+                agent: prevRuntime.agent,
+                phase: prevRuntime.phase || undefined,
               });
               sseNotify('agent_complete', {
                 type: 'agent_complete',
                 session_id: currentSession.id,
-                agent: prevAgent,
+                agent: prevRuntime.agent,
                 timestamp: new Date().toISOString(),
               });
             }
             sessionTracker.startAgent(
               currentSession.id,
-              newStatus.agent,
-              newStatus.agent,
-              newStatus.phase || '',
-              `Processing ${newStatus.phase || 'unknown'}`
+              nextRuntime.agent,
+              nextRuntime.agent,
+              nextRuntime.phase || 'UNKNOWN',
+              `Processing ${nextRuntime.phase || 'unknown'}`
             );
             sessionTracker.addTimelineEvent(currentSession.id, {
               type: 'agent_start',
-              description: `Agent started: ${newStatus.agent}`,
-              agent: newStatus.agent,
-              phase: newStatus.phase,
+              description: `Agent started: ${nextRuntime.agent}`,
+              agent: nextRuntime.agent,
+              phase: nextRuntime.phase || undefined,
             });
             sseNotify('agent_start', {
               type: 'agent_start',
               session_id: currentSession.id,
-              agent: newStatus.agent,
+              agent: nextRuntime.agent,
               timestamp: new Date().toISOString(),
             });
-            sessionTracker.updateSession(currentSession.id, { current_agent: newStatus.agent });
+            sessionTracker.updateSession(currentSession.id, { current_agent: nextRuntime.agent });
           }
 
           // Session completion on DONE/COMPLETE
@@ -194,14 +256,15 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           transition: true,
           from: prevState,
           to: newStatus.state,
-          phase: newStatus.phase,
-          agent: newStatus.agent,
+          phase: nextRuntime.phase || undefined,
+          agent: nextRuntime.agent || undefined,
           timestamp: new Date().toISOString(),
         });
         return reply.send({ ok: true, transition: result, status: newStatus });
       } catch (err) {
-        structuredLog('warn', 'orchestrator_advance_failed', { error: err.message });
-        return reply.code(400).send(errorResponse('ADVANCE_FAILED', err.message));
+        const message = getErrorMessage(err);
+        structuredLog('warn', 'orchestrator_advance_failed', { error: message });
+        return reply.code(400).send(errorResponse('ADVANCE_FAILED', message));
       }
     }
   );
@@ -243,8 +306,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         });
         return reply.send({ ok: true, status: errorStatus });
       } catch (err) {
-        structuredLog('error', 'orchestrator_error_failed', { error: err.message });
-        return reply.code(500).send(errorResponse('ENGINE_ERROR', err.message));
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_error_failed', { error: message });
+        return reply.code(500).send(errorResponse('ENGINE_ERROR', message));
       }
     }
   );
@@ -267,8 +331,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         });
         return reply.send({ ok: true, recoveredState, status: recoverStatus });
       } catch (err) {
-        structuredLog('warn', 'orchestrator_recover_failed', { error: err.message });
-        return reply.code(400).send(errorResponse('RECOVER_FAILED', err.message));
+        const message = getErrorMessage(err);
+        structuredLog('warn', 'orchestrator_recover_failed', { error: message });
+        return reply.code(400).send(errorResponse('RECOVER_FAILED', message));
       }
     }
   );
@@ -294,8 +359,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const result = newEngine.reset(mode, phases);
         return reply.send({ ok: true, status: result });
       } catch (err) {
-        structuredLog('error', 'orchestrator_reset_failed', { error: err.message });
-        return reply.code(500).send(errorResponse('RESET_FAILED', err.message));
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_reset_failed', { error: message });
+        return reply.code(500).send(errorResponse('RESET_FAILED', message));
       }
     }
   );
@@ -323,16 +389,17 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const activeSession = sessionTracker.listSessions().find((s) => s.status === 'active');
         if (activeSession) {
           const gateType = result.verdict === 'APPROVED' ? 'gate_passed' : 'gate_failed';
+          const gatePhase = result.summary.phase || undefined;
           sessionTracker.addTimelineEvent(activeSession.id, {
             type: gateType,
             description: `Gate ${result.verdict}: ${result.summary.phase}`,
-            phase: result.summary.phase,
+            phase: gatePhase,
             metadata: { verdict: result.verdict, violations: result.summary.totalViolations },
           });
           sseNotify(gateType, {
             type: gateType,
             session_id: activeSession.id,
-            phase: result.summary.phase,
+            phase: gatePhase,
             verdict: result.verdict,
             violations: result.summary.totalViolations,
             timestamp: new Date().toISOString(),
@@ -346,8 +413,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         });
         return reply.send({ ok: true, ...result });
       } catch (err) {
-        structuredLog('error', 'orchestrator_validate_gate_error', { error: err.message });
-        return reply.code(500).send(errorResponse('GATE_VALIDATION_ERROR', err.message));
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_validate_gate_error', { error: message });
+        return reply.code(500).send(errorResponse('GATE_VALIDATION_ERROR', message));
       }
     }
   );
@@ -404,7 +472,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         }
 
         const resume = Boolean(body.resume);
-        const project = body.project ? String(body.project).slice(0, 200) : null;
+        const project = body.project ? String(body.project).slice(0, 200) : undefined;
         const template = body.template ? String(body.template).slice(0, 100) : undefined;
 
         // Apply template selection when starting fresh
@@ -429,7 +497,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
             }
           } catch (seedErr) {
             structuredLog('warn', 'orchestrator_decisions_seed_failed', {
-              error: seedErr.message,
+              error: getErrorMessage(seedErr),
             });
           }
         }
@@ -453,8 +521,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           status: st,
         });
       } catch (err) {
-        structuredLog('error', 'orchestrator_command_error', { error: err.message });
-        return reply.code(500).send(errorResponse('COMMAND_ERROR', err.message));
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_command_error', { error: message });
+        return reply.code(500).send(errorResponse('COMMAND_ERROR', message));
       }
     }
   );
@@ -470,8 +539,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const runs = engine.runHistory();
         return reply.send({ ok: true, runs });
       } catch (err) {
-        structuredLog('error', 'orchestrator_run_history_error', { error: err.message });
-        return reply.code(500).send(errorResponse('RUN_HISTORY_ERROR', err.message));
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_run_history_error', { error: message });
+        return reply.code(500).send(errorResponse('RUN_HISTORY_ERROR', message));
       }
     }
   );
@@ -487,8 +557,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const st = engine.stop();
         return reply.send({ ok: true, stopped: true, status: st });
       } catch (err) {
-        structuredLog('error', 'orchestrator_stop_failed', { error: err.message });
-        return reply.code(500).send(errorResponse('STOP_FAILED', err.message));
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_stop_failed', { error: message });
+        return reply.code(500).send(errorResponse('STOP_FAILED', message));
       }
     }
   );
@@ -518,8 +589,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         });
         return reply.send({ ok: true, ...result });
       } catch (err) {
-        structuredLog('error', 'orchestrator_sprint_gate_error', { error: err.message });
-        return reply.code(500).send(errorResponse('SPRINT_GATE_ERROR', err.message));
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_sprint_gate_error', { error: message });
+        return reply.code(500).send(errorResponse('SPRINT_GATE_ERROR', message));
       }
     }
   );

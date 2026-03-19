@@ -1,5 +1,4 @@
 #!/usr/bin/env tsx
-// @ts-nocheck
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 // Agentic SDLC Platform — Fastify-based API server (M30-003, composition root)
 import path from 'path';
@@ -320,7 +319,7 @@ const ctx: ServerContext = {
   PORT,
   SSE_HEARTBEAT_MS,
   ANALYTICS_MAX_EVENTS,
-  resolveSessionFile: () => resolveSessionFile(getStore(), _cache, SESSION_DIR),
+  resolveSessionFile: () => resolveSessionFile(getStore(), _cache, SESSION_DIR) ?? SESSION_FILE,
   getStorageProvider,
   STORAGE_PROVIDER,
   _authManager,

@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
 /**
@@ -43,9 +42,11 @@ function createLegacyReq(request: FastifyRequest): http.IncomingMessage {
 
   // Inherit all IncomingMessage properties; override stream methods
   const proxy = Object.create(raw) as http.IncomingMessage;
-  proxy.on = bodyStream.on.bind(bodyStream) as typeof raw.on;
-  proxy.once = bodyStream.once.bind(bodyStream) as typeof raw.once;
-  proxy.removeListener = bodyStream.removeListener.bind(bodyStream) as typeof raw.removeListener;
+  proxy.on = bodyStream.on.bind(bodyStream) as unknown as typeof raw.on;
+  proxy.once = bodyStream.once.bind(bodyStream) as unknown as typeof raw.once;
+  proxy.removeListener = bodyStream.removeListener.bind(
+    bodyStream
+  ) as unknown as typeof raw.removeListener;
   (proxy as { destroy: typeof raw.destroy }).destroy = (err?: Error) => {
     bodyStream.destroy(err);
     return raw.destroy(err);

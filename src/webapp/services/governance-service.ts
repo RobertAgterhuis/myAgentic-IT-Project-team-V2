@@ -1,4 +1,3 @@
-// @ts-nocheck
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
 /**
@@ -10,25 +9,18 @@
 
 import path from 'path';
 import { GovernanceEngine as PersistedGovernanceEngine } from '../../../platform/sdlc/governance';
+import type { ApprovalRequest } from '../../../platform/sdlc/governance';
 import { ServiceValidationError } from './decisions-service';
 import type { ServiceContext, ApprovalItem, ApprovalDecisionResult } from './types';
 
 /** Minimal governance engine shape. */
 interface GovernanceEngine {
-  getPendingApprovals(): ApprovalItem[];
-  decide(
-    id: string,
-    user: string,
-    approved: boolean,
-    reason: string
-  ): {
-    id: string;
-    status: string;
-    decided_by: string;
-    decided_at: string;
-    reason: string;
-  };
-  saveTo?(store: { writeFile(p: string, d: string): void }, path: string): void;
+  getPendingApprovals(userId?: string): ApprovalRequest[];
+  decide(id: string, user: string, approved: boolean, reason: string): ApprovalRequest;
+  saveTo?(
+    store: { writeFile(path: string, data: string): void; mkdirp(dir: string): void },
+    path: string
+  ): void;
 }
 
 function isGovernanceEngine(value: unknown): value is GovernanceEngine {
@@ -88,8 +80,8 @@ export class GovernanceService {
       approval: {
         id: result.id,
         status: result.status,
-        decided_by: result.decided_by,
-        decided_at: result.decided_at,
+        decided_by: result.decided_by || user,
+        decided_at: result.decided_at || new Date().toISOString(),
         reason: result.reason,
       },
     };
@@ -110,8 +102,8 @@ export class GovernanceService {
       approval: {
         id: result.id,
         status: result.status,
-        decided_by: result.decided_by,
-        decided_at: result.decided_at,
+        decided_by: result.decided_by || user,
+        decided_at: result.decided_at || new Date().toISOString(),
         reason: result.reason,
       },
     };

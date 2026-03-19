@@ -1,4 +1,3 @@
-// @ts-nocheck
 /**
  * MCP Server for myAgentic-IT-Project-team.
  *
@@ -280,7 +279,7 @@ mcp.tool(
       if (!file) return errorResult('file parameter is required');
       const relFile = (file as string).replace(/^BusinessDocs[\\/]?/, '');
       const result = questionnaireSvc.get(relFile);
-      return jsonResult({ file, ...result });
+      return jsonResult({ ...result, file });
     } catch (err: unknown) {
       if ((err as { errorCode?: string }).errorCode === 'PATH_TRAVERSAL')
         return errorResult('Invalid file path');

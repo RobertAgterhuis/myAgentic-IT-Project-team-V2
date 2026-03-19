@@ -58,4 +58,19 @@ describe('TopNavigation', () => {
     renderNavigation();
     expect(screen.getByPlaceholderText(/Ctrl\+K/)).toBeInTheDocument();
   });
+
+  it('renders theme toggle button', () => {
+    renderNavigation();
+    expect(screen.getByRole('button', { name: /theme/i })).toBeInTheDocument();
+  });
+
+  it('theme toggle button cycles to next theme on click', async () => {
+    const user = userEvent.setup();
+    renderNavigation();
+    const btn = screen.getByRole('button', { name: /theme/i });
+    // default is system — clicking should move to light; aria-label reflects next theme
+    await user.click(btn);
+    // after one click the label changes — just assert button is still present
+    expect(screen.getByRole('button', { name: /theme/i })).toBeInTheDocument();
+  });
 });

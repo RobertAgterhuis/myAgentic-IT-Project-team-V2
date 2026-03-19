@@ -2,8 +2,53 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from './input';
 import { Badge } from './badge';
-import { Menu, Search, ShieldCheck, Users, Wifi, WifiOff, Loader2 } from 'lucide-react';
+import {
+  Menu,
+  Monitor,
+  Moon,
+  Search,
+  ShieldCheck,
+  Sun,
+  Users,
+  Wifi,
+  WifiOff,
+  Loader2,
+} from 'lucide-react';
 import { UserMenu } from './user-menu';
+import { useTheme } from './use-theme';
+
+const THEME_CYCLE = ['light', 'dark', 'system'] as const;
+type ThemeCycle = (typeof THEME_CYCLE)[number];
+
+const THEME_ICON: Record<ThemeCycle, React.ReactNode> = {
+  light: <Sun className="size-4" />,
+  dark: <Moon className="size-4" />,
+  system: <Monitor className="size-4" />,
+};
+
+const THEME_LABEL: Record<ThemeCycle, string> = {
+  light: 'Light theme',
+  dark: 'Dark theme',
+  system: 'System theme',
+};
+
+function ThemeToggleButton() {
+  const { theme, setTheme } = useTheme();
+  const current = (THEME_CYCLE.includes(theme as ThemeCycle) ? theme : 'system') as ThemeCycle;
+  const next = THEME_CYCLE[(THEME_CYCLE.indexOf(current) + 1) % THEME_CYCLE.length];
+
+  return (
+    <button
+      type="button"
+      onClick={() => setTheme(next)}
+      aria-label={`Switch to ${THEME_LABEL[next]}`}
+      title={THEME_LABEL[current]}
+      className="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-muted transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+    >
+      {THEME_ICON[current]}
+    </button>
+  );
+}
 
 type ConnectionStatus = 'connected' | 'disconnected' | 'connecting';
 
@@ -139,6 +184,9 @@ function TopNavigation({
           {statusIcon[connectionStatus]}
           <span className="hidden sm:inline">{statusLabel[connectionStatus]}</span>
         </Badge>
+
+        {/* Theme toggle */}
+        <ThemeToggleButton />
 
         {/* User menu (M29-006) */}
         <UserMenu />

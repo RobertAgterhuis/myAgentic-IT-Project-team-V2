@@ -3,6 +3,7 @@
  */
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
+import { ThemeProvider } from '@/components/ui/theme-provider';
 
 export function createTestQueryClient() {
   return new QueryClient({
@@ -15,5 +16,9 @@ export function createTestQueryClient() {
 
 export function TestWrapper({ children }: { children: ReactNode }) {
   const qc = createTestQueryClient();
-  return <QueryClientProvider client={qc}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={qc}>
+      <ThemeProvider>{children}</ThemeProvider>
+    </QueryClientProvider>
+  );
 }

@@ -88,6 +88,42 @@ function renderProtocols(protocols) {
   return lines;
 }
 
+function renderCopilotCommandContext(agents, flows) {
+  const lines = [];
+
+  lines.push('## Command Modes');
+  lines.push('');
+  for (const [modeName, modeDef] of Object.entries(flows.modes)) {
+    const phaseList = modeDef.phases.length > 0 ? modeDef.phases.join(' → ') : '(none)';
+    lines.push(`- **${modeName}**: ${modeDef.label} — ${phaseList}`);
+  }
+  lines.push('');
+
+  lines.push('## Agent Roster');
+  lines.push('');
+  lines.push('| ID | Name | Phase | Dependencies |');
+  lines.push('| --- | --- | --- | --- |');
+  for (const agent of agents.agents) {
+    const deps = agent.dependencies.length > 0 ? agent.dependencies.join(', ') : 'none';
+    lines.push(`| ${agent.id} | ${agent.name} | ${agent.phase} | ${deps} |`);
+  }
+  lines.push('');
+
+  lines.push('## Gates');
+  lines.push('');
+  for (const gate of flows.gates) {
+    lines.push(`### ${gate.id}`);
+    lines.push(`- After: ${gate.after} | Before: ${gate.before} | Type: ${gate.type}`);
+    lines.push('- Conditions:');
+    for (const condition of gate.conditions) {
+      lines.push(`  - ${condition}`);
+    }
+    lines.push('');
+  }
+
+  return lines;
+}
+
 // ─── Copilot Target (S4-4) ──────────────────────────────────
 // Outputs to: .github/copilot-instructions.md + .github/instructions/*.instructions.md
 
@@ -105,6 +141,7 @@ function generateCopilot(canonical, dryRun) {
   protoBodyLines.push(`> Source: platform/schema/protocols.json`);
   protoBodyLines.push('');
   protoBodyLines.push(...renderProtocols(protocols));
+  protoBodyLines.push(...renderCopilotCommandContext(agents, flows));
 
   // 1. copilot-instructions.md — GitHub/browser fallback + older clients
   files.push({
@@ -332,6 +369,14 @@ function generateClaude(canonical, dryRun) {
   lines.push('```');
   lines.push(flows.fullFlow.join(' → '));
   lines.push('```');
+  lines.push('');
+
+  lines.push('## Command Modes');
+  lines.push('');
+  for (const [modeName, modeDef] of Object.entries(flows.modes)) {
+    const phaseList = modeDef.phases.length > 0 ? modeDef.phases.join(' → ') : '(none)';
+    lines.push(`- **${modeName}**: ${modeDef.label} — ${phaseList}`);
+  }
   lines.push('');
 
   // Agent list

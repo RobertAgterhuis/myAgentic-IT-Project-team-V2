@@ -68,3 +68,113 @@ VP-4. Perform a self-check: read your own output from beginning to end and verif
 ```
 
 **AN AGENT MAY NOT HAND OFF THE TASK IF ANY CHECKBOX IS UNCHECKED.**
+
+## Command Modes
+
+- **CREATE**: Full CREATE cycle — PHASE_1 → PHASE_2 → PHASE_3 → PHASE_4
+- **AUDIT**: Full AUDIT cycle — PHASE_1 → PHASE_2 → PHASE_3 → PHASE_4
+- **CREATE_BUSINESS**: Business-only CREATE — PHASE_1
+- **CREATE_TECH**: Tech-only CREATE — PHASE_2
+- **CREATE_UX**: UX-only CREATE — PHASE_3
+- **CREATE_MARKETING**: Marketing-only CREATE — PHASE_4
+- **FEATURE**: FEATURE full cycle — PHASE_1 → PHASE_2 → PHASE_3 → PHASE_4
+- **SCOPE_CHANGE**: Scope change re-analysis — (none)
+- **HOTFIX**: Emergency hotfix bypass — (none)
+
+## Agent Roster
+
+| ID  | Name                             | Phase             | Dependencies |
+| --- | -------------------------------- | ----------------- | ------------ |
+| 00  | Orchestrator                     | SPRINT_GATE       | none         |
+| 01  | Business Analyst                 | PHASE_1           | 25           |
+| 02  | Domain Expert                    | PHASE_1           | 01           |
+| 03  | Sales Strategist                 | PHASE_1           | 02           |
+| 04  | Financial Analyst                | PHASE_1           | 03           |
+| 05  | Software Architect               | PHASE_2           | 19           |
+| 06  | Senior Developer                 | PHASE_2           | 05           |
+| 07  | DevOps Engineer                  | PHASE_2           | 06           |
+| 08  | Security Architect               | PHASE_2           | 07           |
+| 09  | Data Architect                   | PHASE_2           | 08           |
+| 10  | UX Researcher                    | PHASE_3           | 19           |
+| 11  | UX Designer                      | PHASE_3           | 10           |
+| 12  | UI Designer                      | PHASE_3           | 11           |
+| 13  | Accessibility Specialist         | PHASE_3           | 12           |
+| 14  | Brand Strategist                 | PHASE_4           | 19           |
+| 15  | Growth Marketer                  | PHASE_4           | 14           |
+| 16  | CRO Specialist                   | PHASE_4           | 15           |
+| 17  | Synthesis Agent                  | SYNTHESIS         | 31           |
+| 18  | Critic Agent                     | CRITIC_RISK       | 34           |
+| 19  | Risk Agent                       | CRITIC_RISK       | 18           |
+| 20  | Implementation Agent             | PHASE_5_EXECUTING | 27           |
+| 21  | Test Agent                       | PHASE_5_EXECUTING | 20           |
+| 22  | PR/Review Agent                  | PHASE_5_EXECUTING | 21           |
+| 23  | Reevaluate Agent                 | REEVALUATE        | none         |
+| 24  | Feature Agent                    | FEATURE           | none         |
+| 25  | Onboarding Agent                 | ONBOARDING        | none         |
+| 26  | Documentation Agent              | PHASE_5_EXECUTING | 29           |
+| 27  | GitHub Integration Agent         | PHASE_5_EXECUTING | 17           |
+| 28  | Sprint Retrospective Agent       | PHASE_5_EXECUTING | 27           |
+| 29  | KPI/Metrics Agent                | PHASE_5_EXECUTING | 22           |
+| 30  | Brand & Assets Agent (Canva)     | PHASE_4           | 19           |
+| 31  | Storybook Agent                  | PHASE_4           | 30           |
+| 32  | Content Strategist / UX Writer   | PHASE_3           | 13           |
+| 33  | Legal / Privacy Counsel          | PHASE_2           | 09           |
+| 34  | Product Manager                  | PHASE_1           | 04           |
+| 35  | Localization Specialist          | PHASE_3           | 32           |
+| 36  | Questionnaire Agent              | QUESTIONNAIRE     | none         |
+| 37  | Scope Change Agent               | SCOPE_CHANGE      | none         |
+| 38  | Architecture Compliance Reviewer | PHASE_5_EXECUTING | 21           |
+
+## Gates
+
+### gate.critic-risk-1
+
+- After: PHASE_1 | Before: PHASE_2 | Type: CRITIC_RISK
+- Conditions:
+  - All PHASE_1 agent handoff checklists complete
+  - Critic agent validation passed
+  - Risk agent assessment completed
+  - No unresolved BLOCKING items
+
+### gate.critic-risk-2
+
+- After: PHASE_2 | Before: PHASE_3 | Type: CRITIC_RISK
+- Conditions:
+  - All PHASE_2 agent handoff checklists complete
+  - Critic agent validation passed
+  - Risk agent assessment completed
+  - No unresolved BLOCKING items
+
+### gate.critic-risk-3
+
+- After: PHASE_3 | Before: PHASE_4 | Type: CRITIC_RISK
+- Conditions:
+  - All PHASE_3 agent handoff checklists complete
+  - Critic agent validation passed
+  - Risk agent assessment completed
+  - No unresolved BLOCKING items
+
+### gate.critic-risk-4
+
+- After: PHASE_4 | Before: SYNTHESIS | Type: CRITIC_RISK
+- Conditions:
+  - All PHASE_4 agent handoff checklists complete
+  - Critic agent validation passed
+  - Risk agent assessment completed
+  - No unresolved BLOCKING items
+
+### gate.synthesis-approval
+
+- After: SYNTHESIS | Before: SPRINT_GATE | Type: SYNTHESIS_APPROVAL
+- Conditions:
+  - All 6 synthesis documents approved
+  - BLOCKING items linked to sprint plan
+  - Cross-team blocker matrix complete
+
+### gate.sprint-gate
+
+- After: SPRINT_GATE | Before: PHASE_5_EXECUTING | Type: SPRINT_GATE
+- Conditions:
+  - Definition of Ready check passed
+  - Lessons-learned injection completed
+  - Sprint backlog approved

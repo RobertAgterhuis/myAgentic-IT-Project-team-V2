@@ -110,6 +110,87 @@
       }
     },
     {
+      "id": "POL-SEC-C3-001",
+      "name": "Policy approval required before tool.files.write",
+      "description": "Side-effecting write operations must have explicit policy approval before execution.",
+      "scope": "global",
+      "category": "security",
+      "severity": "blocking",
+      "condition": {
+        "type": "gate",
+        "check": "tool_files_write_policy_approved",
+        "parameters": {
+          "tool_id": "tool.files.write"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "tool.files.write requires explicit policy approval from governance decisions.",
+        "notify_roles": ["SECURITY_REVIEWER", "DEVOPS_ENGINEER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "security-team",
+        "created": "2026-03-20T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["c3", "policy-gate", "tooling"]
+      }
+    },
+    {
+      "id": "POL-SEC-C3-002",
+      "name": "Policy approval required before tool.git.commit",
+      "description": "Source-control mutation operations must have explicit policy approval before execution.",
+      "scope": "global",
+      "category": "security",
+      "severity": "blocking",
+      "condition": {
+        "type": "gate",
+        "check": "tool_git_commit_policy_approved",
+        "parameters": {
+          "tool_id": "tool.git.commit"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "tool.git.commit requires explicit policy approval from governance decisions.",
+        "notify_roles": ["SECURITY_REVIEWER", "DEVOPS_ENGINEER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "security-team",
+        "created": "2026-03-20T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["c3", "policy-gate", "tooling"]
+      }
+    },
+    {
+      "id": "POL-SEC-C3-003",
+      "name": "Policy approval required before tool.github.issue",
+      "description": "External issue/PR mutation operations must have explicit policy approval before execution.",
+      "scope": "global",
+      "category": "security",
+      "severity": "blocking",
+      "condition": {
+        "type": "gate",
+        "check": "tool_github_issue_policy_approved",
+        "parameters": {
+          "tool_id": "tool.github.issue"
+        }
+      },
+      "action": {
+        "type": "block",
+        "message": "tool.github.issue requires explicit policy approval from governance decisions.",
+        "notify_roles": ["SECURITY_REVIEWER", "DEVOPS_ENGINEER"]
+      },
+      "exceptions": [],
+      "metadata": {
+        "owner": "security-team",
+        "created": "2026-03-20T00:00:00.000Z",
+        "evidence_required": true,
+        "tags": ["c3", "policy-gate", "tooling"]
+      }
+    },
+    {
       "id": "POL-SEC-005",
       "name": "API key rotation reminder",
       "description": "API keys older than 90 days should be rotated. This is a warning — not a blocker.",

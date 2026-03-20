@@ -130,6 +130,12 @@ GitHub Issues:
 - I-C3-002: Add policy gate before `tool.files.write`, `tool.git.commit`, and `tool.github.issue` actions.
 - I-C3-003: Add adversarial prompt/context test suite under `tests/security/`.
 
+Implementation status (2026-03-20):
+
+- [x] I-C3-001 implemented in `platform/engine/agent-runtime-adapter.ts`.
+- [x] I-C3-002 implemented in `platform/engine/tool-execution-middleware.ts` + policy pack updates.
+- [x] I-C3-003 implemented in `tests/security/adversarial-prompt-context.test.js`.
+
 Acceptance criteria:
 
 - Prompt/context sanitization and trust classification run before every model invocation.

@@ -81,6 +81,15 @@ interface InvocationEntry {
   completionTokens?: number;
   totalTokens?: number;
   contractValidationPassed?: boolean;
+  toolTraceId?: string;
+  toolInvocationCount?: number;
+  toolAuditEvents?: Array<{
+    toolId: string;
+    operation?: string;
+    durationMs?: number;
+    success: boolean;
+    errorCode?: string;
+  }>;
   confidence?: number;
   uncertainty_reasons?: string[];
   needs_human_review?: boolean;
@@ -497,6 +506,15 @@ class Dispatcher {
               completionTokens?: number;
               totalTokens?: number;
             };
+            toolTraceId?: string;
+            toolInvocationCount?: number;
+            toolAuditEvents?: Array<{
+              toolId: string;
+              operation?: string;
+              durationMs?: number;
+              success: boolean;
+              errorCode?: string;
+            }>;
             contractValidation?: { status?: string };
             requestedAt?: string;
             completedAt?: string;
@@ -520,6 +538,9 @@ class Dispatcher {
           entry.promptTokens = response.usage?.promptTokens;
           entry.completionTokens = response.usage?.completionTokens;
           entry.totalTokens = response.usage?.totalTokens;
+          entry.toolTraceId = response.toolTraceId;
+          entry.toolInvocationCount = response.toolInvocationCount;
+          entry.toolAuditEvents = response.toolAuditEvents;
           entry.contractValidationPassed = response.contractValidation?.status === 'passed';
           entry.providerLatencyMs =
             Number.isFinite(requestedAtMs) && Number.isFinite(completedAtMs)

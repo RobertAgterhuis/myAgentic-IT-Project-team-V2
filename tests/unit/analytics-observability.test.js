@@ -18,7 +18,10 @@ const {
   serializeMetricsStore,
   deserializeMetricsStore,
   recordAgentPerformance,
+  recordToolExecutionTrace,
   computeAgentStats,
+  computeStageLatencyStats,
+  computeToolLatencyStats,
   computeVelocityTrendEntry,
   recordSprintBoundary,
 } = require('../../platform/sdlc/observability');
@@ -348,6 +351,97 @@ describe('computeAgentStats', () => {
   });
 });
 
+describe('recordToolExecutionTrace', () => {
+  it('appends tool execution duration and success metrics', () => {
+    const store = createMetricsStore();
+
+    recordToolExecutionTrace(store, {
+      agent_id: 'BA-01',
+      agent_name: 'Business Analyst',
+      state: 'PHASE_1',
+      tool_id: 'tool.files.read',
+      operation: 'read_file',
+      trace_id: 'trace-1',
+      duration_ms: 42,
+      success: true,
+    });
+
+    expect(store.metrics['tool_execution_duration_ms'].data_points).toHaveLength(1);
+    expect(store.metrics['tool_execution_success'].data_points).toHaveLength(1);
+    expect(store.metrics['tool_execution_duration_ms'].data_points[0].labels.tool_id).toBe(
+      'tool.files.read'
+    );
+  });
+});
+
+describe('computeStageLatencyStats', () => {
+  it('computes p50/p95/p99 and failure rate by stage', () => {
+    const store = createMetricsStore();
+    recordAgentPerformance(store, {
+      agent_id: 'A1',
+      agent_name: 'A1',
+      state: 'PHASE_1',
+      started_at: '',
+      ended_at: '',
+      duration_ms: 10,
+      success: true,
+      attempt: 1,
+    });
+    recordAgentPerformance(store, {
+      agent_id: 'A2',
+      agent_name: 'A2',
+      state: 'PHASE_1',
+      started_at: '',
+      ended_at: '',
+      duration_ms: 30,
+      success: false,
+      attempt: 1,
+    });
+
+    const stats = computeStageLatencyStats(store);
+    expect(stats).toHaveLength(1);
+    expect(stats[0].stage).toBe('PHASE_1');
+    expect(stats[0].p50_duration_ms).toBe(10);
+    expect(stats[0].p95_duration_ms).toBe(30);
+    expect(stats[0].p99_duration_ms).toBe(30);
+    expect(stats[0].failure_rate_pct).toBe(50);
+  });
+});
+
+describe('computeToolLatencyStats', () => {
+  it('computes p50/p95/p99 and failure rate by tool and operation', () => {
+    const store = createMetricsStore();
+
+    recordToolExecutionTrace(store, {
+      agent_id: 'A1',
+      agent_name: 'A1',
+      state: 'PHASE_1',
+      tool_id: 'tool.files.read',
+      operation: 'read_file',
+      duration_ms: 5,
+      success: true,
+    });
+    recordToolExecutionTrace(store, {
+      agent_id: 'A1',
+      agent_name: 'A1',
+      state: 'PHASE_1',
+      tool_id: 'tool.files.read',
+      operation: 'read_file',
+      duration_ms: 45,
+      success: false,
+    });
+
+    const stats = computeToolLatencyStats(store);
+    expect(stats).toHaveLength(1);
+    expect(stats[0].tool_id).toBe('tool.files.read');
+    expect(stats[0].operation).toBe('read_file');
+    expect(stats[0].p50_duration_ms).toBe(5);
+    expect(stats[0].p95_duration_ms).toBe(45);
+    expect(stats[0].p99_duration_ms).toBe(45);
+    expect(stats[0].failure_rate_pct).toBe(50);
+  });
+});
+
 // ─── createAgentPerformanceHook ──────────────────────────────
 
 describe('createAgentPerformanceHook', () => {
@@ -385,6 +479,16 @@ describe('createAgentPerformanceHook', () => {
       completionTokens: 80,
       totalTokens: 200,
       contractValidationPassed: true,
+      toolTraceId: 'trace-123',
+      toolInvocationCount: 1,
+      toolAuditEvents: [
+        {
+          toolId: 'tool.files.read',
+          operation: 'read_file',
+          durationMs: 44,
+          success: true,
+        },
+      ],
     });
 
     hook({ from: 'ONBOARDING', to: 'PHASE_1', timestamp: '2025-01-01T00:05:00Z' });
@@ -396,6 +500,8 @@ describe('createAgentPerformanceHook', () => {
     expect(stored.metrics['agent_success'].data_points[0].value).toBe(1);
     expect(stored.metrics['agent_total_tokens'].data_points[0].value).toBe(200);
     expect(stored.metrics['agent_provider_latency_ms'].data_points[0].value).toBe(275);
+    expect(stored.metrics['tool_execution_duration_ms'].data_points[0].value).toBe(44);
+    expect(stored.metrics['tool_execution_success'].data_points[0].value).toBe(1);
   });
 
   it('only processes new entries (idempotent across calls)', () => {

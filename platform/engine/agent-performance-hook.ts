@@ -11,8 +11,10 @@
 import {
   type MetricsStore,
   type AgentPerformanceRecord,
+  type ToolExecutionTraceRecord,
   createMetricsStore,
   recordAgentPerformance,
+  recordToolExecutionTrace,
   serializeMetricsStore,
   deserializeMetricsStore,
 } from '../sdlc/observability';
@@ -47,6 +49,15 @@ interface InvocationLogEntry {
   completionTokens?: number;
   totalTokens?: number;
   contractValidationPassed?: boolean;
+  toolTraceId?: string;
+  toolInvocationCount?: number;
+  toolAuditEvents?: Array<{
+    toolId: string;
+    operation?: string;
+    durationMs?: number;
+    success: boolean;
+    errorCode?: string;
+  }>;
 }
 
 /**
@@ -107,6 +118,23 @@ export function createAgentPerformanceHook(
         contract_validation_passed: entry.contractValidationPassed,
       };
       recordAgentPerformance(metricsStore, record);
+
+      if (Array.isArray(entry.toolAuditEvents) && entry.toolAuditEvents.length > 0) {
+        for (const toolEvent of entry.toolAuditEvents) {
+          const toolRecord: ToolExecutionTraceRecord = {
+            agent_id: entry.agentId,
+            agent_name: entry.agentName,
+            state: entry.state,
+            tool_id: toolEvent.toolId,
+            operation: toolEvent.operation,
+            trace_id: entry.toolTraceId,
+            duration_ms: toolEvent.durationMs || 0,
+            success: toolEvent.success,
+            error_code: toolEvent.errorCode,
+          };
+          recordToolExecutionTrace(metricsStore, toolRecord);
+        }
+      }
     }
 
     processedCount = log.length;

@@ -26,6 +26,8 @@ import {
   computeAgentStats,
   queryMetric,
   computeVelocityTrendEntry,
+  computeStageLatencyStats,
+  computeToolLatencyStats,
 } from '../../../platform/sdlc/observability';
 import type { MetricsStore, SprintMetrics } from '../../../platform/sdlc/observability';
 
@@ -88,6 +90,8 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const sprintPlanned = queryMetric(metricsStore, 'sprint_planned_points');
         const sprintCompleted = queryMetric(metricsStore, 'sprint_completed_points');
         const sprintDefects = queryMetric(metricsStore, 'sprint_defects_found');
+        const stageLatency = computeStageLatencyStats(metricsStore);
+        const toolLatency = computeToolLatencyStats(metricsStore);
 
         return reply.send({
           ok: true,
@@ -103,6 +107,10 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
               planned_points: sprintPlanned,
               completed_points: sprintCompleted,
               defects_found: sprintDefects,
+            },
+            performance: {
+              stage_latency: stageLatency,
+              tool_latency: toolLatency,
             },
           },
           timestamp: new Date().toISOString(),

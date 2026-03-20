@@ -316,6 +316,16 @@ describe('Dispatcher — invoke (success)', () => {
           finishReason: 'stop',
           attempts: 2,
           usage: { promptTokens: 12, completionTokens: 8, totalTokens: 20 },
+          toolTraceId: 'trace-abc',
+          toolInvocationCount: 1,
+          toolAuditEvents: [
+            {
+              toolId: 'tool.files.read',
+              operation: 'read_file',
+              durationMs: 17,
+              success: true,
+            },
+          ],
           contractValidation: { status: 'passed' },
           requestedAt: '2026-03-19T10:00:00.000Z',
           completedAt: '2026-03-19T10:00:00.250Z',
@@ -336,8 +346,12 @@ describe('Dispatcher — invoke (success)', () => {
       promptTokens: 12,
       completionTokens: 8,
       totalTokens: 20,
+      toolTraceId: 'trace-abc',
+      toolInvocationCount: 1,
       contractValidationPassed: true,
     });
+    expect(logs[0].toolAuditEvents).toHaveLength(1);
+    expect(logs[0].toolAuditEvents[0].toolId).toBe('tool.files.read');
     expect(logs[0].providerLatencyMs).toBe(250);
     expect(result.confidence).toBeGreaterThan(0.6);
     expect(result.needs_human_review).toBe(true);

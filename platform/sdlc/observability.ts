@@ -414,6 +414,181 @@ export interface AgentPerformanceStats {
   models: string[];
 }
 
+/** Tool execution trace record for per-tool observability rollups. */
+export interface ToolExecutionTraceRecord {
+  agent_id: string;
+  agent_name: string;
+  state: string;
+  tool_id: string;
+  operation?: string;
+  trace_id?: string;
+  duration_ms: number;
+  success: boolean;
+  error_code?: string;
+}
+
+/** Aggregated latency/failure stats per orchestration stage. */
+export interface StageLatencyStats {
+  stage: string;
+  total_invocations: number;
+  p50_duration_ms: number;
+  p95_duration_ms: number;
+  p99_duration_ms: number;
+  failure_rate_pct: number;
+}
+
+/** Aggregated latency/failure stats per tool (optionally operation-scoped). */
+export interface ToolLatencyStats {
+  tool_id: string;
+  operation: string;
+  total_invocations: number;
+  p50_duration_ms: number;
+  p95_duration_ms: number;
+  p99_duration_ms: number;
+  failure_rate_pct: number;
+}
+
+function percentileFromSorted(sorted: number[], percentile: number): number {
+  if (sorted.length === 0) return 0;
+  const index = Math.max(0, Math.ceil((percentile / 100) * sorted.length) - 1);
+  return sorted[index];
+}
+
+function computePercentileBundle(values: number[]): { p50: number; p95: number; p99: number } {
+  const sorted = [...values].sort((a, b) => a - b);
+  return {
+    p50: percentileFromSorted(sorted, 50),
+    p95: percentileFromSorted(sorted, 95),
+    p99: percentileFromSorted(sorted, 99),
+  };
+}
+
+/** Record one tool execution trace into the time-series metrics store. */
+export function recordToolExecutionTrace(
+  store: MetricsStore,
+  record: ToolExecutionTraceRecord
+): MetricsStore {
+  const labels = {
+    agent_id: record.agent_id,
+    agent_name: record.agent_name,
+    state: record.state,
+    tool_id: record.tool_id,
+    operation: record.operation || 'unspecified',
+    ...(record.trace_id ? { trace_id: record.trace_id } : {}),
+    ...(record.error_code ? { error_code: record.error_code } : {}),
+  };
+
+  appendMetric(store, 'tool_execution_duration_ms', 'ms', record.duration_ms, labels);
+  appendMetric(store, 'tool_execution_success', 'boolean', record.success ? 1 : 0, labels);
+  return store;
+}
+
+/** Compute p50/p95/p99 latency and failure rates grouped by orchestration stage. */
+export function computeStageLatencyStats(store: MetricsStore): StageLatencyStats[] {
+  const durations = store.metrics['agent_duration_ms'];
+  const successes = store.metrics['agent_success'];
+  if (!durations || !successes) return [];
+
+  type StageBucket = { durations: number[]; successes: number[] };
+  const stageMap = new Map<string, StageBucket>();
+
+  function ensureStage(stage: string): StageBucket {
+    if (!stageMap.has(stage)) {
+      stageMap.set(stage, { durations: [], successes: [] });
+    }
+    return stageMap.get(stage)!;
+  }
+
+  for (const point of durations.data_points) {
+    const stage = point.labels?.state || 'UNKNOWN';
+    ensureStage(stage).durations.push(point.value);
+  }
+
+  for (const point of successes.data_points) {
+    const stage = point.labels?.state || 'UNKNOWN';
+    ensureStage(stage).successes.push(point.value);
+  }
+
+  const rows: StageLatencyStats[] = [];
+  for (const [stage, bucket] of stageMap.entries()) {
+    const p = computePercentileBundle(bucket.durations);
+    const total = bucket.successes.length;
+    const successful = bucket.successes.filter((v) => v === 1).length;
+    rows.push({
+      stage,
+      total_invocations: total,
+      p50_duration_ms: p.p50,
+      p95_duration_ms: p.p95,
+      p99_duration_ms: p.p99,
+      failure_rate_pct: total > 0 ? Math.round((1 - successful / total) * 10000) / 100 : 0,
+    });
+  }
+
+  return rows.sort((a, b) => a.stage.localeCompare(b.stage));
+}
+
+/** Compute p50/p95/p99 latency and failure rates grouped by tool + operation. */
+export function computeToolLatencyStats(store: MetricsStore): ToolLatencyStats[] {
+  const durations = store.metrics['tool_execution_duration_ms'];
+  const successes = store.metrics['tool_execution_success'];
+  if (!durations || !successes) return [];
+
+  type ToolBucket = {
+    toolId: string;
+    operation: string;
+    durations: number[];
+    successes: number[];
+  };
+  const toolMap = new Map<string, ToolBucket>();
+
+  function keyFor(labels?: Record<string, string>): string {
+    const toolId = labels?.tool_id || 'unknown';
+    const operation = labels?.operation || 'unspecified';
+    return `${toolId}::${operation}`;
+  }
+
+  function ensureTool(labels?: Record<string, string>): ToolBucket {
+    const key = keyFor(labels);
+    if (!toolMap.has(key)) {
+      toolMap.set(key, {
+        toolId: labels?.tool_id || 'unknown',
+        operation: labels?.operation || 'unspecified',
+        durations: [],
+        successes: [],
+      });
+    }
+    return toolMap.get(key)!;
+  }
+
+  for (const point of durations.data_points) {
+    ensureTool(point.labels).durations.push(point.value);
+  }
+
+  for (const point of successes.data_points) {
+    ensureTool(point.labels).successes.push(point.value);
+  }
+
+  const rows: ToolLatencyStats[] = [];
+  for (const bucket of toolMap.values()) {
+    const p = computePercentileBundle(bucket.durations);
+    const total = bucket.successes.length;
+    const successful = bucket.successes.filter((v) => v === 1).length;
+    rows.push({
+      tool_id: bucket.toolId,
+      operation: bucket.operation,
+      total_invocations: total,
+      p50_duration_ms: p.p50,
+      p95_duration_ms: p.p95,
+      p99_duration_ms: p.p99,
+      failure_rate_pct: total > 0 ? Math.round((1 - successful / total) * 10000) / 100 : 0,
+    });
+  }
+
+  return rows.sort(
+    (a, b) => a.tool_id.localeCompare(b.tool_id) || a.operation.localeCompare(b.operation)
+  );
+}
+
 /**
  * Record an agent invocation in the time-series store.
  * Creates two metric series: agent_duration_ms and agent_success.

@@ -1188,4 +1188,57 @@ describe('Dispatcher — dispatchStateParallel (M4/Epic-661)', () => {
     expect(missing.length).toBeGreaterThan(0);
     expect(missing[0].error).toMatch(/not found in registry/i);
   });
+
+  it('handles rejected task outcomes from bounded group execution', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: createSuccessInvoker('/out/ok.md'),
+      config: { maxRetries: 0 },
+    });
+
+    const originalBuildContext = d.buildContext.bind(d);
+    d.buildContext = (agentId, options = {}) => {
+      if (agentId === '19') {
+        throw new Error('context exploded');
+      }
+      return originalBuildContext(agentId, options);
+    };
+
+    const result = await d.dispatchStateParallel(STATES.CRITIC_1, {}, {}, { maxConcurrency: 2 });
+
+    expect(result.completed).toEqual(['18']);
+    expect(result.failed).toEqual(['unknown']);
+    const rejected = result.results.find((r) => r.agent && r.agent.id === 'unknown');
+    expect(rejected).toBeDefined();
+    expect(rejected.success).toBe(false);
+    expect(String(rejected.error)).toMatch(/context exploded/i);
+  });
+
+  it('continues to later groups when onFailure is continue', async () => {
+    const calledIds = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        calledIds.push(agent.id);
+        if (agent.id === '20') {
+          throw new Error('group-1 failure');
+        }
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.dispatchStateParallel(
+      STATES.PHASE_5_EXECUTING,
+      {},
+      {},
+      { maxConcurrency: 1 }
+    );
+
+    expect(result.failed).toContain('20');
+    expect(result.completed).toEqual(
+      expect.arrayContaining(['21', '38', '22', '29', '26', '27', '28'])
+    );
+    expect(calledIds).toEqual(['20', '21', '38', '22', '29', '26', '27', '28']);
+  });
 });

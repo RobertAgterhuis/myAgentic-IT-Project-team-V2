@@ -284,7 +284,22 @@ export interface ValidateGateResponse extends OkResponse {
   summary: {
     phase: string;
     totalViolations: number;
+    exitCriteria?: {
+      total: number;
+      unmet: ExitCriterionDiagnostic[];
+      allSatisfied: boolean;
+    };
   };
+}
+
+export interface ExitCriterionDiagnostic {
+  id: string;
+  title: string;
+  description: string;
+  blocking: boolean;
+  actual?: number | boolean;
+  expected?: number | boolean;
+  evidence?: unknown;
 }
 
 /** Gate failure info surfaced in ExplainabilityPanel (M15-037). */
@@ -296,6 +311,30 @@ export interface GateFailureInfo {
   timestamp: string;
   relatedArtifactId?: string;
   relatedDecisionId?: string;
+  unmetCriteria?: string[];
+}
+
+export interface GateDiagnosticsResponse extends OkResponse {
+  sessionId: string;
+  totalFailures: number;
+  latest: {
+    eventId: string;
+    timestamp: string;
+    phase: string | null;
+    description: string;
+    verdict: string;
+    violations: number;
+    unmetCriteria: ExitCriterionDiagnostic[];
+  } | null;
+  diagnostics: Array<{
+    eventId: string;
+    timestamp: string;
+    phase: string | null;
+    description: string;
+    verdict: string;
+    violations: number;
+    unmetCriteria: ExitCriterionDiagnostic[];
+  }>;
 }
 
 export type OrchestratorCommandName =

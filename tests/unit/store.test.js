@@ -187,6 +187,81 @@ describe('FileStore', () => {
       expect(store.mtime(path.join(tmpDir, 'gone.txt'))).toBe(0);
     });
   });
+
+  describe('async variants', () => {
+    it('existsAsync reports existing and missing files', async () => {
+      const fp = path.join(tmpDir, 'async-exists.txt');
+      fs.writeFileSync(fp, 'hello');
+
+      await expect(store.existsAsync(fp)).resolves.toBe(true);
+      await expect(store.existsAsync(path.join(tmpDir, 'missing.txt'))).resolves.toBe(false);
+    });
+
+    it('writeFileAsync writes data and readFileAsync returns it', async () => {
+      const fp = path.join(tmpDir, 'async', 'data.txt');
+
+      await store.writeFileAsync(fp, 'v1');
+      await expect(store.readFileAsync(fp)).resolves.toBe('v1');
+
+      await store.writeFileAsync(fp, 'v2');
+      await expect(store.readFileAsync(fp)).resolves.toBe('v2');
+    });
+
+    it('createBackupAsync is a no-op when file does not exist', async () => {
+      const fp = path.join(tmpDir, 'async-no-file.txt');
+
+      await expect(store._createBackupAsync(fp)).resolves.toBeUndefined();
+
+      const bkDir = path.join(tmpDir, BACKUPS_DIR_NAME, 'async-no-file.txt');
+      expect(fs.existsSync(bkDir)).toBe(false);
+    });
+
+    it('createBackupAsync creates backup and prunes to max limit', async () => {
+      const fp = path.join(tmpDir, 'async-prune.txt');
+      await store.writeFileAsync(fp, 'seed');
+
+      for (let i = 0; i < MAX_BACKUPS_PER_FILE + 3; i++) {
+        await store.writeFileAsync(fp, `v${i}`);
+      }
+
+      const bkDir = path.join(tmpDir, BACKUPS_DIR_NAME, 'async-prune.txt');
+      const backups = fs.readdirSync(bkDir).sort();
+      expect(backups.length).toBeLessThanOrEqual(MAX_BACKUPS_PER_FILE);
+    });
+
+    it('writeFileAsync throws status 500 and cleans tmp file when rename fails', async () => {
+      const fp = path.join(tmpDir, 'async-rename-fail.txt');
+      const nowSpy = vi.spyOn(Date, 'now').mockReturnValue(77777);
+      const renameSpy = vi
+        .spyOn(fs.promises, 'rename')
+        .mockRejectedValueOnce(new Error('rename async failed'));
+      const unlinkSpy = vi.spyOn(fs.promises, 'unlink');
+
+      try {
+        await expect(store.writeFileAsync(fp, 'payload')).rejects.toMatchObject({ status: 500 });
+        expect(renameSpy).toHaveBeenCalled();
+        expect(unlinkSpy).toHaveBeenCalledWith(`${fp}.tmp.${process.pid}.77777`);
+      } finally {
+        nowSpy.mockRestore();
+        renameSpy.mockRestore();
+        unlinkSpy.mockRestore();
+      }
+    });
+
+    it('createBackupAsync tolerates copy failures', async () => {
+      const fp = path.join(tmpDir, 'async-copy-fail.txt');
+      fs.writeFileSync(fp, 'baseline');
+      const copySpy = vi
+        .spyOn(fs.promises, 'copyFile')
+        .mockRejectedValueOnce(new Error('copy failed'));
+
+      try {
+        await expect(store._createBackupAsync(fp)).resolves.toBeUndefined();
+      } finally {
+        copySpy.mockRestore();
+      }
+    });
+  });
 });
 
 /* ── InMemoryStore ──────────────────────────────────────────── */
@@ -318,6 +393,15 @@ describe('InMemoryStore', () => {
       const s = store.stat(path.resolve('/a/b/c'));
       expect(s.isDirectory()).toBe(true);
       expect(s.isFile()).toBe(false);
+    });
+  });
+
+  describe('async variants', () => {
+    it('delegates async helpers to sync in-memory operations', async () => {
+      await store.writeFileAsync('/tmp/async-memory.txt', 'async-data');
+
+      await expect(store.existsAsync('/tmp/async-memory.txt')).resolves.toBe(true);
+      await expect(store.readFileAsync('/tmp/async-memory.txt')).resolves.toBe('async-data');
     });
   });
 

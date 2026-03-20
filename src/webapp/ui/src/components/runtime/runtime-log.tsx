@@ -11,6 +11,7 @@ export interface RuntimeLogEvent {
   agent?: string;
   phase?: string;
   artifactId?: string;
+  metadata?: Record<string, unknown>;
 }
 
 interface RuntimeLogProps extends React.ComponentProps<'section'> {
@@ -72,7 +73,7 @@ export function RuntimeLog({
     <section aria-label="Runtime timeline" className={cn('flex flex-col', className)} {...props}>
       {/* Header */}
       <div className="flex items-center justify-between mb-2">
-        <Heading level={3} className="!mb-0 text-base">
+        <Heading level={3} className="mb-0! text-base">
           Runtime Timeline
         </Heading>
         <div className="flex flex-wrap gap-1">

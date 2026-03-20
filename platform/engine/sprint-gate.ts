@@ -84,6 +84,30 @@ const VELOCITY_WINDOW = 3;
 /** Maximum over-commit percentage before flagging capacity risk */
 const CAPACITY_THRESHOLD = 1.2;
 
+/** Executable exit criteria for sprint gates (E-B1 / #692). */
+const SPRINT_EXIT_CRITERIA = [
+  {
+    id: 'B1-SPR-001',
+    title: 'Definition of Ready satisfied',
+    description: 'All sprint stories must satisfy Definition of Ready checks.',
+  },
+  {
+    id: 'B1-SPR-002',
+    title: 'No blocking decision debt',
+    description: 'No HIGH open questions and no pending reevaluate trigger.',
+  },
+  {
+    id: 'B1-SPR-003',
+    title: 'No open blocking dependencies',
+    description: 'Cross-team blocking dependencies must be resolved.',
+  },
+  {
+    id: 'B1-SPR-004',
+    title: 'No blocking policy failures',
+    description: 'Blocking governance/policy checks must pass.',
+  },
+] as const;
+
 // ─── Step 0: Decisions & Reevaluate Triggers ─────────────────
 
 /**
@@ -635,6 +659,68 @@ function checkBlockers(store: SprintGateStore, blockerPath: string) {
   };
 }
 
+/**
+ * Evaluate sprint exit criteria and produce structured diagnostics.
+ */
+function evaluateSprintExitCriteria(
+  step0: ReturnType<typeof loadDecisionsAndTriggers>,
+  step1: ReturnType<typeof checkDefinitionOfReady>,
+  step4: ReturnType<typeof checkBlockers>,
+  step5: { report: EvaluationReport | null; blockingFailures: number }
+) {
+  const unmet: Array<Record<string, unknown>> = [];
+
+  if (!step1.ready) {
+    unmet.push({
+      ...SPRINT_EXIT_CRITERIA[0],
+      blocking: true,
+      actual: false,
+      expected: true,
+      evidence: step1.issues.filter((i) => i.severity === 'CRITICAL').slice(0, 10),
+    });
+  }
+
+  const decisionDebtCount = step0.blockingQuestions.length + (step0.reevaluate.pending ? 1 : 0);
+  if (decisionDebtCount > 0) {
+    unmet.push({
+      ...SPRINT_EXIT_CRITERIA[1],
+      blocking: true,
+      actual: decisionDebtCount,
+      expected: 0,
+      evidence: {
+        blockingQuestions: step0.blockingQuestions,
+        reevaluate: step0.reevaluate,
+      },
+    });
+  }
+
+  if (!step4.clear) {
+    unmet.push({
+      ...SPRINT_EXIT_CRITERIA[2],
+      blocking: true,
+      actual: step4.openBlockers.length,
+      expected: 0,
+      evidence: step4.openBlockers,
+    });
+  }
+
+  if (step5.blockingFailures > 0) {
+    unmet.push({
+      ...SPRINT_EXIT_CRITERIA[3],
+      blocking: true,
+      actual: step5.blockingFailures,
+      expected: 0,
+      evidence: step5.report?.failed?.filter((f) => f.severity === 'blocking') || [],
+    });
+  }
+
+  return {
+    criteria: SPRINT_EXIT_CRITERIA,
+    unmet,
+    allSatisfied: unmet.length === 0,
+  };
+}
+
 // ─── Sprint Gate Runner ──────────────────────────────────────
 
 /**
@@ -772,7 +858,8 @@ function runSprintGate(store: SprintGateStore, options: Record<string, unknown>)
     }
   }
 
-  const verdict = allBlockers.length === 0 ? 'READY' : 'NOT_READY';
+  const exitCriteria = evaluateSprintExitCriteria(step0, step1, step4, step5);
+  const verdict = allBlockers.length === 0 && exitCriteria.allSatisfied ? 'READY' : 'NOT_READY';
 
   const steps = {
     step0_decisions: {
@@ -814,6 +901,11 @@ function runSprintGate(store: SprintGateStore, options: Record<string, unknown>)
           details: step5.report,
         }
       : null,
+    step6_exitCriteria: {
+      total: exitCriteria.criteria.length,
+      unmet: exitCriteria.unmet,
+      allSatisfied: exitCriteria.allSatisfied,
+    },
   };
 
   const summary = {
@@ -830,6 +922,11 @@ function runSprintGate(store: SprintGateStore, options: Record<string, unknown>)
     activeCategoryCount: step0.activeCategories.length,
     policyFailures: step5.report?.summary.failed ?? 0,
     policyWarnings: step5.report?.summary.warnings ?? 0,
+    exitCriteria: {
+      total: exitCriteria.criteria.length,
+      unmet: exitCriteria.unmet,
+      allSatisfied: exitCriteria.allSatisfied,
+    },
     timestamp: new Date().toISOString(),
   };
 

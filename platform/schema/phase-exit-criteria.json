@@ -1,0 +1,152 @@
+{
+  "version": "v1",
+  "criteria": [
+    {
+      "id": "B1-GATE-001",
+      "gate": "critic",
+      "appliesTo": "CRITIC_1",
+      "title": "No critical violations",
+      "description": "Critical validation violations must be zero before moving to the next phase.",
+      "blocking": true,
+      "evaluation": "summary.bySeverity.CRITICAL === 0",
+      "sourceRules": ["EMPTY_DELIVERABLE", "MISSING_DELIVERABLE", "INCOMPLETE_HANDOFF"]
+    },
+    {
+      "id": "B1-GATE-002",
+      "gate": "critic",
+      "appliesTo": "CRITIC_1",
+      "title": "No major violations",
+      "description": "Major validation violations must be zero before moving to the next phase.",
+      "blocking": true,
+      "evaluation": "summary.bySeverity.MAJOR === 0",
+      "sourceRules": ["MISSING_SECTION", "EMPTY_SECTION", "PLACEHOLDER_TEXT"]
+    },
+    {
+      "id": "B1-GATE-003",
+      "gate": "critic",
+      "appliesTo": "CRITIC_1",
+      "title": "Handoff checklist complete",
+      "description": "Every deliverable must contain a complete handoff checklist.",
+      "blocking": true,
+      "evaluation": "summary.perDeliverable[*].handoff.found === true && summary.perDeliverable[*].handoff.unchecked === 0",
+      "sourceRules": ["MISSING_HANDOFF_CHECKLIST", "INCOMPLETE_HANDOFF"]
+    },
+    {
+      "id": "B1-GATE-001",
+      "gate": "critic",
+      "appliesTo": "CRITIC_2",
+      "title": "No critical violations",
+      "description": "Critical validation violations must be zero before moving to the next phase.",
+      "blocking": true,
+      "evaluation": "summary.bySeverity.CRITICAL === 0"
+    },
+    {
+      "id": "B1-GATE-002",
+      "gate": "critic",
+      "appliesTo": "CRITIC_2",
+      "title": "No major violations",
+      "description": "Major validation violations must be zero before moving to the next phase.",
+      "blocking": true,
+      "evaluation": "summary.bySeverity.MAJOR === 0"
+    },
+    {
+      "id": "B1-GATE-003",
+      "gate": "critic",
+      "appliesTo": "CRITIC_2",
+      "title": "Handoff checklist complete",
+      "description": "Every deliverable must contain a complete handoff checklist.",
+      "blocking": true,
+      "evaluation": "summary.perDeliverable[*].handoff.found === true && summary.perDeliverable[*].handoff.unchecked === 0"
+    },
+    {
+      "id": "B1-GATE-001",
+      "gate": "critic",
+      "appliesTo": "CRITIC_3",
+      "title": "No critical violations",
+      "description": "Critical validation violations must be zero before moving to the next phase.",
+      "blocking": true,
+      "evaluation": "summary.bySeverity.CRITICAL === 0"
+    },
+    {
+      "id": "B1-GATE-002",
+      "gate": "critic",
+      "appliesTo": "CRITIC_3",
+      "title": "No major violations",
+      "description": "Major validation violations must be zero before moving to the next phase.",
+      "blocking": true,
+      "evaluation": "summary.bySeverity.MAJOR === 0"
+    },
+    {
+      "id": "B1-GATE-003",
+      "gate": "critic",
+      "appliesTo": "CRITIC_3",
+      "title": "Handoff checklist complete",
+      "description": "Every deliverable must contain a complete handoff checklist.",
+      "blocking": true,
+      "evaluation": "summary.perDeliverable[*].handoff.found === true && summary.perDeliverable[*].handoff.unchecked === 0"
+    },
+    {
+      "id": "B1-GATE-001",
+      "gate": "critic",
+      "appliesTo": "CRITIC_4",
+      "title": "No critical violations",
+      "description": "Critical validation violations must be zero before moving to the next phase.",
+      "blocking": true,
+      "evaluation": "summary.bySeverity.CRITICAL === 0"
+    },
+    {
+      "id": "B1-GATE-002",
+      "gate": "critic",
+      "appliesTo": "CRITIC_4",
+      "title": "No major violations",
+      "description": "Major validation violations must be zero before moving to the next phase.",
+      "blocking": true,
+      "evaluation": "summary.bySeverity.MAJOR === 0"
+    },
+    {
+      "id": "B1-GATE-003",
+      "gate": "critic",
+      "appliesTo": "CRITIC_4",
+      "title": "Handoff checklist complete",
+      "description": "Every deliverable must contain a complete handoff checklist.",
+      "blocking": true,
+      "evaluation": "summary.perDeliverable[*].handoff.found === true && summary.perDeliverable[*].handoff.unchecked === 0"
+    },
+    {
+      "id": "B1-SPR-001",
+      "gate": "sprint",
+      "appliesTo": "SPRINT_GATE",
+      "title": "Definition of Ready satisfied",
+      "description": "All sprint stories satisfy Definition of Ready checks.",
+      "blocking": true,
+      "evaluation": "steps.step1_definitionOfReady.ready === true"
+    },
+    {
+      "id": "B1-SPR-002",
+      "gate": "sprint",
+      "appliesTo": "SPRINT_GATE",
+      "title": "No blocking decision debt",
+      "description": "No HIGH open questions and no pending reevaluate trigger.",
+      "blocking": true,
+      "evaluation": "steps.step0_decisions.blockingQuestions.length === 0 && steps.step0_decisions.reevaluate.pending === false"
+    },
+    {
+      "id": "B1-SPR-003",
+      "gate": "sprint",
+      "appliesTo": "SPRINT_GATE",
+      "title": "No open blocking dependencies",
+      "description": "No unresolved cross-team blockers remain.",
+      "blocking": true,
+      "evaluation": "steps.step4_blockerCheck.clear === true"
+    },
+    {
+      "id": "B1-SPR-004",
+      "gate": "sprint",
+      "appliesTo": "SPRINT_GATE",
+      "title": "No blocking policy failures",
+      "description": "Blocking policy evaluation failures must be zero.",
+      "blocking": true,
+      "evaluation": "steps.step5_policyEvaluation.blocking_failures === 0"
+    }
+  ]
+}

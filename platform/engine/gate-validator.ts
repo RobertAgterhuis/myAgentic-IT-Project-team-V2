@@ -100,6 +100,28 @@ const TRACKED_TAGS = [
 /** Minimum number of canonical handoff checklist items (G-GLOB-20) */
 const HANDOFF_CHECKLIST_COUNT = 9;
 
+/** Executable phase exit criteria IDs for critic gates (E-B1 / #692). */
+const PHASE_EXIT_CRITERIA = [
+  {
+    id: 'B1-GATE-001',
+    title: 'No critical violations',
+    description: 'Critical quality violations must be zero before phase transition.',
+    blocking: true,
+  },
+  {
+    id: 'B1-GATE-002',
+    title: 'No major violations',
+    description: 'Major quality violations must be zero before phase transition.',
+    blocking: false,
+  },
+  {
+    id: 'B1-GATE-003',
+    title: 'Handoff checklists complete',
+    description: 'Every deliverable must include a complete handoff checklist.',
+    blocking: true,
+  },
+] as const;
+
 // ─── Parsing Functions ───────────────────────────────────────
 
 /**
@@ -372,6 +394,86 @@ function validateDocument(content: string, options: { requiredSections?: string[
   return { violations, tags, handoff };
 }
 
+/**
+ * Evaluate machine-checkable phase exit criteria for critic gates.
+ * Returns unmet criteria with actionable evidence for diagnostics/UI.
+ */
+function evaluatePhaseExitCriteria(
+  allViolations: Array<Record<string, unknown>>,
+  perDeliverable: Array<Record<string, unknown>>
+) {
+  const unmet: Array<Record<string, unknown>> = [];
+  const criticalCount = allViolations.filter((v) => v.severity === 'CRITICAL').length;
+  const majorCount = allViolations.filter((v) => v.severity === 'MAJOR').length;
+
+  if (criticalCount > 0) {
+    unmet.push({
+      ...PHASE_EXIT_CRITERIA[0],
+      actual: criticalCount,
+      expected: 0,
+      evidence: allViolations
+        .filter((v) => v.severity === 'CRITICAL')
+        .slice(0, 10)
+        .map((v) => ({
+          deliverable: v.deliverable,
+          rule: v.rule,
+          description: v.description,
+        })),
+    });
+  }
+
+  if (majorCount > 0) {
+    unmet.push({
+      ...PHASE_EXIT_CRITERIA[1],
+      actual: majorCount,
+      expected: 0,
+      evidence: allViolations
+        .filter((v) => v.severity === 'MAJOR')
+        .slice(0, 10)
+        .map((v) => ({
+          deliverable: v.deliverable,
+          rule: v.rule,
+          description: v.description,
+        })),
+    });
+  }
+
+  const incompleteHandoffs = perDeliverable
+    .map((d) => {
+      const handoff = (d.handoff || {}) as {
+        found?: boolean;
+        unchecked?: number;
+        total?: number;
+      };
+      if (!handoff.found || (handoff.unchecked || 0) > 0) {
+        return {
+          deliverable: d.path,
+          found: !!handoff.found,
+          unchecked: handoff.unchecked || 0,
+          total: handoff.total || 0,
+        };
+      }
+      return null;
+    })
+    .filter(Boolean);
+
+  if (incompleteHandoffs.length > 0) {
+    unmet.push({
+      ...PHASE_EXIT_CRITERIA[2],
+      actual: incompleteHandoffs.length,
+      expected: 0,
+      evidence: incompleteHandoffs,
+    });
+  }
+
+  return {
+    criteria: PHASE_EXIT_CRITERIA,
+    unmet,
+    allSatisfied: unmet.length === 0,
+    blockingUnmet: unmet.filter((criterion) => criterion.blocking),
+  };
+}
+
 // ─── Gate Runner ─────────────────────────────────────────────
 
 /**
@@ -510,8 +612,8 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
     }));
     allQuestionnaireRequests.push(...id);
 
-    const hasCrit = result.violations.some((v) => v.severity === 'CRITICAL');
-    const delVerdict = hasCrit ? 'FAILED' : 'APPROVED';
+    const hasBlockingViolation = result.violations.some((v) => v.severity === 'CRITICAL');
+    const delVerdict = hasBlockingViolation ? 'FAILED' : 'APPROVED';
     perDeliverable.push({
       path: dp,
       verdict: delVerdict,
@@ -520,9 +622,10 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
     });
   }
 
-  // AC-6: Determine overall verdict
-  const hasCritical = allViolations.some((v) => v.severity === 'CRITICAL');
-  const verdict = hasCritical ? 'FAILED' : 'APPROVED';
+  const exitCriteria = evaluatePhaseExitCriteria(allViolations, perDeliverable);
+
+  // AC-6: Determine overall verdict from executable exit criteria
+  const verdict = exitCriteria.blockingUnmet.length === 0 ? 'APPROVED' : 'FAILED';
 
   const summary = {
     phase,
@@ -538,6 +641,12 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
     guardrailRulesLoaded: allRules.length,
     contractSectionsLoaded: allRequiredSections.length,
     questionnaireRequestCount: allQuestionnaireRequests.length,
+    exitCriteria: {
+      total: exitCriteria.criteria.length,
+      unmet: exitCriteria.unmet,
+      blockingUnmet: exitCriteria.blockingUnmet,
+      allSatisfied: exitCriteria.allSatisfied,
+    },
     perDeliverable,
     timestamp: new Date().toISOString(),
   };

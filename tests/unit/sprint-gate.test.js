@@ -976,6 +976,29 @@ describe('runSprintGate', () => {
     expect(result.steps).toHaveProperty('step2_lessonsLearned');
     expect(result.steps).toHaveProperty('step3_velocityCapacity');
     expect(result.steps).toHaveProperty('step4_blockerCheck');
+    expect(result.steps).toHaveProperty('step6_exitCriteria');
+  });
+
+  test('includes unmet sprint exit criteria diagnostics when blocked', () => {
+    const store = buildFullStore({
+      blockers: buildBlockerMatrixMd([
+        {
+          id: 'BLK-200',
+          sourceTarget: 'API -> UI',
+          description: 'Unresolved integration dependency',
+          classification: 'BLOCKING',
+          status: 'OPEN',
+        },
+      ]),
+    });
+    const result = runSprintGate(store, {
+      sprintId: 'SP-5',
+      stories: [buildStory()],
+    });
+    expect(result.verdict).toBe('NOT_READY');
+    expect(result.summary.exitCriteria).toBeDefined();
+    expect(result.summary.exitCriteria.allSatisfied).toBe(false);
+    expect(result.summary.exitCriteria.unmet.some((c) => c.id === 'B1-SPR-003')).toBe(true);
   });
 
   test('handles gracefully when all data files are missing', () => {

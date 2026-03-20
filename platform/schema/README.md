@@ -21,6 +21,11 @@ and framework extraction.
 - `tool-canonical.schema.json`: JSON Schema for abstract tool definitions with capability flags.
 - `tools.json`: Canonical tool catalog (12 tools with platform bindings for Copilot/Claude/OpenAI).
 
+### Phase Exit Criteria Schema (E-B1)
+
+- `phase-exit-criteria.schema.json`: JSON Schema for machine-checkable gate criteria.
+- `phase-exit-criteria.json`: Canonical criteria set for critic and sprint gates.
+
 ## Schema Coverage
 
 ### Agent Schema

@@ -103,6 +103,7 @@ function toLogEvent(event: TimelineEvent): RuntimeLogEvent {
     agent: event.agent,
     phase: event.phase,
     artifactId: event.artifact_id,
+    metadata: event.metadata,
   };
 }
 
@@ -165,20 +166,43 @@ export default function SessionDetailPage() {
 
   // M15-037: Detect gate failures from merged events
   const latestGateFailure = useMemo(() => {
+    const timelineFailures = timeline.filter((e) => e.type === 'gate_failed');
+    if (timelineFailures.length > 0) {
+      return toLogEvent(timelineFailures[timelineFailures.length - 1]);
+    }
     const failures = mergedLogEvents.filter((e) => e.type === 'gate_failed');
     return failures.length > 0 ? failures[failures.length - 1] : null;
-  }, [mergedLogEvents]);
+  }, [timeline, mergedLogEvents]);
 
   // M15-037: Show gate failure panel automatically when a new gate failure arrives
   const handleGateFailureShow = useCallback(
     (event: RuntimeLogEvent) => {
+      const metadata = (event.metadata || {}) as Record<string, unknown>;
+      const unmetCriteriaRaw = Array.isArray(metadata.unmetCriteria)
+        ? metadata.unmetCriteria
+        : ([] as unknown[]);
+      const unmetCriteria = unmetCriteriaRaw
+        .map((criterion) => {
+          if (
+            criterion &&
+            typeof criterion === 'object' &&
+            'id' in criterion &&
+            'title' in criterion
+          ) {
+            const c = criterion as { id: string; title: string };
+            return `${c.id}: ${c.title}`;
+          }
+          return null;
+        })
+        .filter((item): item is string => !!item);
       setGateFailure({
         phase: event.phase ?? session?.phase ?? '',
         reason: event.description,
         suggestedAction: 'Review gate violations and fix outstanding issues before retrying.',
-        violations: 1,
+        violations: Number(metadata.violations) || 1,
         timestamp: event.timestamp,
         relatedArtifactId: event.artifactId,
+        unmetCriteria,
       });
       setExplainAgent(null);
     },
@@ -439,6 +463,11 @@ export default function SessionDetailPage() {
               details={{
                 Phase: gateFailure.phase,
                 Violations: String(gateFailure.violations),
+                ...(gateFailure.unmetCriteria && gateFailure.unmetCriteria.length > 0
+                  ? {
+                      'Unmet Exit Criteria': gateFailure.unmetCriteria.join('; '),
+                    }
+                  : {}),
                 Time: new Date(gateFailure.timestamp).toLocaleTimeString(),
                 ...(gateFailure.relatedArtifactId
                   ? { Artifact: gateFailure.relatedArtifactId }

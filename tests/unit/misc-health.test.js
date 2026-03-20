@@ -100,4 +100,102 @@ describe('registerHealthRoutes', () => {
     expect(reply.payload.version).toBe('1.2.3');
     expect(reply.payload.storage_provider).toBe('sqlite');
   });
+
+  it('marks store as degraded when store.exists throws', async () => {
+    const app = createFakeApp();
+
+    registerHealthRoutes({
+      app,
+      version: '1.2.3',
+      sessionDir: '/tmp/session',
+      storageProviderType: 'sqlite',
+      sseConnections: () => 0,
+      getStore: () => ({
+        exists: () => {
+          throw new Error('store failed');
+        },
+      }),
+      getStorageProvider: () => null,
+    });
+
+    const handler = app.routes.get('/api/health');
+    const reply = createReply();
+    await handler({}, reply);
+
+    expect(reply.statusCode).toBe(200);
+    expect(reply.payload.store_status).toBe('degraded');
+  });
+
+  it('returns unhealthy storage payload when provider health throws', async () => {
+    const app = createFakeApp();
+
+    registerHealthRoutes({
+      app,
+      version: '1.2.3',
+      sessionDir: '/tmp/session',
+      storageProviderType: 'sqlite',
+      sseConnections: () => 0,
+      getStore: () => ({ exists: () => true }),
+      getStorageProvider: () => ({
+        name: 'sqlite',
+        health: async () => {
+          throw new Error('health failed');
+        },
+      }),
+    });
+
+    const handler = app.routes.get('/api/health');
+    const reply = createReply();
+    await handler({}, reply);
+
+    expect(reply.statusCode).toBe(200);
+    expect(reply.payload.storage.status).toBe('unhealthy');
+  });
+
+  it('returns ready on /health/ready when dependencies are healthy or absent', async () => {
+    const app = createFakeApp();
+
+    registerHealthRoutes({
+      app,
+      version: '1.2.3',
+      sessionDir: '/tmp/session',
+      storageProviderType: 'sqlite',
+      sseConnections: () => 0,
+      getStore: () => ({ exists: () => true }),
+      getStorageProvider: () => ({
+        health: async () => ({ status: 'healthy', provider: 'sqlite', latencyMs: 3 }),
+      }),
+    });
+
+    const handler = app.routes.get('/health/ready');
+    const reply = createReply();
+    await handler({}, reply);
+
+    expect(reply.statusCode).toBe(200);
+    expect(reply.payload.status).toBe('ready');
+    expect(reply.payload.checks.storage.status).toBe('healthy');
+  });
+
+  it('returns not_ready on /health/ready when storage health is not healthy', async () => {
+    const app = createFakeApp();
+
+    registerHealthRoutes({
+      app,
+      version: '1.2.3',
+      sessionDir: '/tmp/session',
+      storageProviderType: 'sqlite',
+      sseConnections: () => 0,
+      getStore: () => ({ exists: () => true }),
+      getStorageProvider: () => ({
+        health: async () => ({ status: 'degraded', provider: 'sqlite', latencyMs: 9 }),
+      }),
+    });
+
+    const handler = app.routes.get('/health/ready');
+    const reply = createReply();
+    await handler({}, reply);
+
+    expect(reply.statusCode).toBe(503);
+    expect(reply.payload.status).toBe('not_ready');
+  });
 });

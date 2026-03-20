@@ -114,8 +114,21 @@ describe('orchestrator routes (integration)', () => {
     expect(routes['POST /api/orchestrator/resume']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/stop']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/validate-gate']).toBeTypeOf('function');
+    expect(routes['GET /api/orchestrator/gate-diagnostics/:sessionId']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/command']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/sprint-gate']).toBeTypeOf('function');
+  });
+
+  describe('GET /gate-diagnostics/:sessionId', () => {
+    it('returns 404 for unknown session timeline', async () => {
+      const res = fakeRes();
+      await routes['GET /api/orchestrator/gate-diagnostics/:sessionId'](
+        { headers: { host: 'localhost:3000' }, params: { sessionId: 'missing-session' } },
+        res
+      );
+      expect(res.status).toBe(404);
+      expect(res.body.code).toBe('NOT_FOUND');
+    });
   });
 
   /* ── GET /status ─────────────────────────────────────────────── */

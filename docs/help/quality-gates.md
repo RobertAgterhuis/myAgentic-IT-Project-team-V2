@@ -200,6 +200,25 @@ The focus shifts to:
 - Secret scan passed on PRs
 - Implementation traceable to approved recommendations
 
+## Executable Exit Criteria (E-B1)
+
+Quality gates are enforced by machine-checkable exit criteria.
+
+| Gate Type   | Criteria IDs                   | Blocking Behavior                                    |
+| ----------- | ------------------------------ | ---------------------------------------------------- |
+| Critic Gate | `B1-GATE-001` to `B1-GATE-003` | Any unmet criterion blocks phase transition          |
+| Sprint Gate | `B1-SPR-001` to `B1-SPR-004`   | Any unmet criterion blocks sprint readiness approval |
+
+Criteria definitions are tracked in:
+
+- `platform/schema/phase-exit-criteria.schema.json`
+- `platform/schema/phase-exit-criteria.json`
+
+When criteria are unmet, diagnostics are exposed through:
+
+- Timeline metadata on `gate_failed` events
+- `GET /api/orchestrator/gate-diagnostics/:sessionId`
+
 ---
 
 ## Quality Gates During Special Commands

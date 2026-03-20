@@ -625,11 +625,17 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         if (activeSession) {
           const gateType = result.verdict === 'APPROVED' ? 'gate_passed' : 'gate_failed';
           const gatePhase = result.summary.phase || undefined;
+          const unmetCriteria =
+            (result.summary as { exitCriteria?: { unmet?: unknown[] } }).exitCriteria?.unmet || [];
           sessionTracker.addTimelineEvent(activeSession.id, {
             type: gateType,
             description: `Gate ${result.verdict}: ${result.summary.phase}`,
             phase: gatePhase,
-            metadata: { verdict: result.verdict, violations: result.summary.totalViolations },
+            metadata: {
+              verdict: result.verdict,
+              violations: result.summary.totalViolations,
+              unmetCriteria,
+            },
           });
           sseNotify(gateType, {
             type: gateType,
@@ -637,6 +643,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
             phase: gatePhase,
             verdict: result.verdict,
             violations: result.summary.totalViolations,
+            unmetCriteriaCount: Array.isArray(unmetCriteria) ? unmetCriteria.length : 0,
             timestamp: new Date().toISOString(),
           });
         }
@@ -651,6 +658,54 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const message = getErrorMessage(err);
         structuredLog('error', 'orchestrator_validate_gate_error', { error: message });
         return reply.code(500).send(errorResponse('GATE_VALIDATION_ERROR', message));
+      }
+    }
+  );
+
+  // ── GET /api/orchestrator/gate-diagnostics/:sessionId ─────
+
+  app.get(
+    '/api/orchestrator/gate-diagnostics/:sessionId',
+    { schema: { tags: ['orchestrator'] } },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const params = (request.params as Record<string, unknown>) || {};
+        const sessionId = String(params.sessionId || '').trim();
+        if (!sessionId) {
+          return reply.code(400).send(errorResponse('INVALID_INPUT', 'sessionId is required'));
+        }
+
+        const timeline = sessionTracker.getTimeline(sessionId);
+        if (!timeline || timeline.length === 0) {
+          return reply.code(404).send(errorResponse('NOT_FOUND', 'Session timeline not found'));
+        }
+
+        const gateFailures = timeline.filter((event) => event.type === 'gate_failed');
+        const diagnostics = gateFailures.map((event) => {
+          const metadata = (event.metadata || {}) as Record<string, unknown>;
+          return {
+            eventId: event.id,
+            timestamp: event.timestamp,
+            phase: event.phase || null,
+            description: event.description,
+            verdict: metadata.verdict || 'FAILED',
+            violations: metadata.violations || 0,
+            unmetCriteria: Array.isArray(metadata.unmetCriteria) ? metadata.unmetCriteria : [],
+          };
+        });
+
+        const latest = diagnostics.length > 0 ? diagnostics[diagnostics.length - 1] : null;
+        return reply.send({
+          ok: true,
+          sessionId,
+          totalFailures: diagnostics.length,
+          latest,
+          diagnostics,
+        });
+      } catch (err) {
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_gate_diagnostics_error', { error: message });
+        return reply.code(500).send(errorResponse('GATE_DIAGNOSTICS_ERROR', message));
       }
     }
   );

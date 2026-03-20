@@ -481,6 +481,38 @@ describe('runGate', () => {
     expect(result.summary.phase).toBe('PHASE_2');
   });
 
+  it('surfaces unmet MAJOR exit criterion without blocking approval', () => {
+    const store = createMockStore({
+      'major-only.md': [
+        '# Analysis',
+        '## Metadata',
+        'Agent: Test',
+        '## Findings',
+        '[TODO] fill findings',
+        '## HANDOFF CHECKLIST',
+        '- [x] All required sections are filled (not empty, not placeholder)',
+        '- [x] All UNCERTAIN: items are documented and escalated',
+        '- [x] All INSUFFICIENT_DATA: items are documented and escalated',
+        '- [x] Output complies with the contract in /templates/sdlc/contracts/',
+        '- [x] Guardrails from /templates/sdlc/guardrails/ have been checked',
+        '- [x] Output is machine-readable and ready as input for the next agent',
+        '- [x] No contradictory statements in this document',
+        '- [x] All findings include a source reference',
+        '- [x] Deliverable written to file (not only in chat) per MEMORY MANAGEMENT PROTOCOL',
+      ].join('\n'),
+    });
+    const result = runGate(store, {
+      criticState: 'CRITIC_1',
+      deliverables: ['major-only.md'],
+      contractsDir: 'contracts',
+      guardrailsDir: 'guardrails',
+    });
+    expect(result.verdict).toBe('APPROVED');
+    expect(result.summary.exitCriteria).toBeDefined();
+    expect(result.summary.exitCriteria.unmet.length).toBeGreaterThan(0);
+    expect(result.summary.exitCriteria.unmet.some((c) => c.id === 'B1-GATE-002')).toBe(true);
+  });
+
   it('collects QUESTIONNAIRE_REQUEST items (AC-8)', () => {
     const content = buildCompliantDeliverable({
       sections: [

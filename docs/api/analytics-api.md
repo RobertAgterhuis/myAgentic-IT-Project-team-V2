@@ -103,10 +103,35 @@ Get time-series trend data including velocity curves and DORA metrics.
   "ok": true,
   "data": {
     "velocity": [],
-    "lead_time": [],
-    "deploy_frequency": [],
-    "failure_rate": [],
-    "mttr": []
+    "dora": {
+      "lead_time": [],
+      "deployment_frequency": [],
+      "change_failure_rate": [],
+      "mttr": []
+    },
+    "performance": {
+      "stage_latency": [
+        {
+          "stage": "PHASE_1",
+          "total_invocations": 12,
+          "p50_duration_ms": 1200,
+          "p95_duration_ms": 4200,
+          "p99_duration_ms": 6500,
+          "failure_rate_pct": 0
+        }
+      ],
+      "tool_latency": [
+        {
+          "tool_id": "tool.files.read",
+          "operation": "read_file",
+          "total_invocations": 48,
+          "p50_duration_ms": 12,
+          "p95_duration_ms": 45,
+          "p99_duration_ms": 80,
+          "failure_rate_pct": 0
+        }
+      ]
+    }
   }
 }
 ```

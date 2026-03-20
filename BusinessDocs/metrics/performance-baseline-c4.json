@@ -1,0 +1,7373 @@
+{
+  "generated_at": "2026-03-20T08:41:46.1162294+01:00",
+  "source_files": ["BusinessDocs/metrics/runtime-metrics.json"],
+  "bounded_parallel_dispatch": {
+    "generated_at": "2026-03-20T08:10:48.624Z",
+    "scenario_file": "tests/load/bounded-parallel-dispatch-results.json",
+    "config": {
+      "state": "PHASE_3",
+      "iterations": 30,
+      "agents": 6,
+      "maxConcurrency": 3,
+      "minDelayMs": 20,
+      "maxDelayMs": 90,
+      "failRatio": 0.03
+    },
+    "result": {
+      "totalRuns": 30,
+      "failedRuns": 5,
+      "runFailureRatePct": 16.67,
+      "totalCompletedInvocations": 175,
+      "totalFailedInvocations": 5,
+      "latencyMs": {
+        "p50": 156.55,
+        "p95": 186.47,
+        "p99": 188.29,
+        "avg": 156.13,
+        "max": 188.29
+      },
+      "queueWaitMs": {
+        "p50": 184,
+        "p95": 253,
+        "p99": 260,
+        "avg": 187.67,
+        "max": 260
+      },
+      "observedConcurrency": {
+        "p50": 3,
+        "p95": 3,
+        "p99": 3,
+        "max": 3
+      },
+      "throughput": {
+        "completedInvocationsPerSec": {
+          "p50": 37.99,
+          "p95": 47.96,
+          "p99": 53.9,
+          "avg": 38.07,
+          "max": 53.9
+        }
+      }
+    }
+  },
+  "orchestration_stage_latency": [],
+  "tool_latency": [],
+  "api_runtime": {
+    "request_count": 10613,
+    "error_count": 507,
+    "error_rate_pct": 4.78,
+    "response_time_ms": {
+      "p50": 0.73,
+      "p95": 25.76,
+      "p99": 38.92
+    }
+  },
+  "per_endpoint": {
+    "GET /api/dashboard/metrics": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.0,
+      "count": 87,
+      "p95_ms": 1.0
+    },
+    "GET /assets/explainability-panel-Nheadlye.js": {
+      "p99_ms": 1.55,
+      "p50_ms": 1.55,
+      "count": 1,
+      "p95_ms": 1.55
+    },
+    "GET /assets/execution-history-page-DlsXVDo7.js": {
+      "p99_ms": 0.67,
+      "p50_ms": 0.67,
+      "count": 1,
+      "p95_ms": 0.67
+    },
+    "GET /governance": {
+      "p99_ms": 1.03,
+      "p50_ms": 0.44,
+      "count": 10,
+      "p95_ms": 1.03
+    },
+    "GET /assets/file-text-Y_cswCfh.js": {
+      "p99_ms": 1.67,
+      "p50_ms": 1.27,
+      "count": 3,
+      "p95_ms": 1.67
+    },
+    "GET /assets/policy-compliance-panel-BYLrxr52.js": {
+      "p99_ms": 1.19,
+      "p50_ms": 1.19,
+      "count": 1,
+      "p95_ms": 1.19
+    },
+    "GET /assets/use-dashboard-ChXRrZ9U.js": {
+      "p99_ms": 4.13,
+      "p50_ms": 2.18,
+      "count": 2,
+      "p95_ms": 4.13
+    },
+    "GET /assets/pipeline-page-a5SLa_Fb.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-sessions-BSETBRCS.js": {
+      "p99_ms": 4.76,
+      "p50_ms": 0.79,
+      "count": 2,
+      "p95_ms": 4.76
+    },
+    "GET /assets/commands-page-BpX2RTfL.js": {
+      "p99_ms": 1.24,
+      "p50_ms": 1.24,
+      "count": 1,
+      "p95_ms": 1.24
+    },
+    "GET /assets/use-questionnaires-BXr5Ek6S.js": {
+      "p99_ms": 1.85,
+      "p50_ms": 1.0,
+      "count": 3,
+      "p95_ms": 1.85
+    },
+    "GET /assets/cockpit-dashboard-page-Bf5hwWYR.js": {
+      "p99_ms": 1.83,
+      "p50_ms": 1.83,
+      "count": 1,
+      "p95_ms": 1.83
+    },
+    "GET /assets/clock-D-P6VzAP.js": {
+      "p99_ms": 0.79,
+      "p50_ms": 0.79,
+      "count": 1,
+      "p95_ms": 0.79
+    },
+    "GET /assets/index-BYwOxqv3.css": {
+      "p99_ms": 3.2,
+      "p50_ms": 1.1,
+      "count": 2,
+      "p95_ms": 3.2
+    },
+    "GET /assets/use-governance-sQt3PWwP.js": {
+      "p99_ms": 1.86,
+      "p50_ms": 0.76,
+      "count": 2,
+      "p95_ms": 1.86
+    },
+    "GET /docs": {
+      "p99_ms": 2.26,
+      "p50_ms": 2.26,
+      "count": 1,
+      "p95_ms": 2.26
+    },
+    "GET /assets/approval-workflow-DffdXdVs.js": {
+      "p99_ms": 2.81,
+      "p50_ms": 2.81,
+      "count": 1,
+      "p95_ms": 2.81
+    },
+    "GET /assets/download-DcJQ6PQ3.js": {
+      "p99_ms": 2.04,
+      "p50_ms": 2.04,
+      "count": 1,
+      "p95_ms": 2.04
+    },
+    "GET /assets/circle-Cm2qpjav.js": {
+      "p99_ms": 4.16,
+      "p50_ms": 4.16,
+      "count": 1,
+      "p95_ms": 4.16
+    },
+    "GET /assets/circle-D-ea2cLh.js": {
+      "p99_ms": 3.18,
+      "p50_ms": 2.1,
+      "count": 2,
+      "p95_ms": 3.18
+    },
+    "GET /assets/use-questionnaires-0Y4YxcLP.js": {
+      "p99_ms": 2.0,
+      "p50_ms": 0.49,
+      "count": 2,
+      "p95_ms": 2.0
+    },
+    "GET /assets/control-signal-Cn_1bhk5.js": {
+      "p99_ms": 3.07,
+      "p50_ms": 3.07,
+      "count": 1,
+      "p95_ms": 3.07
+    },
+    "GET /assets/pipeline-page-BgBSUtij.js": {
+      "p99_ms": 2.2,
+      "p50_ms": 2.2,
+      "count": 1,
+      "p95_ms": 2.2
+    },
+    "GET /api/v1/cockpit/provenance": {
+      "p99_ms": 38.92,
+      "p50_ms": 34.29,
+      "count": 2,
+      "p95_ms": 38.92
+    },
+    "GET /assets/data-table-DdeumKUr.js": {
+      "p99_ms": 6.36,
+      "p50_ms": 3.98,
+      "count": 5,
+      "p95_ms": 6.36
+    },
+    "GET /assets/governance-dashboard-page-CkR64YWB.js": {
+      "p99_ms": 4.53,
+      "p50_ms": 2.71,
+      "count": 3,
+      "p95_ms": 4.53
+    },
+    "GET /assets/index-s49Jn9sq.js": {
+      "p99_ms": 1.52,
+      "p50_ms": 0.76,
+      "count": 2,
+      "p95_ms": 1.52
+    },
+    "GET /assets/card-ZIXX6Heu.js": {
+      "p99_ms": 4.96,
+      "p50_ms": 2.45,
+      "count": 2,
+      "p95_ms": 4.96
+    },
+    "GET /assets/alert-banner-D6tbVDlH.js": {
+      "p99_ms": 4.35,
+      "p50_ms": 4.35,
+      "count": 1,
+      "p95_ms": 4.35
+    },
+    "GET /assets/data-table-B7q8ePqj.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/policy-compliance-panel-BhMeu_u0.js.map": {
+      "p99_ms": 3.13,
+      "p50_ms": 3.13,
+      "count": 1,
+      "p95_ms": 3.13
+    },
+    "GET /assets/circle-x-gS03FeOo.js.map": {
+      "p99_ms": 2.18,
+      "p50_ms": 2.18,
+      "count": 1,
+      "p95_ms": 2.18
+    },
+    "GET /assets/explainability-panel-DH1q1FZk.js": {
+      "p99_ms": 1.47,
+      "p50_ms": 1.47,
+      "count": 1,
+      "p95_ms": 1.47
+    },
+    "GET /assets/metric-card-C2YNW6xZ.js": {
+      "p99_ms": 2.91,
+      "p50_ms": 1.49,
+      "count": 3,
+      "p95_ms": 2.91
+    },
+    "GET /assets/shield-B83V4FsC.js": {
+      "p99_ms": 1.99,
+      "p50_ms": 1.26,
+      "count": 4,
+      "p95_ms": 1.99
+    },
+    "GET /assets/play-DCEIUg2A.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/card-g5uhrHBD.js": {
+      "p99_ms": 3.45,
+      "p50_ms": 2.2,
+      "count": 2,
+      "p95_ms": 3.45
+    },
+    "GET /assets/index-BLATeYKs.js.map": {
+      "p99_ms": 27.97,
+      "p50_ms": 22.23,
+      "count": 2,
+      "p95_ms": 27.97
+    },
+    "GET /assets/funnel-CMNOHw3G.js": {
+      "p99_ms": 0.91,
+      "p50_ms": 0.91,
+      "count": 1,
+      "p95_ms": 0.91
+    },
+    "GET /assets/cockpit-dashboard-page-CP7h03qV.js": {
+      "p99_ms": 1.33,
+      "p50_ms": 1.33,
+      "count": 1,
+      "p95_ms": 1.33
+    },
+    "GET /assets/use-questionnaires-o7PlfqvG.js": {
+      "p99_ms": 3.31,
+      "p50_ms": 3.31,
+      "count": 1,
+      "p95_ms": 3.31
+    },
+    "GET /assets/governance-dashboard-page-CVKEaY4W.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/funnel-XIBbUVmx.js": {
+      "p99_ms": 3.98,
+      "p50_ms": 1.52,
+      "count": 2,
+      "p95_ms": 3.98
+    },
+    "GET /assets/decisions-page-D_Mt3wPd.js": {
+      "p99_ms": 2.0,
+      "p50_ms": 2.0,
+      "count": 1,
+      "p95_ms": 2.0
+    },
+    "GET /assets/data-table-BMH_2a3r.js": {
+      "p99_ms": 0.91,
+      "p50_ms": 0.91,
+      "count": 1,
+      "p95_ms": 0.91
+    },
+    "GET /assets/commands-page-eA44B084.js": {
+      "p99_ms": 2.54,
+      "p50_ms": 2.54,
+      "count": 1,
+      "p95_ms": 2.54
+    },
+    "GET /assets/cockpit-dashboard-page-C9qUaGi6.js": {
+      "p99_ms": 1.93,
+      "p50_ms": 1.93,
+      "count": 1,
+      "p95_ms": 1.93
+    },
+    "GET /assets/funnel-CAJ53MUK.js": {
+      "p99_ms": 2.34,
+      "p50_ms": 1.35,
+      "count": 4,
+      "p95_ms": 2.34
+    },
+    "GET /assets/decisions-page-DB28SbBm.js": {
+      "p99_ms": 28.0,
+      "p50_ms": 28.0,
+      "count": 1,
+      "p95_ms": 28.0
+    },
+    "GET /assets/use-sessions-BHVz2yhf.js": {
+      "p99_ms": 4.85,
+      "p50_ms": 1.57,
+      "count": 4,
+      "p95_ms": 4.85
+    },
+    "GET /assets/observability-page-ElHc558_.js": {
+      "p99_ms": 0.78,
+      "p50_ms": 0.71,
+      "count": 2,
+      "p95_ms": 0.78
+    },
+    "GET /assets/agents-page-CxDiXxMy.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/pipeline-page-D2dknsbd.js": {
+      "p99_ms": 1.23,
+      "p50_ms": 1.23,
+      "count": 1,
+      "p95_ms": 1.23
+    },
+    "GET /assets/health-card-D2aSSNye.js": {
+      "p99_ms": 3.73,
+      "p50_ms": 1.53,
+      "count": 8,
+      "p95_ms": 3.73
+    },
+    "GET /assets/use-artifacts-Di10zpUU.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/typography-CObnF8z1.js": {
+      "p99_ms": 4.59,
+      "p50_ms": 2.86,
+      "count": 7,
+      "p95_ms": 4.59
+    },
+    "GET /api/v1/approvals": {
+      "p99_ms": 3.65,
+      "p50_ms": 0.48,
+      "count": 688,
+      "p95_ms": 2.45
+    },
+    "GET /assets/use-progress-kShMSLFT.js": {
+      "p99_ms": 0.99,
+      "p50_ms": 0.99,
+      "count": 1,
+      "p95_ms": 0.99
+    },
+    "GET /assets/typography-DMPqa1oe.js": {
+      "p99_ms": 3.45,
+      "p50_ms": 2.05,
+      "count": 2,
+      "p95_ms": 3.45
+    },
+    "GET /assets/shield-BliDYqtQ.js": {
+      "p99_ms": 0.92,
+      "p50_ms": 0.92,
+      "count": 1,
+      "p95_ms": 0.92
+    },
+    "GET /assets/arrow-right-zOKCEusc.js": {
+      "p99_ms": 3.07,
+      "p50_ms": 3.07,
+      "count": 1,
+      "p95_ms": 3.07
+    },
+    "GET /assets/index-BFiQCwFx.css": {
+      "p99_ms": 1.75,
+      "p50_ms": 1.27,
+      "count": 7,
+      "p95_ms": 1.75
+    },
+    "GET /assets/index-1E7uD1i8.css": {
+      "p99_ms": 2.5,
+      "p50_ms": 2.35,
+      "count": 3,
+      "p95_ms": 2.5
+    },
+    "GET /assets/explainability-panel-QBLvZuBx.js": {
+      "p99_ms": 2.62,
+      "p50_ms": 2.62,
+      "count": 1,
+      "p95_ms": 2.62
+    },
+    "GET /assets/progress-CX2piZ9W.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/alert-banner-BNHD8R8k.js": {
+      "p99_ms": 4.19,
+      "p50_ms": 3.67,
+      "count": 3,
+      "p95_ms": 4.19
+    },
+    "GET /assets/card-CKZw3yPF.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/arrow-left-qrR_R4go.js": {
+      "p99_ms": 2.73,
+      "p50_ms": 2.08,
+      "count": 6,
+      "p95_ms": 2.73
+    },
+    "GET /assets/index-Shr0CruH.js.map": {
+      "p99_ms": 1.81,
+      "p50_ms": 1.81,
+      "count": 1,
+      "p95_ms": 1.81
+    },
+    "GET /assets/metric-card-DSdPALUR.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-governance-EBsblfcZ.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/metric-card-C2YNW6xZ.js.map": {
+      "p99_ms": 1.9,
+      "p50_ms": 1.9,
+      "count": 1,
+      "p95_ms": 1.9
+    },
+    "GET /assets/metrics-page-BhWCuaE0.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/modal-dialog-B1bmTFq9.js": {
+      "p99_ms": 8.3,
+      "p50_ms": 8.3,
+      "count": 1,
+      "p95_ms": 8.3
+    },
+    "GET /assets/card-CeHJA5-j.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 2,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-progress-P6geF6MH.js": {
+      "p99_ms": 1.71,
+      "p50_ms": 1.38,
+      "count": 2,
+      "p95_ms": 1.71
+    },
+    "GET /assets/circle-check-big-BmW5zG5O.js": {
+      "p99_ms": 2.79,
+      "p50_ms": 1.29,
+      "count": 2,
+      "p95_ms": 2.79
+    },
+    "GET /assets/execution-history-page-Dg5aTuJV.js": {
+      "p99_ms": 0.84,
+      "p50_ms": 0.84,
+      "count": 1,
+      "p95_ms": 0.84
+    },
+    "GET /assets/input-field-pIUsclpD.js": {
+      "p99_ms": 2.73,
+      "p50_ms": 0.94,
+      "count": 2,
+      "p95_ms": 2.73
+    },
+    "GET /assets/shield-alert-6ys6-LK-.js": {
+      "p99_ms": 3.79,
+      "p50_ms": 1.56,
+      "count": 4,
+      "p95_ms": 3.79
+    },
+    "GET /assets/arrow-left-CinEQBq9.js": {
+      "p99_ms": 2.11,
+      "p50_ms": 2.11,
+      "count": 1,
+      "p95_ms": 2.11
+    },
+    "GET /assets/use-artifacts-CpRof20L.js": {
+      "p99_ms": 3.08,
+      "p50_ms": 3.08,
+      "count": 1,
+      "p95_ms": 3.08
+    },
+    "GET /assets/explainability-panel-J9jvalgr.js": {
+      "p99_ms": 0.86,
+      "p50_ms": 0.86,
+      "count": 1,
+      "p95_ms": 0.86
+    },
+    "GET /assets/index-C-0zoyCG.js": {
+      "p99_ms": 8.14,
+      "p50_ms": 3.29,
+      "count": 2,
+      "p95_ms": 8.14
+    },
+    "GET /assets/metric-card-DHIbMjTo.js": {
+      "p99_ms": 1.64,
+      "p50_ms": 0.72,
+      "count": 2,
+      "p95_ms": 1.64
+    },
+    "GET /assets/arrow-left-CVIkfnqD.js": {
+      "p99_ms": 2.36,
+      "p50_ms": 2.36,
+      "count": 1,
+      "p95_ms": 2.36
+    },
+    "GET /assets/use-progress-TUjRp9ie.js.map": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/agent-activity-C7OQ6iTX.js": {
+      "p99_ms": 5.26,
+      "p50_ms": 0.7,
+      "count": 2,
+      "p95_ms": 5.26
+    },
+    "GET /assets/circle-BJ8Em2wW.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-decisions-DOoLmYdx.js": {
+      "p99_ms": 2.22,
+      "p50_ms": 2.22,
+      "count": 1,
+      "p95_ms": 2.22
+    },
+    "GET /assets/modal-dialog-DP9j31hj.js": {
+      "p99_ms": 2.92,
+      "p50_ms": 2.92,
+      "count": 1,
+      "p95_ms": 2.92
+    },
+    "GET /assets/health-card-C5_5lMdR.js": {
+      "p99_ms": 2.0,
+      "p50_ms": 1.1,
+      "count": 2,
+      "p95_ms": 2.0
+    },
+    "GET /api/v1/analytics/trends": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.44,
+      "count": 23,
+      "p95_ms": 1.0
+    },
+    "GET /assets/circle-check-big-DrLSi1Xt.js": {
+      "p99_ms": 4.62,
+      "p50_ms": 2.04,
+      "count": 4,
+      "p95_ms": 4.62
+    },
+    "GET /assets/use-governance-Bb7YXtTJ.js": {
+      "p99_ms": 2.57,
+      "p50_ms": 2.13,
+      "count": 2,
+      "p95_ms": 2.57
+    },
+    "GET /assets/artifact-browser-page-CTtB6Z8n.js": {
+      "p99_ms": 1.22,
+      "p50_ms": 1.22,
+      "count": 1,
+      "p95_ms": 1.22
+    },
+    "GET /assets/overview-page-CcfCP3Do.js": {
+      "p99_ms": 3.07,
+      "p50_ms": 2.0,
+      "count": 2,
+      "p95_ms": 3.07
+    },
+    "GET /assets/shield-check-Dgmkkyqo.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.0,
+      "count": 5,
+      "p95_ms": 1.0
+    },
+    "GET /assets/pause-Ht54Anjc.js": {
+      "p99_ms": 3.92,
+      "p50_ms": 1.4,
+      "count": 2,
+      "p95_ms": 3.92
+    },
+    "GET /assets/use-artifacts-BtJqbpPR.js": {
+      "p99_ms": 3.44,
+      "p50_ms": 3.44,
+      "count": 1,
+      "p95_ms": 3.44
+    },
+    "GET /assets/arrow-left--PjYgfhJ.js": {
+      "p99_ms": 2.92,
+      "p50_ms": 2.92,
+      "count": 1,
+      "p95_ms": 2.92
+    },
+    "GET /assets/pipeline-page-DA52alRo.js": {
+      "p99_ms": 1.37,
+      "p50_ms": 1.37,
+      "count": 1,
+      "p95_ms": 1.37
+    },
+    "GET /api/sessions": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.22,
+      "count": 550,
+      "p95_ms": 0.62
+    },
+    "GET /assets/control-signal-vxfVkaoy.js.map": {
+      "p99_ms": 2.56,
+      "p50_ms": 2.56,
+      "count": 1,
+      "p95_ms": 2.56
+    },
+    "GET /assets/circle-CCo9eGhE.js": {
+      "p99_ms": 2.08,
+      "p50_ms": 0.93,
+      "count": 2,
+      "p95_ms": 2.08
+    },
+    "GET /assets/use-analytics-D_HTO9lM.js": {
+      "p99_ms": 0.85,
+      "p50_ms": 0.85,
+      "count": 1,
+      "p95_ms": 0.85
+    },
+    "GET /assets/governance-dashboard-page-C3Ln0TZb.js": {
+      "p99_ms": 2.73,
+      "p50_ms": 1.17,
+      "count": 4,
+      "p95_ms": 2.73
+    },
+    "GET /assets/questionnaires-page-BkJ8qDqa.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/circle-DlPCDpz2.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/explainability-panel-x_Ren78E.js": {
+      "p99_ms": 0.82,
+      "p50_ms": 0.82,
+      "count": 1,
+      "p95_ms": 0.82
+    },
+    "GET /assets/health-card-CIe1sgmP.js": {
+      "p99_ms": 2.0,
+      "p50_ms": 1.42,
+      "count": 4,
+      "p95_ms": 2.0
+    },
+    "GET /assets/control-signal-KRBI5ObD.js": {
+      "p99_ms": 5.5,
+      "p50_ms": 3.3,
+      "count": 13,
+      "p95_ms": 5.5
+    },
+    "GET /assets/typography-DN41GsPR.js.map": {
+      "p99_ms": 2.03,
+      "p50_ms": 2.03,
+      "count": 1,
+      "p95_ms": 2.03
+    },
+    "GET /api/v1/approvals/history": {
+      "p99_ms": 32.54,
+      "p50_ms": 20.98,
+      "count": 30,
+      "p95_ms": 30.82
+    },
+    "GET /assets/modal-dialog-BY6G-HEm.js": {
+      "p99_ms": 7.75,
+      "p50_ms": 3.47,
+      "count": 2,
+      "p95_ms": 7.75
+    },
+    "GET /assets/index-ywn_g6yY.css": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 5,
+      "p95_ms": 1.0
+    },
+    "GET /assets/metrics-page-DIFx3SAS.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/refresh-cw-D23AIbZP.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/index-C78Mof31.css": {
+      "p99_ms": 2.35,
+      "p50_ms": 2.17,
+      "count": 3,
+      "p95_ms": 2.35
+    },
+    "GET /assets/use-progress-BQUcuVpf.js": {
+      "p99_ms": 0.64,
+      "p50_ms": 0.64,
+      "count": 1,
+      "p95_ms": 0.64
+    },
+    "GET /assets/modal-dialog-BBK-YtwK.js": {
+      "p99_ms": 2.04,
+      "p50_ms": 2.04,
+      "count": 1,
+      "p95_ms": 2.04
+    },
+    "GET /api/agents": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.32,
+      "count": 25,
+      "p95_ms": 1.0
+    },
+    "GET /assets/explainability-panel-DxksmCBB.js": {
+      "p99_ms": 1.87,
+      "p50_ms": 1.87,
+      "count": 1,
+      "p95_ms": 1.87
+    },
+    "GET /assets/index-DVkOOp61.js": {
+      "p99_ms": 4.84,
+      "p50_ms": 4.4,
+      "count": 5,
+      "p95_ms": 4.84
+    },
+    "GET /assets/clock-C5BM47eu.js": {
+      "p99_ms": 0.95,
+      "p50_ms": 0.47,
+      "count": 2,
+      "p95_ms": 0.95
+    },
+    "GET /assets/use-sessions-BODA47tI.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-artifacts-BGgbnQpE.js": {
+      "p99_ms": 1.21,
+      "p50_ms": 1.21,
+      "count": 1,
+      "p95_ms": 1.21
+    },
+    "GET /assets/use-cockpit-Bdw3htM6.js": {
+      "p99_ms": 1.43,
+      "p50_ms": 1.05,
+      "count": 3,
+      "p95_ms": 1.43
+    },
+    "GET /assets/use-decisions-BKZBEc0d.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/index-OKf4ikaY.js": {
+      "p99_ms": 1.46,
+      "p50_ms": 0.65,
+      "count": 2,
+      "p95_ms": 1.46
+    },
+    "GET /assets/alert-banner-C-8wQpqp.js": {
+      "p99_ms": 5.05,
+      "p50_ms": 2.86,
+      "count": 13,
+      "p95_ms": 5.05
+    },
+    "GET /assets/arrow-left-C6T1eqpm.js": {
+      "p99_ms": 0.87,
+      "p50_ms": 0.72,
+      "count": 2,
+      "p95_ms": 0.87
+    },
+    "GET /assets/play-4jV-l87I.js.map": {
+      "p99_ms": 2.46,
+      "p50_ms": 2.46,
+      "count": 1,
+      "p95_ms": 2.46
+    },
+    "GET /assets/use-decisions-BPGDl9cy.js": {
+      "p99_ms": 2.68,
+      "p50_ms": 2.68,
+      "count": 1,
+      "p95_ms": 2.68
+    },
+    "GET /assets/index-8cX8oAWR.js": {
+      "p99_ms": 2.0,
+      "p50_ms": 2.0,
+      "count": 1,
+      "p95_ms": 2.0
+    },
+    "GET /assets/use-sessions-CnzMfbor.js": {
+      "p99_ms": 1.79,
+      "p50_ms": 1.79,
+      "count": 1,
+      "p95_ms": 1.79
+    },
+    "GET /assets/sparkles-Bu8qmrC4.js": {
+      "p99_ms": 1.72,
+      "p50_ms": 1.49,
+      "count": 2,
+      "p95_ms": 1.72
+    },
+    "GET /assets/health-card-BeYLn3Wz.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/input-field-DNbclbDg.js": {
+      "p99_ms": 1.84,
+      "p50_ms": 1.84,
+      "count": 1,
+      "p95_ms": 1.84
+    },
+    "GET /assets/use-agents-BeTkN4Lf.js": {
+      "p99_ms": 0.69,
+      "p50_ms": 0.69,
+      "count": 1,
+      "p95_ms": 0.69
+    },
+    "GET /assets/commands-page-DJDxIubX.js": {
+      "p99_ms": 2.71,
+      "p50_ms": 2.31,
+      "count": 2,
+      "p95_ms": 2.71
+    },
+    "GET /assets/trending-up-uNUQiNe4.js": {
+      "p99_ms": 4.33,
+      "p50_ms": 1.39,
+      "count": 3,
+      "p95_ms": 4.33
+    },
+    "GET /assets/pencil-BngcsXqJ.js": {
+      "p99_ms": 3.21,
+      "p50_ms": 3.21,
+      "count": 1,
+      "p95_ms": 3.21
+    },
+    "GET /assets/arrow-right-Cu0Z354i.js": {
+      "p99_ms": 2.33,
+      "p50_ms": 1.25,
+      "count": 2,
+      "p95_ms": 2.33
+    },
+    "GET /assets/cockpit-dashboard-page-BqQ8_p_o.js": {
+      "p99_ms": 1.49,
+      "p50_ms": 1.49,
+      "count": 1,
+      "p95_ms": 1.49
+    },
+    "GET /assets/overview-page-CJb0fHp0.js": {
+      "p99_ms": 1.44,
+      "p50_ms": 1.13,
+      "count": 2,
+      "p95_ms": 1.44
+    },
+    "GET /assets/funnel-msgCKZYe.js": {
+      "p99_ms": 3.95,
+      "p50_ms": 1.31,
+      "count": 3,
+      "p95_ms": 3.95
+    },
+    "GET /assets/pipeline-page-BoeTR9FJ.js": {
+      "p99_ms": 1.91,
+      "p50_ms": 0.72,
+      "count": 6,
+      "p95_ms": 1.91
+    },
+    "GET /assets/use-dashboard-BDTrcx5K.js": {
+      "p99_ms": 3.56,
+      "p50_ms": 3.56,
+      "count": 1,
+      "p95_ms": 3.56
+    },
+    "GET /assets/trending-up-DC-uJwXS.js": {
+      "p99_ms": 1.38,
+      "p50_ms": 1.19,
+      "count": 2,
+      "p95_ms": 1.38
+    },
+    "GET /cockpit": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.32,
+      "count": 6,
+      "p95_ms": 1.0
+    },
+    "GET /assets/decisions-page-BfEx4iQu.js": {
+      "p99_ms": 1.01,
+      "p50_ms": 1.01,
+      "count": 1,
+      "p95_ms": 1.01
+    },
+    "GET /assets/use-questionnaires-Bu0YXmeg.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/download-8CIULkeu.js": {
+      "p99_ms": 0.65,
+      "p50_ms": 0.65,
+      "count": 1,
+      "p95_ms": 0.65
+    },
+    "GET /assets/zap-Ba54sN5u.js": {
+      "p99_ms": 1.63,
+      "p50_ms": 0.99,
+      "count": 2,
+      "p95_ms": 1.63
+    },
+    "GET /assets/cockpit-dashboard-page-Rx8V31I8.js": {
+      "p99_ms": 2.43,
+      "p50_ms": 2.25,
+      "count": 3,
+      "p95_ms": 2.43
+    },
+    "GET /assets/observability-page-DYknOIhS.js": {
+      "p99_ms": 0.78,
+      "p50_ms": 0.78,
+      "count": 1,
+      "p95_ms": 0.78
+    },
+    "GET /assets/typography-CS2BokxE.js": {
+      "p99_ms": 4.75,
+      "p50_ms": 2.12,
+      "count": 2,
+      "p95_ms": 4.75
+    },
+    "GET /assets/circle-C5a1NPW4.js": {
+      "p99_ms": 6.68,
+      "p50_ms": 1.41,
+      "count": 2,
+      "p95_ms": 6.68
+    },
+    "GET /assets/observability-page-CJL9IVob.js": {
+      "p99_ms": 0.58,
+      "p50_ms": 0.58,
+      "count": 1,
+      "p95_ms": 0.58
+    },
+    "GET /assets/modal-dialog-DmLgFcsY.js": {
+      "p99_ms": 5.29,
+      "p50_ms": 1.41,
+      "count": 3,
+      "p95_ms": 5.29
+    },
+    "GET /assets/health-card--LehfK4n.js": {
+      "p99_ms": 1.97,
+      "p50_ms": 1.97,
+      "count": 1,
+      "p95_ms": 1.97
+    },
+    "GET /assets/use-progress-Jpdf2Oqc.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/questionnaires-page-DYJsqwBK.js": {
+      "p99_ms": 1.32,
+      "p50_ms": 1.32,
+      "count": 1,
+      "p95_ms": 1.32
+    },
+    "GET /assets/circle-check-big-CPukG8ZX.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/trending-up-DKjwNk5u.js": {
+      "p99_ms": 2.98,
+      "p50_ms": 2.98,
+      "count": 1,
+      "p95_ms": 2.98
+    },
+    "GET /assets/status-motif-Hvgmku6M.js": {
+      "p99_ms": 2.8,
+      "p50_ms": 2.8,
+      "count": 1,
+      "p95_ms": 2.8
+    },
+    "GET /assets/sessions-page-BV5joHO0.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-dashboard-DTldTMPn.js": {
+      "p99_ms": 56.23,
+      "p50_ms": 0.57,
+      "count": 8,
+      "p95_ms": 56.23
+    },
+    "GET /assets/use-decisions-dHYGcLtO.js": {
+      "p99_ms": 2.5,
+      "p50_ms": 2.5,
+      "count": 1,
+      "p95_ms": 2.5
+    },
+    "GET /assets/circle-x-CNKkhi6E.js": {
+      "p99_ms": 2.63,
+      "p50_ms": 1.59,
+      "count": 2,
+      "p95_ms": 2.63
+    },
+    "GET /assets/card-BwboCxry.js": {
+      "p99_ms": 4.5,
+      "p50_ms": 4.5,
+      "count": 1,
+      "p95_ms": 4.5
+    },
+    "GET /assets/health-card-mYBMojA4.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/login-page-DwIGvsQ8.js": {
+      "p99_ms": 1.42,
+      "p50_ms": 1.42,
+      "count": 1,
+      "p95_ms": 1.42
+    },
+    "GET /assets/index-BaK4LSOp.css": {
+      "p99_ms": 2.51,
+      "p50_ms": 1.54,
+      "count": 5,
+      "p95_ms": 2.51
+    },
+    "GET /assets/use-questionnaires-CxQxvxeJ.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/modal-dialog-kV2lWuFQ.js": {
+      "p99_ms": 1.7,
+      "p50_ms": 1.7,
+      "count": 1,
+      "p95_ms": 1.7
+    },
+    "GET /assets/download-Cc7_x2wv.js": {
+      "p99_ms": 1.51,
+      "p50_ms": 1.19,
+      "count": 2,
+      "p95_ms": 1.51
+    },
+    "GET /assets/metric-card-BcO3icHE.js": {
+      "p99_ms": 2.33,
+      "p50_ms": 2.33,
+      "count": 1,
+      "p95_ms": 2.33
+    },
+    "GET /assets/metrics-page-DGLHcb7A.js": {
+      "p99_ms": 0.68,
+      "p50_ms": 0.68,
+      "count": 1,
+      "p95_ms": 0.68
+    },
+    "GET /assets/control-signal-_Hxa4IQM.js": {
+      "p99_ms": 5.58,
+      "p50_ms": 1.67,
+      "count": 2,
+      "p95_ms": 5.58
+    },
+    "GET /assets/index-DnooiZ6U.js": {
+      "p99_ms": 7.18,
+      "p50_ms": 5.28,
+      "count": 6,
+      "p95_ms": 7.18
+    },
+    "GET /assets/decisions-page-B-IUTiNd.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/agents-page-BsbyuROc.js": {
+      "p99_ms": 1.44,
+      "p50_ms": 1.44,
+      "count": 1,
+      "p95_ms": 1.44
+    },
+    "GET /assets/funnel-ecFLzGdG.js": {
+      "p99_ms": 1.21,
+      "p50_ms": 1.21,
+      "count": 1,
+      "p95_ms": 1.21
+    },
+    "GET /assets/funnel-BT_0qiq9.js": {
+      "p99_ms": 4.01,
+      "p50_ms": 1.36,
+      "count": 7,
+      "p95_ms": 4.01
+    },
+    "GET /assets/arrow-left-2j6SQ4i1.js": {
+      "p99_ms": 43.71,
+      "p50_ms": 1.11,
+      "count": 8,
+      "p95_ms": 43.71
+    },
+    "GET /assets/explainability-panel-Cx7Xt5U2.js": {
+      "p99_ms": 2.07,
+      "p50_ms": 2.07,
+      "count": 1,
+      "p95_ms": 2.07
+    },
+    "GET /assets/metrics-page-CDAaU3_b.js": {
+      "p99_ms": 2.56,
+      "p50_ms": 2.22,
+      "count": 2,
+      "p95_ms": 2.56
+    },
+    "GET /assets/use-analytics-CFz-ybI9.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-artifacts-DqXu_Nw9.js": {
+      "p99_ms": 3.36,
+      "p50_ms": 3.36,
+      "count": 1,
+      "p95_ms": 3.36
+    },
+    "GET /assets/agents-page-8jfOuaSk.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/commands-page-CLZJlGTJ.js": {
+      "p99_ms": 0.86,
+      "p50_ms": 0.86,
+      "count": 1,
+      "p95_ms": 0.86
+    },
+    "GET /assets/data-table-BF52tM27.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-agents-CVOlm2ZI.js": {
+      "p99_ms": 1.11,
+      "p50_ms": 1.11,
+      "count": 1,
+      "p95_ms": 1.11
+    },
+    "GET /assets/health-card-B0o2ZwiX.js": {
+      "p99_ms": 3.95,
+      "p50_ms": 3.14,
+      "count": 6,
+      "p95_ms": 3.95
+    },
+    "GET /assets/use-governance-IunWzSsD.js": {
+      "p99_ms": 3.54,
+      "p50_ms": 2.48,
+      "count": 3,
+      "p95_ms": 3.54
+    },
+    "GET /assets/use-decisions-CMOcc6H7.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/circle-check-big-B2U64Lf3.js": {
+      "p99_ms": 0.99,
+      "p50_ms": 0.93,
+      "count": 2,
+      "p95_ms": 0.99
+    },
+    "GET /assets/health-card-BiKhiaSJ.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-questionnaires-eI6z5q2N.js": {
+      "p99_ms": 1.78,
+      "p50_ms": 1.78,
+      "count": 1,
+      "p95_ms": 1.78
+    },
+    "GET /assets/index-C1yRiJzr.js.map": {
+      "p99_ms": 5.0,
+      "p50_ms": 5.0,
+      "count": 1,
+      "p95_ms": 5.0
+    },
+    "GET /assets/shield-alert-u5G_6nNV.js": {
+      "p99_ms": 2.05,
+      "p50_ms": 2.05,
+      "count": 1,
+      "p95_ms": 2.05
+    },
+    "GET /assets/input-field-oksPgpYg.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/modal-dialog-DS3h55U2.js": {
+      "p99_ms": 6.93,
+      "p50_ms": 6.93,
+      "count": 1,
+      "p95_ms": 6.93
+    },
+    "GET /assets/shield-alert-D2Uc2C37.js": {
+      "p99_ms": 1.31,
+      "p50_ms": 1.31,
+      "count": 1,
+      "p95_ms": 1.31
+    },
+    "GET /assets/use-artifacts-6zuwmPKa.js": {
+      "p99_ms": 1.98,
+      "p50_ms": 1.98,
+      "count": 1,
+      "p95_ms": 1.98
+    },
+    "GET /assets/funnel-BDq7xr2l.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-dashboard-BHi0i1qZ.js": {
+      "p99_ms": 2.17,
+      "p50_ms": 2.17,
+      "count": 1,
+      "p95_ms": 2.17
+    },
+    "GET /assets/chevron-right-CutWDPAQ.js": {
+      "p99_ms": 5.15,
+      "p50_ms": 2.54,
+      "count": 2,
+      "p95_ms": 5.15
+    },
+    "GET /assets/input-field-D73t6G2-.js": {
+      "p99_ms": 2.24,
+      "p50_ms": 1.6,
+      "count": 3,
+      "p95_ms": 2.24
+    },
+    "GET /api/v1/policies/packs": {
+      "p99_ms": 2.56,
+      "p50_ms": 1.43,
+      "count": 8,
+      "p95_ms": 2.56
+    },
+    "GET /assets/use-dashboard-Dpy3Lve4.js": {
+      "p99_ms": 0.97,
+      "p50_ms": 0.76,
+      "count": 2,
+      "p95_ms": 0.97
+    },
+    "GET /assets/traceability-explorer-page-BKDYSD11.js": {
+      "p99_ms": 1.1,
+      "p50_ms": 1.1,
+      "count": 1,
+      "p95_ms": 1.1
+    },
+    "GET /assets/shield-SYVUiK-a.js": {
+      "p99_ms": 1.93,
+      "p50_ms": 1.93,
+      "count": 1,
+      "p95_ms": 1.93
+    },
+    "GET /assets/trending-up-BLBFbr29.js": {
+      "p99_ms": 1.97,
+      "p50_ms": 1.75,
+      "count": 3,
+      "p95_ms": 1.97
+    },
+    "GET /assets/progress-B8FAblhh.js": {
+      "p99_ms": 6.83,
+      "p50_ms": 1.71,
+      "count": 4,
+      "p95_ms": 6.83
+    },
+    "GET /assets/index-DwY73yUo.js": {
+      "p99_ms": 7.72,
+      "p50_ms": 4.57,
+      "count": 2,
+      "p95_ms": 7.72
+    },
+    "GET /assets/zap-V-uzHVFr.js": {
+      "p99_ms": 0.6,
+      "p50_ms": 0.6,
+      "count": 1,
+      "p95_ms": 0.6
+    },
+    "GET /assets/input-field-BQT3AD1i.js": {
+      "p99_ms": 2.54,
+      "p50_ms": 0.98,
+      "count": 6,
+      "p95_ms": 2.54
+    },
+    "GET /api/agents/executions": {
+      "p99_ms": 0.54,
+      "p50_ms": 0.35,
+      "count": 5,
+      "p95_ms": 0.54
+    },
+    "GET /assets/file-text-Cw4OSi6C.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/confidence-indicators-C_brAgHd.js": {
+      "p99_ms": 1.14,
+      "p50_ms": 1.14,
+      "count": 1,
+      "p95_ms": 1.14
+    },
+    "GET /assets/zap-CgK5Mz7z.js": {
+      "p99_ms": 1.25,
+      "p50_ms": 0.83,
+      "count": 2,
+      "p95_ms": 1.25
+    },
+    "GET /assets/funnel-DQ93ASXZ.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/sparkles-D26kAzg2.js": {
+      "p99_ms": 2.33,
+      "p50_ms": 1.8,
+      "count": 2,
+      "p95_ms": 2.33
+    },
+    "GET /assets/use-agents-CrCe743T.js": {
+      "p99_ms": 1.11,
+      "p50_ms": 1.11,
+      "count": 1,
+      "p95_ms": 1.11
+    },
+    "GET /assets/sessions-page-Dd7NcBWP.js": {
+      "p99_ms": 0.86,
+      "p50_ms": 0.86,
+      "count": 1,
+      "p95_ms": 0.86
+    },
+    "GET /assets/trending-up-DlpljJ5O.js": {
+      "p99_ms": 3.0,
+      "p50_ms": 2.22,
+      "count": 5,
+      "p95_ms": 3.0
+    },
+    "GET /assets/input-field-tF3TCyED.js": {
+      "p99_ms": 2.04,
+      "p50_ms": 1.82,
+      "count": 3,
+      "p95_ms": 2.04
+    },
+    "GET /assets/artifact-browser-page-DGVshbq0.js": {
+      "p99_ms": 1.49,
+      "p50_ms": 1.49,
+      "count": 1,
+      "p95_ms": 1.49
+    },
+    "GET /assets/overview-page-D6hJXuVB.js": {
+      "p99_ms": 5.58,
+      "p50_ms": 5.58,
+      "count": 1,
+      "p95_ms": 5.58
+    },
+    "GET /assets/circle-check-big-DFqHI3xG.js": {
+      "p99_ms": 2.5,
+      "p50_ms": 2.07,
+      "count": 6,
+      "p95_ms": 2.5
+    },
+    "GET /assets/use-questionnaires-DdtidU9O.js": {
+      "p99_ms": 2.08,
+      "p50_ms": 1.42,
+      "count": 2,
+      "p95_ms": 2.08
+    },
+    "GET /assets/data-table-Bg2OMU-R.js": {
+      "p99_ms": 2.43,
+      "p50_ms": 2.08,
+      "count": 2,
+      "p95_ms": 2.43
+    },
+    "GET /assets/metric-card-ufDrk6aN.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.0,
+      "count": 5,
+      "p95_ms": 1.0
+    },
+    "GET /assets/metrics-page-D7ckfFxo.js": {
+      "p99_ms": 2.81,
+      "p50_ms": 1.31,
+      "count": 2,
+      "p95_ms": 2.81
+    },
+    "GET /assets/commands-page-BGA8FMka.js": {
+      "p99_ms": 0.55,
+      "p50_ms": 0.55,
+      "count": 1,
+      "p95_ms": 0.55
+    },
+    "GET /assets/use-governance-B_IvWU5Z.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/chevron-right-CYkjCwiB.js": {
+      "p99_ms": 3.39,
+      "p50_ms": 1.76,
+      "count": 6,
+      "p95_ms": 3.39
+    },
+    "GET /assets/agents-page-C7VfYQVD.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/arrow-right-sGoyzcEp.js": {
+      "p99_ms": 2.8,
+      "p50_ms": 2.11,
+      "count": 3,
+      "p95_ms": 2.8
+    },
+    "GET /assets/control-signal-B5crFP8R.js": {
+      "p99_ms": 5.1,
+      "p50_ms": 3.25,
+      "count": 2,
+      "p95_ms": 5.1
+    },
+    "GET /assets/arrow-left-dhPygT1w.js": {
+      "p99_ms": 4.02,
+      "p50_ms": 0.36,
+      "count": 2,
+      "p95_ms": 4.02
+    },
+    "GET /assets/modal-dialog-TK_QKT5H.js": {
+      "p99_ms": 2.12,
+      "p50_ms": 1.9,
+      "count": 2,
+      "p95_ms": 2.12
+    },
+    "GET /assets/overview-page-DAPRnf7I.js": {
+      "p99_ms": 5.27,
+      "p50_ms": 5.27,
+      "count": 1,
+      "p95_ms": 5.27
+    },
+    "GET /assets/refresh-cw-8FML36pn.js": {
+      "p99_ms": 1.43,
+      "p50_ms": 1.43,
+      "count": 1,
+      "p95_ms": 1.43
+    },
+    "GET /assets/traceability-explorer-page-jmXIQlgt.js": {
+      "p99_ms": 0.88,
+      "p50_ms": 0.88,
+      "count": 1,
+      "p95_ms": 0.88
+    },
+    "GET /assets/pencil-B6ZIFnsF.js.map": {
+      "p99_ms": 1.8,
+      "p50_ms": 1.8,
+      "count": 1,
+      "p95_ms": 1.8
+    },
+    "GET /assets/questionnaires-page-DMrPxSkK.js": {
+      "p99_ms": 2.37,
+      "p50_ms": 2.37,
+      "count": 1,
+      "p95_ms": 2.37
+    },
+    "GET /assets/governance-dashboard-page-GxMZJp3Y.js": {
+      "p99_ms": 1.56,
+      "p50_ms": 1.56,
+      "count": 1,
+      "p95_ms": 1.56
+    },
+    "GET /assets/pipeline-page-CzcsDEmL.js": {
+      "p99_ms": 1.04,
+      "p50_ms": 1.04,
+      "count": 1,
+      "p95_ms": 1.04
+    },
+    "GET /assets/progress-4dAIZYiQ.js": {
+      "p99_ms": 3.78,
+      "p50_ms": 1.62,
+      "count": 4,
+      "p95_ms": 3.78
+    },
+    "GET /assets/pipeline-page-A49PLfNE.js": {
+      "p99_ms": 2.1,
+      "p50_ms": 2.1,
+      "count": 1,
+      "p95_ms": 2.1
+    },
+    "GET /assets/card-CdrakcH5.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-decisions-DWAeZykF.js": {
+      "p99_ms": 3.32,
+      "p50_ms": 1.68,
+      "count": 2,
+      "p95_ms": 3.32
+    },
+    "GET /assets/approval-workflow-CNoZV2Ae.js": {
+      "p99_ms": 2.34,
+      "p50_ms": 1.47,
+      "count": 3,
+      "p95_ms": 2.34
+    },
+    "GET /assets/use-dashboard-BVWN4dYo.js": {
+      "p99_ms": 3.29,
+      "p50_ms": 1.53,
+      "count": 6,
+      "p95_ms": 3.29
+    },
+    "GET /docs/static/swagger-initializer.js": {
+      "p99_ms": 0.26,
+      "p50_ms": 0.26,
+      "count": 1,
+      "p95_ms": 0.26
+    },
+    "GET /assets/health-card-Cg49FQVQ.js": {
+      "p99_ms": 1.54,
+      "p50_ms": 1.54,
+      "count": 1,
+      "p95_ms": 1.54
+    },
+    "GET /assets/data-table-RRzeSPG6.js": {
+      "p99_ms": 2.72,
+      "p50_ms": 2.72,
+      "count": 1,
+      "p95_ms": 2.72
+    },
+    "GET /api/v1/policies/signals": {
+      "p99_ms": 35.08,
+      "p50_ms": 9.41,
+      "count": 8,
+      "p95_ms": 35.08
+    },
+    "GET /assets/index-6N5O218d.css": {
+      "p99_ms": 4.53,
+      "p50_ms": 3.05,
+      "count": 2,
+      "p95_ms": 4.53
+    },
+    "GET /assets/use-dashboard-DLP5bGUw.js": {
+      "p99_ms": 1.66,
+      "p50_ms": 1.66,
+      "count": 1,
+      "p95_ms": 1.66
+    },
+    "GET /assets/status-motif-BqCTctX-.js": {
+      "p99_ms": 6.33,
+      "p50_ms": 3.26,
+      "count": 13,
+      "p95_ms": 6.33
+    },
+    "GET /assets/shield-alert-zv_v88I6.js": {
+      "p99_ms": 1.86,
+      "p50_ms": 1.12,
+      "count": 2,
+      "p95_ms": 1.86
+    },
+    "GET /assets/card-DfF_D98V.js": {
+      "p99_ms": 3.23,
+      "p50_ms": 2.32,
+      "count": 2,
+      "p95_ms": 3.23
+    },
+    "GET /assets/commands-page-C_X64fu3.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-cockpit-B3M_vCdf.js": {
+      "p99_ms": 1.99,
+      "p50_ms": 1.24,
+      "count": 3,
+      "p95_ms": 1.99
+    },
+    "GET /assets/refresh-cw-FhVRZUjH.js": {
+      "p99_ms": 5.12,
+      "p50_ms": 3.28,
+      "count": 3,
+      "p95_ms": 5.12
+    },
+    "GET /assets/clock-Bt0uc0zY.js": {
+      "p99_ms": 3.05,
+      "p50_ms": 1.24,
+      "count": 4,
+      "p95_ms": 3.05
+    },
+    "GET /assets/progress-BVLwVvno.js": {
+      "p99_ms": 2.18,
+      "p50_ms": 0.95,
+      "count": 2,
+      "p95_ms": 2.18
+    },
+    "GET /assets/analytics-trends-page-fBEGxfAu.js": {
+      "p99_ms": 1.02,
+      "p50_ms": 1.02,
+      "count": 1,
+      "p95_ms": 1.02
+    },
+    "GET /assets/arrow-right-CJ1xdfgs.js": {
+      "p99_ms": 3.98,
+      "p50_ms": 2.82,
+      "count": 5,
+      "p95_ms": 3.98
+    },
+    "GET /assets/sessions-page-CzdCsxET.js": {
+      "p99_ms": 1.01,
+      "p50_ms": 0.97,
+      "count": 4,
+      "p95_ms": 1.01
+    },
+    "GET /assets/clock-D9fEw9s5.js": {
+      "p99_ms": 3.05,
+      "p50_ms": 1.09,
+      "count": 7,
+      "p95_ms": 3.05
+    },
+    "GET /assets/status-motif-B4l6tqRe.js.map": {
+      "p99_ms": 2.17,
+      "p50_ms": 1.85,
+      "count": 2,
+      "p95_ms": 2.17
+    },
+    "GET /assets/agents-page-Be9hdDCr.js": {
+      "p99_ms": 1.19,
+      "p50_ms": 1.19,
+      "count": 1,
+      "p95_ms": 1.19
+    },
+    "GET /assets/questionnaires-page-BVV6kw5p.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 2,
+      "p95_ms": 1.0
+    },
+    "GET /assets/commands-page-Dq-OYVcQ.js": {
+      "p99_ms": 2.02,
+      "p50_ms": 0.58,
+      "count": 2,
+      "p95_ms": 2.02
+    },
+    "GET /assets/index-Ba8c8qz4.js": {
+      "p99_ms": 10.87,
+      "p50_ms": 10.87,
+      "count": 1,
+      "p95_ms": 10.87
+    },
+    "GET /assets/file-text-B6SAgHL4.js": {
+      "p99_ms": 2.98,
+      "p50_ms": 2.98,
+      "count": 1,
+      "p95_ms": 2.98
+    },
+    "GET /assets/health-card-Dp7vMLDm.js": {
+      "p99_ms": 3.04,
+      "p50_ms": 2.96,
+      "count": 2,
+      "p95_ms": 3.04
+    },
+    "GET /assets/chevron-right-3hG8dQKi.js": {
+      "p99_ms": 2.57,
+      "p50_ms": 1.79,
+      "count": 2,
+      "p95_ms": 2.57
+    },
+    "GET /assets/alert-banner-Dog27tKQ.js": {
+      "p99_ms": 11.13,
+      "p50_ms": 3.43,
+      "count": 7,
+      "p95_ms": 11.13
+    },
+    "GET /assets/zap-CuvE_Lbh.js": {
+      "p99_ms": 1.7,
+      "p50_ms": 0.85,
+      "count": 2,
+      "p95_ms": 1.7
+    },
+    "GET /assets/zap-BSENeS1t.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-sessions-CbHCd2pc.js": {
+      "p99_ms": 1.89,
+      "p50_ms": 1.89,
+      "count": 1,
+      "p95_ms": 1.89
+    },
+    "GET /assets/metrics-page-Zfxf0Fv2.js": {
+      "p99_ms": 2.3,
+      "p50_ms": 1.52,
+      "count": 3,
+      "p95_ms": 2.3
+    },
+    "GET /assets/sessions-page-JC-4JZl2.js": {
+      "p99_ms": 1.21,
+      "p50_ms": 1.21,
+      "count": 1,
+      "p95_ms": 1.21
+    },
+    "GET /assets/pause-ChHOETV-.js": {
+      "p99_ms": 2.08,
+      "p50_ms": 1.26,
+      "count": 2,
+      "p95_ms": 2.08
+    },
+    "GET /assets/chevron-right-C-63ierP.js": {
+      "p99_ms": 5.29,
+      "p50_ms": 1.76,
+      "count": 8,
+      "p95_ms": 5.29
+    },
+    "GET /assets/questionnaires-page-iMuQCUnt.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/chevron-right-DEvYFlEu.js.map": {
+      "p99_ms": 2.69,
+      "p50_ms": 2.11,
+      "count": 2,
+      "p95_ms": 2.69
+    },
+    "GET /assets/metrics-page-DXZOFghK.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/explainability-panel-Cnm2lohO.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/progress-C_5GSTQr.js": {
+      "p99_ms": 3.2,
+      "p50_ms": 1.89,
+      "count": 3,
+      "p95_ms": 3.2
+    },
+    "GET /assets/typography-C6VLZyRS.js": {
+      "p99_ms": 3.17,
+      "p50_ms": 1.34,
+      "count": 2,
+      "p95_ms": 3.17
+    },
+    "GET /assets/health-card-BFetuHpE.js": {
+      "p99_ms": 1.98,
+      "p50_ms": 1.98,
+      "count": 1,
+      "p95_ms": 1.98
+    },
+    "GET /assets/arrow-right-qax7-GPE.js": {
+      "p99_ms": 4.51,
+      "p50_ms": 4.51,
+      "count": 1,
+      "p95_ms": 4.51
+    },
+    "GET /assets/arrow-right-BrhXR483.js": {
+      "p99_ms": 1.78,
+      "p50_ms": 0.38,
+      "count": 2,
+      "p95_ms": 1.78
+    },
+    "GET /assets/card-D6MrQfhc.js": {
+      "p99_ms": 2.76,
+      "p50_ms": 1.46,
+      "count": 2,
+      "p95_ms": 2.76
+    },
+    "GET /assets/typography-CNx8JXfy.js": {
+      "p99_ms": 2.1,
+      "p50_ms": 1.46,
+      "count": 5,
+      "p95_ms": 2.1
+    },
+    "GET /assets/trending-up-B-DeUA_i.js": {
+      "p99_ms": 1.15,
+      "p50_ms": 1.07,
+      "count": 2,
+      "p95_ms": 1.15
+    },
+    "GET /assets/commands-page-DtFxYime.js": {
+      "p99_ms": 1.23,
+      "p50_ms": 1.03,
+      "count": 2,
+      "p95_ms": 1.23
+    },
+    "GET /assets/input-field-TammZWx9.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/card-Xnscb-q4.js": {
+      "p99_ms": 3.33,
+      "p50_ms": 2.39,
+      "count": 7,
+      "p95_ms": 3.33
+    },
+    "GET /assets/use-sessions-DKMQJFA0.js": {
+      "p99_ms": 2.22,
+      "p50_ms": 2.22,
+      "count": 1,
+      "p95_ms": 2.22
+    },
+    "GET /assets/arrow-left-ChFhXAWR.js": {
+      "p99_ms": 0.92,
+      "p50_ms": 0.92,
+      "count": 1,
+      "p95_ms": 0.92
+    },
+    "GET /assets/questionnaires-page-imkmyhIW.js": {
+      "p99_ms": 1.27,
+      "p50_ms": 0.98,
+      "count": 2,
+      "p95_ms": 1.27
+    },
+    "GET /assets/typography-LSKv8cqy.js": {
+      "p99_ms": 3.12,
+      "p50_ms": 1.86,
+      "count": 3,
+      "p95_ms": 3.12
+    },
+    "GET /assets/input-field-BCHuW1X8.js": {
+      "p99_ms": 1.6,
+      "p50_ms": 1.6,
+      "count": 1,
+      "p95_ms": 1.6
+    },
+    "GET /assets/shield-CKstHJ3e.js": {
+      "p99_ms": 3.08,
+      "p50_ms": 3.08,
+      "count": 1,
+      "p95_ms": 3.08
+    },
+    "GET /assets/clock-IG8ep5y5.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-analytics-B7CRVZQg.js": {
+      "p99_ms": 1.04,
+      "p50_ms": 0.96,
+      "count": 2,
+      "p95_ms": 1.04
+    },
+    "GET /assets/overview-page-Jlxal7J0.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/chevron-right-CgZv9XXY.js": {
+      "p99_ms": 4.01,
+      "p50_ms": 4.01,
+      "count": 1,
+      "p95_ms": 4.01
+    },
+    "GET /assets/file-text-Dk7U3s5D.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/alert-banner-C6MWVAIZ.js": {
+      "p99_ms": 3.25,
+      "p50_ms": 2.35,
+      "count": 5,
+      "p95_ms": 3.25
+    },
+    "GET /assets/arrow-right-CUVxCLnS.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.0,
+      "count": 5,
+      "p95_ms": 1.0
+    },
+    "GET /assets/arrow-left-lXAJIHmZ.js": {
+      "p99_ms": 4.49,
+      "p50_ms": 4.49,
+      "count": 1,
+      "p95_ms": 4.49
+    },
+    "GET /assets/health-card-DDBu88ZM.js": {
+      "p99_ms": 2.52,
+      "p50_ms": 2.52,
+      "count": 1,
+      "p95_ms": 2.52
+    },
+    "GET /assets/confidence-indicators-DhxlA8PD.js": {
+      "p99_ms": 2.67,
+      "p50_ms": 2.28,
+      "count": 3,
+      "p95_ms": 2.67
+    },
+    "GET /assets/use-governance-Bn0GObu3.js": {
+      "p99_ms": 2.01,
+      "p50_ms": 1.43,
+      "count": 2,
+      "p95_ms": 2.01
+    },
+    "GET /assets/commands-page-Dsk7_jxw.js": {
+      "p99_ms": 1.33,
+      "p50_ms": 0.88,
+      "count": 4,
+      "p95_ms": 1.33
+    },
+    "GET /assets/progress-BVnHf8Xp.js": {
+      "p99_ms": 4.3,
+      "p50_ms": 1.77,
+      "count": 10,
+      "p95_ms": 4.3
+    },
+    "GET /assets/health-card-9ZznU9QL.js": {
+      "p99_ms": 2.87,
+      "p50_ms": 1.51,
+      "count": 2,
+      "p95_ms": 2.87
+    },
+    "GET /assets/use-progress-DLUK1Bc9.js": {
+      "p99_ms": 1.76,
+      "p50_ms": 1.06,
+      "count": 2,
+      "p95_ms": 1.76
+    },
+    "GET /assets/use-questionnaires-Xb_5utqK.js": {
+      "p99_ms": 2.12,
+      "p50_ms": 1.99,
+      "count": 3,
+      "p95_ms": 2.12
+    },
+    "GET /login": {
+      "p99_ms": 0.49,
+      "p50_ms": 0.49,
+      "count": 1,
+      "p95_ms": 0.49
+    },
+    "GET /assets/status-motif-B4l6tqRe.js": {
+      "p99_ms": 5.7,
+      "p50_ms": 2.84,
+      "count": 7,
+      "p95_ms": 5.7
+    },
+    "GET /assets/overview-page-C9Kxsfmi.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/zap-BtNCIkea.js": {
+      "p99_ms": 1.79,
+      "p50_ms": 1.29,
+      "count": 2,
+      "p95_ms": 1.79
+    },
+    "GET /assets/arrow-right-By7-G4-9.js": {
+      "p99_ms": 2.37,
+      "p50_ms": 1.62,
+      "count": 2,
+      "p95_ms": 2.37
+    },
+    "GET /assets/use-agents-BP5E9Q48.js": {
+      "p99_ms": 2.01,
+      "p50_ms": 2.01,
+      "count": 1,
+      "p95_ms": 2.01
+    },
+    "GET /assets/alert-banner-CzB4cjCE.js": {
+      "p99_ms": 1.96,
+      "p50_ms": 1.96,
+      "count": 1,
+      "p95_ms": 1.96
+    },
+    "GET /assets/agent-activity-2JDvWw8f.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-sessions-CqO7nUP1.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/arrow-left-DRgIm4TQ.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/arrow-right-72SWgM5-.js": {
+      "p99_ms": 2.2,
+      "p50_ms": 1.81,
+      "count": 3,
+      "p95_ms": 2.2
+    },
+    "GET /assets/use-dashboard-DkKVf0Bi.js": {
+      "p99_ms": 2.55,
+      "p50_ms": 1.85,
+      "count": 6,
+      "p95_ms": 2.55
+    },
+    "GET /assets/index-69WKrFbp.js": {
+      "p99_ms": 4.56,
+      "p50_ms": 2.55,
+      "count": 2,
+      "p95_ms": 4.56
+    },
+    "GET /assets/approval-workflow-BbfvZJ2C.js": {
+      "p99_ms": 1.96,
+      "p50_ms": 1.96,
+      "count": 1,
+      "p95_ms": 1.96
+    },
+    "GET /assets/governance-dashboard-page-DFj__J45.js": {
+      "p99_ms": 2.36,
+      "p50_ms": 1.48,
+      "count": 2,
+      "p95_ms": 2.36
+    },
+    "GET /assets/use-questionnaires-BRE8-9S0.js": {
+      "p99_ms": 3.46,
+      "p50_ms": 2.55,
+      "count": 2,
+      "p95_ms": 3.46
+    },
+    "GET /assets/download-DbycaP26.js": {
+      "p99_ms": 2.8,
+      "p50_ms": 2.8,
+      "count": 1,
+      "p95_ms": 2.8
+    },
+    "GET /assets/use-questionnaires-C1cnKAQI.js": {
+      "p99_ms": 2.3,
+      "p50_ms": 2.23,
+      "count": 2,
+      "p95_ms": 2.3
+    },
+    "GET /assets/decisions-page-B2rYIc3r.js": {
+      "p99_ms": 2.44,
+      "p50_ms": 2.44,
+      "count": 1,
+      "p95_ms": 2.44
+    },
+    "GET /docs/static/swagger-ui-bundle.js": {
+      "p99_ms": 114.72,
+      "p50_ms": 114.72,
+      "count": 1,
+      "p95_ms": 114.72
+    },
+    "GET /assets/traceability-explorer-page-1rqbCcE7.js": {
+      "p99_ms": 1.14,
+      "p50_ms": 1.14,
+      "count": 1,
+      "p95_ms": 1.14
+    },
+    "GET /assets/metric-card-BItR0Irj.js": {
+      "p99_ms": 2.05,
+      "p50_ms": 2.05,
+      "count": 1,
+      "p95_ms": 2.05
+    },
+    "GET /assets/typography-CT9nuUKC.js": {
+      "p99_ms": 4.49,
+      "p50_ms": 4.49,
+      "count": 1,
+      "p95_ms": 4.49
+    },
+    "GET /assets/governance-dashboard-page-DIjbDndn.js": {
+      "p99_ms": 2.23,
+      "p50_ms": 2.23,
+      "count": 1,
+      "p95_ms": 2.23
+    },
+    "GET /assets/use-progress-Canw8xxS.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/shield-alert-CIAJ6ArA.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/observability-page-625az4Vu.js": {
+      "p99_ms": 0.57,
+      "p50_ms": 0.57,
+      "count": 1,
+      "p95_ms": 0.57
+    },
+    "GET /assets/data-table-DWGEnLei.js": {
+      "p99_ms": 7.61,
+      "p50_ms": 3.08,
+      "count": 3,
+      "p95_ms": 7.61
+    },
+    "GET /assets/clock-T_DfduD9.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-governance-vzcMMfo6.js": {
+      "p99_ms": 3.39,
+      "p50_ms": 1.67,
+      "count": 2,
+      "p95_ms": 3.39
+    },
+    "GET /assets/health-card-DazAHsc8.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/index-C1yRiJzr.js": {
+      "p99_ms": 3.0,
+      "p50_ms": 2.0,
+      "count": 5,
+      "p95_ms": 3.0
+    },
+    "GET /assets/explainability-panel-BPNkt1VK.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/confidence-indicators-CTXX0XIw.js": {
+      "p99_ms": 0.98,
+      "p50_ms": 0.98,
+      "count": 1,
+      "p95_ms": 0.98
+    },
+    "GET /assets/progress-BOMakSKp.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/index-B44otPSl.js": {
+      "p99_ms": 5.8,
+      "p50_ms": 5.41,
+      "count": 3,
+      "p95_ms": 5.8
+    },
+    "GET /assets/typography-Bhyt9Bay.js": {
+      "p99_ms": 5.52,
+      "p50_ms": 1.52,
+      "count": 14,
+      "p95_ms": 5.52
+    },
+    "GET /assets/clock-CSs0wTXd.js": {
+      "p99_ms": 1.9,
+      "p50_ms": 1.56,
+      "count": 2,
+      "p95_ms": 1.9
+    },
+    "GET /assets/circle-check-big-DjKd7r-k.js.map": {
+      "p99_ms": 1.68,
+      "p50_ms": 1.68,
+      "count": 1,
+      "p95_ms": 1.68
+    },
+    "GET /docs/static/swagger-ui.css": {
+      "p99_ms": 22.67,
+      "p50_ms": 22.67,
+      "count": 1,
+      "p95_ms": 22.67
+    },
+    "GET /assets/trending-up-uNUQiNe4.js.map": {
+      "p99_ms": 1.77,
+      "p50_ms": 1.77,
+      "count": 1,
+      "p95_ms": 1.77
+    },
+    "GET /assets/index-BsK6Qu90.css": {
+      "p99_ms": 3.26,
+      "p50_ms": 1.54,
+      "count": 2,
+      "p95_ms": 3.26
+    },
+    "GET /assets/status-motif-Ch5jp41O.js": {
+      "p99_ms": 4.63,
+      "p50_ms": 1.91,
+      "count": 4,
+      "p95_ms": 4.63
+    },
+    "GET /assets/status-motif-gND3v8Az.js": {
+      "p99_ms": 1.65,
+      "p50_ms": 1.51,
+      "count": 2,
+      "p95_ms": 1.65
+    },
+    "GET /assets/circle-x-ZJz1aXnG.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/typography-C18uAPdg.js": {
+      "p99_ms": 1.15,
+      "p50_ms": 1.15,
+      "count": 1,
+      "p95_ms": 1.15
+    },
+    "GET /assets/sessions-page-GNZ7wwxE.js": {
+      "p99_ms": 1.12,
+      "p50_ms": 1.12,
+      "count": 1,
+      "p95_ms": 1.12
+    },
+    "GET /assets/use-dashboard-CbERCG2G.js": {
+      "p99_ms": 1.02,
+      "p50_ms": 0.82,
+      "count": 2,
+      "p95_ms": 1.02
+    },
+    "GET /assets/arrow-right-fBI7ciB_.js": {
+      "p99_ms": 1.99,
+      "p50_ms": 1.99,
+      "count": 1,
+      "p95_ms": 1.99
+    },
+    "GET /assets/index-DEwcCkel.js": {
+      "p99_ms": 8.06,
+      "p50_ms": 8.06,
+      "count": 1,
+      "p95_ms": 8.06
+    },
+    "GET /decisions": {
+      "p99_ms": 1.37,
+      "p50_ms": 0.53,
+      "count": 10,
+      "p95_ms": 1.37
+    },
+    "GET /assets/execution-history-page-DCZnR_bc.js": {
+      "p99_ms": 0.85,
+      "p50_ms": 0.85,
+      "count": 1,
+      "p95_ms": 0.85
+    },
+    "GET /assets/execution-history-page-B3zBPFXa.js": {
+      "p99_ms": 0.93,
+      "p50_ms": 0.93,
+      "count": 1,
+      "p95_ms": 0.93
+    },
+    "GET /assets/use-sessions-ha7aTr_K.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/circle-x-BbolZ2y3.js": {
+      "p99_ms": 3.3,
+      "p50_ms": 0.38,
+      "count": 2,
+      "p95_ms": 3.3
+    },
+    "GET /assets/play-5b-Z7ai_.js": {
+      "p99_ms": 1.35,
+      "p50_ms": 1.35,
+      "count": 1,
+      "p95_ms": 1.35
+    },
+    "GET /assets/index-COF3v6iT.js": {
+      "p99_ms": 8.94,
+      "p50_ms": 8.94,
+      "count": 1,
+      "p95_ms": 8.94
+    },
+    "GET /assets/overview-page-DE5bK6pG.js": {
+      "p99_ms": 3.81,
+      "p50_ms": 1.61,
+      "count": 2,
+      "p95_ms": 3.81
+    },
+    "GET /assets/artifact-browser-page-VGn5zy5r.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/circle-x-DUf0zAx-.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/typography-SfApmgSE.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/input-field-B2H-H2nY.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/index-Shr0CruH.js": {
+      "p99_ms": 3.62,
+      "p50_ms": 1.77,
+      "count": 4,
+      "p95_ms": 3.62
+    },
+    "GET /": {
+      "p99_ms": 4933.0,
+      "p50_ms": 2.0,
+      "count": 66,
+      "p95_ms": 7.67
+    },
+    "GET /assets/download-BXgB4zyv.js": {
+      "p99_ms": 2.49,
+      "p50_ms": 1.15,
+      "count": 4,
+      "p95_ms": 2.49
+    },
+    "GET /assets/health-card-BvWUhZgv.js": {
+      "p99_ms": 2.88,
+      "p50_ms": 2.88,
+      "count": 1,
+      "p95_ms": 2.88
+    },
+    "GET /assets/index-CQgiibdD.js": {
+      "p99_ms": 10.59,
+      "p50_ms": 4.47,
+      "count": 4,
+      "p95_ms": 10.59
+    },
+    "GET /assets/index-DWQ8Wjyy.css": {
+      "p99_ms": 34.0,
+      "p50_ms": 34.0,
+      "count": 1,
+      "p95_ms": 34.0
+    },
+    "GET /assets/index-BM78qlEc.css": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/sessions-page-CSopmxsx.js": {
+      "p99_ms": 1.13,
+      "p50_ms": 1.06,
+      "count": 2,
+      "p95_ms": 1.13
+    },
+    "GET /assets/index-s6NZ70lt.js": {
+      "p99_ms": 2.0,
+      "p50_ms": 2.0,
+      "count": 1,
+      "p95_ms": 2.0
+    },
+    "GET /assets/chevron-right-Rok40-ZV.js": {
+      "p99_ms": 3.17,
+      "p50_ms": 1.91,
+      "count": 3,
+      "p95_ms": 3.17
+    },
+    "GET /questionnaires": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.27,
+      "count": 8,
+      "p95_ms": 1.0
+    },
+    "GET /assets/data-table-CQ-QLtsT.js": {
+      "p99_ms": 3.96,
+      "p50_ms": 1.23,
+      "count": 2,
+      "p95_ms": 3.96
+    },
+    "GET /assets/progress-BLPcitTX.js": {
+      "p99_ms": 4.4,
+      "p50_ms": 2.83,
+      "count": 6,
+      "p95_ms": 4.4
+    },
+    "GET /assets/circle-check-big-DtgF4QEZ.js": {
+      "p99_ms": 3.68,
+      "p50_ms": 2.1,
+      "count": 3,
+      "p95_ms": 3.68
+    },
+    "GET /assets/circle-check-big-D2Mzf0Pw.js": {
+      "p99_ms": 4.96,
+      "p50_ms": 1.43,
+      "count": 2,
+      "p95_ms": 4.96
+    },
+    "GET /assets/metric-card-mCPZugFM.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/agent-activity-DEGs2PNd.js": {
+      "p99_ms": 5.43,
+      "p50_ms": 2.97,
+      "count": 6,
+      "p95_ms": 5.43
+    },
+    "GET /assets/circle-check-big-BCtpP3Es.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-progress-WDLkWElF.js": {
+      "p99_ms": 1.3,
+      "p50_ms": 1.3,
+      "count": 1,
+      "p95_ms": 1.3
+    },
+    "GET /assets/use-governance-DWV6l0Lm.js": {
+      "p99_ms": 2.76,
+      "p50_ms": 2.5,
+      "count": 6,
+      "p95_ms": 2.76
+    },
+    "GET /assets/use-governance-K0YMFP-8.js": {
+      "p99_ms": 2.47,
+      "p50_ms": 2.47,
+      "count": 1,
+      "p95_ms": 2.47
+    },
+    "GET /assets/clock-BGoafgt3.js.map": {
+      "p99_ms": 1.96,
+      "p50_ms": 1.06,
+      "count": 2,
+      "p95_ms": 1.96
+    },
+    "GET /assets/use-sessions-BjGnODPf.js": {
+      "p99_ms": 5.24,
+      "p50_ms": 5.24,
+      "count": 1,
+      "p95_ms": 5.24
+    },
+    "GET /docs/static/index.css": {
+      "p99_ms": 11.52,
+      "p50_ms": 11.52,
+      "count": 1,
+      "p95_ms": 11.52
+    },
+    "GET /assets/trending-up-C4lLopSc.js": {
+      "p99_ms": 3.55,
+      "p50_ms": 2.3,
+      "count": 3,
+      "p95_ms": 3.55
+    },
+    "GET /assets/use-sessions-B8medKou.js": {
+      "p99_ms": 2.67,
+      "p50_ms": 0.99,
+      "count": 2,
+      "p95_ms": 2.67
+    },
+    "GET /assets/use-progress-BopXEOES.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/agents-page-DmbSGFPE.js": {
+      "p99_ms": 2.84,
+      "p50_ms": 2.84,
+      "count": 1,
+      "p95_ms": 2.84
+    },
+    "GET /assets/refresh-cw-C2iBdMzB.js": {
+      "p99_ms": 5.23,
+      "p50_ms": 3.32,
+      "count": 2,
+      "p95_ms": 5.23
+    },
+    "GET /assets/explainability-panel-Ulj8oIeP.js": {
+      "p99_ms": 0.77,
+      "p50_ms": 0.77,
+      "count": 1,
+      "p95_ms": 0.77
+    },
+    "GET /assets/circle-check-big-CCYv2smH.js": {
+      "p99_ms": 4.76,
+      "p50_ms": 4.76,
+      "count": 1,
+      "p95_ms": 4.76
+    },
+    "GET /assets/use-decisions-D7lKqCs0.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/arrow-right-Xkrklvut.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-decisions-DJOk7TZg.js": {
+      "p99_ms": 3.15,
+      "p50_ms": 0.84,
+      "count": 2,
+      "p95_ms": 3.15
+    },
+    "GET /assets/alert-banner-CSbQ27F6.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/decisions-page-OcXwwIXH.js": {
+      "p99_ms": 1.36,
+      "p50_ms": 1.36,
+      "count": 1,
+      "p95_ms": 1.36
+    },
+    "GET /assets/input-field-tBusoFYx.js": {
+      "p99_ms": 2.9,
+      "p50_ms": 1.84,
+      "count": 3,
+      "p95_ms": 2.9
+    },
+    "GET /assets/download-DuIV2VF3.js": {
+      "p99_ms": 1.88,
+      "p50_ms": 1.88,
+      "count": 1,
+      "p95_ms": 1.88
+    },
+    "GET /assets/use-analytics-BtqCwsws.js": {
+      "p99_ms": 2.65,
+      "p50_ms": 1.76,
+      "count": 2,
+      "p95_ms": 2.65
+    },
+    "GET /assets/alert-banner-Dy9AVRI3.js": {
+      "p99_ms": 3.69,
+      "p50_ms": 1.97,
+      "count": 7,
+      "p95_ms": 3.69
+    },
+    "GET /assets/shield-alert-DkiK6cYw.js": {
+      "p99_ms": 2.19,
+      "p50_ms": 2.07,
+      "count": 2,
+      "p95_ms": 2.19
+    },
+    "GET /assets/control-signal-Bz5NXnQX.js": {
+      "p99_ms": 5.71,
+      "p50_ms": 4.54,
+      "count": 3,
+      "p95_ms": 5.71
+    },
+    "GET /assets/clock-DC4vZ5YM.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-questionnaires-CMC1KfME.js": {
+      "p99_ms": 4.85,
+      "p50_ms": 1.78,
+      "count": 3,
+      "p95_ms": 4.85
+    },
+    "GET /assets/decisions-page-B5vTFTk7.js": {
+      "p99_ms": 1.25,
+      "p50_ms": 1.25,
+      "count": 1,
+      "p95_ms": 1.25
+    },
+    "GET /assets/control-signal-G4b9rob8.js.map": {
+      "p99_ms": 2.15,
+      "p50_ms": 1.81,
+      "count": 2,
+      "p95_ms": 2.15
+    },
+    "GET /assets/card-CqLsx_GD.js": {
+      "p99_ms": 4.48,
+      "p50_ms": 4.48,
+      "count": 1,
+      "p95_ms": 4.48
+    },
+    "GET /assets/index-Ddnvybhv.css": {
+      "p99_ms": 11.0,
+      "p50_ms": 10.0,
+      "count": 2,
+      "p95_ms": 11.0
+    },
+    "GET /assets/input-field-E3pWECz6.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/pipeline-page-Bkga02UW.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/pause-DP3Wh84p.js": {
+      "p99_ms": 2.87,
+      "p50_ms": 2.87,
+      "count": 1,
+      "p95_ms": 2.87
+    },
+    "GET /assets/agent-activity-CAmcEoYp.js": {
+      "p99_ms": 3.06,
+      "p50_ms": 1.2,
+      "count": 2,
+      "p95_ms": 3.06
+    },
+    "GET /assets/overview-page-CobuJ1cP.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/clock-CDh15lea.js": {
+      "p99_ms": 1.17,
+      "p50_ms": 1.05,
+      "count": 2,
+      "p95_ms": 1.17
+    },
+    "GET /assets/arrow-right-CEH5t02V.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 2,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-decisions-BRJtJPvv.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/card-DO2cpUHS.js": {
+      "p99_ms": 3.27,
+      "p50_ms": 3.27,
+      "count": 1,
+      "p95_ms": 3.27
+    },
+    "GET /assets/questionnaires-page-ZIvZaPnL.js": {
+      "p99_ms": 1.57,
+      "p50_ms": 1.57,
+      "count": 1,
+      "p95_ms": 1.57
+    },
+    "GET /api/dashboard/stats": {
+      "p99_ms": 79.0,
+      "p50_ms": 55.0,
+      "count": 37,
+      "p95_ms": 76.0
+    },
+    "GET /assets/download-Diao9aQL.js": {
+      "p99_ms": 0.61,
+      "p50_ms": 0.61,
+      "count": 1,
+      "p95_ms": 0.61
+    },
+    "GET /api/v1/artifacts": {
+      "p99_ms": 1.06,
+      "p50_ms": 0.32,
+      "count": 46,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-progress-TUjRp9ie.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.0,
+      "count": 5,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-dashboard-6yZm92Qw.js": {
+      "p99_ms": 3.49,
+      "p50_ms": 1.73,
+      "count": 2,
+      "p95_ms": 3.49
+    },
+    "GET /assets/download-5xlJYb0j.js": {
+      "p99_ms": 1.79,
+      "p50_ms": 1.79,
+      "count": 1,
+      "p95_ms": 1.79
+    },
+    "GET /assets/commands-page-C3izfAiD.js": {
+      "p99_ms": 1.49,
+      "p50_ms": 1.49,
+      "count": 1,
+      "p95_ms": 1.49
+    },
+    "GET /assets/download-Z3JnC-IZ.js": {
+      "p99_ms": 1.14,
+      "p50_ms": 1.04,
+      "count": 3,
+      "p95_ms": 1.14
+    },
+    "GET /assets/circle-check-big-DVqbXHQh.js": {
+      "p99_ms": 43.61,
+      "p50_ms": 1.49,
+      "count": 12,
+      "p95_ms": 43.61
+    },
+    "GET /assets/use-sessions-B2ioQqv2.js": {
+      "p99_ms": 2.57,
+      "p50_ms": 0.68,
+      "count": 2,
+      "p95_ms": 2.57
+    },
+    "GET /assets/index-Be7nR8fo.js": {
+      "p99_ms": 7.0,
+      "p50_ms": 2.88,
+      "count": 3,
+      "p95_ms": 7.0
+    },
+    "GET /assets/control-signal-BUvcdC9u.js": {
+      "p99_ms": 3.98,
+      "p50_ms": 3.84,
+      "count": 3,
+      "p95_ms": 3.98
+    },
+    "GET /assets/play-D7vkwjAt.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/health-card-B44ZY9wM.js": {
+      "p99_ms": 1.22,
+      "p50_ms": 1.22,
+      "count": 1,
+      "p95_ms": 1.22
+    },
+    "GET /assets/shield-JJGVFtx7.js": {
+      "p99_ms": 0.47,
+      "p50_ms": 0.47,
+      "count": 1,
+      "p95_ms": 0.47
+    },
+    "GET /assets/use-progress-VB3UkVDx.js": {
+      "p99_ms": 0.25,
+      "p50_ms": 0.25,
+      "count": 1,
+      "p95_ms": 0.25
+    },
+    "GET /assets/traceability-explorer-page-CSNtMbx0.js": {
+      "p99_ms": 1.75,
+      "p50_ms": 1.75,
+      "count": 1,
+      "p95_ms": 1.75
+    },
+    "GET /assets/use-progress-CimwjLsA.js": {
+      "p99_ms": 1.62,
+      "p50_ms": 0.86,
+      "count": 3,
+      "p95_ms": 1.62
+    },
+    "GET /assets/circle-check-big-2gcfRpsV.js": {
+      "p99_ms": 2.07,
+      "p50_ms": 2.07,
+      "count": 1,
+      "p95_ms": 2.07
+    },
+    "GET /assets/data-table-Dd2dHqp1.js": {
+      "p99_ms": 4.13,
+      "p50_ms": 2.38,
+      "count": 4,
+      "p95_ms": 4.13
+    },
+    "GET /assets/alert-banner-Dfod_LaT.js": {
+      "p99_ms": 4.22,
+      "p50_ms": 4.22,
+      "count": 1,
+      "p95_ms": 4.22
+    },
+    "GET /assets/network-Bf-yv_xm.js": {
+      "p99_ms": 2.51,
+      "p50_ms": 2.22,
+      "count": 3,
+      "p95_ms": 2.51
+    },
+    "GET /assets/circle-check-big-FnaSHAbL.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/funnel-DCuR-4tc.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/chevron-right-CHlhsfIl.js": {
+      "p99_ms": 3.25,
+      "p50_ms": 1.61,
+      "count": 5,
+      "p95_ms": 3.25
+    },
+    "GET /assets/analytics-trends-page-D_tnWVBR.js": {
+      "p99_ms": 1.26,
+      "p50_ms": 1.26,
+      "count": 1,
+      "p95_ms": 1.26
+    },
+    "GET /assets/use-governance-GpRbNRND.js": {
+      "p99_ms": 3.61,
+      "p50_ms": 1.62,
+      "count": 6,
+      "p95_ms": 3.61
+    },
+    "GET /assets/progress-BXEjTecn.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.0,
+      "count": 5,
+      "p95_ms": 1.0
+    },
+    "GET /assets/artifact-browser-page-B_tH3DQp.js": {
+      "p99_ms": 4.12,
+      "p50_ms": 4.12,
+      "count": 1,
+      "p95_ms": 4.12
+    },
+    "GET /assets/pipeline-page-VJwKv9rj.js": {
+      "p99_ms": 1.71,
+      "p50_ms": 0.74,
+      "count": 2,
+      "p95_ms": 1.71
+    },
+    "POST /api/command": {
+      "p99_ms": 4.0,
+      "p50_ms": 4.0,
+      "count": 2,
+      "p95_ms": 4.0
+    },
+    "GET /assets/use-cockpit-CNNrxcsW.js": {
+      "p99_ms": 1.02,
+      "p50_ms": 1.02,
+      "count": 1,
+      "p95_ms": 1.02
+    },
+    "GET /assets/use-cockpit-4dBB5Dnn.js": {
+      "p99_ms": 0.55,
+      "p50_ms": 0.55,
+      "count": 1,
+      "p95_ms": 0.55
+    },
+    "GET /assets/play-ET5Zeq_W.js": {
+      "p99_ms": 0.98,
+      "p50_ms": 0.98,
+      "count": 1,
+      "p95_ms": 0.98
+    },
+    "GET /assets/arrow-left-Bz4H39oO.js": {
+      "p99_ms": 2.01,
+      "p50_ms": 1.0,
+      "count": 2,
+      "p95_ms": 2.01
+    },
+    "GET /assets/index-C3mYoJSl.js": {
+      "p99_ms": 6.03,
+      "p50_ms": 3.61,
+      "count": 7,
+      "p95_ms": 6.03
+    },
+    "GET /assets/circle-x-BHSO__N4.js": {
+      "p99_ms": 5.51,
+      "p50_ms": 1.46,
+      "count": 2,
+      "p95_ms": 5.51
+    },
+    "GET /assets/use-progress-4r9d1_wH.js": {
+      "p99_ms": 1.06,
+      "p50_ms": 1.02,
+      "count": 2,
+      "p95_ms": 1.06
+    },
+    "GET /assets/use-analytics-DWmTNrMF.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/metrics-page-BbtIKGXx.js": {
+      "p99_ms": 1.31,
+      "p50_ms": 1.31,
+      "count": 1,
+      "p95_ms": 1.31
+    },
+    "GET /assets/circle-check-big-C3q4mTUw.js": {
+      "p99_ms": 42.98,
+      "p50_ms": 1.04,
+      "count": 2,
+      "p95_ms": 42.98
+    },
+    "GET /assets/arrow-right-BGn94h8y.js": {
+      "p99_ms": 3.75,
+      "p50_ms": 3.75,
+      "count": 1,
+      "p95_ms": 3.75
+    },
+    "GET /assets/agent-activity-h_1vAehm.js": {
+      "p99_ms": 3.76,
+      "p50_ms": 1.65,
+      "count": 2,
+      "p95_ms": 3.76
+    },
+    "GET /api/drift": {
+      "p99_ms": 3.0,
+      "p50_ms": 1.11,
+      "count": 29,
+      "p95_ms": 2.0
+    },
+    "GET /assets/circle-x-B2PVM4D1.js": {
+      "p99_ms": 4.62,
+      "p50_ms": 2.8,
+      "count": 6,
+      "p95_ms": 4.62
+    },
+    "GET /assets/use-artifacts-C5T2qTc0.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/metric-card-CwY7Eatl.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/agents-page-B46vMsY2.js": {
+      "p99_ms": 0.91,
+      "p50_ms": 0.91,
+      "count": 1,
+      "p95_ms": 0.91
+    },
+    "GET /assets/cockpit-dashboard-page-Df-F6wtr.js": {
+      "p99_ms": 1.92,
+      "p50_ms": 1.87,
+      "count": 3,
+      "p95_ms": 1.92
+    },
+    "GET /assets/play-BKsvIq6G.js": {
+      "p99_ms": 1.26,
+      "p50_ms": 1.26,
+      "count": 1,
+      "p95_ms": 1.26
+    },
+    "GET /assets/clock-BGoafgt3.js": {
+      "p99_ms": 4.93,
+      "p50_ms": 3.3,
+      "count": 4,
+      "p95_ms": 4.93
+    },
+    "GET /assets/use-questionnaires-B3KlLbCc.js": {
+      "p99_ms": 2.06,
+      "p50_ms": 1.25,
+      "count": 2,
+      "p95_ms": 2.06
+    },
+    "GET /assets/commands-page-Bozgf2Wo.js": {
+      "p99_ms": 2.19,
+      "p50_ms": 2.19,
+      "count": 1,
+      "p95_ms": 2.19
+    },
+    "GET /assets/metrics-page-ClHzdPOs.js": {
+      "p99_ms": 1.78,
+      "p50_ms": 1.78,
+      "count": 1,
+      "p95_ms": 1.78
+    },
+    "GET /assets/agent-activity-B-G98fUz.js": {
+      "p99_ms": 3.71,
+      "p50_ms": 3.71,
+      "count": 1,
+      "p95_ms": 3.71
+    },
+    "GET /assets/progress-DrGNoNMe.js": {
+      "p99_ms": 2.71,
+      "p50_ms": 0.35,
+      "count": 2,
+      "p95_ms": 2.71
+    },
+    "GET /assets/shield-alert-B4FOmQDs.js": {
+      "p99_ms": 0.89,
+      "p50_ms": 0.89,
+      "count": 1,
+      "p95_ms": 0.89
+    },
+    "GET /assets/refresh-cw-BIkf7PrI.js": {
+      "p99_ms": 4.26,
+      "p50_ms": 2.62,
+      "count": 7,
+      "p95_ms": 4.26
+    },
+    "GET /assets/index-DmZuTTnl.js": {
+      "p99_ms": 6.25,
+      "p50_ms": 5.6,
+      "count": 3,
+      "p95_ms": 6.25
+    },
+    "GET /assets/circle-LkBySCH7.js": {
+      "p99_ms": 3.71,
+      "p50_ms": 2.38,
+      "count": 2,
+      "p95_ms": 3.71
+    },
+    "GET /assets/zap-BFJVTHDP.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/clock-CqIAgXUh.js": {
+      "p99_ms": 1.43,
+      "p50_ms": 1.1,
+      "count": 4,
+      "p95_ms": 1.43
+    },
+    "GET /assets/play-DdEOSPy5.js": {
+      "p99_ms": 0.83,
+      "p50_ms": 0.83,
+      "count": 1,
+      "p95_ms": 0.83
+    },
+    "GET /assets/use-questionnaires-DaznVnJR.js": {
+      "p99_ms": 3.45,
+      "p50_ms": 2.16,
+      "count": 2,
+      "p95_ms": 3.45
+    },
+    "GET /assets/data-table-B1XdeWi7.js": {
+      "p99_ms": 1.27,
+      "p50_ms": 1.27,
+      "count": 1,
+      "p95_ms": 1.27
+    },
+    "GET /assets/decisions-page-CNRx00B_.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/agent-activity-Bfi_tdVB.js": {
+      "p99_ms": 2.77,
+      "p50_ms": 2.77,
+      "count": 1,
+      "p95_ms": 2.77
+    },
+    "GET /assets/shield-alert-pBCvV7Om.js": {
+      "p99_ms": 1.39,
+      "p50_ms": 1.39,
+      "count": 1,
+      "p95_ms": 1.39
+    },
+    "GET /assets/file-text-P3z2eR2I.js": {
+      "p99_ms": 1.02,
+      "p50_ms": 0.89,
+      "count": 2,
+      "p95_ms": 1.02
+    },
+    "GET /assets/circle-x-jZZsD5xh.js": {
+      "p99_ms": 5.14,
+      "p50_ms": 1.68,
+      "count": 2,
+      "p95_ms": 5.14
+    },
+    "GET /assets/decisions-page-BtFEfldm.js": {
+      "p99_ms": 1.51,
+      "p50_ms": 1.35,
+      "count": 2,
+      "p95_ms": 1.51
+    },
+    "GET /assets/circle-check-big-DjKd7r-k.js": {
+      "p99_ms": 5.11,
+      "p50_ms": 2.26,
+      "count": 4,
+      "p95_ms": 5.11
+    },
+    "GET /assets/use-decisions-zAjpifge.js": {
+      "p99_ms": 4.74,
+      "p50_ms": 1.83,
+      "count": 4,
+      "p95_ms": 4.74
+    },
+    "GET /assets/shield-alert-DZ9YgHA9.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/chevron-right-DwndrNyl.js.map": {
+      "p99_ms": 1.87,
+      "p50_ms": 1.87,
+      "count": 1,
+      "p95_ms": 1.87
+    },
+    "GET /assets/shield-check-Dgmkkyqo.js.map": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/play-Bd-BlcS7.js": {
+      "p99_ms": 2.07,
+      "p50_ms": 2.07,
+      "count": 1,
+      "p95_ms": 2.07
+    },
+    "GET /assets/metric-card-C49KVusM.js": {
+      "p99_ms": 4.69,
+      "p50_ms": 1.38,
+      "count": 7,
+      "p95_ms": 4.69
+    },
+    "GET /assets/modal-dialog-DuYtrWM1.js": {
+      "p99_ms": 13.47,
+      "p50_ms": 4.73,
+      "count": 3,
+      "p95_ms": 13.47
+    },
+    "GET /assets/use-cockpit-DZfyWIJU.js": {
+      "p99_ms": 1.05,
+      "p50_ms": 1.05,
+      "count": 1,
+      "p95_ms": 1.05
+    },
+    "GET /assets/arrow-right-Cc7yZvfS.js": {
+      "p99_ms": 2.27,
+      "p50_ms": 1.72,
+      "count": 6,
+      "p95_ms": 2.27
+    },
+    "GET /assets/governance-dashboard-page-NQ3jTjuC.js": {
+      "p99_ms": 2.18,
+      "p50_ms": 1.78,
+      "count": 2,
+      "p95_ms": 2.18
+    },
+    "GET /assets/alert-banner-CHBO4n-E.js": {
+      "p99_ms": 5.43,
+      "p50_ms": 2.65,
+      "count": 6,
+      "p95_ms": 5.43
+    },
+    "GET /assets/traceability-explorer-page-DDWtcEFI.js": {
+      "p99_ms": 1.14,
+      "p50_ms": 1.14,
+      "count": 1,
+      "p95_ms": 1.14
+    },
+    "GET /assets/governance-dashboard-page-CkR64YWB.js.map": {
+      "p99_ms": 2.5,
+      "p50_ms": 1.06,
+      "count": 2,
+      "p95_ms": 2.5
+    },
+    "GET /assets/data-table-CUyj0Wvf.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/clock-CKTIP6KH.js": {
+      "p99_ms": 4.76,
+      "p50_ms": 4.76,
+      "count": 1,
+      "p95_ms": 4.76
+    },
+    "GET /assets/trending-up-BLLqd8Zq.js": {
+      "p99_ms": 3.0,
+      "p50_ms": 1.95,
+      "count": 5,
+      "p95_ms": 3.0
+    },
+    "GET /assets/trending-up-Dk9QQ5Cu.js": {
+      "p99_ms": 2.74,
+      "p50_ms": 1.44,
+      "count": 4,
+      "p95_ms": 2.74
+    },
+    "GET /assets/use-decisions-BwM7Pyev.js": {
+      "p99_ms": 2.45,
+      "p50_ms": 2.13,
+      "count": 2,
+      "p95_ms": 2.45
+    },
+    "GET /assets/pencil-BwmEinHr.js": {
+      "p99_ms": 1.38,
+      "p50_ms": 1.38,
+      "count": 1,
+      "p95_ms": 1.38
+    },
+    "GET /assets/agent-activity-BdI741TA.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /docs/static/favicon-16x16.png": {
+      "p99_ms": 6.95,
+      "p50_ms": 1.42,
+      "count": 3,
+      "p95_ms": 6.95
+    },
+    "GET /api/v1/cockpit/provenance?actor_type=machine&page=1&page_size=20": {
+      "p99_ms": 26.0,
+      "p50_ms": 24.69,
+      "count": 4,
+      "p95_ms": 26.0
+    },
+    "GET /assets/overview-page-9kYs-xLk.js": {
+      "p99_ms": 6.58,
+      "p50_ms": 1.44,
+      "count": 8,
+      "p95_ms": 6.58
+    },
+    "GET /assets/alert-banner-BW3VwmV3.js": {
+      "p99_ms": 3.99,
+      "p50_ms": 3.46,
+      "count": 2,
+      "p95_ms": 3.99
+    },
+    "GET /assets/card-DVbnWWRK.js.map": {
+      "p99_ms": 2.44,
+      "p50_ms": 1.99,
+      "count": 2,
+      "p95_ms": 2.44
+    },
+    "GET /assets/policy-compliance-panel-C0p8zENf.js": {
+      "p99_ms": 1.79,
+      "p50_ms": 1.79,
+      "count": 1,
+      "p95_ms": 1.79
+    },
+    "GET /assets/circle-check-big-DrLSi1Xt.js.map": {
+      "p99_ms": 2.32,
+      "p50_ms": 2.28,
+      "count": 2,
+      "p95_ms": 2.32
+    },
+    "GET /assets/governance-dashboard-page-BkG0Ju4d.js": {
+      "p99_ms": 1.15,
+      "p50_ms": 0.63,
+      "count": 2,
+      "p95_ms": 1.15
+    },
+    "GET /assets/cockpit-dashboard-page-DB_Ldile.js": {
+      "p99_ms": 1.82,
+      "p50_ms": 1.82,
+      "count": 1,
+      "p95_ms": 1.82
+    },
+    "GET /assets/observability-page-hrOVDVRr.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/control-signal-vxfVkaoy.js": {
+      "p99_ms": 4.5,
+      "p50_ms": 2.46,
+      "count": 3,
+      "p95_ms": 4.5
+    },
+    "GET /api/v1/cockpit/provenance?actor_type=human&page=1&page_size=20": {
+      "p99_ms": 23.35,
+      "p50_ms": 23.35,
+      "count": 1,
+      "p95_ms": 23.35
+    },
+    "GET /assets/alert-banner-BKdfDXw1.js": {
+      "p99_ms": 4.68,
+      "p50_ms": 2.55,
+      "count": 2,
+      "p95_ms": 4.68
+    },
+    "GET /assets/use-progress-De-mHFiv.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/status-motif-DUiKFllB.js": {
+      "p99_ms": 3.01,
+      "p50_ms": 2.75,
+      "count": 3,
+      "p95_ms": 3.01
+    },
+    "GET /assets/data-table-CXMVDthr.js": {
+      "p99_ms": 6.1,
+      "p50_ms": 3.7,
+      "count": 2,
+      "p95_ms": 6.1
+    },
+    "GET /assets/zap-BD8Qbd2q.js": {
+      "p99_ms": 2.51,
+      "p50_ms": 1.29,
+      "count": 5,
+      "p95_ms": 2.51
+    },
+    "GET /assets/index-D0bdPRFM.js": {
+      "p99_ms": 0.82,
+      "p50_ms": 0.82,
+      "count": 1,
+      "p95_ms": 0.82
+    },
+    "GET /assets/use-progress-Y9C_oPVW.js": {
+      "p99_ms": 2.47,
+      "p50_ms": 0.9,
+      "count": 2,
+      "p95_ms": 2.47
+    },
+    "GET /assets/modal-dialog-DsGAYZN7.js": {
+      "p99_ms": 1.18,
+      "p50_ms": 1.18,
+      "count": 1,
+      "p95_ms": 1.18
+    },
+    "GET /assets/sessions-page-CwmloNIO.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/funnel-BOljUn0l.js": {
+      "p99_ms": 2.91,
+      "p50_ms": 1.49,
+      "count": 6,
+      "p95_ms": 2.91
+    },
+    "GET /assets/overview-page-DgmVGfWb.js": {
+      "p99_ms": 3.48,
+      "p50_ms": 2.47,
+      "count": 2,
+      "p95_ms": 3.48
+    },
+    "GET /assets/trending-up-sBUl5xVa.js": {
+      "p99_ms": 2.76,
+      "p50_ms": 2.76,
+      "count": 1,
+      "p95_ms": 2.76
+    },
+    "GET /assets/index-BXy2Szdi.js": {
+      "p99_ms": 80.0,
+      "p50_ms": 3.0,
+      "count": 2,
+      "p95_ms": 80.0
+    },
+    "GET /assets/chevron-right-2x1y6JAt.js": {
+      "p99_ms": 2.01,
+      "p50_ms": 1.18,
+      "count": 2,
+      "p95_ms": 2.01
+    },
+    "GET /assets/input-field-DL6bJ6HC.js": {
+      "p99_ms": 1.5,
+      "p50_ms": 0.95,
+      "count": 2,
+      "p95_ms": 1.5
+    },
+    "GET /assets/funnel-CN7kHSx6.js": {
+      "p99_ms": 3.76,
+      "p50_ms": 3.76,
+      "count": 1,
+      "p95_ms": 3.76
+    },
+    "GET /assets/typography-BXAgtFsI.js": {
+      "p99_ms": 5.24,
+      "p50_ms": 0.54,
+      "count": 2,
+      "p95_ms": 5.24
+    },
+    "GET /assets/governance-dashboard-page-N9k4FOkc.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-artifacts-Dbw5ZLW3.js": {
+      "p99_ms": 2.45,
+      "p50_ms": 2.45,
+      "count": 1,
+      "p95_ms": 2.45
+    },
+    "GET /api/v1/analytics/agents": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.44,
+      "count": 23,
+      "p95_ms": 1.0
+    },
+    "GET /assets/typography-D7UPaNnW.js": {
+      "p99_ms": 6.33,
+      "p50_ms": 2.06,
+      "count": 6,
+      "p95_ms": 6.33
+    },
+    "GET /assets/index-DDEACCm_.css": {
+      "p99_ms": 4.23,
+      "p50_ms": 1.59,
+      "count": 5,
+      "p95_ms": 4.23
+    },
+    "GET /assets/use-decisions-DD7kz4BA.js": {
+      "p99_ms": 2.42,
+      "p50_ms": 1.84,
+      "count": 2,
+      "p95_ms": 2.42
+    },
+    "GET /assets/circle-jj4A9iWe.js": {
+      "p99_ms": 3.83,
+      "p50_ms": 1.45,
+      "count": 2,
+      "p95_ms": 3.83
+    },
+    "GET /assets/index-DWXkhfnC.css": {
+      "p99_ms": 1.45,
+      "p50_ms": 1.4,
+      "count": 2,
+      "p95_ms": 1.45
+    },
+    "GET /assets/input-field-DwxX2ed3.js": {
+      "p99_ms": 1.73,
+      "p50_ms": 0.77,
+      "count": 2,
+      "p95_ms": 1.73
+    },
+    "GET /assets/funnel-FktcGi2c.js": {
+      "p99_ms": 3.34,
+      "p50_ms": 0.74,
+      "count": 3,
+      "p95_ms": 3.34
+    },
+    "GET /assets/activity-BwEFuk_t.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/data-table-VoXa6klE.js": {
+      "p99_ms": 3.8,
+      "p50_ms": 1.48,
+      "count": 2,
+      "p95_ms": 3.8
+    },
+    "GET /api/v1/cockpit/root-cause": {
+      "p99_ms": 41.63,
+      "p50_ms": 15.52,
+      "count": 89,
+      "p95_ms": 32.63
+    },
+    "GET /assets/observability-page-DwSikV-J.js": {
+      "p99_ms": 1.11,
+      "p50_ms": 1.01,
+      "count": 2,
+      "p95_ms": 1.11
+    },
+    "GET /assets/use-dashboard-B28ahE6P.js": {
+      "p99_ms": 2.96,
+      "p50_ms": 1.94,
+      "count": 3,
+      "p95_ms": 2.96
+    },
+    "GET /assets/trending-up-DR3YTHF3.js": {
+      "p99_ms": 1.9,
+      "p50_ms": 1.43,
+      "count": 2,
+      "p95_ms": 1.9
+    },
+    "GET /api/orchestrator/status": {
+      "p99_ms": 0.92,
+      "p50_ms": 0.25,
+      "count": 3887,
+      "p95_ms": 0.42
+    },
+    "GET /assets/clock-rO6kthOg.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.0,
+      "count": 2,
+      "p95_ms": 1.0
+    },
+    "GET /assets/index-cytMbydb.js": {
+      "p99_ms": 3.0,
+      "p50_ms": 3.0,
+      "count": 1,
+      "p95_ms": 3.0
+    },
+    "GET /assets/shield-check-DTZus6-F.js": {
+      "p99_ms": 19.0,
+      "p50_ms": 1.0,
+      "count": 2,
+      "p95_ms": 19.0
+    },
+    "GET /assets/shield-5S2-Wu1M.js": {
+      "p99_ms": 4.28,
+      "p50_ms": 1.88,
+      "count": 3,
+      "p95_ms": 4.28
+    },
+    "GET /assets/shield-alert-6ys6-LK-.js.map": {
+      "p99_ms": 2.35,
+      "p50_ms": 2.35,
+      "count": 1,
+      "p95_ms": 2.35
+    },
+    "GET /assets/questionnaires-page-DlnZ5guI.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-sessions-CLE6QBQF.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/download-Bt1Js7qj.js": {
+      "p99_ms": 1.03,
+      "p50_ms": 0.77,
+      "count": 2,
+      "p95_ms": 1.03
+    },
+    "GET /assets/arrow-left-DJ3enqlo.js": {
+      "p99_ms": 1.73,
+      "p50_ms": 1.01,
+      "count": 2,
+      "p95_ms": 1.73
+    },
+    "GET /assets/approval-workflow-9teoQm57.js": {
+      "p99_ms": 2.04,
+      "p50_ms": 1.82,
+      "count": 3,
+      "p95_ms": 2.04
+    },
+    "GET /assets/modal-dialog-DgQScwlE.js": {
+      "p99_ms": 1.47,
+      "p50_ms": 1.47,
+      "count": 1,
+      "p95_ms": 1.47
+    },
+    "GET /assets/overview-page-D-7WXa9O.js": {
+      "p99_ms": 3.21,
+      "p50_ms": 3.21,
+      "count": 1,
+      "p95_ms": 3.21
+    },
+    "GET /assets/data-table-BCIbLYaw.js": {
+      "p99_ms": 14.56,
+      "p50_ms": 5.78,
+      "count": 7,
+      "p95_ms": 14.56
+    },
+    "GET /assets/progress-0AzpqKNE.js": {
+      "p99_ms": 3.45,
+      "p50_ms": 1.81,
+      "count": 6,
+      "p95_ms": 3.45
+    },
+    "GET /assets/cockpit-dashboard-page-0j35OdMS.js": {
+      "p99_ms": 1.15,
+      "p50_ms": 1.15,
+      "count": 1,
+      "p95_ms": 1.15
+    },
+    "GET /assets/decisions-page-CRsMrvas.js": {
+      "p99_ms": 2.97,
+      "p50_ms": 2.97,
+      "count": 1,
+      "p95_ms": 2.97
+    },
+    "GET /assets/agent-activity-DHQ1nKKc.js": {
+      "p99_ms": 3.92,
+      "p50_ms": 3.92,
+      "count": 1,
+      "p95_ms": 3.92
+    },
+    "GET /assets/circle-x5Yh0P-h.js": {
+      "p99_ms": 4.53,
+      "p50_ms": 1.7,
+      "count": 10,
+      "p95_ms": 4.53
+    },
+    "GET /assets/health-card-Ci1GlsrR.js": {
+      "p99_ms": 7.06,
+      "p50_ms": 7.06,
+      "count": 1,
+      "p95_ms": 7.06
+    },
+    "GET /assets/use-cockpit-CZabwqe4.js": {
+      "p99_ms": 3.11,
+      "p50_ms": 3.1,
+      "count": 3,
+      "p95_ms": 3.11
+    },
+    "GET /assets/dashboard-page-CxGdPNB9.js.map": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/refresh-cw-tvj7z3cO.js": {
+      "p99_ms": 3.88,
+      "p50_ms": 2.07,
+      "count": 3,
+      "p95_ms": 3.88
+    },
+    "GET /assets/modal-dialog-DmLgFcsY.js.map": {
+      "p99_ms": 5.11,
+      "p50_ms": 5.11,
+      "count": 1,
+      "p95_ms": 5.11
+    },
+    "GET /assets/card-DWP4UQeL.js": {
+      "p99_ms": 4.04,
+      "p50_ms": 2.66,
+      "count": 3,
+      "p95_ms": 4.04
+    },
+    "GET /assets/input-field-CidVdVAE.js": {
+      "p99_ms": 1.5,
+      "p50_ms": 1.5,
+      "count": 1,
+      "p95_ms": 1.5
+    },
+    "GET /assets/explainability-panel-BIa_WODj.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /favicon.ico": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/input-field-CZarQo4v.js": {
+      "p99_ms": 4.27,
+      "p50_ms": 4.27,
+      "count": 1,
+      "p95_ms": 4.27
+    },
+    "GET /assets/use-dashboard-gwTxLg02.js": {
+      "p99_ms": 1.42,
+      "p50_ms": 1.14,
+      "count": 2,
+      "p95_ms": 1.42
+    },
+    "GET /assets/download-DlZrkv_p.js": {
+      "p99_ms": 1.7,
+      "p50_ms": 1.24,
+      "count": 3,
+      "p95_ms": 1.7
+    },
+    "GET /assets/use-progress-Bfk_VSRS.js": {
+      "p99_ms": 2.63,
+      "p50_ms": 1.16,
+      "count": 4,
+      "p95_ms": 2.63
+    },
+    "GET /assets/use-governance-BGv2NTqF.js": {
+      "p99_ms": 3.49,
+      "p50_ms": 2.45,
+      "count": 3,
+      "p95_ms": 3.49
+    },
+    "GET /assets/metrics-page-C42lWZ1_.js": {
+      "p99_ms": 2.05,
+      "p50_ms": 2.05,
+      "count": 1,
+      "p95_ms": 2.05
+    },
+    "GET /assets/input-field-C0QUuWFi.js": {
+      "p99_ms": 2.09,
+      "p50_ms": 2.09,
+      "count": 1,
+      "p95_ms": 2.09
+    },
+    "GET /api/progress": {
+      "p99_ms": 8.0,
+      "p50_ms": 0.45,
+      "count": 601,
+      "p95_ms": 1.18
+    },
+    "GET /assets/metric-card-ufDrk6aN.js.map": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/file-text-ObRQEMXa.js": {
+      "p99_ms": 1.14,
+      "p50_ms": 1.14,
+      "count": 1,
+      "p95_ms": 1.14
+    },
+    "GET /assets/users-C6K8e3NJ.js": {
+      "p99_ms": 1.21,
+      "p50_ms": 1.21,
+      "count": 1,
+      "p95_ms": 1.21
+    },
+    "GET /assets/sessions-page-CYkaMeSx.js": {
+      "p99_ms": 1.99,
+      "p50_ms": 1.99,
+      "count": 1,
+      "p95_ms": 1.99
+    },
+    "GET /assets/observability-page-CgzXx1mz.js": {
+      "p99_ms": 1.49,
+      "p50_ms": 1.27,
+      "count": 3,
+      "p95_ms": 1.49
+    },
+    "GET /assets/input-field-D0jVfexf.js": {
+      "p99_ms": 1.74,
+      "p50_ms": 1.6,
+      "count": 3,
+      "p95_ms": 1.74
+    },
+    "GET /assets/circle-x-ClTic-Vv.js": {
+      "p99_ms": 2.95,
+      "p50_ms": 2.95,
+      "count": 1,
+      "p95_ms": 2.95
+    },
+    "GET /assets/metric-card-DT0zK-OU.js.map": {
+      "p99_ms": 1.97,
+      "p50_ms": 1.13,
+      "count": 2,
+      "p95_ms": 1.97
+    },
+    "GET /assets/arrow-right-BTzrP-Cd.js": {
+      "p99_ms": 1.75,
+      "p50_ms": 1.6,
+      "count": 2,
+      "p95_ms": 1.75
+    },
+    "GET /assets/explainability-panel-BYmDEB2q.js": {
+      "p99_ms": 0.85,
+      "p50_ms": 0.85,
+      "count": 1,
+      "p95_ms": 0.85
+    },
+    "GET /assets/typography-QMKU27gP.js": {
+      "p99_ms": 2.66,
+      "p50_ms": 2.66,
+      "count": 1,
+      "p95_ms": 2.66
+    },
+    "GET /assets/zap-CIOiWW5W.js": {
+      "p99_ms": 0.99,
+      "p50_ms": 0.99,
+      "count": 1,
+      "p95_ms": 0.99
+    },
+    "GET /assets/typography-DvHPKO2X.js": {
+      "p99_ms": 4.72,
+      "p50_ms": 2.36,
+      "count": 2,
+      "p95_ms": 4.72
+    },
+    "GET /assets/alert-banner-BOxdVpki.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/circle-x-gS03FeOo.js": {
+      "p99_ms": 3.18,
+      "p50_ms": 2.1,
+      "count": 4,
+      "p95_ms": 3.18
+    },
+    "GET /assets/refresh-cw-CpuR1eEY.js": {
+      "p99_ms": 3.77,
+      "p50_ms": 3.29,
+      "count": 3,
+      "p95_ms": 3.77
+    },
+    "GET /assets/explainability-panel-BD07LG7p.js": {
+      "p99_ms": 2.22,
+      "p50_ms": 1.0,
+      "count": 3,
+      "p95_ms": 2.22
+    },
+    "GET /assets/use-analytics-DBEbdaQQ.js": {
+      "p99_ms": 2.54,
+      "p50_ms": 2.54,
+      "count": 1,
+      "p95_ms": 2.54
+    },
+    "GET /assets/approval-workflow-DgK6eI5v.js": {
+      "p99_ms": 3.0,
+      "p50_ms": 3.0,
+      "count": 1,
+      "p95_ms": 3.0
+    },
+    "GET /assets/play-BVAbFwt2.js": {
+      "p99_ms": 1.71,
+      "p50_ms": 0.94,
+      "count": 8,
+      "p95_ms": 1.71
+    },
+    "GET /assets/status-motif-BQ2Bkzq8.js": {
+      "p99_ms": 4.79,
+      "p50_ms": 4.79,
+      "count": 1,
+      "p95_ms": 4.79
+    },
+    "GET /assets/policy-compliance-panel-Ch69mWbS.js": {
+      "p99_ms": 2.1,
+      "p50_ms": 1.64,
+      "count": 4,
+      "p95_ms": 2.1
+    },
+    "GET /assets/index-vnxFJwWN.js": {
+      "p99_ms": 4.52,
+      "p50_ms": 1.1,
+      "count": 2,
+      "p95_ms": 4.52
+    },
+    "GET /assets/data-table-CX2smjqO.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/pause-C1sC1ag_.js": {
+      "p99_ms": 4.2,
+      "p50_ms": 4.2,
+      "count": 1,
+      "p95_ms": 4.2
+    },
+    "GET /assets/decisions-page-D4PPjNjw.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/play-4jV-l87I.js": {
+      "p99_ms": 1.6,
+      "p50_ms": 0.82,
+      "count": 2,
+      "p95_ms": 1.6
+    },
+    "GET /assets/use-questionnaires-C7jk2OCG.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/overview-page-CCt1CpTR.js": {
+      "p99_ms": 5.69,
+      "p50_ms": 2.08,
+      "count": 6,
+      "p95_ms": 5.69
+    },
+    "GET /assets/use-analytics-BhscW45L.js": {
+      "p99_ms": 1.49,
+      "p50_ms": 1.49,
+      "count": 1,
+      "p95_ms": 1.49
+    },
+    "GET /assets/card-ClPq4xBv.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/zap-BteA5yR1.js": {
+      "p99_ms": 2.76,
+      "p50_ms": 2.76,
+      "count": 1,
+      "p95_ms": 2.76
+    },
+    "GET /assets/chevron-right-BJLRa9hv.js": {
+      "p99_ms": 1.22,
+      "p50_ms": 1.22,
+      "count": 1,
+      "p95_ms": 1.22
+    },
+    "GET /assets/arrow-left-BEw0C5eu.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-cockpit-Dft5hNwr.js": {
+      "p99_ms": 2.32,
+      "p50_ms": 2.32,
+      "count": 1,
+      "p95_ms": 2.32
+    },
+    "GET /assets/artifact-browser-page-CNEhxHsR.js": {
+      "p99_ms": 1.74,
+      "p50_ms": 1.74,
+      "count": 1,
+      "p95_ms": 1.74
+    },
+    "GET /assets/file-text-B7dB8rWB.js": {
+      "p99_ms": 2.03,
+      "p50_ms": 2.03,
+      "count": 1,
+      "p95_ms": 2.03
+    },
+    "GET /assets/modal-dialog-DiGe9i3e.js": {
+      "p99_ms": 1.67,
+      "p50_ms": 1.67,
+      "count": 1,
+      "p95_ms": 1.67
+    },
+    "GET /assets/use-governance-g6cNVane.js": {
+      "p99_ms": 2.02,
+      "p50_ms": 1.73,
+      "count": 2,
+      "p95_ms": 2.02
+    },
+    "GET /assets/overview-page-Bd8Rotbn.js": {
+      "p99_ms": 6.85,
+      "p50_ms": 6.85,
+      "count": 1,
+      "p95_ms": 6.85
+    },
+    "GET /assets/use-agents-DNsl79wT.js": {
+      "p99_ms": 3.08,
+      "p50_ms": 3.08,
+      "count": 1,
+      "p95_ms": 3.08
+    },
+    "GET /assets/index-sKjkUktD.js": {
+      "p99_ms": 3.0,
+      "p50_ms": 3.0,
+      "count": 1,
+      "p95_ms": 3.0
+    },
+    "GET /assets/typography-CgjUNNJD.js": {
+      "p99_ms": 4.07,
+      "p50_ms": 1.34,
+      "count": 2,
+      "p95_ms": 4.07
+    },
+    "GET /assets/clock-GK59i6yI.js": {
+      "p99_ms": 2.23,
+      "p50_ms": 2.23,
+      "count": 1,
+      "p95_ms": 2.23
+    },
+    "GET /assets/play-DfjJv25_.js": {
+      "p99_ms": 1.95,
+      "p50_ms": 1.14,
+      "count": 4,
+      "p95_ms": 1.95
+    },
+    "GET /assets/circle-x-C5N27BEg.js": {
+      "p99_ms": 3.95,
+      "p50_ms": 2.47,
+      "count": 3,
+      "p95_ms": 3.95
+    },
+    "GET /assets/circle-BkKCw39a.js": {
+      "p99_ms": 1.77,
+      "p50_ms": 1.77,
+      "count": 1,
+      "p95_ms": 1.77
+    },
+    "GET /.well-known/appspecific/com.chrome.devtools.json": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.27,
+      "count": 5,
+      "p95_ms": 1.0
+    },
+    "GET /assets/typography-C84SB7Qb.js": {
+      "p99_ms": 3.13,
+      "p50_ms": 2.13,
+      "count": 2,
+      "p95_ms": 3.13
+    },
+    "GET /assets/arrow-right-B6VFGahZ.js": {
+      "p99_ms": 4.17,
+      "p50_ms": 3.03,
+      "count": 3,
+      "p95_ms": 4.17
+    },
+    "GET /assets/pipeline-page-xOjOcwy9.js": {
+      "p99_ms": 1.73,
+      "p50_ms": 1.73,
+      "count": 1,
+      "p95_ms": 1.73
+    },
+    "GET /assets/decisions-page-C54T6eib.js": {
+      "p99_ms": 1.46,
+      "p50_ms": 1.46,
+      "count": 1,
+      "p95_ms": 1.46
+    },
+    "GET /assets/use-progress-D88qd13F.js": {
+      "p99_ms": 2.56,
+      "p50_ms": 1.25,
+      "count": 4,
+      "p95_ms": 2.56
+    },
+    "GET /assets/use-decisions-CisYYQOr.js": {
+      "p99_ms": 2.31,
+      "p50_ms": 2.31,
+      "count": 1,
+      "p95_ms": 2.31
+    },
+    "GET /assets/control-signal-BKPIJd35.js": {
+      "p99_ms": 4.89,
+      "p50_ms": 4.89,
+      "count": 1,
+      "p95_ms": 4.89
+    },
+    "GET /assets/chevron-right-DwndrNyl.js": {
+      "p99_ms": 4.09,
+      "p50_ms": 1.6,
+      "count": 3,
+      "p95_ms": 4.09
+    },
+    "GET /assets/index-CKXLgrv3.css": {
+      "p99_ms": 1.68,
+      "p50_ms": 1.24,
+      "count": 6,
+      "p95_ms": 1.68
+    },
+    "GET /assets/data-table-DgK9CD8m.js": {
+      "p99_ms": 8.95,
+      "p50_ms": 3.35,
+      "count": 3,
+      "p95_ms": 8.95
+    },
+    "GET /assets/pause-DU0y6oAW.js": {
+      "p99_ms": 3.74,
+      "p50_ms": 3.74,
+      "count": 1,
+      "p95_ms": 3.74
+    },
+    "GET /assets/index-D4jpIo8k.css": {
+      "p99_ms": 5.01,
+      "p50_ms": 1.99,
+      "count": 19,
+      "p95_ms": 5.01
+    },
+    "GET /api/dashboard/activity": {
+      "p99_ms": 10.0,
+      "p50_ms": 2.0,
+      "count": 37,
+      "p95_ms": 9.0
+    },
+    "GET /assets/zap-AODtrGFi.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 5,
+      "p95_ms": 1.0
+    },
+    "GET /api/command": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.34,
+      "count": 515,
+      "p95_ms": 1.0
+    },
+    "GET /assets/clock-D165Rqp8.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/typography-CKCeQGxL.js": {
+      "p99_ms": 4.15,
+      "p50_ms": 2.29,
+      "count": 7,
+      "p95_ms": 4.15
+    },
+    "GET /api/auth/me": {
+      "p99_ms": 4.43,
+      "p50_ms": 0.26,
+      "count": 129,
+      "p95_ms": 0.65
+    },
+    "GET /assets/data-table-BARwQzdc.js": {
+      "p99_ms": 11.2,
+      "p50_ms": 5.44,
+      "count": 2,
+      "p95_ms": 11.2
+    },
+    "GET /assets/pipeline-page-DSfvIl4Z.js": {
+      "p99_ms": 1.17,
+      "p50_ms": 1.17,
+      "count": 1,
+      "p95_ms": 1.17
+    },
+    "GET /assets/agent-activity-jj4nyUov.js": {
+      "p99_ms": 2.14,
+      "p50_ms": 1.14,
+      "count": 2,
+      "p95_ms": 2.14
+    },
+    "GET /assets/arrow-right-DeB6sR_R.js": {
+      "p99_ms": 1.9,
+      "p50_ms": 1.55,
+      "count": 2,
+      "p95_ms": 1.9
+    },
+    "GET /assets/health-card-CGRrxZyU.js": {
+      "p99_ms": 2.87,
+      "p50_ms": 2.87,
+      "count": 1,
+      "p95_ms": 2.87
+    },
+    "GET /assets/circle-x-CjPpgaFf.js": {
+      "p99_ms": 4.11,
+      "p50_ms": 4.11,
+      "count": 1,
+      "p95_ms": 4.11
+    },
+    "GET /assets/funnel-BZ9g-PCK.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/explainability-panel-GzSNq63x.js": {
+      "p99_ms": 0.91,
+      "p50_ms": 0.91,
+      "count": 1,
+      "p95_ms": 0.91
+    },
+    "GET /assets/observability-page-NOmOBPNY.js": {
+      "p99_ms": 1.74,
+      "p50_ms": 1.37,
+      "count": 2,
+      "p95_ms": 1.74
+    },
+    "GET /assets/agent-activity-VZ8Nlyhf.js": {
+      "p99_ms": 6.53,
+      "p50_ms": 6.53,
+      "count": 1,
+      "p95_ms": 6.53
+    },
+    "GET /assets/use-governance-x8Vwpp92.js": {
+      "p99_ms": 3.31,
+      "p50_ms": 2.21,
+      "count": 10,
+      "p95_ms": 3.31
+    },
+    "GET /assets/analytics-trends-page-CGJphTX0.js": {
+      "p99_ms": 0.68,
+      "p50_ms": 0.68,
+      "count": 1,
+      "p95_ms": 0.68
+    },
+    "GET /assets/sessions-page-nCEzUB_o.js": {
+      "p99_ms": 1.73,
+      "p50_ms": 1.73,
+      "count": 1,
+      "p95_ms": 1.73
+    },
+    "GET /assets/metric-card-CoN-4KEX.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/status-motif-BcZ1SUAJ.js": {
+      "p99_ms": 3.37,
+      "p50_ms": 2.32,
+      "count": 3,
+      "p95_ms": 3.37
+    },
+    "GET /assets/use-questionnaires-DAHl59eX.js": {
+      "p99_ms": 2.34,
+      "p50_ms": 2.34,
+      "count": 1,
+      "p95_ms": 2.34
+    },
+    "GET /assets/refresh-cw-Fr35yEMa.js": {
+      "p99_ms": 4.94,
+      "p50_ms": 4.94,
+      "count": 1,
+      "p95_ms": 4.94
+    },
+    "GET /assets/typography-C9JttJwO.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/confidence-indicators-C6C0IRWN.js": {
+      "p99_ms": 1.22,
+      "p50_ms": 1.22,
+      "count": 1,
+      "p95_ms": 1.22
+    },
+    "GET /assets/card-CTuq7xt1.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/pipeline-page-CMC5oLVN.js": {
+      "p99_ms": 18.0,
+      "p50_ms": 1.0,
+      "count": 2,
+      "p95_ms": 18.0
+    },
+    "GET /assets/input-field-Be7ZQPHF.js": {
+      "p99_ms": 11.7,
+      "p50_ms": 2.77,
+      "count": 5,
+      "p95_ms": 11.7
+    },
+    "GET /assets/arrow-left-DSVs7thb.js": {
+      "p99_ms": 1.9,
+      "p50_ms": 1.45,
+      "count": 2,
+      "p95_ms": 1.9
+    },
+    "GET /assets/funnel-DE120y_m.js": {
+      "p99_ms": 3.42,
+      "p50_ms": 3.42,
+      "count": 1,
+      "p95_ms": 3.42
+    },
+    "GET /assets/metrics-page-DTobdyFY.js": {
+      "p99_ms": 1.02,
+      "p50_ms": 0.63,
+      "count": 2,
+      "p95_ms": 1.02
+    },
+    "GET /assets/agents-page-CYoejYzD.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-decisions-GiJv8UN1.js": {
+      "p99_ms": 2.15,
+      "p50_ms": 2.15,
+      "count": 1,
+      "p95_ms": 2.15
+    },
+    "GET /assets/use-progress-BXnC7C7l.js": {
+      "p99_ms": 2.17,
+      "p50_ms": 0.96,
+      "count": 2,
+      "p95_ms": 2.17
+    },
+    "GET /assets/circle-x-D80tMx3W.js": {
+      "p99_ms": 3.61,
+      "p50_ms": 1.78,
+      "count": 6,
+      "p95_ms": 3.61
+    },
+    "GET /assets/sessions-page-DTcJwN0m.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/progress-BNe9P5eg.js": {
+      "p99_ms": 2.01,
+      "p50_ms": 2.01,
+      "count": 1,
+      "p95_ms": 2.01
+    },
+    "GET /assets/circle-x-DY5Rrsx-.js": {
+      "p99_ms": 3.06,
+      "p50_ms": 3.06,
+      "count": 1,
+      "p95_ms": 3.06
+    },
+    "GET /assets/use-progress-BKQ5xGS5.js": {
+      "p99_ms": 6.0,
+      "p50_ms": 2.1,
+      "count": 2,
+      "p95_ms": 6.0
+    },
+    "GET /assets/use-decisions-CkzTpTot.js": {
+      "p99_ms": 2.03,
+      "p50_ms": 1.39,
+      "count": 4,
+      "p95_ms": 2.03
+    },
+    "GET /assets/use-dashboard-DUbELEW-.js": {
+      "p99_ms": 2.77,
+      "p50_ms": 2.77,
+      "count": 1,
+      "p95_ms": 2.77
+    },
+    "GET /assets/use-artifacts-Bgf1DY6S.js": {
+      "p99_ms": 3.31,
+      "p50_ms": 3.31,
+      "count": 1,
+      "p95_ms": 3.31
+    },
+    "GET /assets/use-questionnaires-CcKUnTEE.js": {
+      "p99_ms": 3.68,
+      "p50_ms": 2.58,
+      "count": 6,
+      "p95_ms": 3.68
+    },
+    "GET /api/v1/policies": {
+      "p99_ms": 12.03,
+      "p50_ms": 1.6,
+      "count": 14,
+      "p95_ms": 12.03
+    },
+    "GET /assets/refresh-cw-RijVeLu6.js": {
+      "p99_ms": 4.6,
+      "p50_ms": 4.6,
+      "count": 1,
+      "p95_ms": 4.6
+    },
+    "GET /assets/input-field-B2Na9vtp.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 3,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-agents-B-0yIyAw.js": {
+      "p99_ms": 0.82,
+      "p50_ms": 0.82,
+      "count": 1,
+      "p95_ms": 0.82
+    },
+    "GET /assets/circle-DhUxznHM.js": {
+      "p99_ms": 3.47,
+      "p50_ms": 3.47,
+      "count": 1,
+      "p95_ms": 3.47
+    },
+    "GET /assets/sessions-page-Dwh8NafC.js": {
+      "p99_ms": 1.3,
+      "p50_ms": 1.3,
+      "count": 1,
+      "p95_ms": 1.3
+    },
+    "GET /assets/pipeline-page-SCkmNy3O.js": {
+      "p99_ms": 1.59,
+      "p50_ms": 1.08,
+      "count": 2,
+      "p95_ms": 1.59
+    },
+    "GET /assets/modal-dialog-Dh14fPu1.js": {
+      "p99_ms": 2.52,
+      "p50_ms": 2.52,
+      "count": 1,
+      "p95_ms": 2.52
+    },
+    "GET /assets/confidence-indicators-Bbk6t_MV.js": {
+      "p99_ms": 2.43,
+      "p50_ms": 2.43,
+      "count": 1,
+      "p95_ms": 2.43
+    },
+    "GET /assets/input-field-DORJQxgB.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/alert-banner-n0GeTx9o.js": {
+      "p99_ms": 3.79,
+      "p50_ms": 1.1,
+      "count": 2,
+      "p95_ms": 3.79
+    },
+    "GET /assets/confidence-indicators-CFwlOXmq.js": {
+      "p99_ms": 2.33,
+      "p50_ms": 2.24,
+      "count": 3,
+      "p95_ms": 2.33
+    },
+    "GET /assets/typography-BJy1JdVj.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/shield-alert-O15KV-t1.js": {
+      "p99_ms": 0.86,
+      "p50_ms": 0.86,
+      "count": 1,
+      "p95_ms": 0.86
+    },
+    "GET /assets/metric-card-Bfc86XGA.js": {
+      "p99_ms": 2.54,
+      "p50_ms": 1.93,
+      "count": 5,
+      "p95_ms": 2.54
+    },
+    "GET /assets/control-signal-DASCh1EL.js": {
+      "p99_ms": 3.76,
+      "p50_ms": 3.05,
+      "count": 3,
+      "p95_ms": 3.76
+    },
+    "GET /assets/download-CkuJwghF.js": {
+      "p99_ms": 2.4,
+      "p50_ms": 1.82,
+      "count": 2,
+      "p95_ms": 2.4
+    },
+    "GET /assets/use-governance-BoUZwUYZ.js": {
+      "p99_ms": 4.73,
+      "p50_ms": 3.92,
+      "count": 3,
+      "p95_ms": 4.73
+    },
+    "GET /assets/command-center-page-_8x_McBq.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/pipeline-page-Cs21pfCh.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/pause-CTojEfFP.js": {
+      "p99_ms": 1.72,
+      "p50_ms": 1.03,
+      "count": 2,
+      "p95_ms": 1.72
+    },
+    "GET /observability": {
+      "p99_ms": 0.3,
+      "p50_ms": 0.27,
+      "count": 5,
+      "p95_ms": 0.3
+    },
+    "GET /assets/shield-alert-BUqpuB84.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/progress-sqOIg-Hx.js": {
+      "p99_ms": 1.47,
+      "p50_ms": 1.47,
+      "count": 1,
+      "p95_ms": 1.47
+    },
+    "GET /assets/play-Bd9Fxs-1.js": {
+      "p99_ms": 0.83,
+      "p50_ms": 0.83,
+      "count": 1,
+      "p95_ms": 0.83
+    },
+    "GET /assets/progress-CSAQcJr9.js": {
+      "p99_ms": 4.84,
+      "p50_ms": 2.13,
+      "count": 3,
+      "p95_ms": 4.84
+    },
+    "GET /assets/dashboard-page-CxGdPNB9.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 5,
+      "p95_ms": 1.0
+    },
+    "GET /assets/index-DJlJfFe5.css": {
+      "p99_ms": 2.36,
+      "p50_ms": 1.46,
+      "count": 3,
+      "p95_ms": 2.36
+    },
+    "GET /assets/clock-Bk2ya6nJ.js": {
+      "p99_ms": 2.77,
+      "p50_ms": 0.99,
+      "count": 8,
+      "p95_ms": 2.77
+    },
+    "GET /assets/approval-workflow-CXPh-0Hc.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/modal-dialog-CxT0lXI_.js": {
+      "p99_ms": 2.43,
+      "p50_ms": 2.43,
+      "count": 1,
+      "p95_ms": 2.43
+    },
+    "GET /assets/governance-dashboard-page-iBCq8dIY.js": {
+      "p99_ms": 1.97,
+      "p50_ms": 0.81,
+      "count": 2,
+      "p95_ms": 1.97
+    },
+    "GET /assets/use-dashboard-CH35H-tU.js": {
+      "p99_ms": 43.49,
+      "p50_ms": 1.93,
+      "count": 2,
+      "p95_ms": 43.49
+    },
+    "GET /assets/shield-alert-B35OvHdM.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-analytics-DfsqeiOs.js": {
+      "p99_ms": 0.9,
+      "p50_ms": 0.87,
+      "count": 2,
+      "p95_ms": 0.9
+    },
+    "GET /assets/file-text-D9i97ocN.js": {
+      "p99_ms": 1.68,
+      "p50_ms": 0.82,
+      "count": 2,
+      "p95_ms": 1.68
+    },
+    "GET /assets/refresh-cw-BIkf7PrI.js.map": {
+      "p99_ms": 1.82,
+      "p50_ms": 0.87,
+      "count": 2,
+      "p95_ms": 1.82
+    },
+    "GET /docs/static/favicon-32x32.png": {
+      "p99_ms": 7.24,
+      "p50_ms": 1.12,
+      "count": 3,
+      "p95_ms": 7.24
+    },
+    "GET /assets/pencil-B6ZIFnsF.js": {
+      "p99_ms": 3.68,
+      "p50_ms": 1.62,
+      "count": 3,
+      "p95_ms": 3.68
+    },
+    "GET /artifacts": {
+      "p99_ms": 0.81,
+      "p50_ms": 0.53,
+      "count": 7,
+      "p95_ms": 0.81
+    },
+    "GET /assets/use-sessions-D-ekuPar.js": {
+      "p99_ms": 1.77,
+      "p50_ms": 1.47,
+      "count": 2,
+      "p95_ms": 1.77
+    },
+    "GET /assets/circle-check-big-D4aGLk0R.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/data-table-B4SKVs7A.js": {
+      "p99_ms": 1.93,
+      "p50_ms": 1.93,
+      "count": 1,
+      "p95_ms": 1.93
+    },
+    "GET /assets/metric-card-DYIo3mfL.js": {
+      "p99_ms": 2.95,
+      "p50_ms": 1.82,
+      "count": 4,
+      "p95_ms": 2.95
+    },
+    "GET /assets/shield-tj-yEkle.js": {
+      "p99_ms": 0.91,
+      "p50_ms": 0.91,
+      "count": 1,
+      "p95_ms": 0.91
+    },
+    "GET /assets/pipeline-page-rN-WCV5p.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/policy-compliance-panel-C0p8zENf.js.map": {
+      "p99_ms": 3.41,
+      "p50_ms": 3.41,
+      "count": 1,
+      "p95_ms": 3.41
+    },
+    "GET /assets/card-C2Np4yYU.js": {
+      "p99_ms": 6.26,
+      "p50_ms": 1.68,
+      "count": 14,
+      "p95_ms": 6.26
+    },
+    "GET /assets/agents-page-cS-hjaS1.js": {
+      "p99_ms": 1.84,
+      "p50_ms": 1.84,
+      "count": 1,
+      "p95_ms": 1.84
+    },
+    "GET /assets/commands-page-DxY6R34t.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/typography-C636avBd.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/index-CQgiibdD.js.map": {
+      "p99_ms": 32.28,
+      "p50_ms": 32.28,
+      "count": 1,
+      "p95_ms": 32.28
+    },
+    "GET /assets/pipeline-page-OCdR-xiS.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/data-table-C0NYfSeK.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/artifact-browser-page-B_Cx3WL2.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/arrow-right-8UOQu_r7.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/card-17tY5JlH.js": {
+      "p99_ms": 5.02,
+      "p50_ms": 3.4,
+      "count": 3,
+      "p95_ms": 5.02
+    },
+    "GET /assets/health-card-CLyqTnzr.js": {
+      "p99_ms": 2.8,
+      "p50_ms": 2.06,
+      "count": 2,
+      "p95_ms": 2.8
+    },
+    "GET /assets/observability-page-VdvyOd07.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-questionnaires-V1GQkxFO.js": {
+      "p99_ms": 1.54,
+      "p50_ms": 1.54,
+      "count": 1,
+      "p95_ms": 1.54
+    },
+    "GET /assets/download-CqZ4s6Cq.js": {
+      "p99_ms": 1.39,
+      "p50_ms": 1.39,
+      "count": 1,
+      "p95_ms": 1.39
+    },
+    "GET /assets/metric-card-B_RNOxbD.js": {
+      "p99_ms": 2.6,
+      "p50_ms": 1.67,
+      "count": 4,
+      "p95_ms": 2.6
+    },
+    "GET /assets/chevron-right-BHjhL90X.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/progress-BFb3iBjw.js": {
+      "p99_ms": 4.14,
+      "p50_ms": 4.14,
+      "count": 1,
+      "p95_ms": 4.14
+    },
+    "GET /assets/pause-DYgvCAzV.js": {
+      "p99_ms": 6.55,
+      "p50_ms": 3.24,
+      "count": 2,
+      "p95_ms": 6.55
+    },
+    "GET /assets/use-governance-yGILyO8C.js": {
+      "p99_ms": 2.45,
+      "p50_ms": 1.45,
+      "count": 2,
+      "p95_ms": 2.45
+    },
+    "GET /assets/agents-page-qY4xEG25.js": {
+      "p99_ms": 0.81,
+      "p50_ms": 0.81,
+      "count": 1,
+      "p95_ms": 0.81
+    },
+    "GET /assets/arrow-left-BP9bTPQ9.js": {
+      "p99_ms": 2.07,
+      "p50_ms": 1.34,
+      "count": 4,
+      "p95_ms": 2.07
+    },
+    "GET /assets/sparkles-CNu2WcaW.js": {
+      "p99_ms": 3.72,
+      "p50_ms": 3.23,
+      "count": 3,
+      "p95_ms": 3.72
+    },
+    "GET /assets/pause-c2V0C_sn.js": {
+      "p99_ms": 5.63,
+      "p50_ms": 2.47,
+      "count": 2,
+      "p95_ms": 5.63
+    },
+    "GET /assets/chevron-right-wytfofrw.js": {
+      "p99_ms": 0.93,
+      "p50_ms": 0.93,
+      "count": 1,
+      "p95_ms": 0.93
+    },
+    "GET /assets/use-analytics-B49VNr01.js": {
+      "p99_ms": 3.4,
+      "p50_ms": 3.4,
+      "count": 1,
+      "p95_ms": 3.4
+    },
+    "GET /api/dashboard/health": {
+      "p99_ms": 11.0,
+      "p50_ms": 1.0,
+      "count": 121,
+      "p95_ms": 2.0
+    },
+    "GET /assets/pause-Cyc2IYDp.js": {
+      "p99_ms": 1.79,
+      "p50_ms": 1.79,
+      "count": 1,
+      "p95_ms": 1.79
+    },
+    "GET /assets/trending-up-0EVR3cdY.js": {
+      "p99_ms": 3.09,
+      "p50_ms": 0.98,
+      "count": 2,
+      "p95_ms": 3.09
+    },
+    "GET /assets/use-progress-PxEHB2L1.js": {
+      "p99_ms": 2.86,
+      "p50_ms": 0.82,
+      "count": 7,
+      "p95_ms": 2.86
+    },
+    "GET /assets/file-text-BAdCU5Sp.js": {
+      "p99_ms": 2.73,
+      "p50_ms": 2.73,
+      "count": 1,
+      "p95_ms": 2.73
+    },
+    "GET /assets/questionnaires-page-DDa6C5_t.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/data-table-DgK9CD8m.js.map": {
+      "p99_ms": 11.61,
+      "p50_ms": 11.61,
+      "count": 1,
+      "p95_ms": 11.61
+    },
+    "GET /assets/zap-N5k6_PtI.js": {
+      "p99_ms": 2.33,
+      "p50_ms": 2.33,
+      "count": 1,
+      "p95_ms": 2.33
+    },
+    "GET /assets/card-DYinISzm.js": {
+      "p99_ms": 6.1,
+      "p50_ms": 2.52,
+      "count": 6,
+      "p95_ms": 6.1
+    },
+    "GET /assets/shield-pNeFs_I_.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/circle-x-DA_NtiMp.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/arrow-right-CUVxCLnS.js.map": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/status-motif-Da0WmQfe.js": {
+      "p99_ms": 5.61,
+      "p50_ms": 5.61,
+      "count": 1,
+      "p95_ms": 5.61
+    },
+    "GET /assets/card-DVbnWWRK.js": {
+      "p99_ms": 10.93,
+      "p50_ms": 2.85,
+      "count": 7,
+      "p95_ms": 10.93
+    },
+    "GET /assets/play-oybUb3rr.js": {
+      "p99_ms": 1.18,
+      "p50_ms": 1.18,
+      "count": 1,
+      "p95_ms": 1.18
+    },
+    "GET /assets/pencil-PBqgmq9z.js": {
+      "p99_ms": 2.48,
+      "p50_ms": 2.48,
+      "count": 1,
+      "p95_ms": 2.48
+    },
+    "GET /assets/command-center-page-Dra0zjeM.js": {
+      "p99_ms": 22.0,
+      "p50_ms": 22.0,
+      "count": 1,
+      "p95_ms": 22.0
+    },
+    "GET /assets/zap-4gn0eYmM.js": {
+      "p99_ms": 2.01,
+      "p50_ms": 1.2,
+      "count": 2,
+      "p95_ms": 2.01
+    },
+    "GET /assets/refresh-cw-2hg0iOSg.js": {
+      "p99_ms": 5.24,
+      "p50_ms": 2.36,
+      "count": 13,
+      "p95_ms": 5.24
+    },
+    "GET /assets/clock-CWGz9Hwu.js": {
+      "p99_ms": 3.95,
+      "p50_ms": 2.77,
+      "count": 3,
+      "p95_ms": 3.95
+    },
+    "GET /assets/shield-alert--m26sZOd.js": {
+      "p99_ms": 2.34,
+      "p50_ms": 2.34,
+      "count": 1,
+      "p95_ms": 2.34
+    },
+    "GET /assets/status-motif-DVa61JMA.js": {
+      "p99_ms": 4.6,
+      "p50_ms": 1.5,
+      "count": 2,
+      "p95_ms": 4.6
+    },
+    "GET /assets/refresh-cw-9jF0CBPl.js.map": {
+      "p99_ms": 2.37,
+      "p50_ms": 2.37,
+      "count": 1,
+      "p95_ms": 2.37
+    },
+    "GET /assets/typography-BF_AwUdx.js": {
+      "p99_ms": 4.08,
+      "p50_ms": 2.58,
+      "count": 3,
+      "p95_ms": 4.08
+    },
+    "GET /assets/dashboard-page-DuivgqLm.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 2,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-dashboard-B7MsxgNm.js": {
+      "p99_ms": 2.85,
+      "p50_ms": 1.39,
+      "count": 2,
+      "p95_ms": 2.85
+    },
+    "GET /assets/use-decisions-C56Smodj.js": {
+      "p99_ms": 1.85,
+      "p50_ms": 1.49,
+      "count": 2,
+      "p95_ms": 1.85
+    },
+    "GET /assets/metric-card-DUwoIGBA.js": {
+      "p99_ms": 1.51,
+      "p50_ms": 0.82,
+      "count": 2,
+      "p95_ms": 1.51
+    },
+    "GET /assets/overview-page-DiERVfhF.js": {
+      "p99_ms": 0.96,
+      "p50_ms": 0.96,
+      "count": 1,
+      "p95_ms": 0.96
+    },
+    "GET /assets/metric-card-DwaIU9Wg.js": {
+      "p99_ms": 2.07,
+      "p50_ms": 2.07,
+      "count": 1,
+      "p95_ms": 2.07
+    },
+    "GET /assets/progress-BXEjTecn.js.map": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/decisions-page-t8MPVfLY.js": {
+      "p99_ms": 0.87,
+      "p50_ms": 0.87,
+      "count": 1,
+      "p95_ms": 0.87
+    },
+    "GET /assets/use-cockpit-BPlpoHkr.js": {
+      "p99_ms": 1.91,
+      "p50_ms": 1.91,
+      "count": 1,
+      "p95_ms": 1.91
+    },
+    "GET /assets/decisions-page-beO_Snli.js": {
+      "p99_ms": 1.66,
+      "p50_ms": 1.66,
+      "count": 1,
+      "p95_ms": 1.66
+    },
+    "GET /assets/overview-page-T4FmSB2g.js": {
+      "p99_ms": 4.24,
+      "p50_ms": 1.86,
+      "count": 2,
+      "p95_ms": 4.24
+    },
+    "GET /assets/shield-CZHOUJNr.js": {
+      "p99_ms": 0.6,
+      "p50_ms": 0.6,
+      "count": 1,
+      "p95_ms": 0.6
+    },
+    "GET /assets/artifact-browser-page-Dlhcstzp.js": {
+      "p99_ms": 2.07,
+      "p50_ms": 2.07,
+      "count": 1,
+      "p95_ms": 2.07
+    },
+    "GET /assets/alert-banner-Dog27tKQ.js.map": {
+      "p99_ms": 2.21,
+      "p50_ms": 2.08,
+      "count": 2,
+      "p95_ms": 2.21
+    },
+    "GET /assets/use-governance-BrDpq2Aq.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/agent-activity-q9Y618C9.js": {
+      "p99_ms": 3.65,
+      "p50_ms": 3.65,
+      "count": 1,
+      "p95_ms": 3.65
+    },
+    "GET /assets/typography-CObnF8z1.js.map": {
+      "p99_ms": 1.76,
+      "p50_ms": 0.61,
+      "count": 2,
+      "p95_ms": 1.76
+    },
+    "GET /assets/file-text-9Pvde3sq.js": {
+      "p99_ms": 1.32,
+      "p50_ms": 1.32,
+      "count": 1,
+      "p95_ms": 1.32
+    },
+    "GET /assets/metric-card-k-x-mWcc.js": {
+      "p99_ms": 3.46,
+      "p50_ms": 2.34,
+      "count": 3,
+      "p95_ms": 3.46
+    },
+    "GET /assets/agents-page-4nEXZe11.js": {
+      "p99_ms": 1.91,
+      "p50_ms": 1.91,
+      "count": 1,
+      "p95_ms": 1.91
+    },
+    "GET /assets/use-dashboard-3L1UdNAP.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-sessions-COmmHiZq.js": {
+      "p99_ms": 4.16,
+      "p50_ms": 0.89,
+      "count": 2,
+      "p95_ms": 4.16
+    },
+    "GET /assets/dashboard-page-FwpK9Z8M.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/file-text-DfwrnLSM.js": {
+      "p99_ms": 1.14,
+      "p50_ms": 1.14,
+      "count": 1,
+      "p95_ms": 1.14
+    },
+    "GET /assets/use-artifacts-B2womJnk.js": {
+      "p99_ms": 0.74,
+      "p50_ms": 0.74,
+      "count": 1,
+      "p95_ms": 0.74
+    },
+    "GET /assets/metric-card-0RGQPa4w.js": {
+      "p99_ms": 3.04,
+      "p50_ms": 1.0,
+      "count": 2,
+      "p95_ms": 3.04
+    },
+    "GET /assets/trending-up-NxzmBm-1.js.map": {
+      "p99_ms": 2.05,
+      "p50_ms": 2.04,
+      "count": 2,
+      "p95_ms": 2.05
+    },
+    "GET /assets/circle-x-VlePw4OR.js.map": {
+      "p99_ms": 2.25,
+      "p50_ms": 2.19,
+      "count": 2,
+      "p95_ms": 2.25
+    },
+    "GET /assets/data-table-BOP06qJL.js": {
+      "p99_ms": 5.04,
+      "p50_ms": 2.77,
+      "count": 2,
+      "p95_ms": 5.04
+    },
+    "GET /assets/agent-activity-CI2mYzYN.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/card-Dml0eLtQ.js": {
+      "p99_ms": 4.67,
+      "p50_ms": 1.38,
+      "count": 2,
+      "p95_ms": 4.67
+    },
+    "GET /assets/circle-Im4twESt.js": {
+      "p99_ms": 4.57,
+      "p50_ms": 4.57,
+      "count": 1,
+      "p95_ms": 4.57
+    },
+    "GET /assets/shield-alert-DwTClDvd.js": {
+      "p99_ms": 3.09,
+      "p50_ms": 0.93,
+      "count": 7,
+      "p95_ms": 3.09
+    },
+    "GET /assets/use-dashboard-CZkCVOqC.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/governance-dashboard-page-DIYxuB-u.js": {
+      "p99_ms": 3.48,
+      "p50_ms": 2.04,
+      "count": 2,
+      "p95_ms": 3.48
+    },
+    "GET /assets/pencil-BtrpSvzg.js": {
+      "p99_ms": 1.21,
+      "p50_ms": 0.86,
+      "count": 8,
+      "p95_ms": 1.21
+    },
+    "GET /assets/funnel-B1Sc2bFc.js": {
+      "p99_ms": 0.76,
+      "p50_ms": 0.76,
+      "count": 1,
+      "p95_ms": 0.76
+    },
+    "GET /assets/use-artifacts-D8Zxy2N3.js": {
+      "p99_ms": 1.35,
+      "p50_ms": 0.95,
+      "count": 2,
+      "p95_ms": 1.35
+    },
+    "GET /assets/chevron-right-CoYzLYzM.js": {
+      "p99_ms": 2.32,
+      "p50_ms": 2.32,
+      "count": 1,
+      "p95_ms": 2.32
+    },
+    "GET /assets/explainability-panel-Cp-0fBx-.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/control-signal-DGdxSx0W.js": {
+      "p99_ms": 4.25,
+      "p50_ms": 1.52,
+      "count": 2,
+      "p95_ms": 4.25
+    },
+    "GET /assets/arrow-left-DQ1_H_cw.js": {
+      "p99_ms": 2.77,
+      "p50_ms": 1.37,
+      "count": 2,
+      "p95_ms": 2.77
+    },
+    "GET /assets/use-governance-B1g1PZxI.js": {
+      "p99_ms": 2.8,
+      "p50_ms": 2.59,
+      "count": 2,
+      "p95_ms": 2.8
+    },
+    "GET /docs/json": {
+      "p99_ms": 5.48,
+      "p50_ms": 5.48,
+      "count": 1,
+      "p95_ms": 5.48
+    },
+    "GET /assets/clock-CWTD3BX4.js": {
+      "p99_ms": 4.23,
+      "p50_ms": 0.84,
+      "count": 4,
+      "p95_ms": 4.23
+    },
+    "GET /assets/analytics-trends-page-P_4nB71p.js": {
+      "p99_ms": 0.57,
+      "p50_ms": 0.57,
+      "count": 1,
+      "p95_ms": 0.57
+    },
+    "GET /assets/funnel-TSIc9pMx.js": {
+      "p99_ms": 2.01,
+      "p50_ms": 2.01,
+      "count": 1,
+      "p95_ms": 2.01
+    },
+    "GET /assets/cockpit-dashboard-page-Cw-hg35s.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/progress-BT22VVN0.js": {
+      "p99_ms": 2.93,
+      "p50_ms": 2.04,
+      "count": 2,
+      "p95_ms": 2.93
+    },
+    "GET /assets/pipeline-page-BJsuYSuE.js": {
+      "p99_ms": 0.89,
+      "p50_ms": 0.89,
+      "count": 1,
+      "p95_ms": 0.89
+    },
+    "GET /assets/artifact-browser-page-DX5xxbJj.js": {
+      "p99_ms": 1.69,
+      "p50_ms": 1.69,
+      "count": 1,
+      "p95_ms": 1.69
+    },
+    "GET /assets/circle-check-big-D_LdMrcV.js": {
+      "p99_ms": 3.58,
+      "p50_ms": 1.07,
+      "count": 4,
+      "p95_ms": 3.58
+    },
+    "GET /assets/shield-alert-CjUuWqUB.js": {
+      "p99_ms": 2.29,
+      "p50_ms": 1.16,
+      "count": 4,
+      "p95_ms": 2.29
+    },
+    "GET /assets/questionnaires-page-CRWleqv3.js": {
+      "p99_ms": 2.79,
+      "p50_ms": 1.13,
+      "count": 2,
+      "p95_ms": 2.79
+    },
+    "GET /assets/use-progress-y44hkklb.js": {
+      "p99_ms": 0.52,
+      "p50_ms": 0.52,
+      "count": 1,
+      "p95_ms": 0.52
+    },
+    "GET /assets/data-table-CaLEn1Sx.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/metric-card-6sdagod4.js": {
+      "p99_ms": 1.59,
+      "p50_ms": 1.59,
+      "count": 1,
+      "p95_ms": 1.59
+    },
+    "GET /assets/trending-up-NxzmBm-1.js": {
+      "p99_ms": 5.68,
+      "p50_ms": 2.57,
+      "count": 5,
+      "p95_ms": 5.68
+    },
+    "GET /assets/decisions-page-BHydH_Xd.js": {
+      "p99_ms": 2.36,
+      "p50_ms": 1.15,
+      "count": 2,
+      "p95_ms": 2.36
+    },
+    "GET /assets/arrow-left-Dp9oPSgV.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.83,
+      "count": 2,
+      "p95_ms": 1.0
+    },
+    "GET /assets/progress-e5CWGkW3.js": {
+      "p99_ms": 5.1,
+      "p50_ms": 1.44,
+      "count": 2,
+      "p95_ms": 5.1
+    },
+    "GET /assets/status-motif-Ch5jp41O.js.map": {
+      "p99_ms": 1.69,
+      "p50_ms": 1.69,
+      "count": 1,
+      "p95_ms": 1.69
+    },
+    "GET /vite.svg": {
+      "p99_ms": 1.74,
+      "p50_ms": 0.32,
+      "count": 551,
+      "p95_ms": 1.0
+    },
+    "GET /assets/circle-check-big-DpXNetJ4.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/funnel-C6SutAT2.js": {
+      "p99_ms": 3.42,
+      "p50_ms": 1.12,
+      "count": 3,
+      "p95_ms": 3.42
+    },
+    "GET /assets/index-DUPYI_zO.js": {
+      "p99_ms": 2.0,
+      "p50_ms": 2.0,
+      "count": 1,
+      "p95_ms": 2.0
+    },
+    "GET /assets/download-Do-IwaZF.js": {
+      "p99_ms": 1.49,
+      "p50_ms": 1.08,
+      "count": 2,
+      "p95_ms": 1.49
+    },
+    "GET /assets/use-questionnaires-BiX-pBr8.js": {
+      "p99_ms": 3.31,
+      "p50_ms": 3.31,
+      "count": 1,
+      "p95_ms": 3.31
+    },
+    "GET /assets/use-analytics-HUxB0D_-.js": {
+      "p99_ms": 1.94,
+      "p50_ms": 1.94,
+      "count": 1,
+      "p95_ms": 1.94
+    },
+    "GET /assets/chevron-right-DEvYFlEu.js": {
+      "p99_ms": 11.22,
+      "p50_ms": 1.5,
+      "count": 7,
+      "p95_ms": 11.22
+    },
+    "GET /assets/circle-D6M77wvS.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/metric-card-DPCyTsW9.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/shield-alert-BEpHlSX0.js": {
+      "p99_ms": 2.29,
+      "p50_ms": 1.29,
+      "count": 4,
+      "p95_ms": 2.29
+    },
+    "GET /assets/circle-DlkYEwUl.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/confidence-indicators-CcnwpSqH.js": {
+      "p99_ms": 2.24,
+      "p50_ms": 1.72,
+      "count": 3,
+      "p95_ms": 2.24
+    },
+    "GET /assets/use-decisions-BOAUlfr3.js": {
+      "p99_ms": 2.98,
+      "p50_ms": 1.55,
+      "count": 10,
+      "p95_ms": 2.98
+    },
+    "GET /assets/explainability-panel-AkyHgWGR.js": {
+      "p99_ms": 1.51,
+      "p50_ms": 1.51,
+      "count": 1,
+      "p95_ms": 1.51
+    },
+    "GET /assets/use-decisions-CpxqWXil.js": {
+      "p99_ms": 2.21,
+      "p50_ms": 0.94,
+      "count": 2,
+      "p95_ms": 2.21
+    },
+    "GET /assets/use-dashboard-BTe4aPBU.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/decisions-page-YfEkgNK3.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/agents-page-eZd3xrjk.js": {
+      "p99_ms": 1.46,
+      "p50_ms": 1.46,
+      "count": 1,
+      "p95_ms": 1.46
+    },
+    "GET /assets/zap-DTStKmcw.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/arrow-left-CY-5i5CQ.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/circle-DGhuTbWL.js": {
+      "p99_ms": 3.14,
+      "p50_ms": 1.87,
+      "count": 2,
+      "p95_ms": 3.14
+    },
+    "GET /assets/artifact-browser-page-D9CGTfx9.js": {
+      "p99_ms": 1.98,
+      "p50_ms": 1.98,
+      "count": 1,
+      "p95_ms": 1.98
+    },
+    "GET /assets/progress-Da1Pb4uH.js": {
+      "p99_ms": 6.04,
+      "p50_ms": 3.0,
+      "count": 2,
+      "p95_ms": 6.04
+    },
+    "GET /assets/use-sessions-EHbYuQna.js": {
+      "p99_ms": 3.18,
+      "p50_ms": 3.18,
+      "count": 1,
+      "p95_ms": 3.18
+    },
+    "GET /assets/clock-6hlg95EX.js": {
+      "p99_ms": 0.64,
+      "p50_ms": 0.64,
+      "count": 1,
+      "p95_ms": 0.64
+    },
+    "GET /assets/use-sessions-DSpvwPSV.js": {
+      "p99_ms": 2.59,
+      "p50_ms": 2.06,
+      "count": 9,
+      "p95_ms": 2.59
+    },
+    "GET /assets/modal-dialog-BTKmFvKu.js": {
+      "p99_ms": 2.29,
+      "p50_ms": 2.29,
+      "count": 1,
+      "p95_ms": 2.29
+    },
+    "GET /assets/index-DnpS1O9J.css": {
+      "p99_ms": 2.83,
+      "p50_ms": 1.77,
+      "count": 2,
+      "p95_ms": 2.83
+    },
+    "GET /assets/data-table-HXypheKl.js": {
+      "p99_ms": 6.12,
+      "p50_ms": 4.65,
+      "count": 3,
+      "p95_ms": 6.12
+    },
+    "GET /assets/arrow-right-FR7EbWhO.js": {
+      "p99_ms": 3.41,
+      "p50_ms": 2.24,
+      "count": 2,
+      "p95_ms": 3.41
+    },
+    "GET /assets/index-DD_eCL11.css": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/pencil-PeUj2Svp.js": {
+      "p99_ms": 3.63,
+      "p50_ms": 1.76,
+      "count": 2,
+      "p95_ms": 3.63
+    },
+    "GET /assets/circle-x-CUtmGEeP.js": {
+      "p99_ms": 3.41,
+      "p50_ms": 3.37,
+      "count": 2,
+      "p95_ms": 3.41
+    },
+    "GET /assets/circle-x-Cv4Wo64x.js": {
+      "p99_ms": 3.95,
+      "p50_ms": 2.18,
+      "count": 12,
+      "p95_ms": 3.95
+    },
+    "GET /assets/execution-history-page-qqXrPNb7.js": {
+      "p99_ms": 0.67,
+      "p50_ms": 0.67,
+      "count": 1,
+      "p95_ms": 0.67
+    },
+    "GET /assets/agent-activity-B1bmlsJS.js": {
+      "p99_ms": 4.51,
+      "p50_ms": 2.28,
+      "count": 8,
+      "p95_ms": 4.51
+    },
+    "GET /assets/index-AMRdUdcS.js": {
+      "p99_ms": 6.99,
+      "p50_ms": 5.12,
+      "count": 2,
+      "p95_ms": 6.99
+    },
+    "GET /assets/index-C_McpjqN.js": {
+      "p99_ms": 7.72,
+      "p50_ms": 4.25,
+      "count": 2,
+      "p95_ms": 7.72
+    },
+    "GET /assets/status-motif-DrIn6EMJ.js": {
+      "p99_ms": 6.08,
+      "p50_ms": 1.88,
+      "count": 2,
+      "p95_ms": 6.08
+    },
+    "GET /assets/metrics-page-Bo_SkZyA.js": {
+      "p99_ms": 1.92,
+      "p50_ms": 1.92,
+      "count": 1,
+      "p95_ms": 1.92
+    },
+    "GET /assets/agents-page-DcHS67sk.js": {
+      "p99_ms": 2.21,
+      "p50_ms": 1.37,
+      "count": 3,
+      "p95_ms": 2.21
+    },
+    "GET /assets/trending-up-CVEKuK8q.js": {
+      "p99_ms": 2.24,
+      "p50_ms": 2.24,
+      "count": 1,
+      "p95_ms": 2.24
+    },
+    "GET /assets/use-governance-BGv2NTqF.js.map": {
+      "p99_ms": 1.97,
+      "p50_ms": 1.97,
+      "count": 1,
+      "p95_ms": 1.97
+    },
+    "GET /assets/progress-BgSN4lF5.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/zap-AODtrGFi.js.map": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/typography-DN41GsPR.js": {
+      "p99_ms": 3.88,
+      "p50_ms": 1.64,
+      "count": 4,
+      "p95_ms": 3.88
+    },
+    "GET /assets/shield-alert-P_CAkHt2.js": {
+      "p99_ms": 2.01,
+      "p50_ms": 1.89,
+      "count": 3,
+      "p95_ms": 2.01
+    },
+    "GET /assets/commands-page-CX34SUUi.js": {
+      "p99_ms": 1.4,
+      "p50_ms": 1.4,
+      "count": 1,
+      "p95_ms": 1.4
+    },
+    "GET /assets/funnel-BokbDKN4.js": {
+      "p99_ms": 1.7,
+      "p50_ms": 1.7,
+      "count": 1,
+      "p95_ms": 1.7
+    },
+    "GET /command-center": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.0,
+      "count": 2,
+      "p95_ms": 1.0
+    },
+    "GET /assets/arrow-right-Dj7gZXgj.js": {
+      "p99_ms": 1.88,
+      "p50_ms": 1.24,
+      "count": 3,
+      "p95_ms": 1.88
+    },
+    "GET /assets/play-B-K1BOl2.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/clock-CrtVsoeJ.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-progress-Dj_mD2PQ.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /api/questionnaires": {
+      "p99_ms": 4.96,
+      "p50_ms": 1.33,
+      "count": 97,
+      "p95_ms": 3.05
+    },
+    "GET /assets/overview-page-BaoU4HZE.js": {
+      "p99_ms": 9.58,
+      "p50_ms": 9.58,
+      "count": 1,
+      "p95_ms": 9.58
+    },
+    "GET /assets/progress-DM0J1SAE.js": {
+      "p99_ms": 12.0,
+      "p50_ms": 0.0,
+      "count": 2,
+      "p95_ms": 12.0
+    },
+    "GET /assets/input-field-DBcCm3Or.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/sessions-page-CUZogjDw.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/index-DWkYaIBW.js": {
+      "p99_ms": 2.24,
+      "p50_ms": 1.06,
+      "count": 9,
+      "p95_ms": 2.24
+    },
+    "GET /assets/sessions-page-lGh-Qx11.js": {
+      "p99_ms": 2.62,
+      "p50_ms": 1.21,
+      "count": 2,
+      "p95_ms": 2.62
+    },
+    "GET /assets/data-table-zDIIpC4t.js": {
+      "p99_ms": 8.3,
+      "p50_ms": 8.3,
+      "count": 1,
+      "p95_ms": 8.3
+    },
+    "GET /assets/use-analytics-C706jv2L.js": {
+      "p99_ms": 1.68,
+      "p50_ms": 1.68,
+      "count": 1,
+      "p95_ms": 1.68
+    },
+    "GET /assets/play-BoqVwnN-.js": {
+      "p99_ms": 1.58,
+      "p50_ms": 1.12,
+      "count": 2,
+      "p95_ms": 1.58
+    },
+    "GET /assets/commands-page-CdmVwjI0.js": {
+      "p99_ms": 1.3,
+      "p50_ms": 1.3,
+      "count": 1,
+      "p95_ms": 1.3
+    },
+    "GET /assets/play-D21HEVTp.js": {
+      "p99_ms": 2.04,
+      "p50_ms": 0.56,
+      "count": 2,
+      "p95_ms": 2.04
+    },
+    "GET /assets/use-agents-DojVdil7.js": {
+      "p99_ms": 0.57,
+      "p50_ms": 0.57,
+      "count": 1,
+      "p95_ms": 0.57
+    },
+    "GET /assets/analytics-trends-page-B3-Y1Dzw.js": {
+      "p99_ms": 1.89,
+      "p50_ms": 1.89,
+      "count": 1,
+      "p95_ms": 1.89
+    },
+    "GET /assets/modal-dialog-D78u1R0N.js": {
+      "p99_ms": 3.35,
+      "p50_ms": 1.55,
+      "count": 8,
+      "p95_ms": 3.35
+    },
+    "GET /assets/circle-PJ2vLY7j.js": {
+      "p99_ms": 3.97,
+      "p50_ms": 3.03,
+      "count": 6,
+      "p95_ms": 3.97
+    },
+    "GET /assets/funnel-DFrd5NC0.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/refresh-cw-9jF0CBPl.js": {
+      "p99_ms": 3.26,
+      "p50_ms": 2.08,
+      "count": 4,
+      "p95_ms": 3.26
+    },
+    "GET /assets/circle-check-big-CFzZWcp1.js": {
+      "p99_ms": 0.98,
+      "p50_ms": 0.72,
+      "count": 2,
+      "p95_ms": 0.98
+    },
+    "GET /assets/circle-check-big-Cgvfj9FU.js": {
+      "p99_ms": 2.27,
+      "p50_ms": 2.27,
+      "count": 1,
+      "p95_ms": 2.27
+    },
+    "GET /assets/funnel-DVUgOAiL.js": {
+      "p99_ms": 1.25,
+      "p50_ms": 1.25,
+      "count": 1,
+      "p95_ms": 1.25
+    },
+    "GET /assets/decision-provenance-view-BAnF7eRB.js": {
+      "p99_ms": 2.48,
+      "p50_ms": 2.13,
+      "count": 3,
+      "p95_ms": 2.48
+    },
+    "GET /assets/use-sessions-Bb7ZgEN-.js": {
+      "p99_ms": 1.36,
+      "p50_ms": 1.36,
+      "count": 1,
+      "p95_ms": 1.36
+    },
+    "GET /assets/use-governance-BbGmQ75b.js": {
+      "p99_ms": 3.18,
+      "p50_ms": 3.18,
+      "count": 1,
+      "p95_ms": 3.18
+    },
+    "GET /assets/alert-banner-DWrL1ElS.js": {
+      "p99_ms": 5.35,
+      "p50_ms": 5.35,
+      "count": 1,
+      "p95_ms": 5.35
+    },
+    "GET /assets/pipeline-page-DDbU6wrG.js": {
+      "p99_ms": 1.31,
+      "p50_ms": 1.31,
+      "count": 1,
+      "p95_ms": 1.31
+    },
+    "GET /assets/index-szGEUdxz.js": {
+      "p99_ms": 10.67,
+      "p50_ms": 6.36,
+      "count": 2,
+      "p95_ms": 10.67
+    },
+    "GET /assets/use-progress-BINUMaR5.js": {
+      "p99_ms": 12.0,
+      "p50_ms": 0.0,
+      "count": 2,
+      "p95_ms": 12.0
+    },
+    "GET /assets/index-_AR6oqRI.css": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/refresh-cw-BC6yCBiK.js": {
+      "p99_ms": 2.76,
+      "p50_ms": 1.59,
+      "count": 2,
+      "p95_ms": 2.76
+    },
+    "GET /assets/arrow-right-24tNygSY.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/play-vGP9ceFD.js": {
+      "p99_ms": 2.34,
+      "p50_ms": 2.34,
+      "count": 1,
+      "p95_ms": 2.34
+    },
+    "GET /assets/arrow-right-BYf-wbw6.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/circle-BSS0d9dL.js": {
+      "p99_ms": 5.34,
+      "p50_ms": 2.69,
+      "count": 2,
+      "p95_ms": 5.34
+    },
+    "GET /assets/chevron-right-CqGxyAuD.js": {
+      "p99_ms": 3.55,
+      "p50_ms": 2.45,
+      "count": 2,
+      "p95_ms": 3.55
+    },
+    "GET /assets/clock-vJdbjg99.js": {
+      "p99_ms": 3.0,
+      "p50_ms": 3.0,
+      "count": 1,
+      "p95_ms": 3.0
+    },
+    "GET /assets/use-agents-DTgC0kAa.js": {
+      "p99_ms": 2.52,
+      "p50_ms": 2.52,
+      "count": 1,
+      "p95_ms": 2.52
+    },
+    "GET /assets/approval-workflow-CYZFmml5.js": {
+      "p99_ms": 2.51,
+      "p50_ms": 1.44,
+      "count": 3,
+      "p95_ms": 2.51
+    },
+    "GET /assets/input-field-Cp-lFYa_.js": {
+      "p99_ms": 0.81,
+      "p50_ms": 0.81,
+      "count": 1,
+      "p95_ms": 0.81
+    },
+    "GET /assets/use-dashboard-DA1ltCUF.js": {
+      "p99_ms": 0.7,
+      "p50_ms": 0.7,
+      "count": 1,
+      "p95_ms": 0.7
+    },
+    "GET /assets/arrow-left-DKoa2YPi.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/input-field-ErjNEeFa.js": {
+      "p99_ms": 2.08,
+      "p50_ms": 0.55,
+      "count": 2,
+      "p95_ms": 2.08
+    },
+    "GET /assets/circle-x-DOCnUl5B.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/data-table-BTIUYh9H.js": {
+      "p99_ms": 7.23,
+      "p50_ms": 3.84,
+      "count": 5,
+      "p95_ms": 7.23
+    },
+    "GET /assets/decisions-page-CMb4CeFs.js": {
+      "p99_ms": 2.36,
+      "p50_ms": 0.98,
+      "count": 3,
+      "p95_ms": 2.36
+    },
+    "GET /assets/modal-dialog-Nt-gPcyX.js": {
+      "p99_ms": 4.5,
+      "p50_ms": 4.5,
+      "count": 1,
+      "p95_ms": 4.5
+    },
+    "GET /assets/use-sessions-DtCVoz7l.js": {
+      "p99_ms": 1.43,
+      "p50_ms": 0.78,
+      "count": 2,
+      "p95_ms": 1.43
+    },
+    "GET /docs/static/swagger-ui-standalone-preset.js": {
+      "p99_ms": 122.29,
+      "p50_ms": 122.29,
+      "count": 1,
+      "p95_ms": 122.29
+    },
+    "GET /assets/health-card-Bqx-58fF.js": {
+      "p99_ms": 2.5,
+      "p50_ms": 1.06,
+      "count": 2,
+      "p95_ms": 2.5
+    },
+    "GET /assets/agents-page-NxLUB3nE.js": {
+      "p99_ms": 1.18,
+      "p50_ms": 1.18,
+      "count": 1,
+      "p95_ms": 1.18
+    },
+    "GET /assets/use-questionnaires-CJmMcwzB.js": {
+      "p99_ms": 2.81,
+      "p50_ms": 1.52,
+      "count": 8,
+      "p95_ms": 2.81
+    },
+    "GET /assets/alert-banner-CN1dlkxw.js": {
+      "p99_ms": 5.33,
+      "p50_ms": 4.09,
+      "count": 3,
+      "p95_ms": 5.33
+    },
+    "GET /assets/alert-banner-Cv9z4Iq0.js.map": {
+      "p99_ms": 2.25,
+      "p50_ms": 2.25,
+      "count": 1,
+      "p95_ms": 2.25
+    },
+    "GET /assets/decisions-page-P0Jl4vtL.js": {
+      "p99_ms": 1.51,
+      "p50_ms": 1.51,
+      "count": 1,
+      "p95_ms": 1.51
+    },
+    "GET /assets/overview-page-DzHnF9Yo.js": {
+      "p99_ms": 4.29,
+      "p50_ms": 0.65,
+      "count": 2,
+      "p95_ms": 4.29
+    },
+    "GET /assets/commands-page-Bz8kcDOl.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/confidence-indicators-ijznihIS.js": {
+      "p99_ms": 2.78,
+      "p50_ms": 2.78,
+      "count": 1,
+      "p95_ms": 2.78
+    },
+    "GET /assets/arrow-left-98OEd0UM.js": {
+      "p99_ms": 4.87,
+      "p50_ms": 1.42,
+      "count": 2,
+      "p95_ms": 4.87
+    },
+    "GET /assets/data-table-DDPil9Rt.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/funnel-CLOc43-R.js": {
+      "p99_ms": 0.7,
+      "p50_ms": 0.7,
+      "count": 1,
+      "p95_ms": 0.7
+    },
+    "GET /assets/agent-activity-jXPx9zFo.js": {
+      "p99_ms": 4.39,
+      "p50_ms": 2.03,
+      "count": 2,
+      "p95_ms": 4.39
+    },
+    "GET /assets/circle-check-big-BJw3mRtm.js": {
+      "p99_ms": 3.83,
+      "p50_ms": 3.6,
+      "count": 2,
+      "p95_ms": 3.83
+    },
+    "GET /assets/use-governance-BvcfkZXU.js": {
+      "p99_ms": 1.39,
+      "p50_ms": 1.39,
+      "count": 1,
+      "p95_ms": 1.39
+    },
+    "GET /assets/circle-check-big-F4aJQ8vy.js": {
+      "p99_ms": 4.06,
+      "p50_ms": 1.55,
+      "count": 2,
+      "p95_ms": 4.06
+    },
+    "GET /assets/use-decisions-6Y5Y2JP5.js": {
+      "p99_ms": 1.47,
+      "p50_ms": 1.47,
+      "count": 1,
+      "p95_ms": 1.47
+    },
+    "GET /assets/progress-FSefOko7.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/index-TU7R069z.js": {
+      "p99_ms": 5.69,
+      "p50_ms": 4.62,
+      "count": 2,
+      "p95_ms": 5.69
+    },
+    "GET /assets/use-decisions-BNhClXiU.js": {
+      "p99_ms": 5.37,
+      "p50_ms": 5.37,
+      "count": 1,
+      "p95_ms": 5.37
+    },
+    "GET /assets/governance-dashboard-page-tIpLfgg5.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/chevron-right-C4J_CTLX.js": {
+      "p99_ms": 3.83,
+      "p50_ms": 2.93,
+      "count": 3,
+      "p95_ms": 3.83
+    },
+    "GET /assets/card-Cugfmt0k.js": {
+      "p99_ms": 3.2,
+      "p50_ms": 1.83,
+      "count": 3,
+      "p95_ms": 3.2
+    },
+    "GET /assets/policy-compliance-panel-BhMeu_u0.js": {
+      "p99_ms": 3.61,
+      "p50_ms": 1.16,
+      "count": 2,
+      "p95_ms": 3.61
+    },
+    "GET /assets/circle-x-CrmPPGtg.js": {
+      "p99_ms": 5.3,
+      "p50_ms": 2.66,
+      "count": 2,
+      "p95_ms": 5.3
+    },
+    "GET /assets/use-dashboard-CVL-o0Sn.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/zap-DIsqu7dz.js": {
+      "p99_ms": 2.38,
+      "p50_ms": 1.18,
+      "count": 4,
+      "p95_ms": 2.38
+    },
+    "GET /assets/decisions-page-DhnzEQeP.js": {
+      "p99_ms": 1.02,
+      "p50_ms": 0.87,
+      "count": 4,
+      "p95_ms": 1.02
+    },
+    "GET /assets/commands-page-DgprK_ER.js": {
+      "p99_ms": 1.71,
+      "p50_ms": 1.12,
+      "count": 2,
+      "p95_ms": 1.71
+    },
+    "GET /assets/alert-banner-PREmcDSc.js": {
+      "p99_ms": 6.83,
+      "p50_ms": 2.57,
+      "count": 2,
+      "p95_ms": 6.83
+    },
+    "GET /assets/refresh-cw-1Xw9AI_p.js": {
+      "p99_ms": 3.41,
+      "p50_ms": 1.83,
+      "count": 7,
+      "p95_ms": 3.41
+    },
+    "GET /assets/alert-banner-CzoU8HdS.js": {
+      "p99_ms": 3.01,
+      "p50_ms": 2.65,
+      "count": 3,
+      "p95_ms": 3.01
+    },
+    "GET /assets/metric-card-CRcJoUEn.js": {
+      "p99_ms": 1.29,
+      "p50_ms": 1.17,
+      "count": 2,
+      "p95_ms": 1.29
+    },
+    "GET /assets/index-xXGDCa5c.css": {
+      "p99_ms": 5.22,
+      "p50_ms": 5.22,
+      "count": 1,
+      "p95_ms": 5.22
+    },
+    "GET /assets/metrics-page-4aLAuU8W.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/play-CcmzGfS6.js": {
+      "p99_ms": 1.89,
+      "p50_ms": 1.89,
+      "count": 1,
+      "p95_ms": 1.89
+    },
+    "GET /assets/commands-page-BkvOrpp3.js": {
+      "p99_ms": 0.88,
+      "p50_ms": 0.88,
+      "count": 1,
+      "p95_ms": 0.88
+    },
+    "GET /assets/trending-up-Du2di10a.js": {
+      "p99_ms": 2.23,
+      "p50_ms": 2.23,
+      "count": 1,
+      "p95_ms": 2.23
+    },
+    "GET /assets/input-field-DhSS-aUg.js": {
+      "p99_ms": 1.94,
+      "p50_ms": 1.13,
+      "count": 2,
+      "p95_ms": 1.94
+    },
+    "GET /assets/alert-banner-C0rR78c0.js": {
+      "p99_ms": 6.0,
+      "p50_ms": 2.16,
+      "count": 2,
+      "p95_ms": 6.0
+    },
+    "GET /assets/card-BlgC9cHT.js": {
+      "p99_ms": 3.36,
+      "p50_ms": 1.35,
+      "count": 2,
+      "p95_ms": 3.36
+    },
+    "GET /assets/shield-alert-BDAh5emE.js": {
+      "p99_ms": 1.73,
+      "p50_ms": 0.98,
+      "count": 2,
+      "p95_ms": 1.73
+    },
+    "GET /assets/zap-CNjYL_YS.js": {
+      "p99_ms": 2.45,
+      "p50_ms": 2.45,
+      "count": 1,
+      "p95_ms": 2.45
+    },
+    "GET /assets/clock-BPpuy0HV.js": {
+      "p99_ms": 2.84,
+      "p50_ms": 2.84,
+      "count": 1,
+      "p95_ms": 2.84
+    },
+    "GET /assets/metrics-page-SgtZPLtG.js": {
+      "p99_ms": 1.03,
+      "p50_ms": 1.03,
+      "count": 1,
+      "p95_ms": 1.03
+    },
+    "GET /assets/typography-DSBnDN7J.js": {
+      "p99_ms": 2.68,
+      "p50_ms": 2.27,
+      "count": 3,
+      "p95_ms": 2.68
+    },
+    "GET /api/decisions": {
+      "p99_ms": 334.0,
+      "p50_ms": 20.72,
+      "count": 134,
+      "p95_ms": 52.56
+    },
+    "GET /assets/approval-workflow-1SwJUcd4.js": {
+      "p99_ms": 0.38,
+      "p50_ms": 0.38,
+      "count": 1,
+      "p95_ms": 0.38
+    },
+    "GET /assets/pencil-Cly_Eq7z.js": {
+      "p99_ms": 1.3,
+      "p50_ms": 0.91,
+      "count": 2,
+      "p95_ms": 1.3
+    },
+    "GET /assets/circle-x-DrCcdg17.js": {
+      "p99_ms": 2.76,
+      "p50_ms": 2.43,
+      "count": 3,
+      "p95_ms": 2.76
+    },
+    "GET /assets/metric-card-D5vb8zMi.js": {
+      "p99_ms": 18.0,
+      "p50_ms": 1.0,
+      "count": 2,
+      "p95_ms": 18.0
+    },
+    "GET /assets/arrow-right-pROLAm23.js": {
+      "p99_ms": 3.18,
+      "p50_ms": 2.31,
+      "count": 6,
+      "p95_ms": 3.18
+    },
+    "GET /assets/use-cockpit-BVNUvDNl.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/alert-banner-CTvS4iFo.js": {
+      "p99_ms": 3.47,
+      "p50_ms": 1.42,
+      "count": 2,
+      "p95_ms": 3.47
+    },
+    "GET /sessions": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.44,
+      "count": 5,
+      "p95_ms": 1.0
+    },
+    "GET /assets/circle-x-CF8aUnAJ.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/metric-card-Mtrm3xkG.js": {
+      "p99_ms": 2.09,
+      "p50_ms": 1.41,
+      "count": 2,
+      "p95_ms": 2.09
+    },
+    "GET /assets/circle-CUHkkBM9.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/decisions-page-BrtLbud1.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/overview-page-CTUnSA6f.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/shield-alert-BWbZ0-gN.js.map": {
+      "p99_ms": 2.95,
+      "p50_ms": 2.95,
+      "count": 1,
+      "p95_ms": 2.95
+    },
+    "GET /commands": {
+      "p99_ms": 0.34,
+      "p50_ms": 0.31,
+      "count": 2,
+      "p95_ms": 0.34
+    },
+    "GET /assets/artifact-browser-page-FY_TuI2y.js": {
+      "p99_ms": 0.9,
+      "p50_ms": 0.9,
+      "count": 1,
+      "p95_ms": 0.9
+    },
+    "GET /assets/decisions-page-pDNw1RxW.js": {
+      "p99_ms": 1.44,
+      "p50_ms": 1.44,
+      "count": 1,
+      "p95_ms": 1.44
+    },
+    "GET /assets/governance-dashboard-page-DIYxuB-u.js.map": {
+      "p99_ms": 3.02,
+      "p50_ms": 3.02,
+      "count": 1,
+      "p95_ms": 3.02
+    },
+    "GET /assets/approval-workflow-qUrGDTN_.js": {
+      "p99_ms": 2.92,
+      "p50_ms": 2.92,
+      "count": 1,
+      "p95_ms": 2.92
+    },
+    "GET /assets/metric-card-DT0zK-OU.js": {
+      "p99_ms": 4.4,
+      "p50_ms": 1.76,
+      "count": 5,
+      "p95_ms": 4.4
+    },
+    "GET /assets/overview-page-BVwaA3fm.js": {
+      "p99_ms": 2.94,
+      "p50_ms": 2.94,
+      "count": 1,
+      "p95_ms": 2.94
+    },
+    "GET /assets/refresh-cw-BJyBYgVd.js": {
+      "p99_ms": 4.14,
+      "p50_ms": 4.14,
+      "count": 1,
+      "p95_ms": 4.14
+    },
+    "GET /assets/confidence-indicators-CpR-T9o0.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-governance-BT3fngwI.js": {
+      "p99_ms": 2.93,
+      "p50_ms": 1.67,
+      "count": 2,
+      "p95_ms": 2.93
+    },
+    "GET /assets/play-Dgov_KTU.js": {
+      "p99_ms": 0.65,
+      "p50_ms": 0.65,
+      "count": 1,
+      "p95_ms": 0.65
+    },
+    "GET /assets/sessions-page-BYqx1yb4.js": {
+      "p99_ms": 1.9,
+      "p50_ms": 1.4,
+      "count": 2,
+      "p95_ms": 1.9
+    },
+    "GET /assets/use-analytics-D44NHtnN.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/zap-h5Q2UPY0.js": {
+      "p99_ms": 1.69,
+      "p50_ms": 1.13,
+      "count": 6,
+      "p95_ms": 1.69
+    },
+    "GET /assets/chevron-right-DAyol_VF.js": {
+      "p99_ms": 1.78,
+      "p50_ms": 1.73,
+      "count": 3,
+      "p95_ms": 1.78
+    },
+    "GET /assets/agents-page-aBatK4YV.js": {
+      "p99_ms": 0.97,
+      "p50_ms": 0.97,
+      "count": 1,
+      "p95_ms": 0.97
+    },
+    "POST /api/decisions": {
+      "p99_ms": 7.97,
+      "p50_ms": 7.97,
+      "count": 1,
+      "p95_ms": 7.97
+    },
+    "GET /assets/clock-Bf81oEcm.js": {
+      "p99_ms": 1.3,
+      "p50_ms": 0.54,
+      "count": 2,
+      "p95_ms": 1.3
+    },
+    "GET /assets/approval-workflow-DQXXUZmJ.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/card-DpU8IQNL.js": {
+      "p99_ms": 3.74,
+      "p50_ms": 1.76,
+      "count": 4,
+      "p95_ms": 3.74
+    },
+    "GET /assets/metric-card-D-1UjROT.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/circle-3XJwDEJb.js": {
+      "p99_ms": 2.73,
+      "p50_ms": 0.56,
+      "count": 2,
+      "p95_ms": 2.73
+    },
+    "GET /assets/refresh-cw-CKMBhi06.js": {
+      "p99_ms": 3.75,
+      "p50_ms": 1.49,
+      "count": 2,
+      "p95_ms": 3.75
+    },
+    "GET /assets/file-text-Cw1_wsJx.js": {
+      "p99_ms": 1.19,
+      "p50_ms": 1.0,
+      "count": 3,
+      "p95_ms": 1.19
+    },
+    "GET /assets/funnel-DnlcJ4qV.js": {
+      "p99_ms": 1.95,
+      "p50_ms": 1.6,
+      "count": 5,
+      "p95_ms": 1.95
+    },
+    "GET /assets/index-BLATeYKs.js": {
+      "p99_ms": 11.09,
+      "p50_ms": 4.54,
+      "count": 7,
+      "p95_ms": 11.09
+    },
+    "GET /assets/data-table-BCIbLYaw.js.map": {
+      "p99_ms": 12.62,
+      "p50_ms": 7.88,
+      "count": 2,
+      "p95_ms": 12.62
+    },
+    "GET /assets/play-BxBY1T0J.js": {
+      "p99_ms": 1.13,
+      "p50_ms": 1.13,
+      "count": 1,
+      "p95_ms": 1.13
+    },
+    "GET /assets/circle-CIhfd02u.js": {
+      "p99_ms": 2.85,
+      "p50_ms": 1.7,
+      "count": 4,
+      "p95_ms": 2.85
+    },
+    "GET /assets/observability-page-DgRcPwL_.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/sessions-page-BqHxUOw0.js": {
+      "p99_ms": 1.3,
+      "p50_ms": 1.3,
+      "count": 2,
+      "p95_ms": 1.3
+    },
+    "GET /assets/status-motif-Df-IARHd.js": {
+      "p99_ms": 5.41,
+      "p50_ms": 4.73,
+      "count": 3,
+      "p95_ms": 5.41
+    },
+    "GET /assets/confidence-indicators-C5wlNNRy.js": {
+      "p99_ms": 1.28,
+      "p50_ms": 1.28,
+      "count": 1,
+      "p95_ms": 1.28
+    },
+    "GET /assets/control-signal-G4b9rob8.js": {
+      "p99_ms": 5.71,
+      "p50_ms": 3.04,
+      "count": 7,
+      "p95_ms": 5.71
+    },
+    "GET /assets/pause-DtjgHOrZ.js": {
+      "p99_ms": 5.95,
+      "p50_ms": 5.95,
+      "count": 1,
+      "p95_ms": 5.95
+    },
+    "GET /assets/pipeline-page-njWkwr7B.js": {
+      "p99_ms": 1.22,
+      "p50_ms": 1.22,
+      "count": 1,
+      "p95_ms": 1.22
+    },
+    "GET /assets/decisions-page-BmWQ5hPu.js": {
+      "p99_ms": 1.53,
+      "p50_ms": 1.53,
+      "count": 1,
+      "p95_ms": 1.53
+    },
+    "GET /assets/use-dashboard-Nu1Fk2p2.js": {
+      "p99_ms": 4.54,
+      "p50_ms": 1.0,
+      "count": 2,
+      "p95_ms": 4.54
+    },
+    "GET /assets/arrow-right-BWm-mzlW.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/trending-up-C1EKOGva.js": {
+      "p99_ms": 6.02,
+      "p50_ms": 1.92,
+      "count": 7,
+      "p95_ms": 6.02
+    },
+    "GET /assets/circle-JCXJGdo2.js": {
+      "p99_ms": 3.38,
+      "p50_ms": 2.28,
+      "count": 2,
+      "p95_ms": 3.38
+    },
+    "GET /assets/agents-page-Df0Iv1nW.js": {
+      "p99_ms": 2.17,
+      "p50_ms": 2.17,
+      "count": 1,
+      "p95_ms": 2.17
+    },
+    "GET /assets/play-DfjJv25_.js.map": {
+      "p99_ms": 2.38,
+      "p50_ms": 2.38,
+      "count": 1,
+      "p95_ms": 2.38
+    },
+    "GET /assets/shield-GWEU8FHe.js": {
+      "p99_ms": 1.71,
+      "p50_ms": 1.65,
+      "count": 3,
+      "p95_ms": 1.71
+    },
+    "GET /assets/clock-Bt0uc0zY.js.map": {
+      "p99_ms": 1.85,
+      "p50_ms": 1.85,
+      "count": 1,
+      "p95_ms": 1.85
+    },
+    "GET /assets/agent-activity-D0m5q7Ld.js": {
+      "p99_ms": 1.9,
+      "p50_ms": 1.9,
+      "count": 1,
+      "p95_ms": 1.9
+    },
+    "GET /assets/funnel-BrCuEk4C.js": {
+      "p99_ms": 2.58,
+      "p50_ms": 1.71,
+      "count": 2,
+      "p95_ms": 2.58
+    },
+    "GET /assets/chevron-right-BHlw1qiE.js": {
+      "p99_ms": 2.37,
+      "p50_ms": 1.32,
+      "count": 4,
+      "p95_ms": 2.37
+    },
+    "GET /assets/card-B_FzCnrU.js.map": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/approval-workflow-plztNk5P.js": {
+      "p99_ms": 0.51,
+      "p50_ms": 0.51,
+      "count": 1,
+      "p95_ms": 0.51
+    },
+    "GET /assets/input-field-BIvLUW8O.js": {
+      "p99_ms": 2.1,
+      "p50_ms": 2.1,
+      "count": 1,
+      "p95_ms": 2.1
+    },
+    "GET /assets/use-artifacts-CRJ4QWP2.js": {
+      "p99_ms": 0.76,
+      "p50_ms": 0.76,
+      "count": 1,
+      "p95_ms": 0.76
+    },
+    "GET /assets/shield-alert-BWbZ0-gN.js": {
+      "p99_ms": 1.71,
+      "p50_ms": 0.9,
+      "count": 3,
+      "p95_ms": 1.71
+    },
+    "GET /assets/index-BKlRsch_.js": {
+      "p99_ms": 9.66,
+      "p50_ms": 5.04,
+      "count": 14,
+      "p95_ms": 9.66
+    },
+    "GET /assets/chevron-right-CKgI7W_t.js": {
+      "p99_ms": 2.86,
+      "p50_ms": 2.86,
+      "count": 1,
+      "p95_ms": 2.86
+    },
+    "GET /assets/pause-CceQWZ7U.js": {
+      "p99_ms": 5.71,
+      "p50_ms": 2.22,
+      "count": 9,
+      "p95_ms": 5.71
+    },
+    "GET /assets/arrow-right-guJwLMAQ.js": {
+      "p99_ms": 3.12,
+      "p50_ms": 1.5,
+      "count": 2,
+      "p95_ms": 3.12
+    },
+    "GET /assets/use-progress-jaodZ7Nu.js": {
+      "p99_ms": 0.61,
+      "p50_ms": 0.61,
+      "count": 1,
+      "p95_ms": 0.61
+    },
+    "GET /assets/data-table-CkvtoZ1k.js": {
+      "p99_ms": 8.86,
+      "p50_ms": 2.24,
+      "count": 8,
+      "p95_ms": 8.86
+    },
+    "GET /assets/zap-BB_fmz86.js": {
+      "p99_ms": 1.52,
+      "p50_ms": 1.25,
+      "count": 3,
+      "p95_ms": 1.52
+    },
+    "GET /assets/use-governance-BoUZwUYZ.js.map": {
+      "p99_ms": 1.19,
+      "p50_ms": 1.04,
+      "count": 2,
+      "p95_ms": 1.19
+    },
+    "GET /assets/use-questionnaires-DrWTN8uc.js": {
+      "p99_ms": 2.31,
+      "p50_ms": 1.76,
+      "count": 5,
+      "p95_ms": 2.31
+    },
+    "GET /assets/circle-x-2_W0H8kU.js": {
+      "p99_ms": 2.53,
+      "p50_ms": 1.22,
+      "count": 2,
+      "p95_ms": 2.53
+    },
+    "GET /assets/agent-activity-VUJzB-nh.js": {
+      "p99_ms": 3.96,
+      "p50_ms": 1.15,
+      "count": 4,
+      "p95_ms": 3.96
+    },
+    "GET /assets/chevron-right-C6PvzyMn.js": {
+      "p99_ms": 2.12,
+      "p50_ms": 0.72,
+      "count": 2,
+      "p95_ms": 2.12
+    },
+    "GET /assets/sessions-page-C_qJTxRP.js": {
+      "p99_ms": 1.03,
+      "p50_ms": 1.03,
+      "count": 1,
+      "p95_ms": 1.03
+    },
+    "GET /assets/funnel-BXtMAmuG.js": {
+      "p99_ms": 2.81,
+      "p50_ms": 1.35,
+      "count": 3,
+      "p95_ms": 2.81
+    },
+    "GET /assets/health-card-BZIgwQuL.js": {
+      "p99_ms": 4.24,
+      "p50_ms": 2.47,
+      "count": 2,
+      "p95_ms": 4.24
+    },
+    "GET /assets/use-decisions-Bg5As2Ak.js": {
+      "p99_ms": 3.92,
+      "p50_ms": 2.3,
+      "count": 6,
+      "p95_ms": 3.92
+    },
+    "GET /assets/pipeline-page-BpEXxNaf.js": {
+      "p99_ms": 0.98,
+      "p50_ms": 0.98,
+      "count": 1,
+      "p95_ms": 0.98
+    },
+    "GET /assets/status-motif-UxUSk-3b.js": {
+      "p99_ms": 4.07,
+      "p50_ms": 2.64,
+      "count": 2,
+      "p95_ms": 4.07
+    },
+    "GET /assets/use-agents-BOi3_729.js": {
+      "p99_ms": 0.85,
+      "p50_ms": 0.85,
+      "count": 1,
+      "p95_ms": 0.85
+    },
+    "GET /assets/observability-page-a62GB53j.js": {
+      "p99_ms": 0.93,
+      "p50_ms": 0.93,
+      "count": 1,
+      "p95_ms": 0.93
+    },
+    "GET /assets/card-B2H0WQrx.js": {
+      "p99_ms": 2.48,
+      "p50_ms": 2.16,
+      "count": 5,
+      "p95_ms": 2.48
+    },
+    "GET /assets/decisions-page-Cd62FBb2.js": {
+      "p99_ms": 2.39,
+      "p50_ms": 2.39,
+      "count": 1,
+      "p95_ms": 2.39
+    },
+    "GET /assets/agent-activity-C1kijskw.js": {
+      "p99_ms": 3.21,
+      "p50_ms": 1.12,
+      "count": 2,
+      "p95_ms": 3.21
+    },
+    "GET /assets/agent-activity-zu5YKoKj.js": {
+      "p99_ms": 4.93,
+      "p50_ms": 4.93,
+      "count": 1,
+      "p95_ms": 4.93
+    },
+    "GET /assets/use-agents-BrD62s-s.js": {
+      "p99_ms": 2.12,
+      "p50_ms": 0.89,
+      "count": 3,
+      "p95_ms": 2.12
+    },
+    "GET /assets/file-text-BS4EVl5d.js": {
+      "p99_ms": 1.81,
+      "p50_ms": 1.64,
+      "count": 3,
+      "p95_ms": 1.81
+    },
+    "GET /assets/shield-alert-BebwhbEc.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-cockpit-BoPqkU1f.js": {
+      "p99_ms": 0.93,
+      "p50_ms": 0.93,
+      "count": 1,
+      "p95_ms": 0.93
+    },
+    "GET /assets/trending-up-CimhG8cT.js": {
+      "p99_ms": 2.63,
+      "p50_ms": 2.63,
+      "count": 1,
+      "p95_ms": 2.63
+    },
+    "GET /assets/questionnaires-page-DCv1_bbW.js": {
+      "p99_ms": 1.77,
+      "p50_ms": 1.77,
+      "count": 1,
+      "p95_ms": 1.77
+    },
+    "GET /assets/use-analytics-DXJ-Gd7w.js": {
+      "p99_ms": 1.69,
+      "p50_ms": 1.27,
+      "count": 3,
+      "p95_ms": 1.69
+    },
+    "GET /api/v1/cockpit/dependencies": {
+      "p99_ms": 1.45,
+      "p50_ms": 0.42,
+      "count": 89,
+      "p95_ms": 1.0
+    },
+    "GET /metrics": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.0,
+      "count": 2,
+      "p95_ms": 1.0
+    },
+    "GET /assets/progress-BodORyTZ.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/traceability-explorer-page-BzuhKylg.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/zap-CtDnmR63.js": {
+      "p99_ms": 1.91,
+      "p50_ms": 0.62,
+      "count": 2,
+      "p95_ms": 1.91
+    },
+    "GET /assets/shield-alert-DVzHVCIH.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.0,
+      "count": 2,
+      "p95_ms": 1.0
+    },
+    "GET /assets/play-_Q-O2xz1.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/command-center-page-B_NC4MMb.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 3,
+      "p95_ms": 1.0
+    },
+    "GET /assets/overview-page-DNhQqNtV.js": {
+      "p99_ms": 3.34,
+      "p50_ms": 1.07,
+      "count": 4,
+      "p95_ms": 3.34
+    },
+    "GET /assets/use-decisions-DrFgh5Hp.js": {
+      "p99_ms": 2.9,
+      "p50_ms": 1.86,
+      "count": 3,
+      "p95_ms": 2.9
+    },
+    "GET /assets/card-B_FzCnrU.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.0,
+      "count": 5,
+      "p95_ms": 1.0
+    },
+    "GET /assets/artifact-browser-page-CNzs70ur.js": {
+      "p99_ms": 2.18,
+      "p50_ms": 0.96,
+      "count": 2,
+      "p95_ms": 2.18
+    },
+    "GET /assets/circle-check-big-DWz7o4LC.js": {
+      "p99_ms": 3.16,
+      "p50_ms": 1.84,
+      "count": 7,
+      "p95_ms": 3.16
+    },
+    "GET /assets/use-sessions-BRo-_5Mm.js": {
+      "p99_ms": 6.28,
+      "p50_ms": 2.98,
+      "count": 6,
+      "p95_ms": 6.28
+    },
+    "GET /assets/overview-page-Ds3XcHNu.js": {
+      "p99_ms": 3.04,
+      "p50_ms": 3.04,
+      "count": 1,
+      "p95_ms": 3.04
+    },
+    "GET /assets/pause-WIRJzBmA.js": {
+      "p99_ms": 2.55,
+      "p50_ms": 0.94,
+      "count": 2,
+      "p95_ms": 2.55
+    },
+    "GET /assets/observability-page-Bw-0Bytj.js": {
+      "p99_ms": 0.98,
+      "p50_ms": 0.98,
+      "count": 1,
+      "p95_ms": 0.98
+    },
+    "GET /assets/index-BHU3OcVW.css": {
+      "p99_ms": 4.04,
+      "p50_ms": 1.62,
+      "count": 8,
+      "p95_ms": 4.04
+    },
+    "GET /assets/decisions-page-BC3LDPGN.js": {
+      "p99_ms": 0.84,
+      "p50_ms": 0.84,
+      "count": 1,
+      "p95_ms": 0.84
+    },
+    "GET /assets/play-DSdCvvul.js": {
+      "p99_ms": 1.32,
+      "p50_ms": 1.05,
+      "count": 2,
+      "p95_ms": 1.32
+    },
+    "GET /assets/pipeline-page-8y88cO9J.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 2,
+      "p95_ms": 1.0
+    },
+    "GET /pipeline": {
+      "p99_ms": 0.73,
+      "p50_ms": 0.45,
+      "count": 4,
+      "p95_ms": 0.73
+    },
+    "GET /assets/use-agents-CVPUOcWE.js": {
+      "p99_ms": 1.3,
+      "p50_ms": 1.3,
+      "count": 1,
+      "p95_ms": 1.3
+    },
+    "GET /assets/governance-dashboard-page-DVlxKH2j.js": {
+      "p99_ms": 1.06,
+      "p50_ms": 1.06,
+      "count": 1,
+      "p95_ms": 1.06
+    },
+    "GET /assets/pipeline-page-C_bqLtau.js": {
+      "p99_ms": 1.11,
+      "p50_ms": 1.11,
+      "count": 1,
+      "p95_ms": 1.11
+    },
+    "GET /assets/circle-THAViXua.js": {
+      "p99_ms": 3.06,
+      "p50_ms": 3.06,
+      "count": 1,
+      "p95_ms": 3.06
+    },
+    "GET /assets/sparkles-Cirp-2Ff.js": {
+      "p99_ms": 2.92,
+      "p50_ms": 1.34,
+      "count": 2,
+      "p95_ms": 2.92
+    },
+    "GET /assets/governance-dashboard-page-1JSql6IC.js": {
+      "p99_ms": 1.52,
+      "p50_ms": 1.52,
+      "count": 1,
+      "p95_ms": 1.52
+    },
+    "GET /assets/cockpit-dashboard-page-BuP6bx9S.js": {
+      "p99_ms": 2.76,
+      "p50_ms": 2.76,
+      "count": 1,
+      "p95_ms": 2.76
+    },
+    "GET /assets/alert-banner-Cv9z4Iq0.js": {
+      "p99_ms": 3.89,
+      "p50_ms": 1.64,
+      "count": 4,
+      "p95_ms": 3.89
+    },
+    "GET /assets/agents-page-L3kRzXu1.js": {
+      "p99_ms": 0.98,
+      "p50_ms": 0.98,
+      "count": 1,
+      "p95_ms": 0.98
+    },
+    "GET /assets/refresh-cw-Bjr1CLWc.js": {
+      "p99_ms": 3.13,
+      "p50_ms": 2.55,
+      "count": 2,
+      "p95_ms": 3.13
+    },
+    "GET /assets/progress-F2uD4_Mu.js": {
+      "p99_ms": 3.17,
+      "p50_ms": 2.95,
+      "count": 2,
+      "p95_ms": 3.17
+    },
+    "GET /assets/use-cockpit-CdRJxsCD.js": {
+      "p99_ms": 2.04,
+      "p50_ms": 1.83,
+      "count": 3,
+      "p95_ms": 2.04
+    },
+    "GET /assets/zap-BN0x_0wn.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /agents": {
+      "p99_ms": 1.0,
+      "p50_ms": 0.45,
+      "count": 2,
+      "p95_ms": 1.0
+    },
+    "GET /assets/arrow-left-Bt9SSDsq.js": {
+      "p99_ms": 43.61,
+      "p50_ms": 1.48,
+      "count": 2,
+      "p95_ms": 43.61
+    },
+    "GET /assets/modal-dialog-DZ_SbhUl.js": {
+      "p99_ms": 3.63,
+      "p50_ms": 1.67,
+      "count": 2,
+      "p95_ms": 3.63
+    },
+    "GET /assets/questionnaires-page-CesbBnwo.js": {
+      "p99_ms": 0.87,
+      "p50_ms": 0.87,
+      "count": 1,
+      "p95_ms": 0.87
+    },
+    "GET /assets/zap-DcZg8LIh.js": {
+      "p99_ms": 2.26,
+      "p50_ms": 2.26,
+      "count": 1,
+      "p95_ms": 2.26
+    },
+    "GET /assets/circle-x-VlePw4OR.js": {
+      "p99_ms": 5.0,
+      "p50_ms": 3.49,
+      "count": 4,
+      "p95_ms": 5.0
+    },
+    "GET /assets/card-CkT8vAjN.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/metrics-page-Blrthij2.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/shield-jwQ7nyZQ.js": {
+      "p99_ms": 2.4,
+      "p50_ms": 2.4,
+      "count": 1,
+      "p95_ms": 2.4
+    },
+    "GET /assets/card-DpU8IQNL.js.map": {
+      "p99_ms": 2.3,
+      "p50_ms": 2.3,
+      "count": 1,
+      "p95_ms": 2.3
+    },
+    "GET /assets/questionnaires-page-BBIvgyYN.js": {
+      "p99_ms": 2.61,
+      "p50_ms": 2.18,
+      "count": 2,
+      "p95_ms": 2.61
+    },
+    "GET /assets/artifact-browser-page-DOOrbOdN.js": {
+      "p99_ms": 1.47,
+      "p50_ms": 1.47,
+      "count": 1,
+      "p95_ms": 1.47
+    },
+    "GET /assets/trending-up-DhnGzZl-.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/arrow-right-CxZ7OwEf.js": {
+      "p99_ms": 3.81,
+      "p50_ms": 2.03,
+      "count": 12,
+      "p95_ms": 3.81
+    },
+    "GET /assets/refresh-cw-D-YTd4ul.js": {
+      "p99_ms": 3.43,
+      "p50_ms": 2.57,
+      "count": 5,
+      "p95_ms": 3.43
+    },
+    "GET /assets/observability-page-DF0I1sAS.js": {
+      "p99_ms": 0.77,
+      "p50_ms": 0.77,
+      "count": 1,
+      "p95_ms": 0.77
+    },
+    "GET /assets/control-signal-CoaMKkHI.js": {
+      "p99_ms": 5.85,
+      "p50_ms": 5.85,
+      "count": 1,
+      "p95_ms": 5.85
+    },
+    "GET /assets/cockpit-dashboard-page-B194KbjT.js": {
+      "p99_ms": 2.09,
+      "p50_ms": 1.78,
+      "count": 3,
+      "p95_ms": 2.09
+    },
+    "GET /assets/index-y_NI25pP.js": {
+      "p99_ms": 5.35,
+      "p50_ms": 1.87,
+      "count": 2,
+      "p95_ms": 5.35
+    },
+    "GET /assets/index-DfxwPRC4.css": {
+      "p99_ms": 3.34,
+      "p50_ms": 3.34,
+      "count": 1,
+      "p95_ms": 3.34
+    },
+    "GET /assets/decisions-page-ByOWHUBs.js": {
+      "p99_ms": 2.73,
+      "p50_ms": 1.6,
+      "count": 2,
+      "p95_ms": 2.73
+    },
+    "GET /assets/commands-page-d9cZkH-0.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/sessions-page-k1ZXvGLz.js": {
+      "p99_ms": 0.71,
+      "p50_ms": 0.71,
+      "count": 1,
+      "p95_ms": 0.71
+    },
+    "GET /assets/commands-page-B9eNBJ2p.js": {
+      "p99_ms": 1.06,
+      "p50_ms": 1.06,
+      "count": 1,
+      "p95_ms": 1.06
+    },
+    "GET /assets/index-CDCB_ANZ.css": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/confidence-indicators-V9tGxAf7.js": {
+      "p99_ms": 3.28,
+      "p50_ms": 3.28,
+      "count": 1,
+      "p95_ms": 3.28
+    },
+    "GET /assets/commands-page-CsaQ7-Xa.js": {
+      "p99_ms": 1.63,
+      "p50_ms": 1.63,
+      "count": 1,
+      "p95_ms": 1.63
+    },
+    "GET /assets/decisions-page-B2a-Hav5.js": {
+      "p99_ms": 4.6,
+      "p50_ms": 2.26,
+      "count": 2,
+      "p95_ms": 4.6
+    },
+    "GET /assets/refresh-cw-C1HFI1YD.js": {
+      "p99_ms": 3.51,
+      "p50_ms": 3.23,
+      "count": 2,
+      "p95_ms": 3.51
+    },
+    "GET /assets/explainability-panel-Qg2dgbYa.js": {
+      "p99_ms": 1.69,
+      "p50_ms": 1.69,
+      "count": 1,
+      "p95_ms": 1.69
+    },
+    "GET /api/v1/cockpit/provenance?page=1&page_size=20": {
+      "p99_ms": 30.57,
+      "p50_ms": 27.72,
+      "count": 3,
+      "p95_ms": 30.57
+    },
+    "GET /assets/use-decisions-CmiEE-g3.js": {
+      "p99_ms": 2.45,
+      "p50_ms": 2.45,
+      "count": 1,
+      "p95_ms": 2.45
+    },
+    "GET /assets/artifact-browser-page-CGA1aluN.js": {
+      "p99_ms": 1.4,
+      "p50_ms": 1.4,
+      "count": 1,
+      "p95_ms": 1.4
+    },
+    "GET /assets/use-sessions-CxQShs2L.js": {
+      "p99_ms": 2.18,
+      "p50_ms": 1.54,
+      "count": 2,
+      "p95_ms": 2.18
+    },
+    "GET /assets/alert-banner-Cuhz80O3.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/use-dashboard-1VqXrUrV.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/questionnaires-page-BI7w0WSq.js": {
+      "p99_ms": 1.0,
+      "p50_ms": 1.0,
+      "count": 1,
+      "p95_ms": 1.0
+    },
+    "GET /assets/input-field-DsQht4eO.js": {
+      "p99_ms": 1.28,
+      "p50_ms": 0.53,
+      "count": 2,
+      "p95_ms": 1.28
+    },
+    "GET /assets/zap-CRtakNlx.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-sessions-D83Wsf79.js": {
+      "p99_ms": 4.58,
+      "p50_ms": 4.14,
+      "count": 2,
+      "p95_ms": 4.58
+    },
+    "GET /assets/card-CIvhf7bD.js": {
+      "p99_ms": 4.17,
+      "p50_ms": 2.48,
+      "count": 2,
+      "p95_ms": 4.17
+    },
+    "GET /assets/use-agents-DvZRf4Jt.js": {
+      "p99_ms": 0.9,
+      "p50_ms": 0.9,
+      "count": 1,
+      "p95_ms": 0.9
+    },
+    "GET /assets/agent-activity-Cu2NBCks.js": {
+      "p99_ms": 4.46,
+      "p50_ms": 4.46,
+      "count": 1,
+      "p95_ms": 4.46
+    },
+    "GET /assets/progress-Cjm3UcYf.js": {
+      "p99_ms": 4.17,
+      "p50_ms": 1.89,
+      "count": 2,
+      "p95_ms": 4.17
+    },
+    "GET /assets/refresh-cw-B1W6Hzo7.js": {
+      "p99_ms": 3.24,
+      "p50_ms": 2.91,
+      "count": 2,
+      "p95_ms": 3.24
+    },
+    "GET /assets/control-signal-D3hfyu-B.js": {
+      "p99_ms": 3.78,
+      "p50_ms": 1.27,
+      "count": 2,
+      "p95_ms": 3.78
+    },
+    "GET /api/v1/cockpit/health": {
+      "p99_ms": 1.05,
+      "p50_ms": 0.39,
+      "count": 152,
+      "p95_ms": 1.0
+    },
+    "GET /assets/status-motif-CoYIFaQi.js": {
+      "p99_ms": 3.41,
+      "p50_ms": 1.4,
+      "count": 2,
+      "p95_ms": 3.41
+    },
+    "GET /assets/shield-alert-Bin-hMDj.js": {
+      "p99_ms": 1.05,
+      "p50_ms": 1.05,
+      "count": 1,
+      "p95_ms": 1.05
+    },
+    "GET /assets/agent-activity-BaPXRbaq.js": {
+      "p99_ms": 0.0,
+      "p50_ms": 0.0,
+      "count": 1,
+      "p95_ms": 0.0
+    },
+    "GET /assets/use-artifacts-BpIjscFs.js": {
+      "p99_ms": 4.26,
+      "p50_ms": 4.26,
+      "count": 1,
+      "p95_ms": 4.26
+    }
+  },
+  "notes": [
+    "Stage and tool latency arrays are populated after orchestrator pipeline runs that emit time-series metrics.",
+    "Use GET /api/v1/analytics/trends for stage/tool rollups once metrics are available."
+  ]
+}

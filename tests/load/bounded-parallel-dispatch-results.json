@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-03-20T08:10:48.624Z",
+  "scenario": "bounded-parallel-dispatch",
+  "config": {
+    "state": "PHASE_3",
+    "iterations": 30,
+    "agents": 6,
+    "maxConcurrency": 3,
+    "minDelayMs": 20,
+    "maxDelayMs": 90,
+    "failRatio": 0.03
+  },
+  "result": {
+    "totalRuns": 30,
+    "failedRuns": 5,
+    "runFailureRatePct": 16.67,
+    "totalCompletedInvocations": 175,
+    "totalFailedInvocations": 5,
+    "latencyMs": {
+      "p50": 156.55,
+      "p95": 186.47,
+      "p99": 188.29,
+      "avg": 156.13,
+      "max": 188.29
+    },
+    "queueWaitMs": {
+      "p50": 184,
+      "p95": 253,
+      "p99": 260,
+      "avg": 187.67,
+      "max": 260
+    },
+    "observedConcurrency": {
+      "p50": 3,
+      "p95": 3,
+      "p99": 3,
+      "max": 3
+    },
+    "throughput": {
+      "completedInvocationsPerSec": {
+        "p50": 37.99,
+        "p95": 47.96,
+        "p99": 53.9,
+        "avg": 38.07,
+        "max": 53.9
+      }
+    }
+  }
+}

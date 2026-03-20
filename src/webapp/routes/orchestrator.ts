@@ -16,6 +16,7 @@
  * @returns {object} Route map { 'METHOD /path': handler }.
  */
 
+import fs from 'fs';
 import path from 'path';
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { ServerContext } from '../context';
@@ -31,6 +32,18 @@ import * as RS from '../route-schemas';
 type OrchestratorEngine = ReturnType<typeof createEngine>;
 type OrchestratorStatus = ReturnType<OrchestratorEngine['status']>;
 type PhaseAgent = { id: string; name: string };
+
+type HumanOverrideEventType = 'pause' | 'override' | 'resume';
+
+type HumanOverrideEvent = {
+  type: HumanOverrideEventType;
+  rationale: string;
+  requested_by: string;
+  timestamp: string;
+  state: string;
+  mode: string;
+  phases?: string[];
+};
 
 function getErrorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -86,12 +99,62 @@ function getSessionRuntime(status: OrchestratorStatus): {
   };
 }
 
+function getRepoRoot(ctx: Record<string, unknown>): string {
+  return (ctx?.PROJECT_ROOT as string) || path.resolve(__dirname, '..', '..', '..');
+}
+
+function isHumanOverrideEvent(value: unknown): value is HumanOverrideEvent {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const row = value as Record<string, unknown>;
+  return (
+    typeof row.type === 'string' &&
+    typeof row.rationale === 'string' &&
+    typeof row.requested_by === 'string' &&
+    typeof row.timestamp === 'string' &&
+    typeof row.state === 'string' &&
+    typeof row.mode === 'string'
+  );
+}
+
+function readHumanOverrideEvents(filePath: string): HumanOverrideEvent[] {
+  try {
+    const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    if (!Array.isArray(raw)) return [];
+    return raw.filter(isHumanOverrideEvent);
+  } catch {
+    return [];
+  }
+}
+
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const { sseNotify } = ctx;
+  const legacyCtx = ctx as unknown as Record<string, unknown>;
+  const humanOverridePath = path.join(
+    getRepoRoot(legacyCtx),
+    'BusinessDocs',
+    'session',
+    'human-override-events.json'
+  );
 
   // Lazy-initialized engine (created on first request)
   let _engine: OrchestratorEngine | null = null;
   let _templateName: string | undefined = undefined;
+  const initialHumanOverrideEvents = readHumanOverrideEvents(humanOverridePath);
+  const lastInitialOverride =
+    initialHumanOverrideEvents.length > 0
+      ? initialHumanOverrideEvents[initialHumanOverrideEvents.length - 1]
+      : null;
+  const _humanOverride = {
+    paused: lastInitialOverride
+      ? lastInitialOverride.type === 'pause' || lastInitialOverride.type === 'override'
+      : false,
+    events: initialHumanOverrideEvents,
+  };
+
+  function persistHumanOverrideEvents(): void {
+    fs.mkdirSync(path.dirname(humanOverridePath), { recursive: true });
+    fs.writeFileSync(humanOverridePath, JSON.stringify(_humanOverride.events, null, 2), 'utf8');
+  }
 
   function getEngine(): OrchestratorEngine {
     if (!_engine) {
@@ -135,7 +198,15 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     async (_request: FastifyRequest, reply: FastifyReply) => {
       try {
         const engine = getEngine();
-        return reply.send(engine.status());
+        const status = engine.status();
+        const lastEvent = _humanOverride.events[_humanOverride.events.length - 1] || null;
+        return reply.send({
+          ...status,
+          human_override: {
+            paused: _humanOverride.paused,
+            last_event: lastEvent,
+          },
+        });
       } catch (err) {
         const message = getErrorMessage(err);
         structuredLog('error', 'orchestrator_status_error', { error: message });
@@ -152,6 +223,11 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     async (request: FastifyRequest, reply: FastifyReply) => {
       try {
         const body = isRecord(request.body) ? request.body : {};
+        if (_humanOverride.paused) {
+          return reply
+            .code(409)
+            .send(errorResponse('ORCHESTRATOR_PAUSED', 'Orchestrator is paused. Resume first.'));
+        }
         const engine = getEngine();
         const prevStatus = engine.status();
         const prevState = prevStatus.state;
@@ -334,6 +410,165 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const message = getErrorMessage(err);
         structuredLog('warn', 'orchestrator_recover_failed', { error: message });
         return reply.code(400).send(errorResponse('RECOVER_FAILED', message));
+      }
+    }
+  );
+
+  // ── POST /api/orchestrator/pause ──────────────────────────
+
+  app.post(
+    '/api/orchestrator/pause',
+    { schema: RS.orchestratorPause },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const body = (request.body as Record<string, unknown>) || {};
+        if (_humanOverride.paused) {
+          return reply
+            .code(409)
+            .send(errorResponse('ALREADY_PAUSED', 'Orchestrator is already paused'));
+        }
+
+        const rationale = String(body.rationale).slice(0, 2000);
+        const requestedBy = body.requested_by
+          ? String(body.requested_by).slice(0, 200)
+          : 'operator';
+        const engine = getEngine();
+        const status = engine.pauseAtCheckpoint();
+
+        const event: HumanOverrideEvent = {
+          type: 'pause',
+          rationale,
+          requested_by: requestedBy,
+          timestamp: new Date().toISOString(),
+          state: status.state,
+          mode: status.mode,
+        };
+        _humanOverride.paused = true;
+        _humanOverride.events.push(event);
+        persistHumanOverrideEvents();
+
+        sseNotify('orchestrator_state', {
+          type: 'orchestrator_state',
+          paused: true,
+          rationale: rationale.slice(0, 200),
+          requested_by: requestedBy,
+          timestamp: event.timestamp,
+        });
+
+        return reply.send({ ok: true, paused: true, status, event });
+      } catch (err) {
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_pause_failed', { error: message });
+        return reply.code(500).send(errorResponse('PAUSE_FAILED', message));
+      }
+    }
+  );
+
+  // ── POST /api/orchestrator/override ───────────────────────
+
+  app.post(
+    '/api/orchestrator/override',
+    { schema: RS.orchestratorOverride },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const body = (request.body as Record<string, unknown>) || {};
+        const rationale = String(body.rationale).slice(0, 2000);
+        const requestedBy = body.requested_by
+          ? String(body.requested_by).slice(0, 200)
+          : 'operator';
+        const mode = body.mode ? String(body.mode).slice(0, 50) : undefined;
+        const phases = Array.isArray(body.phases) ? body.phases.map((p) => String(p)) : undefined;
+        const engine = getEngine();
+        const before = engine.status();
+
+        if (!mode && (!phases || phases.length === 0)) {
+          return reply
+            .code(400)
+            .send(errorResponse('INVALID_OVERRIDE', 'Provide mode and/or phases to override.'));
+        }
+
+        const nextMode = mode || before.mode;
+        const status = engine.reset(nextMode, phases);
+
+        const event: HumanOverrideEvent = {
+          type: 'override',
+          rationale,
+          requested_by: requestedBy,
+          timestamp: new Date().toISOString(),
+          state: status.state,
+          mode: status.mode,
+          phases,
+        };
+        _humanOverride.paused = true;
+        _humanOverride.events.push(event);
+        persistHumanOverrideEvents();
+
+        sseNotify('orchestrator_state', {
+          type: 'orchestrator_state',
+          override: true,
+          paused: true,
+          from_state: before.state,
+          to_mode: status.mode,
+          phases,
+          rationale: rationale.slice(0, 200),
+          requested_by: requestedBy,
+          timestamp: event.timestamp,
+        });
+
+        return reply.send({ ok: true, paused: true, status, event });
+      } catch (err) {
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_override_failed', { error: message });
+        return reply.code(500).send(errorResponse('OVERRIDE_FAILED', message));
+      }
+    }
+  );
+
+  // ── POST /api/orchestrator/resume ─────────────────────────
+
+  app.post(
+    '/api/orchestrator/resume',
+    { schema: RS.orchestratorResume },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const body = (request.body as Record<string, unknown>) || {};
+        if (!_humanOverride.paused) {
+          return reply.code(409).send(errorResponse('NOT_PAUSED', 'Orchestrator is not paused'));
+        }
+
+        const rationale = String(body.rationale).slice(0, 2000);
+        const requestedBy = body.requested_by
+          ? String(body.requested_by).slice(0, 200)
+          : 'operator';
+        const engine = getEngine();
+        const status = engine.status();
+
+        const event: HumanOverrideEvent = {
+          type: 'resume',
+          rationale,
+          requested_by: requestedBy,
+          timestamp: new Date().toISOString(),
+          state: status.state,
+          mode: status.mode,
+        };
+        _humanOverride.paused = false;
+        _humanOverride.events.push(event);
+        persistHumanOverrideEvents();
+
+        sseNotify('orchestrator_state', {
+          type: 'orchestrator_state',
+          resumed: true,
+          paused: false,
+          rationale: rationale.slice(0, 200),
+          requested_by: requestedBy,
+          timestamp: event.timestamp,
+        });
+
+        return reply.send({ ok: true, resumed: true, status, event });
+      } catch (err) {
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_resume_failed', { error: message });
+        return reply.code(500).send(errorResponse('RESUME_FAILED', message));
       }
     }
   );
@@ -598,4 +833,5 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
   // Expose getEngine for cross-route wiring
   ctx._getEngine = getEngine;
+  ctx._getHumanOverrideEvents = () => [..._humanOverride.events];
 }

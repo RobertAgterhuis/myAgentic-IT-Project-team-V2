@@ -3,6 +3,7 @@
 
 import { Readable } from 'stream';
 import * as fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { registerRoutes } from '../../src/webapp/routes/orchestrator.js';
@@ -18,6 +19,14 @@ const SESSION_FILE = path.resolve(
   'BusinessDocs',
   'session',
   'session-state.json'
+);
+const HUMAN_OVERRIDE_FILE = path.resolve(
+  __dirname,
+  '..',
+  '..',
+  'BusinessDocs',
+  'session',
+  'human-override-events.json'
 );
 const IDLE_STATE = JSON.stringify({ status: 'IDLE', mode: 'CREATE', state_history: [] });
 
@@ -64,14 +73,23 @@ function fakeGetReq() {
 describe('orchestrator routes (integration)', () => {
   let routes;
   let originalSession;
+  let originalHumanOverride;
 
   beforeAll(() => {
     originalSession = fs.existsSync(SESSION_FILE) ? fs.readFileSync(SESSION_FILE, 'utf8') : null;
+    originalHumanOverride = fs.existsSync(HUMAN_OVERRIDE_FILE)
+      ? fs.readFileSync(HUMAN_OVERRIDE_FILE, 'utf8')
+      : null;
   });
 
   afterAll(() => {
     if (originalSession !== null) {
       fs.writeFileSync(SESSION_FILE, originalSession);
+    }
+    if (originalHumanOverride !== null) {
+      fs.writeFileSync(HUMAN_OVERRIDE_FILE, originalHumanOverride);
+    } else {
+      fs.rmSync(HUMAN_OVERRIDE_FILE, { force: true });
     }
   });
 
@@ -80,6 +98,7 @@ describe('orchestrator routes (integration)', () => {
     fs.mkdirSync(path.dirname(SESSION_FILE), { recursive: true });
     // Write clean IDLE state so each test starts fresh
     fs.writeFileSync(SESSION_FILE, IDLE_STATE);
+    fs.rmSync(HUMAN_OVERRIDE_FILE, { force: true });
     routes = createTestableRoutes(registerRoutes, { sseNotify: vi.fn() });
   });
 
@@ -90,6 +109,9 @@ describe('orchestrator routes (integration)', () => {
     expect(routes['POST /api/orchestrator/error']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/recover']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/reset']).toBeTypeOf('function');
+    expect(routes['POST /api/orchestrator/pause']).toBeTypeOf('function');
+    expect(routes['POST /api/orchestrator/override']).toBeTypeOf('function');
+    expect(routes['POST /api/orchestrator/resume']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/stop']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/validate-gate']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/command']).toBeTypeOf('function');
@@ -112,6 +134,91 @@ describe('orchestrator routes (integration)', () => {
       routes['GET /api/orchestrator/status'](fakeGetReq(), res);
       expect(res.body.serialized).toBeDefined();
       expect(res.body.history).toBeInstanceOf(Array);
+      expect(res.body.human_override).toBeDefined();
+      expect(res.body.human_override.paused).toBe(false);
+    });
+  });
+
+  /* ── POST /pause, /override, /resume ─────────────────────── */
+
+  describe('POST /pause|/override|/resume', () => {
+    it('pauses orchestrator and blocks advance until resume', async () => {
+      const pauseRes = fakeRes();
+      await routes['POST /api/orchestrator/pause'](
+        fakeReq({ rationale: 'Need human validation', requested_by: 'qa-user' }),
+        pauseRes
+      );
+      expect(pauseRes.status).toBe(200);
+      expect(pauseRes.body.paused).toBe(true);
+
+      const blockedAdvance = fakeRes();
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), blockedAdvance);
+      expect(blockedAdvance.status).toBe(409);
+      expect(blockedAdvance.body.code).toBe('ORCHESTRATOR_PAUSED');
+
+      const resumeRes = fakeRes();
+      await routes['POST /api/orchestrator/resume'](
+        fakeReq({ rationale: 'Approved to continue', requested_by: 'qa-user' }),
+        resumeRes
+      );
+      expect(resumeRes.status).toBe(200);
+      expect(resumeRes.body.resumed).toBe(true);
+
+      const advanceRes = fakeRes();
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), advanceRes);
+      expect(advanceRes.status).toBe(200);
+    });
+
+    it('applies override reset and keeps paused until resume', async () => {
+      const overrideRes = fakeRes();
+      await routes['POST /api/orchestrator/override'](
+        fakeReq({ rationale: 'Switch to tech-only subplan', mode: 'CREATE_TECH' }),
+        overrideRes
+      );
+      expect(overrideRes.status).toBe(200);
+      expect(overrideRes.body.paused).toBe(true);
+      expect(overrideRes.body.status.mode).toBe('CREATE_TECH');
+
+      const statusRes = fakeRes();
+      routes['GET /api/orchestrator/status'](fakeGetReq(), statusRes);
+      expect(statusRes.body.human_override.paused).toBe(true);
+      expect(statusRes.body.human_override.last_event.type).toBe('override');
+    });
+
+    it('persists override events and restores paused state after route re-init', async () => {
+      const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'orchestrator-override-'));
+      try {
+        const ctx = { sseNotify: vi.fn(), PROJECT_ROOT: tempRoot };
+        const firstRoutes = createTestableRoutes(registerRoutes, ctx);
+
+        const pauseRes = fakeRes();
+        await firstRoutes['POST /api/orchestrator/pause'](
+          fakeReq({ rationale: 'Persistent pause check', requested_by: 'qa-user' }),
+          pauseRes
+        );
+        expect(pauseRes.status).toBe(200);
+
+        const eventsPath = path.join(
+          tempRoot,
+          'BusinessDocs',
+          'session',
+          'human-override-events.json'
+        );
+        expect(fs.existsSync(eventsPath)).toBe(true);
+        const persisted = JSON.parse(fs.readFileSync(eventsPath, 'utf8'));
+        expect(Array.isArray(persisted)).toBe(true);
+        expect(persisted.length).toBe(1);
+        expect(persisted[0].type).toBe('pause');
+
+        const secondRoutes = createTestableRoutes(registerRoutes, ctx);
+        const statusRes = fakeRes();
+        secondRoutes['GET /api/orchestrator/status'](fakeGetReq(), statusRes);
+        expect(statusRes.status).toBe(200);
+        expect(statusRes.body.human_override.paused).toBe(true);
+        expect(statusRes.body.human_override.last_event.type).toBe('pause');
+      } finally {
+        fs.rmSync(tempRoot, { recursive: true, force: true });
+      }
     });
   });
 

@@ -88,7 +88,13 @@ describe('AgentExecutionService', () => {
     });
 
     it('returns completed result on successful invoke', async () => {
-      invokeSpy.mockResolvedValue({ success: true, outputPath: '/output/test.md' });
+      invokeSpy.mockResolvedValue({
+        success: true,
+        outputPath: '/output/test.md',
+        confidence: 0.82,
+        uncertainty_reasons: ['Model required 1 retry'],
+        needs_human_review: true,
+      });
 
       const result = await svc.execute({ agentId: '05' });
       expect(result.agent_id).toBe('05');
@@ -98,14 +104,25 @@ describe('AgentExecutionService', () => {
       expect(result.started_at).toBeDefined();
       expect(result.completed_at).toBeDefined();
       expect(result.duration_ms).toBeGreaterThanOrEqual(0);
+      expect(result.confidence).toBe(0.82);
+      expect(result.uncertainty_reasons).toEqual(['Model required 1 retry']);
+      expect(result.needs_human_review).toBe(true);
     });
 
     it('returns failed result when invoke returns success: false', async () => {
-      invokeSpy.mockResolvedValue({ success: false, error: 'Agent failed' });
+      invokeSpy.mockResolvedValue({
+        success: false,
+        error: 'Agent failed',
+        confidence: 0,
+        uncertainty_reasons: ['Agent failed'],
+        needs_human_review: true,
+      });
 
       const result = await svc.execute({ agentId: '05' });
       expect(result.status).toBe('failed');
       expect(result.error).toBe('Agent failed');
+      expect(result.confidence).toBe(0);
+      expect(result.needs_human_review).toBe(true);
     });
 
     it('returns failed result when invoke throws', async () => {

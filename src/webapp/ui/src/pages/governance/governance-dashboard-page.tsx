@@ -14,8 +14,9 @@ import { Button } from '@/components/ui/button';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
+import { DecisionProvenanceView } from '@/components/cockpit/decision-provenance-view';
 import { getPendingColumns, historyColumns } from './columns';
-import { useApprovals, useApproveRequest, useRejectRequest } from '@/hooks';
+import { useApprovals, useApproveRequest, useRejectRequest, useDecisionProvenance } from '@/hooks';
 import {
   ShieldCheck,
   CheckCircle,
@@ -24,6 +25,7 @@ import {
   AlertTriangle,
   RefreshCw,
   FileCheck,
+  Network,
 } from 'lucide-react';
 
 const PolicyCompliancePanel = lazy(() => import('./policy-compliance-panel'));
@@ -35,7 +37,21 @@ export default function GovernanceDashboardPage() {
   const rejectMutation = useRejectRequest();
   const [rejectReason, setRejectReason] = useState('');
   const [rejectingId, setRejectingId] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'approvals' | 'policies'>('approvals');
+  const [activeTab, setActiveTab] = useState<'approvals' | 'policies' | 'provenance'>('approvals');
+  const [provenanceActorType, setProvenanceActorType] = useState<'all' | 'human' | 'machine'>(
+    'all'
+  );
+  const [provenanceDecisionType, setProvenanceDecisionType] = useState<
+    'all' | 'human_override' | 'approval' | 'policy_exception' | 'gate_failure' | 'error'
+  >('all');
+  const [provenancePage, setProvenancePage] = useState(1);
+
+  const provenanceQuery = useDecisionProvenance({
+    actor_type: provenanceActorType === 'all' ? undefined : provenanceActorType,
+    decision_type: provenanceDecisionType === 'all' ? undefined : provenanceDecisionType,
+    page: provenancePage,
+    page_size: 20,
+  });
 
   const approvals = useMemo(() => data?.approvals ?? [], [data]);
 
@@ -118,9 +134,9 @@ export default function GovernanceDashboardPage() {
             detail: 'Items blocked by governance',
           },
           {
-            label: 'Policy coverage',
-            value: activeTab === 'policies' ? 'Live' : 'Ready',
-            detail: 'Policy tab available for deeper review',
+            label: 'Decision lineage',
+            value: String(provenanceQuery.data?.count ?? 0),
+            detail: 'Machine-readable provenance events',
           },
         ]}
         motifs={
@@ -151,7 +167,11 @@ export default function GovernanceDashboardPage() {
                 Current mode
               </div>
               <div className="mt-2 text-sm font-medium">
-                {activeTab === 'approvals' ? 'Approval operations' : 'Policy compliance review'}
+                {activeTab === 'approvals'
+                  ? 'Approval operations'
+                  : activeTab === 'policies'
+                    ? 'Policy compliance review'
+                    : 'Decision provenance review'}
               </div>
               <Text muted className="mt-1 text-xs">
                 Use approvals for case-by-case intervention and policy compliance for systemic
@@ -181,6 +201,18 @@ export default function GovernanceDashboardPage() {
           onClick={() => setActiveTab('policies')}
         >
           <FileCheck className="size-3 mr-1.5" /> Policy Compliance
+        </Button>
+        <Button
+          variant={activeTab === 'provenance' ? 'default' : 'ghost'}
+          size="sm"
+          role="tab"
+          aria-selected={activeTab === 'provenance'}
+          onClick={() => {
+            setProvenancePage(1);
+            setActiveTab('provenance');
+          }}
+        >
+          <Network className="size-3 mr-1.5" /> Decision Provenance
         </Button>
       </div>
 
@@ -267,6 +299,96 @@ export default function GovernanceDashboardPage() {
         <Suspense fallback={<Spinner label="Loading policy panel…" />}>
           <PolicyCompliancePanel />
         </Suspense>
+      )}
+
+      {activeTab === 'provenance' && (
+        <section aria-label="Decision provenance" className="space-y-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1 min-w-45">
+              <Text className="text-xs uppercase tracking-wide text-muted-foreground">Actor</Text>
+              <select
+                className="h-9 rounded-md border border-border bg-background px-3 text-sm"
+                value={provenanceActorType}
+                onChange={(event) => {
+                  setProvenancePage(1);
+                  setProvenanceActorType(event.target.value as 'all' | 'human' | 'machine');
+                }}
+              >
+                <option value="all">All actors</option>
+                <option value="human">Human</option>
+                <option value="machine">Machine</option>
+              </select>
+            </div>
+            <div className="space-y-1 min-w-55">
+              <Text className="text-xs uppercase tracking-wide text-muted-foreground">
+                Decision Type
+              </Text>
+              <select
+                className="h-9 rounded-md border border-border bg-background px-3 text-sm"
+                value={provenanceDecisionType}
+                onChange={(event) => {
+                  setProvenancePage(1);
+                  setProvenanceDecisionType(
+                    event.target.value as
+                      | 'all'
+                      | 'human_override'
+                      | 'approval'
+                      | 'policy_exception'
+                      | 'gate_failure'
+                      | 'error'
+                  );
+                }}
+              >
+                <option value="all">All decisions</option>
+                <option value="human_override">Human override</option>
+                <option value="approval">Approval</option>
+                <option value="policy_exception">Policy exception</option>
+                <option value="gate_failure">Gate failure</option>
+                <option value="error">Error</option>
+              </select>
+            </div>
+          </div>
+
+          {provenanceQuery.isLoading ? (
+            <Spinner label="Loading decision provenance…" />
+          ) : provenanceQuery.isError ? (
+            <AlertBanner variant="warning">
+              Failed to load provenance feed: {(provenanceQuery.error as Error).message}
+            </AlertBanner>
+          ) : (
+            <>
+              <DecisionProvenanceView items={provenanceQuery.data?.items ?? []} />
+              <div className="flex items-center justify-between">
+                <Text muted className="text-xs">
+                  Showing {provenanceQuery.data?.count ?? 0} of {provenanceQuery.data?.total ?? 0}{' '}
+                  events
+                </Text>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setProvenancePage((p) => Math.max(1, p - 1))}
+                    disabled={provenancePage <= 1 || provenanceQuery.isFetching}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setProvenancePage((p) => p + 1)}
+                    disabled={
+                      provenanceQuery.isFetching ||
+                      (provenanceQuery.data?.page_size ?? 20) * provenancePage >=
+                        (provenanceQuery.data?.total ?? 0)
+                    }
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            </>
+          )}
+        </section>
       )}
     </div>
   );

@@ -14,22 +14,31 @@ import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { ConfidencePanel } from '@/components/cockpit/confidence-indicators';
 import { DependencyGraph } from '@/components/cockpit/dependency-graph';
+import { DecisionProvenanceView } from '@/components/cockpit/decision-provenance-view';
 import { RootCauseView } from '@/components/cockpit/root-cause-view';
 import { ApprovalHistoryTimeline } from '@/components/cockpit/approval-workflow';
-import { useCockpitHealth, useDependencyGraph, useRootCause, useApprovalHistory } from '@/hooks';
+import {
+  useCockpitHealth,
+  useDependencyGraph,
+  useDecisionProvenance,
+  useRootCause,
+  useApprovalHistory,
+} from '@/hooks';
 import type {
   CockpitHealthResponse,
   DependencyGraphResponse,
+  ProvenanceResponse,
   RootCauseResponse,
   ApprovalHistoryResponse,
 } from '@/lib/api-types';
-import { Gauge, GitBranch, AlertTriangle, ClipboardCheck, RefreshCw } from 'lucide-react';
+import { Gauge, GitBranch, AlertTriangle, ClipboardCheck, RefreshCw, Network } from 'lucide-react';
 
-type Tab = 'health' | 'dependencies' | 'root-cause' | 'approvals';
+type Tab = 'health' | 'dependencies' | 'provenance' | 'root-cause' | 'approvals';
 
 const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'health', label: 'Health & Confidence', icon: <Gauge className="size-3" /> },
   { id: 'dependencies', label: 'Dependencies', icon: <GitBranch className="size-3" /> },
+  { id: 'provenance', label: 'Decision Provenance', icon: <Network className="size-3" /> },
   { id: 'root-cause', label: 'Root-Cause Analysis', icon: <AlertTriangle className="size-3" /> },
   { id: 'approvals', label: 'Approval History', icon: <ClipboardCheck className="size-3" /> },
 ];
@@ -40,6 +49,7 @@ export default function CockpitDashboardPage() {
 
   const healthQuery = useCockpitHealth();
   const dependencyQuery = useDependencyGraph();
+  const provenanceQuery = useDecisionProvenance();
   const rootCauseQuery = useRootCause();
   const approvalHistoryQuery = useApprovalHistory();
 
@@ -158,6 +168,9 @@ export default function CockpitDashboardPage() {
         {/* Dependencies */}
         {activeTab === 'dependencies' && <DependenciesPanel query={dependencyQuery} />}
 
+        {/* Provenance */}
+        {activeTab === 'provenance' && <ProvenancePanel query={provenanceQuery} />}
+
         {/* Root-Cause */}
         {activeTab === 'root-cause' && (
           <RootCausePanel query={rootCauseQuery} onNavigate={handleRootCauseNavigate} />
@@ -215,6 +228,12 @@ function RootCausePanel({
   if (query.isLoading) return <Spinner label="Loading root-cause data…" />;
   if (query.error) return <ErrorBanner error={query.error} onRetry={query.refetch} />;
   return <RootCauseView items={query.data?.items ?? []} onNavigate={onNavigate} />;
+}
+
+function ProvenancePanel({ query }: { query: QueryState<ProvenanceResponse> }) {
+  if (query.isLoading) return <Spinner label="Loading decision provenance…" />;
+  if (query.error) return <ErrorBanner error={query.error} onRetry={query.refetch} />;
+  return <DecisionProvenanceView items={query.data?.items ?? []} />;
 }
 
 function ApprovalsPanel({ query }: { query: QueryState<ApprovalHistoryResponse> }) {

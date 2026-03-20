@@ -363,6 +363,41 @@ export const handlers = [
     })
   ),
 
+  /* Cockpit */
+  http.get('/api/v1/cockpit/provenance', () =>
+    HttpResponse.json({
+      ok: true,
+      count: 2,
+      total: 2,
+      page: 1,
+      page_size: 20,
+      items: [
+        {
+          id: 'prov-1',
+          decision_type: 'human_override',
+          actor_type: 'human',
+          actor: 'qa-user',
+          action: 'pause',
+          rationale: 'Need manual validation before continuing',
+          source: 'orchestrator-control',
+          state: 'PHASE_2',
+          mode: 'CREATE',
+          timestamp: new Date().toISOString(),
+        },
+        {
+          id: 'prov-2',
+          decision_type: 'approval',
+          actor_type: 'human',
+          actor: 'product-owner',
+          action: 'APPROVED',
+          rationale: 'Gate reviewed and accepted',
+          source: 'governance-approval',
+          timestamp: new Date().toISOString(),
+        },
+      ],
+    })
+  ),
+
   /* Command queue */
   http.get('/api/command', () => HttpResponse.json(mockCommandQueue)),
   http.post('/api/command', () =>

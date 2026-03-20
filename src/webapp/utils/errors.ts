@@ -91,6 +91,34 @@ export const ERROR_CATALOG: Record<string, ErrorEntry> = {
     message: 'An unexpected server error occurred.',
     recovery: 'Try again. If the problem persists, check server logs.',
   },
+  ORCHESTRATOR_PAUSED: {
+    message: 'The orchestrator is paused by a human override.',
+    recovery: 'Resume the orchestrator before advancing.',
+  },
+  ALREADY_PAUSED: {
+    message: 'The orchestrator is already paused.',
+    recovery: 'Resume the orchestrator or continue with override operations.',
+  },
+  NOT_PAUSED: {
+    message: 'The orchestrator is not currently paused.',
+    recovery: 'Pause the orchestrator before attempting to resume.',
+  },
+  INVALID_OVERRIDE: {
+    message: 'Override request is incomplete.',
+    recovery: 'Provide a mode and/or phases with a rationale.',
+  },
+  PAUSE_FAILED: {
+    message: 'Failed to pause orchestrator.',
+    recovery: 'Retry the pause action and check server logs if it persists.',
+  },
+  OVERRIDE_FAILED: {
+    message: 'Failed to apply orchestrator override.',
+    recovery: 'Retry with a valid override payload and check server logs.',
+  },
+  RESUME_FAILED: {
+    message: 'Failed to resume orchestrator.',
+    recovery: 'Retry the resume action and check server logs if it persists.',
+  },
 };
 
 const STATUS_TO_CODE: Record<number, string> = {

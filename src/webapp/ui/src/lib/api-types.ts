@@ -900,6 +900,38 @@ export interface CockpitHealthResponse extends OkResponse {
   agent_confidence: ConfidenceScore;
 }
 
+export interface ProvenanceEntry {
+  id: string;
+  decision_type: 'human_override' | 'approval' | 'policy_exception' | 'gate_failure' | 'error';
+  actor_type: 'human' | 'machine';
+  actor: string;
+  action: string;
+  rationale: string;
+  source: string;
+  state?: string;
+  mode?: string;
+  timestamp: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ProvenanceQueryParams {
+  actor_type?: 'human' | 'machine';
+  decision_type?: 'human_override' | 'approval' | 'policy_exception' | 'gate_failure' | 'error';
+  source?: string;
+  from?: string;
+  to?: string;
+  page?: number;
+  page_size?: number;
+}
+
+export interface ProvenanceResponse extends OkResponse {
+  count: number;
+  total?: number;
+  page?: number;
+  page_size?: number;
+  items: ProvenanceEntry[];
+}
+
 /* ──────────────────────────────────────────────
  * Cockpit — Dependency Graph (M27-003)
  * ────────────────────────────────────────────── */
@@ -1006,6 +1038,9 @@ export interface AgentExecutionResult {
   duration_ms?: number;
   output_path?: string;
   error?: string;
+  confidence?: number;
+  uncertainty_reasons?: string[];
+  needs_human_review?: boolean;
   logs: ExecutionLogEntry[];
 }
 

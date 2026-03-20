@@ -8,6 +8,8 @@ import { queryKeys } from '@/lib/query-keys';
 import type {
   CockpitHealthResponse,
   DependencyGraphResponse,
+  ProvenanceResponse,
+  ProvenanceQueryParams,
   RootCauseResponse,
   ApprovalDetailResponse,
   ApprovalHistoryResponse,
@@ -28,6 +30,39 @@ export function useDependencyGraph() {
   return useQuery({
     queryKey: queryKeys.cockpit.dependencies,
     queryFn: () => apiGet<DependencyGraphResponse>('/v1/cockpit/dependencies'),
+    refetchInterval: 30_000,
+  });
+}
+
+/** Decision provenance feed across human overrides and machine governance events. */
+export function useDecisionProvenance(params?: ProvenanceQueryParams) {
+  const queryParams = params
+    ? {
+        actor_type: params.actor_type,
+        decision_type: params.decision_type,
+        source: params.source,
+        from: params.from,
+        to: params.to,
+        page: params.page,
+        page_size: params.page_size,
+      }
+    : undefined;
+
+  return useQuery({
+    queryKey: queryKeys.cockpit.provenance(
+      params
+        ? {
+            actorType: params.actor_type,
+            decisionType: params.decision_type,
+            source: params.source,
+            from: params.from,
+            to: params.to,
+            page: params.page,
+            pageSize: params.page_size,
+          }
+        : undefined
+    ),
+    queryFn: () => apiGet<ProvenanceResponse>('/v1/cockpit/provenance', queryParams),
     refetchInterval: 30_000,
   });
 }

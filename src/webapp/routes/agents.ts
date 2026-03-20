@@ -104,6 +104,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           status: result.status,
           duration_ms: result.duration_ms,
           error: result.error,
+          confidence: result.confidence,
+          uncertainty_reasons: result.uncertainty_reasons,
+          needs_human_review: result.needs_human_review,
           timestamp: new Date().toISOString(),
         });
 
@@ -169,6 +172,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         started_at: job.started_at,
         completed_at: job.completed_at,
         duration_ms: job.duration_ms,
+        confidence: job.confidence,
+        uncertainty_reasons: job.uncertainty_reasons,
+        needs_human_review: job.needs_human_review,
       });
     }
   );

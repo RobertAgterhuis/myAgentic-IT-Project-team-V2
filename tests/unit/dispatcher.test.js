@@ -284,6 +284,9 @@ describe('Dispatcher — invoke (success)', () => {
     const result = await d.invoke({ id: '01', name: 'Business Analyst' }, STATES.PHASE_1, {});
     expect(result.success).toBe(true);
     expect(result.outputPath).toBe('/out/01.md');
+    expect(result).toHaveProperty('confidence');
+    expect(result).toHaveProperty('uncertainty_reasons');
+    expect(result).toHaveProperty('needs_human_review');
   });
 
   it('logs successful invocation (AC-8)', async () => {
@@ -321,7 +324,7 @@ describe('Dispatcher — invoke (success)', () => {
       onLog: (e) => logs.push(e),
     });
 
-    await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
     expect(logs).toHaveLength(1);
     expect(logs[0]).toMatchObject({
       provider: 'openai',
@@ -336,6 +339,9 @@ describe('Dispatcher — invoke (success)', () => {
       contractValidationPassed: true,
     });
     expect(logs[0].providerLatencyMs).toBe(250);
+    expect(result.confidence).toBeGreaterThan(0.6);
+    expect(result.needs_human_review).toBe(true);
+    expect(result.uncertainty_reasons).toContain('Model required 1 retry');
   });
 });
 
@@ -365,6 +371,8 @@ describe('Dispatcher — invoke (retry)', () => {
     const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
     expect(result.success).toBe(false);
     expect(result.error).toBe('persistent error');
+    expect(result.confidence).toBe(0);
+    expect(result.needs_human_review).toBe(true);
     expect(d.log.length).toBe(2); // 1 retry + 1 final failure
     expect(d.log[0].status).toBe('retry');
     expect(d.log[1].status).toBe('failure');

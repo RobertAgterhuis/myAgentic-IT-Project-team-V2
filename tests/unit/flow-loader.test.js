@@ -4,7 +4,7 @@
  * Flow Loader — Unit Tests (FEAT-05-A / AC-1)
  *
  * Covers:
- * - parseFlowYaml: minimal YAML-subset parser
+ * - parseFlowYaml: standards-based YAML parser normalization
  * - parseInlineValue: inline value handling
  * - loadFlows: full load + validation
  */
@@ -110,6 +110,27 @@ describe('parseFlowYaml', () => {
     const yaml = '\n\nstates:\n  - IDLE\n\n  - COMPLETED\n\n';
     const result = parseFlowYaml(yaml);
     expect(result.states).toEqual(['IDLE', 'COMPLETED']);
+  });
+
+  it('preserves quoted scalar values containing # and : characters', () => {
+    const yaml = `modes:\n  CREATE:\n    phases: []\n    label: "Full CREATE: #1"\n`;
+    const result = parseFlowYaml(yaml);
+    expect(result.modes.CREATE.label).toBe('Full CREATE: #1');
+  });
+
+  it('throws with a clear error when YAML is invalid', () => {
+    const yaml = 'modes:\n  CREATE:\n    phases: [PHASE_1\n';
+    expect(() => parseFlowYaml(yaml)).toThrow('Invalid flows.yaml');
+  });
+
+  it('throws when modes is not a mapping', () => {
+    const yaml = 'modes:\n  - CREATE\n';
+    expect(() => parseFlowYaml(yaml)).toThrow('modes must be a mapping');
+  });
+
+  it('throws when a mode property has unsupported type', () => {
+    const yaml = `modes:\n  CREATE:\n    phases:\n      nested: true\n    label: Full CREATE\n`;
+    expect(() => parseFlowYaml(yaml)).toThrow('expected string or array');
   });
 
   it('parses the full flows.yaml file', () => {

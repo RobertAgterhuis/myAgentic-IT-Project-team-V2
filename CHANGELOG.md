@@ -12,6 +12,28 @@ and this project adheres to
 
 ### Added
 
+- M4/E-C2: Craftsmanship and Maintainability debt burn-down (starts #694, #733, #734, #735)
+  - Replaced bespoke flow YAML subset parsing with a maintained standards-based
+    parser in [platform/engine/flow-loader.ts](platform/engine/flow-loader.ts)
+  - Added normalization guards for invalid `modes` shapes and unsupported mode
+    property types to fail fast with clear errors
+  - Added migration-focused parser tests for invalid YAML, quoted scalar edge
+    cases, and mode-shape validation in
+    [tests/unit/flow-loader.test.js](tests/unit/flow-loader.test.js)
+  - Updated flow definition parser note in
+    [platform/engine/flows.yaml](platform/engine/flows.yaml)
+  - Added stricter invocation-result contract typing/normalization in
+    [platform/engine/dispatcher.ts](platform/engine/dispatcher.ts), including
+    guards for malformed adapter/invoker payloads
+  - Exported a shared runtime invocation result type from
+    [platform/engine/agent-runtime-adapter.ts](platform/engine/agent-runtime-adapter.ts)
+    and added dispatcher coverage for invalid invocation result shapes in
+    [tests/unit/dispatcher.test.js](tests/unit/dispatcher.test.js)
+  - Added failure-mode persistence tests for corrupted write-ahead state files
+    in [tests/unit/write-ahead-persistence.test.js](tests/unit/write-ahead-persistence.test.js)
+    and normalized corrupt persisted transition markers on engine resume in
+    [platform/engine/engine.ts](platform/engine/engine.ts)
+
 - M3/E-C5: Operational Runbooks and Release Maturity (#691, #724, #725, #726)
   - Added release topology and environment contract documentation defining the
     four runtime profiles (`local-dev`, `ci-test`, `production-single-node`,

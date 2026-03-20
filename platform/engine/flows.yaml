@@ -1,6 +1,6 @@
 # Orchestrator Flow Definition (FEAT-05-A / AC-1)
 # Declarative specification of states, transitions, and command modes.
-# Parsed by flow-loader.js — no external YAML dependency required.
+# Parsed by flow-loader.ts using a maintained YAML parser.
 
 # ─── State Definitions ──────────────────────────────────────
 states:

@@ -1,17 +1,16 @@
 /**
- * Flow Loader — Minimal YAML-subset parser for flows.yaml (FEAT-05-A / AC-1)
+ * Flow Loader — Standards-based YAML parser for flows.yaml (FEAT-05-A / AC-1)
  *
- * Zero external dependencies. Parses the simple structure used in flows.yaml:
- *   - Top-level keys (no nesting beyond mode config)
- *   - Arrays of strings (prefixed with "  - ")
- *   - Nested maps (modes → { phases: [], label: string })
+ * Uses a maintained YAML parser and then normalizes the shape expected by the
+ * orchestrator runtime.
  *
  * @module orchestrator/flow-loader
  */
 
 import path from 'path';
+import { parse } from 'yaml';
 
-// ─── Minimal YAML Parser ────────────────────────────────────
+// ─── YAML Parsing & Normalization ───────────────────────────
 
 /**
  * Parse the flows.yaml subset into a JS object.
@@ -31,120 +30,79 @@ interface ParsedFlowYaml {
   [key: string]: unknown;
 }
 
-function parseFlowYaml(content: string): ParsedFlowYaml {
-  const result: ParsedFlowYaml = {};
-  let currentKey: string | null = null;
-  let currentMode: string | null = null;
-  let modeKey: string | null = null;
-
-  const lines = content.split('\n');
-
-  for (let i = 0; i < lines.length; i++) {
-    const raw = lines[i];
-    const stripped = raw.replace(/#.*$/, '').trimEnd();
-
-    if (stripped.length === 0) continue;
-
-    const indent = raw.search(/\S/);
-
-    // Top-level key (indent 0, ends with ':')
-    if (indent === 0 && stripped.endsWith(':')) {
-      currentKey = stripped.slice(0, -1).trim();
-      currentMode = null;
-      modeKey = null;
-      if (!result[currentKey]) result[currentKey] = null;
-      continue;
-    }
-
-    // Top-level key with inline value (indent 0, contains ':')
-    if (indent === 0 && stripped.includes(':')) {
-      const colonIdx = stripped.indexOf(':');
-      const key = stripped.slice(0, colonIdx).trim();
-      const val = stripped.slice(colonIdx + 1).trim();
-      result[key] = parseInlineValue(val);
-      currentKey = null;
-      currentMode = null;
-      continue;
-    }
-
-    if (currentKey === null) continue;
-
-    // Mode-level nested map entry (indent 2, ends with ':')
-    if (indent === 2 && stripped.trimStart().endsWith(':')) {
-      const name = stripped.trimStart().slice(0, -1);
-      if (currentKey === 'modes') {
-        if (!result.modes) result.modes = {};
-        result.modes[name] = {};
-        currentMode = name;
-        modeKey = null;
-      }
-      continue;
-    }
-
-    // Mode property (indent 4, has ':')
-    if (indent === 4 && currentMode && stripped.includes(':')) {
-      const colonIdx = stripped.trimStart().indexOf(':');
-      const propName = stripped.trimStart().slice(0, colonIdx).trim();
-      const propVal = stripped
-        .trimStart()
-        .slice(colonIdx + 1)
-        .trim();
-
-      if (!result.modes) {
-        result.modes = {};
-      }
-      if (!result.modes[currentMode]) {
-        result.modes[currentMode] = {};
-      }
-      const modeEntry = result.modes[currentMode];
-
-      if (propVal.length > 0) {
-        modeEntry[propName] = parseInlineValue(propVal) as string | string[];
-        modeKey = null;
-      } else {
-        modeKey = propName;
-        modeEntry[propName] = [];
-      }
-      continue;
-    }
-
-    // Array item under mode property (indent 6, starts with "- ")
-    if (indent === 6 && currentMode && modeKey && stripped.trimStart().startsWith('- ')) {
-      const item = stripped.trimStart().slice(2).trim();
-      const modeEntry = result.modes?.[currentMode];
-      if (modeEntry && Array.isArray(modeEntry[modeKey])) {
-        (modeEntry[modeKey] as string[]).push(item);
-      }
-      continue;
-    }
-
-    // Top-level array item (indent 2, starts with "- ")
-    if (indent === 2 && stripped.trimStart().startsWith('- ')) {
-      if (!Array.isArray(result[currentKey])) result[currentKey] = [];
-      const item = stripped.trimStart().slice(2).trim();
-      (result[currentKey] as string[]).push(item);
-      continue;
-    }
-  }
-
-  return result;
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-/**
- * Parse an inline YAML value.
- * Handles: inline arrays [a, b], quoted strings, plain strings.
- */
 function parseInlineValue(val: string) {
   if (val.startsWith('[') && val.endsWith(']')) {
     const inner = val.slice(1, -1).trim();
     if (inner.length === 0) return [];
     return inner.split(',').map((s) => s.trim());
   }
-  // Quoted string
   if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
     return val.slice(1, -1);
   }
   return val;
+}
+
+function normalizeModeConfig(modeName: string, modeConfig: unknown): ModeConfig {
+  if (!isRecord(modeConfig)) {
+    throw new Error(`Invalid mode config for "${modeName}": expected mapping`);
+  }
+
+  const normalized: ModeConfig = {};
+  for (const [key, value] of Object.entries(modeConfig)) {
+    if (Array.isArray(value)) {
+      if (value.some((item) => typeof item !== 'string')) {
+        throw new Error(`Invalid mode property "${modeName}.${key}": expected array of strings`);
+      }
+      normalized[key] = value;
+      continue;
+    }
+
+    if (typeof value === 'string') {
+      normalized[key] = value;
+      continue;
+    }
+
+    if (value === null || value === undefined) {
+      continue;
+    }
+
+    throw new Error(`Invalid mode property "${modeName}.${key}": expected string or array`);
+  }
+
+  return normalized;
+}
+
+function parseFlowYaml(content: string): ParsedFlowYaml {
+  let parsed: unknown;
+  try {
+    parsed = parse(content, { uniqueKeys: true });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'unknown parsing error';
+    throw new Error(`Invalid flows.yaml: ${message}`);
+  }
+
+  if (!isRecord(parsed)) {
+    throw new Error('Invalid flows.yaml: root value must be a mapping');
+  }
+
+  const result: ParsedFlowYaml = { ...parsed };
+
+  if (parsed.modes !== undefined) {
+    if (!isRecord(parsed.modes)) {
+      throw new Error('Invalid flows.yaml: modes must be a mapping');
+    }
+    const normalizedModes: Record<string, ModeConfig> = {};
+    for (const [modeName, modeConfig] of Object.entries(parsed.modes)) {
+      normalizedModes[modeName] = normalizeModeConfig(modeName, modeConfig);
+    }
+    result.modes = normalizedModes;
+  }
+
+  return result;
 }
 
 // ─── Flow Loader ────────────────────────────────────────────

@@ -12,6 +12,17 @@ and this project adheres to
 
 ### Added
 
+- M4/E-C2: Craftsmanship and Maintainability debt burn-down (starts #694, #733)
+  - Replaced bespoke flow YAML subset parsing with a maintained standards-based
+    parser in [platform/engine/flow-loader.ts](platform/engine/flow-loader.ts)
+  - Added normalization guards for invalid `modes` shapes and unsupported mode
+    property types to fail fast with clear errors
+  - Added migration-focused parser tests for invalid YAML, quoted scalar edge
+    cases, and mode-shape validation in
+    [tests/unit/flow-loader.test.js](tests/unit/flow-loader.test.js)
+  - Updated flow definition parser note in
+    [platform/engine/flows.yaml](platform/engine/flows.yaml)
+
 - M3/E-C5: Operational Runbooks and Release Maturity (#691, #724, #725, #726)
   - Added release topology and environment contract documentation defining the
     four runtime profiles (`local-dev`, `ci-test`, `production-single-node`,

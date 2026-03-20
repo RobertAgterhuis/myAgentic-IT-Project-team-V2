@@ -35,13 +35,13 @@ COPY --from=ui-builder /build/src/webapp/ui/dist src/webapp/ui/dist
 # Ensure BusinessDocs/ exists even on a clean slate (volume mount target)
 RUN mkdir -p /app/BusinessDocs
 
-## ── Stage 3: Runtime (distroless) ────────────────────────────
-FROM gcr.io/distroless/nodejs22-debian12:nonroot AS runtime
+## ── Stage 3: Runtime (Chainguard) ────────────────────────────
+FROM cgr.dev/chainguard/node:22 AS runtime
 
 WORKDIR /app
 
-COPY --from=deps --chown=nonroot:nonroot /app /app
-USER nonroot
+COPY --from=deps --chown=65532:65532 /app /app
+USER 65532
 
 ENV NODE_ENV=production
 ENV PORT=3000

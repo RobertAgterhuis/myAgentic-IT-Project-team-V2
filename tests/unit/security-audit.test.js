@@ -13,11 +13,11 @@ describe('M5 Security Hardening', () => {
     const dockerfile = fs.readFileSync(path.join(ROOT, 'infra', 'Dockerfile'), 'utf8');
 
     it('runs as non-root user', () => {
-      expect(dockerfile).toMatch(/USER\s+(node|nonroot)/);
+      expect(dockerfile).toMatch(/USER\s+(node|nonroot|65532)/);
     });
 
     it('sets ownership to a non-root user', () => {
-      expect(dockerfile).toMatch(/chown.*(node:node|nonroot:nonroot)/);
+      expect(dockerfile).toMatch(/chown.*(node:node|nonroot:nonroot|65532:65532)/);
     });
 
     it('includes a HEALTHCHECK', () => {
@@ -26,7 +26,7 @@ describe('M5 Security Hardening', () => {
 
     it('uses an official Node base image', () => {
       expect(dockerfile).toMatch(
-        /FROM (node:\d+-bookworm-slim|gcr\.io\/distroless\/nodejs22-debian12:nonroot)/
+        /FROM (node:\d+-bookworm-slim|gcr\.io\/distroless\/nodejs22-debian12:nonroot|cgr\.dev\/chainguard\/node:22)/
       );
     });
   });

@@ -28,13 +28,30 @@ and this project adheres to
     defaults, and dispatcher wiring in
     [tests/unit/agent-runtime-adapter.test.js](tests/unit/agent-runtime-adapter.test.js)
 
-- M4: Production scalability profile implementation
   - Bounded parallel orchestration groups with configurable per-group concurrency
     in [platform/engine/dispatcher.ts](platform/engine/dispatcher.ts)
   - Async store I/O API (`existsAsync`, `readFileAsync`, `writeFileAsync`) for
     filesystem and in-memory stores in [src/webapp/store.ts](src/webapp/store.ts)
   - Startup scale prerequisite enforcement (`assertScalePrerequisites`) with
     profile-aware Redis connectivity checks in [src/webapp/runtime-profiles.ts](src/webapp/runtime-profiles.ts)
+
+- M1/E-B2: Canonical Autonomous Lane Proof (closes #685, #705, #706, #707)
+  - **I-B2-001**: Reproducible benchmark scenario in [usertests/10-canonical-autonomous-lane-proof.md](usertests/10-canonical-autonomous-lane-proof.md)
+    - Full end-to-end autonomous workflow test: Issue → Plan → Code → Test → PR → Review
+    - Demonstrates deterministic agent execution with mock runtime adapter
+    - Machine-readable artifact capture for CI replay and traceability
+    - Integration test suite in [tests/integration/autonomous-lane.test.js](tests/integration/autonomous-lane.test.js)
+  - **I-B2-002**: CI job for autonomous lane smoke path in [.github/workflows/ci.yml](.github/workflows/ci.yml)
+    - Gate 6 job: `autonomous-lane-smoke` runs on main and feature branches
+    - Artifact traceability with JSONL trace files and failure classification
+    - PR comments with lane execution summary and artifact links
+    - Timeout: 10 minutes; runs after lint/test/build gates
+  - **I-B2-003**: Failure classification report generator [scripts/classify-lane-failures.js](scripts/classify-lane-failures.js)
+    - Taxonomy: `config`, `runtime`, `agent-logic`, `external-dependency`, `data`
+    - Machine-readable JSON report with remediation hints and severity levels
+    - Integrated into CI job for automated failure analysis
+  - New npm script: `test:autonomous-lane` for local development
+  - Updated [usertests/README.md](usertests/README.md) with step 10
 - M28: Multi-platform instruction migration
   - `platform/schema/protocols.json` — canonical protocol data (6 protocols,
     handoff checklist, definition of done) with JSON Schema

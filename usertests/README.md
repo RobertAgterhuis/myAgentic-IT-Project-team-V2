@@ -13,12 +13,10 @@ Use the files in this order:
 7. [07-runtime-observability-and-artifacts.md](./07-runtime-observability-and-artifacts.md)
 8. [08-mcp-and-ide-tooling.md](./08-mcp-and-ide-tooling.md)
 9. [09-technical-regression-checklist.md](./09-technical-regression-checklist.md)
+10. [10-canonical-autonomous-lane-proof.md](./10-canonical-autonomous-lane-proof.md) **← Epic #685: Autonomous Lane Proof**
 
 ## How To Use This Test Pack
 
-- Run the scenarios in order for a full end-to-end evaluation.
-- If time is limited, run files 01, 02, 03, and 09 first.
-- Record findings directly in each file under the feedback sections.
 - If a step fails, note the exact step number, what you expected, what actually happened, and whether the failure blocks adoption.
 
 ## Tester Details

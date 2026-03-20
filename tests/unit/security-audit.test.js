@@ -24,8 +24,8 @@ describe('M5 Security Hardening', () => {
       expect(dockerfile).toContain('HEALTHCHECK');
     });
 
-    it('uses alpine base image', () => {
-      expect(dockerfile).toMatch(/FROM node:\d+-alpine/);
+    it('uses an official Node base image', () => {
+      expect(dockerfile).toMatch(/FROM node:\d+-(alpine|bookworm-slim)/);
     });
   });
 

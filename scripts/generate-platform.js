@@ -24,6 +24,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const SCHEMA_DIR = path.join(ROOT, 'platform', 'schema');
@@ -44,6 +45,23 @@ function readJsonOptional(filePath) {
 function ensureDir(dir) {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
+  }
+}
+
+function runPrettierWrite(filePaths) {
+  const prettierCli = require.resolve('prettier/bin/prettier.cjs', { paths: [ROOT] });
+  const result = spawnSync(process.execPath, [prettierCli, '--write', ...filePaths], {
+    cwd: ROOT,
+    stdio: 'pipe',
+    encoding: 'utf8',
+  });
+
+  if (result.status !== 0) {
+    const stderr = (result.stderr || '').trim();
+    const stdout = (result.stdout || '').trim();
+    throw new Error(
+      `Failed to format generated files with Prettier: ${stderr || stdout || 'unknown error'}`
+    );
   }
 }
 
@@ -150,6 +168,7 @@ function generateArchitectureIndexArtifacts(canonical, dryRun) {
     for (const f of files) {
       fs.writeFileSync(f.path, f.content, 'utf8');
     }
+    runPrettierWrite([ARCHITECTURE_INDEX_MD, ARCHITECTURE_INDEX_JSON]);
   }
 
   return {

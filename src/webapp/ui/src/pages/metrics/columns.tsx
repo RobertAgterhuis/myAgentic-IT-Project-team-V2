@@ -37,14 +37,14 @@ export const driftColumns: ColumnDef<DriftEntry, unknown>[] = [
     accessorKey: 'expected',
     header: 'Expected',
     cell: ({ getValue }) => (
-      <span className="text-xs max-w-[200px] line-clamp-2">{getValue() as string}</span>
+      <span className="text-xs max-w-50 line-clamp-2">{getValue() as string}</span>
     ),
   },
   {
     accessorKey: 'actual',
     header: 'Actual',
     cell: ({ getValue }) => (
-      <span className="text-xs max-w-[200px] line-clamp-2">{getValue() as string}</span>
+      <span className="text-xs max-w-50 line-clamp-2">{getValue() as string}</span>
     ),
   },
   {

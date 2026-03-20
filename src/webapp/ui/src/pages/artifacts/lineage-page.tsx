@@ -172,7 +172,7 @@ export default function LineagePage() {
                   nodes={nodes}
                   edges={edges}
                   onNodeClick={(nodeId) => setSelectedId(nodeId)}
-                  className="h-[500px]"
+                  className="h-125"
                 />
               ) : (
                 <>

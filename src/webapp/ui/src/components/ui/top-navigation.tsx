@@ -104,7 +104,7 @@ function TopNavigation({
     <header
       role="banner"
       className={cn(
-        'relative z-10 flex h-16 items-center gap-4 border-b border-border/70 bg-card/78 px-4 shadow-md backdrop-blur-xl supports-[backdrop-filter]:bg-card/72',
+        'relative z-10 flex h-16 items-center gap-4 border-b border-border/70 bg-card/78 px-4 shadow-md backdrop-blur-xl supports-backdrop-filter:bg-card/72',
         className
       )}
       {...props}
@@ -122,7 +122,7 @@ function TopNavigation({
       {/* Project context */}
       {projectName && (
         <div className="hidden min-w-0 sm:flex items-center gap-3 rounded-full border border-border/70 bg-background/60 px-3 py-2 shadow-sm">
-          <div className="flex size-9 items-center justify-center rounded-full bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-sm ring-1 ring-white/35">
+          <div className="flex size-9 items-center justify-center rounded-full bg-linear-to-br from-primary to-secondary text-primary-foreground shadow-sm ring-1 ring-white/35">
             <ShieldCheck className="size-4" />
           </div>
           <div className="min-w-0">

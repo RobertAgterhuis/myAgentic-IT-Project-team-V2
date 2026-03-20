@@ -12,7 +12,7 @@ and this project adheres to
 
 ### Added
 
-- M4/E-C2: Craftsmanship and Maintainability debt burn-down (starts #694, #733, #734)
+- M4/E-C2: Craftsmanship and Maintainability debt burn-down (starts #694, #733, #734, #735)
   - Replaced bespoke flow YAML subset parsing with a maintained standards-based
     parser in [platform/engine/flow-loader.ts](platform/engine/flow-loader.ts)
   - Added normalization guards for invalid `modes` shapes and unsupported mode
@@ -29,6 +29,10 @@ and this project adheres to
     [platform/engine/agent-runtime-adapter.ts](platform/engine/agent-runtime-adapter.ts)
     and added dispatcher coverage for invalid invocation result shapes in
     [tests/unit/dispatcher.test.js](tests/unit/dispatcher.test.js)
+  - Added failure-mode persistence tests for corrupted write-ahead state files
+    in [tests/unit/write-ahead-persistence.test.js](tests/unit/write-ahead-persistence.test.js)
+    and normalized corrupt persisted transition markers on engine resume in
+    [platform/engine/engine.ts](platform/engine/engine.ts)
 
 - M3/E-C5: Operational Runbooks and Release Maturity (#691, #724, #725, #726)
   - Added release topology and environment contract documentation defining the

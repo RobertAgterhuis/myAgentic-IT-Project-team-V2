@@ -254,10 +254,16 @@ function createEngine(options: Record<string, unknown>) {
     autoPersist.onError(event);
   };
 
-  // Track transition status for write-ahead persistence
+  // Track transition status for write-ahead persistence.
+  // Corrupt/unknown markers are ignored to keep resume behavior deterministic.
+  const persistedTransitionStatus =
+    sessionState && typeof (sessionState as Record<string, unknown>).transition_status === 'string'
+      ? ((sessionState as Record<string, unknown>).transition_status as string)
+      : null;
   let transitionStatus: string | null =
-    (sessionState && ((sessionState as Record<string, unknown>).transition_status as string)) ||
-    null;
+    persistedTransitionStatus === 'IN_PROGRESS' || persistedTransitionStatus === 'COMPLETE'
+      ? persistedTransitionStatus
+      : null;
 
   // Create the state machine (crash recovery is handled by constructor)
   const smOptions: Record<string, unknown> = {

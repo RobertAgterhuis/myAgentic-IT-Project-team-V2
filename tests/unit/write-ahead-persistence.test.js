@@ -123,6 +123,16 @@ describe('saveTransitionComplete', () => {
     const persisted = JSON.parse(store._files['/test/session.json']);
     expect(persisted.transition_status).toBe('COMPLETE');
   });
+
+  it('handles corrupted existing file gracefully', () => {
+    const store = createMockStore({ '/test/session.json': 'not json' });
+    saveTransitionComplete(store, '/test/session.json');
+
+    const persisted = JSON.parse(store._files['/test/session.json']);
+    expect(persisted.transition_status).toBe('COMPLETE');
+    expect(persisted.transition_target).toBeUndefined();
+    expect(persisted.transition_started_at).toBeUndefined();
+  });
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -260,5 +270,29 @@ describe('Engine write-ahead — crash recovery', () => {
 
     expect(engine.status().state).toBe('PHASE_2');
     expect(engine.status().transitionStatus).toBe('COMPLETE');
+  });
+
+  it('ignores corrupt transition_status marker on resume', () => {
+    const sessionPath = '/test/session.json';
+    const sessionState = {
+      status: 'PHASE_2',
+      mode: 'CREATE',
+      transition_status: 'CORRUPTED_MARKER',
+      transition_target: 'PHASE_3',
+      state_history: [
+        { from: 'IDLE', to: 'ONBOARDING', timestamp: '2026-01-01T00:00:00Z' },
+        { from: 'ONBOARDING', to: 'PHASE_1', timestamp: '2026-01-01T00:01:00Z' },
+        { from: 'PHASE_1', to: 'CRITIC_1', timestamp: '2026-01-01T00:02:00Z' },
+        { from: 'CRITIC_1', to: 'PHASE_2', timestamp: '2026-01-01T00:03:00Z' },
+      ],
+    };
+    const store = storeWithFlows({
+      [sessionPath]: JSON.stringify(sessionState),
+    });
+
+    const engine = createEngine({ store, flowsPath: FLOWS_PATH, sessionPath });
+
+    expect(engine.status().state).toBe('PHASE_2');
+    expect(engine.status().transitionStatus).toBeNull();
   });
 });

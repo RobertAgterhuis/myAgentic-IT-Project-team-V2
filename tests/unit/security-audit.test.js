@@ -26,7 +26,7 @@ describe('M5 Security Hardening', () => {
 
     it('uses an official Node base image', () => {
       expect(dockerfile).toMatch(
-        /FROM (node:\d+-bookworm-slim|gcr\.io\/distroless\/nodejs22-debian12:nonroot|cgr\.dev\/chainguard\/node:22)/
+        /FROM (node:\d+-bookworm-slim|gcr\.io\/distroless\/nodejs22-debian12:nonroot|cgr\.dev\/chainguard\/node:(22|latest))/
       );
     });
   });

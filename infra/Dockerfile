@@ -36,7 +36,7 @@ COPY --from=ui-builder /build/src/webapp/ui/dist src/webapp/ui/dist
 RUN mkdir -p /app/BusinessDocs
 
 ## ── Stage 3: Runtime (Chainguard) ────────────────────────────
-FROM cgr.dev/chainguard/node:22 AS runtime
+FROM cgr.dev/chainguard/node:latest AS runtime
 
 WORKDIR /app
 

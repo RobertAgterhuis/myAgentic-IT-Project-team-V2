@@ -1242,3 +1242,61 @@ describe('Dispatcher — dispatchStateParallel (M4/Epic-661)', () => {
     expect(calledIds).toEqual(['20', '21', '38', '22', '29', '26', '27', '28']);
   });
 });
+
+describe('Dispatcher — helper path coverage buffer', () => {
+  it('classifyError returns fatal, transient, and recoverable severities', () => {
+    expect(Dispatcher.classifyError({ message: 'authentication failed 401' })).toBe('FATAL');
+    expect(Dispatcher.classifyError({ message: 'network timeout' })).toBe('TRANSIENT');
+    expect(Dispatcher.classifyError({ message: 'plain validation issue' })).toBe('RECOVERABLE');
+  });
+
+  it('default invoker uses adapter when available', async () => {
+    const adapter = {
+      invoke: vi.fn(async () => ({ outputPath: '/adapter/default.md' })),
+    };
+    const d = new Dispatcher({ store: createMockStore(), adapter });
+
+    const result = await d._defaultInvoker({ id: '01', name: 'BA' }, 'copilot', {});
+
+    expect(result.outputPath).toBe('/adapter/default.md');
+    expect(adapter.invoke).toHaveBeenCalledWith({ id: '01', name: 'BA' }, 'copilot', {});
+  });
+
+  it('withTimeout emits TIMEOUT when promise exceeds deadline', async () => {
+    const d = new Dispatcher({ store: createMockStore() });
+
+    await expect(
+      d._withTimeout(new Promise((resolve) => setTimeout(resolve, 30)), 1)
+    ).rejects.toThrow('TIMEOUT');
+  });
+
+  it('logs uncertainty reasons for non-standard successful runtime response', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/non-standard.md',
+        response: {
+          status: 'partial',
+          finishReason: 'length',
+          attempts: 3,
+          usage: { totalTokens: 0 },
+          contractValidation: { status: 'unknown' },
+        },
+      }),
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(true);
+    expect(result.needs_human_review).toBe(true);
+    expect(result.uncertainty_reasons).toEqual(
+      expect.arrayContaining([
+        'Provider status missing or non-success',
+        'Contract validation status not confirmed',
+        'Non-standard finish reason: length',
+        'Model required 2 retries',
+        'Token usage signal is empty',
+      ])
+    );
+  });
+});

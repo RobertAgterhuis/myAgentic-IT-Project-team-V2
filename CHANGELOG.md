@@ -12,6 +12,24 @@ and this project adheres to
 
 ### Added
 
+- M3/E-C5: Operational Runbooks and Release Maturity (#691, #724, #725, #726)
+  - Added release topology and environment contract documentation defining the
+    four runtime profiles (`local-dev`, `ci-test`, `production-single-node`,
+    `production-distributed`) and the three-tier promotion pipeline in
+    [docs/operations/release-topology.md](docs/operations/release-topology.md)
+  - Added incident runbooks for Redis outage (RB-001), provider outage (RB-002),
+    queue backlog (RB-003), and schema mismatch (RB-004) with testable simulation
+    commands and rollback steps in
+    [docs/operations/runbooks.md](docs/operations/runbooks.md)
+  - Added post-deploy health gate documentation and rollback decision matrix
+    covering single-node and distributed rollback sequences in
+    [docs/operations/post-deploy-health-gates.md](docs/operations/post-deploy-health-gates.md)
+  - Added automated post-deploy health gate script (`scripts/post-deploy-check.mjs`)
+    with six gates (liveness, readiness, orchestrator status, metrics, Redis,
+    session state), profile-aware skip logic, and exit-code–driven rollback trigger
+  - Updated [docs/operations/index.md](docs/operations/index.md) with navigation
+    links to all three new docs
+
 - M3/E-A4: Semantic Memory and Context Optimization (#689, #718, #719, #720)
   - Added three-tier semantic memory abstraction (`run`, `project`, `org`) with
     per-tier retention policies (0 / 30 days / 90 days) and lazy TTL eviction in

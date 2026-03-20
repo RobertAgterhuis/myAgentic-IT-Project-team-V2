@@ -12,6 +12,25 @@ and this project adheres to
 
 ### Added
 
+- M2/E-C3: Agent-specific security guardrails (starts #687)
+  - Added context trust labeling and prompt sanitization for model-bound
+    invocation payloads in
+    [platform/engine/agent-runtime-adapter.ts](platform/engine/agent-runtime-adapter.ts)
+  - Added pre-action policy gates for side-effect canonical tools
+    (`tool.files.write`, `tool.git.commit`, `tool.github.issue`) with
+    policy-pack evaluation and explicit `TOOL_POLICY_BLOCKED` denial path in
+    [platform/engine/tool-execution-middleware.ts](platform/engine/tool-execution-middleware.ts)
+  - Added C3 policy entries in
+    [platform/sdlc/policies/security-baseline.json](platform/sdlc/policies/security-baseline.json)
+    (`POL-SEC-C3-001` through `POL-SEC-C3-003`) to require explicit approval
+    before side-effect execution
+  - Added governance-linked approval derivation from session decision records
+    and propagated decision references into tool audit events
+  - Added adversarial prompt/context regression coverage in
+    [tests/security/adversarial-prompt-context.test.js](tests/security/adversarial-prompt-context.test.js)
+    and extended adapter middleware tests in
+    [tests/unit/agent-runtime-adapter.test.js](tests/unit/agent-runtime-adapter.test.js)
+
 - M2/E-A3: Unified tool-calling middleware through `ToolExecutor` (starts #686, #708, #709, #710, #711)
   - Added runtime tool execution middleware in
     [platform/engine/tool-execution-middleware.ts](platform/engine/tool-execution-middleware.ts)

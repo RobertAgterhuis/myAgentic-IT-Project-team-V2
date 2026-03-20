@@ -16,6 +16,7 @@ facts. It is intended for focused reading rather than first-time onboarding.
 | Platform terminology                    | [Domain Glossary](domain-glossary)             |
 | Repository structure and file ownership | [File System Reference](file-system-reference) |
 | Agent, guardrail, and contract lookup   | [Agent Index](agent-index)                     |
+| Runtime phase-agent architecture map    | [Architecture Index](architecture-index)       |
 
 ## Guides
 
@@ -24,3 +25,4 @@ facts. It is intended for focused reading rather than first-time onboarding.
 - [Domain Glossary](domain-glossary)
 - [File System Reference](file-system-reference)
 - [Agent Index](agent-index)
+- [Architecture Index](architecture-index)

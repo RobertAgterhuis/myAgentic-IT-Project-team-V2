@@ -1,6 +1,11 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
 import type { ProgressInfo, SessionState } from '../types';
+import {
+  PHASE_AGENTS as RUNTIME_PHASE_AGENTS,
+  assertRuntimeSchemaParity,
+} from '../../../../platform/engine/dispatcher';
+import { STATES } from '../../../../platform/engine/state-machine';
 
 type AgentDef = { id: string; name: string };
 
@@ -11,57 +16,6 @@ type PhaseProgressItem = {
   agents: Array<{ id: string; name: string; status: string }>;
   done: number;
   total: number;
-};
-
-const PHASE_AGENTS: Record<string, AgentDef[]> = {
-  ONBOARDING: [{ id: '25', name: 'Onboarding Agent' }],
-  'PHASE-1': [
-    { id: '01', name: 'Business Analyst' },
-    { id: '02', name: 'Domain Expert' },
-    { id: '03', name: 'Sales Strategist' },
-    { id: '04', name: 'Financial Analyst' },
-    { id: '34', name: 'Product Manager' },
-    { id: 'critic_risk', name: 'Critic + Risk' },
-  ],
-  'PHASE-2': [
-    { id: '05', name: 'Software Architect' },
-    { id: '06', name: 'Senior Developer' },
-    { id: '07', name: 'DevOps Engineer' },
-    { id: '08', name: 'Security Architect' },
-    { id: '09', name: 'Data Architect' },
-    { id: '33', name: 'Legal Counsel' },
-    { id: 'critic_risk', name: 'Critic + Risk' },
-  ],
-  'PHASE-3': [
-    { id: '10', name: 'UX Researcher' },
-    { id: '11', name: 'UX Designer' },
-    { id: '12', name: 'UI Designer' },
-    { id: '13', name: 'Accessibility Specialist' },
-    { id: '32', name: 'Content Strategist' },
-    { id: '35', name: 'Localization Specialist' },
-    { id: 'critic_risk', name: 'Critic + Risk' },
-  ],
-  'PHASE-4': [
-    { id: '14', name: 'Brand Strategist' },
-    { id: '15', name: 'Growth Marketer' },
-    { id: '16', name: 'CRO Specialist' },
-    { id: 'critic_risk', name: 'Critic + Risk' },
-    { id: '30', name: 'Brand & Assets Agent' },
-    { id: '31', name: 'Storybook Agent' },
-  ],
-  SYNTHESIS: [
-    { id: '17', name: 'Synthesis Agent' },
-    { id: '27', name: 'GitHub Integration' },
-  ],
-  'PHASE-5': [
-    { id: '20', name: 'Implementation Agent' },
-    { id: '21', name: 'Test Agent' },
-    { id: '22', name: 'PR/Review Agent' },
-    { id: '29', name: 'KPI Agent' },
-    { id: '26', name: 'Documentation Agent' },
-    { id: '27', name: 'GitHub Integration' },
-    { id: '28', name: 'Retrospective Agent' },
-  ],
 };
 
 const PHASE_ORDER = [
@@ -83,6 +37,43 @@ const PHASE_LABELS: Record<string, string> = {
   SYNTHESIS: 'Synthesis',
   'PHASE-5': 'Phase 5 — Implementation',
 };
+
+const PROGRESS_PHASE_FROM_RUNTIME_STATE = Object.freeze({
+  [STATES.ONBOARDING]: 'ONBOARDING',
+  [STATES.PHASE_1]: 'PHASE-1',
+  [STATES.PHASE_2]: 'PHASE-2',
+  [STATES.PHASE_3]: 'PHASE-3',
+  [STATES.PHASE_4]: 'PHASE-4',
+  [STATES.SYNTHESIS]: 'SYNTHESIS',
+  [STATES.PHASE_5_EXECUTING]: 'PHASE-5',
+} as Record<string, string>);
+
+function compileProgressPhaseAgents(runtimePhaseAgents: Record<string, AgentDef[]>) {
+  const phaseAgents: Record<string, AgentDef[]> = Object.fromEntries(
+    PHASE_ORDER.map((key) => [key, [] as AgentDef[]])
+  );
+
+  for (const [runtimeState, progressPhase] of Object.entries(PROGRESS_PHASE_FROM_RUNTIME_STATE)) {
+    phaseAgents[progressPhase] = (runtimePhaseAgents[runtimeState] || []).map((agent) => ({
+      id: agent.id,
+      name: agent.name,
+    }));
+  }
+
+  // Preserve critic gate visibility in phase progress while keeping phase
+  // specialists sourced from canonical runtime schema.
+  const criticRollup: AgentDef = { id: 'critic_risk', name: 'Critic + Risk' };
+  for (const phaseKey of ['PHASE-1', 'PHASE-2', 'PHASE-3', 'PHASE-4']) {
+    phaseAgents[phaseKey].push({ ...criticRollup });
+  }
+
+  return phaseAgents;
+}
+
+assertRuntimeSchemaParity(RUNTIME_PHASE_AGENTS);
+const PHASE_AGENTS: Record<string, AgentDef[]> = compileProgressPhaseAgents(
+  RUNTIME_PHASE_AGENTS as Record<string, AgentDef[]>
+);
 
 function isAgentCompleted(agent: AgentDef, completedAgents: string[]): boolean {
   const agentFile = agent.id + '-' + agent.name.toLowerCase().replace(/[^a-z]+/g, '-');

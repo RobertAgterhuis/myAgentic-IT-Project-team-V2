@@ -42,9 +42,6 @@ function createMinimalManifest(overrides = {}) {
     agentsDir: 'agents',
     contractsDir: 'contracts',
     guardrailsDir: 'guardrails',
-    phaseAgents: {
-      ONBOARDING: [{ id: '01', name: 'Test Agent' }],
-    },
     phaseContracts: {
       PHASE_1: ['test-contract.md'],
     },
@@ -233,10 +230,15 @@ describe('resolveTemplatePaths', () => {
     expect(resolved.playbooksDir).toBeNull();
   });
 
-  test('passes through phaseAgents, phaseContracts, phaseGuardrails, criticToPhase, modes', () => {
+  test('derives phaseAgents from canonical mapping when omitted in manifest', () => {
     const manifest = createMinimalManifest();
+    delete manifest.phaseAgents;
     const resolved = resolveTemplatePaths(manifest, '/root');
-    expect(resolved.phaseAgents).toEqual(manifest.phaseAgents);
+    expect(resolved.phaseAgents.ONBOARDING).toBeDefined();
+    expect(resolved.phaseAgents.PHASE_1).toBeDefined();
+    expect(resolved.phaseAgents.PHASE_5_EXECUTING).toBeDefined();
+    expect(resolved.phaseAgents.CRITIC_1).toBeDefined();
+    expect(resolved.phaseAgents.CRITIC_4).toBeDefined();
     expect(resolved.phaseContracts).toEqual(manifest.phaseContracts);
     expect(resolved.phaseGuardrails).toEqual(manifest.phaseGuardrails);
     expect(resolved.criticToPhase).toEqual(manifest.criticToPhase);
@@ -397,22 +399,21 @@ describe('listTemplates', () => {
 // ─── SDLC Manifest Consistency ───────────────────────────────
 
 describe('SDLC manifest consistency with current engine', () => {
-  let manifest;
+  let config;
 
   beforeAll(() => {
-    manifest = loadManifest('sdlc', TEMPLATES_DIR);
+    config = loadTemplate('sdlc', TEMPLATES_DIR);
   });
 
   test('phaseAgents matches current dispatcher PHASE_AGENTS', () => {
-    // Verify the SDLC manifest has the same agent registrations as the
-    // current hardcoded PHASE_AGENTS in dispatcher.js
+    // phaseAgents are now derived from canonical schema via loader
     const { PHASE_AGENTS } = require('../../platform/engine/dispatcher');
     for (const [state, agents] of Object.entries(PHASE_AGENTS)) {
-      expect(manifest.phaseAgents[state]).toBeDefined();
-      expect(manifest.phaseAgents[state]).toHaveLength(agents.length);
+      expect(config.phaseAgents[state]).toBeDefined();
+      expect(config.phaseAgents[state]).toHaveLength(agents.length);
       for (let i = 0; i < agents.length; i++) {
-        expect(manifest.phaseAgents[state][i].id).toBe(agents[i].id);
-        expect(manifest.phaseAgents[state][i].name).toBe(agents[i].name);
+        expect(config.phaseAgents[state][i].id).toBe(agents[i].id);
+        expect(config.phaseAgents[state][i].name).toBe(agents[i].name);
       }
     }
   });
@@ -421,23 +422,23 @@ describe('SDLC manifest consistency with current engine', () => {
     // Read current hardcoded values for comparison
     // The gate-validator exports PHASE_CONTRACTS indirectly via the module
     // Since we can't easily import it, verify the manifest structure matches
-    expect(manifest.phaseContracts.PHASE_1).toContain('analysis-output-contract.md');
-    expect(manifest.phaseContracts.PHASE_1).toContain('recommendations-output-contract.md');
-    expect(manifest.phaseContracts.PHASE_1).toHaveLength(4);
-    expect(manifest.phaseContracts.PHASE_4).toHaveLength(4);
+    expect(config.phaseContracts.PHASE_1).toContain('analysis-output-contract.md');
+    expect(config.phaseContracts.PHASE_1).toContain('recommendations-output-contract.md');
+    expect(config.phaseContracts.PHASE_1).toHaveLength(4);
+    expect(config.phaseContracts.PHASE_4).toHaveLength(4);
   });
 
   test('modes matches current state-machine MODE_CONFIGS', () => {
     const { MODE_CONFIGS } = require('../../platform/engine/state-machine');
-    for (const [mode, config] of Object.entries(MODE_CONFIGS)) {
-      expect(manifest.modes[mode]).toBeDefined();
-      expect(manifest.modes[mode].phases).toEqual(config.phases);
-      expect(manifest.modes[mode].label).toBe(config.label);
+    for (const [mode, modeConfig] of Object.entries(MODE_CONFIGS)) {
+      expect(config.modes[mode]).toBeDefined();
+      expect(config.modes[mode].phases).toEqual(modeConfig.phases);
+      expect(config.modes[mode].label).toBe(modeConfig.label);
     }
   });
 
   test('criticToPhase matches current gate-validator CRITIC_TO_PHASE', () => {
-    expect(manifest.criticToPhase).toEqual({
+    expect(config.criticToPhase).toEqual({
       CRITIC_1: 'PHASE_1',
       CRITIC_2: 'PHASE_2',
       CRITIC_3: 'PHASE_3',

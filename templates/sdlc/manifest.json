@@ -53,67 +53,6 @@
     { "file": "playwright.md", "name": "Playwright", "count": 6, "defaultStatus": "DEFERRED" },
     { "file": "powershell.md", "name": "PowerShell", "count": 6, "defaultStatus": "DEFERRED" }
   ],
-  "phaseAgents": {
-    "ONBOARDING": [{ "id": "25", "name": "Onboarding Agent" }],
-    "PHASE_1": [
-      { "id": "01", "name": "Business Analyst" },
-      { "id": "02", "name": "Domain Expert" },
-      { "id": "03", "name": "Sales Strategist" },
-      { "id": "04", "name": "Financial Analyst" },
-      { "id": "34", "name": "Product Manager" }
-    ],
-    "CRITIC_1": [
-      { "id": "18", "name": "Critic Agent" },
-      { "id": "19", "name": "Risk Agent" }
-    ],
-    "PHASE_2": [
-      { "id": "05", "name": "Software Architect" },
-      { "id": "06", "name": "Senior Developer" },
-      { "id": "07", "name": "DevOps Engineer" },
-      { "id": "08", "name": "Security Architect" },
-      { "id": "09", "name": "Data Architect" },
-      { "id": "33", "name": "Legal Counsel" }
-    ],
-    "CRITIC_2": [
-      { "id": "18", "name": "Critic Agent" },
-      { "id": "19", "name": "Risk Agent" }
-    ],
-    "PHASE_3": [
-      { "id": "10", "name": "UX Researcher" },
-      { "id": "11", "name": "UX Designer" },
-      { "id": "12", "name": "UI Designer" },
-      { "id": "13", "name": "Accessibility Specialist" },
-      { "id": "32", "name": "Content Strategist" },
-      { "id": "35", "name": "Localization Specialist" }
-    ],
-    "CRITIC_3": [
-      { "id": "18", "name": "Critic Agent" },
-      { "id": "19", "name": "Risk Agent" }
-    ],
-    "PHASE_4": [
-      { "id": "14", "name": "Brand Strategist" },
-      { "id": "15", "name": "Growth Marketer" },
-      { "id": "16", "name": "CRO Specialist" },
-      { "id": "30", "name": "Brand & Assets Agent" },
-      { "id": "31", "name": "Storybook Agent" }
-    ],
-    "CRITIC_4": [
-      { "id": "18", "name": "Critic Agent" },
-      { "id": "19", "name": "Risk Agent" }
-    ],
-    "SYNTHESIS": [{ "id": "17", "name": "Synthesis Agent" }],
-    "SPRINT_GATE": [{ "id": "00", "name": "Orchestrator (Sprint Gate)" }],
-    "PHASE_5_EXECUTING": [
-      { "id": "20", "name": "Implementation Agent" },
-      { "id": "21", "name": "Test Agent" },
-      { "id": "38", "name": "Architecture Compliance Reviewer" },
-      { "id": "22", "name": "PR/Review Agent" },
-      { "id": "29", "name": "KPI Agent" },
-      { "id": "26", "name": "Documentation Agent" },
-      { "id": "27", "name": "GitHub Integration Agent" },
-      { "id": "28", "name": "Retrospective Agent" }
-    ]
-  },
   "phaseContracts": {
     "PHASE_1": [
       "analysis-output-contract.md",

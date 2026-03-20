@@ -15,6 +15,8 @@
  */
 
 const {
+  compileAgentPhaseMap,
+  assertRuntimeSchemaParity,
   PHASE_AGENTS,
   PLATFORMS,
   _DEFAULT_CONFIG,
@@ -97,10 +99,10 @@ describe('PHASE_AGENTS — agent registry', () => {
     expect(PHASE_AGENTS[STATES.PHASE_1][4].name).toBe('Product Manager');
   });
 
-  it('PHASE_2 has 6 agents including Legal Counsel', () => {
+  it('PHASE_2 has 6 agents including agent 33', () => {
     expect(PHASE_AGENTS[STATES.PHASE_2].length).toBe(6);
-    const names = PHASE_AGENTS[STATES.PHASE_2].map((a) => a.name);
-    expect(names).toContain('Legal Counsel');
+    const ids = PHASE_AGENTS[STATES.PHASE_2].map((a) => a.id);
+    expect(ids).toContain('33');
   });
 
   it('all critic states have Critic + Risk agents', () => {
@@ -114,6 +116,33 @@ describe('PHASE_AGENTS — agent registry', () => {
   it('IDLE and COMPLETED have no agents', () => {
     expect(PHASE_AGENTS[STATES.IDLE]).toBeUndefined();
     expect(PHASE_AGENTS[STATES.COMPLETED]).toBeUndefined();
+  });
+
+  it('compiles dispatcher phase map from canonical schema', () => {
+    const compiled = compileAgentPhaseMap();
+    expect(compiled[STATES.ONBOARDING]).toEqual([{ id: '25', name: 'Onboarding Agent' }]);
+    expect(compiled[STATES.CRITIC_1]).toEqual(compiled[STATES.CRITIC_2]);
+    expect(compiled[STATES.CRITIC_1]).toEqual(compiled[STATES.CRITIC_3]);
+    expect(compiled[STATES.CRITIC_1]).toEqual(compiled[STATES.CRITIC_4]);
+  });
+
+  it('throws when runtime map diverges from canonical schema output', () => {
+    const divergent = {
+      ...PHASE_AGENTS,
+      [STATES.PHASE_1]: [{ id: '01', name: 'Broken Name' }],
+    };
+    expect(() => assertRuntimeSchemaParity(divergent)).toThrow(/parity violation/i);
+  });
+
+  it('throws when compiling from invalid schema shape', () => {
+    expect(() => compileAgentPhaseMap({})).toThrow(/expected top-level agents array/i);
+  });
+
+  it('throws when compiling from invalid schema row fields', () => {
+    const badSchema = {
+      agents: [{ id: 1, name: 'Bad', phase: 'PHASE_1' }],
+    };
+    expect(() => compileAgentPhaseMap(badSchema)).toThrow(/expected string id and name/i);
   });
 });
 
@@ -545,6 +574,24 @@ describe('Dispatcher — default invoker', () => {
     const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
     expect(result.success).toBe(false);
     expect(result.error).toMatch(/No runtime adapter configured/);
+  });
+
+  it('uses runtime adapter when configured', async () => {
+    const adapter = {
+      invoke: vi.fn(async () => ({ outputPath: '/adapter/out.md' })),
+    };
+    const d = new Dispatcher({
+      store: createMockStore(),
+      adapter,
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(true);
+    expect(result.outputPath).toBe('/adapter/out.md');
+    expect(adapter.invoke).toHaveBeenCalledTimes(1);
+    expect(adapter.invoke).toHaveBeenCalledWith({ id: '01', name: 'BA' }, PLATFORMS.COPILOT, {});
   });
 });
 
@@ -1121,5 +1168,135 @@ describe('Dispatcher — dispatchStateParallel (M4/Epic-661)', () => {
 
     expect(agent18.platform).toBe('claude');
     expect(agent19.platform).toBe('openai');
+  });
+
+  it('marks missing grouped agents as failed when not present in state registry', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      phaseAgents: {
+        [STATES.PHASE_1]: [{ id: '01', name: 'Business Analyst' }],
+      },
+      invoker: createSuccessInvoker('/out/01.md'),
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.dispatchStateParallel(STATES.PHASE_1, {}, {}, { maxConcurrency: 2 });
+
+    expect(result.completed).toEqual(['01']);
+    expect(result.failed).toEqual(expect.arrayContaining(['02', '03', '04', '34']));
+    const missing = result.results.filter((r) => !r.success);
+    expect(missing.length).toBeGreaterThan(0);
+    expect(missing[0].error).toMatch(/not found in registry/i);
+  });
+
+  it('handles rejected task outcomes from bounded group execution', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: createSuccessInvoker('/out/ok.md'),
+      config: { maxRetries: 0 },
+    });
+
+    const originalBuildContext = d.buildContext.bind(d);
+    d.buildContext = (agentId, options = {}) => {
+      if (agentId === '19') {
+        throw new Error('context exploded');
+      }
+      return originalBuildContext(agentId, options);
+    };
+
+    const result = await d.dispatchStateParallel(STATES.CRITIC_1, {}, {}, { maxConcurrency: 2 });
+
+    expect(result.completed).toEqual(['18']);
+    expect(result.failed).toEqual(['unknown']);
+    const rejected = result.results.find((r) => r.agent && r.agent.id === 'unknown');
+    expect(rejected).toBeDefined();
+    expect(rejected.success).toBe(false);
+    expect(String(rejected.error)).toMatch(/context exploded/i);
+  });
+
+  it('continues to later groups when onFailure is continue', async () => {
+    const calledIds = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        calledIds.push(agent.id);
+        if (agent.id === '20') {
+          throw new Error('group-1 failure');
+        }
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.dispatchStateParallel(
+      STATES.PHASE_5_EXECUTING,
+      {},
+      {},
+      { maxConcurrency: 1 }
+    );
+
+    expect(result.failed).toContain('20');
+    expect(result.completed).toEqual(
+      expect.arrayContaining(['21', '38', '22', '29', '26', '27', '28'])
+    );
+    expect(calledIds).toEqual(['20', '21', '38', '22', '29', '26', '27', '28']);
+  });
+});
+
+describe('Dispatcher — helper path coverage buffer', () => {
+  it('classifyError returns fatal, transient, and recoverable severities', () => {
+    expect(Dispatcher.classifyError({ message: 'authentication failed 401' })).toBe('FATAL');
+    expect(Dispatcher.classifyError({ message: 'network timeout' })).toBe('TRANSIENT');
+    expect(Dispatcher.classifyError({ message: 'plain validation issue' })).toBe('RECOVERABLE');
+  });
+
+  it('default invoker uses adapter when available', async () => {
+    const adapter = {
+      invoke: vi.fn(async () => ({ outputPath: '/adapter/default.md' })),
+    };
+    const d = new Dispatcher({ store: createMockStore(), adapter });
+
+    const result = await d._defaultInvoker({ id: '01', name: 'BA' }, 'copilot', {});
+
+    expect(result.outputPath).toBe('/adapter/default.md');
+    expect(adapter.invoke).toHaveBeenCalledWith({ id: '01', name: 'BA' }, 'copilot', {});
+  });
+
+  it('withTimeout emits TIMEOUT when promise exceeds deadline', async () => {
+    const d = new Dispatcher({ store: createMockStore() });
+
+    await expect(
+      d._withTimeout(new Promise((resolve) => setTimeout(resolve, 30)), 1)
+    ).rejects.toThrow('TIMEOUT');
+  });
+
+  it('logs uncertainty reasons for non-standard successful runtime response', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/non-standard.md',
+        response: {
+          status: 'partial',
+          finishReason: 'length',
+          attempts: 3,
+          usage: { totalTokens: 0 },
+          contractValidation: { status: 'unknown' },
+        },
+      }),
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(true);
+    expect(result.needs_human_review).toBe(true);
+    expect(result.uncertainty_reasons).toEqual(
+      expect.arrayContaining([
+        'Provider status missing or non-success',
+        'Contract validation status not confirmed',
+        'Non-standard finish reason: length',
+        'Model required 2 retries',
+        'Token usage signal is empty',
+      ])
+    );
   });
 });

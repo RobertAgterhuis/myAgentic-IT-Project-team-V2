@@ -24,10 +24,14 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { spawnSync } = require('node:child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const SCHEMA_DIR = path.join(ROOT, 'platform', 'schema');
 const MANIFEST_PATH = path.join(ROOT, 'templates', 'sdlc', 'manifest.json');
+const DOCS_REFERENCE_DIR = path.join(ROOT, 'docs', 'reference');
+const ARCHITECTURE_INDEX_MD = path.join(DOCS_REFERENCE_DIR, 'architecture-index.md');
+const ARCHITECTURE_INDEX_JSON = path.join(DOCS_REFERENCE_DIR, 'architecture-index.json');
 
 function readJson(filePath) {
   return JSON.parse(fs.readFileSync(filePath, 'utf8'));
@@ -44,6 +48,23 @@ function ensureDir(dir) {
   }
 }
 
+function runPrettierWrite(filePaths) {
+  const prettierCli = require.resolve('prettier/bin/prettier.cjs', { paths: [ROOT] });
+  const result = spawnSync(process.execPath, [prettierCli, '--write', ...filePaths], {
+    cwd: ROOT,
+    stdio: 'pipe',
+    encoding: 'utf8',
+  });
+
+  if (result.status !== 0) {
+    const stderr = (result.stderr || '').trim();
+    const stdout = (result.stdout || '').trim();
+    throw new Error(
+      `Failed to format generated files with Prettier: ${stderr || stdout || 'unknown error'}`
+    );
+  }
+}
+
 /**
  * Load all canonical data including protocols.
  */
@@ -54,6 +75,108 @@ function loadCanonical() {
     tools: readJson(path.join(SCHEMA_DIR, 'tools.json')),
     protocols: readJson(path.join(SCHEMA_DIR, 'protocols.json')),
     manifest: readJsonOptional(MANIFEST_PATH),
+  };
+}
+
+function compileArchitectureIndex(canonical) {
+  const { agents, flows } = canonical;
+  const byPhase = {};
+
+  for (const state of flows.states || []) {
+    byPhase[state] = [];
+  }
+
+  for (const agent of agents.agents) {
+    if (!byPhase[agent.phase]) byPhase[agent.phase] = [];
+    byPhase[agent.phase].push({
+      id: agent.id,
+      name: agent.name,
+      role: agent.role,
+      dependencies: agent.dependencies,
+    });
+  }
+
+  for (const phase of Object.keys(byPhase)) {
+    byPhase[phase].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+  }
+
+  return {
+    schemaVersion: agents.schemaVersion,
+    generatedAt: new Date().toISOString(),
+    source: 'platform/schema/agents.json + platform/schema/flows.json',
+    fullFlow: flows.fullFlow,
+    phases: byPhase,
+  };
+}
+
+function renderArchitectureIndexMarkdown(indexData) {
+  const lines = [];
+  lines.push('---');
+  lines.push('title: Architecture Index');
+  lines.push('parent: Reference');
+  lines.push('nav_order: 6');
+  lines.push('description: Auto-generated architecture mapping from canonical runtime schema.');
+  lines.push('---');
+  lines.push('');
+  lines.push('# Architecture Index');
+  lines.push('');
+  lines.push('> Auto-generated from canonical schema. Do not edit manually.');
+  lines.push(`> Generated at: ${indexData.generatedAt}`);
+  lines.push('');
+  lines.push('## Runtime Flow');
+  lines.push('');
+  lines.push('```text');
+  lines.push(indexData.fullFlow.join(' -> '));
+  lines.push('```');
+  lines.push('');
+  lines.push('## Phase-Agent Mapping');
+  lines.push('');
+
+  for (const [phase, phaseAgents] of Object.entries(indexData.phases)) {
+    lines.push(`### ${phase}`);
+    lines.push('');
+    if (!Array.isArray(phaseAgents) || phaseAgents.length === 0) {
+      lines.push('- No agents mapped.');
+      lines.push('');
+      continue;
+    }
+    lines.push('| ID | Agent | Role | Dependencies |');
+    lines.push('| --- | --- | --- | --- |');
+    for (const agent of phaseAgents) {
+      const deps =
+        Array.isArray(agent.dependencies) && agent.dependencies.length > 0
+          ? agent.dependencies.join(', ')
+          : 'none';
+      lines.push(`| ${agent.id} | ${agent.name} | ${agent.role} | ${deps} |`);
+    }
+    lines.push('');
+  }
+
+  return lines.join('\n') + '\n';
+}
+
+function generateArchitectureIndexArtifacts(canonical, dryRun) {
+  const indexData = compileArchitectureIndex(canonical);
+  const markdown = renderArchitectureIndexMarkdown(indexData);
+  const files = [
+    { path: ARCHITECTURE_INDEX_MD, content: markdown },
+    { path: ARCHITECTURE_INDEX_JSON, content: JSON.stringify(indexData, null, 2) + '\n' },
+  ];
+
+  if (!dryRun) {
+    ensureDir(DOCS_REFERENCE_DIR);
+    for (const f of files) {
+      fs.writeFileSync(f.path, f.content, 'utf8');
+    }
+    runPrettierWrite([ARCHITECTURE_INDEX_MD, ARCHITECTURE_INDEX_JSON]);
+  }
+
+  return {
+    target: 'docs-architecture-index',
+    outputDir: DOCS_REFERENCE_DIR,
+    fileCount: files.length,
+    files,
+    dryRun: !!dryRun,
   };
 }
 
@@ -632,7 +755,9 @@ const TARGETS = {
 function generate(target, { dryRun = false } = {}) {
   const canonical = loadCanonical();
   if (target === 'all') {
-    return Object.entries(TARGETS).map(([_name, fn]) => fn(canonical, dryRun));
+    const results = Object.entries(TARGETS).map(([_name, fn]) => fn(canonical, dryRun));
+    generateArchitectureIndexArtifacts(canonical, dryRun);
+    return results;
   }
   if (!TARGETS[target]) {
     throw new Error(
@@ -665,4 +790,11 @@ if (require.main === module) {
   }
 }
 
-module.exports = { generate, loadCanonical, TARGETS };
+module.exports = {
+  generate,
+  loadCanonical,
+  TARGETS,
+  compileArchitectureIndex,
+  renderArchitectureIndexMarkdown,
+  generateArchitectureIndexArtifacts,
+};

@@ -11,6 +11,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { compileAgentPhaseMap } from './dispatcher';
 
 // ─── Constants ───────────────────────────────────────────────
 
@@ -33,7 +34,6 @@ const REQUIRED_MANIFEST_KEYS = [
   'agentsDir',
   'contractsDir',
   'guardrailsDir',
-  'phaseAgents',
   'phaseContracts',
   'phaseGuardrails',
   'criticToPhase',
@@ -126,8 +126,10 @@ function validateManifest(manifest: Record<string, unknown>) {
     errors.push(`Invalid name: '${manifest.name}' (must be lowercase kebab-case)`);
   }
 
-  // Validate phaseAgents structure
-  if (manifest.phaseAgents && typeof manifest.phaseAgents === 'object') {
+  // Validate phaseAgents structure (optional; defaults from canonical schema)
+  if (manifest.phaseAgents !== undefined && typeof manifest.phaseAgents !== 'object') {
+    errors.push('phaseAgents must be an object when provided');
+  } else if (manifest.phaseAgents && typeof manifest.phaseAgents === 'object') {
     for (const [state, agents] of Object.entries(manifest.phaseAgents)) {
       if (!Array.isArray(agents)) {
         errors.push(`phaseAgents['${state}'] must be an array`);
@@ -279,6 +281,8 @@ function validateManifest(manifest: Record<string, unknown>) {
  * @returns {object} Resolved configuration with absolute paths.
  */
 function resolveTemplatePaths(manifest: Record<string, unknown>, templateRoot: string) {
+  const computedPhaseAgents = compileAgentPhaseMap();
+
   return {
     name: manifest.name,
     version: manifest.version,
@@ -298,7 +302,7 @@ function resolveTemplatePaths(manifest: Record<string, unknown>, templateRoot: s
     decisionIndexSeed: manifest.decisionIndexSeed
       ? path.join(templateRoot, manifest.decisionIndexSeed as string)
       : null,
-    phaseAgents: manifest.phaseAgents,
+    phaseAgents: manifest.phaseAgents || computedPhaseAgents,
     phaseContracts: manifest.phaseContracts,
     phaseGuardrails: manifest.phaseGuardrails,
     criticToPhase: manifest.criticToPhase,

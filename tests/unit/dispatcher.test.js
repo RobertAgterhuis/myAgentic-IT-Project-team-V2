@@ -386,6 +386,32 @@ describe('Dispatcher — invoke (success)', () => {
     expect(result.needs_human_review).toBe(true);
     expect(result.uncertainty_reasons).toContain('Model required 1 retry');
   });
+
+  it('fails when invoker returns a non-object result', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => 'invalid-result',
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Invocation result must be an object');
+  });
+
+  it('fails when invoker returns non-string outputPath', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({ outputPath: 42 }),
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Invocation result outputPath must be a string');
+  });
 });
 
 // ─────────────────────────────────────────────────────────────

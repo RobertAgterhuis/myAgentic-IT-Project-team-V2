@@ -61,7 +61,7 @@ export interface AgentRuntimeAdapter {
     agent: { id: string; name: string },
     platform: string,
     context: Record<string, unknown>
-  ): Promise<{ outputPath?: string }>;
+  ): Promise<RuntimeAdapterResult>;
 }
 
 interface AgentInvocationContext {
@@ -127,9 +127,9 @@ export interface AgentResponseEnvelope {
   completedAt: string;
 }
 
-interface RuntimeAdapterResult {
+export interface RuntimeAdapterResult {
   outputPath?: string;
-  response?: AgentResponseEnvelope;
+  response?: Partial<AgentResponseEnvelope> & Record<string, unknown>;
   usage?: TokenUsage;
   toolAuditEvents?: ToolExecutionAuditEvent[];
 }

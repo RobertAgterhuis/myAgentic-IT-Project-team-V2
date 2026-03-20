@@ -18,7 +18,7 @@
 import path from 'node:path';
 import { STATES } from './state-machine';
 import type { JobQueue, JobType } from './jobs/job-types';
-import type { AgentRuntimeAdapter } from './agent-runtime-adapter';
+import type { AgentRuntimeAdapter, RuntimeAdapterResult } from './agent-runtime-adapter';
 import agentsSchema from '../schema/agents.json';
 
 // ─── Error Severity Classification (M5 / Evolution 5) ───────
@@ -106,6 +106,174 @@ interface ConfidenceAssessment {
   confidence: number;
   uncertainty_reasons: string[];
   needs_human_review: boolean;
+}
+
+interface InvocationResponseContract {
+  provider?: string;
+  model?: string;
+  status?: string;
+  finishReason?: string;
+  attempts?: number;
+  usage?: {
+    promptTokens?: number;
+    completionTokens?: number;
+    totalTokens?: number;
+  };
+  toolTraceId?: string;
+  toolInvocationCount?: number;
+  toolAuditEvents?: Array<{
+    toolId: string;
+    operation?: string;
+    durationMs?: number;
+    success: boolean;
+    errorCode?: string;
+  }>;
+  contractValidation?: { status?: string };
+  requestedAt?: string;
+  completedAt?: string;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function readOptionalString(
+  source: Record<string, unknown>,
+  key: string,
+  errorPrefix: string
+): string | undefined {
+  const value = source[key];
+  if (value === undefined) return undefined;
+  if (typeof value !== 'string') {
+    throw new Error(`${errorPrefix}.${key} must be a string`);
+  }
+  return value;
+}
+
+function readOptionalNumber(
+  source: Record<string, unknown>,
+  key: string,
+  errorPrefix: string
+): number | undefined {
+  const value = source[key];
+  if (value === undefined) return undefined;
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`${errorPrefix}.${key} must be a finite number`);
+  }
+  return value;
+}
+
+function normalizeToolAuditEvents(
+  value: unknown,
+  errorPrefix: string
+): InvocationResponseContract['toolAuditEvents'] {
+  if (value === undefined) return undefined;
+  if (!Array.isArray(value)) {
+    throw new Error(`${errorPrefix}.toolAuditEvents must be an array`);
+  }
+
+  return value.map((item, index) => {
+    if (!isRecord(item)) {
+      throw new Error(`${errorPrefix}.toolAuditEvents[${index}] must be an object`);
+    }
+    const toolId = readOptionalString(item, 'toolId', `${errorPrefix}.toolAuditEvents[${index}]`);
+    const success = item.success;
+    if (!toolId) {
+      throw new Error(`${errorPrefix}.toolAuditEvents[${index}].toolId is required`);
+    }
+    if (typeof success !== 'boolean') {
+      throw new Error(`${errorPrefix}.toolAuditEvents[${index}].success must be boolean`);
+    }
+    return {
+      toolId,
+      operation: readOptionalString(item, 'operation', `${errorPrefix}.toolAuditEvents[${index}]`),
+      durationMs: readOptionalNumber(
+        item,
+        'durationMs',
+        `${errorPrefix}.toolAuditEvents[${index}]`
+      ),
+      success,
+      errorCode: readOptionalString(item, 'errorCode', `${errorPrefix}.toolAuditEvents[${index}]`),
+    };
+  });
+}
+
+function normalizeInvocationResponse(value: unknown): InvocationResponseContract | undefined {
+  if (value === undefined) return undefined;
+  if (!isRecord(value)) {
+    throw new Error('Invocation result response must be an object');
+  }
+
+  const usageRaw = value.usage;
+  let usage: InvocationResponseContract['usage'];
+  if (usageRaw !== undefined) {
+    if (!isRecord(usageRaw)) {
+      throw new Error('Invocation result response.usage must be an object');
+    }
+    usage = {
+      promptTokens: readOptionalNumber(
+        usageRaw,
+        'promptTokens',
+        'Invocation result response.usage'
+      ),
+      completionTokens: readOptionalNumber(
+        usageRaw,
+        'completionTokens',
+        'Invocation result response.usage'
+      ),
+      totalTokens: readOptionalNumber(usageRaw, 'totalTokens', 'Invocation result response.usage'),
+    };
+  }
+
+  const contractValidationRaw = value.contractValidation;
+  let contractValidation: InvocationResponseContract['contractValidation'];
+  if (contractValidationRaw !== undefined) {
+    if (!isRecord(contractValidationRaw)) {
+      throw new Error('Invocation result response.contractValidation must be an object');
+    }
+    contractValidation = {
+      status: readOptionalString(
+        contractValidationRaw,
+        'status',
+        'Invocation result response.contractValidation'
+      ),
+    };
+  }
+
+  return {
+    provider: readOptionalString(value, 'provider', 'Invocation result response'),
+    model: readOptionalString(value, 'model', 'Invocation result response'),
+    status: readOptionalString(value, 'status', 'Invocation result response'),
+    finishReason: readOptionalString(value, 'finishReason', 'Invocation result response'),
+    attempts: readOptionalNumber(value, 'attempts', 'Invocation result response'),
+    usage,
+    toolTraceId: readOptionalString(value, 'toolTraceId', 'Invocation result response'),
+    toolInvocationCount: readOptionalNumber(
+      value,
+      'toolInvocationCount',
+      'Invocation result response'
+    ),
+    toolAuditEvents: normalizeToolAuditEvents(value.toolAuditEvents, 'Invocation result response'),
+    contractValidation,
+    requestedAt: readOptionalString(value, 'requestedAt', 'Invocation result response'),
+    completedAt: readOptionalString(value, 'completedAt', 'Invocation result response'),
+  };
+}
+
+function normalizeInvocationResult(result: unknown): RuntimeAdapterResult {
+  if (!isRecord(result)) {
+    throw new Error('Invocation result must be an object');
+  }
+
+  const outputPathRaw = result.outputPath;
+  if (outputPathRaw !== undefined && typeof outputPathRaw !== 'string') {
+    throw new Error('Invocation result outputPath must be a string');
+  }
+
+  return {
+    outputPath: outputPathRaw,
+    response: normalizeInvocationResponse(result.response),
+  };
 }
 
 function clamp01(value: number): number {
@@ -352,7 +520,7 @@ class Dispatcher {
     agent: AgentRef,
     platform: string,
     context: Record<string, unknown>
-  ) => Promise<unknown>;
+  ) => Promise<RuntimeAdapterResult>;
   _onLog: (...args: unknown[]) => void;
   _log: InvocationEntry[];
   _jobQueue: JobQueue | null;
@@ -380,7 +548,7 @@ class Dispatcher {
         agent: AgentRef,
         platform: string,
         context: Record<string, unknown>
-      ) => Promise<unknown>;
+      ) => Promise<RuntimeAdapterResult>;
       onLog?: (...args: unknown[]) => void;
       phaseAgents?: Record<string, AgentRef[]>;
       jobQueue?: JobQueue;
@@ -532,37 +700,11 @@ class Dispatcher {
       };
 
       try {
-        const result = await this._withTimeout(
-          this._invoker(agent, platform, context) as Promise<unknown>,
+        const rawResult = await this._withTimeout(
+          this._invoker(agent, platform, context),
           config.timeoutMs as number
         );
-        const runtimeResult = result as {
-          outputPath?: string;
-          response?: {
-            provider?: string;
-            model?: string;
-            status?: string;
-            finishReason?: string;
-            attempts?: number;
-            usage?: {
-              promptTokens?: number;
-              completionTokens?: number;
-              totalTokens?: number;
-            };
-            toolTraceId?: string;
-            toolInvocationCount?: number;
-            toolAuditEvents?: Array<{
-              toolId: string;
-              operation?: string;
-              durationMs?: number;
-              success: boolean;
-              errorCode?: string;
-            }>;
-            contractValidation?: { status?: string };
-            requestedAt?: string;
-            completedAt?: string;
-          };
-        };
+        const runtimeResult = normalizeInvocationResult(rawResult);
         const response = runtimeResult.response;
 
         entry.endTime = new Date().toISOString();
@@ -756,7 +898,7 @@ class Dispatcher {
   }
 
   /** @private — Promise with timeout */
-  _withTimeout(promise: Promise<unknown>, ms: number) {
+  _withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
     if (ms <= 0) return promise;
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error('TIMEOUT')), ms);

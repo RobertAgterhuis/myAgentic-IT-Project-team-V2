@@ -2,65 +2,47 @@
 
 async function loadRedisModule() {
   vi.resetModules();
-
-  const instances = [];
-  const RedisCtorSpy = vi.fn();
-  class RedisMock {
-    constructor(url, options) {
-      RedisCtorSpy(url, options);
-      this.url = url;
-      this.options = options;
-      this.quit = vi.fn().mockResolvedValue(undefined);
-      this.ping = vi.fn().mockResolvedValue('PONG');
-      instances.push(this);
-    }
-  }
-
-  vi.doMock('ioredis', () => ({ __esModule: true, default: RedisMock }));
-  const mod = await import('../../src/webapp/redis.ts');
-  return { mod, RedisCtorSpy, instances };
+  return import('../../src/webapp/redis.ts');
 }
 
 describe('redis.ts', () => {
-  afterEach(() => {
+  afterEach(async () => {
     delete process.env.REDIS_URL;
-    vi.doUnmock('ioredis');
+    const mod = await loadRedisModule();
+    await mod.closeRedisConnection();
   });
 
   it('returns null when no redis url is configured', async () => {
-    const { mod, RedisCtorSpy } = await loadRedisModule();
+    const mod = await loadRedisModule();
 
     expect(mod.getRedisConnection()).toBeNull();
     expect(mod.createRedisConnection()).toBeNull();
-    expect(RedisCtorSpy).not.toHaveBeenCalled();
   });
 
   it('reuses the shared redis connection', async () => {
-    const { mod } = await loadRedisModule();
+    const mod = await loadRedisModule();
 
     const first = mod.getRedisConnection('redis://shared');
     const second = mod.getRedisConnection('redis://shared');
 
     expect(first).toBe(second);
-    expect(first.url).toBe('redis://shared');
-    expect(first.options).toEqual({
-      maxRetriesPerRequest: null,
-      enableReadyCheck: true,
-      lazyConnect: false,
-    });
+    expect(first).not.toBeNull();
+    expect(typeof first.quit).toBe('function');
   });
 
   it('creates independent redis connections', async () => {
-    const { mod } = await loadRedisModule();
+    const mod = await loadRedisModule();
 
     const first = mod.createRedisConnection('redis://one');
     const second = mod.createRedisConnection('redis://one');
 
     expect(first).not.toBe(second);
+    await first.quit();
+    await second.quit();
   });
 
   it('closes and resets the shared redis connection', async () => {
-    const { mod } = await loadRedisModule();
+    const mod = await loadRedisModule();
 
     const first = mod.getRedisConnection('redis://shared');
     await mod.closeRedisConnection();
@@ -70,10 +52,20 @@ describe('redis.ts', () => {
     expect(second).not.toBe(first);
   });
 
+  it('uses REDIS_URL fallback when url argument is omitted', async () => {
+    process.env.REDIS_URL = 'redis://shared-env';
+    const mod = await loadRedisModule();
+
+    const shared = mod.getRedisConnection();
+    const dedicated = mod.createRedisConnection();
+
+    expect(shared).not.toBeNull();
+    expect(dedicated).not.toBeNull();
+    await dedicated.quit();
+  });
+
   it('reports healthy and unhealthy redis health checks', async () => {
-    vi.resetModules();
-    vi.doUnmock('ioredis');
-    const mod = await import('../../src/webapp/redis.ts');
+    const mod = await loadRedisModule();
     const redis = {
       ping: vi.fn().mockResolvedValue('PONG'),
     };

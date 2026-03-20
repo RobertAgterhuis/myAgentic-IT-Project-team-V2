@@ -187,6 +187,26 @@ describe('FileStore', () => {
       expect(store.mtime(path.join(tmpDir, 'gone.txt'))).toBe(0);
     });
   });
+
+  describe('async variants', () => {
+    it('existsAsync reports existing and missing files', async () => {
+      const fp = path.join(tmpDir, 'async-exists.txt');
+      fs.writeFileSync(fp, 'hello');
+
+      await expect(store.existsAsync(fp)).resolves.toBe(true);
+      await expect(store.existsAsync(path.join(tmpDir, 'missing.txt'))).resolves.toBe(false);
+    });
+
+    it('writeFileAsync writes data and readFileAsync returns it', async () => {
+      const fp = path.join(tmpDir, 'async', 'data.txt');
+
+      await store.writeFileAsync(fp, 'v1');
+      await expect(store.readFileAsync(fp)).resolves.toBe('v1');
+
+      await store.writeFileAsync(fp, 'v2');
+      await expect(store.readFileAsync(fp)).resolves.toBe('v2');
+    });
+  });
 });
 
 /* ── InMemoryStore ──────────────────────────────────────────── */
@@ -318,6 +338,15 @@ describe('InMemoryStore', () => {
       const s = store.stat(path.resolve('/a/b/c'));
       expect(s.isDirectory()).toBe(true);
       expect(s.isFile()).toBe(false);
+    });
+  });
+
+  describe('async variants', () => {
+    it('delegates async helpers to sync in-memory operations', async () => {
+      await store.writeFileAsync('/tmp/async-memory.txt', 'async-data');
+
+      await expect(store.existsAsync('/tmp/async-memory.txt')).resolves.toBe(true);
+      await expect(store.readFileAsync('/tmp/async-memory.txt')).resolves.toBe('async-data');
     });
   });
 

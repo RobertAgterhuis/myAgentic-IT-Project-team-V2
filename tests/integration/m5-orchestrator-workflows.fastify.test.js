@@ -221,6 +221,12 @@ describe('M5 Epic #665 orchestrator workflow automation', () => {
     expect(initial.json().state).toBe('IDLE');
     expect(initial.json().mode).toBe('CREATE');
 
+    // Ensure persisted human override state from prior runs does not block advance.
+    const resume = await inject('POST', '/api/orchestrator/resume', {
+      rationale: 'integration-test-reset',
+    });
+    expect([200, 409]).toContain(resume.statusCode);
+
     const advanced = await inject('POST', '/api/orchestrator/advance', {});
     expect(advanced.statusCode).toBe(200);
     expect(advanced.json().ok).toBe(true);

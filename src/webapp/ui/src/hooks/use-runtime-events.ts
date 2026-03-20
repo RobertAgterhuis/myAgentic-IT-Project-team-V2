@@ -41,7 +41,11 @@ function getRuntimeInvalidationKeys(eventType: string): readonly (readonly strin
       return [queryKeys.artifacts.all];
     case 'gate_passed':
     case 'gate_failed':
-      return [queryKeys.sessions.all, queryKeys.progress.all];
+      return [
+        queryKeys.sessions.all,
+        queryKeys.progress.all,
+        queryKeys.orchestrator.gateDiagnosticsRoot,
+      ];
     default:
       return [];
   }

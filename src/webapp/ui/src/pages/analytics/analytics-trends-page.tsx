@@ -45,6 +45,7 @@ function DoraMetric({
   const latest = series[series.length - 1];
   const prev = series.length > 1 ? series[series.length - 2] : null;
   const delta = prev ? ((latest.value - prev.value) / (prev.value || 1)) * 100 : 0;
+  const heightClasses = ['h-1', 'h-2', 'h-3', 'h-4', 'h-5', 'h-6', 'h-7', 'h-8'];
 
   return (
     <Card elevation="flat" className="p-4">
@@ -64,12 +65,16 @@ function DoraMetric({
       <div className="flex items-center gap-1 mt-2">
         {series.slice(-8).map((dp, i) => {
           const max = Math.max(...series.slice(-8).map((s) => s.value), 1);
-          const h = Math.max((dp.value / max) * 32, 2);
+          const ratio = max > 0 ? dp.value / max : 0;
+          const step = Math.min(
+            heightClasses.length - 1,
+            Math.max(0, Math.round(ratio * (heightClasses.length - 1)))
+          );
+          const heightClass = heightClasses[step];
           return (
             <div
               key={i}
-              className="flex-1 bg-primary/30 rounded-sm"
-              style={{ height: `${h}px` }}
+              className={`flex-1 bg-primary/30 rounded-sm ${heightClass}`}
               title={`${dp.value.toFixed(1)} ${unit}`}
             />
           );
@@ -114,7 +119,6 @@ export default function AnalyticsTrendChartsPage() {
 
   const isLoading = trendsLoading || agentsLoading;
   const error = trendsError || agentsError;
-
   const runtimeTelemetry = useMemo(() => {
     if (!agentPerf || agentPerf.length === 0) {
       return {
@@ -185,23 +189,20 @@ export default function AnalyticsTrendChartsPage() {
         {/* Time range selector */}
         <div
           className="flex items-center gap-1 bg-muted rounded-md p-1"
-          role="radiogroup"
+          role="group"
           aria-label="Time range"
         >
           {(['7d', '30d', '90d', 'all'] as TimeRange[]).map((range) => (
-            <button
+            <Button
               key={range}
-              role="radio"
-              aria-checked={timeRange === range}
-              className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
-                timeRange === range
-                  ? 'bg-background shadow-sm text-foreground'
-                  : 'text-muted-foreground hover:text-foreground'
-              }`}
+              type="button"
+              size="xs"
+              variant={timeRange === range ? 'default' : 'ghost'}
+              aria-pressed={timeRange === range}
               onClick={() => setTimeRange(range)}
             >
               {range === 'all' ? 'All' : range}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

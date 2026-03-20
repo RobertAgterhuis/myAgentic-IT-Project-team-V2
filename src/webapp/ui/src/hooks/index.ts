@@ -40,12 +40,14 @@ export {
   useOrchestratorReset,
   useOrchestratorStop,
   useValidateGate,
+  useGateDiagnostics,
   useOrchestratorCommand,
   useSprintGate,
   useOrchestratorQueue,
   useQueueCommand,
   useGates,
   useOrchestratorErrors,
+  useOnboardingDiagnostics,
 } from './use-orchestrator';
 
 /* Dashboard (#237) */

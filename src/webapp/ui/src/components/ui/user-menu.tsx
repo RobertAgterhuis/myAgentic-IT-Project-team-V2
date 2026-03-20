@@ -51,28 +51,53 @@ export function UserMenu() {
 
   return (
     <div ref={menuRef} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-        aria-expanded={open}
-        aria-haspopup="true"
-        aria-label="User menu"
-      >
-        {user.avatar_url ? (
-          <img
-            src={user.avatar_url}
-            alt=""
-            className="size-6 rounded-full"
-            referrerPolicy="no-referrer"
-          />
-        ) : (
-          <User className="size-5" />
-        )}
-        <span className="hidden sm:inline text-sm font-medium truncate max-w-24">
-          {user.display_name || user.login}
-        </span>
-      </button>
+      {open ? (
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          aria-expanded="true"
+          aria-haspopup="true"
+          aria-label="User menu"
+        >
+          {user.avatar_url ? (
+            <img
+              src={user.avatar_url}
+              alt=""
+              className="size-6 rounded-full"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <User className="size-5" />
+          )}
+          <span className="hidden sm:inline text-sm font-medium truncate max-w-24">
+            {user.display_name || user.login}
+          </span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex items-center gap-2 rounded-md px-2 py-1 hover:bg-muted transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          aria-expanded="false"
+          aria-haspopup="true"
+          aria-label="User menu"
+        >
+          {user.avatar_url ? (
+            <img
+              src={user.avatar_url}
+              alt=""
+              className="size-6 rounded-full"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <User className="size-5" />
+          )}
+          <span className="hidden sm:inline text-sm font-medium truncate max-w-24">
+            {user.display_name || user.login}
+          </span>
+        </button>
+      )}
 
       {open && (
         <div
@@ -99,12 +124,12 @@ export function UserMenu() {
             ).map((option) => {
               const Icon = option.icon;
               const selected = theme === option.value;
-              return (
+              return selected ? (
                 <button
                   key={option.value}
                   type="button"
                   role="menuitemradio"
-                  aria-checked={selected}
+                  aria-checked="true"
                   onClick={() => {
                     setTheme(option.value);
                     setOpen(false);
@@ -113,7 +138,22 @@ export function UserMenu() {
                 >
                   <Icon className="size-4" />
                   <span className="flex-1 text-left">{option.label}</span>
-                  {selected ? <Check className="size-4 text-primary" /> : null}
+                  <Check className="size-4 text-primary" />
+                </button>
+              ) : (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked="false"
+                  onClick={() => {
+                    setTheme(option.value);
+                    setOpen(false);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-muted transition-colors"
+                >
+                  <Icon className="size-4" />
+                  <span className="flex-1 text-left">{option.label}</span>
                 </button>
               );
             })}

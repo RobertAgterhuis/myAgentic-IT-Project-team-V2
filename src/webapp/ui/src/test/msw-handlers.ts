@@ -19,6 +19,8 @@ import type {
   SessionsListResponse,
   SessionDetailResponse,
   TimelineResponse,
+  GateDiagnosticsResponse,
+  OnboardingDiagnosticsResponse,
   AgentsListResponse,
   AgentDetailResponse,
   Session,
@@ -105,6 +107,68 @@ export const mockMilestonesList: MilestonesListResponse = {
 export const mockOrchestratorStatus: OrchestratorStatus = {
   state: 'IDLE',
   mode: 'CREATE',
+};
+
+export const mockOnboardingDiagnostics: OnboardingDiagnosticsResponse = {
+  ok: true,
+  generatedAt: new Date().toISOString(),
+  profile: 'local-dev',
+  contract: {
+    profile: 'local-dev',
+    name: 'Local Development',
+    description: 'Developer workstation with zero external dependencies.',
+    storageProvider: {
+      required: false,
+      allowedValues: ['file', 'sqlite'],
+      recommended: 'file',
+    },
+    queueProvider: {
+      required: false,
+      allowedValues: ['memory', 'persistent', 'bullmq'],
+      recommended: 'memory',
+    },
+    sessionStore: {
+      required: false,
+      allowedValues: ['sqlite', 'redis'],
+      recommended: 'sqlite',
+    },
+    redis: {
+      required: false,
+      description: 'Optional. Redis-backed features are disabled if omitted.',
+    },
+    auth: {
+      required: false,
+      description: 'Optional. GitHub OAuth and API_KEY both optional.',
+    },
+    trustProxy: {
+      required: false,
+      description: 'Not required for localhost.',
+    },
+    startupBehavior: 'Tolerates missing services; continues with fallbacks.',
+  },
+  validation: {
+    valid: true,
+    errors: [],
+    warnings: [],
+  },
+  environment: {
+    nodeEnv: 'development',
+    host: '127.0.0.1',
+    storageProvider: 'file',
+    queueProvider: 'memory',
+    sessionStore: 'sqlite',
+    redisConfigured: false,
+    authConfigured: false,
+    trustProxy: false,
+  },
+};
+
+export const mockGateDiagnostics: GateDiagnosticsResponse = {
+  ok: true,
+  sessionId: 'sess-test-001',
+  totalFailures: 0,
+  latest: null,
+  diagnostics: [],
 };
 
 export const mockCommandQueue: CommandQueueResponse = {
@@ -354,6 +418,15 @@ export const handlers = [
       summary: { phase: 'Phase 1', totalViolations: 0 },
     })
   ),
+  http.get('/api/orchestrator/onboarding-diagnostics', () =>
+    HttpResponse.json(mockOnboardingDiagnostics)
+  ),
+  http.get('/api/orchestrator/gate-diagnostics/:sessionId', ({ params }) => {
+    if (params.sessionId !== mockGateDiagnostics.sessionId) {
+      return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    return HttpResponse.json(mockGateDiagnostics);
+  }),
   http.post('/api/orchestrator/command', () => HttpResponse.json({ ok: true })),
   http.post('/api/orchestrator/sprint-gate', () =>
     HttpResponse.json({

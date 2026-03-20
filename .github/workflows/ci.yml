@@ -278,6 +278,7 @@ jobs:
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3.0.0
+        if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3.0.0
@@ -312,7 +313,7 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: ${{ github.event_name != 'pull_request' && 'type=gha,mode=max' || '' }}
-          platforms: ${{ github.event_name != 'pull_request' && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
+          platforms: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')) && 'linux/amd64,linux/arm64' || 'linux/amd64' }}
 
   container-scan:
     name: Container Image Scan

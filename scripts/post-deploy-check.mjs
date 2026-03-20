@@ -69,7 +69,11 @@ async function httpGet(url, timeoutMs = TIMEOUT_MS) {
   try {
     const res = await fetch(url, { signal: controller.signal });
     let body = '';
-    try { body = await res.text(); } catch { /* ignore */ }
+    try {
+      body = await res.text();
+    } catch {
+      /* ignore */
+    }
     return { ok: res.ok, status: res.status, body };
   } catch (err) {
     return { ok: false, status: 0, body: err.message };
@@ -193,9 +197,9 @@ if (!isDistributed) {
 // Summary
 // ---------------------------------------------------------------------------
 
-const failed = results.filter(r => !r.passed);
-const passed = results.filter(r => r.passed && !r.skipped);
-const skipped = results.filter(r => r.skipped);
+const failed = results.filter((r) => !r.passed);
+const passed = results.filter((r) => r.passed && !r.skipped);
+const skipped = results.filter((r) => r.skipped);
 
 console.log(`\n${'─'.repeat(60)}`);
 console.log(
@@ -204,7 +208,7 @@ console.log(
 
 if (failed.length > 0) {
   console.log(`\n\x1b[31mHealth gate FAILED. Trigger rollback.\x1b[0m`);
-  console.log(`  Failed gates: ${failed.map(r => r.id).join(', ')}`);
+  console.log(`  Failed gates: ${failed.map((r) => r.id).join(', ')}`);
   console.log(`  Runbook     : docs/operations/runbooks.md`);
   console.log(`  Rollback    : docs/operations/post-deploy-health-gates.md\n`);
   process.exit(1);

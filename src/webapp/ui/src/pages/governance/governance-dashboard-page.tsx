@@ -10,11 +10,12 @@ import { DataTable } from '@/components/ui/data-table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { DecisionProvenanceView } from '@/components/cockpit/decision-provenance-view';
+import { cn } from '@/lib/utils';
 import { getPendingColumns, historyColumns } from './columns';
 import { useApprovals, useApproveRequest, useRejectRequest, useDecisionProvenance } from '@/hooks';
 import {
@@ -38,6 +39,12 @@ export default function GovernanceDashboardPage() {
   const [rejectReason, setRejectReason] = useState('');
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'approvals' | 'policies' | 'provenance'>('approvals');
+  const approvalsTabId = 'governance-tab-approvals';
+  const policiesTabId = 'governance-tab-policies';
+  const provenanceTabId = 'governance-tab-provenance';
+  const approvalsPanelId = 'governance-panel-approvals';
+  const policiesPanelId = 'governance-panel-policies';
+  const provenancePanelId = 'governance-panel-provenance';
   const [provenanceActorType, setProvenanceActorType] = useState<'all' | 'human' | 'machine'>(
     'all'
   );
@@ -184,40 +191,97 @@ export default function GovernanceDashboardPage() {
 
       {/* Tab navigation */}
       <div className="flex gap-2 border-b pb-1" role="tablist" aria-label="Governance sections">
-        <Button
-          variant={activeTab === 'approvals' ? 'default' : 'ghost'}
-          size="sm"
-          role="tab"
-          aria-selected={activeTab === 'approvals'}
-          onClick={() => setActiveTab('approvals')}
-        >
-          <ShieldCheck className="size-3 mr-1.5" /> Approvals
-        </Button>
-        <Button
-          variant={activeTab === 'policies' ? 'default' : 'ghost'}
-          size="sm"
-          role="tab"
-          aria-selected={activeTab === 'policies'}
-          onClick={() => setActiveTab('policies')}
-        >
-          <FileCheck className="size-3 mr-1.5" /> Policy Compliance
-        </Button>
-        <Button
-          variant={activeTab === 'provenance' ? 'default' : 'ghost'}
-          size="sm"
-          role="tab"
-          aria-selected={activeTab === 'provenance'}
-          onClick={() => {
-            setProvenancePage(1);
-            setActiveTab('provenance');
-          }}
-        >
-          <Network className="size-3 mr-1.5" /> Decision Provenance
-        </Button>
+        {activeTab === 'approvals' ? (
+          <button
+            type="button"
+            role="tab"
+            id={approvalsTabId}
+            aria-controls={approvalsPanelId}
+            aria-selected="true"
+            tabIndex={0}
+            onClick={() => setActiveTab('approvals')}
+            className={cn(buttonVariants({ variant: 'default', size: 'sm' }))}
+          >
+            <ShieldCheck className="size-3 mr-1.5" /> Approvals
+          </button>
+        ) : (
+          <button
+            type="button"
+            role="tab"
+            id={approvalsTabId}
+            aria-controls={approvalsPanelId}
+            aria-selected="false"
+            tabIndex={-1}
+            onClick={() => setActiveTab('approvals')}
+            className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}
+          >
+            <ShieldCheck className="size-3 mr-1.5" /> Approvals
+          </button>
+        )}
+        {activeTab === 'policies' ? (
+          <button
+            type="button"
+            role="tab"
+            id={policiesTabId}
+            aria-controls={policiesPanelId}
+            aria-selected="true"
+            tabIndex={0}
+            onClick={() => setActiveTab('policies')}
+            className={cn(buttonVariants({ variant: 'default', size: 'sm' }))}
+          >
+            <FileCheck className="size-3 mr-1.5" /> Policy Compliance
+          </button>
+        ) : (
+          <button
+            type="button"
+            role="tab"
+            id={policiesTabId}
+            aria-controls={policiesPanelId}
+            aria-selected="false"
+            tabIndex={-1}
+            onClick={() => setActiveTab('policies')}
+            className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}
+          >
+            <FileCheck className="size-3 mr-1.5" /> Policy Compliance
+          </button>
+        )}
+        {activeTab === 'provenance' ? (
+          <button
+            type="button"
+            role="tab"
+            id={provenanceTabId}
+            aria-controls={provenancePanelId}
+            aria-selected="true"
+            tabIndex={0}
+            onClick={() => {
+              setProvenancePage(1);
+              setActiveTab('provenance');
+            }}
+            className={cn(buttonVariants({ variant: 'default', size: 'sm' }))}
+          >
+            <Network className="size-3 mr-1.5" /> Decision Provenance
+          </button>
+        ) : (
+          <button
+            type="button"
+            role="tab"
+            id={provenanceTabId}
+            aria-controls={provenancePanelId}
+            aria-selected="false"
+            tabIndex={-1}
+            onClick={() => {
+              setProvenancePage(1);
+              setActiveTab('provenance');
+            }}
+            className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}
+          >
+            <Network className="size-3 mr-1.5" /> Decision Provenance
+          </button>
+        )}
       </div>
 
       {activeTab === 'approvals' && (
-        <>
+        <div role="tabpanel" id={approvalsPanelId} aria-labelledby={approvalsTabId}>
           {/* Summary cards */}
           <section aria-label="Governance summary">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -292,22 +356,37 @@ export default function GovernanceDashboardPage() {
               />
             )}
           </section>
-        </>
+        </div>
       )}
 
       {activeTab === 'policies' && (
-        <Suspense fallback={<Spinner label="Loading policy panel…" />}>
-          <PolicyCompliancePanel />
-        </Suspense>
+        <div role="tabpanel" id={policiesPanelId} aria-labelledby={policiesTabId}>
+          <Suspense fallback={<Spinner label="Loading policy panel…" />}>
+            <PolicyCompliancePanel />
+          </Suspense>
+        </div>
       )}
 
       {activeTab === 'provenance' && (
-        <section aria-label="Decision provenance" className="space-y-4">
+        <section
+          aria-label="Decision provenance"
+          className="space-y-4"
+          role="tabpanel"
+          id={provenancePanelId}
+          aria-labelledby={provenanceTabId}
+        >
           <div className="flex flex-wrap items-end gap-3">
             <div className="space-y-1 min-w-45">
-              <Text className="text-xs uppercase tracking-wide text-muted-foreground">Actor</Text>
+              <Text
+                id="governance-provenance-actor-label"
+                className="text-xs uppercase tracking-wide text-muted-foreground"
+              >
+                Actor
+              </Text>
               <select
                 className="h-9 rounded-md border border-border bg-background px-3 text-sm"
+                aria-labelledby="governance-provenance-actor-label"
+                aria-label="Actor"
                 value={provenanceActorType}
                 onChange={(event) => {
                   setProvenancePage(1);
@@ -320,11 +399,16 @@ export default function GovernanceDashboardPage() {
               </select>
             </div>
             <div className="space-y-1 min-w-55">
-              <Text className="text-xs uppercase tracking-wide text-muted-foreground">
+              <Text
+                id="governance-provenance-decision-label"
+                className="text-xs uppercase tracking-wide text-muted-foreground"
+              >
                 Decision Type
               </Text>
               <select
                 className="h-9 rounded-md border border-border bg-background px-3 text-sm"
+                aria-labelledby="governance-provenance-decision-label"
+                aria-label="Decision Type"
                 value={provenanceDecisionType}
                 onChange={(event) => {
                   setProvenancePage(1);

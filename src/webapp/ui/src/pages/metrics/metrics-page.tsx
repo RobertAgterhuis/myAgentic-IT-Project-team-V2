@@ -105,23 +105,20 @@ export default function MetricsPage() {
           {/* Time range selector */}
           <div
             className="flex items-center gap-1 bg-muted rounded-md p-1"
-            role="radiogroup"
+            role="group"
             aria-label="Time range"
           >
             {(['24h', '7d', '30d', '90d'] as TimeRange[]).map((range) => (
-              <button
+              <Button
                 key={range}
-                role="radio"
-                aria-checked={timeRange === range}
-                className={`px-3 py-1 text-xs font-medium rounded transition-colors ${
-                  timeRange === range
-                    ? 'bg-background shadow-sm text-foreground'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
+                type="button"
+                size="xs"
+                variant={timeRange === range ? 'default' : 'ghost'}
+                aria-pressed={timeRange === range}
                 onClick={() => setTimeRange(range)}
               >
                 {range}
-              </button>
+              </Button>
             ))}
           </div>
           <Button

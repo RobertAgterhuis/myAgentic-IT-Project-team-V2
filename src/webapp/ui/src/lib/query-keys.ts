@@ -25,6 +25,14 @@ export const queryKeys = {
     status: ['orchestrator', 'status'] as const,
     runHistory: ['orchestrator', 'run-history'] as const,
     queue: ['command', 'queue'] as const,
+    gateDiagnosticsRoot: ['orchestrator', 'gate-diagnostics'] as const,
+    gateDiagnostics: (sessionId: string) =>
+      ['orchestrator', 'gate-diagnostics', sessionId] as const,
+  },
+
+  /* Onboarding */
+  onboarding: {
+    diagnostics: ['onboarding', 'diagnostics'] as const,
   },
 
   /* Dashboard */

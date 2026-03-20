@@ -28,6 +28,15 @@ import { errorResponse } from '../utils/errors';
 import { structuredLog } from '../middleware';
 import { sessionTracker } from '../session-tracker';
 import * as RS from '../route-schemas';
+import {
+  HOST,
+  STORAGE_PROVIDER,
+  QUEUE_PROVIDER,
+  SESSION_STORE,
+  REDIS_URL,
+  TRUST_PROXY,
+} from '../config';
+import { validateProfile, hasAuthConfigured, PROFILE_CONTRACTS } from '../runtime-profiles';
 
 type OrchestratorEngine = ReturnType<typeof createEngine>;
 type OrchestratorStatus = ReturnType<OrchestratorEngine['status']>;
@@ -186,6 +195,60 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const message = getErrorMessage(err);
         structuredLog('error', 'orchestrator_templates_error', { error: message });
         return reply.code(500).send(errorResponse('TEMPLATE_ERROR', message));
+      }
+    }
+  );
+
+  // ── GET /api/orchestrator/onboarding-diagnostics ─────────────
+
+  app.get(
+    '/api/orchestrator/onboarding-diagnostics',
+    { schema: { tags: ['orchestrator'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const authConfigured = hasAuthConfigured({
+          githubClientId: process.env.GITHUB_CLIENT_ID,
+          apiKey: process.env.API_KEY,
+        });
+
+        const validation = validateProfile({
+          nodeEnv: process.env.NODE_ENV,
+          host: HOST,
+          storageProvider: STORAGE_PROVIDER,
+          queueProvider: QUEUE_PROVIDER,
+          sessionStore: SESSION_STORE,
+          redisUrl: REDIS_URL,
+          hasAuth: authConfigured,
+          trustProxy: TRUST_PROXY,
+        });
+
+        const contract = PROFILE_CONTRACTS[validation.profile];
+
+        return reply.send({
+          ok: true,
+          generatedAt: new Date().toISOString(),
+          profile: validation.profile,
+          contract,
+          validation: {
+            valid: validation.valid,
+            errors: validation.errors,
+            warnings: validation.warnings,
+          },
+          environment: {
+            nodeEnv: process.env.NODE_ENV ?? 'development',
+            host: HOST,
+            storageProvider: STORAGE_PROVIDER,
+            queueProvider: QUEUE_PROVIDER,
+            sessionStore: SESSION_STORE,
+            redisConfigured: Boolean(REDIS_URL),
+            authConfigured,
+            trustProxy: TRUST_PROXY,
+          },
+        });
+      } catch (err) {
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_onboarding_diagnostics_error', { error: message });
+        return reply.code(500).send(errorResponse('ONBOARDING_DIAGNOSTICS_ERROR', message));
       }
     }
   );

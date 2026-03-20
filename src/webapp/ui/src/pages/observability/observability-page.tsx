@@ -50,23 +50,33 @@ export default function ObservabilityPage() {
         aria-label="Observability tabs"
         className="flex items-center gap-1 border-b"
       >
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            aria-controls={`panel-${tab.id}`}
-            id={`tab-${tab.id}`}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px ${
-              activeTab === tab.id
-                ? 'border-primary text-foreground'
-                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/50'
-            }`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.label}
-          </button>
-        ))}
+        {tabs.map((tab) =>
+          activeTab === tab.id ? (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected="true"
+              aria-controls={`panel-${tab.id}`}
+              id={`tab-${tab.id}`}
+              className="px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px border-primary text-foreground"
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ) : (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected="false"
+              aria-controls={`panel-${tab.id}`}
+              id={`tab-${tab.id}`}
+              className="px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/50"
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
+          )
+        )}
       </div>
 
       {/* Tab panels */}

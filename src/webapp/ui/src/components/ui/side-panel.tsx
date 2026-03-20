@@ -40,35 +40,81 @@ function SectionGroup({
   collapsed: boolean;
 }) {
   const [open, setOpen] = React.useState(true);
+  const progressWidthClasses = [
+    'w-0',
+    'w-1/12',
+    'w-2/12',
+    'w-3/12',
+    'w-4/12',
+    'w-5/12',
+    'w-6/12',
+    'w-7/12',
+    'w-8/12',
+    'w-9/12',
+    'w-10/12',
+    'w-11/12',
+    'w-full',
+  ];
 
   return (
     <div>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center gap-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground transition-colors"
-        aria-expanded={open}
-      >
-        <span
-          className="size-1.5 rounded-full bg-secondary/80 shadow-[0_0_10px_currentColor]"
-          aria-hidden="true"
-        />
-        {!collapsed && <span className="flex-1 text-left truncate">{section.title}</span>}
-        {!collapsed && section.progress != null && (
-          <span className="text-[10px] tabular-nums">{section.progress}%</span>
-        )}
-        <ChevronDown className={cn('size-3.5 transition-transform', !open && '-rotate-90')} />
-      </button>
+      {open ? (
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex w-full items-center gap-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground transition-colors"
+          aria-expanded="true"
+        >
+          <span
+            className="size-1.5 rounded-full bg-secondary/80 shadow-[0_0_10px_currentColor]"
+            aria-hidden="true"
+          />
+          {!collapsed && <span className="flex-1 text-left truncate">{section.title}</span>}
+          {!collapsed && section.progress != null && (
+            <span className="text-[10px] tabular-nums">{section.progress}%</span>
+          )}
+          <ChevronDown className={cn('size-3.5 transition-transform', !open && '-rotate-90')} />
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className="flex w-full items-center gap-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground transition-colors"
+          aria-expanded="false"
+        >
+          <span
+            className="size-1.5 rounded-full bg-secondary/80 shadow-[0_0_10px_currentColor]"
+            aria-hidden="true"
+          />
+          {!collapsed && <span className="flex-1 text-left truncate">{section.title}</span>}
+          {!collapsed && section.progress != null && (
+            <span className="text-[10px] tabular-nums">{section.progress}%</span>
+          )}
+          <ChevronDown className={cn('size-3.5 transition-transform', !open && '-rotate-90')} />
+        </button>
+      )}
 
       {/* Progress bar */}
-      {!collapsed && section.progress != null && (
-        <div className="mx-3 mb-2 h-1 rounded-full bg-muted/80 overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-secondary via-info to-primary transition-all"
-            style={{ width: `${Math.min(100, Math.max(0, section.progress))}%` }}
-          />
-        </div>
-      )}
+      {!collapsed &&
+        section.progress != null &&
+        (() => {
+          const pct = Math.min(100, Math.max(0, section.progress));
+          const step = Math.min(
+            progressWidthClasses.length - 1,
+            Math.max(0, Math.round((pct / 100) * (progressWidthClasses.length - 1)))
+          );
+          const widthClass = progressWidthClasses[step];
+          return (
+            <div className="mx-3 mb-2 h-1 rounded-full bg-muted/80 overflow-hidden">
+              <div
+                className={cn(
+                  'h-full bg-linear-to-r from-secondary via-info to-primary transition-all',
+                  widthClass
+                )}
+              />
+            </div>
+          );
+        })()}
 
       {open && (
         <ul role="list" className="space-y-0.5 px-1">
@@ -81,7 +127,7 @@ function SectionGroup({
                   'flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm transition-all duration-150',
                   'hover:bg-background/80 hover:translate-x-0.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                   activeItemId === item.id
-                    ? 'border border-info/20 bg-gradient-to-r from-primary/16 via-info/10 to-secondary/10 text-primary font-medium shadow-sm'
+                    ? 'border border-info/20 bg-linear-to-r from-primary/16 via-info/10 to-secondary/10 text-primary font-medium shadow-sm'
                     : 'border border-transparent text-foreground/88'
                 )}
                 aria-current={activeItemId === item.id ? 'page' : undefined}
@@ -121,7 +167,7 @@ function SidePanel({
     <nav
       aria-label="Side navigation"
       className={cn(
-        'flex flex-col border-r border-border/70 bg-card/82 backdrop-blur-xl transition-[width] duration-200 shadow-md supports-[backdrop-filter]:bg-card/76',
+        'flex flex-col border-r border-border/70 bg-card/82 backdrop-blur-xl transition-[width] duration-200 shadow-md supports-backdrop-filter:bg-card/76',
         collapsed ? 'w-14' : 'w-60',
         className
       )}

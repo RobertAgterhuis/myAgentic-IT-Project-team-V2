@@ -136,24 +136,35 @@ export default function CockpitDashboardPage() {
         aria-label="Cockpit sections"
         className="flex items-center gap-1 rounded-2xl border border-border/70 bg-card/72 p-1.5 shadow-sm backdrop-blur-sm"
       >
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            role="tab"
-            aria-selected={activeTab === tab.id}
-            aria-controls={`cockpit-panel-${tab.id}`}
-            id={`cockpit-tab-${tab.id}`}
-            className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-colors ${
-              activeTab === tab.id
-                ? 'bg-background/80 text-foreground shadow-sm'
-                : 'text-muted-foreground hover:bg-background/60 hover:text-foreground'
-            }`}
-            onClick={() => setActiveTab(tab.id)}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
+        {tabs.map((tab) =>
+          activeTab === tab.id ? (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected="true"
+              aria-controls={`cockpit-panel-${tab.id}`}
+              id={`cockpit-tab-${tab.id}`}
+              className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-colors bg-background/80 text-foreground shadow-sm"
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          ) : (
+            <button
+              key={tab.id}
+              role="tab"
+              aria-selected="false"
+              aria-controls={`cockpit-panel-${tab.id}`}
+              id={`cockpit-tab-${tab.id}`}
+              className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-colors text-muted-foreground hover:bg-background/60 hover:text-foreground"
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.icon}
+              {tab.label}
+            </button>
+          )
+        )}
       </div>
 
       {/* Tab panels */}

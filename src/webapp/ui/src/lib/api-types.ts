@@ -337,6 +337,67 @@ export interface GateDiagnosticsResponse extends OkResponse {
   }>;
 }
 
+export type RuntimeProfile =
+  | 'local-dev'
+  | 'ci-test'
+  | 'production-single-node'
+  | 'production-distributed';
+
+export interface RuntimeProfileContract {
+  profile: RuntimeProfile;
+  name: string;
+  description: string;
+  storageProvider: {
+    required: boolean;
+    allowedValues: string[];
+    recommended: string;
+  };
+  queueProvider: {
+    required: boolean;
+    allowedValues: string[];
+    recommended: string;
+  };
+  sessionStore: {
+    required: boolean;
+    allowedValues: string[];
+    recommended: string;
+  };
+  redis: {
+    required: boolean;
+    description: string;
+  };
+  auth: {
+    required: boolean;
+    description: string;
+  };
+  trustProxy: {
+    required: boolean;
+    description: string;
+  };
+  startupBehavior: string;
+}
+
+export interface OnboardingDiagnosticsResponse extends OkResponse {
+  generatedAt: string;
+  profile: RuntimeProfile;
+  contract: RuntimeProfileContract;
+  validation: {
+    valid: boolean;
+    errors: string[];
+    warnings: string[];
+  };
+  environment: {
+    nodeEnv: string;
+    host: string;
+    storageProvider: string;
+    queueProvider: string;
+    sessionStore: string;
+    redisConfigured: boolean;
+    authConfigured: boolean;
+    trustProxy: boolean | number | string | string[];
+  };
+}
+
 export type OrchestratorCommandName =
   | 'CREATE'
   | 'CREATE_BUSINESS'

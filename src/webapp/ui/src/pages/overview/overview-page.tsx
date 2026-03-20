@@ -22,6 +22,8 @@ import { HealthCard } from '@/components/dashboard/health-card';
 import { WhatsNextGuidance } from '@/components/dashboard/whats-next-guidance';
 import { WelcomeWizard } from '@/components/onboarding/welcome-wizard';
 import { useWelcomeWizard } from '@/components/onboarding/use-welcome-wizard';
+import { OnboardingDiagnosticsWizard } from '@/components/onboarding/onboarding-diagnostics-wizard';
+import { useOnboardingDiagnosticsWizard } from '@/components/onboarding/use-onboarding-diagnostics-wizard';
 import { useSessions, useSession, useDecisions, useDashboardHealth } from '@/hooks';
 import { useUIStore } from '@/stores/ui-store';
 import type { Session, HealthIndicator, TimelineEvent, AgentDetailEntry } from '@/lib/api-types';
@@ -71,6 +73,8 @@ export default function OverviewPage() {
   const navigate = useNavigate();
   const connectionStatus = useUIStore((s) => s.connectionStatus);
   const { dismissed: wizardDismissed, dismiss: dismissWizard } = useWelcomeWizard();
+  const { dismissed: diagnosticsDismissed, dismiss: dismissDiagnostics } =
+    useOnboardingDiagnosticsWizard();
   const {
     data: sessionsData,
     isLoading: sessionsLoading,
@@ -123,6 +127,12 @@ export default function OverviewPage() {
     () => Object.values(health ?? {}).filter((indicator) => indicator.status !== 'good').length,
     [health]
   );
+
+  const shouldShowDiagnostics = useMemo(() => {
+    const totalSessions = sessionsData?.sessions?.length ?? 0;
+    const hasActiveOnboarding = activeSession?.phase === 'ONBOARDING';
+    return !diagnosticsDismissed && (totalSessions === 0 || hasActiveOnboarding);
+  }, [sessionsData?.sessions?.length, activeSession?.phase, diagnosticsDismissed]);
 
   if (sessionsLoading || healthLoading) {
     return (
@@ -236,6 +246,13 @@ export default function OverviewPage() {
 
       {/* Welcome Wizard — first-time users (M15-040) */}
       {!wizardDismissed && <WelcomeWizard onDismiss={dismissWizard} />}
+
+      {shouldShowDiagnostics && (
+        <OnboardingDiagnosticsWizard
+          sessionId={activeSession?.id ?? null}
+          onDismiss={dismissDiagnostics}
+        />
+      )}
 
       {/* What's Next — contextual guidance (M21-002) */}
       <WhatsNextGuidance />

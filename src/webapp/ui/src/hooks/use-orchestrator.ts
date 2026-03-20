@@ -14,7 +14,9 @@ import type {
   OrchestratorResetPayload,
   ValidateGatePayload,
   ValidateGateResponse,
+  GateDiagnosticsResponse,
   OrchestratorCommandPayload,
+  OnboardingDiagnosticsResponse,
   SprintGatePayload,
   SprintGateResponse,
   CommandQueueResponse,
@@ -126,6 +128,19 @@ export function useValidateGate() {
   });
 }
 
+/** Gate diagnostics for a session (gate failures and unmet criteria). */
+export function useGateDiagnostics(sessionId: string) {
+  return useQuery({
+    queryKey: queryKeys.orchestrator.gateDiagnostics(sessionId),
+    queryFn: () =>
+      apiGet<GateDiagnosticsResponse>(
+        `/orchestrator/gate-diagnostics/${encodeURIComponent(sessionId)}`
+      ),
+    enabled: !!sessionId,
+    refetchInterval: 10_000,
+  });
+}
+
 /** Execute an orchestrator command. */
 export function useOrchestratorCommand() {
   const qc = useQueryClient();
@@ -194,6 +209,15 @@ export function useGates() {
   // Gates data comes from orchestrator status + sprint gate checks.
   // We poll the orchestrator status which includes gate info.
   return useOrchestratorStatus();
+}
+
+/** Runtime onboarding diagnostics (profile + environment). */
+export function useOnboardingDiagnostics() {
+  return useQuery({
+    queryKey: queryKeys.onboarding.diagnostics,
+    queryFn: () => apiGet<OnboardingDiagnosticsResponse>('/orchestrator/onboarding-diagnostics'),
+    refetchInterval: 30_000,
+  });
 }
 
 /** Errors — derived from orchestrator status (error messages are part of status). */

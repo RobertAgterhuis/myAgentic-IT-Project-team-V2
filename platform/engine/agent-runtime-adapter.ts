@@ -15,12 +15,30 @@
 import path from 'node:path';
 import { existsSync, readFileSync, promises as fs } from 'node:fs';
 import { createDefaultRegistry, type ProviderRegistry } from '../sdlc/adapters/registry.js';
+import { AdapterRegistry as ToolAdapterRegistry } from '../sdlc/adapters/tool-adapter.js';
+import {
+  GitAdapter,
+  CiAdapter,
+  ContainerAdapter,
+  CloudAdapter,
+  SecurityAdapter,
+  TestingAdapter,
+  LlmAdapter,
+} from '../sdlc/adapters/index.js';
 import type {
   LLMMessage,
   LLMProvider,
   TokenUsage,
+  CompletionResult,
 } from '../sdlc/adapters/contracts/llm-provider.js';
 import { loadContractSections, validateDocument } from './gate-validator.js';
+import { ToolExecutor } from './tool-executor.js';
+import {
+  ToolExecutionMiddleware,
+  ToolAuthorizationError,
+  ToolValidationError,
+  type ToolExecutionAuditEvent,
+} from './tool-execution-middleware.js';
 
 // ─── Interface ────────────────────────────────────────────────
 
@@ -52,6 +70,8 @@ interface AgentInvocationContext {
   predecessorOutputs?: Record<string, string>;
   questionnaireInput?: string | null;
   sessionState?: unknown;
+  role?: 'viewer' | 'operator' | 'admin';
+  profile?: string;
 }
 
 export interface AgentPromptEnvelope {
@@ -83,6 +103,9 @@ export interface AgentResponseEnvelope {
   usage: TokenUsage;
   content: string;
   attempts: number;
+  toolTraceId?: string;
+  toolInvocationCount?: number;
+  toolAuditEvents?: ToolExecutionAuditEvent[];
   contractValidation?: {
     status: 'passed';
     contractPaths: string[];
@@ -97,6 +120,7 @@ interface RuntimeAdapterResult {
   outputPath?: string;
   response?: AgentResponseEnvelope;
   usage?: TokenUsage;
+  toolAuditEvents?: ToolExecutionAuditEvent[];
 }
 
 interface ProviderBackedRuntimeAdapterConfig {
@@ -109,6 +133,9 @@ interface ProviderBackedRuntimeAdapterConfig {
   validationMaxRetries?: number;
   outputDir?: string;
   providerRegistry?: Pick<ProviderRegistry, 'getProvider'>;
+  toolExecutor?: Pick<ToolExecutor, 'execute'>;
+  toolAudit?: { logToolExecution(event: ToolExecutionAuditEvent): void };
+  toolCatalogPath?: string;
 }
 
 interface MockRuntimeAdapterConfig {
@@ -117,10 +144,35 @@ interface MockRuntimeAdapterConfig {
 
 const DEFAULT_OUTPUT_DIR = path.resolve(process.cwd(), 'BusinessDocs', 'session', 'agent-runs');
 const DEFAULT_PROVIDER_REGISTRY = createDefaultRegistry();
+const TOOL_EXECUTION_CACHE_STORE = {
+  _files: {} as Record<string, string>,
+  exists(filePath: string) {
+    return Object.prototype.hasOwnProperty.call(this._files, filePath);
+  },
+  readFile(filePath: string) {
+    return this._files[filePath] || '';
+  },
+  writeFile(filePath: string, data: string) {
+    this._files[filePath] = data;
+  },
+  mkdirp(_dirPath: string) {},
+};
 const FILE_GATE_STORE = {
   exists: existsSync,
   readFile: (filePath: string) => readFileSync(filePath, 'utf8'),
 };
+
+function createDefaultToolExecutor(): ToolExecutor {
+  const registry = new ToolAdapterRegistry();
+  registry.register(new GitAdapter());
+  registry.register(new CiAdapter());
+  registry.register(new ContainerAdapter());
+  registry.register(new CloudAdapter());
+  registry.register(new SecurityAdapter());
+  registry.register(new TestingAdapter());
+  registry.register(new LlmAdapter());
+  return new ToolExecutor({ registry, store: TOOL_EXECUTION_CACHE_STORE });
+}
 
 interface ContractMarkerRequirement {
   anyOf: string[];
@@ -537,6 +589,9 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
   private readonly _timeout?: number;
   private readonly _validationMaxRetries: number;
   private readonly _providerRegistry: Pick<ProviderRegistry, 'getProvider'>;
+  private readonly _toolExecutor: Pick<ToolExecutor, 'execute'>;
+  private readonly _toolAudit?: { logToolExecution(event: ToolExecutionAuditEvent): void };
+  private readonly _toolCatalogPath?: string;
 
   constructor(config: ProviderBackedRuntimeAdapterConfig) {
     super(config.outputDir);
@@ -548,6 +603,115 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
     this._timeout = config.timeout;
     this._validationMaxRetries = config.validationMaxRetries ?? 1;
     this._providerRegistry = config.providerRegistry || DEFAULT_PROVIDER_REGISTRY;
+    this._toolExecutor = config.toolExecutor || createDefaultToolExecutor();
+    this._toolAudit = config.toolAudit;
+    this._toolCatalogPath = config.toolCatalogPath;
+  }
+
+  private _createToolMiddleware(audit?: {
+    logToolExecution(event: ToolExecutionAuditEvent): void;
+  }): ToolExecutionMiddleware {
+    return new ToolExecutionMiddleware({
+      toolExecutor: this._toolExecutor,
+      audit,
+      catalogPath: this._toolCatalogPath,
+    });
+  }
+
+  private async _completeWithToolExecution(options: {
+    provider: LLMProvider;
+    messages: LLMMessage[];
+    model?: string;
+    maxTokens: number;
+    temperature: number;
+    policy: { role?: 'viewer' | 'operator' | 'admin'; profile?: string; traceId: string };
+    maxToolRounds?: number;
+  }): Promise<{ completion: CompletionResult; toolAuditEvents: ToolExecutionAuditEvent[] }> {
+    const {
+      provider,
+      messages,
+      model,
+      maxTokens,
+      temperature,
+      policy,
+      maxToolRounds = 4,
+    } = options;
+
+    const toolAuditEvents: ToolExecutionAuditEvent[] = [];
+    const middleware = this._createToolMiddleware({
+      logToolExecution: (event: ToolExecutionAuditEvent) => {
+        toolAuditEvents.push(event);
+        this._toolAudit?.logToolExecution(event);
+      },
+    });
+
+    let round = 0;
+    let completion = await provider.complete({
+      model,
+      maxTokens,
+      temperature,
+      messages,
+      tools: middleware.listToolDefinitions(),
+    });
+
+    while (completion.toolCalls?.length) {
+      round += 1;
+      if (round > maxToolRounds) {
+        throw new Error(`TOOL_ROUND_LIMIT_EXCEEDED: maxToolRounds=${maxToolRounds}`);
+      }
+
+      const toolResults: Array<Record<string, unknown>> = [];
+      for (const toolCall of completion.toolCalls) {
+        try {
+          const execution = await middleware.execute(
+            {
+              id: toolCall.id,
+              name: toolCall.name,
+              arguments: toolCall.arguments,
+            },
+            {
+              role: policy.role,
+              profile: policy.profile,
+              traceId: policy.traceId,
+            }
+          );
+          toolResults.push({
+            id: toolCall.id,
+            name: toolCall.name,
+            success: execution.success,
+            adapter: execution.adapter,
+            operation: execution.operation,
+            data: execution.data,
+            error: execution.error,
+            fromCache: execution.fromCache,
+          });
+        } catch (err) {
+          if (err instanceof ToolAuthorizationError || err instanceof ToolValidationError) {
+            throw new Error(`${err.code}: ${err.message}`);
+          }
+          throw err;
+        }
+      }
+
+      messages.push({
+        role: 'assistant',
+        content: `Tool calls executed for trace ${policy.traceId}.`,
+      });
+      messages.push({
+        role: 'user',
+        content: `Tool execution results (JSON):\n${JSON.stringify(toolResults, null, 2)}`,
+      });
+
+      completion = await provider.complete({
+        model,
+        maxTokens,
+        temperature,
+        messages,
+        tools: middleware.listToolDefinitions(),
+      });
+    }
+
+    return { completion, toolAuditEvents };
   }
 
   async invoke(
@@ -563,6 +727,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
 
     const requestedAt = new Date().toISOString();
     const requestId = createRequestId(agent.id);
+    const toolTraceId = requestId;
     const predecessorOutputs = Object.entries(runtimeContext.predecessorOutputs || {}).map(
       ([source, content]) => ({ source, excerpt: truncate(content, 2500) })
     );
@@ -619,17 +784,29 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
     ];
 
     let result;
+    let toolAuditEvents: ToolExecutionAuditEvent[] = [];
     let validation: ContractValidationResult = { valid: true, findings: [] };
     let attempts = 0;
 
     while (attempts <= this._validationMaxRetries) {
       attempts += 1;
-      result = await provider.complete({
+      const completionResult = await this._completeWithToolExecution({
+        provider,
+        messages,
         model: this._model,
         maxTokens: this._maxTokens,
         temperature: this._temperature,
-        messages,
+        policy: {
+          role: runtimeContext.role,
+          profile:
+            runtimeContext.profile ||
+            (runtimeContext.sessionState as { profile?: string } | undefined)?.profile,
+          traceId: toolTraceId,
+        },
       });
+
+      result = completionResult.completion;
+      toolAuditEvents = completionResult.toolAuditEvents;
 
       validation = validateContractOutput(result.content, contractBinding, runtimeContext);
       if (validation.valid) {
@@ -669,6 +846,9 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
       usage: result.usage,
       content: result.content,
       attempts,
+      toolTraceId,
+      toolInvocationCount: toolAuditEvents.length,
+      toolAuditEvents,
       contractValidation:
         contractBinding.contractPaths.length > 0
           ? {
@@ -685,7 +865,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
     };
 
     const outputPath = await this._writeArtifact(agent, response);
-    return { outputPath, response, usage: result.usage };
+    return { outputPath, response, usage: result.usage, toolAuditEvents };
   }
 }
 

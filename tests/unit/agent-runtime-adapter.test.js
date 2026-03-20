@@ -529,4 +529,171 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
     ).rejects.toThrow(/failed contract validation/);
     expect(complete).toHaveBeenCalledTimes(2);
   });
+
+  it('routes model tool calls through ToolExecutor middleware when authorized', async () => {
+    const contractPath = await writeContractFixture(
+      'tool-call-contract.md',
+      [
+        '# Contract',
+        '',
+        '```markdown',
+        '## Metadata',
+        '## Findings',
+        '## HANDOFF CHECKLIST',
+        '```',
+      ].join('\n')
+    );
+    const skillPath = await writeSkillFixture('tool-call-skill.md', contractPath);
+
+    const complete = vi
+      .fn()
+      .mockResolvedValueOnce({
+        content: '',
+        model: 'gpt-test',
+        usage: { promptTokens: 10, completionTokens: 2, totalTokens: 12 },
+        finishReason: 'tool_calls',
+        toolCalls: [
+          {
+            id: 'tc-1',
+            name: 'tool.git.commit',
+            arguments: {
+              target: 'git',
+              operation: 'status',
+              params: {},
+            },
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        content: [
+          '## Metadata',
+          '- Agent: Business Analyst',
+          '',
+          '## Findings',
+          '- Finding: tool path executed',
+          '',
+          '## HANDOFF CHECKLIST',
+          '- [x] Item 1',
+          '- [x] Item 2',
+          '- [x] Item 3',
+          '- [x] Item 4',
+          '- [x] Item 5',
+          '- [x] Item 6',
+          '- [x] Item 7',
+          '- [x] Item 8',
+          '- [x] Item 9',
+        ].join('\n'),
+        model: 'gpt-test',
+        usage: { promptTokens: 22, completionTokens: 8, totalTokens: 30 },
+        finishReason: 'stop',
+      });
+
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const execute = vi.fn().mockResolvedValue({
+      success: true,
+      data: { clean: true },
+      error: null,
+      duration_ms: 5,
+      adapter: 'git',
+      operation: 'status',
+      fromCache: false,
+      timestamp: new Date().toISOString(),
+    });
+
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-tools',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      toolExecutor: { execute },
+      validationMaxRetries: 0,
+    });
+
+    const result = await adapter.invoke(AGENT, PLATFORM, {
+      skillFile: skillPath,
+      predecessorOutputs: {},
+      questionnaireInput: null,
+      role: 'admin',
+      profile: 'production-distributed',
+      sessionState: { mode: 'AUDIT' },
+    });
+
+    expect(execute).toHaveBeenCalledTimes(1);
+    expect(execute).toHaveBeenCalledWith(
+      expect.objectContaining({ target: 'git', operation: 'status' })
+    );
+    expect(result.response.toolInvocationCount).toBe(1);
+    expect(result.response.toolAuditEvents[0]).toEqual(
+      expect.objectContaining({
+        toolId: 'tool.git.commit',
+        adapter: 'git',
+        operation: 'status',
+        success: true,
+      })
+    );
+  });
+
+  it('denies unauthorized tool calls with explicit TOOL_UNAUTHORIZED code', async () => {
+    const contractPath = await writeContractFixture(
+      'tool-deny-contract.md',
+      ['# Contract', '', '```markdown', '## Metadata', '## HANDOFF CHECKLIST', '```'].join('\n')
+    );
+    const skillPath = await writeSkillFixture('tool-deny-skill.md', contractPath);
+
+    const complete = vi.fn().mockResolvedValue({
+      content: '',
+      model: 'gpt-test',
+      usage: { promptTokens: 10, completionTokens: 2, totalTokens: 12 },
+      finishReason: 'tool_calls',
+      toolCalls: [
+        {
+          id: 'tc-deny-1',
+          name: 'tool.git.commit',
+          arguments: {
+            target: 'git',
+            operation: 'status',
+            params: {},
+          },
+        },
+      ],
+    });
+
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const execute = vi.fn();
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-tools-deny',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      toolExecutor: { execute },
+      validationMaxRetries: 0,
+    });
+
+    await expect(
+      adapter.invoke(AGENT, PLATFORM, {
+        skillFile: skillPath,
+        predecessorOutputs: {},
+        questionnaireInput: null,
+        role: 'viewer',
+        profile: 'production-distributed',
+        sessionState: { mode: 'AUDIT' },
+      })
+    ).rejects.toThrow(/TOOL_UNAUTHORIZED/);
+
+    expect(execute).not.toHaveBeenCalled();
+  });
 });

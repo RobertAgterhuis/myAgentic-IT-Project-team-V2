@@ -22,35 +22,62 @@ const toneClasses: Record<CardTone, string> = {
     'bg-gradient-to-br from-card via-success/8 to-success/14 border-success/28 text-card-foreground backdrop-blur-sm',
 };
 
-interface CardProps extends React.ComponentProps<'div'> {
+interface CardSharedProps {
   elevation?: CardElevation;
   tone?: CardTone;
   clickable?: boolean;
 }
 
-function Card({
-  className,
-  elevation = 'outlined',
-  tone = 'default',
-  clickable,
-  ...props
-}: CardProps) {
+type CardProps =
+  | (CardSharedProps & { clickable?: false } & React.ComponentPropsWithoutRef<'div'>)
+  | (CardSharedProps & { clickable: true } & React.ComponentPropsWithoutRef<'button'>);
+
+function Card(props: CardProps) {
+  const { className, elevation = 'outlined', tone = 'default', clickable } = props;
+  const cardClassName = cn(
+    'relative flex flex-col gap-6 overflow-hidden rounded-[calc(var(--radius-md)+2px)] py-6',
+    elevationClasses[elevation],
+    toneClasses[tone],
+    clickable &&
+      'cursor-pointer transition-[transform,box-shadow,border-color] hover:-translate-y-0.5 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+    className
+  );
+
+  if (clickable) {
+    const {
+      className: _className,
+      elevation: _elevation,
+      tone: _tone,
+      clickable: _clickable,
+      ...buttonProps
+    } = props as CardSharedProps & React.ComponentPropsWithoutRef<'button'>;
+    return (
+      <button
+        type="button"
+        data-slot="card"
+        data-elevation={elevation}
+        data-tone={tone}
+        className={cardClassName}
+        {...buttonProps}
+      />
+    );
+  }
+
+  const {
+    className: _className,
+    elevation: _elevation,
+    tone: _tone,
+    clickable: _clickable,
+    ...divProps
+  } = props as CardSharedProps & React.ComponentPropsWithoutRef<'div'>;
+
   return (
     <div
       data-slot="card"
       data-elevation={elevation}
       data-tone={tone}
-      role={clickable ? 'button' : undefined}
-      tabIndex={clickable ? 0 : undefined}
-      className={cn(
-        'relative flex flex-col gap-6 overflow-hidden rounded-[calc(var(--radius-md)+2px)] py-6',
-        elevationClasses[elevation],
-        toneClasses[tone],
-        clickable &&
-          'cursor-pointer transition-[transform,box-shadow,border-color] hover:-translate-y-0.5 hover:shadow-xl focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-        className
-      )}
-      {...props}
+      className={cardClassName}
+      {...divProps}
     />
   );
 }

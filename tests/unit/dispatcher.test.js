@@ -133,6 +133,17 @@ describe('PHASE_AGENTS — agent registry', () => {
     };
     expect(() => assertRuntimeSchemaParity(divergent)).toThrow(/parity violation/i);
   });
+
+  it('throws when compiling from invalid schema shape', () => {
+    expect(() => compileAgentPhaseMap({})).toThrow(/expected top-level agents array/i);
+  });
+
+  it('throws when compiling from invalid schema row fields', () => {
+    const badSchema = {
+      agents: [{ id: 1, name: 'Bad', phase: 'PHASE_1' }],
+    };
+    expect(() => compileAgentPhaseMap(badSchema)).toThrow(/expected string id and name/i);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -563,6 +574,24 @@ describe('Dispatcher — default invoker', () => {
     const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
     expect(result.success).toBe(false);
     expect(result.error).toMatch(/No runtime adapter configured/);
+  });
+
+  it('uses runtime adapter when configured', async () => {
+    const adapter = {
+      invoke: vi.fn(async () => ({ outputPath: '/adapter/out.md' })),
+    };
+    const d = new Dispatcher({
+      store: createMockStore(),
+      adapter,
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(true);
+    expect(result.outputPath).toBe('/adapter/out.md');
+    expect(adapter.invoke).toHaveBeenCalledTimes(1);
+    expect(adapter.invoke).toHaveBeenCalledWith({ id: '01', name: 'BA' }, PLATFORMS.COPILOT, {});
   });
 });
 
@@ -1139,5 +1168,24 @@ describe('Dispatcher — dispatchStateParallel (M4/Epic-661)', () => {
 
     expect(agent18.platform).toBe('claude');
     expect(agent19.platform).toBe('openai');
+  });
+
+  it('marks missing grouped agents as failed when not present in state registry', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      phaseAgents: {
+        [STATES.PHASE_1]: [{ id: '01', name: 'Business Analyst' }],
+      },
+      invoker: createSuccessInvoker('/out/01.md'),
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.dispatchStateParallel(STATES.PHASE_1, {}, {}, { maxConcurrency: 2 });
+
+    expect(result.completed).toEqual(['01']);
+    expect(result.failed).toEqual(expect.arrayContaining(['02', '03', '04', '34']));
+    const missing = result.results.filter((r) => !r.success);
+    expect(missing.length).toBeGreaterThan(0);
+    expect(missing[0].error).toMatch(/not found in registry/i);
   });
 });

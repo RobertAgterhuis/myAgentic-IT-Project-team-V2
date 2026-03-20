@@ -576,6 +576,54 @@ export const orchestratorReset = {
   response: mutationResponses,
 };
 
+export const orchestratorPause = {
+  tags: ['orchestrator'],
+  body: {
+    type: 'object' as const,
+    required: ['rationale'],
+    properties: {
+      rationale: { type: 'string' as const, minLength: 1, maxLength: 2000 },
+      requested_by: { type: 'string' as const, minLength: 1, maxLength: 200 },
+    },
+    additionalProperties: false,
+  },
+  response: mutationResponses,
+};
+
+export const orchestratorOverride = {
+  tags: ['orchestrator'],
+  body: {
+    type: 'object' as const,
+    required: ['rationale'],
+    properties: {
+      rationale: { type: 'string' as const, minLength: 1, maxLength: 2000 },
+      requested_by: { type: 'string' as const, minLength: 1, maxLength: 200 },
+      mode: { type: 'string' as const, minLength: 1, maxLength: 50 },
+      phases: {
+        type: 'array' as const,
+        minItems: 1,
+        items: { type: 'string' as const },
+      },
+    },
+    additionalProperties: false,
+  },
+  response: mutationResponses,
+};
+
+export const orchestratorResume = {
+  tags: ['orchestrator'],
+  body: {
+    type: 'object' as const,
+    required: ['rationale'],
+    properties: {
+      rationale: { type: 'string' as const, minLength: 1, maxLength: 2000 },
+      requested_by: { type: 'string' as const, minLength: 1, maxLength: 200 },
+    },
+    additionalProperties: false,
+  },
+  response: mutationResponses,
+};
+
 /* ── misc ─────────────────────────────────────────────────────── */
 
 export const reevaluate = {

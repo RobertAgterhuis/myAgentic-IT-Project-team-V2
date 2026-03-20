@@ -12,6 +12,33 @@ and this project adheres to
 
 ### Added
 
+- M2/E-A5: Human override and provenance groundwork (starts #688, #715)
+  - Extended dispatcher invocation result schema with
+    `confidence`, `uncertainty_reasons`, and `needs_human_review` in
+    [platform/engine/dispatcher.ts](platform/engine/dispatcher.ts)
+  - Propagated confidence metadata to agent execution APIs and SSE payloads in
+    [src/webapp/services/agent-execution-service.ts](src/webapp/services/agent-execution-service.ts)
+    and [src/webapp/routes/agents.ts](src/webapp/routes/agents.ts)
+  - Added unit coverage for confidence metadata propagation in
+    [tests/unit/dispatcher.test.js](tests/unit/dispatcher.test.js),
+    [tests/unit/agent-execution-service.test.js](tests/unit/agent-execution-service.test.js),
+    and [tests/unit/routes-agents-execute.test.js](tests/unit/routes-agents-execute.test.js)
+  - Added orchestrator control APIs for human intervention with rationale:
+    `POST /api/orchestrator/pause`, `POST /api/orchestrator/override`, and
+    `POST /api/orchestrator/resume` in
+    [src/webapp/routes/orchestrator.ts](src/webapp/routes/orchestrator.ts)
+  - Added paused-state guard on `POST /api/orchestrator/advance` plus
+    `human_override` status surface for machine-readable control state
+  - Added route/OpenAPI coverage for override controls in
+    [tests/unit/routes-orchestrator.test.js](tests/unit/routes-orchestrator.test.js)
+    and [tests/unit/openapi-spec.test.js](tests/unit/openapi-spec.test.js)
+  - Added decision provenance feed endpoint `GET /api/v1/cockpit/provenance`
+    combining human override events and governance/audit decisions in
+    [src/webapp/routes/cockpit.ts](src/webapp/routes/cockpit.ts)
+  - Added cockpit "Decision Provenance" tab and UI view in
+    [src/webapp/ui/src/pages/cockpit/cockpit-dashboard-page.tsx](src/webapp/ui/src/pages/cockpit/cockpit-dashboard-page.tsx)
+    and [src/webapp/ui/src/components/cockpit/decision-provenance-view.tsx](src/webapp/ui/src/components/cockpit/decision-provenance-view.tsx)
+
 - M2/E-C3: Agent-specific security guardrails (starts #687)
   - Added context trust labeling and prompt sanitization for model-bound
     invocation payloads in

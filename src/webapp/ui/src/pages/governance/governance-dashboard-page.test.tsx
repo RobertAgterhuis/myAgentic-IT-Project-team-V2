@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { http, HttpResponse } from 'msw';
 import GovernanceDashboardPage from './governance-dashboard-page';
 import { RouterTestWrapper } from '@/test/router-test-wrapper';
@@ -71,5 +71,44 @@ describe('GovernanceDashboardPage', () => {
     });
 
     expect(screen.getAllByText('Governed').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders dedicated decision provenance panel', async () => {
+    server.use(
+      http.get('/api/v1/approvals', () => HttpResponse.json(approvalsResponse)),
+      http.get('/api/v1/cockpit/provenance', () =>
+        HttpResponse.json({
+          ok: true,
+          count: 1,
+          total: 1,
+          page: 1,
+          page_size: 20,
+          items: [
+            {
+              id: 'prov-123',
+              decision_type: 'human_override',
+              actor_type: 'human',
+              actor: 'qa-user',
+              action: 'pause',
+              rationale: 'Manual review required',
+              source: 'orchestrator-control',
+              timestamp: '2026-03-20T10:00:00.000Z',
+            },
+          ],
+        })
+      )
+    );
+
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByTestId('governance-dashboard-page')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('tab', { name: /decision provenance/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/manual review required/i)).toBeInTheDocument();
+    });
+    expect(screen.getByText(/showing 1 of 1 events/i)).toBeInTheDocument();
   });
 });

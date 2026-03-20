@@ -46,6 +46,9 @@ export interface ExecuteAgentResult {
   duration_ms?: number;
   output_path?: string;
   error?: string;
+  confidence?: number;
+  uncertainty_reasons?: string[];
+  needs_human_review?: boolean;
   logs: ExecutionLogEntry[];
 }
 
@@ -152,6 +155,17 @@ export class AgentExecutionService {
       const completedAt = new Date().toISOString();
       const durationMs = +new Date(completedAt) - +new Date(startedAt);
       const outputPath = result.outputPath as string | undefined;
+      const confidence =
+        typeof result.confidence === 'number' ? result.confidence : result.success ? 0.5 : 0;
+      const uncertaintyReasons = Array.isArray(result.uncertainty_reasons)
+        ? (result.uncertainty_reasons as string[])
+        : result.success
+          ? []
+          : [String(result.error || 'Agent invocation failed')];
+      const needsHumanReview =
+        typeof result.needs_human_review === 'boolean'
+          ? result.needs_human_review
+          : !result.success || confidence < 0.6 || uncertaintyReasons.length > 0;
 
       if (result.success) {
         sessionTracker.completeAgent(info.id, outputPath ? [outputPath] : []);
@@ -168,6 +182,9 @@ export class AgentExecutionService {
         job.completed_at = completedAt;
         job.duration_ms = durationMs;
         job.output_path = outputPath;
+        job.confidence = confidence;
+        job.uncertainty_reasons = uncertaintyReasons;
+        job.needs_human_review = needsHumanReview;
         job.logs.push({ timestamp: completedAt, level: 'info', message: 'Execution completed' });
       } else {
         sessionTracker.failAgent(info.id);
@@ -184,6 +201,9 @@ export class AgentExecutionService {
         job.completed_at = completedAt;
         job.duration_ms = durationMs;
         job.error = result.error;
+        job.confidence = confidence;
+        job.uncertainty_reasons = uncertaintyReasons;
+        job.needs_human_review = needsHumanReview;
         job.logs.push({
           timestamp: completedAt,
           level: 'error',
@@ -197,6 +217,9 @@ export class AgentExecutionService {
         sessionTracker.failAgent(info.id);
         job.status = 'failed';
         job.error = (err as Error).message;
+        job.confidence = 0;
+        job.uncertainty_reasons = [(err as Error).message];
+        job.needs_human_review = true;
         job.logs.push({
           timestamp: new Date().toISOString(),
           level: 'error',

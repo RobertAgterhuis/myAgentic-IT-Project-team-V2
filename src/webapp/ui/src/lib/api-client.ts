@@ -33,10 +33,16 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-export async function apiGet<T>(path: string, params?: Record<string, string>): Promise<T> {
+export async function apiGet<T>(
+  path: string,
+  params?: Record<string, string | number | boolean | null | undefined>
+): Promise<T> {
   const url = new URL(`${BASE_URL}${path}`, window.location.origin);
   if (params) {
-    Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v));
+    Object.entries(params).forEach(([k, v]) => {
+      if (v == null) return;
+      url.searchParams.set(k, String(v));
+    });
   }
   const res = await fetch(url.toString(), {
     method: 'GET',

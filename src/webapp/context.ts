@@ -125,6 +125,15 @@ export interface ServerContext {
   _readCommandQueue?: () => unknown[];
   _getLatestCommand?: () => unknown;
   _getEngine?: () => unknown;
+  _getHumanOverrideEvents?: () => Array<{
+    type: string;
+    rationale: string;
+    requested_by: string;
+    timestamp: string;
+    state?: string;
+    mode?: string;
+    phases?: string[];
+  }>;
 }
 
 /* ── Legacy adapter: typed context → Record<string, unknown> ── */

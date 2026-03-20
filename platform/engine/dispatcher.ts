@@ -81,6 +81,86 @@ interface InvocationEntry {
   completionTokens?: number;
   totalTokens?: number;
   contractValidationPassed?: boolean;
+  confidence?: number;
+  uncertainty_reasons?: string[];
+  needs_human_review?: boolean;
+}
+
+interface ConfidenceAssessment {
+  confidence: number;
+  uncertainty_reasons: string[];
+  needs_human_review: boolean;
+}
+
+function clamp01(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(1, value));
+}
+
+function assessConfidence(
+  response:
+    | {
+        status?: string;
+        finishReason?: string;
+        attempts?: number;
+        usage?: { totalTokens?: number };
+        contractValidation?: { status?: string };
+      }
+    | undefined,
+  attempt: number,
+  success: boolean,
+  error?: string
+): ConfidenceAssessment {
+  if (!success) {
+    return {
+      confidence: 0,
+      uncertainty_reasons: [error || 'Agent invocation failed'],
+      needs_human_review: true,
+    };
+  }
+
+  const uncertaintyReasons: string[] = [];
+  let score = 0.55;
+
+  if (!response) {
+    uncertaintyReasons.push('Runtime telemetry unavailable');
+  } else {
+    if (response.status === 'success') {
+      score += 0.1;
+    } else {
+      uncertaintyReasons.push('Provider status missing or non-success');
+    }
+
+    if (response.contractValidation?.status === 'passed') {
+      score += 0.2;
+    } else {
+      uncertaintyReasons.push('Contract validation status not confirmed');
+    }
+
+    if (response.finishReason === 'stop') {
+      score += 0.1;
+    } else if (response.finishReason) {
+      uncertaintyReasons.push(`Non-standard finish reason: ${response.finishReason}`);
+    }
+
+    const retries = Math.max(0, (response.attempts ?? attempt) - 1);
+    if (retries > 0) {
+      score -= Math.min(0.25, retries * 0.08);
+      uncertaintyReasons.push(`Model required ${retries} retr${retries === 1 ? 'y' : 'ies'}`);
+    }
+
+    if ((response.usage?.totalTokens ?? 0) === 0) {
+      uncertaintyReasons.push('Token usage signal is empty');
+    }
+  }
+
+  const confidence = Math.round(clamp01(score) * 100) / 100;
+  const needs_human_review = confidence < 0.6 || uncertaintyReasons.length > 0;
+  return {
+    confidence,
+    uncertainty_reasons: uncertaintyReasons,
+    needs_human_review,
+  };
 }
 
 // ─── Agent Registry ──────────────────────────────────────────
@@ -447,11 +527,19 @@ class Dispatcher {
               : undefined;
         }
 
+        const confidence = assessConfidence(response, attempt, true);
+        entry.confidence = confidence.confidence;
+        entry.uncertainty_reasons = confidence.uncertainty_reasons;
+        entry.needs_human_review = confidence.needs_human_review;
+
         this._logEntry(entry);
         return {
           success: true,
           outputPath: runtimeResult.outputPath,
           response: runtimeResult.response,
+          confidence: confidence.confidence,
+          uncertainty_reasons: confidence.uncertainty_reasons,
+          needs_human_review: confidence.needs_human_review,
         };
       } catch (err) {
         lastError = err as { message: string };
@@ -469,11 +557,28 @@ class Dispatcher {
                 : 'failure';
         entry.errorSeverity = severity;
 
+        const confidence = assessConfidence(
+          undefined,
+          attempt,
+          false,
+          (err as { message: string }).message
+        );
+        entry.confidence = confidence.confidence;
+        entry.uncertainty_reasons = confidence.uncertainty_reasons;
+        entry.needs_human_review = confidence.needs_human_review;
+
         this._logEntry(entry);
 
         // FATAL → halt immediately, no retry
         if (severity === ErrorSeverity.FATAL) {
-          return { success: false, error: lastError.message, severity: ErrorSeverity.FATAL };
+          return {
+            success: false,
+            error: lastError.message,
+            severity: ErrorSeverity.FATAL,
+            confidence: confidence.confidence,
+            uncertainty_reasons: confidence.uncertainty_reasons,
+            needs_human_review: confidence.needs_human_review,
+          };
         }
 
         // TRANSIENT / RECOVERABLE → retry with backoff (if attempts remain)
@@ -488,6 +593,12 @@ class Dispatcher {
 
     // All retries exhausted
     const finalSeverity = lastError ? Dispatcher.classifyError(lastError) : ErrorSeverity.FATAL;
+    const confidence = assessConfidence(
+      undefined,
+      maxRetries + 1,
+      false,
+      lastError ? lastError.message : 'Unknown error'
+    );
     return {
       success: false,
       error: lastError ? lastError.message : 'Unknown error',
@@ -496,6 +607,9 @@ class Dispatcher {
           ? ErrorSeverity.RECOVERABLE
           : ErrorSeverity.FATAL,
       degraded: finalSeverity === ErrorSeverity.RECOVERABLE ? true : undefined,
+      confidence: confidence.confidence,
+      uncertainty_reasons: confidence.uncertainty_reasons,
+      needs_human_review: confidence.needs_human_review,
     };
   }
 

@@ -111,6 +111,7 @@ export { useRuntimeEvents } from './use-runtime-events';
 export {
   useCockpitHealth,
   useDependencyGraph,
+  useDecisionProvenance,
   useRootCause,
   useApprovalDetail,
   useApprovalHistory,

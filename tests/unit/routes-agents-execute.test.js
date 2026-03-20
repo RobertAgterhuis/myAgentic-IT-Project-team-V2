@@ -59,9 +59,13 @@ describe('agents execute route (M31)', () => {
     buildContextSpy = vi
       .spyOn(Dispatcher.prototype, 'buildContext')
       .mockReturnValue({ agentId: '05' });
-    invokeSpy = vi
-      .spyOn(Dispatcher.prototype, 'invoke')
-      .mockResolvedValue({ success: true, outputPath: '/output/test.md' });
+    invokeSpy = vi.spyOn(Dispatcher.prototype, 'invoke').mockResolvedValue({
+      success: true,
+      outputPath: '/output/test.md',
+      confidence: 0.74,
+      uncertainty_reasons: ['Runtime telemetry unavailable'],
+      needs_human_review: true,
+    });
     ctx.sseNotify.mockClear();
   });
 
@@ -116,6 +120,9 @@ describe('agents execute route (M31)', () => {
         expect(body.execution).toBeDefined();
         expect(body.execution.agent_id).toBe('05');
         expect(['completed', 'failed']).toContain(body.execution.status);
+        expect(body.execution).toHaveProperty('confidence');
+        expect(body.execution).toHaveProperty('uncertainty_reasons');
+        expect(body.execution).toHaveProperty('needs_human_review');
       } else {
         // Execution error is still a valid server response
         expect(res.statusCode).toBe(500);

@@ -102,6 +102,28 @@ export const queryKeys = {
   cockpit: {
     health: ['cockpit', 'health'] as const,
     dependencies: ['cockpit', 'dependencies'] as const,
+    provenance: (params?: {
+      actorType?: string;
+      decisionType?: string;
+      source?: string;
+      from?: string;
+      to?: string;
+      page?: number;
+      pageSize?: number;
+    }) =>
+      params
+        ? ([
+            'cockpit',
+            'provenance',
+            params.actorType ?? 'all',
+            params.decisionType ?? 'all',
+            params.source ?? 'all',
+            params.from ?? 'all',
+            params.to ?? 'all',
+            params.page ?? 1,
+            params.pageSize ?? 25,
+          ] as const)
+        : (['cockpit', 'provenance'] as const),
     rootCause: (sessionId?: string) =>
       sessionId
         ? (['cockpit', 'root-cause', sessionId] as const)

@@ -133,6 +133,11 @@ interface InvocationResponseContract {
   completedAt?: string;
 }
 
+interface NormalizedInvocationResult {
+  outputPath?: string;
+  response?: InvocationResponseContract;
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -260,7 +265,7 @@ function normalizeInvocationResponse(value: unknown): InvocationResponseContract
   };
 }
 
-function normalizeInvocationResult(result: unknown): RuntimeAdapterResult {
+function normalizeInvocationResult(result: unknown): NormalizedInvocationResult {
   if (!isRecord(result)) {
     throw new Error('Invocation result must be an object');
   }

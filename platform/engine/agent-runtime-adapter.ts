@@ -129,7 +129,7 @@ export interface AgentResponseEnvelope {
 
 export interface RuntimeAdapterResult {
   outputPath?: string;
-  response?: Partial<AgentResponseEnvelope> & Record<string, unknown>;
+  response?: AgentResponseEnvelope | Record<string, unknown>;
   usage?: TokenUsage;
   toolAuditEvents?: ToolExecutionAuditEvent[];
 }

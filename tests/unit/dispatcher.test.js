@@ -15,6 +15,8 @@
  */
 
 const {
+  compileAgentPhaseMap,
+  assertRuntimeSchemaParity,
   PHASE_AGENTS,
   PLATFORMS,
   _DEFAULT_CONFIG,
@@ -97,10 +99,10 @@ describe('PHASE_AGENTS — agent registry', () => {
     expect(PHASE_AGENTS[STATES.PHASE_1][4].name).toBe('Product Manager');
   });
 
-  it('PHASE_2 has 6 agents including Legal Counsel', () => {
+  it('PHASE_2 has 6 agents including agent 33', () => {
     expect(PHASE_AGENTS[STATES.PHASE_2].length).toBe(6);
-    const names = PHASE_AGENTS[STATES.PHASE_2].map((a) => a.name);
-    expect(names).toContain('Legal Counsel');
+    const ids = PHASE_AGENTS[STATES.PHASE_2].map((a) => a.id);
+    expect(ids).toContain('33');
   });
 
   it('all critic states have Critic + Risk agents', () => {
@@ -114,6 +116,22 @@ describe('PHASE_AGENTS — agent registry', () => {
   it('IDLE and COMPLETED have no agents', () => {
     expect(PHASE_AGENTS[STATES.IDLE]).toBeUndefined();
     expect(PHASE_AGENTS[STATES.COMPLETED]).toBeUndefined();
+  });
+
+  it('compiles dispatcher phase map from canonical schema', () => {
+    const compiled = compileAgentPhaseMap();
+    expect(compiled[STATES.ONBOARDING]).toEqual([{ id: '25', name: 'Onboarding Agent' }]);
+    expect(compiled[STATES.CRITIC_1]).toEqual(compiled[STATES.CRITIC_2]);
+    expect(compiled[STATES.CRITIC_1]).toEqual(compiled[STATES.CRITIC_3]);
+    expect(compiled[STATES.CRITIC_1]).toEqual(compiled[STATES.CRITIC_4]);
+  });
+
+  it('throws when runtime map diverges from canonical schema output', () => {
+    const divergent = {
+      ...PHASE_AGENTS,
+      [STATES.PHASE_1]: [{ id: '01', name: 'Broken Name' }],
+    };
+    expect(() => assertRuntimeSchemaParity(divergent)).toThrow(/parity violation/i);
   });
 });
 

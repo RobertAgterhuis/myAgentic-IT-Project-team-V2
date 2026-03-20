@@ -19,6 +19,7 @@ import path from 'node:path';
 import { STATES } from './state-machine';
 import type { JobQueue, JobType } from './jobs/job-types';
 import type { AgentRuntimeAdapter } from './agent-runtime-adapter';
+import agentsSchema from '../schema/agents.json';
 
 // ─── Error Severity Classification (M5 / Evolution 5) ───────
 
@@ -55,6 +56,12 @@ interface DispatcherStore {
 interface AgentRef {
   id: string;
   name: string;
+}
+
+interface CanonicalSchemaAgent {
+  id?: unknown;
+  name?: unknown;
+  phase?: unknown;
 }
 
 interface InvocationEntry {
@@ -173,69 +180,102 @@ function assessConfidence(
 }
 
 // ─── Agent Registry ──────────────────────────────────────────
-// Maps state → list of agents to invoke (in order)
+// Maps runtime state → list of agents to invoke (in order).
+// The source of truth is platform/schema/agents.json.
 
-const PHASE_AGENTS = Object.freeze({
-  [STATES.ONBOARDING]: [{ id: '25', name: 'Onboarding Agent' }],
-  [STATES.PHASE_1]: [
-    { id: '01', name: 'Business Analyst' },
-    { id: '02', name: 'Domain Expert' },
-    { id: '03', name: 'Sales Strategist' },
-    { id: '04', name: 'Financial Analyst' },
-    { id: '34', name: 'Product Manager' },
-  ],
-  [STATES.CRITIC_1]: [
-    { id: '18', name: 'Critic Agent' },
-    { id: '19', name: 'Risk Agent' },
-  ],
-  [STATES.PHASE_2]: [
-    { id: '05', name: 'Software Architect' },
-    { id: '06', name: 'Senior Developer' },
-    { id: '07', name: 'DevOps Engineer' },
-    { id: '08', name: 'Security Architect' },
-    { id: '09', name: 'Data Architect' },
-    { id: '33', name: 'Legal Counsel' },
-  ],
-  [STATES.CRITIC_2]: [
-    { id: '18', name: 'Critic Agent' },
-    { id: '19', name: 'Risk Agent' },
-  ],
-  [STATES.PHASE_3]: [
-    { id: '10', name: 'UX Researcher' },
-    { id: '11', name: 'UX Designer' },
-    { id: '12', name: 'UI Designer' },
-    { id: '13', name: 'Accessibility Specialist' },
-    { id: '32', name: 'Content Strategist' },
-    { id: '35', name: 'Localization Specialist' },
-  ],
-  [STATES.CRITIC_3]: [
-    { id: '18', name: 'Critic Agent' },
-    { id: '19', name: 'Risk Agent' },
-  ],
-  [STATES.PHASE_4]: [
-    { id: '14', name: 'Brand Strategist' },
-    { id: '15', name: 'Growth Marketer' },
-    { id: '16', name: 'CRO Specialist' },
-    { id: '30', name: 'Brand & Assets Agent' },
-    { id: '31', name: 'Storybook Agent' },
-  ],
-  [STATES.CRITIC_4]: [
-    { id: '18', name: 'Critic Agent' },
-    { id: '19', name: 'Risk Agent' },
-  ],
-  [STATES.SYNTHESIS]: [{ id: '17', name: 'Synthesis Agent' }],
-  [STATES.SPRINT_GATE]: [{ id: '00', name: 'Orchestrator (Sprint Gate)' }],
-  [STATES.PHASE_5_EXECUTING]: [
-    { id: '20', name: 'Implementation Agent' },
-    { id: '21', name: 'Test Agent' },
-    { id: '38', name: 'Architecture Compliance Reviewer' },
-    { id: '22', name: 'PR/Review Agent' },
-    { id: '29', name: 'KPI Agent' },
-    { id: '26', name: 'Documentation Agent' },
-    { id: '27', name: 'GitHub Integration Agent' },
-    { id: '28', name: 'Retrospective Agent' },
-  ],
-});
+const RUNTIME_TO_SCHEMA_PHASE = Object.freeze({
+  [STATES.ONBOARDING]: 'ONBOARDING',
+  [STATES.PHASE_1]: 'PHASE_1',
+  [STATES.PHASE_2]: 'PHASE_2',
+  [STATES.PHASE_3]: 'PHASE_3',
+  [STATES.PHASE_4]: 'PHASE_4',
+  [STATES.SYNTHESIS]: 'SYNTHESIS',
+  [STATES.SPRINT_GATE]: 'SPRINT_GATE',
+  [STATES.PHASE_5_EXECUTING]: 'PHASE_5_EXECUTING',
+} as Record<string, string>);
+
+const RUNTIME_STATES_WITH_AGENTS = Object.freeze([
+  STATES.ONBOARDING,
+  STATES.PHASE_1,
+  STATES.CRITIC_1,
+  STATES.PHASE_2,
+  STATES.CRITIC_2,
+  STATES.PHASE_3,
+  STATES.CRITIC_3,
+  STATES.PHASE_4,
+  STATES.CRITIC_4,
+  STATES.SYNTHESIS,
+  STATES.SPRINT_GATE,
+  STATES.PHASE_5_EXECUTING,
+]);
+
+function toAgentRef(row: CanonicalSchemaAgent): AgentRef {
+  if (typeof row.id !== 'string' || typeof row.name !== 'string') {
+    throw new Error('Invalid agents schema row: expected string id and name');
+  }
+  return { id: row.id, name: row.name };
+}
+
+function freezePhaseMap(phaseMap: Record<string, AgentRef[]>): Record<string, AgentRef[]> {
+  for (const [state, agents] of Object.entries(phaseMap)) {
+    phaseMap[state] = Object.freeze(agents.map((a) => Object.freeze({ ...a })));
+  }
+  return Object.freeze(phaseMap);
+}
+
+function serializePhaseMap(phaseMap: Record<string, AgentRef[]>) {
+  return RUNTIME_STATES_WITH_AGENTS.map((state) => ({
+    state,
+    agents: (phaseMap[state] || []).map((a) => ({ id: a.id, name: a.name })),
+  }));
+}
+
+function compileAgentPhaseMap(schemaDoc: unknown = agentsSchema): Record<string, AgentRef[]> {
+  const doc = schemaDoc as { agents?: unknown };
+  if (!doc || !Array.isArray(doc.agents)) {
+    throw new Error('Invalid agents schema: expected top-level agents array');
+  }
+
+  const schemaByPhase = new Map<string, AgentRef[]>();
+  for (const rawAgent of doc.agents as CanonicalSchemaAgent[]) {
+    if (!rawAgent || typeof rawAgent.phase !== 'string') {
+      throw new Error('Invalid agents schema row: expected string phase');
+    }
+    const list = schemaByPhase.get(rawAgent.phase) || [];
+    list.push(toAgentRef(rawAgent));
+    schemaByPhase.set(rawAgent.phase, list);
+  }
+
+  const criticRiskAgents = schemaByPhase.get('CRITIC_RISK') || [];
+  const runtimePhaseMap: Record<string, AgentRef[]> = {
+    [STATES.CRITIC_1]: criticRiskAgents.map((a) => ({ ...a })),
+    [STATES.CRITIC_2]: criticRiskAgents.map((a) => ({ ...a })),
+    [STATES.CRITIC_3]: criticRiskAgents.map((a) => ({ ...a })),
+    [STATES.CRITIC_4]: criticRiskAgents.map((a) => ({ ...a })),
+  };
+
+  for (const [runtimeState, schemaPhase] of Object.entries(RUNTIME_TO_SCHEMA_PHASE)) {
+    runtimePhaseMap[runtimeState] = (schemaByPhase.get(schemaPhase) || []).map((a) => ({ ...a }));
+  }
+
+  return freezePhaseMap(runtimePhaseMap);
+}
+
+function assertRuntimeSchemaParity(
+  runtimePhaseMap: Record<string, AgentRef[]>,
+  schemaDoc: unknown = agentsSchema
+): void {
+  const compiled = compileAgentPhaseMap(schemaDoc);
+  const runtimeSnapshot = JSON.stringify(serializePhaseMap(runtimePhaseMap));
+  const compiledSnapshot = JSON.stringify(serializePhaseMap(compiled));
+
+  if (runtimeSnapshot !== compiledSnapshot) {
+    throw new Error('Runtime/schema parity violation for dispatcher phase-agent map');
+  }
+}
+
+const PHASE_AGENTS = compileAgentPhaseMap();
+assertRuntimeSchemaParity(PHASE_AGENTS);
 
 // ─── Supported Platforms ─────────────────────────────────────
 const PLATFORMS = Object.freeze({
@@ -933,6 +973,8 @@ class Dispatcher {
 }
 
 export {
+  compileAgentPhaseMap,
+  assertRuntimeSchemaParity,
   PHASE_AGENTS,
   AGENT_GROUPS,
   PLATFORMS,

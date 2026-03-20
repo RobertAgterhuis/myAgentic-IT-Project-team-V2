@@ -72,7 +72,7 @@
       { "id": "07", "name": "DevOps Engineer" },
       { "id": "08", "name": "Security Architect" },
       { "id": "09", "name": "Data Architect" },
-      { "id": "33", "name": "Legal Counsel" }
+      { "id": "33", "name": "Legal / Privacy Counsel" }
     ],
     "CRITIC_2": [
       { "id": "18", "name": "Critic Agent" },
@@ -83,7 +83,7 @@
       { "id": "11", "name": "UX Designer" },
       { "id": "12", "name": "UI Designer" },
       { "id": "13", "name": "Accessibility Specialist" },
-      { "id": "32", "name": "Content Strategist" },
+      { "id": "32", "name": "Content Strategist / UX Writer" },
       { "id": "35", "name": "Localization Specialist" }
     ],
     "CRITIC_3": [
@@ -94,7 +94,7 @@
       { "id": "14", "name": "Brand Strategist" },
       { "id": "15", "name": "Growth Marketer" },
       { "id": "16", "name": "CRO Specialist" },
-      { "id": "30", "name": "Brand & Assets Agent" },
+      { "id": "30", "name": "Brand & Assets Agent (Canva)" },
       { "id": "31", "name": "Storybook Agent" }
     ],
     "CRITIC_4": [
@@ -102,16 +102,16 @@
       { "id": "19", "name": "Risk Agent" }
     ],
     "SYNTHESIS": [{ "id": "17", "name": "Synthesis Agent" }],
-    "SPRINT_GATE": [{ "id": "00", "name": "Orchestrator (Sprint Gate)" }],
+    "SPRINT_GATE": [{ "id": "00", "name": "Orchestrator" }],
     "PHASE_5_EXECUTING": [
       { "id": "20", "name": "Implementation Agent" },
       { "id": "21", "name": "Test Agent" },
-      { "id": "38", "name": "Architecture Compliance Reviewer" },
       { "id": "22", "name": "PR/Review Agent" },
-      { "id": "29", "name": "KPI Agent" },
       { "id": "26", "name": "Documentation Agent" },
       { "id": "27", "name": "GitHub Integration Agent" },
-      { "id": "28", "name": "Retrospective Agent" }
+      { "id": "28", "name": "Sprint Retrospective Agent" },
+      { "id": "29", "name": "KPI/Metrics Agent" },
+      { "id": "38", "name": "Architecture Compliance Reviewer" }
     ]
   },
   "phaseContracts": {

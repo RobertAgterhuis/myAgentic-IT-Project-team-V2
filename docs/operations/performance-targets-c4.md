@@ -71,12 +71,29 @@ Result file:
 Run:
 
 ```bash
-npx tsx tests/load/bounded-parallel-dispatch.ts --iterations 30 --agents 12 --maxConcurrency 3
+npx tsx tests/load/bounded-parallel-dispatch.ts --state PHASE_3 --iterations 30 --agents 6 --maxConcurrency 3
 ```
 
 Result file:
 
 - `tests/load/bounded-parallel-dispatch-results.json`
+
+Latest measured snapshot (2026-03-20):
+
+| Metric                                       | Value                             |
+| -------------------------------------------- | --------------------------------- |
+| state / iterations / agents / maxConcurrency | PHASE_3 / 30 / 6 / 3              |
+| run failure rate                             | 16.67%                            |
+| latency p50 / p95 / p99                      | 156.55 ms / 186.47 ms / 188.29 ms |
+| queue wait p95                               | 253 ms                            |
+| observed concurrency max                     | 3                                 |
+| completed throughput p50 / p95               | 37.99 / 47.96 invocations/sec     |
+
+Interpretation:
+
+- Latency is well below the current orchestration-stage SLO thresholds.
+- Run-level failure rate remains elevated because the synthetic scenario intentionally injects per-invocation failures (`failRatio=0.03`) and marks a run failed when any invocation fails.
+- Concurrency reached the configured cap (`maxConcurrency=3`), confirming bounded parallel lanes are actively exercised.
 
 ### C. Runtime baseline snapshot
 

@@ -16,9 +16,10 @@
 
 import { writeFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
-import { Dispatcher } from '../../platform/engine/dispatcher';
+import { AGENT_GROUPS, Dispatcher } from '../../platform/engine/dispatcher';
 
 interface Args {
+  state: string;
   iterations: number;
   agents: number;
   maxConcurrency: number;
@@ -31,6 +32,8 @@ interface ScenarioResult {
   totalRuns: number;
   failedRuns: number;
   runFailureRatePct: number;
+  totalCompletedInvocations: number;
+  totalFailedInvocations: number;
   latencyMs: {
     p50: number;
     p95: number;
@@ -51,10 +54,20 @@ interface ScenarioResult {
     p99: number;
     max: number;
   };
+  throughput: {
+    completedInvocationsPerSec: {
+      p50: number;
+      p95: number;
+      p99: number;
+      avg: number;
+      max: number;
+    };
+  };
 }
 
 function parseArgs(argv: string[]): Args {
   const parsed: Args = {
+    state: 'PHASE_3',
     iterations: 30,
     agents: 12,
     maxConcurrency: 3,
@@ -70,6 +83,10 @@ function parseArgs(argv: string[]): Args {
 
     const num = Number(value);
     switch (key) {
+      case '--state':
+        parsed.state = value;
+        i += 1;
+        break;
       case '--iterations':
         parsed.iterations = Number.isFinite(num) ? Math.max(1, Math.floor(num)) : parsed.iterations;
         i += 1;
@@ -132,9 +149,16 @@ function randomBetween(min: number, max: number): number {
 }
 
 async function runScenario(config: Args): Promise<ScenarioResult> {
+  const configuredGroups = AGENT_GROUPS[config.state] ?? [];
+  if (configuredGroups.length === 0) {
+    throw new Error(`State "${config.state}" has no parallel group configuration in AGENT_GROUPS.`);
+  }
+
+  const stateAgentIds = Array.from(new Set(configuredGroups.flat()));
+  const selectedAgentIds = stateAgentIds.slice(0, Math.min(config.agents, stateAgentIds.length));
   const phaseAgents = {
-    LOAD_TEST_STATE: Array.from({ length: config.agents }, (_unused, index) => ({
-      id: `LT-${String(index + 1).padStart(2, '0')}`,
+    [config.state]: selectedAgentIds.map((agentId, index) => ({
+      id: agentId,
       name: `Load Test Agent ${index + 1}`,
     })),
   };
@@ -142,7 +166,10 @@ async function runScenario(config: Args): Promise<ScenarioResult> {
   const runDurations: number[] = [];
   const waits: number[] = [];
   const concurrencies: number[] = [];
+  const runThroughput: number[] = [];
   let failedRuns = 0;
+  let totalCompletedInvocations = 0;
+  let totalFailedInvocations = 0;
 
   for (let run = 0; run < config.iterations; run += 1) {
     const dispatcher = new Dispatcher({
@@ -161,7 +188,7 @@ async function runScenario(config: Args): Promise<ScenarioResult> {
 
     const started = performance.now();
     const result = await dispatcher.dispatchStateParallel(
-      'LOAD_TEST_STATE',
+      config.state,
       {},
       {},
       { maxConcurrency: config.maxConcurrency, onFailure: 'continue' }
@@ -171,6 +198,11 @@ async function runScenario(config: Args): Promise<ScenarioResult> {
     runDurations.push(Number(duration.toFixed(2)));
     waits.push(Number(result.totalWaitMs.toFixed(2)));
     concurrencies.push(result.concurrencyHighWaterMark);
+    const completed = result.completed.length;
+    runThroughput.push(Number(((completed * 1000) / Math.max(duration, 1)).toFixed(2)));
+
+    totalCompletedInvocations += completed;
+    totalFailedInvocations += result.failed.length;
 
     if (result.failed.length > 0) {
       failedRuns += 1;
@@ -179,12 +211,15 @@ async function runScenario(config: Args): Promise<ScenarioResult> {
 
   const latencySummary = summary(runDurations);
   const waitSummary = summary(waits);
+  const throughputSummary = summary(runThroughput);
   const sortedConcurrency = [...concurrencies].sort((a, b) => a - b);
 
   return {
     totalRuns: config.iterations,
     failedRuns,
     runFailureRatePct: Number(((failedRuns / config.iterations) * 100).toFixed(2)),
+    totalCompletedInvocations,
+    totalFailedInvocations,
     latencyMs: latencySummary,
     queueWaitMs: waitSummary,
     observedConcurrency: {
@@ -192,6 +227,9 @@ async function runScenario(config: Args): Promise<ScenarioResult> {
       p95: percentile(sortedConcurrency, 95),
       p99: percentile(sortedConcurrency, 99),
       max: sortedConcurrency[sortedConcurrency.length - 1] || 0,
+    },
+    throughput: {
+      completedInvocationsPerSec: throughputSummary,
     },
   };
 }

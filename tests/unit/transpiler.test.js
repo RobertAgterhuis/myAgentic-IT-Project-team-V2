@@ -12,6 +12,8 @@ const COPILOT_INSTRUCTIONS = path.join(ROOT, '.github', 'copilot-instructions.md
 const CLAUDE_DIR = path.join(ROOT, '.claude');
 const CLAUDE_MD = path.join(ROOT, 'CLAUDE.md');
 const CODEX_DIR = path.join(ROOT, '.codex');
+const ARCHITECTURE_INDEX_MD = path.join(ROOT, 'docs', 'reference', 'architecture-index.md');
+const ARCHITECTURE_INDEX_JSON = path.join(ROOT, 'docs', 'reference', 'architecture-index.json');
 
 describe('Platform transpiler (S4-4/S4-5/S4-6)', () => {
   afterAll(() => {
@@ -167,6 +169,20 @@ describe('Platform transpiler (S4-4/S4-5/S4-6)', () => {
       const results = generate('all');
       expect(results).toHaveLength(3);
       expect(results.map((r) => r.target).sort()).toEqual(['claude', 'copilot', 'openai']);
+    });
+
+    it('generates architecture index artifacts in docs/reference', () => {
+      generate('all');
+      expect(fs.existsSync(ARCHITECTURE_INDEX_MD)).toBe(true);
+      expect(fs.existsSync(ARCHITECTURE_INDEX_JSON)).toBe(true);
+
+      const markdown = fs.readFileSync(ARCHITECTURE_INDEX_MD, 'utf8');
+      const json = JSON.parse(fs.readFileSync(ARCHITECTURE_INDEX_JSON, 'utf8'));
+
+      expect(markdown).toContain('Architecture Index');
+      expect(markdown).toContain('Phase-Agent Mapping');
+      expect(json).toHaveProperty('phases');
+      expect(json).toHaveProperty('fullFlow');
     });
   });
 

@@ -218,7 +218,10 @@ function toAgentRef(row: CanonicalSchemaAgent): AgentRef {
 
 function freezePhaseMap(phaseMap: Record<string, AgentRef[]>): Record<string, AgentRef[]> {
   for (const [state, agents] of Object.entries(phaseMap)) {
-    phaseMap[state] = Object.freeze(agents.map((a) => Object.freeze({ ...a })));
+    const frozenAgents = Object.freeze(
+      agents.map((a) => Object.freeze({ ...a }))
+    ) as unknown as AgentRef[];
+    phaseMap[state] = frozenAgents;
   }
   return Object.freeze(phaseMap);
 }

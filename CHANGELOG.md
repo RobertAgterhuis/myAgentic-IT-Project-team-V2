@@ -12,6 +12,19 @@ and this project adheres to
 
 ### Added
 
+- M2/E-A3: Unified tool-calling middleware through `ToolExecutor` (starts #686, #708, #709, #710, #711)
+  - Added runtime tool execution middleware in
+    [platform/engine/tool-execution-middleware.ts](platform/engine/tool-execution-middleware.ts)
+    that resolves canonical tool IDs from `platform/schema/tools.json`, enforces
+    role/profile authorization checks, and emits traceable audit events
+  - Wired `ProviderBackedLlmRuntimeAdapter` to execute provider `toolCalls`
+    through `ToolExecutor` only, feed tool results back into model context, and
+    deny unauthorized operations with explicit `TOOL_UNAUTHORIZED` errors
+  - Added tool invocation telemetry fields to adapter response envelopes:
+    `toolTraceId`, `toolInvocationCount`, and `toolAuditEvents`
+  - Added unit coverage for allowed/denied tool operations in
+    [tests/unit/agent-runtime-adapter.test.js](tests/unit/agent-runtime-adapter.test.js)
+
 - M1/E-A1: Dispatcher Runtime Adapter Integration (closes #683, #697, #698, #699, #700)
   - `AgentRuntimeAdapter` interface + `AdapterRegistry` with `NullAdapter`
     (`ci-test`) and `LogOnlyAdapter` (`local-dev`) built-ins in

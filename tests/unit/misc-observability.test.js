@@ -21,6 +21,9 @@ function createReply() {
     statusCode: 200,
     headers: {},
     body: undefined,
+    setHeader(name, value) {
+      this.headers[name] = value;
+    },
     writeHead(code, headers) {
       this.statusCode = code;
       this.headers = headers;
@@ -102,5 +105,118 @@ describe('registerObservabilityRoutes', () => {
     expect(reply.payload.error_count).toBe(1);
     expect(reply.payload.sse_connections).toBe(2);
     expect(reply.payload.per_endpoint['GET /api/health'].count).toBe(2);
+  });
+
+  it('returns 503 when SSE client limit is reached', async () => {
+    const app = createFakeApp();
+    registerObservabilityRoutes({
+      app,
+      sseManager: { size: 50, addClient: () => {} },
+      metrics: {
+        startedAt: Date.now(),
+        requestCount: 0,
+        errorCount: 0,
+        responseTimes: [],
+        fileOpsCount: 0,
+        perEndpoint: {},
+      },
+      cache: {},
+      computePercentiles: () => ({ p50: 0, p95: 0, p99: 0 }),
+      flushMetrics: () => {},
+    });
+
+    const handler = app.routes.get('GET /api/events');
+    const reply = createReply();
+    await handler({ raw: {} }, reply);
+
+    expect(reply.statusCode).toBe(503);
+    expect(reply.payload.code).toBe('INTERNAL_ERROR');
+  });
+
+  it('opens SSE stream and hijacks reply when under limit', async () => {
+    const app = createFakeApp();
+    const addClient = vi.fn();
+    registerObservabilityRoutes({
+      app,
+      sseManager: { size: 1, addClient },
+      metrics: {
+        startedAt: Date.now(),
+        requestCount: 0,
+        errorCount: 0,
+        responseTimes: [],
+        fileOpsCount: 0,
+        perEndpoint: {},
+      },
+      cache: {},
+      computePercentiles: () => ({ p50: 0, p95: 0, p99: 0 }),
+      flushMetrics: () => {},
+    });
+
+    const handler = app.routes.get('GET /api/events');
+    const reply = createReply();
+    await handler({ raw: { id: 'req-1' } }, reply);
+
+    expect(reply.raw.statusCode).toBe(200);
+    expect(reply.raw.headers['Content-Type']).toBe('text/event-stream');
+    expect(reply.raw.body).toContain('event: connected');
+    expect(addClient).toHaveBeenCalledTimes(1);
+    expect(reply.hijacked).toBe(true);
+  });
+
+  it('flushes metrics via POST endpoint', async () => {
+    const app = createFakeApp();
+    const flushMetrics = vi.fn();
+    registerObservabilityRoutes({
+      app,
+      sseManager: { size: 0, addClient: () => {} },
+      metrics: {
+        startedAt: Date.now(),
+        requestCount: 0,
+        errorCount: 0,
+        responseTimes: [],
+        fileOpsCount: 0,
+        perEndpoint: {},
+      },
+      cache: {},
+      computePercentiles: () => ({ p50: 0, p95: 0, p99: 0 }),
+      flushMetrics,
+    });
+
+    const handler =
+      app.routes.get('POST /api/metrics/flush') || app.routes.get('POST /api/metrics/flush');
+    const reply = createReply();
+    await handler({}, reply);
+
+    expect(flushMetrics).toHaveBeenCalledTimes(1);
+    expect(reply.payload.ok).toBe(true);
+    expect(typeof reply.payload.flushed_at).toBe('string');
+  });
+
+  it('handles empty metrics and missing cache stats', async () => {
+    const app = createFakeApp();
+    registerObservabilityRoutes({
+      app,
+      sseManager: { size: 0, addClient: () => {} },
+      metrics: {
+        startedAt: Date.now() - 1000,
+        requestCount: 0,
+        errorCount: 0,
+        responseTimes: [],
+        fileOpsCount: 0,
+        perEndpoint: {},
+      },
+      cache: {},
+      computePercentiles: () => ({ p50: 0, p95: 0, p99: 0 }),
+      flushMetrics: () => {},
+    });
+
+    const handler = app.routes.get('GET /api/metrics');
+    const reply = createReply();
+    await handler({}, reply);
+
+    expect(reply.statusCode).toBe(200);
+    expect(reply.payload.error_rate).toBe(0);
+    expect(reply.payload.cache_hit_ratio).toBe(0);
+    expect(reply.payload.per_endpoint).toEqual({});
   });
 });

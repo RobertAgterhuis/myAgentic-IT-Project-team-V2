@@ -67,6 +67,22 @@ describe('sessions routes', () => {
   });
 
   describe('GET /api/sessions/:id', () => {
+    it('returns 400 when session id is missing', async () => {
+      const res = createRes();
+      await routes['GET /api/sessions/:id'](
+        {
+          url: '/api/sessions/',
+          method: 'GET',
+          params: { id: '' },
+          headers: { host: 'localhost:3001', 'content-type': 'application/json' },
+        },
+        res
+      );
+      expect(res.statusCode).toBe(400);
+      const body = parsed(res);
+      expect(body.error).toContain('Session ID is required');
+    });
+
     it('returns 404 for non-existent session', async () => {
       const res = createRes();
       await routes['GET /api/sessions/:id'](createReq('/api/sessions/non-existent-id'), res);
@@ -87,6 +103,22 @@ describe('sessions routes', () => {
   });
 
   describe('GET /api/sessions/:id/timeline', () => {
+    it('returns 400 when timeline session id is missing', async () => {
+      const res = createRes();
+      await routes['GET /api/sessions/:id/timeline'](
+        {
+          url: '/api/sessions//timeline',
+          method: 'GET',
+          params: { id: '' },
+          headers: { host: 'localhost:3001', 'content-type': 'application/json' },
+        },
+        res
+      );
+      expect(res.statusCode).toBe(400);
+      const body = parsed(res);
+      expect(body.error).toContain('Session ID is required');
+    });
+
     it('returns 404 for non-existent session timeline', async () => {
       const res = createRes();
       await routes['GET /api/sessions/:id/timeline'](

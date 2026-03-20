@@ -67,8 +67,12 @@ export default defineConfig({
       exclude: [
         'src/webapp/node_modules/**',
         'src/webapp/ui/**',
+        '**/index.ts',
+        '**/types.ts',
+        'platform/sdlc/adapters/contracts/**',
+        'platform/engine/persistence/storage-provider.ts',
+        'platform/engine/jobs/job-types.ts',
         'src/webapp/start.ps1',
-        'src/webapp/services/types.ts',
         'platform/engine/flows.yaml',
         '**/*.d.ts',
       ],

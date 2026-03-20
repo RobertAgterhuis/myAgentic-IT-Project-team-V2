@@ -3,6 +3,9 @@
 
 const { registerRoutes } = require('../../src/webapp/routes/cockpit');
 const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 
 function createReq(url = '/api/v1/cockpit/provenance') {
   return {
@@ -10,6 +13,25 @@ function createReq(url = '/api/v1/cockpit/provenance') {
     method: 'GET',
     headers: { host: 'localhost:3001' },
   };
+}
+
+function createTmpRoot() {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'cockpit-routes-'));
+  fs.mkdirSync(path.join(root, 'BusinessDocs', 'session'), { recursive: true });
+  fs.mkdirSync(path.join(root, 'BusinessDocs', 'audit'), { recursive: true });
+  return root;
+}
+
+function writeJson(root, relativePath, data) {
+  const full = path.join(root, relativePath);
+  fs.mkdirSync(path.dirname(full), { recursive: true });
+  fs.writeFileSync(full, JSON.stringify(data, null, 2), 'utf8');
+}
+
+function writeAudit(root, lines) {
+  const full = path.join(root, 'BusinessDocs', 'audit', 'audit-log.jsonl');
+  fs.mkdirSync(path.dirname(full), { recursive: true });
+  fs.writeFileSync(full, lines.join('\n') + '\n', 'utf8');
 }
 
 function createRes() {
@@ -124,5 +146,211 @@ describe('cockpit provenance route', () => {
     expect(pagedBody.page_size).toBe(2);
     expect(pagedBody.total).toBe(3);
     expect(pagedBody.count).toBe(1);
+  });
+
+  it('returns computed health scores from session-state', async () => {
+    const root = createTmpRoot();
+    writeJson(root, 'BusinessDocs/session/session-state.json', {
+      gates_passed: 4,
+      gates_total: 5,
+      decisions_resolved: 8,
+      decisions_total: 10,
+      questionnaires_complete: 9,
+      questionnaires_total: 10,
+      error_count: 1,
+      stories_ready: 6,
+      stories_total: 8,
+      blocking_items: 0,
+      uncertain_count: 1,
+      insufficient_data_count: 0,
+      agents_total: 8,
+    });
+
+    const routes = createTestableRoutes(registerRoutes, {
+      PROJECT_ROOT: root,
+      _getHumanOverrideEvents: () => [],
+    });
+
+    const res = createRes();
+    await routes['GET /api/v1/cockpit/health'](createReq('/api/v1/cockpit/health'), res);
+
+    expect(res.statusCode).toBe(200);
+    const body = parsed(res);
+    expect(body.ok).toBe(true);
+    expect(body.session_health.score).toBeGreaterThan(0);
+    expect(body.sprint_readiness.score).toBeGreaterThan(0);
+    expect(body.agent_confidence.score).toBeGreaterThan(0);
+  });
+
+  it('returns dependency graph and marks current critical path', async () => {
+    const root = createTmpRoot();
+    writeJson(root, 'BusinessDocs/session/session-state.json', {
+      current_phase: 'PHASE-3',
+    });
+
+    const routes = createTestableRoutes(registerRoutes, {
+      PROJECT_ROOT: root,
+      _getHumanOverrideEvents: () => [],
+    });
+
+    const res = createRes();
+    await routes['GET /api/v1/cockpit/dependencies'](
+      createReq('/api/v1/cockpit/dependencies'),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const body = parsed(res);
+    expect(body.ok).toBe(true);
+    expect(body.nodes.length).toBeGreaterThan(0);
+    expect(body.critical_path).toContain('gate-PHASE-3');
+    expect(body.critical_path).toContain('sprint-PHASE-3');
+  });
+
+  it('builds root-cause items from audit log and filters by session_id', async () => {
+    const root = createTmpRoot();
+    writeAudit(root, [
+      JSON.stringify({
+        event: 'gate_failed',
+        session_id: 's-1',
+        description: 'Gate failed',
+        agent: 'Architect',
+        timestamp: '2026-03-20T10:00:00.000Z',
+      }),
+      JSON.stringify({
+        event: 'error',
+        session_id: 's-2',
+        message: 'Unhandled exception',
+        timestamp: '2026-03-20T10:01:00.000Z',
+      }),
+      '{ malformed json line',
+    ]);
+
+    const routes = createTestableRoutes(registerRoutes, {
+      PROJECT_ROOT: root,
+      _getHumanOverrideEvents: () => [],
+    });
+
+    const res = createRes();
+    await routes['GET /api/v1/cockpit/root-cause'](
+      createReq('/api/v1/cockpit/root-cause?session_id=s-1'),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const body = parsed(res);
+    expect(body.ok).toBe(true);
+    expect(body.session_id).toBe('s-1');
+    expect(body.items).toHaveLength(1);
+    expect(body.items[0].type).toBe('gate_failure');
+  });
+
+  it('returns fallback approval detail when engine is unavailable', async () => {
+    const routes = createTestableRoutes(registerRoutes, {
+      _getHumanOverrideEvents: () => [],
+    });
+
+    const res = createRes();
+    await routes['GET /api/v1/approvals/:id/detail'](
+      createReq('/api/v1/approvals/apr-1/detail'),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const body = parsed(res);
+    expect(body.ok).toBe(true);
+    expect(body.approval.id).toBe('apr-1');
+  });
+
+  it('returns 400 for empty approval id', async () => {
+    const routes = createTestableRoutes(registerRoutes, {
+      _getHumanOverrideEvents: () => [],
+    });
+
+    const res = createRes();
+    await routes['GET /api/v1/approvals/:id/detail'](
+      {
+        url: '/api/v1/approvals//detail',
+        method: 'GET',
+        params: { id: '' },
+        headers: { host: 'localhost:3001' },
+      },
+      res
+    );
+
+    expect(res.statusCode).toBe(400);
+    expect(parsed(res).error).toContain('Approval ID is required');
+  });
+
+  it('returns 404 when approval id is not found in registry', async () => {
+    const routes = createTestableRoutes(registerRoutes, {
+      _getHumanOverrideEvents: () => [],
+      _getEngine: () => ({
+        approvalRegistry: {
+          get: () => null,
+        },
+      }),
+    });
+
+    const res = createRes();
+    await routes['GET /api/v1/approvals/:id/detail'](
+      createReq('/api/v1/approvals/apr-missing/detail'),
+      res
+    );
+
+    expect(res.statusCode).toBe(404);
+    expect(parsed(res).code).toBe('NOT_FOUND');
+  });
+
+  it('returns approval detail from engine registry', async () => {
+    const approval = { id: 'apr-2', status: 'PENDING', gate_id: 'G-1' };
+    const routes = createTestableRoutes(registerRoutes, {
+      _getHumanOverrideEvents: () => [],
+      _getEngine: () => ({
+        approvalRegistry: {
+          get: () => approval,
+        },
+      }),
+    });
+
+    const res = createRes();
+    await routes['GET /api/v1/approvals/:id/detail'](
+      createReq('/api/v1/approvals/apr-2/detail'),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const body = parsed(res);
+    expect(body.ok).toBe(true);
+    expect(body.approval.id).toBe('apr-2');
+  });
+
+  it('returns approvals history from audit log', async () => {
+    const root = createTmpRoot();
+    writeAudit(root, [
+      JSON.stringify({
+        event: 'approval_decided',
+        approval_id: 'APR-1',
+        action: 'APPROVED',
+        user: 'reviewer',
+        reason: 'Looks good',
+        timestamp: '2026-03-20T10:00:00.000Z',
+      }),
+      JSON.stringify({ event: 'gate_failed', timestamp: '2026-03-20T10:01:00.000Z' }),
+    ]);
+
+    const routes = createTestableRoutes(registerRoutes, {
+      PROJECT_ROOT: root,
+      _getHumanOverrideEvents: () => [],
+    });
+
+    const res = createRes();
+    await routes['GET /api/v1/approvals/history'](createReq('/api/v1/approvals/history'), res);
+
+    expect(res.statusCode).toBe(200);
+    const body = parsed(res);
+    expect(body.ok).toBe(true);
+    expect(body.history).toHaveLength(1);
+    expect(body.history[0].approval_id).toBe('APR-1');
   });
 });

@@ -1,4 +1,4 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to the Agentic SDLC Platform are documented in this file.
 
@@ -11,6 +11,21 @@ and this project adheres to
 ## [Unreleased]
 
 ### Added
+
+- M3/E-A4: Semantic Memory and Context Optimization (#689, #718, #719, #720)
+  - Added three-tier semantic memory abstraction (`run`, `project`, `org`) with
+    per-tier retention policies (0 / 30 days / 90 days) and lazy TTL eviction in
+    [platform/engine/semantic-memory.ts](platform/engine/semantic-memory.ts)
+  - Added context budgeter with deterministic rank -> truncate pipeline (`budget`,
+    `rankItems`, `hardTruncate`, `assembleContext`) and byte-level payload metrics in
+    [platform/engine/context-budgeter.ts](platform/engine/context-budgeter.ts)
+  - Added citation-enforced retrieval API with keyword search over decisions and docs,
+    producing `CitedSnippet` objects with `Citation` metadata, compatible with the
+    context budgeter in [platform/engine/retrieval-api.ts](platform/engine/retrieval-api.ts)
+  - Added 74 unit tests covering all three modules in
+    [tests/unit/semantic-memory.test.js](tests/unit/semantic-memory.test.js),
+    [tests/unit/context-budgeter.test.js](tests/unit/context-budgeter.test.js),
+    and [tests/unit/retrieval-api.test.js](tests/unit/retrieval-api.test.js)
 
 - M2/E-A5: Human override and provenance groundwork (starts #688, #715)
   - Extended dispatcher invocation result schema with
@@ -180,6 +195,21 @@ and this project adheres to
 
 ### Added
 
+- M3/E-A4: Semantic Memory and Context Optimization (#689, #718, #719, #720)
+  - Added three-tier semantic memory abstraction (`run`, `project`, `org`) with
+    per-tier retention policies (0 / 30 days / 90 days) and lazy TTL eviction in
+    [platform/engine/semantic-memory.ts](platform/engine/semantic-memory.ts)
+  - Added context budgeter with deterministic rank -> truncate pipeline (`budget`,
+    `rankItems`, `hardTruncate`, `assembleContext`) and byte-level payload metrics in
+    [platform/engine/context-budgeter.ts](platform/engine/context-budgeter.ts)
+  - Added citation-enforced retrieval API with keyword search over decisions and docs,
+    producing `CitedSnippet` objects with `Citation` metadata, compatible with the
+    context budgeter in [platform/engine/retrieval-api.ts](platform/engine/retrieval-api.ts)
+  - Added 74 unit tests covering all three modules in
+    [tests/unit/semantic-memory.test.js](tests/unit/semantic-memory.test.js),
+    [tests/unit/context-budgeter.test.js](tests/unit/context-budgeter.test.js),
+    and [tests/unit/retrieval-api.test.js](tests/unit/retrieval-api.test.js)
+
 - Matomo cookieless analytics integration (GDPR-compliant, no consent banner)
 - A/B experiment framework on landing page (hero headline split test)
 - Docker Compose stack (command-center + Matomo + MariaDB)
@@ -201,6 +231,21 @@ and this project adheres to
 
 ### Added
 
+- M3/E-A4: Semantic Memory and Context Optimization (#689, #718, #719, #720)
+  - Added three-tier semantic memory abstraction (`run`, `project`, `org`) with
+    per-tier retention policies (0 / 30 days / 90 days) and lazy TTL eviction in
+    [platform/engine/semantic-memory.ts](platform/engine/semantic-memory.ts)
+  - Added context budgeter with deterministic rank -> truncate pipeline (`budget`,
+    `rankItems`, `hardTruncate`, `assembleContext`) and byte-level payload metrics in
+    [platform/engine/context-budgeter.ts](platform/engine/context-budgeter.ts)
+  - Added citation-enforced retrieval API with keyword search over decisions and docs,
+    producing `CitedSnippet` objects with `Citation` metadata, compatible with the
+    context budgeter in [platform/engine/retrieval-api.ts](platform/engine/retrieval-api.ts)
+  - Added 74 unit tests covering all three modules in
+    [tests/unit/semantic-memory.test.js](tests/unit/semantic-memory.test.js),
+    [tests/unit/context-budgeter.test.js](tests/unit/context-budgeter.test.js),
+    and [tests/unit/retrieval-api.test.js](tests/unit/retrieval-api.test.js)
+
 - Command Center web UI v2 (pipeline view, questionnaire management, decisions)
 - MCP server with 13 tools and 3 resources
 - Mutation audit trail (append-only JSONL)
@@ -217,6 +262,21 @@ and this project adheres to
 ## [0.1.0] — 2026-02-20 (Sprint 1)
 
 ### Added
+
+- M3/E-A4: Semantic Memory and Context Optimization (#689, #718, #719, #720)
+  - Added three-tier semantic memory abstraction (`run`, `project`, `org`) with
+    per-tier retention policies (0 / 30 days / 90 days) and lazy TTL eviction in
+    [platform/engine/semantic-memory.ts](platform/engine/semantic-memory.ts)
+  - Added context budgeter with deterministic rank -> truncate pipeline (`budget`,
+    `rankItems`, `hardTruncate`, `assembleContext`) and byte-level payload metrics in
+    [platform/engine/context-budgeter.ts](platform/engine/context-budgeter.ts)
+  - Added citation-enforced retrieval API with keyword search over decisions and docs,
+    producing `CitedSnippet` objects with `Citation` metadata, compatible with the
+    context budgeter in [platform/engine/retrieval-api.ts](platform/engine/retrieval-api.ts)
+  - Added 74 unit tests covering all three modules in
+    [tests/unit/semantic-memory.test.js](tests/unit/semantic-memory.test.js),
+    [tests/unit/context-budgeter.test.js](tests/unit/context-budgeter.test.js),
+    and [tests/unit/retrieval-api.test.js](tests/unit/retrieval-api.test.js)
 
 - Initial project structure with 38 agent skill files
 - Phase 1–4 analysis pipeline (Business → Tech → UX → Marketing)

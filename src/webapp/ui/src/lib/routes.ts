@@ -35,9 +35,15 @@ export const routes = {
   commands: { path: '/commands', label: 'Commands', icon: 'Terminal', section: 'Runs' },
 
   /* Approvals */
+  approvals: {
+    path: '/approvals',
+    label: 'Approval Center',
+    icon: 'ShieldCheck',
+    section: 'Approvals',
+  },
   governance: {
     path: '/governance',
-    label: 'Approvals',
+    label: 'Governance',
     icon: 'ShieldCheck',
     section: 'Approvals',
   },
@@ -63,6 +69,12 @@ export const routes = {
   },
 
   /* Audit & Evidence */
+  audit: {
+    path: '/audit',
+    label: 'Audit & Evidence',
+    icon: 'Package',
+    section: 'Audit & Evidence',
+  },
   artifacts: {
     path: '/artifacts',
     label: 'Artifacts',

@@ -1,8 +1,8 @@
 /**
- * Observability page tests — M15 / Issue #M15-032
+ * Observability page tests — M15 / Issue #M15-032 + UI-013 Phase 4 expansion
  */
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ObservabilityPage from './observability-page';
 import { RouterTestWrapper } from '@/test/router-test-wrapper';
@@ -15,47 +15,72 @@ function renderPage() {
   );
 }
 
+/** Wait for initial load to complete (PageShell isLoading spinner disappears). */
+async function waitForPageLoad() {
+  await waitFor(() => expect(screen.getByTestId('observability-page')).toBeInTheDocument());
+}
+
 describe('ObservabilityPage', () => {
-  it('renders shared page header and context strip guidance', () => {
+  it('renders shared page header and context strip guidance', async () => {
     renderPage();
+    await waitForPageLoad();
     expect(screen.getByRole('heading', { name: /observability/i })).toBeInTheDocument();
     expect(screen.getByText(/active view/i)).toBeInTheDocument();
     expect(screen.getByText(/^views$/i)).toBeInTheDocument();
   });
 
-  it('renders the page heading', () => {
+  it('renders the page heading', async () => {
     renderPage();
+    await waitForPageLoad();
     expect(screen.getByRole('heading', { name: /observability/i })).toBeInTheDocument();
   });
 
-  it('renders the container', () => {
+  it('renders the container', async () => {
     renderPage();
+    await waitForPageLoad();
     expect(screen.getByTestId('observability-page')).toBeInTheDocument();
   });
 
-  it('renders tab bar with three tabs', () => {
+  it('renders tab bar with five tabs', async () => {
     renderPage();
+    await waitForPageLoad();
     const tabs = screen.getAllByRole('tab');
-    expect(tabs).toHaveLength(3);
+    expect(tabs).toHaveLength(5);
   });
 
-  it('renders Drift & KPIs tab', () => {
+  it('renders Drift & KPIs tab', async () => {
     renderPage();
+    await waitForPageLoad();
     expect(screen.getByRole('tab', { name: /drift/i })).toBeInTheDocument();
   });
 
-  it('renders Analytics & Velocity tab', () => {
+  it('renders Analytics & Velocity tab', async () => {
     renderPage();
+    await waitForPageLoad();
     expect(screen.getByRole('tab', { name: /analytics/i })).toBeInTheDocument();
   });
 
-  it('renders Traceability tab', () => {
+  it('renders Traceability tab', async () => {
     renderPage();
+    await waitForPageLoad();
     expect(screen.getByRole('tab', { name: /traceability/i })).toBeInTheDocument();
   });
 
-  it('first tab is selected by default', () => {
+  it('renders Alerts tab', async () => {
     renderPage();
+    await waitForPageLoad();
+    expect(screen.getByRole('tab', { name: /^alerts$/i })).toBeInTheDocument();
+  });
+
+  it('renders Telemetry Streams tab', async () => {
+    renderPage();
+    await waitForPageLoad();
+    expect(screen.getByRole('tab', { name: /telemetry streams/i })).toBeInTheDocument();
+  });
+
+  it('first tab is selected by default', async () => {
+    renderPage();
+    await waitForPageLoad();
     const tabs = screen.getAllByRole('tab');
     expect(tabs[0]).toHaveAttribute('aria-selected', 'true');
   });
@@ -63,8 +88,33 @@ describe('ObservabilityPage', () => {
   it('clicking a tab switches the active panel', async () => {
     const user = userEvent.setup();
     renderPage();
+    await waitForPageLoad();
     const analyticsTab = screen.getByRole('tab', { name: /analytics/i });
     await user.click(analyticsTab);
     expect(analyticsTab).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('clicking Alerts tab shows alert feed heading', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await waitForPageLoad();
+    const alertsTab = screen.getByRole('tab', { name: /^alerts$/i });
+    await user.click(alertsTab);
+    await waitFor(() => {
+      expect(screen.getByText(/all alerts/i)).toBeInTheDocument();
+    });
+  });
+
+  it('clicking Telemetry Streams tab shows streams description', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await waitForPageLoad();
+    const streamsTab = screen.getByRole('tab', { name: /telemetry streams/i });
+    await user.click(streamsTab);
+    await waitFor(() => {
+      expect(
+        screen.getByText(/live telemetry streams ingested from all connected agent runtimes/i)
+      ).toBeInTheDocument();
+    });
   });
 });

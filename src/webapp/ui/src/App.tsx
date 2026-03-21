@@ -20,9 +20,11 @@ const AgentsPage = lazy(() => import('@/pages/agents/agents-page'));
 const QuestionnairesPage = lazy(() => import('@/pages/questionnaires/questionnaires-page'));
 const DecisionsPage = lazy(() => import('@/pages/decisions/decisions-page'));
 const ArtifactBrowserPage = lazy(() => import('@/pages/artifacts/artifact-browser-page'));
+const AuditEvidenceExplorerPage = lazy(() => import('@/pages/audit/audit-evidence-explorer-page'));
 const LineagePage = lazy(() => import('@/pages/artifacts/lineage-page'));
 const ObservabilityPage = lazy(() => import('@/pages/observability/observability-page'));
 const GovernanceDashboardPage = lazy(() => import('@/pages/governance/governance-dashboard-page'));
+const ApprovalCenterPage = lazy(() => import('@/pages/approvals/approval-center-page'));
 const CockpitDashboardPage = lazy(() => import('@/pages/cockpit/cockpit-dashboard-page'));
 const ExecutionHistoryPage = lazy(() => import('@/pages/agents/execution-history-page'));
 const ApprovalDetailPage = lazy(() => import('@/pages/cockpit/approval-detail-page'));
@@ -33,7 +35,7 @@ const agentsElement = selectVariant('agents-redesign', <AgentsPage />, <AgentsPa
 const policiesElement = selectVariant('policies-redesign', <DecisionsPage />, <DecisionsPage />);
 const approvalsElement = selectVariant(
   'approvals-redesign',
-  <GovernanceDashboardPage />,
+  <ApprovalCenterPage />,
   <GovernanceDashboardPage />
 );
 const observabilityElement = selectVariant(
@@ -43,7 +45,7 @@ const observabilityElement = selectVariant(
 );
 const auditElement = selectVariant(
   'audit-redesign',
-  <ArtifactBrowserPage />,
+  <AuditEvidenceExplorerPage />,
   <ArtifactBrowserPage />
 );
 
@@ -72,6 +74,7 @@ const router = createBrowserRouter([
       /* Data */
       { path: 'artifacts', element: auditElement },
       { path: 'artifacts/lineage', element: <LineagePage /> },
+      { path: 'audit', element: <AuditEvidenceExplorerPage /> },
       { path: 'questionnaires', element: <QuestionnairesPage /> },
 
       /* Observability */
@@ -79,6 +82,14 @@ const router = createBrowserRouter([
       {
         path: 'governance',
         element: <AccessGuard requiredRole="operator">{approvalsElement}</AccessGuard>,
+      },
+      {
+        path: 'approvals',
+        element: (
+          <AccessGuard requiredRole="operator">
+            <ApprovalCenterPage />
+          </AccessGuard>
+        ),
       },
 
       /* Cockpit — M27 */

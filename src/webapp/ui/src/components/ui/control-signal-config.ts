@@ -1,14 +1,14 @@
 import type { LucideIcon } from 'lucide-react';
-import { Bot, ShieldCheck, UserCheck } from 'lucide-react';
+import { Bot, ShieldCheck, UserCheck, ShieldX } from 'lucide-react';
 
-export type ControlSignal = 'governed' | 'active-agent' | 'needs-human-input';
+export type ControlSignal = 'governed' | 'active-agent' | 'needs-human-input' | 'blocked';
 
 export const controlSignalConfig: Record<
   ControlSignal,
   {
     label: string;
     description: string;
-    variant: 'info' | 'secondary' | 'warning';
+    variant: 'info' | 'secondary' | 'warning' | 'destructive';
     icon: LucideIcon;
   }
 > = {
@@ -29,5 +29,11 @@ export const controlSignalConfig: Record<
     description: 'This marks work that is paused until a person answers or decides something.',
     variant: 'warning',
     icon: UserCheck,
+  },
+  blocked: {
+    label: 'Blocked',
+    description: 'Progress is blocked pending approval or resolution.',
+    variant: 'destructive',
+    icon: ShieldX,
   },
 };

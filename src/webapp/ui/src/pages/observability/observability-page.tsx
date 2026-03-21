@@ -18,12 +18,14 @@ const TraceabilityExplorerPage = lazy(
   () => import('@/pages/traceability/traceability-explorer-page')
 );
 
-type Tab = 'drift' | 'analytics' | 'traceability';
+type Tab = 'drift' | 'analytics' | 'traceability' | 'alerts' | 'streams';
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'drift', label: 'Drift & KPIs' },
   { id: 'analytics', label: 'Analytics & Velocity' },
   { id: 'traceability', label: 'Traceability' },
+  { id: 'alerts', label: 'Alerts' },
+  { id: 'streams', label: 'Telemetry Streams' },
 ];
 
 function TabSpinner() {
@@ -39,9 +41,31 @@ export default function ObservabilityPage() {
   const { data, isLoading, error, refetch } = useObservabilityContracts();
   const activeTabLabel = tabs.find((tab) => tab.id === activeTab)?.label ?? 'Unknown';
 
-  const alertQueueItems = useMemo<QueueTriageItem[]>(
+  const contextItems = useMemo<ContextStripItem[]>(
+    () => [
+      { id: 'active-view', label: 'Active view', value: activeTabLabel, tone: 'info' },
+      { id: 'available-views', label: 'Views', value: String(tabs.length) },
+      {
+        id: 'open-alerts',
+        label: 'Open alerts',
+        value: String(data?.summary.open_alerts ?? 0),
+        tone: (data?.summary.open_alerts ?? 0) > 0 ? 'warning' : 'success',
+      },
+      {
+        id: 'streams',
+        label: 'Telemetry streams',
+        value: String(data?.summary.stream_count ?? 0),
+        tone: 'info',
+      },
+      { id: 'loading-mode', label: 'Load mode', value: 'Lazy modules' },
+    ],
+    [activeTabLabel, data?.summary.open_alerts, data?.summary.stream_count]
+  );
+
+  // All alerts (for Alerts tab) and all streams (for Streams tab)
+  const allAlertItems = useMemo<QueueTriageItem[]>(
     () =>
-      (data?.alerts ?? []).slice(0, 5).map((alert) => ({
+      (data?.alerts ?? []).map((alert) => ({
         id: alert.id,
         title: alert.message,
         subtitle: `${alert.source} · ${alert.status}`,
@@ -70,27 +94,6 @@ export default function ObservabilityPage() {
     [data?.alerts]
   );
 
-  const contextItems = useMemo<ContextStripItem[]>(
-    () => [
-      { id: 'active-view', label: 'Active view', value: activeTabLabel, tone: 'info' },
-      { id: 'available-views', label: 'Views', value: String(tabs.length) },
-      {
-        id: 'open-alerts',
-        label: 'Open alerts',
-        value: String(data?.summary.open_alerts ?? 0),
-        tone: (data?.summary.open_alerts ?? 0) > 0 ? 'warning' : 'success',
-      },
-      {
-        id: 'streams',
-        label: 'Telemetry streams',
-        value: String(data?.summary.stream_count ?? 0),
-        tone: 'info',
-      },
-      { id: 'loading-mode', label: 'Load mode', value: 'Lazy modules' },
-    ],
-    [activeTabLabel, data?.summary.open_alerts, data?.summary.stream_count]
-  );
-
   return (
     <PageShell
       isLoading={isLoading}
@@ -109,39 +112,6 @@ export default function ObservabilityPage() {
         />
 
         <ContextStrip items={contextItems} />
-
-        <QueueTriageList
-          title="Alert triage queue"
-          description="Alert contract from drift and runtime telemetry sources."
-          items={alertQueueItems}
-          emptyTitle="No alerts"
-          emptyDescription="No current alert signals require intervention."
-        />
-
-        {(data?.streams?.length ?? 0) > 0 && (
-          <section
-            aria-label="Telemetry streams"
-            className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
-          >
-            {data?.streams.map((stream) => (
-              <OperationalCard
-                key={stream.id}
-                title={stream.name}
-                subtitle={`${stream.sample_count} samples`}
-                statusLabel={stream.kind}
-                statusTone={stream.kind === 'errors' ? 'warning' : 'info'}
-                meta={[
-                  {
-                    id: `${stream.id}-latest`,
-                    label: 'Latest',
-                    value: `${stream.latest} ${stream.unit}`,
-                  },
-                  { id: `${stream.id}-unit`, label: 'Unit', value: stream.unit },
-                ]}
-              />
-            ))}
-          </section>
-        )}
 
         {/* Tab bar */}
         <div
@@ -183,12 +153,66 @@ export default function ObservabilityPage() {
           id={`panel-${activeTab}`}
           role="tabpanel"
           aria-labelledby={`tab-${activeTab}`}
-          className="-mx-6 -mt-6"
+          className={activeTab === 'alerts' || activeTab === 'streams' ? undefined : '-mx-6 -mt-6'}
         >
           <Suspense fallback={<TabSpinner />}>
             {activeTab === 'drift' && <MetricsPage />}
             {activeTab === 'analytics' && <AnalyticsTrendsPage />}
             {activeTab === 'traceability' && <TraceabilityExplorerPage />}
+            {activeTab === 'alerts' && (
+              <div className="space-y-4 pt-2">
+                <QueueTriageList
+                  title="All alerts"
+                  description="Full alert feed from drift detection and runtime telemetry sources."
+                  items={allAlertItems}
+                  emptyTitle="No alerts"
+                  emptyDescription="No current alert signals require intervention."
+                />
+              </div>
+            )}
+            {activeTab === 'streams' && (
+              <div className="space-y-4 pt-2">
+                <p className="text-sm text-muted-foreground">
+                  Live telemetry streams ingested from all connected agent runtimes. Each card
+                  represents one instrumented signal channel.
+                </p>
+                {(data?.streams?.length ?? 0) === 0 ? (
+                  <p className="text-sm text-muted-foreground italic">
+                    No telemetry streams available.
+                  </p>
+                ) : (
+                  <section
+                    aria-label="Telemetry streams"
+                    className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+                  >
+                    {data?.streams.map((stream) => (
+                      <OperationalCard
+                        key={stream.id}
+                        title={stream.name}
+                        subtitle={`${stream.sample_count} samples`}
+                        statusLabel={stream.kind}
+                        statusTone={stream.kind === 'errors' ? 'warning' : 'info'}
+                        meta={[
+                          {
+                            id: `${stream.id}-latest`,
+                            label: 'Latest',
+                            value: `${stream.latest} ${stream.unit}`,
+                          },
+                          { id: `${stream.id}-unit`, label: 'Unit', value: stream.unit },
+                          {
+                            id: `${stream.id}-alerts`,
+                            label: 'Correlated alerts',
+                            value: String(
+                              (data?.alerts ?? []).filter((a) => a.source === stream.name).length
+                            ),
+                          },
+                        ]}
+                      />
+                    ))}
+                  </section>
+                )}
+              </div>
+            )}
           </Suspense>
         </div>
       </div>

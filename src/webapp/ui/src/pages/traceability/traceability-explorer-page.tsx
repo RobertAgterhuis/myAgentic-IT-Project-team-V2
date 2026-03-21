@@ -9,8 +9,7 @@ import { Input } from '@/components/ui/input';
 import { DataTable } from '@/components/ui/data-table';
 import { MetricCard } from '@/components/ui/metric-card';
 import { EmptyState } from '@/components/ui/empty-state';
-import { Spinner } from '@/components/ui/spinner';
-import { AlertBanner } from '@/components/ui/alert-banner';
+import { PageShell } from '@/components/ui/page-shell';
 import { Button } from '@/components/ui/button';
 import { Heading, Text } from '@/components/ui/typography';
 import { PageHeader } from '@/components/layout/page-header';
@@ -215,29 +214,6 @@ export default function TraceabilityExplorerPage() {
     return counts;
   }, [entities]);
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-8">
-        <Spinner label="Loading traceability data…" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <AlertBanner variant="error">
-          <div className="flex items-center justify-between gap-4 w-full">
-            <span>Failed to load traceability data: {(error as Error).message}</span>
-            <Button variant="outline" size="sm" onClick={() => refetch()}>
-              <RefreshCw className="size-3 mr-1.5" /> Retry
-            </Button>
-          </div>
-        </AlertBanner>
-      </div>
-    );
-  }
-
   const contextItems: ContextStripItem[] = [
     { id: 'entities', label: 'Entities', value: String(entities.length) },
     {
@@ -255,177 +231,184 @@ export default function TraceabilityExplorerPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6" data-testid="traceability-explorer-page">
-      <PageHeader
-        title="Traceability Explorer"
-        subtitle="Navigate requirement-to-test chains as governed delivery pathways."
-        chips={[
-          { id: 'traceability', label: 'Traceability', tone: 'info' },
-          { id: 'governed', label: 'Governed' },
-        ]}
-      />
+    <PageShell
+      isLoading={isLoading}
+      loadingLabel="Loading traceability data…"
+      error={error as Error | null}
+      onRetry={() => refetch()}
+    >
+      <div className="p-6 space-y-6" data-testid="traceability-explorer-page">
+        <PageHeader
+          title="Traceability Explorer"
+          subtitle="Navigate requirement-to-test chains as governed delivery pathways."
+          chips={[
+            { id: 'traceability', label: 'Traceability', tone: 'info' },
+            { id: 'governed', label: 'Governed' },
+          ]}
+        />
 
-      <ContextStrip items={contextItems} />
+        <ContextStrip items={contextItems} />
 
-      <MissionControlHero
-        eyebrow="Traceability explorer"
-        title="Follow requirement-to-test chains as governed delivery pathways"
-        description="Traceability shows whether intent, design, implementation, and tests remain connected. Gaps here are delivery risks, not just missing rows."
-        badges={
-          <>
-            <ControlSignalBadge signal="governed" />
-            {gaps.length > 0 && <ControlSignalBadge signal="needs-human-input" />}
-            <Badge variant="outline">Traceability</Badge>
-          </>
-        }
-        metrics={[
-          {
-            label: 'Entities',
-            value: String(entities.length),
-            detail: 'Tracked traceability nodes',
-          },
-          {
-            label: 'Requirements',
-            value: String(typeCounts.requirement),
-            detail: 'Intent-level inputs',
-          },
-          { label: 'Tests', value: String(typeCounts.test), detail: 'Verification endpoints' },
-          {
-            label: 'Coverage gaps',
-            value: String(gaps.length),
-            detail: 'Broken or incomplete chains',
-          },
-        ]}
-        motifs={
-          <>
-            <StatusMotif
-              kind="governance"
-              title="Traceability is auditable"
-              description="Each entity is visible as part of a governed chain, making delivery lineage inspectable instead of assumed."
+        <MissionControlHero
+          eyebrow="Traceability explorer"
+          title="Follow requirement-to-test chains as governed delivery pathways"
+          description="Traceability shows whether intent, design, implementation, and tests remain connected. Gaps here are delivery risks, not just missing rows."
+          badges={
+            <>
+              <ControlSignalBadge signal="governed" />
+              {gaps.length > 0 && <ControlSignalBadge signal="needs-human-input" />}
+              <Badge variant="outline">Traceability</Badge>
+            </>
+          }
+          metrics={[
+            {
+              label: 'Entities',
+              value: String(entities.length),
+              detail: 'Tracked traceability nodes',
+            },
+            {
+              label: 'Requirements',
+              value: String(typeCounts.requirement),
+              detail: 'Intent-level inputs',
+            },
+            { label: 'Tests', value: String(typeCounts.test), detail: 'Verification endpoints' },
+            {
+              label: 'Coverage gaps',
+              value: String(gaps.length),
+              detail: 'Broken or incomplete chains',
+            },
+          ]}
+          motifs={
+            <>
+              <StatusMotif
+                kind="governance"
+                title="Traceability is auditable"
+                description="Each entity is visible as part of a governed chain, making delivery lineage inspectable instead of assumed."
+              />
+              <StatusMotif
+                kind="agent"
+                title="Execution leaves links behind"
+                description="The explorer exposes how generated outputs connect across requirement, design, code, and test layers."
+              />
+              <StatusMotif
+                kind="human-loop"
+                title="Coverage gaps need review"
+                description="When links are missing, a person can quickly identify where the chain broke and what evidence is absent."
+              />
+            </>
+          }
+          asideTitle="Explorer controls"
+          asideDescription="Use chain overview for structure, coverage gaps for immediate risk, and the entity browser for targeted inspection."
+          asideContent={
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              <RefreshCw className="size-3 mr-1.5" /> Refresh
+            </Button>
+          }
+        />
+
+        {/* Summary */}
+        <section aria-label="Traceability summary">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <MetricCard
+              label="Requirements"
+              value={typeCounts.requirement}
+              icon={<FileText className="size-4" />}
+              trend="neutral"
             />
-            <StatusMotif
-              kind="agent"
-              title="Execution leaves links behind"
-              description="The explorer exposes how generated outputs connect across requirement, design, code, and test layers."
+            <MetricCard
+              label="Designs"
+              value={typeCounts.design}
+              icon={<Palette className="size-4" />}
+              trend="neutral"
             />
-            <StatusMotif
-              kind="human-loop"
-              title="Coverage gaps need review"
-              description="When links are missing, a person can quickly identify where the chain broke and what evidence is absent."
+            <MetricCard
+              label="Code"
+              value={typeCounts.code}
+              icon={<Code className="size-4" />}
+              trend="neutral"
             />
-          </>
-        }
-        asideTitle="Explorer controls"
-        asideDescription="Use chain overview for structure, coverage gaps for immediate risk, and the entity browser for targeted inspection."
-        asideContent={
-          <Button variant="outline" size="sm" onClick={() => refetch()}>
-            <RefreshCw className="size-3 mr-1.5" /> Refresh
-          </Button>
-        }
-      />
-
-      {/* Summary */}
-      <section aria-label="Traceability summary">
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-          <MetricCard
-            label="Requirements"
-            value={typeCounts.requirement}
-            icon={<FileText className="size-4" />}
-            trend="neutral"
-          />
-          <MetricCard
-            label="Designs"
-            value={typeCounts.design}
-            icon={<Palette className="size-4" />}
-            trend="neutral"
-          />
-          <MetricCard
-            label="Code"
-            value={typeCounts.code}
-            icon={<Code className="size-4" />}
-            trend="neutral"
-          />
-          <MetricCard
-            label="Tests"
-            value={typeCounts.test}
-            icon={<TestTube className="size-4" />}
-            trend="neutral"
-          />
-          <MetricCard
-            label="Coverage Gaps"
-            value={gaps.length}
-            icon={<AlertTriangle className="size-4" />}
-            trend={gaps.length > 0 ? 'down' : 'neutral'}
-          />
-        </div>
-      </section>
-
-      {/* Chain visualization */}
-      <section aria-label="Traceability chain">
-        <Heading level={2} className="mb-3">
-          Chain Overview
-        </Heading>
-        <TraceChainVisual entities={entities} />
-      </section>
-
-      {/* Coverage gaps */}
-      {gaps.length > 0 && (
-        <section aria-label="Coverage gaps">
-          <Heading level={2} className="mb-3">
-            <AlertTriangle className="size-4 inline mr-2 text-amber-500" />
-            Coverage Gaps
-          </Heading>
-          <DataTable columns={gapColumns} data={gaps} enableSorting emptyTitle="No gaps" />
-        </section>
-      )}
-
-      {/* Entity browser with filters */}
-      <section aria-label="Entity browser">
-        <Heading level={2} className="mb-3">
-          All Entities
-        </Heading>
-        <Card elevation="flat" className="mb-3 p-4 bg-card/78">
-          <div className="flex items-center gap-3 flex-wrap">
-            <Search className="size-4 text-muted-foreground" />
-            <Input
-              placeholder="Search entities…"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-9 max-w-sm"
-              aria-label="Search entities"
+            <MetricCard
+              label="Tests"
+              value={typeCounts.test}
+              icon={<TestTube className="size-4" />}
+              trend="neutral"
             />
-            <select
-              className="h-9 rounded-xl border border-border/70 bg-background/80 px-3 text-sm shadow-sm"
-              value={filterType}
-              onChange={(e) => setFilterType(e.target.value as TraceEntityType | '')}
-              aria-label="Filter by entity type"
-            >
-              <option value="">All Types</option>
-              {chainOrder.map((t) => (
-                <option key={t} value={t}>
-                  {entityConfig[t].label}
-                </option>
-              ))}
-            </select>
+            <MetricCard
+              label="Coverage Gaps"
+              value={gaps.length}
+              icon={<AlertTriangle className="size-4" />}
+              trend={gaps.length > 0 ? 'down' : 'neutral'}
+            />
           </div>
-        </Card>
+        </section>
 
-        {filtered.length === 0 ? (
-          <EmptyState
-            icon={<GitPullRequest className="size-12" />}
-            title="No entities found"
-            description="Traceability entities will appear once artifacts are registered."
-          />
-        ) : (
-          <DataTable
-            columns={entityColumns}
-            data={filtered}
-            enableSorting
-            enablePagination
-            emptyTitle="No matching entities"
-          />
+        {/* Chain visualization */}
+        <section aria-label="Traceability chain">
+          <Heading level={2} className="mb-3">
+            Chain Overview
+          </Heading>
+          <TraceChainVisual entities={entities} />
+        </section>
+
+        {/* Coverage gaps */}
+        {gaps.length > 0 && (
+          <section aria-label="Coverage gaps">
+            <Heading level={2} className="mb-3">
+              <AlertTriangle className="size-4 inline mr-2 text-amber-500" />
+              Coverage Gaps
+            </Heading>
+            <DataTable columns={gapColumns} data={gaps} enableSorting emptyTitle="No gaps" />
+          </section>
         )}
-      </section>
-    </div>
+
+        {/* Entity browser with filters */}
+        <section aria-label="Entity browser">
+          <Heading level={2} className="mb-3">
+            All Entities
+          </Heading>
+          <Card elevation="flat" className="mb-3 p-4 bg-card/78">
+            <div className="flex items-center gap-3 flex-wrap">
+              <Search className="size-4 text-muted-foreground" />
+              <Input
+                placeholder="Search entities…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="h-9 max-w-sm"
+                aria-label="Search entities"
+              />
+              <select
+                className="h-9 rounded-xl border border-border/70 bg-background/80 px-3 text-sm shadow-sm"
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value as TraceEntityType | '')}
+                aria-label="Filter by entity type"
+              >
+                <option value="">All Types</option>
+                {chainOrder.map((t) => (
+                  <option key={t} value={t}>
+                    {entityConfig[t].label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </Card>
+
+          {filtered.length === 0 ? (
+            <EmptyState
+              icon={<GitPullRequest className="size-12" />}
+              title="No entities found"
+              description="Traceability entities will appear once artifacts are registered."
+            />
+          ) : (
+            <DataTable
+              columns={entityColumns}
+              data={filtered}
+              enableSorting
+              enablePagination
+              emptyTitle="No matching entities"
+            />
+          )}
+        </section>
+      </div>
+    </PageShell>
   );
 }

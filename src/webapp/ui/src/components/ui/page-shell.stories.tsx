@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { PageShell } from './page-shell';
-import { Inbox, FileText } from 'lucide-react';
+import { Inbox, FileText, ShieldOff } from 'lucide-react';
 
 const meta = {
   title: 'UI/PageShell',
@@ -93,5 +93,18 @@ export const ErrorThenRetry: Story = {
     error: new Error('ECONNREFUSED: Connection refused'),
     onRetry: () => alert('Retry triggered — in a real app this calls refetch()'),
     children: <div>Content after successful retry</div>,
+  },
+};
+
+export const NoAccess: Story = {
+  args: {
+    isNoAccess: true,
+    noAccessState: {
+      icon: <ShieldOff className="size-12" />,
+      title: 'Access restricted',
+      description: 'Your current role does not have permission to access this section.',
+      action: { label: 'Request access', onClick: () => alert('Requesting access…') },
+    },
+    children: <div>Hidden content</div>,
   },
 };

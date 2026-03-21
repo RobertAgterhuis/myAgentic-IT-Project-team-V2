@@ -896,6 +896,101 @@ export interface TraceGap {
 }
 
 /* ──────────────────────────────────────────────
+ * Audit/Evidence Aggregation (UI-025)
+ * ────────────────────────────────────────────── */
+
+export type AuditTimelineDomain =
+  | 'artifacts'
+  | 'traceability'
+  | 'approvals'
+  | 'policies'
+  | 'sessions';
+
+export type AuditEventSeverity = 'info' | 'warning' | 'critical';
+
+export interface AuditTimelineEntry {
+  id: string;
+  timestamp: string;
+  domain: AuditTimelineDomain;
+  event_type: string;
+  title: string;
+  description: string;
+  severity: AuditEventSeverity;
+  entity_id?: string;
+  session_id?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface AuditEvidencePack {
+  id: string;
+  title: string;
+  status: 'complete' | 'partial' | 'missing';
+  phase: string;
+  artifact_ids: string[];
+  trace_entity_ids: string[];
+  approval_ids: string[];
+  coverage_score: number;
+  last_updated: string;
+}
+
+export interface AuditEvidenceAggregationResponse extends OkResponse {
+  generated_at: string;
+  timeline: AuditTimelineEntry[];
+  packs: AuditEvidencePack[];
+  summary: {
+    total_events: number;
+    critical_events: number;
+    open_packs: number;
+  };
+}
+
+/* ──────────────────────────────────────────────
+ * Observability Telemetry Contracts (UI-026)
+ * ────────────────────────────────────────────── */
+
+export type AlertSeverity = 'critical' | 'warning' | 'info';
+export type AlertStatus = 'open' | 'acknowledged' | 'resolved';
+
+export interface ObservabilityAlertEntry {
+  id: string;
+  source: string;
+  severity: AlertSeverity;
+  status: AlertStatus;
+  message: string;
+  first_seen: string;
+  last_seen: string;
+  related_session_id?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface ObservabilityTelemetryPoint {
+  timestamp: string;
+  value: number;
+}
+
+export interface ObservabilityTelemetryStream {
+  id: string;
+  name: string;
+  kind: 'latency' | 'throughput' | 'errors' | 'agent';
+  unit: string;
+  latest: number;
+  sample_count: number;
+  points: ObservabilityTelemetryPoint[];
+}
+
+export interface ObservabilityTelemetryContractResponse extends OkResponse {
+  generated_at: string;
+  alerts: ObservabilityAlertEntry[];
+  streams: ObservabilityTelemetryStream[];
+  summary: {
+    open_alerts: number;
+    critical_alerts: number;
+    stream_count: number;
+    stale_streams: number;
+  };
+}
+
+/* ──────────────────────────────────────────────
  * Sessions (M15 / Issue #M15-022)
  * ────────────────────────────────────────────── */
 

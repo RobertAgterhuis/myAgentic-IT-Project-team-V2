@@ -93,6 +93,16 @@ export const queryKeys = {
     chains: ['traceability', 'chains'] as const,
   },
 
+  /* Audit/Evidence aggregation (UI-025) */
+  audit: {
+    evidence: ['audit', 'evidence'] as const,
+  },
+
+  /* Observability telemetry contracts (UI-026) */
+  observability: {
+    contracts: ['observability', 'contracts'] as const,
+  },
+
   /* Sessions (M15) */
   sessions: {
     all: ['sessions'] as const,

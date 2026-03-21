@@ -13,6 +13,8 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
 import { ProgressBar } from '@/components/ui/progress';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { driftColumns, velocityColumns, agentColumns } from './columns';
 import { exportData } from './constants';
 import {
@@ -92,53 +94,96 @@ export default function MetricsPage() {
   const drifts = drift?.drifts ?? [];
   const summary = drift?.summary ?? { total_drifts: 0, critical: 0, warning: 0, info: 0 };
   const inSync = drift?.in_sync ?? { sprints: [], stories: 0 };
+  const contextItems: ContextStripItem[] = [
+    {
+      id: 'metrics-range',
+      label: 'Time range',
+      value: timeRange,
+      tone: 'info',
+    },
+    {
+      id: 'metrics-total-drifts',
+      label: 'Total drifts',
+      value: String(summary.total_drifts),
+      tone: summary.total_drifts > 0 ? 'warning' : 'success',
+    },
+    {
+      id: 'metrics-critical-drifts',
+      label: 'Critical',
+      value: String(summary.critical),
+      tone: summary.critical > 0 ? 'critical' : 'neutral',
+    },
+    {
+      id: 'metrics-in-sync',
+      label: 'In sync',
+      value: `${inSync.sprints.length} sprints`,
+      tone: inSync.sprints.length > 0 ? 'success' : 'neutral',
+    },
+  ];
 
   return (
     <div className="p-6 space-y-6" data-testid="metrics-page">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Heading level={1}>Metrics & Drift Detection</Heading>
-          <Text muted>Monitor project health, detect drift, and track KPIs</Text>
-        </div>
-        <div className="flex items-center gap-2">
-          {/* Time range selector */}
-          <div
-            className="flex items-center gap-1 bg-muted rounded-md p-1"
-            role="group"
-            aria-label="Time range"
-          >
-            {(['24h', '7d', '30d', '90d'] as TimeRange[]).map((range) => (
-              <Button
-                key={range}
-                type="button"
-                size="xs"
-                variant={timeRange === range ? 'default' : 'ghost'}
-                aria-pressed={timeRange === range}
-                onClick={() => setTimeRange(range)}
-              >
-                {range}
-              </Button>
-            ))}
+      <PageHeader
+        title="Metrics"
+        subtitle="Monitor project health, detect drift, and track KPI movement across sprints."
+        chips={[
+          {
+            id: 'metrics-chip-drifts',
+            label: `${summary.total_drifts} drifts`,
+            tone: summary.total_drifts > 0 ? 'warning' : 'success',
+          },
+          {
+            id: 'metrics-chip-critical',
+            label: `${summary.critical} critical`,
+            tone: summary.critical > 0 ? 'critical' : 'default',
+          },
+          {
+            id: 'metrics-chip-sync',
+            label: `${inSync.sprints.length} in sync`,
+            tone: inSync.sprints.length > 0 ? 'success' : 'default',
+          },
+        ]}
+        actions={
+          <div className="flex items-center gap-2">
+            <div
+              className="flex items-center gap-1 bg-muted rounded-md p-1"
+              role="group"
+              aria-label="Time range"
+            >
+              {(['24h', '7d', '30d', '90d'] as TimeRange[]).map((range) => (
+                <Button
+                  key={range}
+                  type="button"
+                  size="xs"
+                  variant={timeRange === range ? 'default' : 'ghost'}
+                  aria-pressed={timeRange === range}
+                  onClick={() => setTimeRange(range)}
+                >
+                  {range}
+                </Button>
+              ))}
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportData(drifts, 'json')}
+              disabled={drifts.length === 0}
+            >
+              <Download className="size-4 mr-1" /> JSON
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => exportData(drifts, 'csv')}
+              disabled={drifts.length === 0}
+            >
+              <Download className="size-4 mr-1" /> CSV
+            </Button>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => exportData(drifts, 'json')}
-            disabled={drifts.length === 0}
-          >
-            <Download className="size-4 mr-1" /> JSON
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => exportData(drifts, 'csv')}
-            disabled={drifts.length === 0}
-          >
-            <Download className="size-4 mr-1" /> CSV
-          </Button>
-        </div>
-      </div>
+        }
+      />
+
+      <ContextStrip items={contextItems} />
 
       {/* Drift Summary Cards */}
       <section aria-label="Drift summary">

@@ -12,6 +12,14 @@ function renderPage() {
 }
 
 describe('ArtifactBrowserPage', () => {
+  it('renders shared page header and context strip', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /^artifact browser$/i })).toBeInTheDocument();
+    });
+    expect(screen.getAllByText(/artifact registry/i).length).toBeGreaterThan(0);
+  });
+
   it('renders the page container', async () => {
     renderPage();
     await waitFor(() => {

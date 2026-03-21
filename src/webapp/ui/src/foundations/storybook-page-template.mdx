@@ -1,0 +1,69 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Foundations/Story Template" />
+
+# Story Template
+
+Use this template for any page-level story introduced during UI redesign.
+
+## Required Exports Checklist
+
+- `Populated`
+- `Loading`
+- `Error`
+
+## Recommended Additional Exports
+
+- Domain-specific empty state (`Empty`, `FirstTimeUser`, or equivalent)
+- Restricted/no-access state when route is permission-bound
+
+## Template Skeleton
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react-vite';
+import { http, HttpResponse, delay } from 'msw';
+import MyPage from './my-page';
+import { withProviders } from '@/test/storybook-decorators';
+
+const meta = {
+  title: 'Pages/MyPage',
+  component: MyPage,
+  decorators: [withProviders],
+  tags: ['autodocs'],
+  parameters: { layout: 'fullscreen' },
+} satisfies Meta<typeof MyPage>;
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Populated: Story = {
+  parameters: {
+    msw: {
+      handlers: [http.get('/api/*', () => HttpResponse.json({}))],
+    },
+  },
+};
+
+export const Loading: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        http.get('/api/*', async () => {
+          await delay('infinite');
+          return new HttpResponse(null);
+        }),
+      ],
+    },
+  },
+};
+
+export const Error: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        http.get('/api/*', () => HttpResponse.json({ error: 'Internal Server Error' }, { status: 500 })),
+      ],
+    },
+  },
+};
+```

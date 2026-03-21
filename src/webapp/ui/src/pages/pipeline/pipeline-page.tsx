@@ -14,6 +14,8 @@ import { ProgressBar } from '@/components/ui/progress';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { useOrchestratorStatus, useProgress } from '@/hooks';
 import type { AgentEntry, PhaseEntry, SessionInfo } from '@/lib/api-types';
 import { cn } from '@/lib/utils';
@@ -266,9 +268,70 @@ export default function PipelinePage() {
     openEscalations,
     humanBlockers
   );
+  const contextItems: ContextStripItem[] = [
+    {
+      id: 'phases',
+      label: 'Visible phases',
+      value: String(swimlanes.length),
+      tone: swimlanes.length > 0 ? 'info' : 'neutral',
+    },
+    {
+      id: 'state',
+      label: 'Runtime state',
+      value: status?.state ?? 'UNKNOWN',
+      tone: status?.state === 'IDLE' ? 'neutral' : 'info',
+    },
+    {
+      id: 'escalations',
+      label: 'Open escalations',
+      value: String(openEscalations),
+      tone: openEscalations > 0 ? 'warning' : 'success',
+    },
+    {
+      id: 'recommended',
+      label: 'Recommended',
+      value: nextStep.title,
+      tone: openEscalations > 0 || humanBlockers > 0 ? 'warning' : 'info',
+    },
+  ];
 
   return (
     <div className="p-6 space-y-6">
+      <PageHeader
+        title="Pipeline"
+        subtitle="Track every orchestration phase, active agent, and escalation in one governed execution view."
+        chips={[
+          {
+            id: 'pipeline-state',
+            label: status?.state ?? 'UNKNOWN',
+            tone: status?.state === 'IDLE' ? 'default' : 'info',
+          },
+          {
+            id: 'pipeline-escalations',
+            label: `${openEscalations} escalations`,
+            tone: openEscalations > 0 ? 'warning' : 'success',
+          },
+          {
+            id: 'pipeline-blockers',
+            label: `${humanBlockers} blockers`,
+            tone: humanBlockers > 0 ? 'warning' : 'success',
+          },
+        ]}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            className="motion-transition-base"
+            onClick={() => navigate(nextStep.actionHref)}
+          >
+            {nextStep.actionLabel}
+            <ArrowRight className="ml-1 size-3" />
+          </Button>
+        }
+      />
+
+      <ContextStrip items={contextItems} />
+
       <MissionControlHero
         eyebrow="Swimlane telemetry"
         title="Follow orchestration like a governed flight deck"

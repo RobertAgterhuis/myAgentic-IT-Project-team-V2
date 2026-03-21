@@ -16,12 +16,14 @@ import type {
   ApprovalDecideResponse,
 } from '@/lib/api-types';
 
+const POLL_ENABLED = import.meta.env.MODE !== 'test';
+
 /** Confidence scores — session health, sprint readiness, agent confidence. */
 export function useCockpitHealth() {
   return useQuery({
     queryKey: queryKeys.cockpit.health,
     queryFn: () => apiGet<CockpitHealthResponse>('/v1/cockpit/health'),
-    refetchInterval: 15_000,
+    refetchInterval: POLL_ENABLED ? 15_000 : false,
   });
 }
 
@@ -30,7 +32,7 @@ export function useDependencyGraph() {
   return useQuery({
     queryKey: queryKeys.cockpit.dependencies,
     queryFn: () => apiGet<DependencyGraphResponse>('/v1/cockpit/dependencies'),
-    refetchInterval: 30_000,
+    refetchInterval: POLL_ENABLED ? 30_000 : false,
   });
 }
 
@@ -63,7 +65,7 @@ export function useDecisionProvenance(params?: ProvenanceQueryParams) {
         : undefined
     ),
     queryFn: () => apiGet<ProvenanceResponse>('/v1/cockpit/provenance', queryParams),
-    refetchInterval: 30_000,
+    refetchInterval: POLL_ENABLED ? 30_000 : false,
   });
 }
 
@@ -73,7 +75,7 @@ export function useRootCause(sessionId?: string) {
   return useQuery({
     queryKey: queryKeys.cockpit.rootCause(sessionId),
     queryFn: () => apiGet<RootCauseResponse>('/v1/cockpit/root-cause', params),
-    refetchInterval: 30_000,
+    refetchInterval: POLL_ENABLED ? 30_000 : false,
   });
 }
 

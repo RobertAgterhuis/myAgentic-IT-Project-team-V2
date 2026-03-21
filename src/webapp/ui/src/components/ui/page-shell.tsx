@@ -41,7 +41,7 @@ export function PageShell({
 }: PageShellProps) {
   if (isLoading) {
     return (
-      <div className="flex flex-1 items-center justify-center p-8">
+      <div className="motion-fade-in flex flex-1 items-center justify-center p-(--space-2xl)">
         <Spinner label={loadingLabel} />
       </div>
     );
@@ -49,12 +49,17 @@ export function PageShell({
 
   if (error) {
     return (
-      <div className="p-6 space-y-4">
+      <div className="motion-fade-in space-stack-md p-(--space-xl)">
         <AlertBanner variant="error">
           <div className="flex items-center justify-between gap-4 w-full">
             <span>Failed to load data: {error.message || 'Unknown error'}</span>
             {onRetry && (
-              <Button variant="outline" size="sm" onClick={onRetry}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={onRetry}
+                className="motion-transition-base"
+              >
                 <RefreshCw className="size-3 mr-1.5" />
                 Retry
               </Button>
@@ -67,7 +72,7 @@ export function PageShell({
 
   if (isEmpty && emptyState) {
     return (
-      <div className="p-6">
+      <div className="motion-fade-in p-(--space-xl)">
         <EmptyState
           icon={emptyState.icon}
           title={emptyState.title}

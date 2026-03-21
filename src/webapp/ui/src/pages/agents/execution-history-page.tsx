@@ -7,7 +7,8 @@ import { useExecutionHistory } from '@/hooks';
 import { Badge } from '@/components/ui/badge';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
-import { Heading, Text } from '@/components/ui/typography';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { Clock, CheckCircle, XCircle, StopCircle } from 'lucide-react';
 import type { AgentExecutionResult } from '@/lib/api-types';
 
@@ -53,12 +54,25 @@ export default function ExecutionHistoryPage() {
       )
     : executions;
 
+  const contextItems: ContextStripItem[] = [
+    { id: 'total', label: 'Total executions', value: String(executions.length) },
+    {
+      id: 'filtered',
+      label: 'Showing',
+      value: String(filtered.length),
+      tone: filtered.length < executions.length ? 'warning' : 'neutral',
+    },
+  ];
+
   return (
     <div className="p-6 space-y-6" data-testid="execution-history-page">
-      <div>
-        <Heading level={1}>Execution History</Heading>
-        <Text className="text-muted-foreground">Review all past agent executions.</Text>
-      </div>
+      <PageHeader
+        title="Execution History"
+        subtitle="Review all past agent executions with status, duration, and output paths."
+        chips={[{ id: 'agent-telemetry', label: 'Agent telemetry', tone: 'info' }]}
+      />
+
+      <ContextStrip items={contextItems} />
 
       {/* Filter bar */}
       <div className="flex items-center gap-3">

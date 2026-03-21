@@ -80,10 +80,15 @@ function DataTable<TData>({
     enableRowSelection,
   });
 
-  // Set initial page size
+  // Set initial page size only when it differs from the current one.
   React.useEffect(() => {
-    if (enablePagination && pageSizes[0]) {
-      table.setPageSize(pageSizes[0]);
+    const initialPageSize = pageSizes[0];
+    if (!enablePagination || !initialPageSize) {
+      return;
+    }
+
+    if (table.getState().pagination.pageSize !== initialPageSize) {
+      table.setPageSize(initialPageSize);
     }
   }, [enablePagination, pageSizes, table]);
 

@@ -6,11 +6,20 @@ initialize();
 
 const preview: Preview = {
   parameters: {
+    options: {
+      storySort: {
+        order: ['Foundations', 'Layout', 'Components', 'Pages'],
+      },
+    },
     controls: {
+      expanded: true,
       matchers: {
         color: /(background|color)$/i,
         date: /Date$/i,
       },
+    },
+    docs: {
+      source: { type: 'dynamic' },
     },
 
     a11y: {

@@ -15,6 +15,8 @@ import { ModalDialog } from '@/components/ui/modal-dialog';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { LifecycleFlow } from '@/components/decisions/lifecycle-flow';
 import { CreateDecisionDialog } from '@/components/decisions/create-decision-dialog';
 import { getColumns } from './columns';
@@ -334,6 +336,33 @@ export default function DecisionsPage() {
     [allDecisions.length, data]
   );
 
+  const contextItems: ContextStripItem[] = [
+    {
+      id: 'decision-open',
+      label: 'Open questions',
+      value: String(stats.open),
+      tone: stats.open > 0 ? 'warning' : 'success',
+    },
+    {
+      id: 'decision-decided',
+      label: 'Decided',
+      value: String(stats.decided),
+      tone: stats.decided > 0 ? 'info' : 'neutral',
+    },
+    {
+      id: 'decision-filter',
+      label: 'Active filter',
+      value: statusFilter === 'all' ? 'None' : statusFilter,
+      tone: statusFilter === 'all' ? 'neutral' : 'info',
+    },
+    {
+      id: 'decision-visible',
+      label: 'Visible rows',
+      value: String(filtered.length),
+      tone: filtered.length > 0 ? 'neutral' : 'warning',
+    },
+  ];
+
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
@@ -359,6 +388,35 @@ export default function DecisionsPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="decisions-page">
+      <PageHeader
+        title="Decisions"
+        subtitle="Track open questions, resolved choices, and deferred decisions as governed delivery records."
+        chips={[
+          {
+            id: 'decision-chip-open',
+            label: `${stats.open} open`,
+            tone: stats.open > 0 ? 'warning' : 'success',
+          },
+          {
+            id: 'decision-chip-decided',
+            label: `${stats.decided} decided`,
+            tone: 'info',
+          },
+          {
+            id: 'decision-chip-deferred',
+            label: `${stats.deferred} deferred`,
+            tone: stats.deferred > 0 ? 'warning' : 'default',
+          },
+        ]}
+        actions={
+          <Button className="motion-transition-base" onClick={() => setShowCreate(true)}>
+            <Plus className="size-4 mr-1.5" /> New Decision
+          </Button>
+        }
+      />
+
+      <ContextStrip items={contextItems} />
+
       <MissionControlHero
         eyebrow="Decision ledger"
         title="Treat decisions as governed delivery objects, not scattered notes"

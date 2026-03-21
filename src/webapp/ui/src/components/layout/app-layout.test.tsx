@@ -2,12 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { AppLayout } from './app-layout';
 import { RouterTestWrapper } from '@/test/router-test-wrapper';
+import { ThemeProvider } from '@/components/ui/theme-provider';
 
 function renderLayout(initialEntries: string[] = ['/']) {
   // We render AppLayout directly inside a MemoryRouter with a child route
   return render(
     <RouterTestWrapper initialEntries={initialEntries}>
-      <AppLayout />
+      <ThemeProvider>
+        <AppLayout />
+      </ThemeProvider>
     </RouterTestWrapper>
   );
 }

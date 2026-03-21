@@ -4,6 +4,8 @@
  */
 import { useState, useMemo } from 'react';
 import { Card } from '@/components/ui/card';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
@@ -99,6 +101,21 @@ export default function ArtifactBrowserPage() {
   );
   const statuses = useMemo(() => [...new Set(artifacts.map((a) => a.status))].sort(), [artifacts]);
 
+  const contextItems = useMemo<ContextStripItem[]>(
+    () => [
+      { id: 'artifacts', label: 'Artifacts', value: String(artifacts.length) },
+      { id: 'types', label: 'Types', value: String(types.length) },
+      { id: 'phases', label: 'Phases', value: String(phases.length) },
+      {
+        id: 'filtered',
+        label: 'Filters active',
+        value: filterPhase || filterType || filterStatus ? 'Yes' : 'No',
+        tone: filterPhase || filterType || filterStatus ? 'warning' : 'neutral',
+      },
+    ],
+    [artifacts.length, types.length, phases.length, filterPhase, filterType, filterStatus]
+  );
+
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
@@ -124,6 +141,17 @@ export default function ArtifactBrowserPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="artifact-browser-page">
+      <PageHeader
+        title="Artifact Browser"
+        subtitle="Browse governed delivery artifacts as traceable evidence with status, phase, and hash continuity."
+        chips={[
+          { id: 'artifact-registry', label: 'Artifact Registry', tone: 'info' },
+          { id: 'governed', label: 'Governed' },
+        ]}
+      />
+
+      <ContextStrip items={contextItems} />
+
       <MissionControlHero
         eyebrow="Artifact registry"
         title="Browse governed delivery artifacts as traceable evidence"

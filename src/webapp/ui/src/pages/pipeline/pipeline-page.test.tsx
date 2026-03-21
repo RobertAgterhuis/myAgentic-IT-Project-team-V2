@@ -107,7 +107,7 @@ describe('PipelinePage', () => {
   it('renders orchestrator status badge', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByText('IDLE')).toBeInTheDocument();
+      expect(screen.getAllByText('IDLE').length).toBeGreaterThan(0);
     });
   });
 

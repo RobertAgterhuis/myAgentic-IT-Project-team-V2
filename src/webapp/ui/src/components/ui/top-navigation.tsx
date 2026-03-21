@@ -43,7 +43,7 @@ function ThemeToggleButton() {
       onClick={() => setTheme(next)}
       aria-label={`Switch to ${THEME_LABEL[next]}`}
       title={THEME_LABEL[current]}
-      className="inline-flex items-center justify-center rounded-md p-1.5 hover:bg-muted transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      className="motion-transition-base inline-flex items-center justify-center rounded-md p-1.5 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
     >
       {THEME_ICON[current]}
     </button>
@@ -104,7 +104,7 @@ function TopNavigation({
     <header
       role="banner"
       className={cn(
-        'relative z-10 flex h-16 items-center gap-4 border-b border-border/70 bg-card/78 px-4 shadow-md backdrop-blur-xl supports-backdrop-filter:bg-card/72',
+        'surface-app relative z-10 flex h-16 items-center gap-(--space-lg) border-b border-border/70 px-4 shadow-md backdrop-blur-xl supports-backdrop-filter:bg-card/72',
         className
       )}
       {...props}
@@ -113,7 +113,7 @@ function TopNavigation({
       <button
         type="button"
         onClick={onMenuToggle}
-        className="shrink-0 md:hidden rounded-sm p-1 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        className="motion-transition-base shrink-0 rounded-sm p-1 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none md:hidden"
         aria-label="Toggle menu"
       >
         <Menu className="size-5" />
@@ -121,7 +121,7 @@ function TopNavigation({
 
       {/* Project context */}
       {projectName && (
-        <div className="hidden min-w-0 sm:flex items-center gap-3 rounded-full border border-border/70 bg-background/60 px-3 py-2 shadow-sm">
+        <div className="surface-muted hidden min-w-0 items-center gap-(--space-md) rounded-full border border-border/70 px-3 py-2 shadow-sm sm:flex">
           <div className="flex size-9 items-center justify-center rounded-full bg-linear-to-br from-primary to-secondary text-primary-foreground shadow-sm ring-1 ring-white/35">
             <ShieldCheck className="size-4" />
           </div>
@@ -142,7 +142,7 @@ function TopNavigation({
         <Input
           ref={searchRef}
           placeholder="Search routes, sessions, commands… (Ctrl+K)"
-          className="h-10 border-border/70 bg-background/70 pl-8 shadow-sm"
+          className="motion-transition-base h-10 border-border/70 bg-background/70 pl-8 shadow-sm"
           onChange={(e) => onSearch?.(e.target.value)}
           aria-label="Search"
         />

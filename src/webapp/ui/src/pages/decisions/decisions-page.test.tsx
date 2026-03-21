@@ -16,6 +16,16 @@ function renderPage() {
 }
 
 describe('DecisionsPage', () => {
+  it('renders shared page header and context strip guidance', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByTestId('decisions-page')).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByText(/open questions/i).length).toBeGreaterThan(0);
+    expect(screen.getByText(/visible rows/i)).toBeInTheDocument();
+  });
+
   it('renders the page container', async () => {
     renderPage();
     await waitFor(() => {
@@ -95,7 +105,7 @@ describe('DecisionsPage', () => {
   it('renders New Decision button', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /new decision/i })).toBeInTheDocument();
+      expect(screen.getAllByRole('button', { name: /new decision/i }).length).toBeGreaterThan(0);
     });
   });
 

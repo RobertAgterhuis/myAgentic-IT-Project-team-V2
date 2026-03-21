@@ -34,6 +34,17 @@ const approvalDetailResponse = {
 };
 
 describe('ApprovalDetailPage', () => {
+  it('renders shared page header and context strip', async () => {
+    server.use(
+      http.get('/api/v1/approvals/:id/detail', () => HttpResponse.json(approvalDetailResponse))
+    );
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /^approval review$/i })).toBeInTheDocument();
+    });
+    expect(screen.getAllByText(/approval workflow/i).length).toBeGreaterThan(0);
+  });
+
   it('renders the page container', async () => {
     server.use(
       http.get('/api/v1/approvals/:id/detail', () => HttpResponse.json(approvalDetailResponse))

@@ -15,10 +15,18 @@ function renderPage() {
 }
 
 describe('AgentsPage', () => {
+  it('renders shared page header and context strip', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /^agents$/i })).toBeInTheDocument();
+    });
+    expect(screen.getAllByText(/invocations/i).length).toBeGreaterThan(0);
+  });
+
   it('renders the page heading', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /agents/i })).toBeInTheDocument();
+      expect(screen.getAllByRole('heading', { name: /agents/i }).length).toBeGreaterThan(0);
     });
   });
 

@@ -15,11 +15,19 @@
 | Phase   | Primary Backlog Items                                  |
 | ------- | ------------------------------------------------------ |
 | Phase 1 | UI-008, UI-007, UI-024, UI-017                         |
-| Phase 2 | UI-003, UI-004, UI-005, UI-006                         |
-| Phase 3 | UI-009, UI-010, UI-018, UI-025, UI-026                 |
+| Phase 2 | UI-003, UI-004, UI-005, UI-006, UI-009                 |
+| Phase 3 | UI-010, UI-018, UI-025, UI-026                         |
 | Phase 4 | UI-011, UI-012, UI-013, UI-019, UI-020, UI-021, UI-022 |
 | Phase 5 | UI-014, UI-015, UI-016                                 |
 | Phase 6 | UI-023                                                 |
+
+## Phase 2 Closure Snapshot (2026-03-21)
+
+- UI-003 complete: semantic tokens are documented in Storybook with status/risk, typography, spacing, motion, and explicit contrast requirements. [src/webapp/ui/src/foundations/semantic-tokens.stories.tsx](src/webapp/ui/src/foundations/semantic-tokens.stories.tsx#L1-L170)
+- UI-004 complete: token-backed spacing and motion utilities are implemented in shared styles. [src/webapp/ui/src/index.css](src/webapp/ui/src/index.css#L26-L291)
+- UI-005 complete: Storybook governance docs, template, addon config, and enforcement test are present and passing. [src/webapp/ui/src/foundations/storybook-governance.mdx](src/webapp/ui/src/foundations/storybook-governance.mdx#L1-L36), [src/webapp/ui/src/foundations/storybook-page-template.mdx](src/webapp/ui/src/foundations/storybook-page-template.mdx#L1-L69), [src/webapp/ui/.storybook/main.ts](src/webapp/ui/.storybook/main.ts#L1-L13), [src/webapp/ui/.storybook/preview.ts](src/webapp/ui/.storybook/preview.ts#L1-L30), [src/webapp/ui/src/foundations/storybook-governance.test.ts](src/webapp/ui/src/foundations/storybook-governance.test.ts#L1-L48)
+- UI-006 complete: app shell primitives extracted and documented in Storybook. [src/webapp/ui/src/components/layout](src/webapp/ui/src/components/layout)
+- UI-009 complete: PageHeader and ContextStrip are now applied across the migrated application pages, including traceability explorer. [src/webapp/ui/src/pages/traceability/traceability-explorer-page.tsx](src/webapp/ui/src/pages/traceability/traceability-explorer-page.tsx#L1-L380)
 
 ## Shell-First vs Page-First
 

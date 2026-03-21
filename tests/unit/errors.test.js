@@ -28,6 +28,20 @@ describe('errorResponse', () => {
     expect(r.recovery).toBe(ERROR_CATALOG.INTERNAL_ERROR.recovery);
   });
 
+  it('falls back to INTERNAL_ERROR defaults for unknown codes without detail', () => {
+    const r = errorResponse('DOES_NOT_EXIST');
+    expect(r.code).toBe('INTERNAL_ERROR');
+    expect(r.error).toBe(ERROR_CATALOG.INTERNAL_ERROR.message);
+    expect(r.message).toBe(ERROR_CATALOG.INTERNAL_ERROR.message);
+    expect(r.recovery).toBe(ERROR_CATALOG.INTERNAL_ERROR.recovery);
+  });
+
+  it('uses catalog defaults when detail is an empty string', () => {
+    const r = errorResponse('VALIDATION_ERROR', '');
+    expect(r.error).toBe(ERROR_CATALOG.VALIDATION_ERROR.message);
+    expect(r.message).toBe(ERROR_CATALOG.VALIDATION_ERROR.message);
+  });
+
   it('covers all catalog codes', () => {
     for (const code of Object.keys(ERROR_CATALOG)) {
       const r = errorResponse(code);
@@ -61,6 +75,10 @@ describe('statusToCode', () => {
 
   it('maps 415 to INVALID_CONTENT_TYPE', () => {
     expect(statusToCode(415)).toBe('INVALID_CONTENT_TYPE');
+  });
+
+  it('maps 429 to RATE_LIMITED', () => {
+    expect(statusToCode(429)).toBe('RATE_LIMITED');
   });
 
   it('returns INTERNAL_ERROR for unmapped status', () => {

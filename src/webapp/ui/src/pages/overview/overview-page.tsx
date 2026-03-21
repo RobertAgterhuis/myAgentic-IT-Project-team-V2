@@ -24,6 +24,8 @@ import { WelcomeWizard } from '@/components/onboarding/welcome-wizard';
 import { useWelcomeWizard } from '@/components/onboarding/use-welcome-wizard';
 import { OnboardingDiagnosticsWizard } from '@/components/onboarding/onboarding-diagnostics-wizard';
 import { useOnboardingDiagnosticsWizard } from '@/components/onboarding/use-onboarding-diagnostics-wizard';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { useSessions, useSession, useDecisions, useDashboardHealth } from '@/hooks';
 import { useUIStore } from '@/stores/ui-store';
 import type { Session, HealthIndicator, TimelineEvent, AgentDetailEntry } from '@/lib/api-types';
@@ -134,6 +136,62 @@ export default function OverviewPage() {
     return !diagnosticsDismissed && (totalSessions === 0 || hasActiveOnboarding);
   }, [sessionsData?.sessions?.length, activeSession?.phase, diagnosticsDismissed]);
 
+  const headerChips = useMemo(() => {
+    const connectionTone =
+      connectionStatus === 'connected'
+        ? 'success'
+        : connectionStatus === 'connecting'
+          ? 'warning'
+          : 'critical';
+
+    return [
+      {
+        id: 'connection',
+        label: connectionStatus === 'connected' ? 'Live telemetry' : 'Connection degraded',
+        tone: connectionTone,
+      },
+      {
+        id: 'session',
+        label: activeSession ? `Session ${activeSession.status}` : 'No active session',
+        tone: activeSession ? 'info' : 'default',
+      },
+      {
+        id: 'decisions',
+        label: `${openDecisions.length} open decisions`,
+        tone: openDecisions.length > 0 ? 'warning' : 'success',
+      },
+    ] as const;
+  }, [connectionStatus, activeSession, openDecisions.length]);
+
+  const contextItems = useMemo<ContextStripItem[]>(
+    () => [
+      {
+        id: 'workspace',
+        label: 'Workspace',
+        value: activeSession?.project ?? 'No active workspace',
+      },
+      {
+        id: 'phase',
+        label: 'Phase',
+        value: activeSession?.phase ?? 'Idle',
+        tone: activeSession ? 'info' : 'neutral',
+      },
+      {
+        id: 'active-agent',
+        label: 'Active agent',
+        value: activeSession?.current_agent ?? 'Not assigned',
+        tone: activeSession?.current_agent ? 'success' : 'neutral',
+      },
+      {
+        id: 'health',
+        label: 'Health alerts',
+        value: String(healthAttentionCount),
+        tone: healthAttentionCount > 0 ? 'warning' : 'success',
+      },
+    ],
+    [activeSession, healthAttentionCount]
+  );
+
   if (sessionsLoading || healthLoading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
@@ -167,6 +225,34 @@ export default function OverviewPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="overview-page">
+      <PageHeader
+        title="Overview"
+        subtitle="Track runtime flow, governance checkpoints, and health signals from one operational control surface."
+        chips={[...headerChips]}
+        actions={
+          activeSession ? (
+            <Button
+              variant="outline"
+              size="sm"
+              className="motion-transition-base"
+              onClick={() => navigate(`/sessions/${encodeURIComponent(activeSession.id)}`)}
+            >
+              Open Session <ArrowRight className="ml-1 size-3" />
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              className="motion-transition-base"
+              onClick={() => navigate('/commands')}
+            >
+              Start Command <Rocket className="ml-1 size-3" />
+            </Button>
+          )
+        }
+      />
+
+      <ContextStrip items={contextItems} />
+
       <MissionControlHero
         eyebrow="Executive overview"
         title="See governed delivery, live agent motion, and human checkpoints in one view"

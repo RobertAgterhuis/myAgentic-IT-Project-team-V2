@@ -18,6 +18,8 @@ import { QuickLinks } from '@/components/dashboard/quick-links';
 import { RecentCommands } from '@/components/dashboard/recent-commands';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import {
   useDashboardHealth,
   useDashboardMetrics,
@@ -104,6 +106,32 @@ export default function DashboardPage() {
   const confidenceScore = cockpitHealth
     ? `${Math.round(cockpitHealth.session_health.score)}%`
     : 'Live';
+  const contextItems: ContextStripItem[] = [
+    {
+      id: 'active-sessions',
+      label: 'Active sessions',
+      value: String(activeSessions),
+      tone: activeSessions > 0 ? 'info' : 'neutral',
+    },
+    {
+      id: 'attention-items',
+      label: 'Attention items',
+      value: String(openAttentionItems),
+      tone: openAttentionItems > 0 ? 'warning' : 'success',
+    },
+    {
+      id: 'activity-feed',
+      label: 'Activity feed',
+      value: String(feedItems.length),
+      tone: feedItems.length > 0 ? 'info' : 'neutral',
+    },
+    {
+      id: 'confidence',
+      label: 'Confidence',
+      value: confidenceScore,
+      tone: cockpitHealth ? 'success' : 'neutral',
+    },
+  ];
 
   if (healthLoading) {
     return (
@@ -130,6 +158,30 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="dashboard-page">
+      <PageHeader
+        title="Dashboard"
+        subtitle="Monitor orchestration health, runtime motion, and delivery signals from a single control surface."
+        chips={[
+          {
+            id: 'dashboard-chip-active',
+            label: `${activeSessions} active`,
+            tone: activeSessions > 0 ? 'info' : 'default',
+          },
+          {
+            id: 'dashboard-chip-attention',
+            label: `${openAttentionItems} attention`,
+            tone: openAttentionItems > 0 ? 'warning' : 'success',
+          },
+          {
+            id: 'dashboard-chip-confidence',
+            label: `Confidence ${confidenceScore}`,
+            tone: cockpitHealth ? 'success' : 'default',
+          },
+        ]}
+      />
+
+      <ContextStrip items={contextItems} />
+
       <MissionControlHero
         eyebrow="Runtime command deck"
         title="Governed AI SDLC mission control"

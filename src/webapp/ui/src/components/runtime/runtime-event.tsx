@@ -59,6 +59,7 @@ export function RuntimeEvent({
   description,
   agent,
   phase,
+  artifactId: _artifactId,
   className,
   ...props
 }: RuntimeEventProps) {

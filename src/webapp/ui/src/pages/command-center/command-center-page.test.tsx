@@ -16,6 +16,13 @@ function renderPage() {
 }
 
 describe('CommandCenterPage', () => {
+  it('renders shared page header and context strip', () => {
+    renderPage();
+    expect(screen.getByRole('heading', { name: /command center/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/orchestrator control/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/queue length/i).length).toBeGreaterThan(0);
+  });
+
   it('renders the page heading', () => {
     renderPage();
     expect(screen.getByRole('heading', { name: /command center/i })).toBeInTheDocument();

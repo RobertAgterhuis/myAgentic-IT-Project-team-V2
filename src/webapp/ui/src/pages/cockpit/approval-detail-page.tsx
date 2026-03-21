@@ -9,6 +9,8 @@ import { AlertBanner } from '@/components/ui/alert-banner';
 import { EmptyState } from '@/components/ui/empty-state';
 import { ApprovalDetailPanel } from '@/components/cockpit/approval-workflow';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { Badge } from '@/components/ui/badge';
@@ -60,8 +62,31 @@ export default function ApprovalDetailPage() {
     );
   }
 
+  const contextItems: ContextStripItem[] = [
+    { id: 'approval-id', label: 'ID', value: data.approval.id, tone: 'info' },
+    {
+      id: 'status',
+      label: 'Status',
+      value: data.approval.status,
+      tone: data.approval.status === 'PENDING' ? 'warning' : 'success',
+    },
+    { id: 'gate', label: 'Gate', value: data.approval.gate_id },
+    { id: 'stage', label: 'Stage', value: data.approval.stage },
+  ];
+
   return (
     <div className="p-6 space-y-6" data-testid="approval-detail-page">
+      <PageHeader
+        title="Approval Review"
+        subtitle="Resolve a governed checkpoint with full approval context and required human rationale."
+        chips={[
+          { id: 'approval-workflow', label: 'Approval workflow', tone: 'warning' },
+          { id: 'needs-human', label: 'Needs human input', tone: 'critical' },
+        ]}
+      />
+
+      <ContextStrip items={contextItems} />
+
       <MissionControlHero
         eyebrow="Approval review"
         title="Resolve a governed checkpoint with full approval context"

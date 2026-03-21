@@ -4,6 +4,8 @@
  */
 import { useState } from 'react';
 import { Heading, Text } from '@/components/ui/typography';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
@@ -76,20 +78,37 @@ export default function CommandCenterPage() {
     setBriefText('');
   }
 
+  const queueLength = queue?.queue?.length ?? 0;
+  const contextItems: ContextStripItem[] = [
+    {
+      id: 'queue-length',
+      label: 'Queue length',
+      value: String(queueLength),
+      tone: queueLength > 0 ? 'info' : 'neutral',
+    },
+    {
+      id: 'orchestrator-state',
+      label: 'Orchestrator',
+      value: status ? `${status.state} — ${status.mode}` : 'Unknown',
+    },
+  ];
+
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Heading level={1}>Command Center</Heading>
-          <Text muted>Submit project briefs and manage orchestrator commands</Text>
-        </div>
-        {status && (
-          <Badge variant={status.state === 'IDLE' ? 'secondary' : 'info'}>
-            {status.state} — {status.mode}
-          </Badge>
-        )}
-      </div>
+      <PageHeader
+        title="Command Center"
+        subtitle="Submit project briefs and manage orchestrator commands"
+        chips={[{ id: 'control-interface', label: 'Orchestrator control', tone: 'info' }]}
+        actions={
+          status ? (
+            <Badge variant={status.state === 'IDLE' ? 'secondary' : 'info'}>
+              {status.state} — {status.mode}
+            </Badge>
+          ) : undefined
+        }
+      />
+
+      <ContextStrip items={contextItems} />
 
       {/* Project Brief Input */}
       <Card>

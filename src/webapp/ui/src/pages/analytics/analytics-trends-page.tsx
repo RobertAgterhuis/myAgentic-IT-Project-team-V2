@@ -4,7 +4,9 @@
  * M10 / Issue #395
  */
 import { useState, useMemo } from 'react';
-import { Heading, Text } from '@/components/ui/typography';
+import { Heading } from '@/components/ui/typography';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { Card } from '@/components/ui/card';
 import { MetricCard } from '@/components/ui/metric-card';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -175,37 +177,55 @@ export default function AnalyticsTrendChartsPage() {
       ? velocityData.reduce((s, v) => s + v.velocity_ratio, 0) / velocityData.length
       : 0;
 
+  const contextItems: ContextStripItem[] = [
+    {
+      id: 'time-range',
+      label: 'Time range',
+      value: timeRange === 'all' ? 'All time' : timeRange,
+      tone: 'info',
+    },
+    { id: 'sprints', label: 'Sprints tracked', value: String(velocityData.length) },
+    { id: 'agents', label: 'Agents tracked', value: String(agentPerf?.length ?? 0) },
+    {
+      id: 'avg-completion',
+      label: 'Avg completion',
+      value: `${(avgRatio * 100).toFixed(0)}%`,
+      tone: avgRatio >= 0.8 ? 'success' : 'warning',
+    },
+  ];
+
   return (
     <div className="p-6 space-y-6" data-testid="analytics-trends-page">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Heading level={1}>
-            <TrendingUp className="size-5 inline mr-2" />
-            Analytics Trend Charts
-          </Heading>
-          <Text muted>Velocity, DORA metrics, and agent performance over time</Text>
-        </div>
-        {/* Time range selector */}
-        <div
-          className="flex items-center gap-1 bg-muted rounded-md p-1"
-          role="group"
-          aria-label="Time range"
-        >
-          {(['7d', '30d', '90d', 'all'] as TimeRange[]).map((range) => (
-            <Button
-              key={range}
-              type="button"
-              size="xs"
-              variant={timeRange === range ? 'default' : 'ghost'}
-              aria-pressed={timeRange === range}
-              onClick={() => setTimeRange(range)}
-            >
-              {range === 'all' ? 'All' : range}
-            </Button>
-          ))}
-        </div>
-      </div>
+      <PageHeader
+        title="Analytics Trend Charts"
+        subtitle="Velocity, DORA metrics, and agent performance over time"
+        chips={[
+          { id: 'trend-analysis', label: 'Trend analysis', tone: 'info' },
+          { id: 'dora-metrics', label: 'DORA metrics' },
+        ]}
+        actions={
+          <div
+            className="flex items-center gap-1 bg-muted rounded-md p-1"
+            role="group"
+            aria-label="Time range"
+          >
+            {(['7d', '30d', '90d', 'all'] as TimeRange[]).map((range) => (
+              <Button
+                key={range}
+                type="button"
+                size="xs"
+                variant={timeRange === range ? 'default' : 'ghost'}
+                aria-pressed={timeRange === range}
+                onClick={() => setTimeRange(range)}
+              >
+                {range === 'all' ? 'All' : range}
+              </Button>
+            ))}
+          </div>
+        }
+      />
+
+      <ContextStrip items={contextItems} />
 
       {/* Summary KPIs */}
       <section aria-label="Summary KPIs">

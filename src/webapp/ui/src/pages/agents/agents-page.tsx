@@ -2,8 +2,10 @@
  * Agents page — list all tracked agents with activity status and detail panel.
  * M15 / Issue #M15-030, M31-001 … M31-006
  */
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Text } from '@/components/ui/typography';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -55,6 +57,39 @@ export default function AgentsPage() {
       return next;
     });
 
+  // Derive summary data before any early returns (Rules of Hooks)
+  const agents = data?.agents ?? [];
+  const total = agents.length;
+  const completed = agents.filter((a) => a.status === 'completed').length;
+  const failed = agents.filter((a) => a.status === 'failed').length;
+  const running = agents.filter((a) => a.status === 'running').length;
+  const successRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  const contextItems = useMemo<ContextStripItem[]>(
+    () => [
+      { id: 'total', label: 'Invocations', value: String(total) },
+      {
+        id: 'running',
+        label: 'Running',
+        value: String(running),
+        tone: running > 0 ? 'success' : 'neutral',
+      },
+      {
+        id: 'success-rate',
+        label: 'Success rate',
+        value: `${successRate}%`,
+        tone: successRate >= 80 ? 'success' : 'warning',
+      },
+      {
+        id: 'failed',
+        label: 'Failed',
+        value: String(failed),
+        tone: failed > 0 ? 'critical' : 'neutral',
+      },
+    ],
+    [total, running, successRate, failed]
+  );
+
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
@@ -78,17 +113,19 @@ export default function AgentsPage() {
     );
   }
 
-  const agents = data?.agents ?? [];
-
-  // Performance summary
-  const total = agents.length;
-  const completed = agents.filter((a) => a.status === 'completed').length;
-  const failed = agents.filter((a) => a.status === 'failed').length;
-  const running = agents.filter((a) => a.status === 'running').length;
-  const successRate = total > 0 ? Math.round((completed / total) * 100) : 0;
-
   return (
     <div className="p-6 space-y-6" data-testid="agents-page">
+      <PageHeader
+        title="Agents"
+        subtitle="Active and historical agent operations, execution status, and performance."
+        chips={[
+          { id: 'agent-registry', label: 'Agent Registry', tone: 'info' },
+          { id: 'governed', label: 'Governed' },
+        ]}
+      />
+
+      <ContextStrip items={contextItems} />
+
       <MissionControlHero
         eyebrow="Agent operations"
         title="Inspect active agents like operators, not just list items"

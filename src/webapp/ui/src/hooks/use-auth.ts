@@ -6,6 +6,22 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuthStore, type AuthUser } from '@/stores/auth-store';
 import { useEffect } from 'react';
 
+export type RoleRequirement = AuthUser['role'];
+
+const ROLE_ORDER: RoleRequirement[] = ['viewer', 'operator', 'admin'];
+
+function getRoleRank(role: RoleRequirement | null | undefined): number {
+  if (!role) return -1;
+  return ROLE_ORDER.indexOf(role);
+}
+
+export function hasRequiredRole(
+  role: RoleRequirement | null | undefined,
+  requiredRole: RoleRequirement
+): boolean {
+  return getRoleRank(role) >= getRoleRank(requiredRole);
+}
+
 async function fetchCurrentUser(): Promise<AuthUser | null> {
   const res = await fetch('/api/auth/me', { credentials: 'include' });
   if (res.status === 401) return null;
@@ -60,4 +76,16 @@ export function useLogout() {
       queryClient.setQueryData(['auth', 'me'], null);
     },
   });
+}
+
+export function useAuthorization() {
+  const user = useAuthStore((s) => s.user);
+  const loading = useAuthStore((s) => s.loading);
+
+  return {
+    user,
+    loading,
+    isAuthenticated: Boolean(user),
+    hasRequiredRole: (requiredRole: RoleRequirement) => hasRequiredRole(user?.role, requiredRole),
+  };
 }

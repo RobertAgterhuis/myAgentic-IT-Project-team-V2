@@ -15,7 +15,7 @@ import { useCurrentUser } from '@/hooks/use-auth';
 import { useSSEEvents } from '@/hooks/use-sse-events';
 import { useRuntimeEvents } from '@/hooks/use-runtime-events';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
-import { routes, buildBreadcrumbs } from '@/lib/routes';
+import { routes, buildBreadcrumbs, DOMAIN_ORDER, type DomainSection } from '@/lib/routes';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -29,6 +29,7 @@ import {
   Activity,
   Bot,
   Gauge,
+  History,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -43,17 +44,26 @@ const iconMap: Record<string, React.ReactNode> = {
   Activity: <Activity className="size-4" />,
   Bot: <Bot className="size-4" />,
   Gauge: <Gauge className="size-4" />,
+  History: <History className="size-4" />,
 };
 
+function toSectionId(section: DomainSection): string {
+  return section
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '');
+}
+
 function buildSections(): NavSection[] {
-  const sectionMap = new Map<string, NavSection>();
+  const sectionMap = new Map<DomainSection, NavSection>();
+
+  DOMAIN_ORDER.forEach((section) => {
+    sectionMap.set(section, { id: toSectionId(section), title: section, items: [] });
+  });
 
   for (const route of Object.values(routes)) {
-    let section = sectionMap.get(route.section);
-    if (!section) {
-      section = { id: route.section.toLowerCase(), title: route.section, items: [] };
-      sectionMap.set(route.section, section);
-    }
+    const section = sectionMap.get(route.section);
+    if (!section) continue;
     section.items.push({
       id: route.path,
       label: route.label,
@@ -62,7 +72,30 @@ function buildSections(): NavSection[] {
     });
   }
 
-  return Array.from(sectionMap.values());
+  return DOMAIN_ORDER.map((section) => {
+    const entry = sectionMap.get(section);
+    if (!entry) return { id: toSectionId(section), title: section, items: [] };
+    if (entry.items.length === 0) {
+      entry.items.push({
+        id: `${entry.id}-placeholder`,
+        label: 'Coming soon',
+        disabled: true,
+      });
+    }
+    return entry;
+  });
+}
+
+function resolveActiveNavPath(pathname: string): string {
+  const directMatch = Object.values(routes).find((route) => route.path === pathname);
+  if (directMatch) return directMatch.path;
+
+  const segments = pathname.split('/').filter(Boolean);
+  if (segments.length === 0) return pathname;
+
+  const parentPath = `/${segments[0]}`;
+  const parentMatch = Object.values(routes).find((route) => route.path === parentPath);
+  return parentMatch?.path ?? pathname;
 }
 
 const navSections = buildSections();
@@ -144,7 +177,7 @@ export function AppLayout() {
       <div className="relative z-10 flex flex-1 overflow-hidden">
         <SidePanel
           sections={navSections}
-          activeItemId={location.pathname}
+          activeItemId={resolveActiveNavPath(location.pathname)}
           collapsed={!sidebarOpen}
           onCollapse={(collapsed) => useUIStore.getState().setSidebarOpen(!collapsed)}
           onItemSelect={(itemId) => navigate(itemId)}

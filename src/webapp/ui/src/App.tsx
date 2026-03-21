@@ -6,6 +6,8 @@ import { lazy } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom';
 import { AppLayout } from '@/components/layout/app-layout';
 import { NotFoundPage } from '@/pages/not-found-page';
+import { AccessGuard } from '@/components/ui/access-guard';
+import { selectVariant } from '@/lib/feature-flags';
 
 const LoginPage = lazy(() => import('@/pages/login/login-page'));
 const OverviewPage = lazy(() => import('@/pages/overview/overview-page'));
@@ -25,6 +27,26 @@ const CockpitDashboardPage = lazy(() => import('@/pages/cockpit/cockpit-dashboar
 const ExecutionHistoryPage = lazy(() => import('@/pages/agents/execution-history-page'));
 const ApprovalDetailPage = lazy(() => import('@/pages/cockpit/approval-detail-page'));
 
+const overviewElement = selectVariant('overview-redesign', <DashboardPage />, <OverviewPage />);
+const runsElement = selectVariant('runs-redesign', <SessionsPage />, <SessionsPage />);
+const agentsElement = selectVariant('agents-redesign', <AgentsPage />, <AgentsPage />);
+const policiesElement = selectVariant('policies-redesign', <DecisionsPage />, <DecisionsPage />);
+const approvalsElement = selectVariant(
+  'approvals-redesign',
+  <GovernanceDashboardPage />,
+  <GovernanceDashboardPage />
+);
+const observabilityElement = selectVariant(
+  'observability-redesign',
+  <ObservabilityPage />,
+  <ObservabilityPage />
+);
+const auditElement = selectVariant(
+  'audit-redesign',
+  <ArtifactBrowserPage />,
+  <ArtifactBrowserPage />
+);
+
 const router = createBrowserRouter([
   /* Login — outside the app shell (no sidebar/nav) */
   { path: 'login', element: <LoginPage /> },
@@ -32,30 +54,43 @@ const router = createBrowserRouter([
     element: <AppLayout />,
     children: [
       /* Runtime */
-      { index: true, element: <OverviewPage /> },
+      { index: true, element: overviewElement },
       { path: 'dashboard', element: <DashboardPage /> },
-      { path: 'sessions', element: <SessionsPage /> },
+      { path: 'sessions', element: runsElement },
       { path: 'sessions/:id', element: <SessionDetailPage /> },
       { path: 'pipeline', element: <PipelinePage /> },
 
       /* Operations */
       { path: 'commands', element: <CommandsPage /> },
-      { path: 'agents', element: <AgentsPage /> },
+      { path: 'agents', element: agentsElement },
       { path: 'agents/executions', element: <ExecutionHistoryPage /> },
-      { path: 'decisions', element: <DecisionsPage /> },
+      {
+        path: 'decisions',
+        element: <AccessGuard requiredRole="operator">{policiesElement}</AccessGuard>,
+      },
 
       /* Data */
-      { path: 'artifacts', element: <ArtifactBrowserPage /> },
+      { path: 'artifacts', element: auditElement },
       { path: 'artifacts/lineage', element: <LineagePage /> },
       { path: 'questionnaires', element: <QuestionnairesPage /> },
 
       /* Observability */
-      { path: 'observability', element: <ObservabilityPage /> },
-      { path: 'governance', element: <GovernanceDashboardPage /> },
+      { path: 'observability', element: observabilityElement },
+      {
+        path: 'governance',
+        element: <AccessGuard requiredRole="operator">{approvalsElement}</AccessGuard>,
+      },
 
       /* Cockpit — M27 */
       { path: 'cockpit', element: <CockpitDashboardPage /> },
-      { path: 'cockpit/approvals/:id', element: <ApprovalDetailPage /> },
+      {
+        path: 'cockpit/approvals/:id',
+        element: (
+          <AccessGuard requiredRole="operator">
+            <ApprovalDetailPage />
+          </AccessGuard>
+        ),
+      },
 
       /* Redirects for renamed/merged routes */
       { path: 'command-center', element: <Navigate to="/commands" replace /> },

@@ -127,6 +127,7 @@ export default function AgentsPage() {
       <ContextStrip items={contextItems} />
 
       <MissionControlHero
+        heroId="agents"
         eyebrow="Agent operations"
         title="Inspect active agents like operators, not just list items"
         description="The agent surface shows which specialists are running, which have failed, and which executions need a human to diagnose or retry."

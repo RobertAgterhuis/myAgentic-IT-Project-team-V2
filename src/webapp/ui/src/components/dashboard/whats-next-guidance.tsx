@@ -131,7 +131,7 @@ export function WhatsNextGuidance() {
         title: `${pendingApprovals.length} governance approval${pendingApprovals.length === 1 ? '' : 's'} needed`,
         description: 'Blocked items are waiting for your review and approval.',
         badge: { label: String(pendingApprovals.length), variant: 'error' },
-        action: { label: 'Review Approvals', href: '/governance' },
+        action: { label: 'Review Approvals', href: '/approvals' },
         priority: 1,
       });
     }

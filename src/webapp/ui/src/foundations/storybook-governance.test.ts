@@ -17,7 +17,7 @@ describe('Storybook governance', () => {
   it('Core page stories export required state variants', () => {
     const requiredExports = ['Populated', 'Loading', 'Error'];
     const pageStories = [
-      join(uiSrcRoot(), 'pages/overview/overview-page.stories.tsx'),
+      join(uiSrcRoot(), 'pages/dashboard/dashboard-page.stories.tsx'),
       join(uiSrcRoot(), 'pages/sessions/sessions-page.stories.tsx'),
       join(uiSrcRoot(), 'pages/sessions/session-detail-page.stories.tsx'),
       join(uiSrcRoot(), 'pages/pipeline/pipeline-page.stories.tsx'),

@@ -22,7 +22,7 @@ export function RecentCommands() {
     <Card elevation="flat" className="p-4">
       <div className="flex items-center justify-between mb-3">
         <span className="text-sm font-semibold">Recent Commands</span>
-        <Link to="/command-center" className="text-xs text-primary hover:underline">
+        <Link to="/commands" className="text-xs text-primary hover:underline">
           View all
         </Link>
       </div>

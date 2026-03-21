@@ -358,6 +358,7 @@ export default function ApprovalCenterPage() {
         <ContextStrip items={contextItems} />
 
         <MissionControlHero
+          heroId="approvals"
           eyebrow="Approval Center"
           title="Review, decide, and capture approvals without switching between tools"
           description="Pending approvals, their context, risk levels, and decision options are available in one surface. Every decision is audit-captured with the actor, reason, and timestamp to support governance reviews."

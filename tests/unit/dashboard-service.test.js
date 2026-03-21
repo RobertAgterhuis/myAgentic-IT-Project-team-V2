@@ -49,9 +49,9 @@ describe('DashboardService', () => {
     const health = service.computeHealthStatus();
 
     expect(health.quality).toMatchObject({
-      value: 'Configured',
+      value: '1 controls',
       status: 'healthy',
-      details: 'ESLint config present',
+      details: 'ESLint',
     });
     expect(health.coverage).toMatchObject({
       value: '82%',
@@ -119,7 +119,11 @@ describe('DashboardService', () => {
     const health = service.computeHealthStatus();
 
     expect(health.coverage).toMatchObject({ value: '65%', status: 'medium' });
-    expect(health.quality).toMatchObject({ value: 'Configured', status: 'healthy' });
+    expect(health.quality).toMatchObject({
+      value: '1 controls',
+      status: 'healthy',
+      details: 'ESLint',
+    });
     expect(health.builds.details).toContain('Built 2h ago');
     expect(health.deployment.details).toContain('Up 2h 5m');
   });
@@ -282,7 +286,7 @@ describe('DashboardService', () => {
         value: '2',
         label: 'Team Members',
         icon: '👥',
-        details: 'Unique contributors (git + audit, last 180 days)',
+        details: 'Alice, Bob, Carol',
       },
       sprint_progress: {
         value: '50%',

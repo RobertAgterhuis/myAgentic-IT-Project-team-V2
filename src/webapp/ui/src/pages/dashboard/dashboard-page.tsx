@@ -4,6 +4,7 @@
  * Issue #244 (S9G-37)
  */
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Heading, Text } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -60,6 +61,7 @@ const statIcons: Record<string, React.ReactNode> = {
 
 /* ── Main Page ── */
 export default function DashboardPage() {
+  const navigate = useNavigate();
   const {
     data: health,
     isLoading: healthLoading,
@@ -183,6 +185,7 @@ export default function DashboardPage() {
       <ContextStrip items={contextItems} />
 
       <MissionControlHero
+        heroId="dashboard"
         eyebrow="Runtime command deck"
         title="Governed AI SDLC mission control"
         description="Track delivery health, agent movement, and human checkpoints from a single control surface designed for evidence-backed execution."
@@ -236,7 +239,11 @@ export default function DashboardPage() {
                 Decisions, questionnaires, and governance steps still define release readiness.
               </Text>
             </div>
-            <Button variant="outline" className="w-full justify-between">
+            <Button
+              variant="outline"
+              className="w-full justify-between"
+              onClick={() => navigate('/observability')}
+            >
               Review operational signals
               <ArrowRight className="size-4" />
             </Button>
@@ -329,6 +336,7 @@ export default function DashboardPage() {
                 label={stat.label}
                 value={String(stat.value)}
                 icon={statIcons[key] ?? <Clock className="size-4" />}
+                details={stat.details || undefined}
               />
             ))}
           </div>

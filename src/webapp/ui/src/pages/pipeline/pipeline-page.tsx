@@ -333,6 +333,7 @@ export default function PipelinePage() {
       <ContextStrip items={contextItems} />
 
       <MissionControlHero
+        heroId="pipeline"
         eyebrow="Swimlane telemetry"
         title="Follow orchestration like a governed flight deck"
         description="Every phase, agent handoff, and human escalation is visible in sequence so teams can see where automation is flowing and where human judgment is required."
@@ -595,7 +596,11 @@ export default function PipelinePage() {
                       <span className="text-xs text-muted-foreground">{phase.total} total</span>
                     </div>
 
-                    <div className="flex gap-3 overflow-x-auto pb-1">
+                    <div
+                      className="flex gap-3 overflow-x-auto pb-1"
+                      tabIndex={0}
+                      aria-label={`Agent swimlane cards for ${phase.label}`}
+                    >
                       {phase.agents.map((agent) => (
                         <article
                           key={agent.id}

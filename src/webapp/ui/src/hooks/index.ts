@@ -1,5 +1,8 @@
 // Custom hooks barrel file
 
+/* Hero fold state */
+export { useHeroFold } from './use-hero-fold';
+
 /* Auth (M29-006) */
 export { useCurrentUser, useLogout, useAuthorization } from './use-auth';
 

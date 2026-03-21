@@ -60,12 +60,12 @@ const STEPS: WizardStep[] = [
     action: { label: 'Browse Artifacts', href: '/artifacts' },
   },
   {
-    title: 'Governance & Quality',
+    title: 'Approvals & Quality',
     description:
       'Gate validations ensure quality at every phase boundary. ' +
-      'The Governance dashboard shows compliance status and approval workflows.',
+      'The Approval Center shows compliance status and approval workflows.',
     icon: <ShieldCheck className="size-8 text-teal-500" />,
-    action: { label: 'View Governance', href: '/governance' },
+    action: { label: 'View Approvals', href: '/approvals' },
   },
 ];
 

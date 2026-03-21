@@ -192,6 +192,7 @@ export default function SessionsPage() {
         <ContextStrip items={contextItems} />
 
         <MissionControlHero
+          heroId="sessions"
           eyebrow="Execution archive"
           title="Sessions turn orchestration into reviewable evidence"
           description="Use this page as the runtime ledger for active and completed cycles, with clear signals for where work is live, stalled, or ready for review."

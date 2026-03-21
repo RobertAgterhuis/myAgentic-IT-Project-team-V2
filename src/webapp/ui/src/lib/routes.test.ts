@@ -20,7 +20,7 @@ describe('routes', () => {
     expect(routes.agents.section).toBe('Agents');
     expect(routes.artifacts.section).toBe('Audit & Evidence');
     expect(routes.observability.section).toBe('Observability');
-    expect(routes.governance.section).toBe('Approvals');
+    expect(routes.approvals.section).toBe('Approvals');
   });
 });
 

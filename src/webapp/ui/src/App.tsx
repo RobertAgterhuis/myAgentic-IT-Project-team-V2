@@ -14,6 +14,7 @@ const OverviewPage = lazy(() => import('@/pages/overview/overview-page'));
 const DashboardPage = lazy(() => import('@/pages/dashboard/dashboard-page'));
 const CommandsPage = lazy(() => import('@/pages/commands/commands-page'));
 const PipelinePage = lazy(() => import('@/pages/pipeline/pipeline-page'));
+const WorkspacesPage = lazy(() => import('@/pages/workspaces/workspaces-page'));
 const SessionsPage = lazy(() => import('@/pages/sessions/sessions-page'));
 const SessionDetailPage = lazy(() => import('@/pages/sessions/session-detail-page'));
 const AgentsPage = lazy(() => import('@/pages/agents/agents-page'));
@@ -25,6 +26,8 @@ const LineagePage = lazy(() => import('@/pages/artifacts/lineage-page'));
 const ObservabilityPage = lazy(() => import('@/pages/observability/observability-page'));
 const GovernanceDashboardPage = lazy(() => import('@/pages/governance/governance-dashboard-page'));
 const ApprovalCenterPage = lazy(() => import('@/pages/approvals/approval-center-page'));
+const PromptsContractsPage = lazy(() => import('@/pages/prompts/prompts-contracts-page'));
+const AdministrationPage = lazy(() => import('@/pages/administration/administration-page'));
 const CockpitDashboardPage = lazy(() => import('@/pages/cockpit/cockpit-dashboard-page'));
 const ExecutionHistoryPage = lazy(() => import('@/pages/agents/execution-history-page'));
 const ApprovalDetailPage = lazy(() => import('@/pages/cockpit/approval-detail-page'));
@@ -58,6 +61,7 @@ const router = createBrowserRouter([
       /* Runtime */
       { index: true, element: overviewElement },
       { path: 'dashboard', element: <DashboardPage /> },
+      { path: 'workspaces', element: <WorkspacesPage /> },
       { path: 'sessions', element: runsElement },
       { path: 'sessions/:id', element: <SessionDetailPage /> },
       { path: 'pipeline', element: <PipelinePage /> },
@@ -76,6 +80,7 @@ const router = createBrowserRouter([
       { path: 'artifacts/lineage', element: <LineagePage /> },
       { path: 'audit', element: <AuditEvidenceExplorerPage /> },
       { path: 'questionnaires', element: <QuestionnairesPage /> },
+      { path: 'prompts-contracts', element: <PromptsContractsPage /> },
 
       /* Observability */
       { path: 'observability', element: observabilityElement },
@@ -94,6 +99,14 @@ const router = createBrowserRouter([
 
       /* Cockpit — M27 */
       { path: 'cockpit', element: <CockpitDashboardPage /> },
+      {
+        path: 'administration',
+        element: (
+          <AccessGuard requiredRole="admin">
+            <AdministrationPage />
+          </AccessGuard>
+        ),
+      },
       {
         path: 'cockpit/approvals/:id',
         element: (

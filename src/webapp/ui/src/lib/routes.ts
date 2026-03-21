@@ -29,6 +29,14 @@ export const routes = {
   /* Overview */
   dashboard: { path: '/', label: 'Overview', icon: 'LayoutDashboard', section: 'Overview' },
 
+  /* Workspaces */
+  workspaces: {
+    path: '/workspaces',
+    label: 'Workspaces',
+    icon: 'FolderKanban',
+    section: 'Workspaces',
+  },
+
   /* Runs */
   sessions: { path: '/sessions', label: 'Runs', icon: 'Activity', section: 'Runs' },
   pipeline: { path: '/pipeline', label: 'Pipeline', icon: 'GitBranch', section: 'Runs' },
@@ -67,6 +75,12 @@ export const routes = {
     icon: 'ClipboardList',
     section: 'Prompts & Contracts',
   },
+  promptsContracts: {
+    path: '/prompts-contracts',
+    label: 'Prompt & Contract Registry',
+    icon: 'FileCode2',
+    section: 'Prompts & Contracts',
+  },
 
   /* Audit & Evidence */
   audit: {
@@ -94,6 +108,14 @@ export const routes = {
     label: 'Cockpit',
     icon: 'Gauge',
     section: 'Observability',
+  },
+
+  /* Administration */
+  administration: {
+    path: '/administration',
+    label: 'Administration',
+    icon: 'Settings2',
+    section: 'Administration',
   },
 } as const satisfies Record<string, RouteEntry>;
 

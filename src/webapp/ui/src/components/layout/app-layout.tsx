@@ -32,6 +32,9 @@ import {
   Bot,
   Gauge,
   History,
+  FolderKanban,
+  FileCode2,
+  Settings2,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -47,6 +50,9 @@ const iconMap: Record<string, React.ReactNode> = {
   Bot: <Bot className="size-4" />,
   Gauge: <Gauge className="size-4" />,
   History: <History className="size-4" />,
+  FolderKanban: <FolderKanban className="size-4" />,
+  FileCode2: <FileCode2 className="size-4" />,
+  Settings2: <Settings2 className="size-4" />,
 };
 
 function toSectionId(section: DomainSection): string {

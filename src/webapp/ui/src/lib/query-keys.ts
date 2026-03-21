@@ -88,6 +88,23 @@ export const queryKeys = {
     policyEvaluation: ['governance', 'policy-evaluation'] as const,
   },
 
+  /* Workspaces (UI-014) */
+  workspaces: {
+    all: ['workspaces'] as const,
+    detail: (id: string) => ['workspaces', id] as const,
+  },
+
+  /* Prompts & Contracts (UI-015) */
+  promptsContracts: {
+    assets: ['prompts-contracts', 'assets'] as const,
+  },
+
+  /* Administration (UI-016) */
+  administration: {
+    users: ['administration', 'users'] as const,
+    integrations: ['administration', 'integrations'] as const,
+  },
+
   /* Traceability (M10) */
   traceability: {
     chains: ['traceability', 'chains'] as const,

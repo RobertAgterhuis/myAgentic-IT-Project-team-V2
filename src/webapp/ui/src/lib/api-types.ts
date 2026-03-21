@@ -1119,6 +1119,109 @@ export interface ProvenanceQueryParams {
   page_size?: number;
 }
 
+/* ──────────────────────────────────────────────
+ * Workspaces (UI-014)
+ * ────────────────────────────────────────────── */
+
+export type WorkspaceRepositoryProvider = 'github' | 'azure-devops' | 'gitlab' | 'local';
+
+export interface WorkspaceRepository {
+  id: string;
+  name: string;
+  provider: WorkspaceRepositoryProvider;
+  url: string;
+  defaultBranch: string;
+  tags?: string[];
+}
+
+export interface WorkspaceSummary {
+  id: string;
+  name: string;
+  repositories: WorkspaceRepository[];
+  owner: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkspaceProject {
+  id: string;
+  workspaceId: string;
+  name: string;
+  repositories: string[];
+  sessions: string[];
+  status: 'active' | 'archived' | 'draft';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkspacesListResponse extends OkResponse {
+  count: number;
+  workspaces: WorkspaceSummary[];
+}
+
+export interface WorkspaceDetailResponse extends OkResponse {
+  workspace: WorkspaceSummary;
+  projects: WorkspaceProject[];
+}
+
+/* ──────────────────────────────────────────────
+ * Prompts & Contracts (UI-015)
+ * ────────────────────────────────────────────── */
+
+export interface PromptContractAsset {
+  id: string;
+  type: 'questionnaire' | 'decision' | 'policy';
+  title: string;
+  scope: string;
+  governance_status: 'compliant' | 'review' | 'attention';
+  updated_at?: string;
+}
+
+export interface PromptContractAssetsResponse extends OkResponse {
+  generated_at: string;
+  assets: PromptContractAsset[];
+  summary: {
+    total_assets: number;
+    compliant_assets: number;
+    review_assets: number;
+    attention_assets: number;
+  };
+}
+
+/* ──────────────────────────────────────────────
+ * Administration / RBAC / Integrations (UI-016)
+ * ────────────────────────────────────────────── */
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  name?: string;
+  avatar_url?: string;
+  role: 'admin' | 'operator' | 'viewer';
+  created_at?: string;
+  last_login?: string;
+}
+
+export interface AdminUsersResponse {
+  users: AdminUser[];
+}
+
+export interface AdministrationIntegrationStatus {
+  id: string;
+  label: string;
+  status: 'healthy' | 'degraded' | 'offline';
+  detail: string;
+}
+
+export interface AdministrationOverviewResponse extends OkResponse {
+  integrations: AdministrationIntegrationStatus[];
+  role_counts: {
+    admin: number;
+    operator: number;
+    viewer: number;
+  };
+}
+
 export interface ProvenanceResponse extends OkResponse {
   count: number;
   total?: number;

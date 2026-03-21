@@ -3,13 +3,15 @@
  * dependency graph, root-cause analysis, and approval workflow.
  * M27 / Operational Cockpit UI
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { ConfidencePanel } from '@/components/cockpit/confidence-indicators';
@@ -72,8 +74,29 @@ export default function CockpitDashboardPage() {
     [navigate]
   );
 
+  const activeTabLabel = tabs.find((tab) => tab.id === activeTab)?.label ?? 'Health & Confidence';
+
+  const contextItems = useMemo<ContextStripItem[]>(
+    () => [
+      { id: 'active-tab', label: 'Active lens', value: activeTabLabel, tone: 'info' },
+      { id: 'sections', label: 'Sections', value: String(tabs.length) },
+    ],
+    [activeTabLabel]
+  );
+
   return (
     <div className="p-6 space-y-6" data-testid="cockpit-dashboard-page">
+      <PageHeader
+        title="Cockpit"
+        subtitle="Investigate confidence, dependencies, root-cause analysis, and approval history."
+        chips={[
+          { id: 'diagnostic-surface', label: 'Diagnostic surface', tone: 'info' },
+          { id: 'governed', label: 'Governed' },
+        ]}
+      />
+
+      <ContextStrip items={contextItems} />
+
       <MissionControlHero
         eyebrow="Operational cockpit"
         title="Investigate confidence, dependencies, and approvals from a single cockpit"

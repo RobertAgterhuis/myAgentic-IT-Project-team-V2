@@ -16,6 +16,8 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { FlowTimeline, type FlowPhase } from '@/components/runtime/flow-timeline';
 import { AgentActivity, type AgentEntry } from '@/components/runtime/agent-activity';
 import { RuntimeLog, type RuntimeLogEvent } from '@/components/runtime/runtime-log';
@@ -262,9 +264,72 @@ export default function SessionDetailPage() {
   const artifactCount = artifactEvents.length;
   const decisionCount = decisionEvents.length;
   const gateFailuresCount = mergedLogEvents.filter((e) => e.type === 'gate_failed').length;
+  const contextItems: ContextStripItem[] = [
+    {
+      id: 'flow',
+      label: 'Flow',
+      value: session.flow,
+      tone: 'info',
+    },
+    {
+      id: 'phase',
+      label: 'Phase',
+      value: session.phase,
+      tone: 'info',
+    },
+    {
+      id: 'agent',
+      label: 'Active agent',
+      value: activeAgent,
+      tone: session.current_agent ? 'success' : 'neutral',
+    },
+    {
+      id: 'evidence',
+      label: 'Evidence',
+      value: `${artifactCount} artifacts • ${decisionCount} decisions • ${gateFailuresCount} failures`,
+      tone: gateFailuresCount > 0 ? 'warning' : 'success',
+    },
+  ];
 
   return (
     <div className="p-6 space-y-6" data-testid="session-detail-page">
+      <PageHeader
+        title={session.project}
+        subtitle="Session detail shows live phase progression, agent ownership, and evidence signals in one operational view."
+        chips={[
+          {
+            id: 'status',
+            label: session.status,
+            tone:
+              config.variant === 'error'
+                ? 'critical'
+                : config.variant === 'warning'
+                  ? 'warning'
+                  : config.variant === 'success'
+                    ? 'success'
+                    : 'info',
+          },
+          { id: 'progress', label: `${Math.round(session.progress)}% progress`, tone: 'info' },
+          {
+            id: 'gate-failures',
+            label: `${gateFailuresCount} gate failures`,
+            tone: gateFailuresCount > 0 ? 'warning' : 'success',
+          },
+        ]}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            className="motion-transition-base"
+            onClick={() => navigate('/sessions')}
+          >
+            <ArrowLeft className="mr-1 size-3" /> Back to Runs
+          </Button>
+        }
+      />
+
+      <ContextStrip items={contextItems} />
+
       <MissionControlHero
         eyebrow="Session runtime"
         title={`${session.project} is running as a governed execution record`}

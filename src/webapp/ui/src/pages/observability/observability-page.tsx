@@ -3,10 +3,10 @@
  * Merges content from the former Metrics, Analytics, and Traceability pages.
  * M15 / Issue #M15-032
  */
-import { useState, lazy, Suspense } from 'react';
-import { Heading, Text } from '@/components/ui/typography';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { Spinner } from '@/components/ui/spinner';
-import { BarChart3 } from 'lucide-react';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 
 const MetricsPage = lazy(() => import('@/pages/metrics/metrics-page'));
 const AnalyticsTrendsPage = lazy(() => import('@/pages/analytics/analytics-trends-page'));
@@ -32,17 +32,29 @@ function TabSpinner() {
 
 export default function ObservabilityPage() {
   const [activeTab, setActiveTab] = useState<Tab>('drift');
+  const activeTabLabel = tabs.find((tab) => tab.id === activeTab)?.label ?? 'Unknown';
+
+  const contextItems = useMemo<ContextStripItem[]>(
+    () => [
+      { id: 'active-view', label: 'Active view', value: activeTabLabel, tone: 'info' },
+      { id: 'available-views', label: 'Views', value: String(tabs.length) },
+      { id: 'loading-mode', label: 'Load mode', value: 'Lazy modules' },
+    ],
+    [activeTabLabel]
+  );
 
   return (
     <div className="p-6 space-y-6" data-testid="observability-page">
-      {/* Header */}
-      <div>
-        <Heading level={1}>
-          <BarChart3 className="size-5 inline mr-2" />
-          Observability
-        </Heading>
-        <Text muted>Drift detection, velocity trends, agent analytics, and traceability</Text>
-      </div>
+      <PageHeader
+        title="Observability"
+        subtitle="Drift detection, velocity trends, agent analytics, and traceability"
+        chips={[
+          { id: 'unified-view', label: 'Unified runtime view', tone: 'info' },
+          { id: 'cross-signals', label: 'Cross-signal telemetry' },
+        ]}
+      />
+
+      <ContextStrip items={contextItems} />
 
       {/* Tab bar */}
       <div

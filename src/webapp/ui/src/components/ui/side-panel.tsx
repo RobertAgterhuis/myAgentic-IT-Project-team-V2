@@ -63,7 +63,7 @@ function SectionGroup({
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className="flex w-full items-center gap-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground transition-colors"
+          className="motion-transition-base flex w-full items-center gap-(--space-sm) px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground"
           aria-expanded="true"
         >
           <span
@@ -80,7 +80,7 @@ function SectionGroup({
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
-          className="flex w-full items-center gap-2 px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground transition-colors"
+          className="motion-transition-base flex w-full items-center gap-(--space-sm) px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground"
           aria-expanded="false"
         >
           <span
@@ -129,7 +129,7 @@ function SectionGroup({
                   onItemSelect?.(item.href ?? item.id);
                 }}
                 className={cn(
-                  'flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm transition-all duration-150',
+                  'motion-transition-base flex w-full items-center gap-(--space-sm) rounded-xl px-3 py-2 text-sm duration-150',
                   'hover:bg-background/80 hover:translate-x-0.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                   item.disabled
                     ? 'cursor-not-allowed text-muted-foreground/60'
@@ -138,7 +138,6 @@ function SectionGroup({
                       : 'border border-transparent text-foreground/88'
                 )}
                 aria-current={activeItemId === (item.href ?? item.id) ? 'page' : undefined}
-                aria-disabled={item.disabled || undefined}
                 disabled={item.disabled}
               >
                 {item.icon && (
@@ -176,7 +175,7 @@ function SidePanel({
     <nav
       aria-label="Side navigation"
       className={cn(
-        'flex flex-col border-r border-border/70 bg-card/82 backdrop-blur-xl transition-[width] duration-200 shadow-md supports-backdrop-filter:bg-card/76',
+        'surface-app motion-transition-base flex flex-col border-r border-border/70 shadow-md supports-backdrop-filter:bg-card/76',
         collapsed ? 'w-14' : 'w-60',
         className
       )}
@@ -192,7 +191,7 @@ function SidePanel({
         <button
           type="button"
           onClick={() => onCollapse?.(!collapsed)}
-          className="rounded-lg p-1.5 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none transition-colors"
+          className="motion-transition-base rounded-lg p-1.5 hover:bg-background/80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
         >
           <ChevronLeft className={cn('size-4 transition-transform', collapsed && 'rotate-180')} />

@@ -74,6 +74,12 @@ vi.mock('@/hooks', () => ({
 }));
 
 describe('AnalyticsTrendChartsPage', () => {
+  it('renders shared page header and context strip', () => {
+    render(<AnalyticsTrendChartsPage />);
+    expect(screen.getByRole('heading', { name: /analytics trend charts/i })).toBeInTheDocument();
+    expect(screen.getAllByText(/time range/i).length).toBeGreaterThan(0);
+  });
+
   it('renders runtime telemetry summary cards', () => {
     render(<AnalyticsTrendChartsPage />);
 

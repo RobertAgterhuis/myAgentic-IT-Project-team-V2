@@ -13,6 +13,8 @@ import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
 import { Button } from '@/components/ui/button';
 import { Heading, Text } from '@/components/ui/typography';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
@@ -236,8 +238,35 @@ export default function TraceabilityExplorerPage() {
     );
   }
 
+  const contextItems: ContextStripItem[] = [
+    { id: 'entities', label: 'Entities', value: String(entities.length) },
+    {
+      id: 'gaps',
+      label: 'Coverage gaps',
+      value: String(gaps.length),
+      tone: gaps.length > 0 ? 'critical' : 'neutral',
+    },
+    {
+      id: 'filtered',
+      label: 'Showing',
+      value: String(filtered.length),
+      tone: filtered.length < entities.length ? 'warning' : 'neutral',
+    },
+  ];
+
   return (
     <div className="p-6 space-y-6" data-testid="traceability-explorer-page">
+      <PageHeader
+        title="Traceability Explorer"
+        subtitle="Navigate requirement-to-test chains as governed delivery pathways."
+        chips={[
+          { id: 'traceability', label: 'Traceability', tone: 'info' },
+          { id: 'governed', label: 'Governed' },
+        ]}
+      />
+
+      <ContextStrip items={contextItems} />
+
       <MissionControlHero
         eyebrow="Traceability explorer"
         title="Follow requirement-to-test chains as governed delivery pathways"

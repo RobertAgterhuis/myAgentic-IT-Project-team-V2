@@ -8,6 +8,33 @@
   color-scheme: light;
   --scrollbar-thumb: color-mix(in srgb, var(--color-muted-foreground) 60%, transparent);
   --scrollbar-track: color-mix(in srgb, var(--color-background) 80%, transparent);
+  --status-online: var(--color-success);
+  --status-running: var(--color-info);
+  --status-paused: var(--color-warning);
+  --status-failed: var(--color-destructive);
+  --status-pending: color-mix(in srgb, var(--color-info) 65%, var(--color-muted) 35%);
+  --risk-low: var(--color-success);
+  --risk-medium: var(--color-warning);
+  --risk-high: color-mix(in srgb, var(--color-destructive) 82%, #6e0c0c 18%);
+  --risk-critical: color-mix(in srgb, var(--color-destructive) 78%, #000 22%);
+  --text-heading-xl: clamp(1.4rem, 0.96rem + 1.2vw, 2.05rem);
+  --text-heading-lg: clamp(1.16rem, 0.9rem + 0.68vw, 1.52rem);
+  --text-heading-md: clamp(1.02rem, 0.9rem + 0.42vw, 1.22rem);
+  --text-body-md: 0.95rem;
+  --text-body-sm: 0.86rem;
+  --text-caption-sm: 0.73rem;
+  --space-2xs: 0.125rem;
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 0.75rem;
+  --space-lg: 1rem;
+  --space-xl: 1.5rem;
+  --space-2xl: 2rem;
+  --motion-duration-fast: 120ms;
+  --motion-duration-base: 200ms;
+  --motion-duration-slow: 320ms;
+  --motion-ease-standard: cubic-bezier(0.2, 0.7, 0.24, 1);
+  --motion-ease-emphasis: cubic-bezier(0.15, 0.85, 0.25, 1);
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
   scrollbar-width: thin;
 }
@@ -42,6 +69,9 @@ html.dark {
   --color-warning-foreground: hsl(0 0% 100%);
   --color-info: hsl(210 80% 60%);
   --color-info-foreground: hsl(0 0% 100%);
+  --status-pending: color-mix(in srgb, var(--color-info) 55%, var(--color-muted) 45%);
+  --risk-high: color-mix(in srgb, var(--color-destructive) 70%, #2a0101 30%);
+  --risk-critical: color-mix(in srgb, var(--color-destructive) 60%, #000 40%);
 }
 
 *::-webkit-scrollbar {
@@ -164,6 +194,77 @@ html.dark {
 }
 
 @layer utilities {
+  .surface-app {
+    background: color-mix(in srgb, var(--color-card) 84%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
+    backdrop-filter: blur(10px);
+  }
+
+  .surface-elevated {
+    background: linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--color-card) 88%, white 12%),
+      color-mix(in srgb, var(--color-card) 80%, transparent)
+    );
+    box-shadow: var(--shadow-sm);
+  }
+
+  .surface-muted {
+    background: color-mix(in srgb, var(--color-muted) 26%, transparent);
+  }
+
+  .text-heading-xl {
+    font-size: var(--text-heading-xl);
+    line-height: 1.16;
+  }
+
+  .text-heading-lg {
+    font-size: var(--text-heading-lg);
+    line-height: 1.22;
+  }
+
+  .text-heading-md {
+    font-size: var(--text-heading-md);
+    line-height: 1.26;
+  }
+
+  .text-body-md {
+    font-size: var(--text-body-md);
+    line-height: 1.48;
+  }
+
+  .text-body-sm {
+    font-size: var(--text-body-sm);
+    line-height: 1.42;
+  }
+
+  .text-caption-sm {
+    font-size: var(--text-caption-sm);
+    line-height: 1.32;
+  }
+
+  .space-stack-sm > * + * {
+    margin-top: var(--space-sm);
+  }
+
+  .space-stack-md > * + * {
+    margin-top: var(--space-md);
+  }
+
+  .space-stack-lg > * + * {
+    margin-top: var(--space-lg);
+  }
+
+  .motion-transition-base {
+    transition-property: transform, opacity, background-color, border-color, color;
+    transition-duration: var(--motion-duration-base);
+    transition-timing-function: var(--motion-ease-standard);
+  }
+
+  .motion-fade-in {
+    animation: fade-in-up var(--motion-duration-slow) var(--motion-ease-emphasis) both;
+  }
+
   .animate-pulse-border {
     animation: pulse-border 2s ease-in-out infinite;
   }
@@ -172,7 +273,20 @@ html.dark {
   }
 }
 
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .motion-fade-in,
+  .motion-transition-base,
   .animate-pulse-border,
   .animate-flash,
   .animate-spin,

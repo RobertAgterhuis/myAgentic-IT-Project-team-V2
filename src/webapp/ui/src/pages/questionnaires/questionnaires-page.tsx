@@ -13,6 +13,8 @@ import { SidePanel, type NavSection } from '@/components/ui/side-panel';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { useQuestionnaires, useQuestionnaire, useSaveQuestionnaire } from '@/hooks';
 import type { QuestionnaireQuestion, QuestionUpdate } from '@/lib/api-types';
 import { ClipboardList, Save, Search, FileQuestion, RefreshCw } from 'lucide-react';
@@ -161,6 +163,32 @@ export default function QuestionnairesPage() {
   }, [selected]);
 
   const dirtyCount = Object.keys(drafts).length;
+  const contextItems: ContextStripItem[] = [
+    {
+      id: 'questionnaires-total',
+      label: 'Questionnaires',
+      value: String(questionnaires.length),
+      tone: questionnaires.length > 0 ? 'info' : 'neutral',
+    },
+    {
+      id: 'questionnaires-selected',
+      label: 'Selected',
+      value: selected?.agent || 'None',
+      tone: selected ? 'success' : 'neutral',
+    },
+    {
+      id: 'questionnaires-dirty',
+      label: 'Dirty drafts',
+      value: String(dirtyCount),
+      tone: dirtyCount > 0 ? 'warning' : 'success',
+    },
+    {
+      id: 'questionnaires-search',
+      label: 'Search',
+      value: searchTerm.trim() ? 'Filtered' : 'All questions',
+      tone: searchTerm.trim() ? 'info' : 'neutral',
+    },
+  ];
 
   if (isLoading) {
     return (
@@ -208,6 +236,37 @@ export default function QuestionnairesPage() {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <PageHeader
+          title="Questionnaires"
+          subtitle="Answer and track phase questionnaires with explicit required coverage and draft state."
+          chips={[
+            {
+              id: 'questionnaires-chip-selected',
+              label: selected?.phase ?? 'No selection',
+              tone: selected ? 'info' : 'default',
+            },
+            {
+              id: 'questionnaires-chip-drafts',
+              label: `${dirtyCount} drafts`,
+              tone: dirtyCount > 0 ? 'warning' : 'success',
+            },
+          ]}
+          actions={
+            selectedFile ? (
+              <Button
+                onClick={handleSave}
+                disabled={dirtyCount === 0 || save.isPending}
+                loading={save.isPending}
+              >
+                <Save className="size-4 mr-2" />
+                Save ({dirtyCount})
+              </Button>
+            ) : undefined
+          }
+        />
+
+        <ContextStrip items={contextItems} />
+
         {!selectedFile ? (
           <EmptyState
             icon={<ClipboardList className="size-12" />}
@@ -224,14 +283,6 @@ export default function QuestionnairesPage() {
                   {selected.phase} — v{selected.version}
                 </Text>
               </div>
-              <Button
-                onClick={handleSave}
-                disabled={dirtyCount === 0 || save.isPending}
-                loading={save.isPending}
-              >
-                <Save className="size-4 mr-2" />
-                Save ({dirtyCount})
-              </Button>
             </div>
 
             {/* Progress */}

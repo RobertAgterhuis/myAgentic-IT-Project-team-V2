@@ -3,9 +3,9 @@
  * Uses React Router's <Outlet> for nested page rendering.
  */
 import { Suspense } from 'react';
-import { Outlet, useLocation, useNavigate, Link } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { TopNavigation } from '@/components/ui/top-navigation';
-import { SidePanel, type NavSection } from '@/components/ui/side-panel';
+import { type NavSection } from '@/components/ui/side-panel';
 import { ErrorBoundary } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { HelpPanel } from '@/components/help-panel/help-panel';
@@ -16,7 +16,9 @@ import { useSSEEvents } from '@/hooks/use-sse-events';
 import { useRuntimeEvents } from '@/hooks/use-runtime-events';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { routes, buildBreadcrumbs, DOMAIN_ORDER, type DomainSection } from '@/lib/routes';
-import { cn } from '@/lib/utils';
+import { AppShell } from '@/components/layout/app-shell';
+import { SidebarNav } from '@/components/layout/sidebar-nav';
+import { BreadcrumbNav } from '@/components/layout/breadcrumb-nav';
 import {
   LayoutDashboard,
   Terminal,
@@ -108,32 +110,6 @@ function PageSpinner() {
   );
 }
 
-function Breadcrumbs({ pathname }: { pathname: string }) {
-  const crumbs = buildBreadcrumbs(pathname);
-  if (crumbs.length <= 1) return null;
-
-  return (
-    <nav aria-label="Breadcrumb" className="px-6 pt-4 text-sm text-muted-foreground">
-      <ol className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/70 px-3 py-1.5 shadow-sm backdrop-blur-sm">
-        {crumbs.map((c, i) => (
-          <li key={c.path + i} className="flex items-center gap-1.5">
-            {i > 0 && <span aria-hidden>/</span>}
-            {i === crumbs.length - 1 ? (
-              <span className="font-medium text-foreground" aria-current="page">
-                {c.label}
-              </span>
-            ) : (
-              <Link to={c.path} className="hover:text-foreground transition-colors">
-                {c.label}
-              </Link>
-            )}
-          </li>
-        ))}
-      </ol>
-    </nav>
-  );
-}
-
 export function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -159,43 +135,32 @@ export function AppLayout() {
   useKeyboardShortcuts();
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-transparent text-foreground">
-      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_srgb,var(--color-border)_30%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_srgb,var(--color-border)_20%,transparent)_1px,transparent_1px)] bg-size-[88px_88px] opacity-50" />
-        <div className="absolute -left-28 top-0 h-72 w-72 rounded-full bg-info/15 blur-3xl" />
-        <div className="absolute -right-24 top-20 h-80 w-80 rounded-full bg-secondary/12 blur-3xl" />
-        <div className="absolute -bottom-28 left-1/3 h-80 w-80 rounded-full bg-accent/8 blur-3xl" />
-      </div>
-
-      <TopNavigation
-        projectName="Agentic SDLC"
-        orchestratorState={orchestratorStatus?.state}
-        connectionStatus={connectionStatus}
-        onMenuToggle={toggleSidebar}
-      />
-
-      <div className="relative z-10 flex flex-1 overflow-hidden">
-        <SidePanel
+    <AppShell
+      topNavigation={
+        <TopNavigation
+          projectName="Agentic SDLC"
+          orchestratorState={orchestratorStatus?.state}
+          connectionStatus={connectionStatus}
+          onMenuToggle={toggleSidebar}
+        />
+      }
+      sidebar={
+        <SidebarNav
           sections={navSections}
           activeItemId={resolveActiveNavPath(location.pathname)}
-          collapsed={!sidebarOpen}
+          sidebarOpen={sidebarOpen}
           onCollapse={(collapsed) => useUIStore.getState().setSidebarOpen(!collapsed)}
-          onItemSelect={(itemId) => navigate(itemId)}
-          className={cn('hidden md:flex', !sidebarOpen && 'md:hidden')}
+          onSelectItem={(itemId) => navigate(itemId)}
         />
-
-        <main className="scrollbar-surface relative flex flex-1 flex-col overflow-y-auto">
-          <Breadcrumbs pathname={location.pathname} />
-
-          <ErrorBoundary>
-            <Suspense fallback={<PageSpinner />}>
-              <Outlet />
-            </Suspense>
-          </ErrorBoundary>
-        </main>
-      </div>
-
-      {helpOpen && <HelpPanel onClose={toggleHelp} />}
-    </div>
+      }
+      breadcrumbs={<BreadcrumbNav items={buildBreadcrumbs(location.pathname)} />}
+      helpPanel={helpOpen ? <HelpPanel onClose={toggleHelp} /> : null}
+    >
+      <ErrorBoundary>
+        <Suspense fallback={<PageSpinner />}>
+          <Outlet />
+        </Suspense>
+      </ErrorBoundary>
+    </AppShell>
   );
 }

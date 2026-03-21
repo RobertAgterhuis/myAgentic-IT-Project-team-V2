@@ -16,6 +16,16 @@ function renderPage() {
 }
 
 describe('MetricsPage', () => {
+  it('renders shared page header and context strip guidance', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /^metrics$/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/time range/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/total drifts/i).length).toBeGreaterThan(0);
+  });
+
   it('renders the page container', async () => {
     renderPage();
     await waitFor(() => {
@@ -26,7 +36,7 @@ describe('MetricsPage', () => {
   it('renders page heading', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /metrics.*drift/i })).toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: /^metrics$/i })).toBeInTheDocument();
     });
   });
 
@@ -41,7 +51,7 @@ describe('MetricsPage', () => {
     renderPage();
     await waitFor(() => {
       expect(screen.getByText('Total Drifts')).toBeInTheDocument();
-      expect(screen.getByText('Critical')).toBeInTheDocument();
+      expect(screen.getAllByText('Critical').length).toBeGreaterThan(0);
       expect(screen.getByText('Warnings')).toBeInTheDocument();
       expect(screen.getByText('In Sync')).toBeInTheDocument();
     });
@@ -71,7 +81,7 @@ describe('MetricsPage', () => {
   it('renders time range selector', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByRole('radiogroup', { name: /time range/i })).toBeInTheDocument();
+      expect(screen.getByRole('group', { name: /time range/i })).toBeInTheDocument();
     });
   });
 
@@ -80,12 +90,12 @@ describe('MetricsPage', () => {
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByRole('radio', { name: '7d' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: '7d' })).toBeInTheDocument();
     });
 
-    const btn30d = screen.getByRole('radio', { name: '30d' });
+    const btn30d = screen.getByRole('button', { name: '30d' });
     await user.click(btn30d);
-    expect(btn30d).toHaveAttribute('aria-checked', 'true');
+    expect(btn30d).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('shows empty state when no drifts detected', async () => {
@@ -122,8 +132,8 @@ describe('MetricsPage', () => {
   it('renders progress bars for phases', async () => {
     renderPage();
     await waitFor(() => {
-      const bars = screen.getAllByRole('progressbar');
-      expect(bars.length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText('Pipeline Progress')).toBeInTheDocument();
+      expect(screen.getAllByText(/agents/i).length).toBeGreaterThan(0);
     });
   });
 });

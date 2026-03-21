@@ -1,0 +1,36 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Foundations/Storybook Governance" />
+
+# Storybook Governance
+
+This document defines the minimum Storybook contract for UI Redesign Phase 2 work.
+
+## Required Story Coverage
+
+- Every new primitive must ship with at least one story in each of these states: default, dense/compact, and constrained-width.
+- Every component with semantic states must include stories for status and risk variants.
+- Every shell primitive must include a composition story demonstrating use with real layout neighbors.
+
+## Required Docs Content
+
+- Purpose: one sentence describing what problem the primitive solves.
+- Inputs: required props and optional props with expected value ranges.
+- Composition: where the primitive belongs in page structure.
+- Accessibility: keyboard behavior, landmarks, and contrast expectations.
+
+## Naming and Structure
+
+- Story title order follows Foundations -> Layout -> Components -> Pages.
+- Stories must prefer deterministic data and avoid runtime-only dependencies.
+- New design-system stories should live next to the component source.
+
+## Phase 2 Enforcement Checklist
+
+- Semantic token usage is visible in stories (status, risk, typography, spacing, motion).
+- Storybook a11y checks remain enabled and tracked.
+- New shell primitives are documented before route-level adoption.
+
+## Notes
+
+- This governance page is intentionally concise and operational; deeper standards can be added as the redesign progresses.

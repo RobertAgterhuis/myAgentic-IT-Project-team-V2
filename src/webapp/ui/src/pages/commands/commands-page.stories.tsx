@@ -79,6 +79,10 @@ export const WithQueue: Story = {
   },
 };
 
+export const Populated: Story = {
+  ...WithQueue,
+};
+
 export const Loading: Story = {
   parameters: {
     msw: {
@@ -91,6 +95,21 @@ export const Loading: Story = {
           await delay('infinite');
           return new HttpResponse(null);
         }),
+      ],
+    },
+  },
+};
+
+export const Error: Story = {
+  parameters: {
+    msw: {
+      handlers: [
+        http.get('/api/orchestrator/status', () =>
+          HttpResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        ),
+        http.get('/api/command', () =>
+          HttpResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        ),
       ],
     },
   },

@@ -8,7 +8,7 @@ description: Auto-generated architecture mapping from canonical runtime schema.
 # Architecture Index
 
 > Auto-generated from canonical schema. Do not edit manually.
-> Generated at: 2026-03-20T19:26:57.988Z
+> Generated at: 2026-03-21T07:35:48.114Z
 
 ## Runtime Flow
 

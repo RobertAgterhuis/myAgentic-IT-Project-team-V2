@@ -16,6 +16,13 @@ function renderPage() {
 }
 
 describe('ObservabilityPage', () => {
+  it('renders shared page header and context strip guidance', () => {
+    renderPage();
+    expect(screen.getByRole('heading', { name: /observability/i })).toBeInTheDocument();
+    expect(screen.getByText(/active view/i)).toBeInTheDocument();
+    expect(screen.getByText(/^views$/i)).toBeInTheDocument();
+  });
+
   it('renders the page heading', () => {
     renderPage();
     expect(screen.getByRole('heading', { name: /observability/i })).toBeInTheDocument();

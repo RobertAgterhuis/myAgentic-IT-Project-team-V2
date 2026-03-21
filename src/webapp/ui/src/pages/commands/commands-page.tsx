@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { InputField } from '@/components/ui/input-field';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { useOrchestratorStatus, useOrchestratorQueue, useQueueCommand } from '@/hooks';
 import type { OrchestratorCommandName } from '@/lib/api-types';
 import { cn } from '@/lib/utils';
@@ -136,6 +138,32 @@ export default function CommandsPage() {
               'Submit the brief to start a CREATE cycle, or use a quick action if AUDIT, FEATURE, or HOTFIX is a better fit.',
             badge: 'Step 3',
           };
+  const contextItems: ContextStripItem[] = [
+    {
+      id: 'runtime-state',
+      label: 'Runtime state',
+      value: status?.state ?? 'UNKNOWN',
+      tone: status?.state === 'IDLE' ? 'neutral' : 'info',
+    },
+    {
+      id: 'queue-depth',
+      label: 'Queue depth',
+      value: String(queue?.queue?.length ?? 0),
+      tone: (queue?.queue?.length ?? 0) > 0 ? 'info' : 'neutral',
+    },
+    {
+      id: 'brief-ready',
+      label: 'Brief status',
+      value: hasProjectName && hasBrief ? 'Ready to submit' : 'Needs input',
+      tone: hasProjectName && hasBrief ? 'success' : 'warning',
+    },
+    {
+      id: 'recommended-command',
+      label: 'Recommended',
+      value: recommendedAction.label,
+      tone: 'info',
+    },
+  ];
 
   function handleQuickAction(command: OrchestratorCommandName) {
     queueCommand.mutate({
@@ -159,20 +187,29 @@ export default function CommandsPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <Heading level={1}>Commands</Heading>
-          <Text muted>
-            Choose the right action, understand what happens next, and then queue it.
-          </Text>
-        </div>
-        {status && (
-          <Badge variant={status.state === 'IDLE' ? 'secondary' : 'info'}>
-            {status.state} — {status.mode}
-          </Badge>
-        )}
-      </div>
+      <PageHeader
+        title="Commands"
+        subtitle="Choose the right action, understand what happens next, and then queue it with clear operational context."
+        chips={[
+          {
+            id: 'commands-state',
+            label: status?.state ?? 'UNKNOWN',
+            tone: status?.state === 'IDLE' ? 'default' : 'info',
+          },
+          {
+            id: 'commands-mode',
+            label: status?.mode ?? 'No mode',
+            tone: 'info',
+          },
+          {
+            id: 'commands-queue',
+            label: `${queue?.queue?.length ?? 0} queued`,
+            tone: (queue?.queue?.length ?? 0) > 0 ? 'warning' : 'success',
+          },
+        ]}
+      />
+
+      <ContextStrip items={contextItems} />
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,1fr)]">
         <Card elevation="flat" className="border border-border/70 px-5 py-5">

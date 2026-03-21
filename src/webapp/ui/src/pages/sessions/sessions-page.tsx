@@ -13,6 +13,8 @@ import { ProgressBar } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { useSessions } from '@/hooks';
 import type { SessionStatus } from '@/lib/api-types';
 import {
@@ -112,6 +114,34 @@ export default function SessionsPage() {
   const attentionSessions = sessions.filter(
     (session) => session.status === 'paused' || session.status === 'failed'
   ).length;
+
+  const contextItems: ContextStripItem[] = [
+    {
+      id: 'total',
+      label: 'Total runs',
+      value: String(sessions.length),
+      tone: sessions.length > 0 ? 'info' : 'neutral',
+    },
+    {
+      id: 'active',
+      label: 'Active',
+      value: String(activeSessions),
+      tone: activeSessions > 0 ? 'success' : 'neutral',
+    },
+    {
+      id: 'attention',
+      label: 'Needs attention',
+      value: String(attentionSessions),
+      tone: attentionSessions > 0 ? 'warning' : 'success',
+    },
+    {
+      id: 'recommended',
+      label: 'Recommended',
+      value: nextStep.title,
+      tone: 'info',
+    },
+  ];
+
   const topProgress =
     sessions.length > 0
       ? `${Math.round(Math.max(...sessions.map((session) => session.progress)))}%`
@@ -119,6 +149,37 @@ export default function SessionsPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="sessions-page">
+      <PageHeader
+        title="Runs"
+        subtitle="Inspect active and historical orchestration sessions with clear runtime status and next-step guidance."
+        chips={[
+          {
+            id: 'runs-total',
+            label: `${sessions.length} total`,
+            tone: sessions.length > 0 ? 'info' : 'default',
+          },
+          { id: 'runs-active', label: `${activeSessions} active`, tone: 'success' },
+          {
+            id: 'runs-attention',
+            label: `${attentionSessions} need attention`,
+            tone: attentionSessions > 0 ? 'warning' : 'success',
+          },
+        ]}
+        actions={
+          <Button
+            variant="outline"
+            size="sm"
+            className="motion-transition-base"
+            onClick={() => navigate(nextStep.actionHref)}
+          >
+            {nextStep.actionLabel}
+            <ArrowRight className="ml-1 size-3" />
+          </Button>
+        }
+      />
+
+      <ContextStrip items={contextItems} />
+
       <MissionControlHero
         eyebrow="Execution archive"
         title="Sessions turn orchestration into reviewable evidence"

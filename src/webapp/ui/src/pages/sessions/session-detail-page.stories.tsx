@@ -71,12 +71,16 @@ const sessionData = {
   decisions: [{ id: 'dec-001', title: 'Tech stack selection', status: 'OPEN' }],
 };
 
-export const Active: Story = {
+export const Populated: Story = {
   parameters: {
     msw: {
       handlers: [http.get('/api/sessions/:id', () => HttpResponse.json(sessionData))],
     },
   },
+};
+
+export const Active: Story = {
+  ...Populated,
 };
 
 export const Completed: Story = {

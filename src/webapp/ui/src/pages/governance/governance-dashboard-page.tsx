@@ -14,6 +14,8 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { DecisionProvenanceView } from '@/components/cockpit/decision-provenance-view';
 import { cn } from '@/lib/utils';
 import { getPendingColumns, historyColumns } from './columns';
@@ -79,6 +81,38 @@ export default function GovernanceDashboardPage() {
     [approvals]
   );
 
+  const contextItems: ContextStripItem[] = [
+    {
+      id: 'governance-active-tab',
+      label: 'Active tab',
+      value:
+        activeTab === 'approvals'
+          ? 'Approvals'
+          : activeTab === 'policies'
+            ? 'Policy compliance'
+            : 'Decision provenance',
+      tone: activeTab === 'approvals' ? 'info' : activeTab === 'policies' ? 'warning' : 'neutral',
+    },
+    {
+      id: 'governance-pending',
+      label: 'Pending approvals',
+      value: String(counts.pending),
+      tone: counts.pending > 0 ? 'warning' : 'success',
+    },
+    {
+      id: 'governance-provenance-events',
+      label: 'Provenance events',
+      value: String(provenanceQuery.data?.total ?? 0),
+      tone: (provenanceQuery.data?.total ?? 0) > 0 ? 'info' : 'neutral',
+    },
+    {
+      id: 'governance-mode',
+      label: 'Mode',
+      value: counts.pending > 0 ? 'Needs review' : 'Stable',
+      tone: counts.pending > 0 ? 'warning' : 'success',
+    },
+  ];
+
   const pendingColumns = getPendingColumns({
     rejectingId,
     rejectReason,
@@ -113,6 +147,30 @@ export default function GovernanceDashboardPage() {
 
   return (
     <div className="p-6 space-y-6" data-testid="governance-dashboard-page">
+      <PageHeader
+        title="Governance"
+        subtitle="Review approvals, policy compliance, and decision provenance with explicit human oversight."
+        chips={[
+          {
+            id: 'governance-chip-pending',
+            label: `${counts.pending} pending`,
+            tone: counts.pending > 0 ? 'warning' : 'success',
+          },
+          {
+            id: 'governance-chip-approved',
+            label: `${counts.approved} approved`,
+            tone: 'info',
+          },
+          {
+            id: 'governance-chip-rejected',
+            label: `${counts.rejected} rejected`,
+            tone: counts.rejected > 0 ? 'warning' : 'default',
+          },
+        ]}
+      />
+
+      <ContextStrip items={contextItems} />
+
       <MissionControlHero
         eyebrow="Governance command layer"
         title="Keep approvals, policy, and release discipline in one governed surface"

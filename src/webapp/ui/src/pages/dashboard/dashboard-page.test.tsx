@@ -2,7 +2,7 @@
  * Dashboard page tests — Issue #244 (S9G-37)
  */
 import { describe, it, expect } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import DashboardPage from './dashboard-page';
 import { RouterTestWrapper } from '@/test/router-test-wrapper';
 
@@ -15,6 +15,16 @@ function renderPage() {
 }
 
 describe('DashboardPage', () => {
+  it('renders shared page header and context strip guidance', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /dashboard/i })).toBeInTheDocument();
+    });
+
+    expect(screen.getAllByText(/active sessions/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/attention items/i).length).toBeGreaterThan(0);
+  });
+
   it('renders the page container', async () => {
     renderPage();
     await waitFor(() => {
@@ -91,10 +101,11 @@ describe('DashboardPage', () => {
   it('renders quick link cards', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByText('Command Center')).toBeInTheDocument();
-      expect(screen.getByText('Pipeline')).toBeInTheDocument();
-      expect(screen.getByText('Questionnaires')).toBeInTheDocument();
-      expect(screen.getByText('Decisions')).toBeInTheDocument();
+      const quickLinks = screen.getByLabelText(/quick links/i);
+      expect(within(quickLinks).getByText('Commands')).toBeInTheDocument();
+      expect(within(quickLinks).getByText('Pipeline')).toBeInTheDocument();
+      expect(within(quickLinks).getByText('Questionnaires')).toBeInTheDocument();
+      expect(within(quickLinks).getByText('Decisions')).toBeInTheDocument();
     });
   });
 

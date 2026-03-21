@@ -16,6 +16,15 @@ function renderPage() {
 }
 
 describe('QuestionnairesPage', () => {
+  it('renders shared page header and context strip guidance', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByText(/dirty drafts/i)).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/selected/i)).toBeInTheDocument();
+  });
+
   it('renders the page container', async () => {
     renderPage();
     await waitFor(() => {
@@ -90,8 +99,8 @@ describe('QuestionnairesPage', () => {
     await user.click(screen.getByText('Business Analyst'));
 
     await waitFor(() => {
-      const bars = screen.getAllByRole('progressbar');
-      expect(bars.length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText(/overall progress/i)).toBeInTheDocument();
+      expect(screen.getByText(/required questions/i)).toBeInTheDocument();
     });
   });
 

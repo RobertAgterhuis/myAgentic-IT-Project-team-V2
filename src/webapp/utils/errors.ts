@@ -145,5 +145,6 @@ export function errorResponse(code: string, detail?: string) {
 }
 
 export function statusToCode(status: number): string {
-  return STATUS_TO_CODE[status] || 'INTERNAL_ERROR';
+  const mapped = STATUS_TO_CODE[status];
+  return mapped !== undefined ? mapped : 'INTERNAL_ERROR';
 }

@@ -4,7 +4,9 @@
  */
 import { useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Heading, Text } from '@/components/ui/typography';
+import { Text } from '@/components/ui/typography';
+import { PageHeader } from '@/components/layout/page-header';
+import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -71,18 +73,26 @@ export default function LineagePage() {
     );
   }
 
+  const contextItems: ContextStripItem[] = [
+    { id: 'artifacts', label: 'Artifacts', value: String(artifacts.length) },
+    {
+      id: 'selected',
+      label: 'Selected artifact',
+      value: selectedId || 'None',
+      tone: selectedId ? 'info' : 'neutral',
+    },
+    { id: 'view-mode', label: 'View mode', value: viewMode === 'graph' ? 'Graph' : 'List' },
+  ];
+
   return (
     <div className="p-6 space-y-6" data-testid="lineage-page">
-      {/* Header */}
-      <div>
-        <Heading level={1}>
-          <GitBranch className="size-5 inline mr-2" />
-          Lineage Visualization
-        </Heading>
-        <Text muted>
-          Visual directed acyclic graph of PRODUCES / CONSUMES / SUPERSEDES relationships
-        </Text>
-      </div>
+      <PageHeader
+        title="Lineage Visualization"
+        subtitle="Visual directed acyclic graph of PRODUCES / CONSUMES / SUPERSEDES relationships"
+        chips={[{ id: 'artifact-lineage', label: 'Artifact lineage', tone: 'info' }]}
+      />
+
+      <ContextStrip items={contextItems} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Artifact selector */}

@@ -39,9 +39,39 @@ const approvalsResponse = {
   count: 2,
 };
 
+const defaultProvenanceResponse = {
+  ok: true,
+  count: 0,
+  total: 0,
+  page: 1,
+  page_size: 20,
+  items: [],
+};
+
+function mockGovernanceData(overrides?: { provenance?: unknown }) {
+  server.use(
+    http.get('/api/v1/approvals', () => HttpResponse.json(approvalsResponse)),
+    http.get('/api/v1/cockpit/provenance', () =>
+      HttpResponse.json(overrides?.provenance ?? defaultProvenanceResponse)
+    )
+  );
+}
+
 describe('GovernanceDashboardPage', () => {
+  it('renders shared page header and context strip guidance', async () => {
+    mockGovernanceData();
+
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByTestId('governance-dashboard-page')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/active tab/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/provenance events/i).length).toBeGreaterThan(0);
+  });
+
   it('renders the mission-control heading', async () => {
-    server.use(http.get('/api/v1/approvals', () => HttpResponse.json(approvalsResponse)));
+    mockGovernanceData();
 
     renderPage();
     await waitFor(() => {
@@ -50,7 +80,7 @@ describe('GovernanceDashboardPage', () => {
   });
 
   it('renders the page container', async () => {
-    server.use(http.get('/api/v1/approvals', () => HttpResponse.json(approvalsResponse)));
+    mockGovernanceData();
 
     renderPage();
     await waitFor(() => {
@@ -63,7 +93,7 @@ describe('GovernanceDashboardPage', () => {
   });
 
   it('renders governance motifs and standardized signals', async () => {
-    server.use(http.get('/api/v1/approvals', () => HttpResponse.json(approvalsResponse)));
+    mockGovernanceData();
 
     renderPage();
     await waitFor(() => {
@@ -74,30 +104,27 @@ describe('GovernanceDashboardPage', () => {
   });
 
   it('renders dedicated decision provenance panel', async () => {
-    server.use(
-      http.get('/api/v1/approvals', () => HttpResponse.json(approvalsResponse)),
-      http.get('/api/v1/cockpit/provenance', () =>
-        HttpResponse.json({
-          ok: true,
-          count: 1,
-          total: 1,
-          page: 1,
-          page_size: 20,
-          items: [
-            {
-              id: 'prov-123',
-              decision_type: 'human_override',
-              actor_type: 'human',
-              actor: 'qa-user',
-              action: 'pause',
-              rationale: 'Manual review required',
-              source: 'orchestrator-control',
-              timestamp: '2026-03-20T10:00:00.000Z',
-            },
-          ],
-        })
-      )
-    );
+    mockGovernanceData({
+      provenance: {
+        ok: true,
+        count: 1,
+        total: 1,
+        page: 1,
+        page_size: 20,
+        items: [
+          {
+            id: 'prov-123',
+            decision_type: 'human_override',
+            actor_type: 'human',
+            actor: 'qa-user',
+            action: 'pause',
+            rationale: 'Manual review required',
+            source: 'orchestrator-control',
+            timestamp: '2026-03-20T10:00:00.000Z',
+          },
+        ],
+      },
+    });
 
     renderPage();
     await waitFor(() => {

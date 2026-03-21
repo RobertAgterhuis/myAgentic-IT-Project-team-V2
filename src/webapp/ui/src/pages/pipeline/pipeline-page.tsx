@@ -596,7 +596,11 @@ export default function PipelinePage() {
                       <span className="text-xs text-muted-foreground">{phase.total} total</span>
                     </div>
 
-                    <div className="flex gap-3 overflow-x-auto pb-1">
+                    <div
+                      className="flex gap-3 overflow-x-auto pb-1"
+                      tabIndex={0}
+                      aria-label={`Agent swimlane cards for ${phase.title}`}
+                    >
                       {phase.agents.map((agent) => (
                         <article
                           key={agent.id}

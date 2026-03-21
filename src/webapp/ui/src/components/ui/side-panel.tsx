@@ -9,6 +9,7 @@ export interface NavItem {
   label: string;
   href?: string;
   icon?: React.ReactNode;
+  disabled?: boolean;
 }
 
 export interface NavSection {
@@ -122,21 +123,29 @@ function SectionGroup({
             <li key={item.id}>
               <button
                 type="button"
-                onClick={() => onItemSelect?.(item.id)}
+                role="link"
+                onClick={() => {
+                  if (item.disabled) return;
+                  onItemSelect?.(item.href ?? item.id);
+                }}
                 className={cn(
                   'flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm transition-all duration-150',
                   'hover:bg-background/80 hover:translate-x-0.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-                  activeItemId === item.id
-                    ? 'border border-info/20 bg-linear-to-r from-primary/16 via-info/10 to-secondary/10 text-primary font-medium shadow-sm'
-                    : 'border border-transparent text-foreground/88'
+                  item.disabled
+                    ? 'cursor-not-allowed text-muted-foreground/60'
+                    : activeItemId === (item.href ?? item.id)
+                      ? 'border border-info/20 bg-linear-to-r from-primary/16 via-info/10 to-secondary/10 text-primary font-medium shadow-sm'
+                      : 'border border-transparent text-foreground/88'
                 )}
-                aria-current={activeItemId === item.id ? 'page' : undefined}
+                aria-current={activeItemId === (item.href ?? item.id) ? 'page' : undefined}
+                aria-disabled={item.disabled || undefined}
+                disabled={item.disabled}
               >
                 {item.icon && (
                   <span
                     className={cn(
                       'shrink-0 [&>svg]:size-4',
-                      activeItemId === item.id && 'text-primary'
+                      activeItemId === (item.href ?? item.id) && 'text-primary'
                     )}
                   >
                     {item.icon}

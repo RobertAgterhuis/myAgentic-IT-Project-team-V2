@@ -14,13 +14,13 @@ describe('routes', () => {
   });
 
   it('has new section groupings', () => {
-    expect(routes.dashboard.section).toBe('Runtime');
-    expect(routes.sessions.section).toBe('Runtime');
-    expect(routes.commands.section).toBe('Operations');
-    expect(routes.agents.section).toBe('Operations');
-    expect(routes.artifacts.section).toBe('Data');
+    expect(routes.dashboard.section).toBe('Overview');
+    expect(routes.sessions.section).toBe('Runs');
+    expect(routes.commands.section).toBe('Runs');
+    expect(routes.agents.section).toBe('Agents');
+    expect(routes.artifacts.section).toBe('Audit & Evidence');
     expect(routes.observability.section).toBe('Observability');
-    expect(routes.governance.section).toBe('Observability');
+    expect(routes.governance.section).toBe('Approvals');
   });
 });
 
@@ -34,6 +34,7 @@ describe('buildBreadcrumbs', () => {
     const crumbs = buildBreadcrumbs('/commands');
     expect(crumbs).toEqual([
       { label: 'Home', path: '/' },
+      { label: 'Runs', path: '/commands' },
       { label: 'Commands', path: '/commands' },
     ]);
   });
@@ -42,7 +43,7 @@ describe('buildBreadcrumbs', () => {
     const crumbs = buildBreadcrumbs('/sessions/sess-123');
     expect(crumbs).toEqual([
       { label: 'Home', path: '/' },
-      { label: 'Sessions', path: '/sessions' },
+      { label: 'Runs', path: '/sessions' },
       { label: 'sess-123', path: '/sessions/sess-123' },
     ]);
   });

@@ -3,50 +3,78 @@
  * Used by the router config, sidebar nav, and breadcrumbs.
  */
 
+export const DOMAIN_ORDER = [
+  'Overview',
+  'Workspaces',
+  'Runs',
+  'Approvals',
+  'Policies',
+  'Agents',
+  'Prompts & Contracts',
+  'Audit & Evidence',
+  'Observability',
+  'Administration',
+] as const;
+
+export type DomainSection = (typeof DOMAIN_ORDER)[number];
+
 export interface RouteEntry {
   path: string;
   label: string;
   icon?: string;
-  section: string;
+  section: DomainSection;
 }
 
 export const routes = {
-  /* Runtime */
-  dashboard: { path: '/', label: 'Overview', icon: 'LayoutDashboard', section: 'Runtime' },
-  sessions: { path: '/sessions', label: 'Sessions', icon: 'Activity', section: 'Runtime' },
-  pipeline: { path: '/pipeline', label: 'Pipeline', icon: 'GitBranch', section: 'Runtime' },
+  /* Overview */
+  dashboard: { path: '/', label: 'Overview', icon: 'LayoutDashboard', section: 'Overview' },
 
-  /* Operations */
-  commands: { path: '/commands', label: 'Commands', icon: 'Terminal', section: 'Operations' },
-  agents: { path: '/agents', label: 'Agents', icon: 'Bot', section: 'Operations' },
+  /* Runs */
+  sessions: { path: '/sessions', label: 'Runs', icon: 'Activity', section: 'Runs' },
+  pipeline: { path: '/pipeline', label: 'Pipeline', icon: 'GitBranch', section: 'Runs' },
+  commands: { path: '/commands', label: 'Commands', icon: 'Terminal', section: 'Runs' },
+
+  /* Approvals */
+  governance: {
+    path: '/governance',
+    label: 'Approvals',
+    icon: 'ShieldCheck',
+    section: 'Approvals',
+  },
+
+  /* Policies */
+  decisions: { path: '/decisions', label: 'Decisions', icon: 'Scale', section: 'Policies' },
+
+  /* Agents */
+  agents: { path: '/agents', label: 'Agents', icon: 'Bot', section: 'Agents' },
   executionHistory: {
     path: '/agents/executions',
     label: 'Execution History',
     icon: 'History',
-    section: 'Operations',
+    section: 'Agents',
   },
-  decisions: { path: '/decisions', label: 'Decisions', icon: 'Scale', section: 'Operations' },
 
-  /* Data */
-  artifacts: { path: '/artifacts', label: 'Artifacts', icon: 'Package', section: 'Data' },
+  /* Prompts & Contracts */
   questionnaires: {
     path: '/questionnaires',
     label: 'Questionnaires',
     icon: 'ClipboardList',
-    section: 'Data',
+    section: 'Prompts & Contracts',
+  },
+
+  /* Audit & Evidence */
+  artifacts: {
+    path: '/artifacts',
+    label: 'Artifacts',
+    icon: 'Package',
+    section: 'Audit & Evidence',
   },
 
   /* Observability */
   observability: {
     path: '/observability',
-    label: 'Metrics',
+    label: 'Observability',
     icon: 'BarChart3',
-    section: 'Observability',
-  },
-  governance: {
-    path: '/governance',
-    label: 'Governance',
-    icon: 'ShieldCheck',
     section: 'Observability',
   },
   cockpit: {
@@ -64,7 +92,9 @@ export function buildBreadcrumbs(pathname: string): { label: string; path: strin
   const match = Object.values(routes).find((r) => r.path === pathname);
   if (match && match.path !== '/') {
     crumbs.push({ label: match.section, path: match.path });
-    crumbs.push({ label: match.label, path: match.path });
+    if (match.label !== match.section) {
+      crumbs.push({ label: match.label, path: match.path });
+    }
     return crumbs;
   }
 
@@ -75,7 +105,9 @@ export function buildBreadcrumbs(pathname: string): { label: string; path: strin
     const parentMatch = Object.values(routes).find((r) => r.path === parentPath);
     if (parentMatch) {
       crumbs.push({ label: parentMatch.section, path: parentMatch.path });
-      crumbs.push({ label: parentMatch.label, path: parentPath });
+      if (parentMatch.label !== parentMatch.section) {
+        crumbs.push({ label: parentMatch.label, path: parentPath });
+      }
       if (segments.length >= 2) {
         crumbs.push({ label: segments[1], path: pathname });
       }

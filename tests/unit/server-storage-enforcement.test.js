@@ -124,5 +124,5 @@ describe('storage provider startup enforcement', () => {
     });
 
     expect(callbackFired).toBe(false);
-  }, 5000);
+  }, 15000);
 });

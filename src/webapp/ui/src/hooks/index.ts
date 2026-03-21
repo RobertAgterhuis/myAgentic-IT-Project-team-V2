@@ -126,3 +126,12 @@ export {
   useApproveWithComment,
   useRejectWithComment,
 } from './use-cockpit';
+
+/* Workspaces (UI-014) */
+export { useWorkspaces, useWorkspaceDetail } from './use-workspaces';
+
+/* Prompts & Contracts (UI-015) */
+export { usePromptContractAssets } from './use-prompt-contracts';
+
+/* Administration (UI-016) */
+export { useAdminUsers, useAdministrationOverview } from './use-administration';

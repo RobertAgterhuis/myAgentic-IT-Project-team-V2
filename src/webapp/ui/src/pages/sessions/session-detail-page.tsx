@@ -10,9 +10,8 @@ import { Heading, Text } from '@/components/ui/typography';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
-import { AlertBanner } from '@/components/ui/alert-banner';
 import { EmptyState } from '@/components/ui/empty-state';
+import { PageShell } from '@/components/ui/page-shell';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
@@ -41,7 +40,6 @@ import {
   Scale,
   Lightbulb,
   ShieldAlert,
-  RefreshCw,
 } from 'lucide-react';
 
 /* ── Status badge config ── */
@@ -219,43 +217,27 @@ export default function SessionDetailPage() {
     [phaseFilter]
   );
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-8">
-        <Spinner label="Loading session…" />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6">
-        <AlertBanner variant="error">
-          <div className="flex items-center justify-between gap-4 w-full">
-            <span>Failed to load session: {(error as Error).message}</span>
-            <Button variant="outline" size="sm" onClick={() => refetch()}>
-              <RefreshCw className="size-3 mr-1.5" /> Retry
-            </Button>
-          </div>
-        </AlertBanner>
-      </div>
-    );
-  }
-
   if (!session) {
     return (
-      <div className="p-6">
-        <EmptyState
-          icon={<Activity className="size-8" />}
-          title="Session not found"
-          description="This session may have been removed or the ID is invalid."
-        />
-        <div className="mt-4 flex justify-center">
-          <Button variant="outline" onClick={() => navigate('/sessions')}>
-            <ArrowLeft className="size-4 mr-2" /> Back to Sessions
-          </Button>
+      <PageShell
+        isLoading={isLoading}
+        loadingLabel="Loading session…"
+        error={error as Error | null}
+        onRetry={() => refetch()}
+      >
+        <div className="p-6">
+          <EmptyState
+            icon={<Activity className="size-8" />}
+            title="Session not found"
+            description="This session may have been removed or the ID is invalid."
+          />
+          <div className="mt-4 flex justify-center">
+            <Button variant="outline" onClick={() => navigate('/sessions')}>
+              <ArrowLeft className="size-4 mr-2" /> Back to Sessions
+            </Button>
+          </div>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
@@ -292,300 +274,309 @@ export default function SessionDetailPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6" data-testid="session-detail-page">
-      <PageHeader
-        title={session.project}
-        subtitle="Session detail shows live phase progression, agent ownership, and evidence signals in one operational view."
-        chips={[
-          {
-            id: 'status',
-            label: session.status,
-            tone:
-              config.variant === 'error'
-                ? 'critical'
-                : config.variant === 'warning'
-                  ? 'warning'
-                  : config.variant === 'success'
-                    ? 'success'
-                    : 'info',
-          },
-          { id: 'progress', label: `${Math.round(session.progress)}% progress`, tone: 'info' },
-          {
-            id: 'gate-failures',
-            label: `${gateFailuresCount} gate failures`,
-            tone: gateFailuresCount > 0 ? 'warning' : 'success',
-          },
-        ]}
-        actions={
-          <Button
-            variant="outline"
-            size="sm"
-            className="motion-transition-base"
-            onClick={() => navigate('/sessions')}
-          >
-            <ArrowLeft className="mr-1 size-3" /> Back to Runs
-          </Button>
-        }
-      />
-
-      <ContextStrip items={contextItems} />
-
-      <MissionControlHero
-        eyebrow="Session runtime"
-        title={`${session.project} is running as a governed execution record`}
-        description="Use this detail view to inspect the live phase, the active agent, produced evidence, and any failure or escalation that requires human intervention."
-        badges={
-          <>
-            <ControlSignalBadge signal="governed" />
-            {session.current_agent && <ControlSignalBadge signal="active-agent" />}
-            {gateFailuresCount > 0 && <ControlSignalBadge signal="needs-human-input" />}
-            <Badge variant={config.variant} className="gap-1">
-              {config.icon}
-              {session.status}
-            </Badge>
-          </>
-        }
-        metrics={[
-          { label: 'Flow', value: session.flow, detail: 'Execution mode for this session' },
-          { label: 'Current phase', value: session.phase, detail: 'Where the run is now' },
-          { label: 'Active agent', value: activeAgent, detail: 'Current responsible executor' },
-          {
-            label: 'Progress',
-            value: `${Math.round(session.progress)}%`,
-            detail: 'Observed completion',
-          },
-        ]}
-        motifs={
-          <>
-            <StatusMotif
-              kind="governance"
-              title="Runtime evidence stays attached"
-              description="Artifacts, decisions, and logs remain tied to the session instead of being scattered across views."
-            />
-            <StatusMotif
-              kind="agent"
-              title="Agent execution is inspectable"
-              description="Each agent card opens context, retries, and current work so intervention is evidence-based."
-            />
-            <StatusMotif
-              kind="human-loop"
-              title="Failure states call for a person"
-              description="Gate failures and blocked steps are surfaced as visible operational interruptions that need review."
-            />
-          </>
-        }
-        asideTitle="Session control"
-        asideDescription="Move from phase timeline to agent activity, then inspect artifacts, decisions, and the runtime log for the evidence behind the current state."
-        asideContent={
-          <div className="space-y-3">
+    <PageShell
+      isLoading={isLoading}
+      loadingLabel="Loading session…"
+      error={error as Error | null}
+      onRetry={() => refetch()}
+    >
+      <div className="p-6 space-y-6" data-testid="session-detail-page">
+        <PageHeader
+          title={session.project}
+          subtitle="Session detail shows live phase progression, agent ownership, and evidence signals in one operational view."
+          chips={[
+            {
+              id: 'status',
+              label: session.status,
+              tone:
+                config.variant === 'error'
+                  ? 'critical'
+                  : config.variant === 'warning'
+                    ? 'warning'
+                    : config.variant === 'success'
+                      ? 'success'
+                      : 'info',
+            },
+            { id: 'progress', label: `${Math.round(session.progress)}% progress`, tone: 'info' },
+            {
+              id: 'gate-failures',
+              label: `${gateFailuresCount} gate failures`,
+              tone: gateFailuresCount > 0 ? 'warning' : 'success',
+            },
+          ]}
+          actions={
             <Button
               variant="outline"
-              className="w-full justify-between"
+              size="sm"
+              className="motion-transition-base"
               onClick={() => navigate('/sessions')}
             >
-              <span className="inline-flex items-center gap-2">
-                <ArrowLeft className="size-4" />
-                Back to Sessions
-              </span>
+              <ArrowLeft className="mr-1 size-3" /> Back to Runs
             </Button>
-            <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3">
-              <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
-                Evidence counts
-              </div>
-              <Text muted className="mt-2 text-xs">
-                {artifactCount} artifact signal(s), {decisionCount} decision event(s),{' '}
-                {gateFailuresCount} gate failure event(s).
-              </Text>
-            </div>
-          </div>
-        }
-      />
-
-      {/* Flow Timeline (top) — M15-034: phase click filters log */}
-      <section aria-label="Phase timeline">
-        <FlowTimeline
-          phases={phases}
-          activePhaseId={session.phase}
-          onPhaseClick={handlePhaseClick}
+          }
         />
-        {phaseFilter && (
-          <div className="mt-2 flex items-center gap-2">
-            <Badge variant="secondary" className="text-xs">
-              Filtering: {phaseFilter}
-            </Badge>
-            <button
-              type="button"
-              onClick={() => setPhaseFilter(null)}
-              className="text-xs text-muted-foreground underline hover:text-foreground"
-            >
-              Clear filter
-            </button>
-          </div>
-        )}
-      </section>
 
-      {/* M27-002: Execution Timeline with replay */}
-      {mergedLogEvents.length > 0 && (
-        <section aria-label="Execution timeline">
-          <ExecutionTimeline
-            events={mergedLogEvents.map((e) => ({
-              id: e.id,
-              type: e.type,
-              timestamp: e.timestamp,
-              description: e.description,
-              agent: e.agent,
-              phase: e.phase,
-              artifact_id: e.artifactId,
-            }))}
-          />
-        </section>
-      )}
+        <ContextStrip items={contextItems} />
 
-      {/* Three-column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: Agent Activity (40%) — M15-035: live agent data */}
-        <section aria-label="Agent activity" className="lg:col-span-5">
-          <Card elevation="flat" className="p-4">
-            <Heading level={2} className="mb-3 text-sm">
-              Agent Activity
-            </Heading>
-            <AgentActivity
-              agents={agentEntries}
-              onAgentClick={(agentId) => {
-                const agent = agents.find((a) => a.id === agentId);
-                if (agent) {
-                  setExplainAgent(explainAgent?.id === agentId ? null : agent);
-                  setGateFailure(null);
-                }
-              }}
-            />
-          </Card>
-        </section>
-
-        {/* Middle: Artifacts + Decisions (35%) — M15-038: artifact flash */}
-        <section aria-label="Artifacts and decisions" className="lg:col-span-4 space-y-4">
-          {/* Artifacts */}
-          <Card elevation="flat" className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Package className="size-4" />
-              <span className="text-sm font-semibold">Artifacts</span>
-              <Badge variant="secondary" className="ml-auto">
-                {artifactEvents.length}
+        <MissionControlHero
+          eyebrow="Session runtime"
+          title={`${session.project} is running as a governed execution record`}
+          description="Use this detail view to inspect the live phase, the active agent, produced evidence, and any failure or escalation that requires human intervention."
+          badges={
+            <>
+              <ControlSignalBadge signal="governed" />
+              {session.current_agent && <ControlSignalBadge signal="active-agent" />}
+              {gateFailuresCount > 0 && <ControlSignalBadge signal="needs-human-input" />}
+              <Badge variant={config.variant} className="gap-1">
+                {config.icon}
+                {session.status}
               </Badge>
-            </div>
-            {artifactEvents.length === 0 ? (
-              <Text muted className="text-xs">
-                No artifacts created yet
-              </Text>
-            ) : (
-              <ul className="space-y-1.5">
-                {artifactEvents.map((e, i) => (
-                  <li
-                    key={e.id}
-                    className={`text-xs flex items-start gap-2 ${i === artifactEvents.length - 1 ? 'animate-flash' : ''}`}
-                  >
-                    <Package className="size-3 mt-0.5 shrink-0 text-muted-foreground" />
-                    <span>{e.description}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-
-          {/* Decisions */}
-          <Card elevation="flat" className="p-4">
-            <div className="flex items-center gap-2 mb-3">
-              <Scale className="size-4" />
-              <span className="text-sm font-semibold">Decisions</span>
-              <Badge variant="secondary" className="ml-auto">
-                {decisionEvents.length}
-              </Badge>
-            </div>
-            {decisionEvents.length === 0 ? (
-              <Text muted className="text-xs">
-                No decisions recorded yet
-              </Text>
-            ) : (
-              <ul className="space-y-1.5">
-                {decisionEvents.map((e) => (
-                  <li key={e.id} className="text-xs flex items-start gap-2">
-                    <Scale className="size-3 mt-0.5 shrink-0 text-muted-foreground" />
-                    <span>{e.description}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-        </section>
-
-        {/* Right: Explainability Panel (25%) — M15-037: gate failure panel */}
-        <section className="lg:col-span-3" aria-label="Detail panel">
-          {gateFailure ? (
-            <ExplainabilityPanel
-              title="Gate Failed"
-              reason={gateFailure.reason}
-              suggestedAction={gateFailure.suggestedAction}
-              details={{
-                Phase: gateFailure.phase,
-                Violations: String(gateFailure.violations),
-                ...(gateFailure.unmetCriteria && gateFailure.unmetCriteria.length > 0
-                  ? {
-                      'Unmet Exit Criteria': gateFailure.unmetCriteria.join('; '),
-                    }
-                  : {}),
-                Time: new Date(gateFailure.timestamp).toLocaleTimeString(),
-                ...(gateFailure.relatedArtifactId
-                  ? { Artifact: gateFailure.relatedArtifactId }
-                  : {}),
-              }}
-              onDismiss={() => setGateFailure(null)}
-            />
-          ) : explainAgent ? (
-            <ExplainabilityPanel
-              title={`Agent: ${explainAgent.name}`}
-              reason={explainAgent.task_description}
-              suggestedAction={explainAgent.status === 'failed' ? 'Review error logs' : undefined}
-              details={{
-                Status: explainAgent.status,
-                Phase: explainAgent.phase,
-                Retries: String(explainAgent.retry_count),
-                ...(explainAgent.duration_ms > 0
-                  ? { Duration: `${(explainAgent.duration_ms / 1000).toFixed(1)}s` }
-                  : {}),
-              }}
-              onDismiss={() => setExplainAgent(null)}
-            />
-          ) : latestGateFailure ? (
-            <Card
-              elevation="flat"
-              className="p-4 border-red-500/30 bg-red-500/5 cursor-pointer hover:shadow-md"
-              clickable
-              onClick={() => handleGateFailureShow(latestGateFailure)}
-            >
-              <div className="flex items-center gap-2 text-red-600">
-                <ShieldAlert className="size-4" />
-                <Text className="text-xs font-medium">Gate failure detected — click to review</Text>
-              </div>
-            </Card>
-          ) : (
-            <Card elevation="flat" className="p-4">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <Lightbulb className="size-4" />
-                <Text muted className="text-xs">
-                  Click an agent to view details
+            </>
+          }
+          metrics={[
+            { label: 'Flow', value: session.flow, detail: 'Execution mode for this session' },
+            { label: 'Current phase', value: session.phase, detail: 'Where the run is now' },
+            { label: 'Active agent', value: activeAgent, detail: 'Current responsible executor' },
+            {
+              label: 'Progress',
+              value: `${Math.round(session.progress)}%`,
+              detail: 'Observed completion',
+            },
+          ]}
+          motifs={
+            <>
+              <StatusMotif
+                kind="governance"
+                title="Runtime evidence stays attached"
+                description="Artifacts, decisions, and logs remain tied to the session instead of being scattered across views."
+              />
+              <StatusMotif
+                kind="agent"
+                title="Agent execution is inspectable"
+                description="Each agent card opens context, retries, and current work so intervention is evidence-based."
+              />
+              <StatusMotif
+                kind="human-loop"
+                title="Failure states call for a person"
+                description="Gate failures and blocked steps are surfaced as visible operational interruptions that need review."
+              />
+            </>
+          }
+          asideTitle="Session control"
+          asideDescription="Move from phase timeline to agent activity, then inspect artifacts, decisions, and the runtime log for the evidence behind the current state."
+          asideContent={
+            <div className="space-y-3">
+              <Button
+                variant="outline"
+                className="w-full justify-between"
+                onClick={() => navigate('/sessions')}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <ArrowLeft className="size-4" />
+                  Back to Sessions
+                </span>
+              </Button>
+              <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+                  Evidence counts
+                </div>
+                <Text muted className="mt-2 text-xs">
+                  {artifactCount} artifact signal(s), {decisionCount} decision event(s),{' '}
+                  {gateFailuresCount} gate failure event(s).
                 </Text>
               </div>
-            </Card>
+            </div>
+          }
+        />
+
+        {/* Flow Timeline (top) — M15-034: phase click filters log */}
+        <section aria-label="Phase timeline">
+          <FlowTimeline
+            phases={phases}
+            activePhaseId={session.phase}
+            onPhaseClick={handlePhaseClick}
+          />
+          {phaseFilter && (
+            <div className="mt-2 flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">
+                Filtering: {phaseFilter}
+              </Badge>
+              <button
+                type="button"
+                onClick={() => setPhaseFilter(null)}
+                className="text-xs text-muted-foreground underline hover:text-foreground"
+              >
+                Clear filter
+              </button>
+            </div>
           )}
         </section>
-      </div>
 
-      {/* Bottom: Runtime Log — M15-036: merged query + SSE events */}
-      <section aria-label="Runtime log">
-        <Card elevation="flat" className="p-4">
-          <RuntimeLog events={filteredLogEvents} maxVisible={50} />
-        </Card>
-      </section>
-    </div>
+        {/* M27-002: Execution Timeline with replay */}
+        {mergedLogEvents.length > 0 && (
+          <section aria-label="Execution timeline">
+            <ExecutionTimeline
+              events={mergedLogEvents.map((e) => ({
+                id: e.id,
+                type: e.type,
+                timestamp: e.timestamp,
+                description: e.description,
+                agent: e.agent,
+                phase: e.phase,
+                artifact_id: e.artifactId,
+              }))}
+            />
+          </section>
+        )}
+
+        {/* Three-column layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Left: Agent Activity (40%) — M15-035: live agent data */}
+          <section aria-label="Agent activity" className="lg:col-span-5">
+            <Card elevation="flat" className="p-4">
+              <Heading level={2} className="mb-3 text-sm">
+                Agent Activity
+              </Heading>
+              <AgentActivity
+                agents={agentEntries}
+                onAgentClick={(agentId) => {
+                  const agent = agents.find((a) => a.id === agentId);
+                  if (agent) {
+                    setExplainAgent(explainAgent?.id === agentId ? null : agent);
+                    setGateFailure(null);
+                  }
+                }}
+              />
+            </Card>
+          </section>
+
+          {/* Middle: Artifacts + Decisions (35%) — M15-038: artifact flash */}
+          <section aria-label="Artifacts and decisions" className="lg:col-span-4 space-y-4">
+            {/* Artifacts */}
+            <Card elevation="flat" className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Package className="size-4" />
+                <span className="text-sm font-semibold">Artifacts</span>
+                <Badge variant="secondary" className="ml-auto">
+                  {artifactEvents.length}
+                </Badge>
+              </div>
+              {artifactEvents.length === 0 ? (
+                <Text muted className="text-xs">
+                  No artifacts created yet
+                </Text>
+              ) : (
+                <ul className="space-y-1.5">
+                  {artifactEvents.map((e, i) => (
+                    <li
+                      key={e.id}
+                      className={`text-xs flex items-start gap-2 ${i === artifactEvents.length - 1 ? 'animate-flash' : ''}`}
+                    >
+                      <Package className="size-3 mt-0.5 shrink-0 text-muted-foreground" />
+                      <span>{e.description}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+
+            {/* Decisions */}
+            <Card elevation="flat" className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Scale className="size-4" />
+                <span className="text-sm font-semibold">Decisions</span>
+                <Badge variant="secondary" className="ml-auto">
+                  {decisionEvents.length}
+                </Badge>
+              </div>
+              {decisionEvents.length === 0 ? (
+                <Text muted className="text-xs">
+                  No decisions recorded yet
+                </Text>
+              ) : (
+                <ul className="space-y-1.5">
+                  {decisionEvents.map((e) => (
+                    <li key={e.id} className="text-xs flex items-start gap-2">
+                      <Scale className="size-3 mt-0.5 shrink-0 text-muted-foreground" />
+                      <span>{e.description}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+          </section>
+
+          {/* Right: Explainability Panel (25%) — M15-037: gate failure panel */}
+          <section className="lg:col-span-3" aria-label="Detail panel">
+            {gateFailure ? (
+              <ExplainabilityPanel
+                title="Gate Failed"
+                reason={gateFailure.reason}
+                suggestedAction={gateFailure.suggestedAction}
+                details={{
+                  Phase: gateFailure.phase,
+                  Violations: String(gateFailure.violations),
+                  ...(gateFailure.unmetCriteria && gateFailure.unmetCriteria.length > 0
+                    ? {
+                        'Unmet Exit Criteria': gateFailure.unmetCriteria.join('; '),
+                      }
+                    : {}),
+                  Time: new Date(gateFailure.timestamp).toLocaleTimeString(),
+                  ...(gateFailure.relatedArtifactId
+                    ? { Artifact: gateFailure.relatedArtifactId }
+                    : {}),
+                }}
+                onDismiss={() => setGateFailure(null)}
+              />
+            ) : explainAgent ? (
+              <ExplainabilityPanel
+                title={`Agent: ${explainAgent.name}`}
+                reason={explainAgent.task_description}
+                suggestedAction={explainAgent.status === 'failed' ? 'Review error logs' : undefined}
+                details={{
+                  Status: explainAgent.status,
+                  Phase: explainAgent.phase,
+                  Retries: String(explainAgent.retry_count),
+                  ...(explainAgent.duration_ms > 0
+                    ? { Duration: `${(explainAgent.duration_ms / 1000).toFixed(1)}s` }
+                    : {}),
+                }}
+                onDismiss={() => setExplainAgent(null)}
+              />
+            ) : latestGateFailure ? (
+              <Card
+                elevation="flat"
+                className="p-4 border-red-500/30 bg-red-500/5 cursor-pointer hover:shadow-md"
+                clickable
+                onClick={() => handleGateFailureShow(latestGateFailure)}
+              >
+                <div className="flex items-center gap-2 text-red-600">
+                  <ShieldAlert className="size-4" />
+                  <Text className="text-xs font-medium">
+                    Gate failure detected — click to review
+                  </Text>
+                </div>
+              </Card>
+            ) : (
+              <Card elevation="flat" className="p-4">
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <Lightbulb className="size-4" />
+                  <Text muted className="text-xs">
+                    Click an agent to view details
+                  </Text>
+                </div>
+              </Card>
+            )}
+          </section>
+        </div>
+
+        {/* Bottom: Runtime Log — M15-036: merged query + SSE events */}
+        <section aria-label="Runtime log">
+          <Card elevation="flat" className="p-4">
+            <RuntimeLog events={filteredLogEvents} maxVisible={50} />
+          </Card>
+        </section>
+      </div>
+    </PageShell>
   );
 }

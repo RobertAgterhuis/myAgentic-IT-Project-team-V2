@@ -27,6 +27,15 @@ interface PageShellProps {
     description?: string;
     action?: { label: string; onClick: () => void };
   };
+  /** Whether access to this view is restricted. */
+  isNoAccess?: boolean;
+  /** No-access state configuration. */
+  noAccessState?: {
+    icon?: React.ReactNode;
+    title: string;
+    description?: string;
+    action?: { label: string; onClick: () => void };
+  };
   children: React.ReactNode;
 }
 
@@ -37,6 +46,8 @@ export function PageShell({
   onRetry,
   isEmpty,
   emptyState,
+  isNoAccess,
+  noAccessState,
   children,
 }: PageShellProps) {
   if (isLoading) {
@@ -78,6 +89,19 @@ export function PageShell({
           title={emptyState.title}
           description={emptyState.description}
           action={emptyState.action}
+        />
+      </div>
+    );
+  }
+
+  if (isNoAccess && noAccessState) {
+    return (
+      <div className="motion-fade-in p-(--space-xl)">
+        <EmptyState
+          icon={noAccessState.icon}
+          title={noAccessState.title}
+          description={noAccessState.description}
+          action={noAccessState.action}
         />
       </div>
     );

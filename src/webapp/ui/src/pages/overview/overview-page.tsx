@@ -9,9 +9,8 @@ import { Heading, Text } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { EmptyState } from '@/components/ui/empty-state';
-import { AlertBanner } from '@/components/ui/alert-banner';
+import { PageShell } from '@/components/ui/page-shell';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
@@ -29,7 +28,7 @@ import { ContextStrip, type ContextStripItem } from '@/components/layout/context
 import { useSessions, useSession, useDecisions, useDashboardHealth } from '@/hooks';
 import { useUIStore } from '@/stores/ui-store';
 import type { Session, HealthIndicator, TimelineEvent, AgentDetailEntry } from '@/lib/api-types';
-import { Package, Scale, ArrowRight, Rocket, RefreshCw, Activity, ShieldCheck } from 'lucide-react';
+import { Package, Scale, ArrowRight, Rocket, Activity, ShieldCheck } from 'lucide-react';
 
 /* ── Phase derivation (shared logic with session-detail) ── */
 const PHASE_ORDER = ['PHASE-1', 'PHASE-2', 'PHASE-3', 'PHASE-4', 'PHASE-5'];
@@ -192,330 +191,309 @@ export default function OverviewPage() {
     [activeSession, healthAttentionCount]
   );
 
-  if (sessionsLoading || healthLoading) {
-    return (
-      <div className="flex flex-1 items-center justify-center p-8">
-        <Spinner label="Loading overview…" />
-      </div>
-    );
-  }
-
-  if (sessionsError || healthError) {
-    const err = sessionsError || healthError;
-    return (
-      <div className="p-6">
-        <AlertBanner variant="error">
-          <div className="flex items-center justify-between gap-4 w-full">
-            <span>Failed to load overview: {(err as Error).message}</span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                refetchSessions();
-                refetchHealth();
-              }}
-            >
-              <RefreshCw className="size-3 mr-1.5" /> Retry
-            </Button>
-          </div>
-        </AlertBanner>
-      </div>
-    );
-  }
-
   return (
-    <div className="p-6 space-y-6" data-testid="overview-page">
-      <PageHeader
-        title="Overview"
-        subtitle="Track runtime flow, governance checkpoints, and health signals from one operational control surface."
-        chips={[...headerChips]}
-        actions={
-          activeSession ? (
-            <Button
-              variant="outline"
-              size="sm"
-              className="motion-transition-base"
-              onClick={() => navigate(`/sessions/${encodeURIComponent(activeSession.id)}`)}
-            >
-              Open Session <ArrowRight className="ml-1 size-3" />
-            </Button>
-          ) : (
-            <Button
-              size="sm"
-              className="motion-transition-base"
-              onClick={() => navigate('/commands')}
-            >
-              Start Command <Rocket className="ml-1 size-3" />
-            </Button>
-          )
-        }
-      />
-
-      <ContextStrip items={contextItems} />
-
-      <MissionControlHero
-        eyebrow="Executive overview"
-        title="See governed delivery, live agent motion, and human checkpoints in one view"
-        description="Overview acts as the operator summary for the whole product: what is active now, what needs judgment next, and what evidence is accumulating behind each cycle."
-        badges={
-          <>
-            <ControlSignalBadge signal="governed" />
-            {activeSession?.current_agent && <ControlSignalBadge signal="active-agent" />}
-            {openDecisions.length > 0 && <ControlSignalBadge signal="needs-human-input" />}
-          </>
-        }
-        metrics={[
-          {
-            label: 'Active session',
-            value: activeSession?.project ?? 'None',
-            detail: 'Current primary workstream',
-          },
-          {
-            label: 'Current phase',
-            value: activeSession?.phase ?? 'Idle',
-            detail: 'Latest visible runtime phase',
-          },
-          {
-            label: 'Open decisions',
-            value: String(openDecisions.length),
-            detail: 'Human choices still pending',
-          },
-          {
-            label: 'Health signals',
-            value: String(healthAttentionCount),
-            detail: 'Non-green health indicators',
-          },
-        ]}
-        motifs={
-          <>
-            <StatusMotif
-              kind="governance"
-              title="Governance remains in the foreground"
-              description="Decision count, health signals, and next steps are visible before users dive into lower-level detail."
-            />
-            <StatusMotif
-              kind="agent"
-              title="Agent activity stays legible"
-              description="The active session, phase flow, and current executor are readable as one operational story."
-            />
-            <StatusMotif
-              kind="human-loop"
-              title="Human checkpoints are prioritized"
-              description="Open decisions and guidance keep the operator focused on interventions that unlock progress."
-            />
-          </>
-        }
-        asideTitle="Operator focus"
-        asideDescription="Start here when you need the fastest possible understanding of current delivery state and the next action that needs a human response."
-        asideContent={
-          <div className="space-y-3">
-            <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Activity className="size-4 text-info" /> What this page answers
-              </div>
-              <Text muted className="mt-1 text-xs">
-                What is running, what is blocked, and what you should review next.
-              </Text>
-            </div>
-            <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <ShieldCheck className="size-4 text-info" /> Why it matters
-              </div>
-              <Text muted className="mt-1 text-xs">
-                It keeps strategic oversight and runtime evidence together instead of splitting them
-                across disconnected screens.
-              </Text>
-            </div>
-          </div>
-        }
-      />
-
-      {/* Welcome Wizard — first-time users (M15-040) */}
-      {!wizardDismissed && <WelcomeWizard onDismiss={dismissWizard} />}
-
-      {shouldShowDiagnostics && (
-        <OnboardingDiagnosticsWizard
-          sessionId={activeSession?.id ?? null}
-          onDismiss={dismissDiagnostics}
+    <PageShell
+      isLoading={sessionsLoading || healthLoading}
+      loadingLabel="Loading overview…"
+      error={(sessionsError || healthError) as Error | null}
+      onRetry={() => {
+        refetchSessions();
+        refetchHealth();
+      }}
+    >
+      <div className="p-6 space-y-6" data-testid="overview-page">
+        <PageHeader
+          title="Overview"
+          subtitle="Track runtime flow, governance checkpoints, and health signals from one operational control surface."
+          chips={[...headerChips]}
+          actions={
+            activeSession ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="motion-transition-base"
+                onClick={() => navigate(`/sessions/${encodeURIComponent(activeSession.id)}`)}
+              >
+                Open Session <ArrowRight className="ml-1 size-3" />
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                className="motion-transition-base"
+                onClick={() => navigate('/commands')}
+              >
+                Start Command <Rocket className="ml-1 size-3" />
+              </Button>
+            )
+          }
         />
-      )}
 
-      {/* What's Next — contextual guidance (M21-002) */}
-      <WhatsNextGuidance />
+        <ContextStrip items={contextItems} />
 
-      {/* Active Session Hero */}
-      <section aria-label="Active session">
-        <SessionStatus
-          session={sessionSummary}
-          progress={activeSession?.progress ?? 0}
-          activePhase={activeSession?.phase}
-          activeAgent={activeSession?.current_agent ?? undefined}
-          connectionStatus={connectionStatus}
+        <MissionControlHero
+          eyebrow="Executive overview"
+          title="See governed delivery, live agent motion, and human checkpoints in one view"
+          description="Overview acts as the operator summary for the whole product: what is active now, what needs judgment next, and what evidence is accumulating behind each cycle."
+          badges={
+            <>
+              <ControlSignalBadge signal="governed" />
+              {activeSession?.current_agent && <ControlSignalBadge signal="active-agent" />}
+              {openDecisions.length > 0 && <ControlSignalBadge signal="needs-human-input" />}
+            </>
+          }
+          metrics={[
+            {
+              label: 'Active session',
+              value: activeSession?.project ?? 'None',
+              detail: 'Current primary workstream',
+            },
+            {
+              label: 'Current phase',
+              value: activeSession?.phase ?? 'Idle',
+              detail: 'Latest visible runtime phase',
+            },
+            {
+              label: 'Open decisions',
+              value: String(openDecisions.length),
+              detail: 'Human choices still pending',
+            },
+            {
+              label: 'Health signals',
+              value: String(healthAttentionCount),
+              detail: 'Non-green health indicators',
+            },
+          ]}
+          motifs={
+            <>
+              <StatusMotif
+                kind="governance"
+                title="Governance remains in the foreground"
+                description="Decision count, health signals, and next steps are visible before users dive into lower-level detail."
+              />
+              <StatusMotif
+                kind="agent"
+                title="Agent activity stays legible"
+                description="The active session, phase flow, and current executor are readable as one operational story."
+              />
+              <StatusMotif
+                kind="human-loop"
+                title="Human checkpoints are prioritized"
+                description="Open decisions and guidance keep the operator focused on interventions that unlock progress."
+              />
+            </>
+          }
+          asideTitle="Operator focus"
+          asideDescription="Start here when you need the fastest possible understanding of current delivery state and the next action that needs a human response."
+          asideContent={
+            <div className="space-y-3">
+              <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Activity className="size-4 text-info" /> What this page answers
+                </div>
+                <Text muted className="mt-1 text-xs">
+                  What is running, what is blocked, and what you should review next.
+                </Text>
+              </div>
+              <div className="rounded-2xl border border-border/60 bg-background/70 px-4 py-3">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <ShieldCheck className="size-4 text-info" /> Why it matters
+                </div>
+                <Text muted className="mt-1 text-xs">
+                  It keeps strategic oversight and runtime evidence together instead of splitting
+                  them across disconnected screens.
+                </Text>
+              </div>
+            </div>
+          }
         />
-      </section>
 
-      {/* Mini FlowTimeline */}
-      {phases.length > 0 && (
-        <section aria-label="Phase timeline">
-          <FlowTimeline
-            phases={phases}
-            activePhaseId={activeSession?.phase}
-            onPhaseClick={(phaseId) => {
-              if (activeSession) {
-                navigate(`/sessions/${encodeURIComponent(activeSession.id)}`);
-              }
-              // phaseId consumed by navigation
-              void phaseId;
-            }}
+        {/* Welcome Wizard — first-time users (M15-040) */}
+        {!wizardDismissed && <WelcomeWizard onDismiss={dismissWizard} />}
+
+        {shouldShowDiagnostics && (
+          <OnboardingDiagnosticsWizard
+            sessionId={activeSession?.id ?? null}
+            onDismiss={dismissDiagnostics}
+          />
+        )}
+
+        {/* What's Next — contextual guidance (M21-002) */}
+        <WhatsNextGuidance />
+
+        {/* Active Session Hero */}
+        <section aria-label="Active session">
+          <SessionStatus
+            session={sessionSummary}
+            progress={activeSession?.progress ?? 0}
+            activePhase={activeSession?.phase}
+            activeAgent={activeSession?.current_agent ?? undefined}
+            connectionStatus={connectionStatus}
           />
         </section>
-      )}
 
-      {/* Agent Activity Strip */}
-      {agentEntries.length > 0 && (
-        <section aria-label="Agent activity">
-          <Card elevation="flat" className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <Heading level={2} className="text-sm">
-                Agent Activity
-              </Heading>
-              <Button variant="ghost" size="xs" onClick={() => navigate('/agents')}>
-                View all <ArrowRight className="size-3 ml-1" />
-              </Button>
-            </div>
-            <AgentActivity
-              agents={agentEntries}
-              onAgentClick={() => {
+        {/* Mini FlowTimeline */}
+        {phases.length > 0 && (
+          <section aria-label="Phase timeline">
+            <FlowTimeline
+              phases={phases}
+              activePhaseId={activeSession?.phase}
+              onPhaseClick={(phaseId) => {
                 if (activeSession) {
                   navigate(`/sessions/${encodeURIComponent(activeSession.id)}`);
                 }
+                // phaseId consumed by navigation
+                void phaseId;
               }}
             />
-          </Card>
-        </section>
-      )}
+          </section>
+        )}
 
-      {/* Two-column: Open Decisions + Latest Artifacts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Open Decisions */}
-        <section aria-label="Open decisions">
-          <Card elevation="flat" className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Scale className="size-4" />
-                <span className="text-sm font-semibold">Open Decisions</span>
+        {/* Agent Activity Strip */}
+        {agentEntries.length > 0 && (
+          <section aria-label="Agent activity">
+            <Card elevation="flat" className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <Heading level={2} className="text-sm">
+                  Agent Activity
+                </Heading>
+                <Button variant="ghost" size="xs" onClick={() => navigate('/agents')}>
+                  View all <ArrowRight className="size-3 ml-1" />
+                </Button>
               </div>
-              <div className="flex items-center gap-2">
-                {openDecisions.length > 0 && (
-                  <ControlSignalBadge
-                    signal="needs-human-input"
-                    className="hidden sm:inline-flex"
-                  />
-                )}
-                <Badge variant="secondary">{openDecisions.length}</Badge>
-              </div>
-            </div>
-            {openDecisions.length === 0 ? (
-              <Text muted className="text-xs">
-                No open decisions
-              </Text>
-            ) : (
-              <ul className="space-y-2">
-                {openDecisions.slice(0, 5).map((d) => (
-                  <li key={d.id} className="text-xs flex items-start gap-2">
-                    <Badge
-                      variant={
-                        d.priority === 'HIGH'
-                          ? 'error'
-                          : d.priority === 'MEDIUM'
-                            ? 'warning'
-                            : 'secondary'
-                      }
-                      className="shrink-0 text-[10px]"
-                    >
-                      {d.priority}
-                    </Badge>
-                    <span className="min-w-0 truncate">{d.question}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {openDecisions.length > 0 && (
-              <Button
-                variant="ghost"
-                size="xs"
-                className="mt-3"
-                onClick={() => navigate('/decisions')}
-              >
-                View all decisions <ArrowRight className="size-3 ml-1" />
-              </Button>
-            )}
-          </Card>
-        </section>
+              <AgentActivity
+                agents={agentEntries}
+                onAgentClick={() => {
+                  if (activeSession) {
+                    navigate(`/sessions/${encodeURIComponent(activeSession.id)}`);
+                  }
+                }}
+              />
+            </Card>
+          </section>
+        )}
 
-        {/* Latest Artifacts */}
-        <section aria-label="Latest artifacts">
-          <Card elevation="flat" className="p-4">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Package className="size-4" />
-                <span className="text-sm font-semibold">Latest Artifacts</span>
+        {/* Two-column: Open Decisions + Latest Artifacts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Open Decisions */}
+          <section aria-label="Open decisions">
+            <Card elevation="flat" className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Scale className="size-4" />
+                  <span className="text-sm font-semibold">Open Decisions</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  {openDecisions.length > 0 && (
+                    <ControlSignalBadge
+                      signal="needs-human-input"
+                      className="hidden sm:inline-flex"
+                    />
+                  )}
+                  <Badge variant="secondary">{openDecisions.length}</Badge>
+                </div>
               </div>
-              <Badge variant="secondary">{artifactEvents.length}</Badge>
+              {openDecisions.length === 0 ? (
+                <Text muted className="text-xs">
+                  No open decisions
+                </Text>
+              ) : (
+                <ul className="space-y-2">
+                  {openDecisions.slice(0, 5).map((d) => (
+                    <li key={d.id} className="text-xs flex items-start gap-2">
+                      <Badge
+                        variant={
+                          d.priority === 'HIGH'
+                            ? 'error'
+                            : d.priority === 'MEDIUM'
+                              ? 'warning'
+                              : 'secondary'
+                        }
+                        className="shrink-0 text-[10px]"
+                      >
+                        {d.priority}
+                      </Badge>
+                      <span className="min-w-0 truncate">{d.question}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {openDecisions.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  className="mt-3"
+                  onClick={() => navigate('/decisions')}
+                >
+                  View all decisions <ArrowRight className="size-3 ml-1" />
+                </Button>
+              )}
+            </Card>
+          </section>
+
+          {/* Latest Artifacts */}
+          <section aria-label="Latest artifacts">
+            <Card elevation="flat" className="p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Package className="size-4" />
+                  <span className="text-sm font-semibold">Latest Artifacts</span>
+                </div>
+                <Badge variant="secondary">{artifactEvents.length}</Badge>
+              </div>
+              {artifactEvents.length === 0 ? (
+                <Text muted className="text-xs">
+                  No artifacts created yet
+                </Text>
+              ) : (
+                <ul className="space-y-1.5">
+                  {artifactEvents.slice(-5).map((e) => (
+                    <li key={e.id} className="text-xs flex items-start gap-2">
+                      <Package className="size-3 mt-0.5 shrink-0 text-muted-foreground" />
+                      <span>{e.description}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {artifactEvents.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="xs"
+                  className="mt-3"
+                  onClick={() => navigate('/artifacts')}
+                >
+                  Browse artifacts <ArrowRight className="size-3 ml-1" />
+                </Button>
+              )}
+            </Card>
+          </section>
+        </div>
+
+        {/* System Health Compact Strip */}
+        {health && (
+          <section aria-label="System health">
+            <Heading level={2} className="mb-3 text-sm">
+              System Health
+            </Heading>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {(Object.entries(health) as [string, HealthIndicator][]).map(([name, indicator]) => (
+                <HealthCard key={name} name={name} indicator={indicator} />
+              ))}
             </div>
-            {artifactEvents.length === 0 ? (
-              <Text muted className="text-xs">
-                No artifacts created yet
-              </Text>
-            ) : (
-              <ul className="space-y-1.5">
-                {artifactEvents.slice(-5).map((e) => (
-                  <li key={e.id} className="text-xs flex items-start gap-2">
-                    <Package className="size-3 mt-0.5 shrink-0 text-muted-foreground" />
-                    <span>{e.description}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-            {artifactEvents.length > 0 && (
-              <Button
-                variant="ghost"
-                size="xs"
-                className="mt-3"
-                onClick={() => navigate('/artifacts')}
-              >
-                Browse artifacts <ArrowRight className="size-3 ml-1" />
-              </Button>
-            )}
-          </Card>
-        </section>
+          </section>
+        )}
+
+        {/* Idle CTA */}
+        {!activeSession && (
+          <section aria-label="Call to action">
+            <EmptyState
+              icon={<Rocket className="size-10" />}
+              title="No active session"
+              description="Start a CREATE or AUDIT command to begin."
+              action={{ label: 'Go to Commands', onClick: () => navigate('/commands') }}
+            />
+          </section>
+        )}
       </div>
-
-      {/* System Health Compact Strip */}
-      {health && (
-        <section aria-label="System health">
-          <Heading level={2} className="mb-3 text-sm">
-            System Health
-          </Heading>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {(Object.entries(health) as [string, HealthIndicator][]).map(([name, indicator]) => (
-              <HealthCard key={name} name={name} indicator={indicator} />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Idle CTA */}
-      {!activeSession && (
-        <section aria-label="Call to action">
-          <EmptyState
-            icon={<Rocket className="size-10" />}
-            title="No active session"
-            description="Start a CREATE or AUDIT command to begin."
-            action={{ label: 'Go to Commands', onClick: () => navigate('/commands') }}
-          />
-        </section>
-      )}
-    </div>
+    </PageShell>
   );
 }

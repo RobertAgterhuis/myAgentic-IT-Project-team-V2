@@ -92,6 +92,12 @@ export {
 /* Traceability (M10) */
 export { useTraceability } from './use-traceability';
 
+/* Audit/Evidence aggregation (UI-025) */
+export { useAuditEvidenceAggregation } from './use-audit-evidence';
+
+/* Observability contracts (UI-026) */
+export { useObservabilityContracts } from './use-observability-contracts';
+
 /* Sessions (M15) */
 export { useSessions, useSession, useSessionTimeline } from './use-sessions';
 

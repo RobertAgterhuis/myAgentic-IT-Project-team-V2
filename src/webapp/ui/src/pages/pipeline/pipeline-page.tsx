@@ -599,7 +599,7 @@ export default function PipelinePage() {
                     <div
                       className="flex gap-3 overflow-x-auto pb-1"
                       tabIndex={0}
-                      aria-label={`Agent swimlane cards for ${phase.title}`}
+                      aria-label={`Agent swimlane cards for ${phase.label}`}
                     >
                       {phase.agents.map((agent) => (
                         <article

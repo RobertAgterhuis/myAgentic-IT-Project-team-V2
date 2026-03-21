@@ -49,12 +49,6 @@ export const routes = {
     icon: 'ShieldCheck',
     section: 'Approvals',
   },
-  governance: {
-    path: '/governance',
-    label: 'Governance',
-    icon: 'ShieldCheck',
-    section: 'Approvals',
-  },
 
   /* Policies */
   decisions: { path: '/decisions', label: 'Decisions', icon: 'Scale', section: 'Policies' },
@@ -83,12 +77,6 @@ export const routes = {
   },
 
   /* Audit & Evidence */
-  audit: {
-    path: '/audit',
-    label: 'Audit & Evidence',
-    icon: 'Package',
-    section: 'Audit & Evidence',
-  },
   artifacts: {
     path: '/artifacts',
     label: 'Artifacts',

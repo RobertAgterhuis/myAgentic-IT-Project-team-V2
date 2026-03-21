@@ -250,6 +250,7 @@ export default function TraceabilityExplorerPage() {
         <ContextStrip items={contextItems} />
 
         <MissionControlHero
+          heroId="traceability"
           eyebrow="Traceability explorer"
           title="Follow requirement-to-test chains as governed delivery pathways"
           description="Traceability shows whether intent, design, implementation, and tests remain connected. Gaps here are delivery risks, not just missing rows."

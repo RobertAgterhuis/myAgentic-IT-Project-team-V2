@@ -26,7 +26,7 @@ const SHORTCUTS: Shortcut[] = [
   { keys: ['G', 'S'], description: 'Go to Sessions' },
   { keys: ['G', 'A'], description: 'Go to Agents' },
   { keys: ['G', 'O'], description: 'Go to Observability' },
-  { keys: ['G', 'V'], description: 'Go to Governance' },
+  { keys: ['G', 'V'], description: 'Go to Approvals' },
   { keys: ['['], description: 'Toggle sidebar' },
   // Pipeline-specific
   { keys: ['Enter'], description: 'Expand selected phase', routes: ['/pipeline'] },

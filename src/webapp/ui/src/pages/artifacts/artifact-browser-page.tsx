@@ -183,6 +183,7 @@ export default function ArtifactBrowserPage() {
         <ContextStrip items={contextItems} />
 
         <MissionControlHero
+          heroId="artifacts"
           eyebrow="Artifact registry"
           title="Browse governed delivery artifacts as traceable evidence"
           description="The artifact registry is where generated outputs become inspectable delivery evidence, with status, phase, and hash continuity across the workflow."

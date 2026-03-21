@@ -3,7 +3,8 @@ import { Card } from './card';
 import { Badge } from './badge';
 import { Text, Heading } from './typography';
 import { cn } from '@/lib/utils';
-import { Sparkles } from 'lucide-react';
+import { ChevronDown, Sparkles } from 'lucide-react';
+import { useHeroFold } from '@/hooks/use-hero-fold';
 
 interface HeroMetric {
   label: string;
@@ -21,6 +22,8 @@ interface MissionControlHeroProps extends React.ComponentProps<'section'> {
   asideTitle?: string;
   asideDescription?: string;
   asideContent?: React.ReactNode;
+  /** Unique id used as localStorage key for persisting fold state. Required to enable folding. */
+  heroId?: string;
 }
 
 export function MissionControlHero({
@@ -33,30 +36,61 @@ export function MissionControlHero({
   asideTitle,
   asideDescription,
   asideContent,
+  heroId,
   className,
   ...props
 }: MissionControlHeroProps) {
+  const [folded, toggleFold] = useHeroFold(heroId ?? '');
+  const foldable = Boolean(heroId);
+
   return (
     <section className={cn('relative', className)} {...props}>
       <Card
         elevation="raised"
         tone="info"
-        className="overflow-hidden border border-info/20 px-6 py-6 lg:px-7"
+        className={cn(
+          'overflow-hidden border border-info/20 px-6 lg:px-7',
+          folded ? 'py-4' : 'py-6'
+        )}
       >
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,color-mix(in_srgb,var(--color-info)_18%,transparent)_0%,transparent_34%),radial-gradient(circle_at_bottom_right,color-mix(in_srgb,var(--color-secondary)_16%,transparent)_0%,transparent_32%)]"
         />
-        <div className="relative grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(20rem,0.9fr)]">
-          <div className="space-y-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="border-info/20 bg-background/70 text-foreground">
-                <Sparkles className="size-3.5" />
-                {eyebrow}
-              </Badge>
-              {badges}
-            </div>
 
+        {/* Header row — always visible, contains eyebrow badge and fold toggle */}
+        <div className={cn('relative flex items-center gap-2', !folded && 'mb-5')}>
+          <div className="flex flex-1 flex-wrap items-center gap-2">
+            <Badge variant="outline" className="border-info/20 bg-background/70 text-foreground">
+              <Sparkles className="size-3.5" />
+              {eyebrow}
+            </Badge>
+            {badges}
+          </div>
+          {foldable && (
+            <button
+              type="button"
+              aria-label={folded ? 'Expand hero section' : 'Collapse hero section'}
+              aria-expanded={!folded}
+              onClick={toggleFold}
+              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-background/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <ChevronDown
+                className={cn('size-4 transition-transform duration-200', folded && '-rotate-90')}
+              />
+            </button>
+          )}
+        </div>
+
+        {/* Collapsible body */}
+        <div
+          className={cn(
+            'relative grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(20rem,0.9fr)]',
+            'overflow-hidden transition-all duration-300',
+            folded ? 'max-h-0 opacity-0' : 'max-h-[9999px] opacity-100'
+          )}
+        >
+          <div className="space-y-5">
             <div className="space-y-2">
               <Heading
                 level={1}

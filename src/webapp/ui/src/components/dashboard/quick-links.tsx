@@ -39,7 +39,7 @@ export function QuickLinks() {
           key={link.path}
           type="button"
           onClick={() => navigate(link.path)}
-          className="text-left rounded-lg border bg-card p-4 hover:bg-accent hover:border-primary/30 hover:shadow-md transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none group"
+          className="text-left rounded-lg border bg-card p-4 hover:bg-muted/60 hover:border-border hover:shadow-sm transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none group"
         >
           <div className="flex items-center gap-3 mb-2">
             <span className="p-2 rounded-lg bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">

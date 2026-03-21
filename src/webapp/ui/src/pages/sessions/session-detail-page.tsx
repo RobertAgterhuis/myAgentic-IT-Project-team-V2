@@ -319,6 +319,7 @@ export default function SessionDetailPage() {
         <ContextStrip items={contextItems} />
 
         <MissionControlHero
+          heroId="session-detail"
           eyebrow="Session runtime"
           title={`${session.project} is running as a governed execution record`}
           description="Use this detail view to inspect the live phase, the active agent, produced evidence, and any failure or escalation that requires human intervention."

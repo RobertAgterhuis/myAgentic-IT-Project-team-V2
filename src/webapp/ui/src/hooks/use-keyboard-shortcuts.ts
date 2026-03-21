@@ -60,7 +60,7 @@ export function useKeyboardShortcuts() {
             navigate('/observability');
             return;
           case 'v':
-            navigate('/governance');
+            navigate('/approvals');
             return;
         }
         return;

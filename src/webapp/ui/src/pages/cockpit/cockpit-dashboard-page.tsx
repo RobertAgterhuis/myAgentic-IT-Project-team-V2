@@ -98,6 +98,7 @@ export default function CockpitDashboardPage() {
       <ContextStrip items={contextItems} />
 
       <MissionControlHero
+        heroId="cockpit"
         eyebrow="Operational cockpit"
         title="Investigate confidence, dependencies, and approvals from a single cockpit"
         description="Cockpit is the analytical control room for the platform: it combines machine confidence, dependency context, root-cause analysis, and approval history into one operator-facing surface."

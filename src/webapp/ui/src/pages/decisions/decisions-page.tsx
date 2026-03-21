@@ -418,6 +418,7 @@ export default function DecisionsPage() {
       <ContextStrip items={contextItems} />
 
       <MissionControlHero
+        heroId="decisions"
         eyebrow="Decision ledger"
         title="Treat decisions as governed delivery objects, not scattered notes"
         description="The decision surface keeps open questions, resolved choices, and deferred items in one evidence trail so teams can see where human judgment is still shaping the outcome."

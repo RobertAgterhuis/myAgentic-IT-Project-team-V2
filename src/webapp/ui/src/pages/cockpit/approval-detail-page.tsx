@@ -88,6 +88,7 @@ export default function ApprovalDetailPage() {
       <ContextStrip items={contextItems} />
 
       <MissionControlHero
+        heroId="approval-detail"
         eyebrow="Approval review"
         title="Resolve a governed checkpoint with full approval context"
         description="This review surface brings together the gate, requester, risk context, related artifacts, and required human rationale before the approval can be closed."

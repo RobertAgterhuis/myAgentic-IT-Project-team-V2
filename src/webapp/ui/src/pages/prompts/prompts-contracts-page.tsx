@@ -5,9 +5,9 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { PageShell } from '@/components/ui/page-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
-import { usePromptContractAssets } from '@/hooks';
+import { usePromptContractAssets, useHeroFold } from '@/hooks';
 import type { PromptContractAsset } from '@/lib/api-types';
-import { ClipboardList, FileCode2, Scale } from 'lucide-react';
+import { ChevronDown, ClipboardList, FileCode2, Scale } from 'lucide-react';
 
 const typeIcon = {
   questionnaire: <ClipboardList className="size-4 text-info" />,
@@ -23,6 +23,10 @@ const governanceVariant = {
 
 export default function PromptsContractsPage() {
   const { data, isLoading, error, refetch } = usePromptContractAssets();
+
+  const [questionnaireFolded, toggleQuestionnaire] = useHeroFold('prompts-questionnaire');
+  const [decisionFolded, toggleDecision] = useHeroFold('prompts-decision');
+  const [policyFolded, togglePolicy] = useHeroFold('prompts-policy');
 
   const grouped = useMemo(() => {
     const assets: PromptContractAsset[] = data?.assets ?? [];
@@ -105,79 +109,139 @@ export default function PromptsContractsPage() {
         <ContextStrip items={contextItems} />
 
         <div className="grid gap-4 xl:grid-cols-3">
-          <Card elevation="flat" className="space-y-3 p-4">
-            <h2 className="text-sm font-semibold">Questionnaire assets</h2>
-            {grouped.questionnaires.length === 0 ? (
-              <EmptyState
-                title="No questionnaires"
-                description="No questionnaire contracts were discovered."
-              />
-            ) : (
-              grouped.questionnaires.map((asset: PromptContractAsset) => (
-                <div key={asset.id} className="rounded-lg border border-border/70 p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      {typeIcon[asset.type]}
-                      <p className="text-sm font-medium">{asset.title}</p>
+          {/* Questionnaire assets */}
+          <Card elevation="flat" className="p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Questionnaire assets</h2>
+              <button
+                onClick={toggleQuestionnaire}
+                className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label={
+                  questionnaireFolded
+                    ? 'Expand questionnaire assets'
+                    : 'Collapse questionnaire assets'
+                }
+              >
+                <ChevronDown
+                  className={`size-4 transition-transform duration-300 ${questionnaireFolded ? '-rotate-90' : ''}`}
+                />
+              </button>
+            </div>
+            <div
+              className={`overflow-hidden transition-all duration-300 ${questionnaireFolded ? 'max-h-0 opacity-0' : 'max-h-500 opacity-100 mt-3'}`}
+            >
+              {grouped.questionnaires.length === 0 ? (
+                <EmptyState
+                  title="No questionnaires"
+                  description="No questionnaire contracts were discovered."
+                />
+              ) : (
+                <div className="space-y-3">
+                  {grouped.questionnaires.map((asset: PromptContractAsset) => (
+                    <div key={asset.id} className="rounded-lg border border-border/70 p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {typeIcon[asset.type]}
+                          <p className="text-sm font-medium">{asset.title}</p>
+                        </div>
+                        <Badge variant={governanceVariant[asset.governance_status]}>
+                          {asset.governance_status}
+                        </Badge>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">Scope: {asset.scope}</p>
                     </div>
-                    <Badge variant={governanceVariant[asset.governance_status]}>
-                      {asset.governance_status}
-                    </Badge>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">Scope: {asset.scope}</p>
+                  ))}
                 </div>
-              ))
-            )}
+              )}
+            </div>
           </Card>
 
-          <Card elevation="flat" className="space-y-3 p-4">
-            <h2 className="text-sm font-semibold">Decision contracts</h2>
-            {grouped.decisions.length === 0 ? (
-              <EmptyState
-                title="No open decisions"
-                description="No decision contracts require active review."
-              />
-            ) : (
-              grouped.decisions.map((asset: PromptContractAsset) => (
-                <div key={asset.id} className="rounded-lg border border-border/70 p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      {typeIcon[asset.type]}
-                      <p className="text-sm font-medium">{asset.title}</p>
+          {/* Decision contracts */}
+          <Card elevation="flat" className="p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Decision contracts</h2>
+              <button
+                onClick={toggleDecision}
+                className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label={
+                  decisionFolded ? 'Expand decision contracts' : 'Collapse decision contracts'
+                }
+              >
+                <ChevronDown
+                  className={`size-4 transition-transform duration-300 ${decisionFolded ? '-rotate-90' : ''}`}
+                />
+              </button>
+            </div>
+            <div
+              className={`overflow-hidden transition-all duration-300 ${decisionFolded ? 'max-h-0 opacity-0' : 'max-h-500 opacity-100 mt-3'}`}
+            >
+              {grouped.decisions.length === 0 ? (
+                <EmptyState
+                  title="No open decisions"
+                  description="No decision contracts require active review."
+                />
+              ) : (
+                <div className="space-y-3">
+                  {grouped.decisions.map((asset: PromptContractAsset) => (
+                    <div key={asset.id} className="rounded-lg border border-border/70 p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {typeIcon[asset.type]}
+                          <p className="text-sm font-medium">{asset.title}</p>
+                        </div>
+                        <Badge variant={governanceVariant[asset.governance_status]}>
+                          {asset.governance_status}
+                        </Badge>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">Scope: {asset.scope}</p>
                     </div>
-                    <Badge variant={governanceVariant[asset.governance_status]}>
-                      {asset.governance_status}
-                    </Badge>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">Scope: {asset.scope}</p>
+                  ))}
                 </div>
-              ))
-            )}
+              )}
+            </div>
           </Card>
 
-          <Card elevation="flat" className="space-y-3 p-4">
-            <h2 className="text-sm font-semibold">Policy contracts</h2>
-            {grouped.policies.length === 0 ? (
-              <EmptyState
-                title="No policies"
-                description="No policy contracts were returned by governance endpoints."
-              />
-            ) : (
-              grouped.policies.map((asset: PromptContractAsset) => (
-                <div key={asset.id} className="rounded-lg border border-border/70 p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      {typeIcon[asset.type]}
-                      <p className="text-sm font-medium">{asset.title}</p>
+          {/* Policy contracts */}
+          <Card elevation="flat" className="p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold">Policy contracts</h2>
+              <button
+                onClick={togglePolicy}
+                className="rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                aria-label={policyFolded ? 'Expand policy contracts' : 'Collapse policy contracts'}
+              >
+                <ChevronDown
+                  className={`size-4 transition-transform duration-300 ${policyFolded ? '-rotate-90' : ''}`}
+                />
+              </button>
+            </div>
+            <div
+              className={`overflow-hidden transition-all duration-300 ${policyFolded ? 'max-h-0 opacity-0' : 'max-h-500 opacity-100 mt-3'}`}
+            >
+              {grouped.policies.length === 0 ? (
+                <EmptyState
+                  title="No policies"
+                  description="No policy contracts were returned by governance endpoints."
+                />
+              ) : (
+                <div className="space-y-3">
+                  {grouped.policies.map((asset: PromptContractAsset) => (
+                    <div key={asset.id} className="rounded-lg border border-border/70 p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {typeIcon[asset.type]}
+                          <p className="text-sm font-medium">{asset.title}</p>
+                        </div>
+                        <Badge variant={governanceVariant[asset.governance_status]}>
+                          {asset.governance_status}
+                        </Badge>
+                      </div>
+                      <p className="mt-1 text-xs text-muted-foreground">Scope: {asset.scope}</p>
                     </div>
-                    <Badge variant={governanceVariant[asset.governance_status]}>
-                      {asset.governance_status}
-                    </Badge>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">Scope: {asset.scope}</p>
+                  ))}
                 </div>
-              ))
-            )}
+              )}
+            </div>
           </Card>
         </div>
       </div>

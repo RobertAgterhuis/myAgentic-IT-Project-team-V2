@@ -1,20 +1,18 @@
-export type FeatureFlag =
-  | 'overview-redesign'
-  | 'runs-redesign'
-  | 'approvals-redesign'
-  | 'policies-redesign'
-  | 'agents-redesign'
-  | 'observability-redesign'
-  | 'audit-redesign';
+/**
+ * Feature flags — runtime toggles for experimental features.
+ *
+ * Note: UI redesign phase flags (overview-redesign, runs-redesign, etc.) were
+ * used during Phase 1-5 for parity validation. As of Phase 6 (UI-023), all
+ * legacy components have been removed and these flags are no longer applicable.
+ *
+ * Consider this file as the infrastructure for future feature flags, or
+ * these flags could be used for A/B testing specific features if needed.
+ */
+
+export type FeatureFlag = 'reserved-for-future-use';
 
 const DEFAULT_FLAGS: Record<FeatureFlag, boolean> = {
-  'overview-redesign': true,
-  'runs-redesign': false,
-  'approvals-redesign': false,
-  'policies-redesign': false,
-  'agents-redesign': false,
-  'observability-redesign': false,
-  'audit-redesign': false,
+  'reserved-for-future-use': false,
 };
 
 const STORAGE_KEY = 'agentic.ui.featureFlags';

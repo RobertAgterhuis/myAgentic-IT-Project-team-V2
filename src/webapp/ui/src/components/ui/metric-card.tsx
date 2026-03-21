@@ -13,6 +13,7 @@ interface MetricCardProps extends React.ComponentProps<'div'> {
   delta?: string;
   trend?: Trend;
   icon?: React.ReactNode;
+  details?: string;
 }
 
 const trendConfig: Record<Trend, { icon: React.ReactNode; color: string }> = {
@@ -27,6 +28,7 @@ function MetricCard({
   delta,
   trend = 'neutral',
   icon,
+  details,
   className,
   ...props
 }: MetricCardProps) {
@@ -54,6 +56,11 @@ function MetricCard({
           </span>
         )}
       </div>
+      {details && (
+        <p className="mt-1.5 text-xs text-muted-foreground truncate" title={details}>
+          {details}
+        </p>
+      )}
     </Card>
   );
 }

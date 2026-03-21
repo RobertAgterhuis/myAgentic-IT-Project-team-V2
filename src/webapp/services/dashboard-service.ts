@@ -148,9 +148,29 @@ export class DashboardService {
       fs.existsSync(path.join(repoRoot, 'eslint.config.mjs')) ||
       fs.existsSync(path.join(repoRoot, '.eslintrc.json'));
     if (eslintConfigExists) {
-      qualityValue = 'Configured';
+      // Detect all quality controls present in the repo
+      const qualityControls: string[] = [];
+      if (eslintConfigExists) qualityControls.push('ESLint');
+      if (
+        fs.existsSync(path.join(repoRoot, '.prettierrc.json')) ||
+        fs.existsSync(path.join(repoRoot, '.prettierrc')) ||
+        fs.existsSync(path.join(repoRoot, 'prettier.config.mjs')) ||
+        fs.existsSync(path.join(repoRoot, 'prettier.config.js'))
+      )
+        qualityControls.push('Prettier');
+      if (fs.existsSync(path.join(repoRoot, '.husky'))) qualityControls.push('Husky');
+      if (
+        fs.existsSync(path.join(repoRoot, 'vitest.config.mjs')) ||
+        fs.existsSync(path.join(repoRoot, 'vitest.config.ts'))
+      )
+        qualityControls.push('Vitest');
+      if (fs.existsSync(path.join(repoRoot, 'playwright.config.ts')))
+        qualityControls.push('Playwright');
+      if (fs.existsSync(path.join(repoRoot, 'tsconfig.json'))) qualityControls.push('TypeScript');
+
+      qualityValue = `${qualityControls.length} controls`;
       qualityStatus = 'healthy';
-      qualityDetails = 'ESLint config present';
+      qualityDetails = qualityControls.join(' · ');
     }
 
     let buildValue = 'Unknown';
@@ -279,18 +299,22 @@ export class DashboardService {
     const sprintPercent = totalCount > 0 ? Math.round((completeCount / totalCount) * 100) : 0;
 
     const trackedFiles = (await gitLinesAsync('ls-files', repoRoot, this.ctx?._execFile)).length;
-    const contributors = new Set(
-      (await gitLinesAsync('recent-contributors', repoRoot, this.ctx?._execFile)).map((n) =>
-        n.toLowerCase()
-      )
-    ).size;
-    const auditContributors = new Set(
-      this.getAuditEntries(200)
-        .map((entry) => normalizeAuditUser(entry.user))
-        .filter(Boolean)
-        .map((name) => (name as string).toLowerCase())
-    );
-    const teamCount = Math.max(contributors, auditContributors.size, 1);
+    const gitNames = await gitLinesAsync('recent-contributors', repoRoot, this.ctx?._execFile);
+    const contributorSet = new Set(gitNames.map((n) => n.toLowerCase()));
+    const auditNames = this.getAuditEntries(200)
+      .map((entry) => normalizeAuditUser(entry.user))
+      .filter(Boolean) as string[];
+    const auditContributors = new Set(auditNames.map((n) => n.toLowerCase()));
+
+    // Merge unique display names (prefer capitalised git names over lowercase audit names)
+    const mergedNames = new Map<string, string>();
+    for (const name of gitNames) mergedNames.set(name.toLowerCase(), name);
+    for (const name of auditNames) {
+      const key = name.toLowerCase();
+      if (!mergedNames.has(key)) mergedNames.set(key, name);
+    }
+    const allNames = Array.from(mergedNames.values());
+    const teamCount = Math.max(contributorSet.size, auditContributors.size, 1);
 
     const starsFromEnv = Number.parseInt(process.env.GITHUB_STARS || '', 10);
     const starsValue = Number.isFinite(starsFromEnv) ? String(starsFromEnv) : '—';
@@ -306,7 +330,10 @@ export class DashboardService {
         value: String(teamCount),
         label: 'Team Members',
         icon: '👥',
-        details: 'Unique contributors (git + audit, last 180 days)',
+        details:
+          allNames.length > 0
+            ? allNames.join(', ')
+            : 'Unique contributors (git + audit, last 180 days)',
       },
       sprint_progress: {
         value: `${sprintPercent}%`,

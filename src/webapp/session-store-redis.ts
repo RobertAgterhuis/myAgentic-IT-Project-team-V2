@@ -41,6 +41,7 @@ export function createRedisSessionStore(redis: Redis): RedisSessionStore {
     const session: Session = {
       id,
       user_id: userId,
+      primary_provider: 'github',
       csrf_token: csrfToken,
       created_at: now.toISOString(),
       expires_at: expiresAt.toISOString(),

@@ -46,6 +46,46 @@ export interface AuditFacade {
   read(limit?: number): object[];
 }
 
+export interface RagStoreFacade {
+  ensureCollection(collection: {
+    id: string;
+    name: string;
+    description: string;
+    created_at: string;
+  }): void;
+  query(
+    collectionId: string,
+    queryVector: number[],
+    topK: number,
+    threshold?: number
+  ): Promise<
+    Array<{
+      chunk: {
+        source_path: string;
+        chunk_text: string;
+        start_line: number | null;
+      };
+      score: number;
+    }>
+  >;
+}
+
+export interface RagIndexerFacade {
+  syncDirectory(
+    collectionId: string,
+    dirPath: string,
+    opts?: { incremental?: boolean; fileFilter?: (filePath: string) => boolean }
+  ): Promise<{ filesProcessed: number; chunksInserted: number; filesSkipped: number }>;
+  indexFile(
+    collectionId: string,
+    filePath: string
+  ): Promise<{ filesProcessed: number; chunksInserted: number; filesSkipped: number }>;
+}
+
+export interface EmbeddingProviderFacade {
+  embedText(text: string): Promise<number[]>;
+}
+
 /* ── Typed Server Context ─────────────────────────────────────── */
 
 export interface ServerContext {
@@ -119,6 +159,11 @@ export interface ServerContext {
   /* ── Auth (M29) ────────────────────────────────────────────── */
   readonly _authManager: AuthManager | null;
   readonly _authMiddleware: AuthMiddleware | null;
+
+  /* ── RAG services (M-INTEL-1) ──────────────────────────────── */
+  readonly _ragStore?: RagStoreFacade;
+  readonly _ragIndexer?: RagIndexerFacade;
+  readonly _embeddingProvider?: EmbeddingProviderFacade;
 
   /* ── Cross-route wiring (set after route registration) ─────── */
   _rebuildQuestionnaireIndex?: () => Promise<void>;

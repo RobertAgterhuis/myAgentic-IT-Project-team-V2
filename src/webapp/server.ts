@@ -2,6 +2,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 // Agentic SDLC Platform — Fastify-based API server (M30-003, composition root)
 import path from 'path';
+import fs from 'fs';
 import { getStore } from './store';
 import { FileCache } from './cache';
 import { AuditTrail } from './audit';
@@ -58,6 +59,10 @@ import { hasAuthConfigured, validateProfile, assertScalePrerequisites } from './
 
 import { buildApp } from './app';
 import type { ServerContext } from './context';
+import { RagStore } from './services/rag/rag-store';
+import { RagIndexer } from './services/rag/rag-indexer';
+import { MarkdownChunker } from './services/rag/text-chunker';
+import { createEmbeddingProvider } from './services/rag/embedding-provider';
 
 /* ── Native Fastify route plugins (M30-004) ───────────────────── */
 import { registerRoutes as registerQuestionnaireRoutes } from './routes/questionnaires';
@@ -80,11 +85,21 @@ import { registerRoutes as registerWorkspaceRoutes } from './routes/workspaces';
 import { registerRoutes as registerCockpitRoutes } from './routes/cockpit';
 import { registerRoutes as registerAuthRoutes } from './routes/auth';
 import { registerRoutes as registerMcpRoutes } from './routes/mcp';
+import { registerRoutes as registerRagRoutes } from './routes/rag';
+import { registerRoutes as registerGitRoutes } from './routes/git';
 import { registerRoutes as registerMiscRoutes } from './routes/misc';
 import { McpGovernanceService, McpHealthMonitor } from './plugins/mcp-governance';
 
 const _cache = new FileCache();
 const _audit = new AuditTrail({ logDir: path.join(BUSINESS_DOCS, 'audit') });
+const RAG_BASE_DIR = process.env.RAG_BASE_DIR || path.join(PROJECT_ROOT, '.agentic', 'rag');
+const RAG_DB_PATH = process.env.RAG_DB_PATH || path.join(RAG_BASE_DIR, 'rag.sqlite');
+const RAG_LANCE_DIR = process.env.RAG_LANCE_DIR || path.join(RAG_BASE_DIR, 'vectors');
+fs.mkdirSync(RAG_BASE_DIR, { recursive: true });
+fs.mkdirSync(RAG_LANCE_DIR, { recursive: true });
+const _embeddingProvider = createEmbeddingProvider();
+const _ragStore = new RagStore(RAG_DB_PATH, RAG_LANCE_DIR);
+const _ragIndexer = new RagIndexer(_ragStore, _embeddingProvider, new MarkdownChunker());
 const rateLimiter = createRateLimiter({
   windowMs: RATE_LIMIT_WINDOW_MS,
   maxRequests: RATE_LIMIT_MAX,
@@ -356,6 +371,9 @@ const ctx: ServerContext = {
   STORAGE_PROVIDER,
   _authManager,
   _authMiddleware,
+  _ragStore,
+  _ragIndexer,
+  _embeddingProvider,
 };
 
 let _rebuildTimer: ReturnType<typeof setTimeout> | null = null;
@@ -421,6 +439,8 @@ async function createApp() {
   await registerCockpitRoutes(app, ctx);
   await registerAuthRoutes(app, ctx);
   await registerMcpRoutes(app, ctx);
+  await registerRagRoutes(app, ctx);
+  await registerGitRoutes(app, ctx);
   // misc registers last — includes catch-all SPA static handler
   await registerMiscRoutes(app, ctx);
 
@@ -631,6 +651,7 @@ if (require.main === module) {
     metricsCollector.flush();
     const sp = getStorageProvider();
     if (sp) sp.close().catch(() => {});
+    _ragStore.close();
     if (_mcpHealthMonitor) _mcpHealthMonitor.stop();
     if (_authManager) _authManager.close();
     _app

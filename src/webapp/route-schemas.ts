@@ -263,6 +263,53 @@ export const subscribe = {
   response: { ...mutationResponses, ...r201, ...r409, ...r500, ...r503 },
 };
 
+/* ── git credentials ─────────────────────────────────────────── */
+
+export const gitCredentialCreate = {
+  tags: ['git'],
+  body: {
+    type: 'object' as const,
+    required: ['provider'],
+    properties: {
+      provider: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 64,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
+      username: { type: 'string' as const, maxLength: 512 },
+      password: { type: 'string' as const, maxLength: 4096 },
+      token: { type: 'string' as const, maxLength: 4096 },
+      expiresAt: { type: 'string' as const, maxLength: 128 },
+    },
+    additionalProperties: false,
+  },
+  response: { ...mutationResponses, ...r401 },
+};
+
+export const gitCredentialDelete = {
+  tags: ['git'],
+  params: {
+    type: 'object' as const,
+    required: ['provider'],
+    properties: {
+      provider: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 64,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
+    },
+    additionalProperties: false,
+  },
+  response: { ...mutationResponses, ...r401 },
+};
+
+export const gitCredentialStatus = {
+  tags: ['git'],
+  response: { ...listResponses, ...r401 },
+};
+
 /* ── milestones ───────────────────────────────────────────────── */
 
 export const milestoneCreate = {
@@ -529,6 +576,52 @@ export const jobCancel = {
     additionalProperties: false,
   },
   response: { ...mutationResponses, ...r404 },
+};
+
+/* ── rag ──────────────────────────────────────────────────────── */
+
+export const ragIndexStart = {
+  tags: ['rag'],
+  body: {
+    type: 'object' as const,
+    required: ['collection', 'paths'],
+    properties: {
+      collection: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 100,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
+      paths: {
+        type: 'array' as const,
+        minItems: 1,
+        items: { type: 'string' as const, minLength: 1, maxLength: 2000 },
+      },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
+export const ragQuery = {
+  tags: ['rag'],
+  body: {
+    type: 'object' as const,
+    required: ['collection', 'query'],
+    properties: {
+      collection: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 100,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
+      query: { type: 'string' as const, minLength: 1, maxLength: 5000 },
+      topK: { type: 'number' as const, minimum: 1, maximum: 50 },
+      threshold: { type: 'number' as const, minimum: 0, maximum: 1 },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
 };
 
 /* ── orchestrator ─────────────────────────────────────────────── */

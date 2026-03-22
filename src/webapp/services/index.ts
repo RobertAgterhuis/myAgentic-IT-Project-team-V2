@@ -20,6 +20,25 @@ export {
   AgentNotFoundError,
   AgentCancelledError,
 } from './agent-execution-service';
+export type {
+  GitBackend,
+  ResultTuple,
+  GitStatusResult,
+  GitMutationResult,
+  GitCommitResult,
+  GitDiffResult,
+  GitLogOptions,
+  GitLogResult,
+  GitBranchOptions,
+  GitBranchResult,
+  GitRemoteResult,
+} from './git/git-backend';
+export { createBrowserFsGitAdapter } from './git/browserfs-adapter';
+export { GitCredentialStore } from './git/credential-store';
+export { GitBackendRouter, GitBackendUnavailableError } from './git/git-backend-router';
+export { IsomorphicGitBackend } from './git/isomorphic-git-backend';
+export { NativeGitBackend } from './git/native-git-backend';
+export { GitService } from './git/git-service';
 export type { ExecuteAgentResult, ExecutionLogEntry } from './agent-execution-service';
 export { toServiceContext } from './context-adapter';
 export type {

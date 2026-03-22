@@ -27,12 +27,10 @@ pages:
       - approvals
       - governance
     topicLinks:
-      - topicId: commands
-        title: Commands Reference
-      - topicId: advanced-commands
-        title: Advanced Commands
-      - topicId: getting-started
-        title: Getting Started
+      - topicId: commands-modes
+        title: Command Modes
+      - topicId: commands-prerequisites
+        title: Command Prerequisites
   - routeSlug: sessions
     routePath: /sessions
     pageTitle: Sessions
@@ -59,12 +57,10 @@ pages:
       - recovery
       - gate
     topicLinks:
-      - topicId: getting-started
-        title: Getting Started
+      - topicId: sessions-lifecycle
+        title: Session Lifecycle
       - topicId: troubleshooting
         title: Troubleshooting
-      - topicId: onboarding
-        title: Onboarding
   - routeSlug: approvals
     routePath: /approvals
     pageTitle: Approvals
@@ -90,12 +86,12 @@ pages:
       - policy
       - review
     topicLinks:
-      - topicId: quality-gates
-        title: Quality Gates
-      - topicId: tool-list-approvals
-        title: "MCP Tool: list_approvals"
-      - topicId: tool-approve-request
-        title: "MCP Tool: approve_request"
+      - topicId: approvals-when-required
+        title: When Approvals Are Required
+      - topicId: approvals-hotfix-bypass
+        title: Hotfix Bypass
+      - topicId: approvals-override-decisions
+        title: Override Decisions and Audit
   - routeSlug: pipeline
     routePath: /pipeline
     pageTitle: Pipeline
@@ -121,12 +117,10 @@ pages:
       - synthesis
       - sprints
     topicLinks:
-      - topicId: pipeline
-        title: Pipeline & Progress
-      - topicId: quality-gates
-        title: Quality Gates
-      - topicId: sprints
-        title: Sprints
+      - topicId: pipeline-phases
+        title: Pipeline Phases
+      - topicId: pipeline-gates
+        title: Gate Types and Overrides
   - routeSlug: agents
     routePath: /agents
     pageTitle: Agents
@@ -152,9 +146,7 @@ pages:
       - status
       - handoff
     topicLinks:
-      - topicId: agents
-        title: Agents
-      - topicId: troubleshooting
-        title: Troubleshooting
-      - topicId: onboarding
-        title: Onboarding
+      - topicId: agents-overview
+        title: Agent Catalog and Dependencies
+      - topicId: agents-confidence
+        title: Confidence Scores

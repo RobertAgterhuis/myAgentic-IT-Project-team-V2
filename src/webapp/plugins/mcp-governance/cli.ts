@@ -57,7 +57,7 @@ async function buildService(projectRoot: string): Promise<McpGovernanceService> 
   });
 }
 
-async function run(): Promise<void> {
+async function run(overrideProjectRoot?: string): Promise<void> {
   const parsed = parseArgs(process.argv);
   const [cmd, sub] = parsed.command;
 
@@ -67,7 +67,7 @@ async function run(): Promise<void> {
     return;
   }
 
-  const projectRoot = path.resolve(__dirname, '../../../..');
+  const projectRoot = overrideProjectRoot ?? path.resolve(__dirname, '../../../..');
   const service = await buildService(projectRoot);
 
   if (cmd === 'init') {
@@ -138,8 +138,12 @@ async function run(): Promise<void> {
   process.exitCode = 1;
 }
 
-run().catch((err: unknown) => {
-  const message = err instanceof Error ? err.message : String(err);
-  process.stderr.write(`${JSON.stringify({ ok: false, error: message }, null, 2)}\n`);
-  process.exitCode = 1;
-});
+export { parseArgs, printUsage, buildService, run };
+
+if (require.main === module) {
+  run().catch((err: unknown) => {
+    const message = err instanceof Error ? err.message : String(err);
+    process.stderr.write(`${JSON.stringify({ ok: false, error: message }, null, 2)}\n`);
+    process.exitCode = 1;
+  });
+}

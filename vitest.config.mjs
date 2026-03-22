@@ -69,7 +69,6 @@ export default defineConfig({
         'src/webapp/ui/**',
         '**/index.ts',
         '**/types.ts',
-        '**/cli.ts',
         'platform/sdlc/adapters/contracts/**',
         'platform/engine/persistence/storage-provider.ts',
         'platform/engine/jobs/job-types.ts',

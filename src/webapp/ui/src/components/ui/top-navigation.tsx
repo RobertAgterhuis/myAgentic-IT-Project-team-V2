@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 import { Input } from './input';
 import { Badge } from './badge';
 import {
+  CircleHelp,
   Menu,
   Monitor,
   Moon,
@@ -76,6 +77,7 @@ interface TopNavigationProps extends React.ComponentProps<'header'> {
   connectionStatus?: ConnectionStatus;
   onSearch?: (query: string) => void;
   onMenuToggle?: () => void;
+  onHelpClick?: () => void;
 }
 
 function TopNavigation({
@@ -84,6 +86,7 @@ function TopNavigation({
   connectionStatus = 'connected',
   onSearch,
   onMenuToggle,
+  onHelpClick,
   className,
   ...props
 }: TopNavigationProps) {
@@ -184,6 +187,16 @@ function TopNavigation({
           {statusIcon[connectionStatus]}
           <span className="hidden sm:inline">{statusLabel[connectionStatus]}</span>
         </Badge>
+
+        <button
+          type="button"
+          onClick={onHelpClick}
+          title="Help for this page"
+          aria-label="Help for this page"
+          className="motion-transition-base inline-flex items-center justify-center rounded-md p-1.5 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        >
+          <CircleHelp className="size-4" />
+        </button>
 
         {/* Theme toggle */}
         <ThemeToggleButton />

@@ -15,6 +15,7 @@ import { useCurrentUser } from '@/hooks/use-auth';
 import { useSSEEvents } from '@/hooks/use-sse-events';
 import { useRuntimeEvents } from '@/hooks/use-runtime-events';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
+import { resolveHelpRouteSlug } from '@/hooks/use-help';
 import { routes, buildBreadcrumbs, DOMAIN_ORDER, type DomainSection } from '@/lib/routes';
 import { AppShell } from '@/components/layout/app-shell';
 import { SidebarNav } from '@/components/layout/sidebar-nav';
@@ -124,6 +125,7 @@ export function AppLayout() {
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const helpOpen = useUIStore((s) => s.helpOpen);
   const closeHelp = useUIStore((s) => s.closeHelp);
+  const openHelpForRoute = useUIStore((s) => s.openHelpForRoute);
   const connectionStatus = useUIStore((s) => s.connectionStatus);
 
   const { data: orchestratorStatus } = useOrchestratorStatus();
@@ -148,6 +150,7 @@ export function AppLayout() {
           orchestratorState={orchestratorStatus?.state}
           connectionStatus={connectionStatus}
           onMenuToggle={toggleSidebar}
+          onHelpClick={() => openHelpForRoute(resolveHelpRouteSlug(location.pathname))}
         />
       }
       sidebar={

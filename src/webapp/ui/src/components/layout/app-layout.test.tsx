@@ -43,4 +43,11 @@ describe('AppLayout', () => {
       expect(screen.getByText('Agentic SDLC')).toBeInTheDocument();
     });
   });
+
+  it('renders global help icon in top navigation', async () => {
+    renderLayout(['/commands']);
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: 'Help for this page' })).toBeInTheDocument();
+    });
+  });
 });

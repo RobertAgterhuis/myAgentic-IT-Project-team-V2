@@ -55,8 +55,13 @@ describe('GitBackendRouter (#948)', () => {
 
   test('returns the native backend when configured', () => {
     const nativeBackend = createBackend('native');
+    const repoDir = fs.mkdtempSync(path.join(os.tmpdir(), 'git-router-force-native-'));
+    fs.writeFileSync(
+      path.join(repoDir, '.gitattributes'),
+      '*.bin filter=lfs diff=lfs merge=lfs -text\n'
+    );
     const router = new GitBackendRouter({
-      repositoryPath: process.cwd(),
+      repositoryPath: repoDir,
       env: { GIT_BACKEND: 'native' },
       factories: {
         native: () => nativeBackend,
@@ -65,6 +70,44 @@ describe('GitBackendRouter (#948)', () => {
 
     expect(router.resolveBackendKind()).toBe('native');
     expect(router.getBackend()).toBe(nativeBackend);
+
+    fs.rmSync(repoDir, { recursive: true, force: true });
+  });
+
+  test('forces isomorphic backend when configured, even when native detection would trigger (#962)', async () => {
+    const repoDir = fs.mkdtempSync(path.join(os.tmpdir(), 'git-router-force-isomorphic-'));
+    fs.writeFileSync(path.join(repoDir, '.gitmodules'), '[submodule "lib"]\n\tpath = lib\n');
+
+    const isomorphic = createBackend('isomorphic');
+    isomorphic.status.mockResolvedValue([
+      {
+        branch: 'main',
+        ahead: 0,
+        behind: 0,
+        clean: true,
+        entries: [],
+      },
+      null,
+    ]);
+    const nativeBackend = createBackend('native');
+
+    const router = new GitBackendRouter({
+      repositoryPath: repoDir,
+      env: { GIT_BACKEND: 'isomorphic' },
+      factories: {
+        isomorphic: () => isomorphic,
+        native: () => nativeBackend,
+      },
+    });
+
+    expect(router.resolveBackendKind()).toBe('isomorphic');
+    const [statusResult, statusError] = await router.getBackend().status();
+    expect(statusError).toBeNull();
+    expect(statusResult.clean).toBe(true);
+    expect(isomorphic.status).toHaveBeenCalledTimes(1);
+    expect(nativeBackend.status).not.toHaveBeenCalled();
+
+    fs.rmSync(repoDir, { recursive: true, force: true });
   });
 
   test('returns the provider-api backend when configured', () => {
@@ -191,5 +234,23 @@ describe('GitBackendRouter (#948)', () => {
         entityType: 'git_backend',
       })
     );
+  });
+
+  test('workspace config overrides environment backend selection (#962)', () => {
+    const router = new GitBackendRouter({
+      repositoryPath: process.cwd(),
+      env: { GIT_BACKEND: 'isomorphic' },
+      workspaceConfig: {
+        git: {
+          backend: 'native',
+        },
+      },
+      factories: {
+        isomorphic: () => createBackend('isomorphic'),
+        native: () => createBackend('native'),
+      },
+    });
+
+    expect(router.resolveBackendKind()).toBe('native');
   });
 });

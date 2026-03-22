@@ -19,6 +19,7 @@ import { IsomorphicGitBackend } from './isomorphic-git-backend';
 import { NativeGitBackend } from './native-git-backend';
 
 export type GitBackendKind = 'isomorphic' | 'native' | 'provider-api';
+export type GitBackendSelection = GitBackendKind | 'auto';
 
 interface AuditLogger {
   log(entry: {
@@ -36,6 +37,11 @@ export interface GitBackendRouterOptions {
   env?: Record<string, string | undefined>;
   factories?: Partial<Record<GitBackendKind, () => GitBackend>>;
   audit?: AuditLogger;
+  workspaceConfig?: {
+    git?: {
+      backend?: GitBackendSelection;
+    };
+  };
 }
 
 export class GitBackendUnavailableError extends Error {
@@ -139,12 +145,14 @@ export class GitBackendRouter {
   private readonly repositoryPath: string;
   private readonly audit?: AuditLogger;
   private readonly env: Record<string, string | undefined>;
+  private readonly workspaceConfig?: GitBackendRouterOptions['workspaceConfig'];
   private readonly factories: Partial<Record<GitBackendKind, () => GitBackend>>;
 
   constructor(options: GitBackendRouterOptions) {
     this.repositoryPath = options.repositoryPath;
     this.audit = options.audit;
     this.env = options.env || process.env;
+    this.workspaceConfig = options.workspaceConfig;
     this.factories = {
       isomorphic: () =>
         new IsomorphicGitBackend({
@@ -207,7 +215,7 @@ export class GitBackendRouter {
   }
 
   resolveBackendKind(): GitBackendKind {
-    const configured = parseBackend(this.env.GIT_BACKEND);
+    const configured = parseBackend(this.workspaceConfig?.git?.backend ?? this.env.GIT_BACKEND);
     if (configured === 'auto') {
       return this.autoDetect();
     }

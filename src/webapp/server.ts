@@ -85,6 +85,7 @@ import { registerRoutes as registerWorkspaceRoutes } from './routes/workspaces';
 import { registerRoutes as registerCockpitRoutes } from './routes/cockpit';
 import { registerRoutes as registerAuthRoutes } from './routes/auth';
 import { registerRoutes as registerMcpRoutes } from './routes/mcp';
+import { registerRoutes as registerHelpRoutes } from './routes/help';
 import { registerRoutes as registerRagRoutes } from './routes/rag';
 import { registerRoutes as registerGitRoutes } from './routes/git';
 import { registerRoutes as registerMiscRoutes } from './routes/misc';
@@ -439,6 +440,7 @@ async function createApp() {
   await registerCockpitRoutes(app, ctx);
   await registerAuthRoutes(app, ctx);
   await registerMcpRoutes(app, ctx);
+  await registerHelpRoutes(app, ctx);
   await registerRagRoutes(app, ctx);
   await registerGitRoutes(app, ctx);
   // misc registers last — includes catch-all SPA static handler

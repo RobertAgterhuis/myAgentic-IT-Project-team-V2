@@ -13,6 +13,7 @@ export { CommandService } from './commands-service';
 export { GovernanceService, ServiceNotAvailableError } from './governance-service';
 export { PolicyService, PolicyValidationError, PolicyNotFoundError } from './policy-service';
 export { SessionService } from './session-service';
+export { HelpService } from './help-service';
 export { DashboardService } from './dashboard-service';
 export { MetricsDashboardService } from './metrics-dashboard-service';
 export {

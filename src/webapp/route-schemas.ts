@@ -800,7 +800,7 @@ export const auditGet = {
 };
 
 export const helpGet = {
-  tags: ['system'],
+  tags: ['help'],
   querystring: {
     type: 'object' as const,
     properties: {
@@ -809,6 +809,43 @@ export const helpGet = {
     additionalProperties: false,
   },
   response: readResponses,
+};
+
+export const helpPageGet = {
+  tags: ['help'],
+  params: {
+    type: 'object' as const,
+    required: ['routeSlug'],
+    properties: {
+      routeSlug: { type: 'string' as const, minLength: 1, pattern: '^[A-Za-z0-9/_-]+$' },
+    },
+  },
+  response: readResponses,
+};
+
+export const helpTopicGet = {
+  tags: ['help'],
+  params: {
+    type: 'object' as const,
+    required: ['topicId'],
+    properties: {
+      topicId: { type: 'string' as const, minLength: 1, pattern: '^[a-z0-9_-]+$' },
+    },
+  },
+  response: readResponses,
+};
+
+export const helpSearchGet = {
+  tags: ['help'],
+  querystring: {
+    type: 'object' as const,
+    required: ['q'],
+    properties: {
+      q: { type: 'string' as const, minLength: 1, maxLength: 200 },
+    },
+    additionalProperties: false,
+  },
+  response: listResponses,
 };
 
 /* ── analytics v1 ─────────────────────────────────────────────── */

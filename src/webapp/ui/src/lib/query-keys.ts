@@ -92,6 +92,7 @@ export const queryKeys = {
   help: {
     page: (routeSlug: string) => ['help', 'page', routeSlug] as const,
     topic: (topicId: string) => ['help', 'topic', topicId] as const,
+    search: (query: string) => ['help', 'search', query] as const,
   },
 
   /* Workspaces (UI-014) */

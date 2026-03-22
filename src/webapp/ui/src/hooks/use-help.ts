@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { ApiError, apiGet } from '@/lib/api-client';
-import type { HelpTopicResponse, PageHelpResponse } from '@/lib/api-types';
+import type { HelpSearchResponse, HelpTopicResponse, PageHelpResponse } from '@/lib/api-types';
 import { queryKeys } from '@/lib/query-keys';
 
 /**
@@ -55,5 +55,22 @@ export function useHelpTopic(topicId: string | null) {
     },
     staleTime: 5 * 60_000,
     enabled: Boolean(topicId),
+  });
+}
+
+/**
+ * Searches help pages/topics for the provided query.
+ */
+export function useHelpSearch(query: string) {
+  const normalizedQuery = query.trim();
+
+  return useQuery({
+    queryKey: queryKeys.help.search(normalizedQuery),
+    queryFn: () =>
+      apiGet<HelpSearchResponse>('/v1/help/search', {
+        q: normalizedQuery,
+      }),
+    staleTime: 60_000,
+    enabled: normalizedQuery.length > 0,
   });
 }

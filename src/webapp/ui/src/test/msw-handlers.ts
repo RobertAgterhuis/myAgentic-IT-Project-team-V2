@@ -374,7 +374,7 @@ const mockPageHelpByRoute: Record<
     inputsOutputs: 'Session list in, run-level insight out.',
     permissions: 'Operator',
     relatedPages: [{ routeSlug: 'commands', title: 'Commands' }],
-    keywords: ['sessions', 'runs', 'history'],
+    keywords: ['sessions', 'runs', 'history', 'gate'],
     topicLinks: [{ topicId: 'sessions-overview', title: 'Sessions overview' }],
   },
   approvals: {
@@ -392,6 +392,22 @@ const mockPageHelpByRoute: Record<
     relatedPages: [{ routeSlug: 'sessions', title: 'Sessions' }],
     keywords: ['approvals', 'governance', 'decisions'],
     topicLinks: [{ topicId: 'approval-workflow', title: 'Approval workflow' }],
+  },
+  pipeline: {
+    routeSlug: 'pipeline',
+    routePath: '/pipeline',
+    pageTitle: 'Pipeline',
+    purpose: 'Track phases, critic/risk gates, and sprint readiness.',
+    coreActions: [
+      { label: 'Inspect gates', description: 'Review why a gate passed or failed.' },
+      { label: 'Track progress', description: 'Monitor run phase transitions.' },
+      { label: 'Review readiness', description: 'Confirm sprint gate criteria.' },
+    ],
+    inputsOutputs: 'Pipeline events in, phase/gate insight out.',
+    permissions: 'Operator',
+    relatedPages: [{ routeSlug: 'sessions', title: 'Sessions' }],
+    keywords: ['pipeline', 'gate', 'progress'],
+    topicLinks: [{ topicId: 'quality-gates', title: 'Quality Gates' }],
   },
 };
 
@@ -429,6 +445,14 @@ const mockHelpTopicsById: Record<
     markdown: '# Approval workflow\n\n## Decisioning\n\nApprove or reject with rationale.',
     html: '<h1>Approval workflow</h1><h2>Decisioning</h2><p>Approve or reject with rationale.</p>',
     keywords: ['approval', 'governance'],
+  },
+  'quality-gates': {
+    topicId: 'quality-gates',
+    title: 'Quality Gates',
+    description: 'How phase boundaries and gate outcomes are evaluated.',
+    markdown: '# Quality Gates\n\n## Gate outcomes\n\nEach gate may pass, fail, or block progress.',
+    html: '<h1>Quality Gates</h1><h2>Gate outcomes</h2><p>Each gate may pass, fail, or block progress.</p>',
+    keywords: ['quality', 'gates', 'pipeline'],
   },
 };
 
@@ -644,6 +668,62 @@ export const handlers = [
       return HttpResponse.json({ error: 'Not found' }, { status: 404 });
     }
     return HttpResponse.json(topic);
+  }),
+  http.get('/api/v1/help/search', ({ request }) => {
+    const url = new URL(request.url);
+    const query = (url.searchParams.get('q') || '').trim().toLowerCase();
+    if (!query) {
+      return HttpResponse.json({ error: 'Query is required' }, { status: 400 });
+    }
+
+    const allPages = Object.values(mockPageHelpByRoute);
+    const matchedPages = allPages.filter((page) => {
+      const haystack = [
+        page.routeSlug,
+        page.pageTitle,
+        page.purpose,
+        page.keywords.join(' '),
+        page.coreActions.map((action) => `${action.label} ${action.description}`).join(' '),
+      ]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+
+    const allTopics = Object.values(mockHelpTopicsById);
+    const matchedTopics = allTopics.filter((topic) => {
+      const haystack = [topic.topicId, topic.title, topic.description, topic.keywords.join(' ')]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+
+    const results = [
+      ...matchedPages.map((page) => ({
+        kind: 'page' as const,
+        id: page.routeSlug,
+        title: page.pageTitle,
+        snippet: page.purpose,
+        routePath: page.routePath,
+        score: 0.85,
+      })),
+      ...matchedTopics.map((topic) => ({
+        kind: 'topic' as const,
+        id: topic.topicId,
+        topicId: topic.topicId,
+        title: topic.title,
+        snippet: topic.description,
+        score: 0.8,
+      })),
+    ];
+
+    return HttpResponse.json({
+      query,
+      count: results.length,
+      results,
+      pages: matchedPages,
+      topics: matchedTopics.map((topic) => ({ topicId: topic.topicId, title: topic.title })),
+    });
   }),
 
   /* SSE — not mockable via MSW HTTP handlers, tested separately */

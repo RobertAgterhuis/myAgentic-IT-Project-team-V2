@@ -56,6 +56,36 @@ describe('HelpPanel', () => {
     expect(useUIStore.getState().helpTopicId).toBe('sessions-overview');
   });
 
+  it('searches and groups page/topic results', async () => {
+    const user = userEvent.setup();
+    renderPanel(['/commands']);
+
+    await user.type(screen.getByRole('textbox', { name: /search help topics/i }), 'gate');
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/pipeline/i).length).toBeGreaterThan(0);
+      expect(screen.getByText(/sessions/i)).toBeInTheDocument();
+      expect(screen.getByText(/quality gates/i)).toBeInTheDocument();
+    });
+  });
+
+  it('selecting a topic search result loads that topic in drawer', async () => {
+    const user = userEvent.setup();
+    renderPanel(['/commands']);
+
+    await user.type(screen.getByRole('textbox', { name: /search help topics/i }), 'gate');
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /quality gates/i })).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: /quality gates/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /quality gates/i, level: 1 })).toBeInTheDocument();
+    });
+  });
+
   it('closes when escape is pressed', async () => {
     const user = userEvent.setup();
     const { onClose } = renderPanel(['/commands']);

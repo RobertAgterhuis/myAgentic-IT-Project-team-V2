@@ -1037,6 +1037,24 @@ export interface HelpTopicResponse {
   keywords: string[];
 }
 
+export interface HelpSearchResult {
+  kind: 'page' | 'topic';
+  id: string;
+  title: string;
+  snippet: string;
+  routePath?: string;
+  topicId?: string;
+  score: number;
+}
+
+export interface HelpSearchResponse {
+  query: string;
+  count: number;
+  results: HelpSearchResult[];
+  pages: PageHelpResponse[];
+  topics: HelpTopicLink[];
+}
+
 /* ──────────────────────────────────────────────
  * Sessions (M15 / Issue #M15-022)
  * ────────────────────────────────────────────── */

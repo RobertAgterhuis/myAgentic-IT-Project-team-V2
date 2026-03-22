@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo, useCallback, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { X, BookOpenText, Link2, ListTree, Loader2 } from 'lucide-react';
-import { useHelpTopic, usePageHelp, resolveHelpRouteSlug } from '@/hooks';
+import { X, BookOpenText, Link2, ListTree, Loader2, Search } from 'lucide-react';
+import { useHelpSearch, useHelpTopic, usePageHelp, resolveHelpRouteSlug } from '@/hooks';
 import { useUIStore } from '@/stores/ui-store';
 
 interface HelpPanelProps {
@@ -11,6 +11,7 @@ interface HelpPanelProps {
 
 export function HelpPanel({ onClose }: HelpPanelProps) {
   const location = useLocation();
+  const [searchQuery, setSearchQuery] = useState('');
   const helpRouteSlug = useUIStore((s) => s.helpRouteSlug);
   const helpTopicId = useUIStore((s) => s.helpTopicId);
   const setHelpTopic = useUIStore((s) => s.setHelpTopic);
@@ -20,6 +21,7 @@ export function HelpPanel({ onClose }: HelpPanelProps) {
   const { data: pageHelp, isLoading: isPageLoading } = usePageHelp(routeSlug);
   const activeTopicId = helpTopicId ?? pageHelp?.topicLinks[0]?.topicId ?? null;
   const { data: topic, isLoading: isTopicLoading } = useHelpTopic(activeTopicId);
+  const { data: searchData, isLoading: isSearchLoading } = useHelpSearch(searchQuery);
 
   useEffect(() => {
     if (!helpTopicId && pageHelp?.topicLinks[0]?.topicId) {
@@ -28,6 +30,8 @@ export function HelpPanel({ onClose }: HelpPanelProps) {
   }, [helpTopicId, pageHelp, setHelpTopic]);
 
   const topicDocument = useMemo(() => enrichTopicHtml(topic?.html ?? ''), [topic?.html]);
+  const pageSearchResults = searchData?.results.filter((entry) => entry.kind === 'page') ?? [];
+  const topicSearchResults = searchData?.results.filter((entry) => entry.kind === 'topic') ?? [];
 
   // Close on Escape
   useEffect(() => {
@@ -110,6 +114,93 @@ export function HelpPanel({ onClose }: HelpPanelProps) {
                   Topics
                 </h3>
                 <ul className="space-y-1 text-sm">
+                  <li>
+                    <div className="relative">
+                      <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(event) => setSearchQuery(event.target.value)}
+                        placeholder="Search help topics"
+                        aria-label="Search help topics"
+                        className="w-full rounded border border-input bg-background px-2 py-1 pl-7 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </div>
+                  </li>
+                  {searchQuery.trim().length > 0 && (
+                    <li className="rounded border border-border/60 bg-background/70 p-2">
+                      <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                        Search results
+                      </div>
+                      {isSearchLoading ? (
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Loader2 className="size-3.5 animate-spin" />
+                          Searching...
+                        </div>
+                      ) : (
+                        <div className="space-y-2">
+                          <div>
+                            <div className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                              Pages
+                            </div>
+                            {pageSearchResults.length === 0 ? (
+                              <p className="text-xs text-muted-foreground">No page matches</p>
+                            ) : (
+                              <ul className="space-y-1">
+                                {pageSearchResults.map((entry) => {
+                                  const page =
+                                    searchData?.pages.find((item) => item.routeSlug === entry.id) ||
+                                    null;
+                                  return (
+                                    <li key={`page-${entry.id}`}>
+                                      <button
+                                        type="button"
+                                        className="w-full rounded px-2 py-1 text-left text-xs hover:bg-muted"
+                                        onClick={() => {
+                                          openHelpForRoute(
+                                            page?.routeSlug || entry.id,
+                                            page?.topicLinks[0]?.topicId ?? null
+                                          );
+                                          setSearchQuery('');
+                                        }}
+                                      >
+                                        {entry.title}
+                                      </button>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            )}
+                          </div>
+                          <div>
+                            <div className="mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+                              Topics
+                            </div>
+                            {topicSearchResults.length === 0 ? (
+                              <p className="text-xs text-muted-foreground">No topic matches</p>
+                            ) : (
+                              <ul className="space-y-1">
+                                {topicSearchResults.map((entry) => (
+                                  <li key={`topic-${entry.id}`}>
+                                    <button
+                                      type="button"
+                                      className="w-full rounded px-2 py-1 text-left text-xs hover:bg-muted"
+                                      onClick={() => {
+                                        setHelpTopic(entry.topicId || entry.id);
+                                        setSearchQuery('');
+                                      }}
+                                    >
+                                      {entry.title}
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </li>
+                  )}
                   {(pageHelp?.topicLinks || []).map((topicLink) => {
                     const active = topicLink.topicId === activeTopicId;
                     return (

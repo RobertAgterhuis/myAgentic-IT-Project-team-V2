@@ -45,16 +45,53 @@ export interface McpServerRegistry {
 
 export type PermissionLevel = 'N' | 'D' | 'R' | 'P' | 'W' | 'A' | 'X';
 
+export type EnvironmentScope = 'dev' | 'test' | 'prod';
+
 export interface AgentServerPolicy {
   agentId: string;
   serverId: string;
   permission: PermissionLevel;
+  envScope?: EnvironmentScope | null;
 }
 
 export interface EnvironmentPolicy {
-  env: 'dev' | 'test' | 'prod';
+  env: EnvironmentScope;
   defaultPermission: PermissionLevel;
   writeRequiresApproval: boolean;
+}
+
+export type ToolOverrideMode = 'inherit' | 'set' | 'deny';
+
+export interface AgentToolPolicy {
+  agentId: string;
+  serverId: string;
+  toolId: string;
+  overrideMode: ToolOverrideMode;
+  permission?: PermissionLevel;
+  approvalRequired?: boolean;
+  blocked?: boolean;
+  envScope?: EnvironmentScope | null;
+}
+
+export interface ResolvedServerPermission {
+  agentId: string;
+  serverId: string;
+  environment: EnvironmentScope;
+  permissionLevel: PermissionLevel;
+  approvalRequired: boolean;
+  blocked: boolean;
+  source: 'server-policy' | 'environment-default' | 'implicit-deny';
+}
+
+export interface ResolvedToolPermission {
+  agentId: string;
+  serverId: string;
+  toolId: string;
+  environment: EnvironmentScope;
+  permissionLevel: PermissionLevel;
+  approvalRequired: boolean;
+  blocked: boolean;
+  source: 'server-policy' | 'environment-default' | 'tool-override' | 'implicit-deny';
 }
 
 export interface RuntimeToolPermission {

@@ -147,6 +147,7 @@ interface ProviderBackedRuntimeAdapterConfig {
   toolExecutor?: Pick<ToolExecutor, 'execute'>;
   toolAudit?: { logToolExecution(event: ToolExecutionAuditEvent): void };
   toolCatalogPath?: string;
+  runtimeManifestDir?: string;
 }
 
 interface MockRuntimeAdapterConfig {
@@ -687,6 +688,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
   private readonly _toolExecutor: Pick<ToolExecutor, 'execute'>;
   private readonly _toolAudit?: { logToolExecution(event: ToolExecutionAuditEvent): void };
   private readonly _toolCatalogPath?: string;
+  private readonly _runtimeManifestDir?: string;
 
   constructor(config: ProviderBackedRuntimeAdapterConfig) {
     super(config.outputDir);
@@ -701,6 +703,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
     this._toolExecutor = config.toolExecutor || createDefaultToolExecutor();
     this._toolAudit = config.toolAudit;
     this._toolCatalogPath = config.toolCatalogPath;
+    this._runtimeManifestDir = config.runtimeManifestDir;
   }
 
   private _createToolMiddleware(audit?: {
@@ -710,7 +713,15 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
       toolExecutor: this._toolExecutor,
       audit,
       catalogPath: this._toolCatalogPath,
+      runtimeManifestDir: this._runtimeManifestDir,
     });
+  }
+
+  private _deriveEnvScope(profile: string | undefined): 'dev' | 'test' | 'prod' {
+    if (!profile) return 'dev';
+    if (profile.startsWith('production-')) return 'prod';
+    if (profile.startsWith('test-')) return 'test';
+    return 'dev';
   }
 
   private async _completeWithToolExecution(options: {
@@ -722,6 +733,8 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
     policy: {
       role?: 'viewer' | 'operator' | 'admin';
       profile?: string;
+      agentId?: string;
+      envScope?: 'dev' | 'test' | 'prod';
       traceId: string;
       approvedActions?: unknown;
     };
@@ -772,6 +785,8 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
             {
               role: policy.role,
               profile: policy.profile,
+              agentId: policy.agentId,
+              envScope: policy.envScope,
               traceId: policy.traceId,
               approvedActions: policy.approvedActions,
             }
@@ -940,6 +955,11 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
           profile:
             runtimeContext.profile ||
             (runtimeContext.sessionState as { profile?: string } | undefined)?.profile,
+          agentId: agent.id,
+          envScope: this._deriveEnvScope(
+            runtimeContext.profile ||
+              (runtimeContext.sessionState as { profile?: string } | undefined)?.profile
+          ),
           traceId: toolTraceId,
           approvedActions: resolvedPolicyApprovals,
         },

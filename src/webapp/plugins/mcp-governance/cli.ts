@@ -30,6 +30,8 @@ function printUsage(): void {
       '  npm run plugin -- bootstrap --apply',
       '  npm run plugin -- agents sync [--apply|--dry-run]',
       '  npm run plugin -- mcp sync [--apply|--dry-run]',
+      '  npm run plugin -- policies sync [--apply|--dry-run]',
+      '  npm run plugin -- tool-policies sync [--apply|--dry-run]',
       '  npm run plugin -- runtime build',
       '  npm run plugin -- doctor',
       '',
@@ -79,9 +81,11 @@ async function run(overrideProjectRoot?: string): Promise<void> {
   if (cmd === 'bootstrap') {
     const migration = await service.runSqliteMigrations();
     const apply = parsed.apply || !parsed.dryRun;
-    const [agentSync, serverSync] = await Promise.all([
+    const [agentSync, serverSync, serverPolicySync, toolPolicySync] = await Promise.all([
       service.syncAgents(await service.getDefinedAgents(), { dryRun: !apply }),
       service.syncServers(await service.getDefinedServers(), { dryRun: !apply }),
+      service.syncServerPolicies(await service.getDefinedPolicies(), { dryRun: !apply }),
+      service.syncToolPolicies(await service.getDefinedToolPolicies(), { dryRun: !apply }),
     ]);
     process.stdout.write(
       `${JSON.stringify(
@@ -92,6 +96,8 @@ async function run(overrideProjectRoot?: string): Promise<void> {
           migration,
           agents: agentSync,
           servers: serverSync,
+          serverPolicies: serverPolicySync,
+          toolPolicies: toolPolicySync,
         },
         null,
         2
@@ -114,6 +120,28 @@ async function run(overrideProjectRoot?: string): Promise<void> {
     const result = await service.syncServers(await service.getDefinedServers(), { dryRun: !apply });
     process.stdout.write(
       `${JSON.stringify({ ok: true, command: 'mcp sync', apply, ...result }, null, 2)}\n`
+    );
+    return;
+  }
+
+  if (cmd === 'policies' && sub === 'sync') {
+    const apply = parsed.apply || !parsed.dryRun;
+    const result = await service.syncServerPolicies(await service.getDefinedPolicies(), {
+      dryRun: !apply,
+    });
+    process.stdout.write(
+      `${JSON.stringify({ ok: true, command: 'policies sync', apply, ...result }, null, 2)}\n`
+    );
+    return;
+  }
+
+  if (cmd === 'tool-policies' && sub === 'sync') {
+    const apply = parsed.apply || !parsed.dryRun;
+    const result = await service.syncToolPolicies(await service.getDefinedToolPolicies(), {
+      dryRun: !apply,
+    });
+    process.stdout.write(
+      `${JSON.stringify({ ok: true, command: 'tool-policies sync', apply, ...result }, null, 2)}\n`
     );
     return;
   }

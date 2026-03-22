@@ -66,6 +66,8 @@ describe('run() CLI commands', () => {
       path.join(pluginRoot, 'migrations', '001_mcp_governance.sql'),
       [
         'CREATE TABLE IF NOT EXISTS agent_types (id TEXT PRIMARY KEY, category TEXT NOT NULL, control_posture TEXT NOT NULL, requires_workload_identity INTEGER NOT NULL, app_registration_ref TEXT, template_category TEXT NOT NULL);',
+        'CREATE TABLE IF NOT EXISTS agent_server_policy (id TEXT PRIMARY KEY, agent_id TEXT NOT NULL, server_id TEXT NOT NULL, permission TEXT NOT NULL, env_scope TEXT);',
+        'CREATE TABLE IF NOT EXISTS agent_tool_policy (id TEXT PRIMARY KEY, agent_id TEXT NOT NULL, server_id TEXT NOT NULL, tool_id TEXT NOT NULL, override_mode TEXT NOT NULL, permission TEXT, approval_required INTEGER NOT NULL DEFAULT 0, blocked INTEGER NOT NULL DEFAULT 0, env_scope TEXT);',
         "CREATE TABLE IF NOT EXISTS mcp_migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')));",
       ].join('\n'),
       'utf8'
@@ -213,6 +215,24 @@ describe('run() CLI commands', () => {
     await run(root);
     const result = parsedOut();
     expect(result.apply).toBe(true);
+  });
+
+  it('policies sync --apply seeds server policies', async () => {
+    process.argv = argv('policies', 'sync', '--apply');
+    await run(root);
+    const result = parsedOut();
+    expect(result.ok).toBe(true);
+    expect(result.command).toBe('policies sync');
+    expect(result.added).toBeGreaterThan(0);
+  });
+
+  it('tool-policies sync --apply seeds tool policies', async () => {
+    process.argv = argv('tool-policies', 'sync', '--apply');
+    await run(root);
+    const result = parsedOut();
+    expect(result.ok).toBe(true);
+    expect(result.command).toBe('tool-policies sync');
+    expect(result.added).toBeGreaterThan(0);
   });
 
   // ── runtime build ─────────────────────────────────────────────────────────────

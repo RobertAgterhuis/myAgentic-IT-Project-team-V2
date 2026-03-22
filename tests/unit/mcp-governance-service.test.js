@@ -17,6 +17,8 @@ describe('McpGovernanceService', () => {
       path.join(pluginRoot, 'migrations', '001_mcp_governance.sql'),
       [
         'CREATE TABLE IF NOT EXISTS agent_types (id TEXT PRIMARY KEY, category TEXT NOT NULL, control_posture TEXT NOT NULL, requires_workload_identity INTEGER NOT NULL, app_registration_ref TEXT, template_category TEXT NOT NULL);',
+        'CREATE TABLE IF NOT EXISTS agent_server_policy (id TEXT PRIMARY KEY, agent_id TEXT NOT NULL, server_id TEXT NOT NULL, permission TEXT NOT NULL, env_scope TEXT);',
+        'CREATE TABLE IF NOT EXISTS agent_tool_policy (id TEXT PRIMARY KEY, agent_id TEXT NOT NULL, server_id TEXT NOT NULL, tool_id TEXT NOT NULL, override_mode TEXT NOT NULL, permission TEXT, approval_required INTEGER NOT NULL DEFAULT 0, blocked INTEGER NOT NULL DEFAULT 0, env_scope TEXT);',
         "CREATE TABLE IF NOT EXISTS mcp_migrations (id TEXT PRIMARY KEY, applied_at TEXT DEFAULT (datetime('now')));",
       ].join('\n'),
       'utf8'
@@ -79,5 +81,40 @@ describe('McpGovernanceService', () => {
 
     const stored = await svc.listServers();
     expect(stored).toEqual([]);
+  });
+
+  it('resolves server and tool permissions with environment scope', async () => {
+    const server = await svc.resolveServerPermission('orchestrator', 'workspace-management', 'dev');
+    expect(server.permissionLevel).toBe('R');
+    expect(server.blocked).toBe(false);
+
+    const tool = await svc.resolveToolPermission(
+      'documentation',
+      'workspace-management',
+      'workspace-management.delete_workspace',
+      'dev'
+    );
+    expect(tool.permissionLevel).toBe('X');
+    expect(tool.blocked).toBe(true);
+  });
+
+  it('validates env_scope and rejects missing or invalid values', () => {
+    expect(() => svc.validateEnvironmentScope(undefined)).toThrow(/env_scope is required/i);
+    expect(() => svc.validateEnvironmentScope('staging')).toThrow(/Invalid env_scope/i);
+    expect(() => svc.validateEnvironmentScope('prod', 'dev')).toThrow(/not allowed/i);
+    expect(svc.validateEnvironmentScope('dev', 'dev')).toBe('dev');
+  });
+
+  it('syncs server and tool policies in dry-run mode without writing state', async () => {
+    const serverPolicies = await svc.getDefinedPolicies();
+    const toolPolicies = await svc.getDefinedToolPolicies();
+
+    const serverDry = await svc.syncServerPolicies(serverPolicies, { dryRun: true });
+    const toolDry = await svc.syncToolPolicies(toolPolicies, { dryRun: true });
+
+    expect(serverDry.added).toBeGreaterThan(0);
+    expect(toolDry.added).toBeGreaterThan(0);
+    expect(await svc.listServerPolicies()).toEqual([]);
+    expect(await svc.listToolPolicies()).toEqual([]);
   });
 });

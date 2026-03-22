@@ -868,6 +868,100 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
     expect(execute).not.toHaveBeenCalled();
   });
 
+  it('blocks tool execution when resolved runtime manifest permission is blocked', async () => {
+    const contractPath = await writeContractFixture(
+      'tool-runtime-permission-block-contract.md',
+      ['# Contract', '', '```markdown', '## Metadata', '## HANDOFF CHECKLIST', '```'].join('\n')
+    );
+    const skillPath = await writeSkillFixture(
+      'tool-runtime-permission-block-skill.md',
+      contractPath
+    );
+
+    const runtimeManifestDir = path.join(tmpRoot, 'runtime-manifests');
+    await fs.mkdir(runtimeManifestDir, { recursive: true });
+    await fs.writeFile(
+      path.join(runtimeManifestDir, `${AGENT.id}.json`),
+      JSON.stringify(
+        {
+          agentId: AGENT.id,
+          generatedAt: new Date().toISOString(),
+          servers: [
+            {
+              serverId: 'git',
+              tools: [
+                {
+                  toolId: 'git.status',
+                  permissionLevel: 'X',
+                  approvalRequired: false,
+                  blocked: true,
+                },
+              ],
+            },
+          ],
+        },
+        null,
+        2
+      ),
+      'utf8'
+    );
+
+    const complete = vi.fn().mockResolvedValue({
+      content: '',
+      model: 'gpt-test',
+      usage: { promptTokens: 10, completionTokens: 2, totalTokens: 12 },
+      finishReason: 'tool_calls',
+      toolCalls: [
+        {
+          id: 'tc-runtime-perm-1',
+          name: 'tool.git.commit',
+          arguments: {
+            target: 'git',
+            operation: 'status',
+            params: {},
+          },
+        },
+      ],
+    });
+
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const execute = vi.fn();
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-runtime-permission-block',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      toolExecutor: { execute },
+      runtimeManifestDir,
+      validationMaxRetries: 0,
+    });
+
+    await expect(
+      adapter.invoke(AGENT, PLATFORM, {
+        skillFile: skillPath,
+        predecessorOutputs: {},
+        questionnaireInput: null,
+        role: 'admin',
+        profile: 'production-distributed',
+        sessionState: {
+          mode: 'AUDIT',
+          policyApprovals: {
+            'tool.git.commit': true,
+          },
+        },
+      })
+    ).rejects.toThrow(/TOOL_POLICY_BLOCKED|blocked by resolved permissions/);
+
+    expect(execute).not.toHaveBeenCalled();
+  });
+
   it('sanitizes untrusted context and emits trust metadata before model invocation', async () => {
     const contractPath = await writeContractFixture(
       'context-trust-contract.md',

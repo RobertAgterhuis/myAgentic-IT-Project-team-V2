@@ -5,6 +5,7 @@ const {
   defineMcpServers,
   definePolicies,
   defineEnvironmentPolicies,
+  defineToolPolicies,
 } = require('../../src/webapp/plugins/mcp-governance/factories');
 
 describe('mcp-governance factories', () => {
@@ -46,10 +47,21 @@ describe('mcp-governance factories', () => {
       { env: 'dev', defaultPermission: 'W', writeRequiresApproval: false },
     ]);
 
+    const toolPolicies = defineToolPolicies([
+      {
+        agentId: 'orchestrator',
+        serverId: 'workspace-management',
+        toolId: 'workspace-management.default',
+        overrideMode: 'set',
+        permission: 'R',
+      },
+    ]);
+
     expect(agents).toHaveLength(1);
     expect(servers).toHaveLength(1);
     expect(policies).toHaveLength(1);
     expect(envPolicies).toHaveLength(1);
+    expect(toolPolicies).toHaveLength(1);
   });
 
   it('returns cloned arrays so callers cannot mutate source objects', () => {

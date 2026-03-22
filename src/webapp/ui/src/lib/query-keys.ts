@@ -88,6 +88,11 @@ export const queryKeys = {
     policyEvaluation: ['governance', 'policy-evaluation'] as const,
   },
 
+  /* Help (M-UX-1a) */
+  help: {
+    page: (routeSlug: string) => ['help', 'page', routeSlug] as const,
+  },
+
   /* Workspaces (UI-014) */
   workspaces: {
     all: ['workspaces'] as const,

@@ -991,6 +991,44 @@ export interface ObservabilityTelemetryContractResponse extends OkResponse {
 }
 
 /* ──────────────────────────────────────────────
+ * Help (M-UX-1a)
+ * ────────────────────────────────────────────── */
+
+export interface HelpAction {
+  label: string;
+  description: string;
+}
+
+export interface HelpRelatedPage {
+  routeSlug: string;
+  title: string;
+}
+
+export interface HelpTopicLink {
+  topicId: string;
+  title: string;
+}
+
+export interface HelpStateVariant {
+  condition: string;
+  additionalContent: string;
+}
+
+export interface PageHelpResponse {
+  routeSlug: string;
+  routePath: string;
+  pageTitle: string;
+  purpose: string;
+  coreActions: HelpAction[];
+  inputsOutputs: string;
+  permissions: string;
+  relatedPages: HelpRelatedPage[];
+  keywords: string[];
+  topicLinks: HelpTopicLink[];
+  stateVariants?: HelpStateVariant[];
+}
+
+/* ──────────────────────────────────────────────
  * Sessions (M15 / Issue #M15-022)
  * ────────────────────────────────────────────── */
 

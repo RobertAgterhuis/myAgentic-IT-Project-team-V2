@@ -330,6 +330,71 @@ export const mockAgentsList: AgentsListResponse = {
   agents: [mockAgentDetail],
 };
 
+const mockPageHelpByRoute: Record<
+  string,
+  {
+    routeSlug: string;
+    routePath: string;
+    pageTitle: string;
+    purpose: string;
+    coreActions: Array<{ label: string; description: string }>;
+    inputsOutputs: string;
+    permissions: string;
+    relatedPages: Array<{ routeSlug: string; title: string }>;
+    keywords: string[];
+    topicLinks: Array<{ topicId: string; title: string }>;
+  }
+> = {
+  commands: {
+    routeSlug: 'commands',
+    routePath: '/commands',
+    pageTitle: 'Commands',
+    purpose: 'Queue and guide orchestrator commands with clear project intent.',
+    coreActions: [
+      { label: 'Create', description: 'Start a full delivery cycle from the brief.' },
+      { label: 'Audit', description: 'Assess an existing system before changes.' },
+      { label: 'Feature', description: 'Run scoped feature delivery.' },
+    ],
+    inputsOutputs: 'Project name and brief in, queued command out.',
+    permissions: 'Operator',
+    relatedPages: [{ routeSlug: 'pipeline', title: 'Pipeline' }],
+    keywords: ['commands', 'queue', 'brief'],
+    topicLinks: [{ topicId: 'commands-overview', title: 'Commands overview' }],
+  },
+  sessions: {
+    routeSlug: 'sessions',
+    routePath: '/sessions',
+    pageTitle: 'Sessions',
+    purpose: 'Track active and historical runs with clear recovery context.',
+    coreActions: [
+      { label: 'Review active', description: 'Open currently running orchestration sessions.' },
+      { label: 'Inspect history', description: 'Check completed runs for evidence and outcomes.' },
+      { label: 'Recover', description: 'Prioritize paused or failed runs that need intervention.' },
+    ],
+    inputsOutputs: 'Session list in, run-level insight out.',
+    permissions: 'Operator',
+    relatedPages: [{ routeSlug: 'commands', title: 'Commands' }],
+    keywords: ['sessions', 'runs', 'history'],
+    topicLinks: [{ topicId: 'sessions-overview', title: 'Sessions overview' }],
+  },
+  approvals: {
+    routeSlug: 'approvals',
+    routePath: '/approvals',
+    pageTitle: 'Approval Center',
+    purpose: 'Review and decide pending governance approvals in one queue.',
+    coreActions: [
+      { label: 'Filter', description: 'Narrow approvals by status.' },
+      { label: 'Review', description: 'Open a request to inspect context.' },
+      { label: 'Decide', description: 'Approve or reject with rationale.' },
+    ],
+    inputsOutputs: 'Approval requests in, audit-ready decisions out.',
+    permissions: 'Operator',
+    relatedPages: [{ routeSlug: 'sessions', title: 'Sessions' }],
+    keywords: ['approvals', 'governance', 'decisions'],
+    topicLinks: [{ topicId: 'approval-workflow', title: 'Approval workflow' }],
+  },
+};
+
 export const handlers = [
   /* Questionnaires */
   http.get('/api/questionnaires', () => HttpResponse.json(mockQuestionnaires)),
@@ -524,6 +589,16 @@ export const handlers = [
     }
     const resp: AgentDetailResponse = { ok: true, agent: mockAgentDetail };
     return HttpResponse.json(resp);
+  }),
+
+  /* Help */
+  http.get('/api/v1/help/page/:routeSlug', ({ params }) => {
+    const routeSlug = String(params.routeSlug ?? '').toLowerCase();
+    const page = mockPageHelpByRoute[routeSlug];
+    if (!page) {
+      return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    return HttpResponse.json(page);
   }),
 
   /* SSE — not mockable via MSW HTTP handlers, tested separately */

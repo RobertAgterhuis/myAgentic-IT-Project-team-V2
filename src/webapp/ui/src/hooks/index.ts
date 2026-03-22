@@ -73,6 +73,9 @@ export { useSSEEvents } from './use-sse-events';
 /* Keyboard Shortcuts (#241) */
 export { useKeyboardShortcuts } from './use-keyboard-shortcuts';
 
+/* Help (M-UX-1a) */
+export { usePageHelp } from './use-help';
+
 /* Analytics (M7) */
 export { useAnalyticsTrends, useAnalyticsAgents, useAnalyticsMetrics } from './use-analytics';
 

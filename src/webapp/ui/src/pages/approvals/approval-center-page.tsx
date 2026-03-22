@@ -20,6 +20,7 @@ import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
+import { PageHelpStrip } from '@/components/help-panel/page-help-strip';
 import { useApprovals, useApproveRequest, useRejectRequest, useApprovalDetail } from '@/hooks';
 import type { ApprovalEntry } from '@/lib/api-types';
 import {
@@ -354,6 +355,8 @@ export default function ApprovalCenterPage() {
             { id: 'audit', label: 'Audit-captured' },
           ]}
         />
+
+        <PageHelpStrip routeSlug="approvals" />
 
         <ContextStrip items={contextItems} />
 

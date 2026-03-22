@@ -16,6 +16,7 @@ import { ContextStrip, type ContextStripItem } from '@/components/layout/context
 import { PageShell } from '@/components/ui/page-shell';
 import { QueueTriageList, type QueueTriageItem } from '@/components/ui/queue-triage-list';
 import { useSessions } from '@/hooks';
+import { PageHelpStrip } from '@/components/help-panel/page-help-strip';
 import type { SessionStatus } from '@/lib/api-types';
 import { Activity, ArrowRight, CheckCircle, Clock, Pause, Sparkles, XCircle } from 'lucide-react';
 
@@ -188,6 +189,8 @@ export default function SessionsPage() {
             </Button>
           }
         />
+
+        <PageHelpStrip routeSlug="sessions" />
 
         <ContextStrip items={contextItems} />
 

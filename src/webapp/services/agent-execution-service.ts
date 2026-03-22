@@ -15,6 +15,8 @@ import { sessionTracker } from '../session-tracker';
 import type { ServiceContext } from './types';
 import { resolveAdapter } from '../../../platform/engine/agent-runtime-adapter';
 import { AGENT_RUNTIME_ADAPTER } from '../config';
+import { GitBackendRouter } from './git/git-backend-router';
+import { GitService } from './git/git-service';
 
 /** All known agents from the PHASE_AGENTS registry, keyed by id. */
 const AGENT_INDEX = new Map<string, { id: string; name: string; phase: string }>();
@@ -31,6 +33,7 @@ export interface ExecuteAgentInput {
   context?: {
     predecessorPaths?: string[];
     questionnairePath?: string;
+    workspaceId?: string;
   };
 }
 
@@ -126,11 +129,15 @@ export class AgentExecutionService {
     // I-A1-003: resolve adapter from registry; Dispatcher uses it instead of bare throw.
     const { adapter } = resolveAdapter({ adapterName: AGENT_RUNTIME_ADAPTER });
     const dispatcher = new Dispatcher({ store: getStore(), adapter: adapter ?? undefined });
+    const workspaceId = input.context?.workspaceId || 'default';
+    const gitService = this.createGitService(workspaceId);
 
     // Build context
     const ctx = dispatcher.buildContext(info.id, {
       predecessorPaths: input.context?.predecessorPaths ?? [],
       questionnairePath: input.context?.questionnairePath,
+      workspaceId,
+      gitService,
     });
 
     try {
@@ -236,6 +243,22 @@ export class AgentExecutionService {
     }
 
     return job;
+  }
+
+  private createGitService(workspaceId: string): GitService {
+    const repositoryPath = this._svc.projectRoot;
+    const router = new GitBackendRouter({
+      repositoryPath,
+      workspaceId,
+      env: process.env,
+    });
+
+    return new GitService({
+      backend: router.getBackend(),
+      audit: this._svc.audit,
+      repositoryPath,
+      actor: 'agent-execution',
+    });
   }
 
   /** Get execution status by job ID (M31-002). */

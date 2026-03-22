@@ -620,6 +620,7 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
       skillFile: skillPath,
       predecessorOutputs: {},
       questionnaireInput: null,
+      workspaceId: 'ws-runtime-1',
       role: 'admin',
       profile: 'production-distributed',
       sessionState: { mode: 'AUDIT', policyApprovals: { 'tool.git.commit': true } },
@@ -628,6 +629,9 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
     expect(execute).toHaveBeenCalledTimes(1);
     expect(execute).toHaveBeenCalledWith(
       expect.objectContaining({ target: 'git', operation: 'status' })
+    );
+    expect(execute.mock.calls[0][0].params.__agentContext).toEqual(
+      expect.objectContaining({ workspaceId: 'ws-runtime-1' })
     );
     expect(result.response.toolInvocationCount).toBe(1);
     expect(result.response.toolAuditEvents[0]).toEqual(

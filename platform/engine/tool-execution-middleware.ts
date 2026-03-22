@@ -21,6 +21,7 @@ export interface ToolExecutionPolicy {
   traceId?: string;
   actor?: string;
   approvedActions?: unknown;
+  executionContext?: Record<string, unknown>;
 }
 
 export interface LlmToolCall {
@@ -611,10 +612,17 @@ export class ToolExecutionMiddleware {
       );
     }
 
+    const requestParams =
+      target === 'git' &&
+      policy.executionContext &&
+      !Object.prototype.hasOwnProperty.call(params, '__agentContext')
+        ? { ...params, __agentContext: policy.executionContext }
+        : params;
+
     const request: ToolRequest = {
       target,
       operation,
-      params,
+      params: requestParams,
       timeout:
         typeof call.arguments?.timeout === 'number'
           ? (call.arguments.timeout as number)

@@ -58,6 +58,16 @@ interface AgentRef {
   name: string;
 }
 
+export interface AgentExecutionContext {
+  agentId: string;
+  skillFile: string;
+  predecessorOutputs: Record<string, string>;
+  questionnaireInput: string | null;
+  sessionState: unknown;
+  workspaceId: string | null;
+  gitService?: unknown;
+}
+
 interface CanonicalSchemaAgent {
   id?: unknown;
   name?: unknown;
@@ -603,23 +613,23 @@ class Dispatcher {
       predecessorPaths = [],
       questionnairePath,
       sessionState,
+      workspaceId,
+      gitService,
     } = options as {
       predecessorPaths?: string[];
       questionnairePath?: string;
       sessionState?: unknown;
+      workspaceId?: string;
+      gitService?: unknown;
     };
-    const context: {
-      agentId: string;
-      skillFile: string;
-      predecessorOutputs: Record<string, string>;
-      questionnaireInput: string | null;
-      sessionState: unknown;
-    } = {
+    const context: AgentExecutionContext = {
       agentId,
       skillFile: path.join(this._config.skillsDir as string, `${agentId}-*.md`),
       predecessorOutputs: {},
       questionnaireInput: null,
       sessionState: sessionState || null,
+      workspaceId: workspaceId || null,
+      gitService,
     };
 
     // AC-3: Load predecessor outputs

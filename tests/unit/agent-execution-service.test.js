@@ -15,7 +15,13 @@ function createMockServiceContext() {
     cache: { get: vi.fn(), set: vi.fn(), del: vi.fn() },
     audit: { log: vi.fn() },
     safeWrite: vi.fn(),
-    paths: { root: '/tmp/test', output: '/tmp/test/output' },
+    projectRoot: '/tmp/test',
+    businessDocs: '/tmp/test/BusinessDocs',
+    sessionDir: '/tmp/test/BusinessDocs/session',
+    decisionsFile: '/tmp/test/BusinessDocs/decisions.md',
+    decisionsDir: '/tmp/test/BusinessDocs/decisions',
+    commandQueue: '/tmp/test/BusinessDocs/session/command-queue.json',
+    helpDir: '/tmp/test/docs/help',
   };
 }
 
@@ -141,6 +147,25 @@ describe('AgentExecutionService', () => {
         expect.objectContaining({
           operation: 'AGENT_MANUAL_EXECUTE',
           entityId: '05',
+        })
+      );
+    });
+
+    it('injects workspace-scoped GitService into dispatcher context', async () => {
+      invokeSpy.mockResolvedValue({ success: true, outputPath: '/out.md' });
+
+      await svc.execute({
+        agentId: '05',
+        context: {
+          workspaceId: 'ws-123',
+        },
+      });
+
+      expect(buildContextSpy).toHaveBeenCalledWith(
+        '05',
+        expect.objectContaining({
+          workspaceId: 'ws-123',
+          gitService: expect.any(Object),
         })
       );
     });

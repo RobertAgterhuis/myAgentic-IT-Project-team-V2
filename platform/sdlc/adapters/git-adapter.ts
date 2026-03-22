@@ -4,8 +4,7 @@
  * Git Adapter
  *
  * Adapter for Git operations: repository info, branching, commit listing,
- * tag management, and diff queries. Executes real git CLI commands via
- * the shell executor.
+ * tag management, and diff queries.
  *
  * @module sdlc/adapters/git-adapter
  */
@@ -20,6 +19,12 @@ import fs from 'node:fs';
 import * as git from 'isomorphic-git';
 import { GitBackendRouter } from '../../../src/webapp/services/git/git-backend-router';
 import { GitService } from '../../../src/webapp/services/git/git-service';
+import type {
+  GitBranchResult,
+  GitLogResult,
+  GitStatusResult,
+  ResultTuple,
+} from '../../../src/webapp/services/git/git-backend';
 
 export interface GitConfig {
   [key: string]: unknown;
@@ -30,52 +35,54 @@ export interface GitConfig {
   timeout?: number;
 }
 
+interface GitServiceLike {
+  branch(
+    input: { op: 'list' } | { op: 'create'; name: string }
+  ): Promise<ResultTuple<GitBranchResult>>;
+  log(input: { depth: number }): Promise<ResultTuple<GitLogResult>>;
+  status(): Promise<ResultTuple<GitStatusResult>>;
+}
+
+interface AgentContextLike {
+  gitService?: GitServiceLike;
+}
+
 export class GitAdapter extends BaseAdapter {
   readonly name = 'git';
   readonly category = ADAPTER_CATEGORIES.GIT;
   readonly version = '2.0.0';
 
+  private readonly repositoryPath: string;
+  private readonly timeout: number;
+  private readonly fallbackGitService: GitServiceLike;
+
   constructor(config: GitConfig = { repository_path: '.' }) {
     super();
     this._config = config as Record<string, unknown>;
-    const repoPath = config.repository_path;
-    const timeout = config.timeout ?? 15_000;
+    this.repositoryPath = config.repository_path;
+    this.timeout = config.timeout ?? 15_000;
+    this.fallbackGitService = this.createFallbackGitService();
 
-    const router = new GitBackendRouter({
-      repositoryPath: repoPath,
-      env: process.env,
-    });
-    const gitService = new GitService({
-      backend: router.getBackend(),
-      audit: { log: () => {} },
-      repositoryPath: repoPath,
-      actor: 'sdlc-adapter',
-    });
-
-    const withTimeout = async <T>(promise: Promise<T>): Promise<T> => {
-      return Promise.race([
-        promise,
-        new Promise<T>((_, reject) => {
-          setTimeout(() => reject(new Error(`Git operation timeout after ${timeout}ms`)), timeout);
-        }),
-      ]);
-    };
-
-    const unwrap = <T>(result: readonly [T, null] | readonly [null, Error]): T => {
-      if (result[1]) throw result[1];
-      return result[0];
-    };
-
-    this._operations.set('list-branches', async () => {
-      const branchResult = await withTimeout(gitService.branch({ op: 'list' }));
-      const branches = unwrap(branchResult).info.branches;
+    this._operations.set('list-branches', async (params) => {
+      const gitService = this.resolveGitService(params);
+      const branchResult = (await this.withTimeout(
+        gitService.branch({ op: 'list' })
+      )) as ResultTuple<GitBranchResult>;
+      if (branchResult[1]) throw branchResult[1];
+      const branches = branchResult[0].info.branches;
       return { branches };
     });
 
     this._operations.set('list-commits', async (params) => {
       const limit = (params.limit as number) || 10;
-      const logResult = await withTimeout(gitService.log({ depth: limit }));
-      const commits = unwrap(logResult).entries.map((entry) => ({
+      const gitService = this.resolveGitService(params);
+      const logResult = (await this.withTimeout(
+        gitService.log({ depth: limit })
+      )) as ResultTuple<GitLogResult>;
+      if (logResult[1]) throw logResult[1];
+      const entries = logResult[0].entries;
+
+      const commits = entries.map((entry) => ({
         hash: entry.hash,
         author: entry.author,
         subject: entry.subject,
@@ -87,8 +94,11 @@ export class GitAdapter extends BaseAdapter {
     this._operations.set('create-branch', async (params) => {
       const name = params.name as string;
       if (!name) throw new Error('Branch name is required');
-      const branchResult = await withTimeout(gitService.branch({ op: 'create', name }));
-      unwrap(branchResult);
+      const gitService = this.resolveGitService(params);
+      const branchResult = (await this.withTimeout(
+        gitService.branch({ op: 'create', name })
+      )) as ResultTuple<GitBranchResult>;
+      if (branchResult[1]) throw branchResult[1];
       return { branch: name, created: true };
     });
 
@@ -96,11 +106,12 @@ export class GitAdapter extends BaseAdapter {
       const name = params.name as string;
       const message = (params.message as string) || name;
       if (!name) throw new Error('Tag name is required');
-      await withTimeout(
+
+      await this.withTimeout(
         git.annotatedTag({
           fs,
-          dir: repoPath,
-          gitdir: `${repoPath}/.git`,
+          dir: this.repositoryPath,
+          gitdir: `${this.repositoryPath}/.git`,
           ref: name,
           message,
           tagger: {
@@ -111,53 +122,65 @@ export class GitAdapter extends BaseAdapter {
           },
         })
       );
-      await withTimeout(
+
+      await this.withTimeout(
         git.writeRef({
           fs,
-          dir: repoPath,
-          gitdir: `${repoPath}/.git`,
+          dir: this.repositoryPath,
+          gitdir: `${this.repositoryPath}/.git`,
           ref: `refs/tags/${name}`,
-          value: await git.resolveRef({
-            fs,
-            dir: repoPath,
-            gitdir: `${repoPath}/.git`,
-            ref: name,
-          }),
+          value: await this.withTimeout(
+            git.resolveRef({
+              fs,
+              dir: this.repositoryPath,
+              gitdir: `${this.repositoryPath}/.git`,
+              ref: name,
+            })
+          ),
           force: true,
         })
       );
+
       return { tag: name, created: true };
     });
 
     this._operations.set('get-diff', async (params) => {
       const from = (params.from as string) || 'HEAD~1';
       const to = (params.to as string) || 'HEAD';
-      const fromCommit = await withTimeout(
-        git.readCommit({
+
+      const fromOid = await this.withTimeout(
+        git.resolveRef({
           fs,
-          dir: repoPath,
-          gitdir: `${repoPath}/.git`,
-          oid: await git.resolveRef({
-            fs,
-            dir: repoPath,
-            gitdir: `${repoPath}/.git`,
-            ref: from,
-          }),
+          dir: this.repositoryPath,
+          gitdir: `${this.repositoryPath}/.git`,
+          ref: from,
         })
       );
-      const toCommit = await withTimeout(
-        git.readCommit({
+      const toOid = await this.withTimeout(
+        git.resolveRef({
           fs,
-          dir: repoPath,
-          gitdir: `${repoPath}/.git`,
-          oid: await git.resolveRef({
-            fs,
-            dir: repoPath,
-            gitdir: `${repoPath}/.git`,
-            ref: to,
-          }),
+          dir: this.repositoryPath,
+          gitdir: `${this.repositoryPath}/.git`,
+          ref: to,
         })
       );
+      const fromCommit = await this.withTimeout(
+        git.readCommit({
+          fs,
+          dir: this.repositoryPath,
+          gitdir: `${this.repositoryPath}/.git`,
+          oid: fromOid,
+        })
+      );
+      const toCommit = await this.withTimeout(
+        git.readCommit({
+          fs,
+          dir: this.repositoryPath,
+          gitdir: `${this.repositoryPath}/.git`,
+          oid: toOid,
+        })
+      );
+
       const diffSummary = {
         from,
         to,
@@ -167,15 +190,61 @@ export class GitAdapter extends BaseAdapter {
       return { from, to, diff: JSON.stringify(diffSummary) };
     });
 
-    this._operations.set('status', async () => {
-      const statusResult = await withTimeout(gitService.status());
-      const status = unwrap(statusResult);
+    this._operations.set('status', async (params) => {
+      const gitService = this.resolveGitService(params);
+      const statusResult = (await this.withTimeout(
+        gitService.status()
+      )) as ResultTuple<GitStatusResult>;
+      if (statusResult[1]) throw statusResult[1];
+      const status = statusResult[0];
+
       const files = status.entries.map((entry) => ({
         status: `${entry.index[0] || ' '} ${entry.workingTree[0] || ' '}`.trim(),
         file: entry.path,
       }));
       return { files, clean: status.clean };
     });
+  }
+
+  private createFallbackGitService(): GitServiceLike {
+    const router = new GitBackendRouter({
+      repositoryPath: this.repositoryPath,
+      env: process.env,
+    });
+
+    return new GitService({
+      backend: router.getBackend(),
+      audit: { log: () => {} },
+      repositoryPath: this.repositoryPath,
+      actor: 'sdlc-adapter',
+    });
+  }
+
+  private resolveGitService(params: Record<string, unknown>): GitServiceLike {
+    const agentContext = params.__agentContext as AgentContextLike | undefined;
+    const injected = agentContext?.gitService;
+    if (
+      injected &&
+      typeof injected.branch === 'function' &&
+      typeof injected.log === 'function' &&
+      typeof injected.status === 'function'
+    ) {
+      return injected;
+    }
+
+    return this.fallbackGitService;
+  }
+
+  private withTimeout<T>(promise: Promise<T>): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        setTimeout(
+          () => reject(new Error(`Git operation timeout after ${this.timeout}ms`)),
+          this.timeout
+        );
+      }),
+    ]);
   }
 
   async healthCheck(): Promise<HealthCheck> {

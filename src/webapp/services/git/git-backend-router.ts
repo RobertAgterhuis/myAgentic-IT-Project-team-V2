@@ -34,6 +34,7 @@ interface AuditLogger {
 export interface GitBackendRouterOptions {
   repositoryPath: string;
   author?: GitAuthorIdentity;
+  workspaceId?: string;
   env?: Record<string, string | undefined>;
   factories?: Partial<Record<GitBackendKind, () => GitBackend>>;
   audit?: AuditLogger;
@@ -158,6 +159,7 @@ export class GitBackendRouter {
         new IsomorphicGitBackend({
           repositoryPath: options.repositoryPath,
           author: options.author,
+          workspaceId: options.workspaceId,
         }),
       native: () =>
         new NativeGitBackend({

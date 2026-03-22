@@ -70,6 +70,8 @@ interface AgentInvocationContext {
   predecessorOutputs?: Record<string, string>;
   questionnaireInput?: string | null;
   sessionState?: unknown;
+  workspaceId?: string | null;
+  gitService?: unknown;
   role?: 'viewer' | 'operator' | 'admin';
   profile?: string;
   policyApprovals?: unknown;
@@ -737,6 +739,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
       envScope?: 'dev' | 'test' | 'prod';
       traceId: string;
       approvedActions?: unknown;
+      executionContext?: Record<string, unknown>;
     };
     maxToolRounds?: number;
   }): Promise<{ completion: CompletionResult; toolAuditEvents: ToolExecutionAuditEvent[] }> {
@@ -789,6 +792,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
               envScope: policy.envScope,
               traceId: policy.traceId,
               approvedActions: policy.approvedActions,
+              executionContext: policy.executionContext,
             }
           );
           toolResults.push({
@@ -962,6 +966,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
           ),
           traceId: toolTraceId,
           approvedActions: resolvedPolicyApprovals,
+          executionContext: runtimeContext as Record<string, unknown>,
         },
       });
 

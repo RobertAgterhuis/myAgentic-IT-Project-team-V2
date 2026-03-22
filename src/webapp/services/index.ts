@@ -35,6 +35,7 @@ export type {
 } from './git/git-backend';
 export { createBrowserFsGitAdapter } from './git/browserfs-adapter';
 export { GitCredentialStore } from './git/credential-store';
+export { AzureDevOpsProviderBackend } from './git/azure-devops-provider-backend';
 export { GitBackendRouter, GitBackendUnavailableError } from './git/git-backend-router';
 export { GitHubProviderBackend } from './git/github-provider-backend';
 export { IsomorphicGitBackend } from './git/isomorphic-git-backend';

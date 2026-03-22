@@ -395,6 +395,43 @@ const mockPageHelpByRoute: Record<
   },
 };
 
+const mockHelpTopicsById: Record<
+  string,
+  {
+    topicId: string;
+    title: string;
+    description: string;
+    markdown: string;
+    html: string;
+    keywords: string[];
+  }
+> = {
+  'commands-overview': {
+    topicId: 'commands-overview',
+    title: 'Commands overview',
+    description: 'Command modes and expected outcomes.',
+    markdown: '# Commands overview\n\n## Queueing\n\nUse CREATE to start a run.',
+    html: '<h1>Commands overview</h1><h2>Queueing</h2><p>Use CREATE to start a run.</p>',
+    keywords: ['commands', 'create'],
+  },
+  'sessions-overview': {
+    topicId: 'sessions-overview',
+    title: 'Sessions overview',
+    description: 'Track active and historical sessions.',
+    markdown: '# Sessions overview\n\n## Recovery\n\nResume paused work safely.',
+    html: '<h1>Sessions overview</h1><h2>Recovery</h2><p>Resume paused work safely.</p>',
+    keywords: ['sessions', 'recovery'],
+  },
+  'approval-workflow': {
+    topicId: 'approval-workflow',
+    title: 'Approval workflow',
+    description: 'How governance approvals progress.',
+    markdown: '# Approval workflow\n\n## Decisioning\n\nApprove or reject with rationale.',
+    html: '<h1>Approval workflow</h1><h2>Decisioning</h2><p>Approve or reject with rationale.</p>',
+    keywords: ['approval', 'governance'],
+  },
+};
+
 export const handlers = [
   /* Questionnaires */
   http.get('/api/questionnaires', () => HttpResponse.json(mockQuestionnaires)),
@@ -599,6 +636,14 @@ export const handlers = [
       return HttpResponse.json({ error: 'Not found' }, { status: 404 });
     }
     return HttpResponse.json(page);
+  }),
+  http.get('/api/v1/help/topic/:topicId', ({ params }) => {
+    const topicId = String(params.topicId ?? '').toLowerCase();
+    const topic = mockHelpTopicsById[topicId];
+    if (!topic) {
+      return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    return HttpResponse.json(topic);
   }),
 
   /* SSE — not mockable via MSW HTTP handlers, tested separately */

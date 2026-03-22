@@ -1028,6 +1028,15 @@ export interface PageHelpResponse {
   stateVariants?: HelpStateVariant[];
 }
 
+export interface HelpTopicResponse {
+  topicId: string;
+  title: string;
+  description: string;
+  markdown: string;
+  html: string;
+  keywords: string[];
+}
+
 /* ──────────────────────────────────────────────
  * Sessions (M15 / Issue #M15-022)
  * ────────────────────────────────────────────── */

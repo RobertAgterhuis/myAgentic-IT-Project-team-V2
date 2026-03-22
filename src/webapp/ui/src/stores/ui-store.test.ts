@@ -11,6 +11,8 @@ describe('useUIStore', () => {
       sidebarOpen: true,
       activePage: 'dashboard',
       helpOpen: false,
+      helpRouteSlug: null,
+      helpTopicId: null,
       confirmDialog: null,
     });
   });
@@ -37,6 +39,14 @@ describe('useUIStore', () => {
     expect(useUIStore.getState().helpOpen).toBe(false);
     useUIStore.getState().toggleHelp();
     expect(useUIStore.getState().helpOpen).toBe(true);
+  });
+
+  it('opens help with route and topic context', () => {
+    useUIStore.getState().openHelpForRoute('/commands', 'commands');
+    const state = useUIStore.getState();
+    expect(state.helpOpen).toBe(true);
+    expect(state.helpRouteSlug).toBe('commands');
+    expect(state.helpTopicId).toBe('commands');
   });
 
   it('shows and dismisses confirm dialog', () => {

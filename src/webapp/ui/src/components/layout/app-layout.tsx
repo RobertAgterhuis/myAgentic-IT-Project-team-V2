@@ -123,7 +123,7 @@ export function AppLayout() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const helpOpen = useUIStore((s) => s.helpOpen);
-  const toggleHelp = useUIStore((s) => s.toggleHelp);
+  const closeHelp = useUIStore((s) => s.closeHelp);
   const connectionStatus = useUIStore((s) => s.connectionStatus);
 
   const { data: orchestratorStatus } = useOrchestratorStatus();
@@ -160,7 +160,7 @@ export function AppLayout() {
         />
       }
       breadcrumbs={<BreadcrumbNav items={buildBreadcrumbs(location.pathname)} />}
-      helpPanel={helpOpen ? <HelpPanel onClose={toggleHelp} /> : null}
+      helpPanel={helpOpen ? <HelpPanel onClose={closeHelp} /> : null}
     >
       <ErrorBoundary>
         <Suspense fallback={<PageSpinner />}>

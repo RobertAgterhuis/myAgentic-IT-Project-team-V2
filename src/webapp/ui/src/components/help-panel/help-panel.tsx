@@ -1,64 +1,33 @@
-/**
- * Help panel overlay — keyboard shortcut reference and context-aware help.
- * Issue #241 (S9F-34). Triggered by ? key or help button.
- */
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useMemo, useCallback } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-import { X, Search, Keyboard, HelpCircle } from 'lucide-react';
-
-export interface Shortcut {
-  keys: string[];
-  description: string;
-  /** Restrict to specific route paths, or omit for global. */
-  routes?: string[];
-}
-
-const SHORTCUTS: Shortcut[] = [
-  { keys: ['?'], description: 'Toggle help panel' },
-  { keys: ['Ctrl', 'K'], description: 'Focus search' },
-  { keys: ['Escape'], description: 'Close panel / dismiss dialog' },
-  { keys: ['G', 'D'], description: 'Go to Dashboard' },
-  { keys: ['G', 'C'], description: 'Go to Commands' },
-  { keys: ['G', 'P'], description: 'Go to Pipeline' },
-  { keys: ['G', 'Q'], description: 'Go to Questionnaires' },
-  { keys: ['G', 'E'], description: 'Go to Decisions' },
-  { keys: ['G', 'S'], description: 'Go to Sessions' },
-  { keys: ['G', 'A'], description: 'Go to Agents' },
-  { keys: ['G', 'O'], description: 'Go to Observability' },
-  { keys: ['G', 'V'], description: 'Go to Approvals' },
-  { keys: ['['], description: 'Toggle sidebar' },
-  // Pipeline-specific
-  { keys: ['Enter'], description: 'Expand selected phase', routes: ['/pipeline'] },
-  // Commands-specific
-  { keys: ['Ctrl', 'Enter'], description: 'Submit brief', routes: ['/commands'] },
-];
-
-function ShortcutRow({ shortcut }: { shortcut: Shortcut }) {
-  return (
-    <div className="flex items-center justify-between py-1.5 text-sm">
-      <span>{shortcut.description}</span>
-      <kbd className="flex items-center gap-1">
-        {shortcut.keys.map((key, i) => (
-          <span key={i}>
-            {i > 0 && <span className="text-muted-foreground mx-0.5">+</span>}
-            <span className="inline-flex items-center justify-center rounded border border-border bg-muted px-1.5 py-0.5 text-xs font-mono font-medium">
-              {key}
-            </span>
-          </span>
-        ))}
-      </kbd>
-    </div>
-  );
-}
+import { X, BookOpenText, Link2, ListTree, Loader2 } from 'lucide-react';
+import { useHelpTopic, usePageHelp, resolveHelpRouteSlug } from '@/hooks';
+import { useUIStore } from '@/stores/ui-store';
 
 interface HelpPanelProps {
   onClose: () => void;
 }
 
 export function HelpPanel({ onClose }: HelpPanelProps) {
-  const [filter, setFilter] = useState('');
   const location = useLocation();
+  const helpRouteSlug = useUIStore((s) => s.helpRouteSlug);
+  const helpTopicId = useUIStore((s) => s.helpTopicId);
+  const setHelpTopic = useUIStore((s) => s.setHelpTopic);
+  const openHelpForRoute = useUIStore((s) => s.openHelpForRoute);
+
+  const routeSlug = helpRouteSlug || resolveHelpRouteSlug(location.pathname);
+  const { data: pageHelp, isLoading: isPageLoading } = usePageHelp(routeSlug);
+  const activeTopicId = helpTopicId ?? pageHelp?.topicLinks[0]?.topicId ?? null;
+  const { data: topic, isLoading: isTopicLoading } = useHelpTopic(activeTopicId);
+
+  useEffect(() => {
+    if (!helpTopicId && pageHelp?.topicLinks[0]?.topicId) {
+      setHelpTopic(pageHelp.topicLinks[0].topicId);
+    }
+  }, [helpTopicId, pageHelp, setHelpTopic]);
+
+  const topicDocument = useMemo(() => enrichTopicHtml(topic?.html ?? ''), [topic?.html]);
 
   // Close on Escape
   useEffect(() => {
@@ -72,22 +41,6 @@ export function HelpPanel({ onClose }: HelpPanelProps) {
     return () => document.removeEventListener('keydown', handleKey);
   }, [onClose]);
 
-  // Context-aware filtering
-  const contextShortcuts = useMemo(() => {
-    return SHORTCUTS.filter((s) => {
-      if (s.routes && !s.routes.includes(location.pathname)) return false;
-      if (!filter) return true;
-      const q = filter.toLowerCase();
-      return (
-        s.description.toLowerCase().includes(q) || s.keys.some((k) => k.toLowerCase().includes(q))
-      );
-    });
-  }, [filter, location.pathname]);
-
-  const globalShortcuts = contextShortcuts.filter((s) => !s.routes);
-  const pageShortcuts = contextShortcuts.filter((s) => s.routes);
-
-  // Focus trap - close on outside click
   const handleBackdropClick = useCallback(
     (e: React.MouseEvent) => {
       if (e.target === e.currentTarget) onClose();
@@ -97,81 +50,187 @@ export function HelpPanel({ onClose }: HelpPanelProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 pt-20"
+      className="fixed inset-0 z-50 flex justify-end bg-black/45"
       onClick={handleBackdropClick}
       role="dialog"
-      aria-label="Keyboard shortcuts"
+      aria-label="Page help drawer"
       aria-modal="true"
     >
-      <div className="w-full max-w-md rounded-lg border bg-card shadow-lg animate-in fade-in slide-in-from-top-4 duration-200">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b px-4 py-3">
+      <aside className="flex h-full w-full max-w-3xl animate-in slide-in-from-right-8 duration-200 border-l border-border bg-card/95 shadow-2xl backdrop-blur">
+        <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex items-center gap-2">
-            <Keyboard className="size-5" />
-            <span className="font-semibold">Keyboard Shortcuts</span>
+            <BookOpenText className="size-5" />
+            <span className="font-semibold">Help</span>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="rounded-sm p-1 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            aria-label="Close help"
-          >
-            <X className="size-4" />
-          </button>
-        </div>
-
-        {/* Search */}
-        <div className="border-b px-4 py-2">
-          <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <input
-              type="text"
-              placeholder="Search shortcuts…"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="w-full rounded-md border border-input bg-background pl-8 pr-3 py-1.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="Search shortcuts"
-              autoFocus
-            />
-          </div>
-        </div>
-
-        {/* Shortcut list */}
-        <div className="max-h-80 overflow-y-auto px-4 py-3">
-          {globalShortcuts.length > 0 && (
-            <section>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                Global
-              </h3>
-              {globalShortcuts.map((s, i) => (
-                <ShortcutRow key={i} shortcut={s} />
-              ))}
-            </section>
-          )}
-
-          {pageShortcuts.length > 0 && (
-            <section className="mt-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                This Page
-              </h3>
-              {pageShortcuts.map((s, i) => (
-                <ShortcutRow key={i} shortcut={s} />
-              ))}
-            </section>
-          )}
-
-          {contextShortcuts.length === 0 && (
-            <div
-              className={cn(
-                'flex flex-col items-center gap-2 py-6 text-center text-muted-foreground'
-              )}
-            >
-              <HelpCircle className="size-8" />
-              <span className="text-sm">No shortcuts match "{filter}"</span>
+          <div className="flex items-center justify-between border-b px-5 py-4">
+            <div className="min-w-0">
+              <div className="truncate text-base font-semibold">
+                {pageHelp?.pageTitle || 'Page Help'}
+              </div>
+              <p className="truncate text-xs text-muted-foreground">
+                {pageHelp?.purpose || 'No contextual help configured for this route.'}
+              </p>
             </div>
-          )}
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-sm p-1 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              aria-label="Close help"
+            >
+              <X className="size-4" />
+            </button>
+          </div>
+
+          <div className="grid min-h-0 flex-1 grid-cols-12">
+            <div className="col-span-9 min-h-0 overflow-y-auto p-5">
+              {isPageLoading || isTopicLoading ? (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Loader2 className="size-4 animate-spin" />
+                  Loading help content...
+                </div>
+              ) : topic ? (
+                <article
+                  className={cn(
+                    'prose prose-slate max-w-none dark:prose-invert',
+                    'prose-headings:scroll-mt-20 prose-a:text-info hover:prose-a:text-info/80'
+                  )}
+                  dangerouslySetInnerHTML={{ __html: topicDocument.html }}
+                />
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  Help content for this page is not available yet.
+                </p>
+              )}
+            </div>
+
+            <div className="col-span-3 min-h-0 overflow-y-auto border-l px-4 py-5">
+              <section>
+                <h3 className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <ListTree className="size-3.5" />
+                  Topics
+                </h3>
+                <ul className="space-y-1 text-sm">
+                  {(pageHelp?.topicLinks || []).map((topicLink) => {
+                    const active = topicLink.topicId === activeTopicId;
+                    return (
+                      <li key={topicLink.topicId}>
+                        <button
+                          type="button"
+                          className={cn(
+                            'w-full rounded px-2 py-1 text-left hover:bg-muted',
+                            active && 'bg-muted font-medium'
+                          )}
+                          onClick={() => setHelpTopic(topicLink.topicId)}
+                        >
+                          {topicLink.title}
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+
+              <section className="mt-5">
+                <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  On this page
+                </h3>
+                <ul className="space-y-1 text-xs">
+                  {topicDocument.headings.length === 0 && (
+                    <li className="text-muted-foreground">No section headings</li>
+                  )}
+                  {topicDocument.headings.map((heading) => (
+                    <li key={heading.id}>
+                      <a
+                        href={`#${heading.id}`}
+                        className={cn(
+                          'block rounded py-1 hover:bg-muted',
+                          heading.level <= 1 && 'pl-2',
+                          heading.level === 2 && 'pl-4',
+                          heading.level >= 3 && 'pl-6'
+                        )}
+                      >
+                        {heading.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+
+              <section className="mt-5">
+                <h3 className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <Link2 className="size-3.5" />
+                  Related pages
+                </h3>
+                <ul className="space-y-1 text-sm">
+                  {(pageHelp?.relatedPages || []).map((related) => (
+                    <li key={related.routeSlug}>
+                      <Link
+                        to={`/${related.routeSlug}`}
+                        className="block rounded px-2 py-1 hover:bg-muted"
+                        onClick={() => openHelpForRoute(related.routeSlug)}
+                      >
+                        {related.title}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+          </div>
         </div>
-      </div>
+      </aside>
     </div>
   );
+}
+
+interface HeadingEntry {
+  id: string;
+  level: number;
+  text: string;
+}
+
+function enrichTopicHtml(html: string): { html: string; headings: HeadingEntry[] } {
+  if (!html) {
+    return { html: '', headings: [] };
+  }
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const headings: HeadingEntry[] = [];
+  const seenIds = new Set<string>();
+
+  doc.querySelectorAll('h1, h2, h3').forEach((heading) => {
+    const level = Number.parseInt(heading.tagName.replace('H', ''), 10);
+    const text = heading.textContent?.trim() || '';
+    const id = heading.id || buildHeadingId(text, seenIds);
+    heading.id = id;
+    seenIds.add(id);
+    if (text) {
+      headings.push({ id, level, text });
+    }
+  });
+
+  return {
+    html: doc.body.innerHTML,
+    headings,
+  };
+}
+
+function buildHeadingId(text: string, seenIds: Set<string>): string {
+  const base =
+    text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .trim()
+      .replace(/\s+/g, '-') || 'section';
+
+  if (!seenIds.has(base)) {
+    return base;
+  }
+
+  let suffix = 2;
+  while (seenIds.has(`${base}-${suffix}`)) {
+    suffix += 1;
+  }
+  return `${base}-${suffix}`;
 }

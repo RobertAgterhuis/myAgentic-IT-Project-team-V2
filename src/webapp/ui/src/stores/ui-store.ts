@@ -20,7 +20,12 @@ export interface UIState {
 
   /* Help panel */
   helpOpen: boolean;
+  helpRouteSlug: string | null;
+  helpTopicId: string | null;
   toggleHelp: () => void;
+  closeHelp: () => void;
+  openHelpForRoute: (routePathOrSlug: string, topicId?: string | null) => void;
+  setHelpTopic: (topicId: string | null) => void;
 
   /* Confirm dialog */
   confirmDialog: ConfirmDialogState | null;
@@ -52,7 +57,17 @@ export const useUIStore = create<UIState>((set) => ({
   setActivePage: (page) => set({ activePage: page }),
 
   helpOpen: false,
+  helpRouteSlug: null,
+  helpTopicId: null,
   toggleHelp: () => set((s) => ({ helpOpen: !s.helpOpen })),
+  closeHelp: () => set({ helpOpen: false }),
+  openHelpForRoute: (routePathOrSlug, topicId = null) =>
+    set({
+      helpOpen: true,
+      helpRouteSlug: normalizeHelpRouteSlug(routePathOrSlug),
+      helpTopicId: topicId,
+    }),
+  setHelpTopic: (topicId) => set({ helpTopicId: topicId }),
 
   confirmDialog: null,
   showConfirm: (dialog) => set({ confirmDialog: dialog }),
@@ -64,3 +79,15 @@ export const useUIStore = create<UIState>((set) => ({
   lastSSEEvent: null,
   setLastSSEEvent: (event) => set({ lastSSEEvent: event }),
 }));
+
+function normalizeHelpRouteSlug(routePathOrSlug: string): string {
+  const value = routePathOrSlug.trim();
+  if (!value) return '';
+
+  if (value.startsWith('/')) {
+    const [firstSegment] = value.split('/').filter(Boolean);
+    return (firstSegment || '').toLowerCase();
+  }
+
+  return value.replace(/^\/+/, '').toLowerCase();
+}

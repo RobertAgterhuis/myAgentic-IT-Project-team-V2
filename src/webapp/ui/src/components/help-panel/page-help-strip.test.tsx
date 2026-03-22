@@ -19,7 +19,7 @@ function renderStrip(routeSlug = 'commands') {
 describe('PageHelpStrip', () => {
   beforeEach(() => {
     localStorage.clear();
-    useUIStore.setState({ helpOpen: false });
+    useUIStore.setState({ helpOpen: false, helpRouteSlug: null, helpTopicId: null });
   });
 
   it('renders purpose and core actions for a route with help content', async () => {
@@ -105,5 +105,7 @@ describe('PageHelpStrip', () => {
     await user.click(screen.getByRole('button', { name: /learn more/i }));
 
     expect(useUIStore.getState().helpOpen).toBe(true);
+    expect(useUIStore.getState().helpRouteSlug).toBe('commands');
+    expect(useUIStore.getState().helpTopicId).toBe('commands-overview');
   });
 });

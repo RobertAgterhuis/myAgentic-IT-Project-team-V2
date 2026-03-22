@@ -31,8 +31,7 @@ export function PageHelpStrip({ routeSlug, className }: PageHelpStripProps) {
   const storageKey = `${STORAGE_PREFIX}${routeSlug}`;
   const [collapsed, setCollapsed] = useState<boolean>(() => readCollapsed(storageKey));
   const { data: pageHelp } = usePageHelp(routeSlug);
-  const helpOpen = useUIStore((s) => s.helpOpen);
-  const toggleHelp = useUIStore((s) => s.toggleHelp);
+  const openHelpForRoute = useUIStore((s) => s.openHelpForRoute);
 
   const topActions = useMemo(() => pageHelp?.coreActions.slice(0, 5) ?? [], [pageHelp]);
 
@@ -49,9 +48,8 @@ export function PageHelpStrip({ routeSlug, className }: PageHelpStripProps) {
   };
 
   const openHelp = () => {
-    if (!helpOpen) {
-      toggleHelp();
-    }
+    const defaultTopic = pageHelp.topicLinks[0]?.topicId ?? null;
+    openHelpForRoute(pageHelp.routePath || routeSlug, defaultTopic);
   };
 
   return (

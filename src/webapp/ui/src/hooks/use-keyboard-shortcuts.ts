@@ -3,15 +3,19 @@
  * Attaches to document and routes keys to actions.
  */
 import { useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useUIStore } from '@/stores/ui-store';
+import { resolveHelpRouteSlug } from './use-help';
 
 /**
  * Handles two-key sequences (e.g., G then D) and single-key shortcuts.
  */
 export function useKeyboardShortcuts() {
   const navigate = useNavigate();
-  const toggleHelp = useUIStore((s) => s.toggleHelp);
+  const location = useLocation();
+  const helpOpen = useUIStore((s) => s.helpOpen);
+  const closeHelp = useUIStore((s) => s.closeHelp);
+  const openHelpForRoute = useUIStore((s) => s.openHelpForRoute);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
 
   const pendingRef = useRef<string | null>(null);
@@ -69,7 +73,11 @@ export function useKeyboardShortcuts() {
       // Single-key shortcuts
       if (key === '?' && !e.ctrlKey && !e.metaKey) {
         e.preventDefault();
-        toggleHelp();
+        if (helpOpen) {
+          closeHelp();
+        } else {
+          openHelpForRoute(resolveHelpRouteSlug(location.pathname));
+        }
         return;
       }
 
@@ -90,5 +98,13 @@ export function useKeyboardShortcuts() {
       document.removeEventListener('keydown', handleKeyDown);
       clearTimeout(timerRef.current);
     };
-  }, [navigate, toggleHelp, toggleSidebar, clearPending]);
+  }, [
+    navigate,
+    location.pathname,
+    helpOpen,
+    closeHelp,
+    openHelpForRoute,
+    toggleSidebar,
+    clearPending,
+  ]);
 }

@@ -489,6 +489,59 @@ describe('routes/auth handlers', () => {
     });
   });
 
+  /* ── GET /api/auth/providers ─────────────────────────────────── */
+
+  describe('GET /api/auth/providers', () => {
+    it('returns github:true entra:false when only GitHub is configured', async () => {
+      const handler = routes['GET /api/auth/providers'];
+      const req = createReq('/api/auth/providers');
+      const res = createRes();
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(200);
+      const body = parsed(res);
+      expect(body.github).toBe(true);
+      expect(body.entra).toBe(false);
+    });
+
+    it('returns github:true entra:true when both providers are configured', async () => {
+      const dbPath2 = tmpDbPath();
+      const cfg = {
+        ...TEST_CONFIG,
+        dbPath: dbPath2,
+        ...ENTRA_TEST_CONFIG,
+        entraClientSecret: 'entra-secret',
+      };
+      const mgr2 = new AuthManager(cfg);
+      const mw2 = createAuthMiddleware({ authManager: mgr2, log: () => {} });
+      const routes2 = createAuthRoutes({ _authManager: mgr2, _authMiddleware: mw2 });
+
+      const handler = routes2['GET /api/auth/providers'];
+      const req = createReq('/api/auth/providers');
+      const res = createRes();
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(200);
+      const body = parsed(res);
+      expect(body.github).toBe(true);
+      expect(body.entra).toBe(true);
+
+      mgr2.close();
+      rmDir(dbPath2);
+    });
+
+    it('returns 503 when auth is disabled', async () => {
+      const routes3 = createAuthRoutes({ _authManager: undefined, _authMiddleware: undefined });
+      const handler = routes3['GET /api/auth/providers'];
+      const req = createReq('/api/auth/providers');
+      const res = createRes();
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(503);
+      expect(parsed(res).error).toBe('AUTH_DISABLED');
+    });
+  });
+
   /* ── GET /api/admin/users ────────────────────────────────────── */
 
   describe('GET /api/admin/users', () => {

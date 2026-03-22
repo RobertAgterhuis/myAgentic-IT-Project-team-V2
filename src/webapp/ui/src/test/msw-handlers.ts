@@ -458,6 +458,11 @@ const mockHelpTopicsById: Record<
 
 export const handlers = [
   /* Questionnaires */
+  /* Auth */
+  http.get('/api/auth/me', () => HttpResponse.json({}, { status: 401 })),
+  http.get('/api/auth/providers', () => HttpResponse.json({ github: true, entra: false })),
+
+  /* Questionnaires */
   http.get('/api/questionnaires', () => HttpResponse.json(mockQuestionnaires)),
   http.post('/api/save', () => HttpResponse.json({ ok: true, saved: 1 })),
 

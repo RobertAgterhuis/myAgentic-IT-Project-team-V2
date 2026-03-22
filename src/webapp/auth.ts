@@ -1287,6 +1287,7 @@ export function createAuthMiddleware(opts: AuthMiddlewareOptions) {
     '/api/auth/entra/login',
     '/api/auth/entra/callback',
     '/api/auth/logout',
+    '/api/auth/providers',
   ];
 
   function isPublicPath(pathname: string): boolean {

@@ -276,6 +276,23 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     }
   );
 
+  /* ── GET /api/auth/providers ─────────────────────────────── */
+  app.get(
+    '/api/auth/providers',
+    { schema: { tags: ['auth'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      if (!authManager) {
+        return reply
+          .code(503)
+          .send({ error: 'AUTH_DISABLED', message: 'Authentication not configured' });
+      }
+      return reply.send({
+        github: authManager.getProvider('github') !== null,
+        entra: authManager.getProvider('entra') !== null,
+      });
+    }
+  );
+
   /* ── GET /api/admin/users ─────────────────────────────────── */
   app.get(
     '/api/admin/users',

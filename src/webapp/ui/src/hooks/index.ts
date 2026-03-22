@@ -130,8 +130,19 @@ export {
   useRejectWithComment,
 } from './use-cockpit';
 
-/* Workspaces (UI-014) */
-export { useWorkspaces, useWorkspaceDetail } from './use-workspaces';
+/* Workspaces (UI-014, M25-014) */
+export {
+  useWorkspaces,
+  useWorkspaceDetail,
+  useCreateWorkspace,
+  useUpdateWorkspace,
+  useDeleteWorkspace,
+  useAddRepository,
+  useRemoveRepository,
+  useCreateProject,
+  useUpdateProject,
+  useDeleteProject,
+} from './use-workspaces';
 
 /* Prompts & Contracts (UI-015) */
 export { usePromptContractAssets } from './use-prompt-contracts';

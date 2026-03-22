@@ -11,7 +11,12 @@ const fs = require('fs');
 const crypto = require('crypto');
 
 // Dynamic import wrapper for the TS auth module
-let AuthStore, AuthManager, createAuthMiddleware, loadAuthConfig;
+let AuthStore,
+  AuthManager,
+  createAuthMiddleware,
+  loadAuthConfig,
+  ProviderRegistry,
+  GitHubAuthProvider;
 
 beforeAll(async () => {
   const mod = await import('../../src/webapp/auth.ts');
@@ -19,6 +24,8 @@ beforeAll(async () => {
   AuthManager = mod.AuthManager;
   createAuthMiddleware = mod.createAuthMiddleware;
   loadAuthConfig = mod.loadAuthConfig;
+  ProviderRegistry = mod.ProviderRegistry;
+  GitHubAuthProvider = mod.GitHubAuthProvider;
 });
 
 /** Create a temporary database path that is cleaned up after each test. */
@@ -61,7 +68,8 @@ describe('AuthStore', () => {
         avatarUrl: 'https://example.com/alice.png',
       });
       expect(user).toBeDefined();
-      expect(user.github_id).toBe(1001);
+      expect(user.provider_id).toBe('1001');
+      expect(user.primary_provider).toBe('github');
       expect(user.role).toBe('admin');
       expect(user.email).toBe('alice@example.com');
     });
@@ -93,6 +101,7 @@ describe('AuthStore', () => {
         avatarUrl: '',
       });
       expect(store.findUserByGithubId(9999)).toBeDefined();
+      expect(store.findUserByProvider('github', '9999')).toBeDefined();
       expect(store.findUserById(created.id)).toBeDefined();
       expect(store.findUserByGithubId(0)).toBeNull();
       expect(store.findUserById('nonexistent')).toBeNull();
@@ -219,6 +228,14 @@ describe('AuthManager', () => {
     expect(url).toContain('state=');
   });
 
+  it('registers and resolves providers through ProviderRegistry', () => {
+    const registry = new ProviderRegistry();
+    const provider = new GitHubAuthProvider(config);
+    registry.registerProvider('github', provider);
+    expect(registry.getProvider('github')).toBe(provider);
+    expect(registry.getProvider('entra')).toBeNull();
+  });
+
   it('generates login URL with redirect_to encoded in state', () => {
     const url = manager.getLoginUrl('/dashboard');
     expect(url).toContain('state=');
@@ -262,11 +279,19 @@ describe('AuthManager', () => {
       const session = manager.createSession(userId);
       // Mock IncomingMessage with cookie header
       const mockReq = {
-        headers: { cookie: `sid=${session.id}` },
+        headers: { cookie: `sid=${session.primary_provider}.${session.id}` },
       };
       const found = manager.getSessionFromRequest(mockReq);
       expect(found).toBeDefined();
       expect(found.id).toBe(session.id);
+    });
+
+    it('rejects mismatched provider in session cookie', () => {
+      const session = manager.createSession(userId, 'github');
+      const mockReq = {
+        headers: { cookie: `sid=entra.${session.id}` },
+      };
+      expect(manager.getSessionFromRequest(mockReq)).toBeNull();
     });
 
     it('returns null for missing session cookie', () => {

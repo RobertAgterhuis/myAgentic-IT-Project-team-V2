@@ -93,27 +93,28 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       }
 
       try {
-        // Exchange code for token
-        const accessToken = await authManager.exchangeCode(code);
-
-        // Fetch GitHub user profile
-        const ghUser = await authManager.fetchGitHubUser(accessToken);
+        const providerUser = await authManager.authenticateProvider('github', code, state);
 
         // Create or update user
         const user = authManager.store.upsertUser({
-          githubId: ghUser.id,
-          email: ghUser.email,
-          name: ghUser.name,
-          avatarUrl: ghUser.avatar_url,
+          provider: providerUser.provider,
+          providerId: providerUser.providerId,
+          providerUsername: providerUser.username,
+          email: providerUser.email,
+          name: providerUser.name,
+          avatarUrl: providerUser.avatarUrl,
+          tokenPair: providerUser.tokenPair,
+          tenantId: providerUser.tenantId,
         });
 
         // Create session (new ID — prevents session fixation)
-        const session = authManager.createSession(user.id);
+        const session = authManager.createSession(user.id, user.primary_provider);
         authManager.setSessionCookie(reply.raw, session);
 
         structuredLog('info', 'user_login', {
           userId: user.id,
-          githubLogin: ghUser.login,
+          provider: providerUser.provider,
+          providerUsername: providerUser.username,
           role: user.role,
         });
 

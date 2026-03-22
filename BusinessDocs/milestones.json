@@ -138,9 +138,9 @@
   {
     "id": "GH-105",
     "name": "M-INFRA-2b - Entra OIDC Provider",
-    "status": "in progress",
-    "progress": 44,
-    "completion": null,
+    "status": "completed",
+    "progress": 100,
+    "completion": "2026-03-22",
     "archived": false
   },
   {

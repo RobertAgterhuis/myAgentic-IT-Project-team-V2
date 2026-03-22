@@ -368,6 +368,17 @@ describe('AuthManager', () => {
       expect(entraAccount.tenant_id).toBe('tenant-persist-001');
       expect(entraAccount.provider_username).toBe('carol@contoso.com');
     });
+
+    it('extracts groups claim from Entra id_token', async () => {
+      const result = await authenticateWithClaims({
+        oid: 'entra-obj-id-004',
+        tid: 'tenant-groups-001',
+        preferred_username: 'dana@contoso.com',
+        groups: ['group-admin', 'group-ops'],
+      });
+
+      expect(result.groups).toEqual(['group-admin', 'group-ops']);
+    });
   });
 
   it('generates login URL with redirect_to encoded in state', () => {
@@ -809,6 +820,14 @@ describe('loadAuthConfig', () => {
       manager.close();
       rmDir(p);
     }
+  });
+
+  it('parses ENTRA_ADMIN_GROUP_ID as comma-separated group IDs', () => {
+    process.env.ENTRA_CLIENT_ID = 'entra-client-id';
+    process.env.ENTRA_ADMIN_GROUP_ID = 'group-a, group-b ,group-c';
+
+    const config = loadAuthConfig();
+    expect(config.entraAdminGroupIds).toEqual(['group-a', 'group-b', 'group-c']);
   });
 });
 

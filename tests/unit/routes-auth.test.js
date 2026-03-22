@@ -201,6 +201,118 @@ describe('routes/auth handlers', () => {
     });
   });
 
+  describe('POST /api/auth/link/entra', () => {
+    it('returns 401 when no authenticated session is present', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({ ...TEST_CONFIG, ...ENTRA_TEST_CONFIG, dbPath });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      const handler = routes['POST /api/auth/link/entra'];
+      const req = createReq('/api/auth/link/entra', 'POST', { body: { redirect: '/settings' } });
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(401);
+      expect(parsed(res).code).toBe('UNAUTHORIZED');
+    });
+
+    it('returns Entra login URL for authenticated user without existing Entra link', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({ ...TEST_CONFIG, ...ENTRA_TEST_CONFIG, dbPath });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      const user = manager.store.upsertUser({
+        provider: 'github',
+        providerId: 'gh-link-user-1',
+        providerUsername: 'ghlink1',
+        email: 'gh-link1@example.com',
+        name: 'GH Link 1',
+        avatarUrl: '',
+      });
+      const session = manager.createSession(user.id, 'github');
+
+      const handler = routes['POST /api/auth/link/entra'];
+      const req = createReq('/api/auth/link/entra', 'POST', {
+        headers: { cookie: `sid=${session.primary_provider}.${session.id}` },
+        body: { redirect: '/settings/identity' },
+      });
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(200);
+      const body = parsed(res);
+      expect(body.ok).toBe(true);
+      expect(body.provider).toBe('entra');
+      expect(body.url).toContain('login.microsoftonline.com');
+      expect(body.url).toContain('state=');
+    });
+
+    it('returns 409 when user already linked Entra provider', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({ ...TEST_CONFIG, ...ENTRA_TEST_CONFIG, dbPath });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      const user = manager.store.upsertUser({
+        provider: 'github',
+        providerId: 'gh-link-user-2',
+        providerUsername: 'ghlink2',
+        email: 'gh-link2@example.com',
+        name: 'GH Link 2',
+        avatarUrl: '',
+      });
+      manager.store.linkProviderAccount({
+        userId: user.id,
+        provider: 'entra',
+        providerId: 'entra-linked-user-2',
+        providerUsername: 'entra.user2@example.com',
+      });
+      const session = manager.createSession(user.id, 'github');
+
+      const handler = routes['POST /api/auth/link/entra'];
+      const req = createReq('/api/auth/link/entra', 'POST', {
+        headers: { cookie: `sid=${session.primary_provider}.${session.id}` },
+      });
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(409);
+      expect(parsed(res).code).toBe('CONFLICT');
+    });
+  });
+
   /* ── GET /api/auth/callback ──────────────────────────────────── */
 
   describe('GET /api/auth/callback', () => {
@@ -382,6 +494,161 @@ describe('routes/auth handlers', () => {
         expect(entraAccount).not.toBeNull();
         expect(entraAccount.tenant_id).toBe('tenant-001');
         expect(entraAccount.provider_username).toBe('entra.user@example.com');
+      } finally {
+        globalThis.fetch = origFetch;
+      }
+    });
+
+    it('links Entra account to existing GitHub session without logout', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({ ...TEST_CONFIG, ...ENTRA_TEST_CONFIG, dbPath });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      const user = manager.store.upsertUser({
+        provider: 'github',
+        providerId: 'gh-link-entra-001',
+        providerUsername: 'gh-link-user',
+        email: 'gh.link@example.com',
+        name: 'GH Link User',
+        avatarUrl: '',
+      });
+      const session = manager.createSession(user.id, 'github');
+
+      const linkRedirect = `/__auth/link/entra?uid=${encodeURIComponent(user.id)}&redirect=${encodeURIComponent('/settings/identity')}`;
+      const loginUrl = manager.getLoginUrlForProvider('entra', linkRedirect);
+      const stateParam = new URL(loginUrl).searchParams.get('state');
+
+      const origFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        const urlStr = typeof url === 'string' ? url : url.toString();
+        if (urlStr.includes('/oauth2/v2.0/token')) {
+          return {
+            ok: true,
+            json: async () => ({
+              access_token: 'entra-access-token-link',
+              refresh_token: 'entra-refresh-token-link',
+              expires_in: 3600,
+              id_token: createUnsignedJwt({
+                oid: 'entra-user-link-001',
+                tid: 'tenant-link-001',
+                preferred_username: 'linked.user@example.com',
+                name: 'Linked User',
+                email: 'linked.user@example.com',
+              }),
+            }),
+          };
+        }
+        return origFetch(url);
+      };
+
+      try {
+        const handler = routes['GET /api/auth/entra/callback'];
+        const req = createReq(
+          `/api/auth/entra/callback?code=mock-code&state=${encodeURIComponent(stateParam)}`,
+          'GET',
+          { headers: { cookie: `sid=${session.primary_provider}.${session.id}` } }
+        );
+        const res = createRes();
+
+        await handler(req, res);
+
+        expect(res.statusCode).toBe(302);
+        expect(res._headers['Location']).toBe('/settings/identity?linked=entra');
+
+        const linkedUser = manager.store.findUserById(user.id);
+        const linkedProviders = linkedUser.linked_accounts.map((a) => a.provider).sort();
+        expect(linkedProviders).toEqual(['entra', 'github']);
+
+        const persistedSession = manager.store.findSession(session.id);
+        expect(persistedSession).not.toBeNull();
+        expect(persistedSession.primary_provider).toBe('github');
+      } finally {
+        globalThis.fetch = origFetch;
+      }
+    });
+
+    it('maps Entra admin group claim to admin role on login', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({
+        ...TEST_CONFIG,
+        ...ENTRA_TEST_CONFIG,
+        dbPath,
+        entraAdminGroupIds: ['entra-admin-group-001'],
+      });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      // Consume bootstrap admin role so Entra user role assertion is meaningful.
+      manager.store.upsertUser({
+        provider: 'github',
+        providerId: 'bootstrap-admin-gh',
+        providerUsername: 'bootstrap',
+        email: 'bootstrap@example.com',
+        name: 'Bootstrap',
+        avatarUrl: '',
+      });
+
+      const loginUrl = manager.getLoginUrlForProvider('entra', '/dashboard');
+      const stateParam = new URL(loginUrl).searchParams.get('state');
+
+      const origFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        const urlStr = typeof url === 'string' ? url : url.toString();
+        if (urlStr.includes('/oauth2/v2.0/token')) {
+          return {
+            ok: true,
+            json: async () => ({
+              access_token: 'entra-access-token-admin',
+              refresh_token: 'entra-refresh-token-admin',
+              expires_in: 3600,
+              id_token: createUnsignedJwt({
+                oid: 'entra-admin-user-001',
+                tid: 'tenant-admin-001',
+                preferred_username: 'admin.user@example.com',
+                name: 'Admin User',
+                email: 'admin.user@example.com',
+                groups: ['entra-admin-group-001'],
+              }),
+            }),
+          };
+        }
+        return origFetch(url);
+      };
+
+      try {
+        const handler = routes['GET /api/auth/entra/callback'];
+        const req = createReq(
+          `/api/auth/entra/callback?code=mock-code&state=${encodeURIComponent(stateParam)}`
+        );
+        const res = createRes();
+
+        await handler(req, res);
+
+        expect(res.statusCode).toBe(302);
+        expect(res._headers['Location']).toBe('/dashboard');
+
+        const user = manager.store.findUserByProvider('entra', 'entra-admin-user-001');
+        expect(user).not.toBeNull();
+        expect(user.role).toBe('admin');
       } finally {
         globalThis.fetch = origFetch;
       }

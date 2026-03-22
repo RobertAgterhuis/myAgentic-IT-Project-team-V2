@@ -15,13 +15,23 @@
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { ServerContext } from '../context';
-import type { AuthManager, AuthenticatedRequest, Role } from '../auth';
+import type {
+  AuthManager,
+  AuthenticatedRequest,
+  ProviderUser,
+  Role,
+  IdentityProvider,
+} from '../auth';
+import path from 'path';
+import fs from 'fs';
 
 import { structuredLog } from '../middleware';
 import { errorResponse } from '../utils/errors';
+import { GitCredentialStore } from '../services/git/credential-store';
 import * as RS from '../route-schemas';
 
 const VALID_ROLES: Role[] = ['admin', 'operator', 'viewer'];
+const ENTRA_LINK_REDIRECT_PREFIX = '/__auth/link/entra';
 
 // Validate redirectTo is a safe relative path (no open redirect)
 function safeRedirect(url: string | undefined): string {
@@ -29,6 +39,77 @@ function safeRedirect(url: string | undefined): string {
   // Only allow paths starting with / and not // (protocol-relative)
   if (url.startsWith('/') && !url.startsWith('//')) return url;
   return '/';
+}
+
+function appendQuery(url: string, key: string, value: string): string {
+  const sep = url.includes('?') ? '&' : '?';
+  return `${url}${sep}${encodeURIComponent(key)}=${encodeURIComponent(value)}`;
+}
+
+function buildEntraLinkRedirect(userId: string, redirectTo: string): string {
+  const params = new URLSearchParams({ uid: userId, redirect: redirectTo });
+  return `${ENTRA_LINK_REDIRECT_PREFIX}?${params.toString()}`;
+}
+
+function parseEntraLinkRedirect(
+  redirectTo: string | undefined
+): { userId: string; redirectTo: string } | null {
+  if (!redirectTo || !redirectTo.startsWith(ENTRA_LINK_REDIRECT_PREFIX)) {
+    return null;
+  }
+
+  try {
+    const fake = new URL(`http://localhost${redirectTo}`);
+    const userId = fake.searchParams.get('uid') || '';
+    const next = safeRedirect(fake.searchParams.get('redirect') || '/');
+    if (!userId) return null;
+    return { userId, redirectTo: next };
+  } catch {
+    return null;
+  }
+}
+
+function resolveEntraMappedRole(authManager: AuthManager, providerUser: ProviderUser): Role | null {
+  if (providerUser.provider !== 'entra') return null;
+  const configuredAdminGroups = authManager.config.entraAdminGroupIds || [];
+  if (!configuredAdminGroups.length) return null;
+  const userGroups = providerUser.groups || [];
+  return userGroups.some((groupId) => configuredAdminGroups.includes(groupId)) ? 'admin' : 'viewer';
+}
+
+function syncProviderTokenToCredentialStore(
+  ctx: ServerContext,
+  userId: string,
+  provider: IdentityProvider,
+  providerUser: ProviderUser
+): void {
+  const token = providerUser.tokenPair?.accessToken;
+  if (!token) return;
+
+  const gitProvider = provider === 'entra' ? 'entra' : provider === 'github' ? 'github' : null;
+  if (!gitProvider) return;
+
+  try {
+    const dbPath =
+      process.env.GIT_CREDENTIAL_DB_PATH ||
+      path.join(ctx.PROJECT_ROOT, '.agentic', 'git', 'credentials.sqlite');
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    const store = new GitCredentialStore(dbPath);
+    try {
+      store.setCredential(`user:${userId}`, gitProvider, {
+        token,
+        expiresAt: providerUser.tokenPair?.expiresAt || null,
+      });
+    } finally {
+      store.close();
+    }
+  } catch (err) {
+    structuredLog('warn', 'auth_provider_token_sync_skipped', {
+      provider,
+      userId,
+      error: (err as Error).message,
+    });
+  }
 }
 
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
@@ -90,6 +171,50 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     }
   );
 
+  /* ── POST /api/auth/link/entra ─────────────────────────────── */
+  app.post(
+    '/api/auth/link/entra',
+    { schema: { tags: ['auth'] } },
+    async (request: FastifyRequest<{ Body: { redirect?: string } }>, reply: FastifyReply) => {
+      if (!authManager) {
+        return reply
+          .code(503)
+          .send({ error: 'AUTH_DISABLED', message: 'Authentication not configured' });
+      }
+
+      if (!authManager.getProvider('entra')) {
+        return reply.code(503).send({
+          error: 'AUTH_PROVIDER_DISABLED',
+          message: 'Entra authentication is not configured',
+        });
+      }
+
+      const session = authManager.getSessionFromRequest(request.raw);
+      if (!session) {
+        return reply.code(401).send(errorResponse('UNAUTHORIZED', 'Not authenticated'));
+      }
+
+      const user = authManager.getUserForSession(session);
+      if (!user) {
+        authManager.destroySession(session.id);
+        authManager.clearSessionCookies(reply.raw);
+        return reply.code(401).send(errorResponse('UNAUTHORIZED', 'Session invalid'));
+      }
+
+      if (authManager.store.hasLinkedProvider(user.id, 'entra')) {
+        return reply
+          .code(409)
+          .send(errorResponse('CONFLICT', 'Entra account already linked for this user'));
+      }
+
+      const redirectTo = safeRedirect(request.body?.redirect || '/');
+      const linkStateRedirect = buildEntraLinkRedirect(user.id, redirectTo);
+      const loginUrl = authManager.getLoginUrlForProvider('entra', linkStateRedirect);
+
+      return reply.send({ ok: true, provider: 'entra', url: loginUrl });
+    }
+  );
+
   /* ── GET /api/auth/callback ───────────────────────────────── */
   app.get(
     '/api/auth/callback',
@@ -133,6 +258,8 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           tokenPair: providerUser.tokenPair,
           tenantId: providerUser.tenantId,
         });
+
+        syncProviderTokenToCredentialStore(ctx, user.id, providerUser.provider, providerUser);
 
         // Create session (new ID — prevents session fixation)
         const session = authManager.createSession(user.id, user.primary_provider);
@@ -191,6 +318,72 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
       try {
         const providerUser = await authManager.authenticateProvider('entra', code, state);
+        const linkIntent = parseEntraLinkRedirect(stateResult.redirectTo);
+
+        if (linkIntent) {
+          const currentSession = authManager.getSessionFromRequest(request.raw);
+          if (!currentSession) {
+            return reply.redirect(
+              appendQuery(linkIntent.redirectTo, 'error', 'link_requires_session'),
+              302
+            );
+          }
+
+          const currentUser = authManager.getUserForSession(currentSession);
+          if (!currentUser || currentUser.id !== linkIntent.userId) {
+            return reply.redirect(
+              appendQuery(linkIntent.redirectTo, 'error', 'link_session_mismatch'),
+              302
+            );
+          }
+
+          if (authManager.store.hasLinkedProvider(currentUser.id, 'entra')) {
+            return reply.redirect(
+              appendQuery(linkIntent.redirectTo, 'error', 'already_linked'),
+              302
+            );
+          }
+
+          const existingOwner = authManager.store.findUserByProvider(
+            'entra',
+            providerUser.providerId
+          );
+          if (existingOwner && existingOwner.id !== currentUser.id) {
+            return reply.redirect(
+              appendQuery(linkIntent.redirectTo, 'error', 'account_already_in_use'),
+              302
+            );
+          }
+
+          const linkedUser = authManager.store.linkProviderAccount({
+            userId: currentUser.id,
+            provider: providerUser.provider,
+            providerId: providerUser.providerId,
+            providerUsername: providerUser.username,
+            tokenPair: providerUser.tokenPair,
+            tenantId: providerUser.tenantId,
+          });
+
+          const mappedRole = resolveEntraMappedRole(authManager, providerUser);
+          if (mappedRole) {
+            authManager.updateUserRole(linkedUser.id, mappedRole);
+          }
+
+          syncProviderTokenToCredentialStore(
+            ctx,
+            linkedUser.id,
+            providerUser.provider,
+            providerUser
+          );
+
+          structuredLog('info', 'entra_account_linked', {
+            userId: linkedUser.id,
+            providerId: providerUser.providerId,
+            providerUsername: providerUser.username,
+          });
+
+          return reply.redirect(appendQuery(linkIntent.redirectTo, 'linked', 'entra'), 302);
+        }
 
         const user = authManager.store.upsertUser({
           provider: providerUser.provider,
@@ -203,6 +396,13 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           tenantId: providerUser.tenantId,
         });
 
+        const mappedRole = resolveEntraMappedRole(authManager, providerUser);
+        if (mappedRole) {
+          authManager.updateUserRole(user.id, mappedRole);
+        }
+
+        syncProviderTokenToCredentialStore(ctx, user.id, providerUser.provider, providerUser);
+
         const session = authManager.createSession(user.id, user.primary_provider);
         authManager.setSessionCookie(reply.raw, session);
 
@@ -210,7 +410,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           userId: user.id,
           provider: providerUser.provider,
           providerUsername: providerUser.username,
-          role: user.role,
+          role: mappedRole || user.role,
         });
 
         const redirectTo = safeRedirect(stateResult.redirectTo);

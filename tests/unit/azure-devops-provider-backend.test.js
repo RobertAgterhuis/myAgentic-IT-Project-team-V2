@@ -37,13 +37,17 @@ function createGitApi() {
 }
 
 describe('AzureDevOpsProviderBackend (#965)', () => {
-  test('listRepositories uses ADO PAT from credential store', async () => {
+  test('listRepositories prefers Entra token from credential store', async () => {
     const gitApi = createGitApi();
     const clientFactory = vi.fn().mockReturnValue({
       getGitApi: vi.fn().mockResolvedValue(gitApi),
     });
     const credentialStore = {
-      getCredential: vi.fn().mockReturnValue({ token: 'ado-pat-token' }),
+      getCredential: vi
+        .fn()
+        .mockImplementation((_workspaceId, provider) =>
+          provider === 'entra' ? { token: 'entra-access-token' } : { token: 'ado-pat-token' }
+        ),
     };
 
     const backend = new AzureDevOpsProviderBackend({
@@ -56,8 +60,9 @@ describe('AzureDevOpsProviderBackend (#965)', () => {
 
     const repositories = await backend.listRepositories();
 
+    expect(credentialStore.getCredential).toHaveBeenCalledWith('workspace-ado', 'entra');
     expect(credentialStore.getCredential).toHaveBeenCalledWith('workspace-ado', 'ado');
-    expect(clientFactory).toHaveBeenCalledWith('ado-pat-token');
+    expect(clientFactory).toHaveBeenCalledWith('entra-access-token');
     expect(repositories).toEqual([
       {
         id: 'repo-1',
@@ -123,6 +128,8 @@ describe('AzureDevOpsProviderBackend (#965)', () => {
       clientFactory: vi.fn(),
     });
 
-    await expect(backend.listRepositories()).rejects.toThrow(/Azure DevOps PAT is required/i);
+    await expect(backend.listRepositories()).rejects.toThrow(
+      /Azure DevOps credential is required/i
+    );
   });
 });

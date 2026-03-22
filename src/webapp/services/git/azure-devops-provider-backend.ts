@@ -95,10 +95,17 @@ export class AzureDevOpsProviderBackend {
   }
 
   private async getGitApi(): Promise<GitApiLike> {
-    const credential = this.credentialStore.getCredential(this.workspaceId, 'ado');
-    const token = credential?.token || credential?.password || null;
+    // Prefer Entra-issued token for Azure DevOps workspaces; keep ado PAT fallback.
+    const entraCredential = this.credentialStore.getCredential(this.workspaceId, 'entra');
+    const adoCredential = this.credentialStore.getCredential(this.workspaceId, 'ado');
+    const token =
+      entraCredential?.token ||
+      entraCredential?.password ||
+      adoCredential?.token ||
+      adoCredential?.password ||
+      null;
     if (!token) {
-      throw new Error('Azure DevOps PAT is required in GitCredentialStore');
+      throw new Error('Azure DevOps credential is required in GitCredentialStore (entra or ado)');
     }
 
     return this.clientFactory(token).getGitApi();

@@ -35,6 +35,7 @@ export interface ProviderUser {
   avatarUrl: string;
   tokenPair?: TokenPair | null;
   tenantId?: string | null;
+  groups?: string[];
 }
 
 export interface IAuthProvider {
@@ -52,6 +53,11 @@ export interface LinkedAccount {
   token_expires_at: string | null;
   tenant_id: string | null;
   scopes: string[];
+}
+
+export interface LinkedAccountTokenRecord extends LinkedAccount {
+  access_token: string | null;
+  refresh_token: string | null;
 }
 
 export interface User {
@@ -98,6 +104,8 @@ export interface AuthConfig {
   entraAuthorityHost?: string;
   /** Optional Entra scopes */
   entraScopes?: string[];
+  /** Optional Entra group IDs mapped to admin role */
+  entraAdminGroupIds?: string[];
   /** Session TTL in milliseconds (default: 24h) */
   sessionTtlMs?: number;
   /** Path to auth SQLite database */
@@ -264,6 +272,44 @@ export class AuthStore {
     }));
   }
 
+  private _getLinkedAccountTokens(
+    userId: string,
+    provider: IdentityProvider
+  ): LinkedAccountTokenRecord | null {
+    const row = this._db
+      .prepare(
+        `SELECT provider, provider_id, provider_username, token_expires_at, tenant_id, scopes,
+                access_token_encrypted, refresh_token_encrypted
+         FROM linked_accounts
+         WHERE user_id = ? AND provider = ?`
+      )
+      .get(userId, provider) as
+      | {
+          provider: string;
+          provider_id: string;
+          provider_username: string;
+          token_expires_at: string | null;
+          tenant_id: string | null;
+          scopes: string;
+          access_token_encrypted: string | null;
+          refresh_token_encrypted: string | null;
+        }
+      | undefined;
+
+    if (!row) return null;
+
+    return {
+      provider: row.provider,
+      provider_id: row.provider_id,
+      provider_username: row.provider_username,
+      token_expires_at: row.token_expires_at,
+      tenant_id: row.tenant_id,
+      scopes: JSON.parse(row.scopes || '[]'),
+      access_token: _decryptToken(row.access_token_encrypted),
+      refresh_token: _decryptToken(row.refresh_token_encrypted),
+    };
+  }
+
   private _mapUser(
     row: Omit<User, 'linked_accounts' | 'provider_id' | 'primary_provider'> & {
       provider_account_id?: string | null;
@@ -363,6 +409,55 @@ export class AuthStore {
   findUserById(id: string): User | null {
     const row = this._db.prepare('SELECT * FROM users WHERE id = ?').get(id);
     return row ? this._mapUser(row as Parameters<AuthStore['_mapUser']>[0]) : null;
+  }
+
+  hasLinkedProvider(userId: string, provider: IdentityProvider): boolean {
+    const row = this._db
+      .prepare(
+        'SELECT 1 as present FROM linked_accounts WHERE user_id = ? AND provider = ? LIMIT 1'
+      )
+      .get(userId, provider) as { present: number } | undefined;
+    return Boolean(row?.present);
+  }
+
+  getLinkedAccountTokens(
+    userId: string,
+    provider: IdentityProvider
+  ): LinkedAccountTokenRecord | null {
+    return this._getLinkedAccountTokens(userId, provider);
+  }
+
+  linkProviderAccount(data: {
+    userId: string;
+    provider: IdentityProvider;
+    providerId: string;
+    providerUsername?: string;
+    tokenPair?: TokenPair | null;
+    tenantId?: string | null;
+  }): User {
+    const user = this.findUserById(data.userId);
+    if (!user) {
+      throw new Error('USER_NOT_FOUND');
+    }
+    if (this.hasLinkedProvider(data.userId, data.provider)) {
+      throw new Error('PROVIDER_ALREADY_LINKED');
+    }
+
+    const existingByProvider = this.findUserByProvider(data.provider, data.providerId);
+    if (existingByProvider && existingByProvider.id !== data.userId) {
+      throw new Error('PROVIDER_ALREADY_LINKED_TO_OTHER_USER');
+    }
+
+    this._upsertLinkedAccount({
+      userId: data.userId,
+      provider: data.provider,
+      providerId: data.providerId,
+      providerUsername: data.providerUsername || '',
+      tokenPair: data.tokenPair,
+      tenantId: data.tenantId,
+    });
+
+    return this.findUserById(data.userId)!;
   }
 
   upsertUser(data: {
@@ -899,6 +994,9 @@ export class EntraAuthProvider implements IAuthProvider {
       (typeof claims.name === 'string' && claims.name) ||
       (typeof claims.preferred_username === 'string' && claims.preferred_username) ||
       username;
+    const groups = Array.isArray(claims.groups)
+      ? claims.groups.filter((entry): entry is string => typeof entry === 'string')
+      : [];
 
     return {
       provider: this.provider,
@@ -912,6 +1010,7 @@ export class EntraAuthProvider implements IAuthProvider {
       avatarUrl: '',
       tokenPair,
       tenantId: typeof claims.tid === 'string' ? claims.tid : null,
+      groups,
     };
   }
 
@@ -1384,6 +1483,10 @@ export function loadAuthConfig(): AuthConfig | null {
   const entraClientId = process.env.ENTRA_CLIENT_ID;
   const entraTenantId = process.env.ENTRA_TENANT_ID;
   const entraClientSecret = process.env.ENTRA_CLIENT_SECRET;
+  const entraAdminGroupIds = (process.env.ENTRA_ADMIN_GROUP_ID || '')
+    .split(',')
+    .map((entry) => entry.trim())
+    .filter(Boolean);
 
   const hasGitHub = Boolean(clientId && clientSecret);
   const hasEntra = Boolean(entraClientId);
@@ -1406,6 +1509,7 @@ export function loadAuthConfig(): AuthConfig | null {
     entraClientId,
     entraTenantId,
     entraClientSecret,
+    entraAdminGroupIds,
     entraCallbackUrl,
     entraAuthorityHost,
     stateSecret,

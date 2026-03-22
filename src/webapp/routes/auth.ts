@@ -90,9 +90,10 @@ function syncProviderTokenToCredentialStore(
   if (!gitProvider) return;
 
   try {
+    const projectRoot = ctx.PROJECT_ROOT || process.cwd();
     const dbPath =
       process.env.GIT_CREDENTIAL_DB_PATH ||
-      path.join(ctx.PROJECT_ROOT, '.agentic', 'git', 'credentials.sqlite');
+      path.join(projectRoot, '.agentic', 'git', 'credentials.sqlite');
     fs.mkdirSync(path.dirname(dbPath), { recursive: true });
     const store = new GitCredentialStore(dbPath);
     try {

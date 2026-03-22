@@ -53,6 +53,8 @@ export interface AzureDevOpsCreatePullRequestInput {
   description?: string;
   sourceRefName: string;
   targetRefName: string;
+  reviewers?: string[];
+  isDraft?: boolean;
 }
 
 export interface AzureDevOpsProviderBackendOptions {
@@ -124,6 +126,8 @@ export class AzureDevOpsProviderBackend {
         description: input.description,
         sourceRefName: input.sourceRefName,
         targetRefName: input.targetRefName,
+        reviewers: input.reviewers,
+        isDraft: input.isDraft,
       },
       input.repositoryId,
       this.project

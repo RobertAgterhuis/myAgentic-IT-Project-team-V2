@@ -45,6 +45,18 @@ const TEST_CONFIG = {
   enabled: true,
 };
 
+const ENTRA_TEST_CONFIG = {
+  entraClientId: 'entra-client-id',
+  entraTenantId: 'common',
+  entraCallbackUrl: 'http://localhost:3000/api/auth/entra/callback',
+};
+
+function createUnsignedJwt(payload) {
+  const header = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString('base64url');
+  const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  return `${header}.${body}.`;
+}
+
 function createReq(url, method = 'GET', { headers = {}, body = null } = {}) {
   const chunks = body ? [Buffer.from(JSON.stringify(body))] : [];
   return {
@@ -146,6 +158,46 @@ describe('routes/auth handlers', () => {
 
       expect(res.statusCode).toBe(302);
       expect(res._headers['Location']).toContain('state=');
+    });
+  });
+
+  describe('GET /api/auth/entra/login', () => {
+    it('returns 503 when Entra provider is not configured', async () => {
+      const handler = routes['GET /api/auth/entra/login'];
+      const req = createReq('/api/auth/entra/login');
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(503);
+      expect(parsed(res).error).toBe('AUTH_PROVIDER_DISABLED');
+    });
+
+    it('redirects to Entra authorize endpoint when provider is configured', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({ ...TEST_CONFIG, ...ENTRA_TEST_CONFIG, dbPath });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      const handler = routes['GET /api/auth/entra/login'];
+      const req = createReq('/api/auth/entra/login?redirect=/dashboard');
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(302);
+      expect(res._headers['Location']).toContain('login.microsoftonline.com');
+      expect(res._headers['Location']).toContain('code_challenge_method=S256');
+      expect(res._headers['Location']).toContain('client_id=entra-client-id');
     });
   });
 
@@ -251,6 +303,80 @@ describe('routes/auth handlers', () => {
 
         expect(res.statusCode).toBe(302);
         expect(res._headers['Location']).toBe('/login?error=auth_failed');
+      } finally {
+        globalThis.fetch = origFetch;
+      }
+    });
+  });
+
+  describe('GET /api/auth/entra/callback', () => {
+    it('returns 503 when Entra provider is not configured', async () => {
+      const handler = routes['GET /api/auth/entra/callback'];
+      const req = createReq('/api/auth/entra/callback');
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(503);
+      expect(parsed(res).error).toBe('AUTH_PROVIDER_DISABLED');
+    });
+
+    it('completes Entra OAuth flow and creates session on valid callback', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({ ...TEST_CONFIG, ...ENTRA_TEST_CONFIG, dbPath });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      const loginUrl = manager.getLoginUrlForProvider('entra', '/dashboard');
+      const stateParam = new URL(loginUrl).searchParams.get('state');
+
+      const origFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        const urlStr = typeof url === 'string' ? url : url.toString();
+        if (urlStr.includes('/oauth2/v2.0/token')) {
+          return {
+            ok: true,
+            json: async () => ({
+              access_token: 'entra-access-token',
+              refresh_token: 'entra-refresh-token',
+              expires_in: 3600,
+              id_token: createUnsignedJwt({
+                oid: 'entra-user-001',
+                tid: 'tenant-001',
+                preferred_username: 'entra.user@example.com',
+                name: 'Entra User',
+                email: 'entra.user@example.com',
+              }),
+            }),
+          };
+        }
+        return origFetch(url);
+      };
+
+      try {
+        const handler = routes['GET /api/auth/entra/callback'];
+        const req = createReq(
+          `/api/auth/entra/callback?code=mock-code&state=${encodeURIComponent(stateParam)}`
+        );
+        const res = createRes();
+
+        await handler(req, res);
+
+        expect(res.statusCode).toBe(302);
+        expect(res._headers['Location']).toBe('/dashboard');
+
+        const user = manager.store.findUserByProvider('entra', 'entra-user-001');
+        expect(user).not.toBeNull();
+        expect(user.email).toBe('entra.user@example.com');
       } finally {
         globalThis.fetch = origFetch;
       }
@@ -540,6 +666,20 @@ describe('routes/auth handlers', () => {
       const req = createReq('/api/auth/callback');
       const res = createRes();
       await disabledRoutes['GET /api/auth/callback'](req, res);
+      expect(res.statusCode).toBe(503);
+    });
+
+    it('GET /api/auth/entra/login returns 503', async () => {
+      const req = createReq('/api/auth/entra/login');
+      const res = createRes();
+      await disabledRoutes['GET /api/auth/entra/login'](req, res);
+      expect(res.statusCode).toBe(503);
+    });
+
+    it('GET /api/auth/entra/callback returns 503', async () => {
+      const req = createReq('/api/auth/entra/callback');
+      const res = createRes();
+      await disabledRoutes['GET /api/auth/entra/callback'](req, res);
       expect(res.statusCode).toBe(503);
     });
 

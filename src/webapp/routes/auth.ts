@@ -58,7 +58,34 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           .send({ error: 'AUTH_DISABLED', message: 'Authentication not configured' });
       }
       const redirectTo = request.query.redirect || undefined;
-      const loginUrl = authManager.getLoginUrl(redirectTo);
+      const loginUrl = authManager.getLoginUrlForProvider('github', redirectTo);
+      return reply.redirect(loginUrl, 302);
+    }
+  );
+
+  /* ── GET /api/auth/entra/login ─────────────────────────────── */
+  app.get(
+    '/api/auth/entra/login',
+    { schema: { tags: ['auth'] } },
+    async (
+      request: FastifyRequest<{ Querystring: { redirect?: string } }>,
+      reply: FastifyReply
+    ) => {
+      if (!authManager) {
+        return reply
+          .code(503)
+          .send({ error: 'AUTH_DISABLED', message: 'Authentication not configured' });
+      }
+
+      if (!authManager.getProvider('entra')) {
+        return reply.code(503).send({
+          error: 'AUTH_PROVIDER_DISABLED',
+          message: 'Entra authentication is not configured',
+        });
+      }
+
+      const redirectTo = request.query.redirect || undefined;
+      const loginUrl = authManager.getLoginUrlForProvider('entra', redirectTo);
       return reply.redirect(loginUrl, 302);
     }
   );
@@ -86,7 +113,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       }
 
       // Verify state (CSRF protection for OAuth)
-      const stateResult = authManager.verifyState(state);
+      const stateResult = authManager.verifyProviderState('github', state);
       if (!stateResult.valid) {
         structuredLog('warn', 'oauth_state_invalid');
         return reply.redirect('/login?error=invalid_state', 302);
@@ -122,6 +149,74 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         return reply.redirect(redirectTo, 302);
       } catch (err) {
         structuredLog('error', 'oauth_callback_failed', { error: (err as Error).message });
+        return reply.redirect('/login?error=auth_failed', 302);
+      }
+    }
+  );
+
+  /* ── GET /api/auth/entra/callback ──────────────────────────── */
+  app.get(
+    '/api/auth/entra/callback',
+    { schema: { tags: ['auth'] } },
+    async (
+      request: FastifyRequest<{ Querystring: { code?: string; state?: string } }>,
+      reply: FastifyReply
+    ) => {
+      if (!authManager) {
+        return reply
+          .code(503)
+          .send({ error: 'AUTH_DISABLED', message: 'Authentication not configured' });
+      }
+
+      if (!authManager.getProvider('entra')) {
+        return reply.code(503).send({
+          error: 'AUTH_PROVIDER_DISABLED',
+          message: 'Entra authentication is not configured',
+        });
+      }
+
+      const code = request.query.code;
+      const state = request.query.state;
+
+      if (!code || !state) {
+        structuredLog('warn', 'entra_callback_missing_params');
+        return reply.redirect('/login?error=missing_params', 302);
+      }
+
+      const stateResult = authManager.verifyProviderState('entra', state);
+      if (!stateResult.valid) {
+        structuredLog('warn', 'entra_state_invalid');
+        return reply.redirect('/login?error=invalid_state', 302);
+      }
+
+      try {
+        const providerUser = await authManager.authenticateProvider('entra', code, state);
+
+        const user = authManager.store.upsertUser({
+          provider: providerUser.provider,
+          providerId: providerUser.providerId,
+          providerUsername: providerUser.username,
+          email: providerUser.email,
+          name: providerUser.name,
+          avatarUrl: providerUser.avatarUrl,
+          tokenPair: providerUser.tokenPair,
+          tenantId: providerUser.tenantId,
+        });
+
+        const session = authManager.createSession(user.id, user.primary_provider);
+        authManager.setSessionCookie(reply.raw, session);
+
+        structuredLog('info', 'user_login', {
+          userId: user.id,
+          provider: providerUser.provider,
+          providerUsername: providerUser.username,
+          role: user.role,
+        });
+
+        const redirectTo = safeRedirect(stateResult.redirectTo);
+        return reply.redirect(redirectTo, 302);
+      } catch (err) {
+        structuredLog('error', 'entra_callback_failed', { error: (err as Error).message });
         return reply.redirect('/login?error=auth_failed', 302);
       }
     }

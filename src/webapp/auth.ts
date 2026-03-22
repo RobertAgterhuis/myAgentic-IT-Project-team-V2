@@ -86,6 +86,18 @@ export interface AuthConfig {
   callbackUrl: string;
   /** HMAC secret for OAuth state parameter */
   stateSecret: string;
+  /** Optional Entra OIDC client ID */
+  entraClientId?: string;
+  /** Optional Entra tenant ID (defaults to 'common') */
+  entraTenantId?: string;
+  /** Optional Entra client secret for confidential clients */
+  entraClientSecret?: string;
+  /** Optional Entra callback URL; defaults to /api/auth/entra/callback on base URL */
+  entraCallbackUrl?: string;
+  /** Optional Entra authority host (defaults to login.microsoftonline.com) */
+  entraAuthorityHost?: string;
+  /** Optional Entra scopes */
+  entraScopes?: string[];
   /** Session TTL in milliseconds (default: 24h) */
   sessionTtlMs?: number;
   /** Path to auth SQLite database */
@@ -105,6 +117,7 @@ const CSRF_HEADER = 'x-csrf-token';
 const ROLE_HIERARCHY: Record<Role, number> = { viewer: 0, operator: 1, admin: 2 };
 const STATE_TTL_MS = 10 * 60 * 1000; // 10 minutes for OAuth state
 const DEFAULT_PROVIDER: IdentityProvider = 'github';
+const ENTRA_STATE_PREFIX = 'entra:';
 
 /** Format Date to SQLite-compatible datetime string (YYYY-MM-DD HH:MM:SS). */
 function toSqliteDatetime(d: Date): string {
@@ -637,6 +650,70 @@ function verifyOAuthState(secret: string, state: string): { valid: boolean; redi
   return { valid: true, redirectTo };
 }
 
+function toBase64Url(input: string): string {
+  return Buffer.from(input, 'utf8').toString('base64url');
+}
+
+function fromBase64Url(input: string): string {
+  return Buffer.from(input, 'base64url').toString('utf8');
+}
+
+function createPkceVerifier(): string {
+  return crypto.randomBytes(32).toString('base64url');
+}
+
+function createPkceChallenge(verifier: string): string {
+  return crypto.createHash('sha256').update(verifier).digest('base64url');
+}
+
+function createEntraState(secret: string, codeVerifier: string, redirectTo?: string): string {
+  const payload = toBase64Url(
+    JSON.stringify({
+      codeVerifier,
+      redirectTo: redirectTo || '/',
+    })
+  );
+  return createOAuthState(secret, `${ENTRA_STATE_PREFIX}${payload}`);
+}
+
+function verifyEntraState(
+  secret: string,
+  state: string
+): { valid: boolean; redirectTo?: string; codeVerifier?: string } {
+  const verified = verifyOAuthState(secret, state);
+  if (!verified.valid || !verified.redirectTo?.startsWith(ENTRA_STATE_PREFIX)) {
+    return { valid: false };
+  }
+
+  const encoded = verified.redirectTo.slice(ENTRA_STATE_PREFIX.length);
+  try {
+    const parsed = JSON.parse(fromBase64Url(encoded)) as {
+      codeVerifier?: string;
+      redirectTo?: string;
+    };
+    if (!parsed.codeVerifier) {
+      return { valid: false };
+    }
+    return {
+      valid: true,
+      codeVerifier: parsed.codeVerifier,
+      redirectTo: parsed.redirectTo || '/',
+    };
+  } catch {
+    return { valid: false };
+  }
+}
+
+function decodeJwtPayload(token: string): Record<string, unknown> {
+  const segments = token.split('.');
+  if (segments.length < 2) {
+    throw new Error('Invalid JWT token');
+  }
+
+  const payload = fromBase64Url(segments[1]);
+  return JSON.parse(payload) as Record<string, unknown>;
+}
+
 export class GitHubAuthProvider implements IAuthProvider {
   readonly provider: IdentityProvider = 'github';
   private readonly _config: AuthConfig;
@@ -761,6 +838,218 @@ export class GitHubAuthProvider implements IAuthProvider {
   }
 }
 
+export class EntraAuthProvider implements IAuthProvider {
+  readonly provider: IdentityProvider = 'entra';
+  private readonly _config: AuthConfig;
+
+  constructor(config: AuthConfig) {
+    this._config = config;
+  }
+
+  getLoginUrl(redirectTo?: string): string {
+    if (!this._config.entraClientId) {
+      throw new Error('Entra auth is not configured');
+    }
+
+    const verifier = createPkceVerifier();
+    const challenge = createPkceChallenge(verifier);
+    const state = createEntraState(this._config.stateSecret, verifier, redirectTo);
+    const tenant = this._config.entraTenantId || 'common';
+    const authority = (
+      this._config.entraAuthorityHost || 'https://login.microsoftonline.com'
+    ).replace(/\/$/, '');
+
+    const params = new URLSearchParams({
+      client_id: this._config.entraClientId,
+      response_type: 'code',
+      redirect_uri: this._config.entraCallbackUrl || '',
+      response_mode: 'query',
+      scope: (this._config.entraScopes || ['openid', 'profile', 'email', 'offline_access']).join(
+        ' '
+      ),
+      state,
+      code_challenge: challenge,
+      code_challenge_method: 'S256',
+    });
+
+    return `${authority}/${tenant}/oauth2/v2.0/authorize?${params.toString()}`;
+  }
+
+  async authenticate(code: string, state: string): Promise<ProviderUser> {
+    const stateData = verifyEntraState(this._config.stateSecret, state);
+    if (!stateData.valid || !stateData.codeVerifier) {
+      throw new Error('Invalid Entra auth state');
+    }
+
+    const tokenPair = await this.exchangeCode(code, stateData.codeVerifier);
+    const claims = tokenPair.idToken ? decodeJwtPayload(tokenPair.idToken) : {};
+
+    const providerId =
+      (typeof claims.oid === 'string' && claims.oid) ||
+      (typeof claims.sub === 'string' && claims.sub) ||
+      crypto.randomUUID();
+    const username =
+      (typeof claims.preferred_username === 'string' && claims.preferred_username) ||
+      (typeof claims.email === 'string' && claims.email) ||
+      providerId;
+    const name =
+      (typeof claims.name === 'string' && claims.name) ||
+      (typeof claims.preferred_username === 'string' && claims.preferred_username) ||
+      username;
+
+    return {
+      provider: this.provider,
+      providerId,
+      username,
+      email:
+        (typeof claims.email === 'string' && claims.email) ||
+        (typeof claims.preferred_username === 'string' && claims.preferred_username) ||
+        '',
+      name,
+      avatarUrl: '',
+      tokenPair,
+      tenantId: typeof claims.tid === 'string' ? claims.tid : null,
+    };
+  }
+
+  async refreshToken(refreshToken: string): Promise<TokenPair> {
+    if (!this._config.entraClientId) {
+      throw new Error('Entra auth is not configured');
+    }
+
+    const tenant = this._config.entraTenantId || 'common';
+    const authority = (
+      this._config.entraAuthorityHost || 'https://login.microsoftonline.com'
+    ).replace(/\/$/, '');
+    const tokenUrl = `${authority}/${tenant}/oauth2/v2.0/token`;
+
+    const body = new URLSearchParams({
+      client_id: this._config.entraClientId,
+      grant_type: 'refresh_token',
+      refresh_token: refreshToken,
+      scope: (this._config.entraScopes || ['openid', 'profile', 'email', 'offline_access']).join(
+        ' '
+      ),
+    });
+
+    if (this._config.entraClientSecret) {
+      body.set('client_secret', this._config.entraClientSecret);
+    }
+
+    const resp = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+    });
+
+    if (!resp.ok) {
+      throw new Error(`Entra refresh token failed: ${resp.status}`);
+    }
+
+    const data = (await resp.json()) as {
+      access_token?: string;
+      refresh_token?: string;
+      expires_in?: number;
+      scope?: string;
+    };
+    if (!data.access_token) {
+      throw new Error('Entra refresh token response missing access_token');
+    }
+
+    const expiresAt = data.expires_in
+      ? new Date(Date.now() + data.expires_in * 1000).toISOString()
+      : null;
+
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token || refreshToken,
+      expiresAt,
+      scopes: data.scope
+        ? data.scope
+            .split(' ')
+            .map((scope) => scope.trim())
+            .filter(Boolean)
+        : this._config.entraScopes,
+    };
+  }
+
+  async revokeToken(_accessToken: string): Promise<void> {
+    return;
+  }
+
+  private async exchangeCode(
+    code: string,
+    codeVerifier: string
+  ): Promise<TokenPair & { idToken?: string }> {
+    if (!this._config.entraClientId) {
+      throw new Error('Entra auth is not configured');
+    }
+
+    const tenant = this._config.entraTenantId || 'common';
+    const authority = (
+      this._config.entraAuthorityHost || 'https://login.microsoftonline.com'
+    ).replace(/\/$/, '');
+    const tokenUrl = `${authority}/${tenant}/oauth2/v2.0/token`;
+
+    const body = new URLSearchParams({
+      client_id: this._config.entraClientId,
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: this._config.entraCallbackUrl || '',
+      code_verifier: codeVerifier,
+      scope: (this._config.entraScopes || ['openid', 'profile', 'email', 'offline_access']).join(
+        ' '
+      ),
+    });
+
+    if (this._config.entraClientSecret) {
+      body.set('client_secret', this._config.entraClientSecret);
+    }
+
+    const resp = await fetch(tokenUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body,
+    });
+    if (!resp.ok) {
+      throw new Error(`Entra token exchange failed: ${resp.status}`);
+    }
+
+    const data = (await resp.json()) as {
+      access_token?: string;
+      refresh_token?: string;
+      expires_in?: number;
+      scope?: string;
+      id_token?: string;
+      error?: string;
+      error_description?: string;
+    };
+
+    if (data.error || !data.access_token) {
+      throw new Error(
+        `Entra OAuth error: ${data.error_description || data.error || 'no access_token'}`
+      );
+    }
+
+    const expiresAt = data.expires_in
+      ? new Date(Date.now() + data.expires_in * 1000).toISOString()
+      : null;
+
+    return {
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token || null,
+      expiresAt,
+      scopes: data.scope
+        ? data.scope
+            .split(' ')
+            .map((scope) => scope.trim())
+            .filter(Boolean)
+        : this._config.entraScopes,
+      idToken: data.id_token,
+    };
+  }
+}
+
 /* ── Auth Manager ─────────────────────────────────────────────── */
 
 export class AuthManager {
@@ -778,6 +1067,9 @@ export class AuthManager {
 
     if (config.clientId && config.clientSecret) {
       this.registerProvider(DEFAULT_PROVIDER, new GitHubAuthProvider(config));
+    }
+    if (config.entraClientId) {
+      this.registerProvider('entra', new EntraAuthProvider(config));
     }
 
     // Periodic expired-session cleanup every 10 minutes
@@ -804,11 +1096,15 @@ export class AuthManager {
   /* ── OAuth Flow ─────────────────────────────────────────────── */
 
   getLoginUrl(redirectTo?: string): string {
-    const provider = this.getProvider(DEFAULT_PROVIDER);
-    if (!provider?.getLoginUrl) {
-      throw new Error(`Auth provider not available: ${DEFAULT_PROVIDER}`);
+    return this.getLoginUrlForProvider(DEFAULT_PROVIDER, redirectTo);
+  }
+
+  getLoginUrlForProvider(provider: IdentityProvider, redirectTo?: string): string {
+    const implementation = this.getProvider(provider);
+    if (!implementation?.getLoginUrl) {
+      throw new Error(`Auth provider not available: ${provider}`);
     }
-    return provider.getLoginUrl(redirectTo);
+    return implementation.getLoginUrl(redirectTo);
   }
 
   async authenticateProvider(
@@ -850,6 +1146,20 @@ export class AuthManager {
   }
 
   verifyState(state: string): { valid: boolean; redirectTo?: string } {
+    return this.verifyProviderState(DEFAULT_PROVIDER, state);
+  }
+
+  verifyProviderState(
+    provider: IdentityProvider,
+    state: string
+  ): { valid: boolean; redirectTo?: string } {
+    if (provider === 'entra') {
+      const result = verifyEntraState(this._config.stateSecret, state);
+      return {
+        valid: result.valid,
+        redirectTo: result.redirectTo,
+      };
+    }
     return verifyOAuthState(this._config.stateSecret, state);
   }
 
@@ -967,7 +1277,14 @@ export interface AuthenticatedRequest extends IncomingMessage {
 export function createAuthMiddleware(opts: AuthMiddlewareOptions) {
   const { authManager, log, audit } = opts;
 
-  const PUBLIC_PATHS = ['/api/health', '/api/auth/login', '/api/auth/callback', '/api/auth/logout'];
+  const PUBLIC_PATHS = [
+    '/api/health',
+    '/api/auth/login',
+    '/api/auth/callback',
+    '/api/auth/entra/login',
+    '/api/auth/entra/callback',
+    '/api/auth/logout',
+  ];
 
   function isPublicPath(pathname: string): boolean {
     return PUBLIC_PATHS.some((p) => pathname === p || pathname.startsWith(p + '/'));
@@ -1060,19 +1377,30 @@ export function createAuthMiddleware(opts: AuthMiddlewareOptions) {
 export function loadAuthConfig(): AuthConfig | null {
   const clientId = process.env.GITHUB_CLIENT_ID;
   const clientSecret = process.env.GITHUB_CLIENT_SECRET;
-  if (!clientId || !clientSecret) return null;
+  const entraClientId = process.env.ENTRA_CLIENT_ID;
+  const entraTenantId = process.env.ENTRA_TENANT_ID;
+  const entraClientSecret = process.env.ENTRA_CLIENT_SECRET;
+
+  const hasGitHub = Boolean(clientId && clientSecret);
+  const hasEntra = Boolean(entraClientId);
+  if (!hasGitHub && !hasEntra) return null;
 
   const host = process.env.HOST || '127.0.0.1';
   const port = process.env.PORT || '3000';
   const baseUrl = process.env.AUTH_CALLBACK_URL || `http://${host}:${port}`;
   const callbackUrl = `${baseUrl}/api/auth/callback`;
+  const entraCallbackUrl = `${baseUrl}/api/auth/entra/callback`;
   const stateSecret = process.env.AUTH_STATE_SECRET || crypto.randomBytes(32).toString('hex');
   const secureCookies = process.env.AUTH_SECURE_COOKIES === 'true';
 
   return {
-    clientId,
-    clientSecret,
+    clientId: clientId || '',
+    clientSecret: clientSecret || '',
     callbackUrl,
+    entraClientId,
+    entraTenantId,
+    entraClientSecret,
+    entraCallbackUrl,
     stateSecret,
     secureCookies,
     enabled: true,

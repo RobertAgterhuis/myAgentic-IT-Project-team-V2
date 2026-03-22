@@ -16,7 +16,8 @@ let AuthStore,
   createAuthMiddleware,
   loadAuthConfig,
   ProviderRegistry,
-  GitHubAuthProvider;
+  GitHubAuthProvider,
+  EntraAuthProvider;
 
 beforeAll(async () => {
   const mod = await import('../../src/webapp/auth.ts');
@@ -26,6 +27,7 @@ beforeAll(async () => {
   loadAuthConfig = mod.loadAuthConfig;
   ProviderRegistry = mod.ProviderRegistry;
   GitHubAuthProvider = mod.GitHubAuthProvider;
+  EntraAuthProvider = mod.EntraAuthProvider;
 });
 
 /** Create a temporary database path that is cleaned up after each test. */
@@ -234,6 +236,30 @@ describe('AuthManager', () => {
     registry.registerProvider('github', provider);
     expect(registry.getProvider('github')).toBe(provider);
     expect(registry.getProvider('entra')).toBeNull();
+  });
+
+  it('registers Entra provider when ENTRA_CLIENT_ID is configured', () => {
+    const entraManager = new AuthManager({
+      ...config,
+      dbPath: tmpDbPath(),
+      entraClientId: 'entra-client',
+      entraTenantId: 'common',
+      entraCallbackUrl: 'http://localhost:3000/api/auth/entra/callback',
+    });
+
+    try {
+      const provider = entraManager.getProvider('entra');
+      expect(provider).toBeInstanceOf(EntraAuthProvider);
+
+      const entraLoginUrl = entraManager.getLoginUrlForProvider('entra', '/dashboard');
+      expect(entraLoginUrl).toContain('login.microsoftonline.com');
+      expect(entraLoginUrl).toContain('code_challenge_method=S256');
+      expect(entraLoginUrl).toContain('client_id=entra-client');
+    } finally {
+      const pathToDelete = entraManager.config.dbPath;
+      entraManager.close();
+      rmDir(pathToDelete);
+    }
   });
 
   it('generates login URL with redirect_to encoded in state', () => {
@@ -596,6 +622,8 @@ describe('loadAuthConfig', () => {
   it('returns null when GITHUB_CLIENT_ID is missing', () => {
     delete process.env.GITHUB_CLIENT_ID;
     delete process.env.GITHUB_CLIENT_SECRET;
+    delete process.env.ENTRA_CLIENT_ID;
+    delete process.env.ENTRA_TENANT_ID;
     expect(loadAuthConfig()).toBeNull();
   });
 
@@ -631,6 +659,19 @@ describe('loadAuthConfig', () => {
     process.env.AUTH_SECURE_COOKIES = 'true';
     const config = loadAuthConfig();
     expect(config.secureCookies).toBe(true);
+  });
+
+  it('returns config when ENTRA_CLIENT_ID is set without GitHub credentials', () => {
+    delete process.env.GITHUB_CLIENT_ID;
+    delete process.env.GITHUB_CLIENT_SECRET;
+    process.env.ENTRA_CLIENT_ID = 'entra-client-id';
+    process.env.ENTRA_TENANT_ID = 'tenant-id';
+
+    const config = loadAuthConfig();
+    expect(config).not.toBeNull();
+    expect(config.entraClientId).toBe('entra-client-id');
+    expect(config.entraTenantId).toBe('tenant-id');
+    expect(config.entraCallbackUrl).toContain('/api/auth/entra/callback');
   });
 });
 

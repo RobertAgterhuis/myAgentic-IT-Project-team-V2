@@ -34,6 +34,7 @@ npm-debug.log*
 BusinessDocs/audit/
 BusinessDocs/analytics-events.json
 BusinessDocs/session/command-queue.json
+.generated/
 
 # Generated platform instruction files (regenerated via npm run generate:platform)
 .github/copilot-instructions.md

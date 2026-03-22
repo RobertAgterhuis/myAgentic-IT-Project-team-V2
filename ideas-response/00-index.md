@@ -4,6 +4,8 @@
 > Source material: `ideas/ideas.md`, `ideas/mcp_plugin_architecture_mapping_document.md`, `ideas/mcp_plugin_architecture_addendum_identity_consent.md`  
 > Methodology: Deep analysis of consultant recommendations mapped against the existing codebase and architecture.
 
+> Validation update: March 22, 2026 consultant scoping session confirms Domain 01 default backend choice: **LanceDB OSS embedded** (deterministic stores remain source of truth).
+
 ---
 
 ## Purpose

@@ -5,6 +5,8 @@
 > Sources: `ideas/ideas.md`, `ideas/mcp_plugin_architecture_mapping_document.md`, `ideas/mcp_plugin_architecture_addendum_identity_consent.md`  
 > Domains analyzed: 06 (MCP Architecture), 02 (Identity), 01 (RAG), 03 (Chat), 05 (Help), 04 (Git)
 
+> Validation addendum: March 22, 2026 consultant scoping review confirms Domain 01 should keep **LanceDB OSS embedded** as default implementation path.
+
 ---
 
 ## 1. Executive Summary
@@ -14,6 +16,12 @@ Analysis of the consultant's three recommendation documents reveals a coherent, 
 The platform currently has a functional but narrow foundation: GitHub OAuth, SQLite persistence, Express routing, a single MCP server with no governance, and agent execution logic that lacks tool-level control. The six domains collectively transform this into a **governed, multi-provider, AI-assisted, document-aware, audit-complete SDLC platform**.
 
 **Main conclusion:** Build in the order defined by the dependency graph. Do not start Chat before RAG. Do not start Workload Identity before the provider abstraction layer. Do not build Experience Plane without Runtime Plane.
+
+Additional outcome from consultant scoping validation:
+
+- No milestone reordering is required for Domain 01.
+- M-INTEL-1/2/3 sequencing remains valid.
+- RAG implementation should preserve deterministic governance stores as sole source of truth.
 
 ---
 

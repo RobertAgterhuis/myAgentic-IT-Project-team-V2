@@ -1,0 +1,160 @@
+// Copyright (c) 2026 Robert Agterhuis. MIT License.
+
+import {
+  defineAgents,
+  defineEnvironmentPolicies,
+  defineMcpServers,
+  definePolicies,
+} from './factories';
+import type { AgentType, AgentServerPolicy, EnvironmentPolicy, McpServerRegistry } from './types';
+
+export const DEFAULT_AGENTS: AgentType[] = defineAgents([
+  {
+    id: 'orchestrator',
+    category: 'orchestration',
+    controlPosture: 'strict',
+    requiresWorkloadIdentity: true,
+    appRegistrationRef: 'entra://agents/orchestrator',
+    templateCategory: 'governance',
+  },
+  {
+    id: 'product',
+    category: 'product',
+    controlPosture: 'balanced',
+    requiresWorkloadIdentity: true,
+    appRegistrationRef: 'entra://agents/product',
+    templateCategory: 'phase',
+  },
+  {
+    id: 'architect',
+    category: 'architecture',
+    controlPosture: 'strict',
+    requiresWorkloadIdentity: true,
+    appRegistrationRef: 'entra://agents/architect',
+    templateCategory: 'phase',
+  },
+  {
+    id: 'developer',
+    category: 'engineering',
+    controlPosture: 'balanced',
+    requiresWorkloadIdentity: true,
+    appRegistrationRef: 'entra://agents/developer',
+    templateCategory: 'phase',
+  },
+  {
+    id: 'ui',
+    category: 'engineering',
+    controlPosture: 'balanced',
+    requiresWorkloadIdentity: true,
+    appRegistrationRef: 'entra://agents/ui',
+    templateCategory: 'phase',
+  },
+  {
+    id: 'qa',
+    category: 'quality',
+    controlPosture: 'strict',
+    requiresWorkloadIdentity: true,
+    appRegistrationRef: 'entra://agents/qa',
+    templateCategory: 'phase',
+  },
+  {
+    id: 'devops',
+    category: 'operations',
+    controlPosture: 'strict',
+    requiresWorkloadIdentity: true,
+    appRegistrationRef: 'entra://agents/devops',
+    templateCategory: 'runtime',
+  },
+  {
+    id: 'infra',
+    category: 'operations',
+    controlPosture: 'strict',
+    requiresWorkloadIdentity: true,
+    appRegistrationRef: 'entra://agents/infra',
+    templateCategory: 'runtime',
+  },
+  {
+    id: 'security',
+    category: 'security',
+    controlPosture: 'strict',
+    requiresWorkloadIdentity: true,
+    appRegistrationRef: 'entra://agents/security',
+    templateCategory: 'cross-functional',
+  },
+  {
+    id: 'data',
+    category: 'data',
+    controlPosture: 'balanced',
+    requiresWorkloadIdentity: true,
+    appRegistrationRef: 'entra://agents/data',
+    templateCategory: 'cross-functional',
+  },
+  {
+    id: 'documentation',
+    category: 'documentation',
+    controlPosture: 'permissive',
+    requiresWorkloadIdentity: false,
+    appRegistrationRef: null,
+    templateCategory: 'cross-functional',
+  },
+  {
+    id: 'sre',
+    category: 'reliability',
+    controlPosture: 'strict',
+    requiresWorkloadIdentity: true,
+    appRegistrationRef: 'entra://agents/sre',
+    templateCategory: 'runtime',
+  },
+]);
+
+export const DEFAULT_SERVERS: McpServerRegistry[] = defineMcpServers([
+  {
+    id: 'workspace-management',
+    endpoint: 'https://mcp.local/workspace-management/health',
+    risk: 'medium',
+    authType: 'oauth',
+    healthStatus: 'healthy',
+    tenantEnabled: true,
+    workspaceEnabled: {},
+    lastHealthCheck: null,
+    consecutiveFailures: 0,
+  },
+  {
+    id: 'governance-approval',
+    endpoint: 'https://mcp.local/governance-approval/health',
+    risk: 'high',
+    authType: 'entra',
+    healthStatus: 'healthy',
+    tenantEnabled: true,
+    workspaceEnabled: {},
+    lastHealthCheck: null,
+    consecutiveFailures: 0,
+  },
+]);
+
+export const DEFAULT_POLICIES: AgentServerPolicy[] = definePolicies([
+  { agentId: 'orchestrator', serverId: 'workspace-management', permission: 'R' },
+  { agentId: 'orchestrator', serverId: 'governance-approval', permission: 'P' },
+  { agentId: 'devops', serverId: 'workspace-management', permission: 'W' },
+  { agentId: 'devops', serverId: 'governance-approval', permission: 'A' },
+  { agentId: 'sre', serverId: 'workspace-management', permission: 'W' },
+  { agentId: 'security', serverId: 'governance-approval', permission: 'W' },
+]);
+
+export const DEFAULT_ENVIRONMENT_POLICIES: EnvironmentPolicy[] = defineEnvironmentPolicies([
+  {
+    env: 'dev',
+    defaultPermission: 'W',
+    writeRequiresApproval: false,
+  },
+  {
+    env: 'test',
+    defaultPermission: 'W',
+    writeRequiresApproval: false,
+  },
+  {
+    env: 'prod',
+    defaultPermission: 'R',
+    writeRequiresApproval: true,
+  },
+]);

@@ -115,6 +115,7 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
         { name: 'jobs', description: 'Background job queue' },
         { name: 'metrics', description: 'Velocity & KPI metrics' },
         { name: 'milestones', description: 'Milestone management' },
+        { name: 'mcp', description: 'MCP governance plugin catalog & registry' },
         { name: 'orchestrator', description: 'State machine engine' },
         { name: 'policies', description: 'Policy management' },
         { name: 'progress', description: 'Session progress' },

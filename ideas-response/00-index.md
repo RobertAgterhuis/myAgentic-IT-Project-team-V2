@@ -26,6 +26,14 @@ This folder contains a domain-by-domain implementation analysis, phased roadmap,
 
 ---
 
+## Support Files
+
+| File                                                     | Purpose                                                             |
+| -------------------------------------------------------- | ------------------------------------------------------------------- |
+| [chat-grounding-protocol.md](chat-grounding-protocol.md) | Shared grounding and fallback contract for Domain 03 chat responses |
+
+---
+
 ## Key Findings Summary
 
 ### What the consultant recommends
@@ -59,7 +67,7 @@ This folder contains a domain-by-domain implementation analysis, phased roadmap,
 
 Based on the analysis in each domain file, the recommended implementation order is:
 
-```
+```text
 P0-CRITICAL:  MCP Plugin Architecture (structural backbone — everything else depends on it)
 P1-HIGH:      Identity & Authentication (gates enterprise adoption, required for MCP identity)
 P1-HIGH:      RAG / Knowledge Retrieval (highest product intelligence gain)
@@ -95,9 +103,10 @@ For implementation planning, read files in this order:
 2. [02-identity-authentication.md](02-identity-authentication.md) — identity dependency
 3. [01-rag-knowledge-retrieval.md](01-rag-knowledge-retrieval.md) — intelligence layer
 4. [03-chat-conversational-interface.md](03-chat-conversational-interface.md) — user surface
-5. [05-help-system.md](05-help-system.md) — near-term UX win
-6. [04-git-backend.md](04-git-backend.md) — operational infrastructure
-7. [07-synthesis.md](07-synthesis.md) — full cross-domain roadmap
+5. [chat-grounding-protocol.md](chat-grounding-protocol.md) — chat grounding and fallback contract
+6. [05-help-system.md](05-help-system.md) — near-term UX win
+7. [04-git-backend.md](04-git-backend.md) — operational infrastructure
+8. [07-synthesis.md](07-synthesis.md) — full cross-domain roadmap
 
 ---
 

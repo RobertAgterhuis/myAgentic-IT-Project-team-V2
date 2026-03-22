@@ -53,7 +53,7 @@ The chat feature synergizes directly with:
 
 ### Chat System Components
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │  CHAT FRONTEND (React component in existing UI)              │
 │  ChatPanel — persistent, slide-in/expandable                 │
@@ -149,6 +149,17 @@ interface ProposedAction {
 4. **Must not** execute irreversible production actions without approval prompt
 5. **Must not** expose raw database contents or secrets in responses
 
+### Grounding Protocol
+
+Chat needs a formal response protocol so the operator console stays deterministic even when LLM-backed reasoning is used.
+
+- Every non-trivial response must declare grounding sources before actions are rendered.
+- If confidence is low or citations are missing, the assistant must fall back to clarification, navigation help, or a refusal to answer.
+- Proposed actions must only be emitted when the cited platform state supports them.
+- Gate explanations, approvals, and policy answers must prefer structured platform records over free-form summaries.
+
+The detailed contract is documented in [chat-grounding-protocol.md](chat-grounding-protocol.md).
+
 ---
 
 ## 4. Intent Classification Model
@@ -204,6 +215,11 @@ The chat system must route messages to the correct handler based on intent categ
 - **Issue 1.1.5** — Add `GET /api/v1/chat/history` (returns last N messages for current session) and `DELETE /api/v1/chat/session`
   - Acceptance: history persisted across page reloads within same platform session
   - Effort: S (1 day)
+
+- **Issue 1.1.6** — Implement grounding validator and low-confidence fallback rules
+  - Enforce citation presence for substantive claims, block unsupported actions, and require clarification prompts when intent classification or grounding confidence is low
+  - Acceptance: unsupported responses downgrade to clarification or refusal; grounded responses include citations in 100% of governance and status-query test fixtures
+  - Effort: M (2 days)
 
 #### Epic 1.2 — Action Proposal System
 
@@ -308,7 +324,7 @@ The chat system must route messages to the correct handler based on intent categ
 ### M-UX-2a — Chat Foundation
 
 - **Deliverables:** Chat API, ChatPanel UI, session-grounded responses, action proposal system, SSE streaming
-- **Exit criteria:** End-to-end: user asks status question; grounded response with session context; action button executes command
+- **Exit criteria:** End-to-end: user asks status question; grounded response with session context; action button executes command; low-confidence cases fall back safely without unsupported claims
 
 ### M-UX-2b — Operator Console
 
@@ -343,6 +359,7 @@ Recommended: **Azure OpenAI as primary** (aligns with the Microsoft-first direct
 | LLM API costs at scale                                   | Medium     | Medium   | Context window management; aggressive context pruning; response caching for repeat queries               |
 | SSE streaming unreliable under load                      | Low        | Medium   | Redis-backed SSE manager already exists; load test streaming path                                        |
 | Security: chat leaks RBAC-restricted data                | Medium     | Critical | ContextAssembler respects RBAC; all queries pass through policy middleware                               |
+| Weak intent confidence causes wrong handler selection    | Medium     | High     | Grounding validator forces clarification when confidence or citation support is low                      |
 
 ---
 
@@ -352,6 +369,7 @@ Recommended: **Azure OpenAI as primary** (aligns with the Microsoft-first direct
 - [x] Architecture design with component model documented
 - [x] Intent classification model complete (10 categories)
 - [x] Grounding constraints documented
+- [x] Grounding protocol support document linked
 - [x] Response data model specified with TypeScript types
 - [x] RAG dependency on Domain 01 explicitly flagged
 - [x] LLM provider strategy documented

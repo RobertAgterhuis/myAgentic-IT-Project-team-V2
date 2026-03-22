@@ -58,7 +58,7 @@ The current platform exposes a basic MCP server (`src/webapp/mcp-server.ts`) wit
 
 ### The Four Planes
 
-```
+```text
 ┌────────────────────────────────────────────────────────────────────┐
 │  MANAGEMENT PLANE                                                    │
 │  Server Registry — Catalog what exists and what can be used         │
@@ -99,7 +99,7 @@ The current platform exposes a basic MCP server (`src/webapp/mcp-server.ts`) wit
 
 ### Effective Enablement Formula
 
-```
+```text
 effectiveEnabled =
   registryAvailable
   AND tenantEnabled
@@ -115,13 +115,38 @@ effectiveEnabled =
 
 Tool execution additionally requires:
 
-```
+```text
 toolExecutable =
   effectiveEnabled
   AND permissionSufficient
   AND environmentAllows
   AND approvalSatisfied
 ```
+
+### Effective Enablement Evaluation Order
+
+Enablement must be evaluated in a stable order so the UI, runtime manifests, and audit logs all describe the same reason for a server being unavailable.
+
+1. Registry presence: if the server is absent from the managed registry, state is `unregistered` and no lower-level checks run.
+2. Tenant enablement: tenant disable produces `disabled_by_tenant` even if the workspace previously enabled the server.
+3. Workspace enablement: workspace disable produces `disabled_by_workspace` when tenant state still allows use.
+4. Agent policy resolution: policy deny produces `blocked_by_policy`.
+5. Auth and consent readiness: missing auth, consent, or workload identity prerequisites produce `auth_pending` or `consent_pending`.
+6. Health evaluation: unhealthy dependencies produce `degraded`.
+7. Executable readiness: only then can the server become `enabled` for tool discovery and execution.
+
+Required visible states:
+
+| Visible State           | Meaning                                                                 |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `enabled`               | Server is visible and executable within current policy envelope         |
+| `disabled_by_tenant`    | Tenant admin disabled server for all workspaces                         |
+| `disabled_by_workspace` | Workspace admin disabled server for current workspace                   |
+| `blocked_by_policy`     | Agent or tool policy prevents use even though server is otherwise ready |
+| `auth_pending`          | Auth binding, service principal, or credential state is incomplete      |
+| `consent_pending`       | Required Microsoft consent has not yet been granted                     |
+| `degraded`              | Server is registered but not healthy enough for execution               |
+| `unregistered`          | Server is not present in the governed registry                          |
 
 ### Frontend Enablement Model
 
@@ -140,6 +165,7 @@ Required UX behavior:
 - Tenant admins can enable or disable a registered MCP server for the tenant.
 - Workspace admins can enable or disable a tenant-allowed server for a workspace.
 - Disabled servers remain visible in the UI with a clear reason and scope badge; they are not silently hidden.
+- The UI must show both requested state and effective state so operators can distinguish "I enabled this" from "it is still blocked by a higher-order condition."
 - Every toggle action requires audit metadata: actor, scope, serverId, previous state, new state, timestamp, justification.
 - Workspace enablement cannot override a tenant-level disable.
 - Runtime manifests and `tools/list` must reflect enablement changes after reconcile/runtime rebuild.
@@ -159,6 +185,35 @@ Suggested mutation payload:
 interface McpEnablementUpdate {
   enabled: boolean;
   justification: string;
+}
+```
+
+### Enablement Propagation Requirements
+
+Enablement changes are not complete when the row is updated in the database. They must propagate through all derived state.
+
+- Every enable/disable mutation emits an audit event and a domain event such as `mcp.enablement.changed`.
+- Reconcile and `runtime build` must invalidate manifest caches for affected server, tenant, and workspace scopes.
+- `tools/list` must return the new effective state on the next request after cache invalidation.
+- Diagnostics and enablement history views must read the same effective-state resolver used by runtime enforcement.
+- If a server is disabled after a session started, the next tool execution must fail closed with a structured remediation response.
+
+Required blocked response contract for disabled or non-ready servers:
+
+```typescript
+interface McpBlockedResponse {
+  blocked: true;
+  reason:
+    | 'disabled_by_tenant'
+    | 'disabled_by_workspace'
+    | 'blocked_by_policy'
+    | 'auth_pending'
+    | 'consent_pending'
+    | 'degraded'
+    | 'unregistered';
+  remediation?: string;
+  enablementScope?: 'tenant' | 'workspace';
+  approvalId?: string;
 }
 ```
 
@@ -263,7 +318,7 @@ export const environments = defineEnvironmentPolicies({
 
 ## 5. CLI Command Model
 
-```
+```text
 Package lifecycle:
   npx my-plugin init           → Generate project config, folders, default definitions
   npx my-plugin bootstrap      → Run migrations, seed metadata, apply base policies, build manifests
@@ -419,6 +474,10 @@ npx my-platform-plugin identity consent status
   - Acceptance: manifest reflects live health state
   - Effort: M (2 days)
 
+- **Issue 3.1.4** — Add manifest invalidation and enablement-change propagation after tenant/workspace toggle
+  - Acceptance: enablement mutation invalidates affected manifests and next `tools/list` reflects the updated effective state
+  - Effort: M (2 days)
+
 - **Issue 3.1.3** — Add manifest rebuild trigger: reconcile run always ends with `runtime build`
   - Acceptance: `reconcile --apply` automatically rebuilds manifests
   - Effort: S (1 day)
@@ -447,6 +506,10 @@ npx my-platform-plugin identity consent status
 - **Issue 3.3.3** — Add `approval_required` flow: blocked tool call auto-creates approval request; returns `{ pending: true, approvalId }`
   - Acceptance: DevOps agent Prod write creates approval request; approval unblocks execution
   - Effort: L (3–4 days)
+
+- **Issue 3.3.4** — Return structured remediation response for disabled, degraded, or consent-pending servers
+  - Acceptance: blocked response includes canonical reason code and remediation guidance that the chat and diagnostics UI can render directly
+  - Effort: M (2 days)
 
 ---
 

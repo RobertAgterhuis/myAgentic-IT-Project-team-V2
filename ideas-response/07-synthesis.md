@@ -19,7 +19,7 @@ The platform currently has a functional but narrow foundation: GitHub OAuth, SQL
 
 ## 2. Dependency Graph
 
-```
+```text
 ──────────────────────────────────────────────────────────────────────
                      DEPENDENCY FLOW
 ──────────────────────────────────────────────────────────────────────
@@ -51,24 +51,25 @@ Immediate parallel start:
 
 ### Integration Points
 
-| Integration                           | Source Domain     | Target Domain       | Description                                                    |
-| ------------------------------------- | ----------------- | ------------------- | -------------------------------------------------------------- |
-| Agent identity in MCP session         | 02 Identity       | 06 MCP Runtime      | Every MCP request carries agent role claim                     |
-| Consent state in ToolExecutionGuard   | 02 Identity       | 06 MCP Runtime      | Microsoft tool calls blocked if consent missing                |
-| RAG context injection into tool calls | 01 RAG            | 06 MCP Runtime      | Context plane enhances agent prompts before dispatch           |
-| RAG as Chat context source            | 01 RAG            | 03 Chat             | Phase 2+ Chat pulls from indexed collections                   |
-| Entra token for Git authentication    | 02 Identity       | 04 Git              | Phase 2 Git uses Entra credential (no PAT)                     |
-| Approval-via-chat                     | 03 Chat           | 06 MCP Runtime      | Chat operator approves `approval_required` gate via message    |
-| Chat gate failure explainer           | 06 MCP Runtime    | 03 Chat             | Why-blocked context rendered in Chat detail panel              |
-| Help page for MCP diagnostics         | 05 Help           | 06 MCP Experience   | Per-page help in diagnostics/overrides pages                   |
-| MCP enable-disable console            | 06 MCP Experience | Tenant/Workspace UX | User-facing transparency for which servers are enabled and why |
-| Agent workload identity               | 02 Identity       | 06 Phase 5          | Entra app registrations per agent role                         |
+| Integration                           | Source Domain     | Target Domain       | Description                                                      |
+| ------------------------------------- | ----------------- | ------------------- | ---------------------------------------------------------------- |
+| Agent identity in MCP session         | 02 Identity       | 06 MCP Runtime      | Every MCP request carries agent role claim                       |
+| Consent state in ToolExecutionGuard   | 02 Identity       | 06 MCP Runtime      | Microsoft tool calls blocked if consent missing                  |
+| RAG context injection into tool calls | 01 RAG            | 06 MCP Runtime      | Context plane enhances agent prompts before dispatch             |
+| RAG as Chat context source            | 01 RAG            | 03 Chat             | Phase 2+ Chat pulls from indexed collections                     |
+| Entra token for Git authentication    | 02 Identity       | 04 Git              | Phase 2 Git uses Entra credential (no PAT)                       |
+| Approval-via-chat                     | 03 Chat           | 06 MCP Runtime      | Chat operator approves `approval_required` gate via message      |
+| Chat gate failure explainer           | 06 MCP Runtime    | 03 Chat             | Why-blocked context rendered in Chat detail panel                |
+| Chat grounding protocol               | 03 Chat           | 06 MCP Runtime      | Shared reason codes align chat, diagnostics, and guard responses |
+| Help page for MCP diagnostics         | 05 Help           | 06 MCP Experience   | Per-page help in diagnostics/overrides pages                     |
+| MCP enable-disable console            | 06 MCP Experience | Tenant/Workspace UX | User-facing transparency for which servers are enabled and why   |
+| Agent workload identity               | 02 Identity       | 06 Phase 5          | Entra app registrations per agent role                           |
 
 ---
 
 ## 3. Master Milestone Timeline
 
-```
+```text
 Quarter 1 — Infrastructure Core
 
   Sprint 1–2: M-INFRA-1a  (Domain 06, Phase 1)
@@ -106,7 +107,7 @@ Quarter 3 — Runtime Plane + Chat
     Runtime manifests; tools/list filtering; ToolExecutionGuard
 
   Sprint 5–6: M-UX-2a     (Domain 03, Phase 1)
-    Chat service; intent classifier; basic operator console
+    Chat service; intent classifier; grounding validator; basic operator console
 
   Sprint 5–6: M-UX-1b     (Domain 05, Phase 2)
     8 help pages; LLM-grounded help drawer; help API
@@ -143,7 +144,7 @@ Year 2+ Quarter 1 — Full Intelligence
 
 The critical path (sequence that determines earliest completion of the full platform):
 
-```
+```text
 M-INFRA-1a (plugin core)
     → M-INFRA-3a (policy plane)
         → M-INFRA-3b (runtime plane)

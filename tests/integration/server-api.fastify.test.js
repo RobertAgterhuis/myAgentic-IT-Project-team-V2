@@ -669,6 +669,9 @@ describe('GET /api/v1/help/search', () => {
     expect(body.results.some((result) => result.kind === 'page' && result.id === 'commands')).toBe(
       true
     );
+    expect(Array.isArray(body.pages)).toBe(true);
+    expect(Array.isArray(body.topics)).toBe(true);
+    expect(body.pages.some((page) => page.routeSlug === 'commands')).toBe(true);
   });
 });
 

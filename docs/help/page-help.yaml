@@ -24,6 +24,8 @@ pages:
       - audit
       - feature
       - hotfix
+      - approvals
+      - governance
     topicLinks:
       - topicId: commands
         title: Commands Reference
@@ -55,6 +57,7 @@ pages:
       - resume
       - status
       - recovery
+      - gate
     topicLinks:
       - topicId: getting-started
         title: Getting Started

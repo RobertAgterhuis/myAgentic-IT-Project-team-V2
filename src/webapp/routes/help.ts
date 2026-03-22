@@ -39,8 +39,19 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       if (!query) {
         return reply.code(400).send(errorResponse('VALIDATION_ERROR', 'Query is required'));
       }
+
       const results = svc.search(query);
-      return reply.send({ query, count: results.length, results });
+      const pageIds = [
+        ...new Set(results.filter((result) => result.kind === 'page').map((result) => result.id)),
+      ];
+      const pages = pageIds
+        .map((routeSlug) => svc.getPageHelp(routeSlug))
+        .filter((page): page is NonNullable<ReturnType<typeof svc.getPageHelp>> => page !== null);
+      const topics = results
+        .filter((result) => result.kind === 'topic' && typeof result.topicId === 'string')
+        .map((result) => ({ topicId: result.topicId as string, title: result.title }));
+
+      return reply.send({ query, count: results.length, results, pages, topics });
     }
   );
 }

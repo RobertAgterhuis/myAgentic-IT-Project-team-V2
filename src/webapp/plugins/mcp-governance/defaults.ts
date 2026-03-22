@@ -5,8 +5,15 @@ import {
   defineEnvironmentPolicies,
   defineMcpServers,
   definePolicies,
+  defineToolPolicies,
 } from './factories';
-import type { AgentType, AgentServerPolicy, EnvironmentPolicy, McpServerRegistry } from './types';
+import type {
+  AgentToolPolicy,
+  AgentType,
+  AgentServerPolicy,
+  EnvironmentPolicy,
+  McpServerRegistry,
+} from './types';
 
 export const DEFAULT_AGENTS: AgentType[] = defineAgents([
   {
@@ -156,5 +163,25 @@ export const DEFAULT_ENVIRONMENT_POLICIES: EnvironmentPolicy[] = defineEnvironme
     env: 'prod',
     defaultPermission: 'R',
     writeRequiresApproval: true,
+  },
+]);
+
+export const DEFAULT_TOOL_POLICIES: AgentToolPolicy[] = defineToolPolicies([
+  {
+    agentId: 'orchestrator',
+    serverId: 'governance-approval',
+    toolId: 'governance-approval.approve_request',
+    overrideMode: 'set',
+    permission: 'A',
+    approvalRequired: true,
+    blocked: false,
+    envScope: 'prod',
+  },
+  {
+    agentId: 'documentation',
+    serverId: 'workspace-management',
+    toolId: 'workspace-management.delete_workspace',
+    overrideMode: 'deny',
+    blocked: true,
   },
 ]);

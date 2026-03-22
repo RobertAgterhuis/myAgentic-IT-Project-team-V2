@@ -63,6 +63,9 @@ describe('routes/mcp', () => {
     const routes = createRoutes();
     expect(routes).toHaveProperty('GET /api/v1/mcp/agents');
     expect(routes).toHaveProperty('GET /api/v1/mcp/servers');
+    expect(routes).toHaveProperty('GET /api/v1/mcp/policies');
+    expect(routes).toHaveProperty('POST /api/v1/mcp/resolve/server');
+    expect(routes).toHaveProperty('POST /api/v1/mcp/resolve/tool');
   });
 
   it('returns catalog and registry payloads', async () => {
@@ -82,6 +85,59 @@ describe('routes/mcp', () => {
     await routes['GET /api/v1/mcp/servers'](createReq('/api/v1/mcp/servers'), serversRes);
     expect(serversRes.statusCode).toBe(200);
     expect(parsed(serversRes).count).toBe(0);
+
+    vi.spyOn(McpGovernanceService.prototype, 'getDefinedPolicies').mockResolvedValue([]);
+    const policiesRes = createRes();
+    await routes['GET /api/v1/mcp/policies'](createReq('/api/v1/mcp/policies'), policiesRes);
+    expect(policiesRes.statusCode).toBe(200);
+    expect(parsed(policiesRes).count).toBe(0);
+  });
+
+  it('returns 400 when env_scope is missing and resolves when valid', async () => {
+    const routes = createRoutes();
+
+    const missingRes = createRes();
+    await routes['POST /api/v1/mcp/resolve/server'](
+      createReq('/api/v1/mcp/resolve/server', 'POST', {
+        agent_id: 'orchestrator',
+        server_id: 'workspace-management',
+      }),
+      missingRes
+    );
+    expect(missingRes.statusCode).toBe(400);
+
+    vi.spyOn(McpGovernanceService.prototype, 'resolveServerPermission').mockResolvedValue({
+      permissionLevel: 'R',
+      approvalRequired: false,
+      blocked: false,
+    });
+
+    const okRes = createRes();
+    await routes['POST /api/v1/mcp/resolve/server'](
+      createReq('/api/v1/mcp/resolve/server', 'POST', {
+        agent_id: 'orchestrator',
+        server_id: 'workspace-management',
+        env_scope: 'dev',
+      }),
+      okRes
+    );
+    expect(okRes.statusCode).toBe(200);
+    expect(parsed(okRes).ok).toBe(true);
+  });
+
+  it('returns 403 for invalid env_scope on tool resolve', async () => {
+    const routes = createRoutes();
+    const res = createRes();
+    await routes['POST /api/v1/mcp/resolve/tool'](
+      createReq('/api/v1/mcp/resolve/tool', 'POST', {
+        agent_id: 'orchestrator',
+        server_id: 'workspace-management',
+        tool_id: 'workspace-management.default',
+        env_scope: 'staging',
+      }),
+      res
+    );
+    expect(res.statusCode).toBe(403);
   });
 
   it('enforces operator/admin role when auth middleware is active', async () => {

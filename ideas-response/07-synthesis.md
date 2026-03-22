@@ -51,17 +51,18 @@ Immediate parallel start:
 
 ### Integration Points
 
-| Integration                           | Source Domain  | Target Domain     | Description                                                 |
-| ------------------------------------- | -------------- | ----------------- | ----------------------------------------------------------- |
-| Agent identity in MCP session         | 02 Identity    | 06 MCP Runtime    | Every MCP request carries agent role claim                  |
-| Consent state in ToolExecutionGuard   | 02 Identity    | 06 MCP Runtime    | Microsoft tool calls blocked if consent missing             |
-| RAG context injection into tool calls | 01 RAG         | 06 MCP Runtime    | Context plane enhances agent prompts before dispatch        |
-| RAG as Chat context source            | 01 RAG         | 03 Chat           | Phase 2+ Chat pulls from indexed collections                |
-| Entra token for Git authentication    | 02 Identity    | 04 Git            | Phase 2 Git uses Entra credential (no PAT)                  |
-| Approval-via-chat                     | 03 Chat        | 06 MCP Runtime    | Chat operator approves `approval_required` gate via message |
-| Chat gate failure explainer           | 06 MCP Runtime | 03 Chat           | Why-blocked context rendered in Chat detail panel           |
-| Help page for MCP diagnostics         | 05 Help        | 06 MCP Experience | Per-page help in diagnostics/overrides pages                |
-| Agent workload identity               | 02 Identity    | 06 Phase 5        | Entra app registrations per agent role                      |
+| Integration                           | Source Domain     | Target Domain       | Description                                                    |
+| ------------------------------------- | ----------------- | ------------------- | -------------------------------------------------------------- |
+| Agent identity in MCP session         | 02 Identity       | 06 MCP Runtime      | Every MCP request carries agent role claim                     |
+| Consent state in ToolExecutionGuard   | 02 Identity       | 06 MCP Runtime      | Microsoft tool calls blocked if consent missing                |
+| RAG context injection into tool calls | 01 RAG            | 06 MCP Runtime      | Context plane enhances agent prompts before dispatch           |
+| RAG as Chat context source            | 01 RAG            | 03 Chat             | Phase 2+ Chat pulls from indexed collections                   |
+| Entra token for Git authentication    | 02 Identity       | 04 Git              | Phase 2 Git uses Entra credential (no PAT)                     |
+| Approval-via-chat                     | 03 Chat           | 06 MCP Runtime      | Chat operator approves `approval_required` gate via message    |
+| Chat gate failure explainer           | 06 MCP Runtime    | 03 Chat             | Why-blocked context rendered in Chat detail panel              |
+| Help page for MCP diagnostics         | 05 Help           | 06 MCP Experience   | Per-page help in diagnostics/overrides pages                   |
+| MCP enable-disable console            | 06 MCP Experience | Tenant/Workspace UX | User-facing transparency for which servers are enabled and why |
+| Agent workload identity               | 02 Identity       | 06 Phase 5          | Entra app registrations per agent role                         |
 
 ---
 
@@ -113,7 +114,7 @@ Quarter 3 — Runtime Plane + Chat
 Quarter 4 — Experience, Workload Identity, Advanced Chat
 
   Sprint 7–8: M-INFRA-3c  (Domain 06, Phase 4)
-    Permission matrix UI; override console; reconcile; doctor
+    Permission matrix UI; enable-disable console; override console; reconcile; doctor
 
   Sprint 7–8: M-INFRA-2c  (Domain 02, Phase 3)
     Agent workload identity; consent lifecycle; per-agent app registrations
@@ -204,6 +205,7 @@ Git Backend and Help System are **off-critical** and can be worked independently
 | RSK-08 | Tool execution guard latency hurts agent throughput              | Medium     | High     | 06        | Manifest caching; < 5ms target; Redis for multi-instance                                 |
 | RSK-09 | SQLite bottleneck under concurrent agent sessions                | Low        | High     | All       | Monitor `better-sqlite3` WAL mode; plan PostgreSQL migration if concurrent sessions > 10 |
 | RSK-10 | Reconcile command causes unintended policy regression            | Medium     | Critical | 06        | Mandatory dry-run + diff display before every apply                                      |
+| RSK-11 | Users cannot understand why an MCP server is unavailable         | Medium     | High     | 06        | Explicit enablement console, inherited-disable messaging, and enablement history UI      |
 
 ---
 
@@ -219,6 +221,7 @@ Git Backend and Help System are **off-critical** and can be worked independently
 | Per-agent-role Entra app registrations (not one global app) | Principle of least privilege; per-role revocability        | Single shared app — too broad; consent cannot be scoped     |
 | Remote-first MCP server model                               | All production servers are remote; local only for dev      | Local-only — would not work in production SaaS context      |
 | Approval-via-chat for HITL gates                            | Operator stays in one interface; natural language approval | Separate approval UI — context switch; slower               |
+| Explicit MCP enable-disable UI                              | Transparency and tenant control are mandatory for trust    | CLI-only enablement — too opaque for operators and admins   |
 
 ---
 
@@ -231,6 +234,7 @@ Git Backend and Help System are **off-critical** and can be worked independently
 - Plugin package structure (`defineAgents`, `defineServers`, etc.)
 - Agent catalog schema + DB migration
 - `init` CLI command
+- MCP server enablement API shape (`tenant-enablement`, `workspace-enablement`)
 
 **Track B — Auth Provider Abstraction (1 engineer):**
 

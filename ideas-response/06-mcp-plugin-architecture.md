@@ -90,6 +90,7 @@ The current platform exposes a basic MCP server (`src/webapp/mcp-server.ts`) wit
 │  EXPERIENCE PLANE                                                     │
 │  Agent Views — Per-agent tool visibility with permission annotation │
 │  Permission Matrix — Full Agent × Server × Tool view                │
+│  Enablement Console — Tenant/workspace enable-disable with audit     │
 │  Overrides Console — Time-bound manual override with audit          │
 │  Diagnostics — Why is a tool blocked/degraded/pending approval?     │
 │  Approvals — HITL gates for approval_required/two_step actions      │
@@ -120,6 +121,45 @@ toolExecutable =
   AND permissionSufficient
   AND environmentAllows
   AND approvalSatisfied
+```
+
+### Frontend Enablement Model
+
+The platform must expose explicit frontend controls for MCP server enablement. Visibility without control is insufficient for tenant transparency.
+
+There are three distinct enablement layers:
+
+| Layer                | Controlled By                | Scope             | Purpose                                    |
+| -------------------- | ---------------------------- | ----------------- | ------------------------------------------ |
+| Registry presence    | Platform bootstrap/reconcile | Global            | Server exists in the managed catalog       |
+| Tenant enablement    | Admin UI                     | Tenant            | Allow this tenant to use the server at all |
+| Workspace enablement | Workspace admin UI           | Workspace/project | Allow this workspace to consume the server |
+
+Required UX behavior:
+
+- Tenant admins can enable or disable a registered MCP server for the tenant.
+- Workspace admins can enable or disable a tenant-allowed server for a workspace.
+- Disabled servers remain visible in the UI with a clear reason and scope badge; they are not silently hidden.
+- Every toggle action requires audit metadata: actor, scope, serverId, previous state, new state, timestamp, justification.
+- Workspace enablement cannot override a tenant-level disable.
+- Runtime manifests and `tools/list` must reflect enablement changes after reconcile/runtime rebuild.
+
+Required backend API surface:
+
+```typescript
+GET   /api/v1/mcp/servers
+PATCH /api/v1/mcp/servers/:serverId/tenant-enablement
+PATCH /api/v1/mcp/servers/:serverId/workspaces/:workspaceId/enablement
+GET   /api/v1/mcp/servers/:serverId/enablement-history
+```
+
+Suggested mutation payload:
+
+```typescript
+interface McpEnablementUpdate {
+  enabled: boolean;
+  justification: string;
+}
 ```
 
 ### Agent RBAC Matrix (from mapping document)
@@ -312,6 +352,12 @@ npx my-platform-plugin identity consent status
   - Acceptance: correct data; shows health inline
   - Effort: S (1 day)
 
+- **Issue 1.3.5** — Add MCP enablement mutation endpoints for tenant and workspace scope
+  - `PATCH /api/v1/mcp/servers/:serverId/tenant-enablement`
+  - `PATCH /api/v1/mcp/servers/:serverId/workspaces/:workspaceId/enablement`
+  - Acceptance: writes enablement state with justification and audit event; tenant disable wins over workspace enable
+  - Effort: M (2 days)
+
 ---
 
 ### Phase 2 — Policy Plane (Milestone: M-INFRA-3a)
@@ -426,6 +472,16 @@ npx my-platform-plugin identity consent status
   - Acceptance: shows all unhealthy servers and auth-pending agents in one view
   - Effort: M (2–3 days)
 
+- **Issue 4.1.5** — **MCP Enablement Console** pages for tenant and workspace scope
+  - Tenant admin view: list all registered servers with enable/disable toggle, risk, health, auth readiness, current tenant state
+  - Workspace admin view: list tenant-allowed servers with per-workspace toggle and inherited-disable reason
+  - Acceptance: operator can clearly see enabled vs disabled state, who changed it, and why
+  - Effort: L (3–4 days)
+
+- **Issue 4.1.6** — **Enablement History** panel showing all toggle actions with actor and justification
+  - Acceptance: every enable/disable action is visible in chronological order and linked to the server/workspace scope it changed
+  - Effort: M (2 days)
+
 #### Epic 4.2 — Reconcile Loop
 
 - **Issue 4.2.1** — Implement full `reconcile` command: read code → diff vs DB → plan changes → display plan → apply with confirmation
@@ -467,7 +523,7 @@ _Issues already defined in Domain 02 Phase 3 (Epic 3.1–3.3). Integration tasks
 
 ### M-INFRA-1a — Plugin Core
 
-- **Deliverables:** Plugin structure; `defineAgents/Servers/Policies/Environments` factories; agent catalog; server registry; `init`, `bootstrap` CLI
+- **Deliverables:** Plugin structure; `defineAgents/Servers/Policies/Environments` factories; agent catalog; server registry; enablement mutation APIs; `init`, `bootstrap` CLI
 - **Exit criteria:** 12 agents in catalog; 8 servers in registry; `doctor` runs clean
 
 ### M-INFRA-3a — Policy Plane
@@ -482,8 +538,8 @@ _Issues already defined in Domain 02 Phase 3 (Epic 3.1–3.3). Integration tasks
 
 ### M-INFRA-3c — Experience Plane & Reconcile
 
-- **Deliverables:** Permission Matrix UI; diagnostics page; override console; `reconcile` command; `doctor` command
-- **Exit criteria:** Admin can see full policy state; reconcile applies code changes to DB; doctor catches 8 scenarios
+- **Deliverables:** Permission Matrix UI; diagnostics page; override console; enablement console; enablement history; `reconcile` command; `doctor` command
+- **Exit criteria:** Admin can see and change MCP enablement state with audit trail; reconcile applies code changes to DB; doctor catches 8 scenarios
 
 ### M-INFRA-3d — Workload Identity
 

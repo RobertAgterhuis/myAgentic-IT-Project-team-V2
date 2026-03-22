@@ -40,7 +40,7 @@ This folder contains a domain-by-domain implementation analysis, phased roadmap,
 
 5. **Internal help system** — Per-page contextual help with two layers: inline summary and expandable topic detail. Reduces reliance on external documentation.
 
-6. **MCP Plugin Architecture** — Plugin-driven, remote-first, agent-centric RBAC model with explicit bootstrap/reconcile flows, code-generated policy, and Microsoft Entra workload identity per agent role.
+6. **MCP Plugin Architecture** — Plugin-driven, remote-first, agent-centric RBAC model with explicit bootstrap/reconcile flows, code-generated policy, Microsoft Entra workload identity per agent role, and explicit frontend enable/disable controls for MCP visibility and transparency.
 
 ### Current platform state (gap baseline)
 

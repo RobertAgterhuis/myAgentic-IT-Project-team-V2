@@ -4,6 +4,8 @@
 > Analysis date: March 22, 2026  
 > Analyst: GitHub Copilot (based on consultant recommendations)
 
+> Validation refresh: March 22, 2026 (external consultant scoping session)
+
 ---
 
 ## 1. Executive Summary
@@ -20,6 +22,23 @@ Deterministic Control Plane   +   RAG-Assisted Context Plane
  policies, job state, audit)       contracts, phase outputs,
                                    retrospectives, workspace knowledge)
 ```
+
+### Consultant Validation Outcome (March 22, 2026)
+
+Decision: **ADOPT LanceDB OSS embedded as the default RAG backend**.
+
+Validation result against the current solution:
+
+- The current platform has deterministic storage only (`file` or `sqlite`) and no vector retrieval layer.
+- There is no active semantic retrieval API in the runtime path yet.
+- Existing roadmap already points to LanceDB in M-INTEL-1 issue definitions, so consultant advice is aligned.
+
+Scope lock after validation:
+
+- **Source of truth remains deterministic stores** (session state, approvals, governance records, audit).
+- RAG is a context plane only.
+- `sqlite-vec` is allowed for lab-only spikes, not production baseline.
+- Chroma and Qdrant remain deferred alternatives (re-evaluate after corpus and concurrency growth).
 
 ---
 
@@ -89,13 +108,19 @@ Deterministic Control Plane   +   RAG-Assisted Context Plane
 
 ### Technology Choices
 
-| Component     | Recommended                                                                | Rationale                                        |
-| ------------- | -------------------------------------------------------------------------- | ------------------------------------------------ |
-| Embeddings    | `@xenova/transformers` (local) or OpenAI `text-embedding-3-small`          | Local-first for privacy; cloud for quality       |
-| Vector store  | `lancedb` (embedded, TypeScript-native) or `pgvector` (Postgres extension) | LanceDB for zero-infra start; pgvector for scale |
-| Chunking      | `langchain`/`llamaindex` splitters or custom token-aware chunker           | Markdown-aware splitting for `.md` files         |
-| Retrieval API | Custom REST endpoint: `POST /api/v1/rag/query`                             | Consistent with existing API patterns            |
-| Indexer       | Background job via existing job queue                                      | Non-blocking, incremental                        |
+| Component     | Recommended                                                       | Rationale                                       |
+| ------------- | ----------------------------------------------------------------- | ----------------------------------------------- |
+| Embeddings    | `@xenova/transformers` (local) or OpenAI `text-embedding-3-small` | Local-first for privacy; cloud for quality      |
+| Vector store  | `lancedb` (embedded, TypeScript-native)                           | Consultant-validated best fit for current stack |
+| Chunking      | `langchain`/`llamaindex` splitters or custom token-aware chunker  | Markdown-aware splitting for `.md` files        |
+| Retrieval API | Custom REST endpoint: `POST /api/v1/rag/query`                    | Consistent with existing API patterns           |
+| Indexer       | Background job via existing job queue                             | Non-blocking, incremental                       |
+
+Deferred alternatives:
+
+- `sqlite-vec`: keep for ultra-light prototype spikes only (pre-v1 risk and brute-force search profile).
+- Qdrant: re-evaluate for scale-out and dedicated vector infra requirements.
+- Chroma: re-evaluate only if a service-first model is explicitly preferred.
 
 ---
 
@@ -273,6 +298,8 @@ Every retrieval result that influences agent output must be clearly tagged as `[
 3. Tool authorization is never RAG-based.
 4. Every RAG result must carry source attribution.
 5. Session state is never stored in or derived from vectors.
+
+6. Retrieval responses must support hybrid relevance strategy in roadmap scope (semantic + lexical), with filtering by workspace/phase/agent when applicable.
 
 ---
 

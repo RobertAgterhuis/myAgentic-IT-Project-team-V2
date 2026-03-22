@@ -781,6 +781,35 @@ describe('loadAuthConfig', () => {
     expect(config.entraTenantId).toBe('tenant-id');
     expect(config.entraCallbackUrl).toContain('/api/auth/entra/callback');
   });
+
+  it('uses ENTRA_REDIRECT_URI when set, overriding the derived entraCallbackUrl', () => {
+    process.env.ENTRA_CLIENT_ID = 'entra-id';
+    process.env.ENTRA_TENANT_ID = 'common';
+    process.env.AUTH_CALLBACK_URL = 'https://app.example.com';
+    process.env.ENTRA_REDIRECT_URI = 'https://custom.example.com/auth/entra/cb';
+
+    const config = loadAuthConfig();
+    expect(config.entraCallbackUrl).toBe('https://custom.example.com/auth/entra/cb');
+  });
+
+  it('disables Entra provider when ENTRA_CLIENT_ID is not set', () => {
+    process.env.GITHUB_CLIENT_ID = 'gh-id';
+    process.env.GITHUB_CLIENT_SECRET = 'gh-secret';
+    delete process.env.ENTRA_CLIENT_ID;
+
+    const config = loadAuthConfig();
+    expect(config).not.toBeNull();
+    expect(config.entraClientId).toBeFalsy();
+
+    const manager = new AuthManager({ ...config, dbPath: tmpDbPath() });
+    try {
+      expect(manager.getProvider('entra')).toBeNull();
+    } finally {
+      const p = manager.config.dbPath;
+      manager.close();
+      rmDir(p);
+    }
+  });
 });
 
 /* ── Additional AuthManager Coverage ──────────────────────────── */

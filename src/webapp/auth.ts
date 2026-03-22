@@ -1392,7 +1392,9 @@ export function loadAuthConfig(): AuthConfig | null {
   const port = process.env.PORT || '3000';
   const baseUrl = process.env.AUTH_CALLBACK_URL || `http://${host}:${port}`;
   const callbackUrl = `${baseUrl}/api/auth/callback`;
-  const entraCallbackUrl = `${baseUrl}/api/auth/entra/callback`;
+  // ENTRA_REDIRECT_URI takes precedence; fall back to the derived base URL path.
+  const entraCallbackUrl = process.env.ENTRA_REDIRECT_URI || `${baseUrl}/api/auth/entra/callback`;
+  const entraAuthorityHost = process.env.ENTRA_AUTHORITY_HOST || undefined;
   const stateSecret = process.env.AUTH_STATE_SECRET || crypto.randomBytes(32).toString('hex');
   const secureCookies = process.env.AUTH_SECURE_COOKIES === 'true';
 
@@ -1404,6 +1406,7 @@ export function loadAuthConfig(): AuthConfig | null {
     entraTenantId,
     entraClientSecret,
     entraCallbackUrl,
+    entraAuthorityHost,
     stateSecret,
     secureCookies,
     enabled: true,

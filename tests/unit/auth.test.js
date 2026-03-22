@@ -262,6 +262,114 @@ describe('AuthManager', () => {
     }
   });
 
+  describe('EntraAuthProvider claims extraction (#868)', () => {
+    let entraManager;
+    let entraProvider;
+
+    beforeEach(() => {
+      entraManager = new AuthManager({
+        ...config,
+        dbPath: tmpDbPath(),
+        entraClientId: 'entra-client',
+        entraTenantId: 'test-tenant',
+        entraClientSecret: 'entra-secret',
+        entraCallbackUrl: 'http://localhost:3000/api/auth/entra/callback',
+      });
+      entraProvider = entraManager.getProvider('entra');
+    });
+
+    afterEach(() => {
+      const pathToDelete = entraManager.config.dbPath;
+      entraManager.close();
+      rmDir(pathToDelete);
+    });
+
+    function makeUnsignedJwt(payload) {
+      const header = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString('base64url');
+      const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+      return `${header}.${body}.`;
+    }
+
+    async function authenticateWithClaims(claims) {
+      const loginUrl = entraProvider.getLoginUrl('/dashboard');
+      const stateParam = new URL(loginUrl).searchParams.get('state');
+      const origFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        const urlStr = typeof url === 'string' ? url : url.toString();
+        if (urlStr.includes('/oauth2/v2.0/token')) {
+          return {
+            ok: true,
+            json: async () => ({
+              access_token: 'entra-at',
+              refresh_token: 'entra-rt',
+              expires_in: 3600,
+              id_token: makeUnsignedJwt(claims),
+            }),
+          };
+        }
+        return origFetch(url);
+      };
+      try {
+        return await entraProvider.authenticate('mock-code', stateParam);
+      } finally {
+        globalThis.fetch = origFetch;
+      }
+    }
+
+    it('extracts oid → providerId and tid → tenantId from id_token', async () => {
+      const result = await authenticateWithClaims({
+        oid: 'entra-obj-id-001',
+        tid: 'a1b2c3d4-0000-0000-0000-000000000001',
+        preferred_username: 'alice@contoso.com',
+        name: 'Alice',
+        email: 'alice@contoso.com',
+      });
+
+      expect(result.provider).toBe('entra');
+      expect(result.providerId).toBe('entra-obj-id-001');
+      expect(result.tenantId).toBe('a1b2c3d4-0000-0000-0000-000000000001');
+      expect(result.username).toBe('alice@contoso.com');
+    });
+
+    it('uses upn claim as provider_username when preferred_username is absent (v1.0 token)', async () => {
+      const result = await authenticateWithClaims({
+        oid: 'entra-obj-id-002',
+        tid: 'a1b2c3d4-0000-0000-0000-000000000002',
+        upn: 'bob@contoso.com',
+        name: 'Bob',
+      });
+
+      expect(result.username).toBe('bob@contoso.com');
+    });
+
+    it('persists tenant_id and provider_username (UPN) in linked_accounts', async () => {
+      const providerUser = await authenticateWithClaims({
+        oid: 'entra-obj-id-003',
+        tid: 'tenant-persist-001',
+        preferred_username: 'carol@contoso.com',
+        name: 'Carol',
+        email: 'carol@contoso.com',
+      });
+
+      const user = entraManager.store.upsertUser({
+        provider: providerUser.provider,
+        providerId: providerUser.providerId,
+        providerUsername: providerUser.username,
+        email: providerUser.email,
+        name: providerUser.name,
+        avatarUrl: providerUser.avatarUrl,
+        tokenPair: providerUser.tokenPair,
+        tenantId: providerUser.tenantId,
+      });
+
+      const entraAccount = user.linked_accounts.find((a) => a.provider === 'entra');
+      expect(entraAccount).not.toBeNull();
+      expect(entraAccount.provider_id).toBe('entra-obj-id-003');
+      expect(entraAccount.tenant_id).toBe('tenant-persist-001');
+      expect(entraAccount.provider_username).toBe('carol@contoso.com');
+    });
+  });
+
   it('generates login URL with redirect_to encoded in state', () => {
     const url = manager.getLoginUrl('/dashboard');
     expect(url).toContain('state=');

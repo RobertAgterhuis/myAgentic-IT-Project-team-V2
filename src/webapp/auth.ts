@@ -888,8 +888,11 @@ export class EntraAuthProvider implements IAuthProvider {
       (typeof claims.oid === 'string' && claims.oid) ||
       (typeof claims.sub === 'string' && claims.sub) ||
       crypto.randomUUID();
+    // preferred_username is the UPN in v2.0 tokens; fall back to the explicit upn
+    // claim (v1.0 tokens) before trying email or the object ID.
     const username =
       (typeof claims.preferred_username === 'string' && claims.preferred_username) ||
+      (typeof claims.upn === 'string' && claims.upn) ||
       (typeof claims.email === 'string' && claims.email) ||
       providerId;
     const name =

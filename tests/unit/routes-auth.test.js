@@ -377,6 +377,11 @@ describe('routes/auth handlers', () => {
         const user = manager.store.findUserByProvider('entra', 'entra-user-001');
         expect(user).not.toBeNull();
         expect(user.email).toBe('entra.user@example.com');
+
+        const entraAccount = user.linked_accounts.find((a) => a.provider === 'entra');
+        expect(entraAccount).not.toBeNull();
+        expect(entraAccount.tenant_id).toBe('tenant-001');
+        expect(entraAccount.provider_username).toBe('entra.user@example.com');
       } finally {
         globalThis.fetch = origFetch;
       }

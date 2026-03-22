@@ -300,3 +300,76 @@ describe('Engine hooks — no hooks provided', () => {
     expect(engine.status().state).toBe('ONBOARDING');
   });
 });
+
+describe('Engine phase-gate auto-commit (#970)', () => {
+  it('commits artifact output when a phase gate crossing has changes', () => {
+    const sessionPath = '/test/session.json';
+    const store = storeWithFlows({
+      [sessionPath]: JSON.stringify({
+        status: 'IDLE',
+        mode: 'CREATE',
+        state_history: [],
+        gate_results: {},
+        session_id: 'sess-123',
+      }),
+    });
+
+    const calls = [];
+    const gitRunner = (args) => {
+      calls.push(args);
+      if (args[0] === 'status') {
+        return { status: 0, stdout: ' M BusinessDocs/Phase1-Business/analysis.md\n', stderr: '' };
+      }
+      return { status: 0, stdout: '', stderr: '' };
+    };
+
+    const engine = createEngine({
+      store,
+      flowsPath: FLOWS_PATH,
+      sessionPath,
+      gitRunner,
+      artifactOutputDir: 'BusinessDocs',
+      autoCommitPhaseGates: true,
+    });
+
+    engine.advance();
+    engine.advance();
+    engine.advance();
+    engine.advance({ verdict: 'APPROVED' });
+
+    const commitCall = calls.find((args) => args[0] === 'commit');
+    expect(commitCall).toBeDefined();
+    expect(commitCall[1]).toBe('-m');
+    expect(commitCall[2]).toContain('chore(sdlc): phase 1 gate passed');
+    expect(commitCall[2]).toContain('[session=sess-123]');
+    expect(commitCall[2]).toContain('[gate=gate.critic-risk-1]');
+  });
+
+  it('does not commit when artifact output directory has no changes', () => {
+    const store = storeWithFlows();
+    const calls = [];
+    const gitRunner = (args) => {
+      calls.push(args);
+      if (args[0] === 'status') {
+        return { status: 0, stdout: '', stderr: '' };
+      }
+      return { status: 0, stdout: '', stderr: '' };
+    };
+
+    const engine = createEngine({
+      store,
+      flowsPath: FLOWS_PATH,
+      gitRunner,
+      artifactOutputDir: 'BusinessDocs',
+      autoCommitPhaseGates: true,
+    });
+
+    engine.advance();
+    engine.advance();
+    engine.advance();
+    engine.advance({ verdict: 'APPROVED' });
+
+    const commitCall = calls.find((args) => args[0] === 'commit');
+    expect(commitCall).toBeUndefined();
+  });
+});

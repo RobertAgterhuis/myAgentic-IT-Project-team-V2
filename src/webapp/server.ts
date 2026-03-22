@@ -79,7 +79,9 @@ import { registerRoutes as registerAgentRoutes } from './routes/agents';
 import { registerRoutes as registerWorkspaceRoutes } from './routes/workspaces';
 import { registerRoutes as registerCockpitRoutes } from './routes/cockpit';
 import { registerRoutes as registerAuthRoutes } from './routes/auth';
+import { registerRoutes as registerMcpRoutes } from './routes/mcp';
 import { registerRoutes as registerMiscRoutes } from './routes/misc';
+import { McpGovernanceService, McpHealthMonitor } from './plugins/mcp-governance';
 
 const _cache = new FileCache();
 const _audit = new AuditTrail({ logDir: path.join(BUSINESS_DOCS, 'audit') });
@@ -372,6 +374,26 @@ function scheduleRebuildIndex(): void {
 
 /* ── Build Fastify app ────────────────────────────────────────── */
 let _app: Awaited<ReturnType<typeof buildApp>> | null = null;
+let _mcpHealthMonitor: McpHealthMonitor | null = null;
+
+function getMcpHealthMonitor(): McpHealthMonitor {
+  if (_mcpHealthMonitor) return _mcpHealthMonitor;
+
+  const intervalMs = Number(process.env.MCP_HEALTH_INTERVAL_MS || 30000);
+  const failureThreshold = Number(process.env.MCP_HEALTH_FAILURE_THRESHOLD || 3);
+
+  const svc = new McpGovernanceService({
+    projectRoot: PROJECT_ROOT,
+    storageProvider: getStorageProvider(),
+  });
+
+  _mcpHealthMonitor = new McpHealthMonitor(svc, {
+    intervalMs: Number.isFinite(intervalMs) ? intervalMs : 30000,
+    failureThreshold: Number.isFinite(failureThreshold) ? failureThreshold : 3,
+  });
+
+  return _mcpHealthMonitor;
+}
 
 async function createApp() {
   const app = await buildApp({ ctx, disableRequestLogging: false });
@@ -398,6 +420,7 @@ async function createApp() {
   await registerWorkspaceRoutes(app, ctx);
   await registerCockpitRoutes(app, ctx);
   await registerAuthRoutes(app, ctx);
+  await registerMcpRoutes(app, ctx);
   // misc registers last — includes catch-all SPA static handler
   await registerMiscRoutes(app, ctx);
 
@@ -444,6 +467,7 @@ const server = {
           }
         });
         await app.listen({ port, host: resolvedHost });
+        getMcpHealthMonitor().start();
         resolvedCb?.();
         // Emit 'listening' for tests that use server.once('listening', ...)
         const cbs = _listeners['listening'];
@@ -525,6 +549,7 @@ if (require.main === module) {
     .then(() => initStorageProvider().then(() => createApp()))
     .then(async (app) => {
       await app!.listen({ port: PORT, host: HOST });
+      getMcpHealthMonitor().start();
       structuredLog('info', 'server_started', {
         host: HOST,
         port: PORT,
@@ -560,6 +585,7 @@ if (require.main === module) {
       createApp()
         .then((app) => app.listen({ port: PORT, host: HOST }))
         .then(() => {
+          getMcpHealthMonitor().start();
           structuredLog('warn', 'server_started_without_storage_provider', {
             host: HOST,
             port: PORT,
@@ -605,6 +631,7 @@ if (require.main === module) {
     metricsCollector.flush();
     const sp = getStorageProvider();
     if (sp) sp.close().catch(() => {});
+    if (_mcpHealthMonitor) _mcpHealthMonitor.stop();
     if (_authManager) _authManager.close();
     _app
       ?.close()

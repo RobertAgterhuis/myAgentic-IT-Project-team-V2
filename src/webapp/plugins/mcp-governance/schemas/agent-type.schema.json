@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myagentic.local/schemas/mcp/agent-type.schema.json",
+  "title": "AgentType",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "category",
+    "controlPosture",
+    "requiresWorkloadIdentity",
+    "appRegistrationRef",
+    "templateCategory"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "orchestration",
+        "product",
+        "architecture",
+        "engineering",
+        "quality",
+        "operations",
+        "security",
+        "data",
+        "documentation",
+        "reliability"
+      ]
+    },
+    "controlPosture": {
+      "type": "string",
+      "enum": ["strict", "balanced", "permissive"]
+    },
+    "requiresWorkloadIdentity": {
+      "type": "boolean"
+    },
+    "appRegistrationRef": {
+      "type": ["string", "null"]
+    },
+    "templateCategory": {
+      "type": "string",
+      "enum": ["phase", "governance", "runtime", "cross-functional"]
+    }
+  }
+}

@@ -142,35 +142,53 @@ function createCtx() {
 describe('chat grounding quality gate', () => {
   const ctx = createCtx();
   const routes = createTestableRoutes(registerRoutes, ctx);
+  const firstTokenP95BudgetMs = Number(process.env.CHAT_FIRST_TOKEN_P95_BUDGET_MS || 250);
+  const retrievalP95BudgetMs = Number(process.env.CHAT_RETRIEVAL_P95_BUDGET_MS || 250);
+  const fallbackRateBudget = Number(process.env.CHAT_FALLBACK_RATE_BUDGET || 0.1);
+  const noMatchRateBudget = Number(process.env.CHAT_NO_MATCH_RATE_BUDGET || 0.1);
 
   const fixtures = [
     {
       message: 'What policy should I follow for this approval override?',
       expectedSourceHint: 'BusinessDocs/decisions',
-      governance: true,
+      requiredCitationTypes: ['decision', 'policy', 'artifact'],
     },
     {
       message: 'Where in the workspace is the chat message route implemented?',
       expectedSourceHint: 'src/webapp',
-      governance: false,
+      requiredCitationTypes: ['rag_chunk', 'artifact'],
     },
     {
-      message: 'Summarize the architecture review artifacts for this run.',
+      message: 'Why did the gate fail in the current run?',
       expectedSourceHint: 'BusinessDocs',
-      governance: false,
+      requiredCitationTypes: ['artifact'],
     },
     {
-      message: 'Need guidance on decision precedent for a policy exception.',
+      message: 'What approvals are pending right now?',
       expectedSourceHint: 'BusinessDocs/decisions',
-      governance: true,
+      requiredCitationTypes: ['decision', 'policy', 'artifact'],
     },
   ];
 
-  it('keeps precision@3 above threshold and governance citations valid', async () => {
+  it('enforces precision, citation validity, and latency budgets for M-UX-2b benchmark fixtures', async () => {
     let relevantHits = 0;
     let totalRetrieved = 0;
+    let fallbackCount = 0;
+    let noMatchCount = 0;
+    const failures = [];
 
-    for (const fixture of fixtures) {
+    const isCitationStructurallyValid = (entry) => {
+      const sourcePath = String(entry.source_path || '');
+      const deepLink = String(entry.deep_link || '');
+      const sourceType = String(entry.source_type || '').toLowerCase();
+      return (
+        sourcePath.length > 0 &&
+        deepLink.startsWith('/') &&
+        ['artifact', 'decision', 'policy', 'session', 'rag_chunk'].includes(sourceType)
+      );
+    };
+
+    for (const [index, fixture] of fixtures.entries()) {
       const res = createRes();
       await routes['POST /api/v1/chat/message'](
         createReq('/api/v1/chat/message', {
@@ -184,9 +202,23 @@ describe('chat grounding quality gate', () => {
 
       expect(res.statusCode).toBe(200);
       const payload = JSON.parse(res.body);
-      expect(payload.grounding.fallback_reason).toBeNull();
+      if (payload.grounding.fallback_reason !== null) {
+        fallbackCount += 1;
+        if (payload.grounding.fallback_reason === 'no_matches') {
+          noMatchCount += 1;
+        }
+      }
 
       const citations = Array.isArray(payload.citations) ? payload.citations : [];
+      const invalidCitations = citations.filter((entry) => !isCitationStructurallyValid(entry));
+      if (invalidCitations.length > 0) {
+        failures.push(
+          `fixture#${index + 1} invalid citations: ${invalidCitations
+            .map((entry) => JSON.stringify(entry))
+            .join('; ')}`
+        );
+      }
+
       const groundedOnly = citations.filter(
         (entry) => String(entry.source_type || '').toLowerCase() !== 'session'
       );
@@ -198,17 +230,74 @@ describe('chat grounding quality gate', () => {
       relevantHits += relevant;
       totalRetrieved += 3;
 
-      if (fixture.governance) {
-        expect(citations.length).toBeGreaterThan(0);
-        expect(
-          citations.some((entry) =>
-            /(decision|policy|artifact)/.test(String(entry.source_type || '').toLowerCase())
-          )
-        ).toBe(true);
+      if (citations.length === 0) {
+        failures.push(
+          `fixture#${index + 1} returned zero citations for message: ${fixture.message}`
+        );
+      }
+
+      if (
+        !citations.some((entry) =>
+          fixture.requiredCitationTypes.includes(String(entry.source_type || '').toLowerCase())
+        )
+      ) {
+        failures.push(
+          `fixture#${index + 1} missing required citation type(s): ${fixture.requiredCitationTypes.join(', ')}`
+        );
       }
     }
 
     const precisionAt3 = relevantHits / totalRetrieved;
-    expect(precisionAt3).toBeGreaterThanOrEqual(0.75);
+    const chatMetricCalls = ctx.recordMetric.mock.calls.filter(
+      (call) => call[0] === 'CHAT' && typeof call[1] === 'string'
+    );
+    const firstTokenDurations = chatMetricCalls
+      .filter((call) => call[1] === '/message/first-token-latency')
+      .map((call) => Number(call[2]))
+      .filter((value) => Number.isFinite(value));
+    const retrievalDurations = chatMetricCalls
+      .filter((call) => call[1] === '/grounding/retrieval')
+      .map((call) => Number(call[2]))
+      .filter((value) => Number.isFinite(value));
+
+    const percentile = (values, p) => {
+      if (values.length === 0) return 0;
+      const sorted = [...values].sort((a, b) => a - b);
+      const index = Math.max(0, Math.ceil((p / 100) * sorted.length) - 1);
+      return sorted[index];
+    };
+
+    const firstTokenP95 = percentile(firstTokenDurations, 95);
+    const retrievalP95 = percentile(retrievalDurations, 95);
+    const fallbackRate = fixtures.length > 0 ? fallbackCount / fixtures.length : 0;
+    const noMatchRate = fixtures.length > 0 ? noMatchCount / fixtures.length : 0;
+
+    if (precisionAt3 < 0.75) {
+      failures.push(`precision@3 regression: expected >= 0.75, got ${precisionAt3.toFixed(3)}`);
+    }
+    if (firstTokenP95 > firstTokenP95BudgetMs) {
+      failures.push(
+        `first-token latency budget exceeded: p95=${firstTokenP95.toFixed(2)}ms budget=${firstTokenP95BudgetMs}ms`
+      );
+    }
+    if (retrievalP95 > retrievalP95BudgetMs) {
+      failures.push(
+        `retrieval latency budget exceeded: p95=${retrievalP95.toFixed(2)}ms budget=${retrievalP95BudgetMs}ms`
+      );
+    }
+    if (fallbackRate > fallbackRateBudget) {
+      failures.push(
+        `fallback rate budget exceeded: rate=${fallbackRate.toFixed(3)} budget=${fallbackRateBudget}`
+      );
+    }
+    if (noMatchRate > noMatchRateBudget) {
+      failures.push(
+        `no-match rate budget exceeded: rate=${noMatchRate.toFixed(3)} budget=${noMatchRateBudget}`
+      );
+    }
+
+    if (failures.length > 0) {
+      throw new Error(`M-UX-2b quality gate failed:\n- ${failures.join('\n- ')}`);
+    }
   });
 });

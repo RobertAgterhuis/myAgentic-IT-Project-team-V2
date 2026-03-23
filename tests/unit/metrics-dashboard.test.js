@@ -77,6 +77,15 @@ function buildFiles() {
   // "phase5" format KPI (SP-4)
   files[path.join(BUSINESS_DOCS, 'phase-5', 'sprint-SP-4', 'sprint-SP-4-kpi.json')] =
     JSON.stringify(kpiSP4);
+  files[path.join(BUSINESS_DOCS, 'metrics', 'runtime-metrics.json')] = JSON.stringify({
+    perEndpoint: {
+      'CHAT /grounding/retrieval': { count: 4, times: [20, 25, 30, 40] },
+      'CHAT /message/first-token-latency': { count: 4, times: [30, 35, 40, 50] },
+      'CHAT /message/citation-count': { count: 4, times: [3, 2, 3, 4] },
+      'CHAT /message/fallback/low_confidence': { count: 1, times: [1] },
+      'CHAT /message/no-match': { count: 1, times: [1] },
+    },
+  });
   return files;
 }
 
@@ -146,6 +155,20 @@ describe('metrics-dashboard route (FEAT-01)', () => {
       'generated_at',
     ];
     expected.forEach((key) => expect(data).toHaveProperty(key));
+    expect(data).toHaveProperty('chat_grounding');
+  });
+
+  it('returns chat grounding quality and latency summary per environment', async () => {
+    const res = fakeRes();
+    await handler(fakeReq(), res);
+    expect(res.status).toBe(200);
+
+    const chatGrounding = res.json.chat_grounding;
+    const env = chatGrounding.active_environment;
+    expect(env).toBeTruthy();
+    expect(chatGrounding.per_environment[env].retrieval_latency_p95_ms).toBe(40);
+    expect(chatGrounding.per_environment[env].fallback_rate).toBe(0.25);
+    expect(chatGrounding.per_environment[env].no_match_rate).toBe(0.25);
   });
 
   /* FEAT-01-A: Velocity data */

@@ -22,6 +22,16 @@ interface MetricsState {
   perEndpoint: Record<string, MetricsEndpointData>;
 }
 
+interface ChatGroundingMetricsSummary {
+  environment: string;
+  total_chat_requests: number;
+  retrieval_latency_p95_ms: number;
+  first_token_latency_p95_ms: number;
+  avg_citation_count: number;
+  fallback_rate: number;
+  no_match_rate: number;
+}
+
 interface CacheStats {
   hits?: number;
   misses?: number;
@@ -155,6 +165,39 @@ export function registerObservabilityRoutes(options: RegisterObservabilityRoutes
     });
   }
 
+  function buildChatGroundingMetricsSummary(
+    perEndpoint: MetricsState['perEndpoint']
+  ): ChatGroundingMetricsSummary {
+    const environment = process.env.NODE_ENV || 'development';
+    const retrieval = perEndpoint['CHAT /grounding/retrieval'];
+    const firstToken = perEndpoint['CHAT /message/first-token-latency'];
+    const citationCount = perEndpoint['CHAT /message/citation-count'];
+
+    const fallbackCount = Object.entries(perEndpoint)
+      .filter(([endpoint]) => endpoint.startsWith('CHAT /message/fallback/'))
+      .reduce((sum, [, value]) => sum + value.count, 0);
+
+    const noMatchCount = perEndpoint['CHAT /message/no-match']?.count || 0;
+    const totalChatRequests = firstToken?.count || 0;
+    const retrievalPcts = computePercentiles(retrieval?.times || []);
+    const firstTokenPcts = computePercentiles(firstToken?.times || []);
+    const citations = citationCount?.times || [];
+    const avgCitationCount =
+      citations.length > 0
+        ? citations.reduce((sum, value) => sum + value, 0) / citations.length
+        : 0;
+
+    return {
+      environment,
+      total_chat_requests: totalChatRequests,
+      retrieval_latency_p95_ms: retrievalPcts.p95,
+      first_token_latency_p95_ms: firstTokenPcts.p95,
+      avg_citation_count: +avgCitationCount.toFixed(3),
+      fallback_rate: totalChatRequests > 0 ? +(fallbackCount / totalChatRequests).toFixed(4) : 0,
+      no_match_rate: totalChatRequests > 0 ? +(noMatchCount / totalChatRequests).toFixed(4) : 0,
+    };
+  }
+
   app.get('/api/events', async (request: FastifyRequest, reply: FastifyReply) => {
     if (sseManager.size >= MAX_SSE_CLIENTS) {
       return reply.code(503).send(errorResponse('SSE_LIMIT', 'Too many SSE connections'));
@@ -194,6 +237,10 @@ export function registerObservabilityRoutes(options: RegisterObservabilityRoutes
       file_ops_count: number;
       cache_hit_ratio: number;
       per_endpoint: Record<string, { count: number; p50: number; p95: number; p99: number }>;
+      chat_grounding: {
+        active_environment: string;
+        per_environment: Record<string, ChatGroundingMetricsSummary>;
+      };
     } = {
       uptime_seconds: uptimeS,
       request_count: metrics.requestCount,
@@ -207,6 +254,10 @@ export function registerObservabilityRoutes(options: RegisterObservabilityRoutes
       file_ops_count: metrics.fileOpsCount,
       cache_hit_ratio: totalCache > 0 ? +((cacheStats.hits || 0) / totalCache).toFixed(4) : 0,
       per_endpoint: {},
+      chat_grounding: {
+        active_environment: process.env.NODE_ENV || 'development',
+        per_environment: {},
+      },
     };
 
     for (const [ep, data] of Object.entries(metrics.perEndpoint)) {
@@ -218,6 +269,10 @@ export function registerObservabilityRoutes(options: RegisterObservabilityRoutes
         p99: epPcts.p99,
       };
     }
+
+    const chatSummary = buildChatGroundingMetricsSummary(metrics.perEndpoint);
+    result.chat_grounding.active_environment = chatSummary.environment;
+    result.chat_grounding.per_environment[chatSummary.environment] = chatSummary;
 
     reply.send(result);
   });

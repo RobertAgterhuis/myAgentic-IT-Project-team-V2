@@ -13,6 +13,7 @@
     "test:integration": "vitest run tests/integration/",
     "test:smoke": "vitest run tests/smoke/",
     "test:chat-grounding": "vitest run tests/unit/chat-grounding-quality.test.js tests/unit/routes-chat.test.js tests/unit/rag-grounding-service.test.js",
+    "test:chat-quality-gate": "vitest run tests/unit/chat-grounding-quality.test.js",
     "test:translations": "vitest run tests/unit/translation-validation.test.js",
     "test:a11y": "npx playwright test tests/e2e/s9h-accessibility.spec.ts --project=chromium",
     "test:autonomous-lane": "vitest run tests/integration/autonomous-lane.test.js --reporter=verbose",

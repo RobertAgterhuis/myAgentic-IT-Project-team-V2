@@ -361,6 +361,82 @@ function percentile(sorted: number[], p: number): number {
   return sorted[Math.max(0, idx)];
 }
 
+function summarizeChatGroundingFromRuntimeMetrics(perEndpoint, environment: string) {
+  const endpointEntries = Object.entries(perEndpoint) as Array<
+    [string, { count?: number; times?: number[] }]
+  >;
+  const retrieval = perEndpoint['CHAT /grounding/retrieval'];
+  const firstToken = perEndpoint['CHAT /message/first-token-latency'];
+  const citationCount = perEndpoint['CHAT /message/citation-count'];
+
+  const retrievalTimes = Array.isArray(retrieval?.times) ? retrieval.times : [];
+  const firstTokenTimes = Array.isArray(firstToken?.times) ? firstToken.times : [];
+  const citationTimes = Array.isArray(citationCount?.times) ? citationCount.times : [];
+
+  const fallbackCount = endpointEntries
+    .filter(([endpoint]) => endpoint.startsWith('CHAT /message/fallback/'))
+    .reduce((sum, [, value]) => sum + (typeof value?.count === 'number' ? value.count : 0), 0);
+
+  const noMatchCount =
+    typeof perEndpoint['CHAT /message/no-match']?.count === 'number'
+      ? perEndpoint['CHAT /message/no-match'].count
+      : 0;
+
+  const totalChatRequests = typeof firstToken?.count === 'number' ? firstToken.count : 0;
+
+  const sortedRetrieval = [...retrievalTimes].sort((a, b) => a - b);
+  const sortedFirstToken = [...firstTokenTimes].sort((a, b) => a - b);
+  const avgCitationCount =
+    citationTimes.length > 0
+      ? citationTimes.reduce((sum, value) => sum + value, 0) / citationTimes.length
+      : 0;
+
+  return {
+    environment,
+    total_chat_requests: totalChatRequests,
+    retrieval_latency_p95_ms: percentile(sortedRetrieval, 95),
+    first_token_latency_p95_ms: percentile(sortedFirstToken, 95),
+    avg_citation_count: +avgCitationCount.toFixed(3),
+    fallback_rate: totalChatRequests > 0 ? +(fallbackCount / totalChatRequests).toFixed(4) : 0,
+    no_match_rate: totalChatRequests > 0 ? +(noMatchCount / totalChatRequests).toFixed(4) : 0,
+  };
+}
+
+function buildChatGroundingDashboardSignal(store, businessDocs: string, environment: string) {
+  const runtimeMetricsPath = path.join(businessDocs, 'metrics', 'runtime-metrics.json');
+  if (!store.exists(runtimeMetricsPath)) {
+    return {
+      active_environment: environment,
+      per_environment: {
+        [environment]: summarizeChatGroundingFromRuntimeMetrics({}, environment),
+      },
+    };
+  }
+
+  try {
+    const payload = JSON.parse(store.readFile(runtimeMetricsPath));
+    const perEndpoint =
+      payload && typeof payload.perEndpoint === 'object' && payload.perEndpoint
+        ? payload.perEndpoint
+        : {};
+
+    return {
+      active_environment: environment,
+      per_environment: {
+        [environment]: summarizeChatGroundingFromRuntimeMetrics(perEndpoint, environment),
+      },
+    };
+  } catch {
+    return {
+      active_environment: environment,
+      per_environment: {
+        [environment]: summarizeChatGroundingFromRuntimeMetrics({}, environment),
+      },
+      error: 'runtime_metrics_unavailable',
+    };
+  }
+}
+
 function sliceLast<T>(arr: T[], n: number): T[] {
   return n > 0 && n < arr.length ? arr.slice(-n) : arr;
 }
@@ -450,6 +526,7 @@ export class MetricsDashboardService {
 
   computeDashboard(lastN?: number) {
     const store = getStore();
+    const environment = process.env.NODE_ENV || 'development';
     const velocity = this.readVelocity(store);
     const kpis = this.collectKpis(store);
     const sorted = [...(velocity.sprints || [])].sort(sortBySprint);
@@ -479,6 +556,7 @@ export class MetricsDashboardService {
       estimationHistogram: buildEstimationHistogram(sorted),
       riskTrend: buildRiskTrend(kpis),
       heatmapData: buildHeatmapData(sorted, kpis),
+      chat_grounding: buildChatGroundingDashboardSignal(store, this.businessDocs, environment),
       ...(storageMetrics ? { storage: storageMetrics } : {}),
       generated_at: new Date().toISOString(),
     };

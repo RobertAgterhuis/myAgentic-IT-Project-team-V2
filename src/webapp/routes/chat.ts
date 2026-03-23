@@ -908,6 +908,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
     const firstTokenLatencyMs = Date.now() - requestStartedAt;
     ctx.recordMetric('CHAT', '/message/first-token-latency', firstTokenLatencyMs, 200);
+    if (groundingIntent) {
+      ctx.recordMetric('CHAT', '/message/citation-count', groundingCitationCount, 200);
+    }
     if (fallbackReason) {
       ctx.recordMetric('CHAT', `/message/fallback/${fallbackReason}`, 1, 200);
     }

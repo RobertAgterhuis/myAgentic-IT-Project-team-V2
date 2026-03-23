@@ -151,6 +151,26 @@ describe('routes/chat', () => {
     ).toBe(true);
   });
 
+  it('records citation-count metric for grounded chat requests', async () => {
+    const ctx = createCtx();
+    const localRoutes = createTestableRoutes(registerRoutes, ctx);
+    const res = createRes();
+
+    await localRoutes['POST /api/v1/chat/message'](
+      createReq('/api/v1/chat/message', {
+        message: 'What policy should I follow for this approval override?',
+      }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    expect(
+      ctx.recordMetric.mock.calls.some(
+        (call) => call[0] === 'CHAT' && call[1] === '/message/citation-count'
+      )
+    ).toBe(true);
+  });
+
   it('returns grounded references for a decision lookup query', async () => {
     const res = createRes();
     await routes['POST /api/v1/chat/query'](

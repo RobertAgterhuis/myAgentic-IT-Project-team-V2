@@ -66,6 +66,12 @@ async function writeSkillFixture(name, contractPath) {
   return skillPath;
 }
 
+async function writeToolsCatalogFixture(name, tools) {
+  const catalogPath = path.join(tmpRoot, name);
+  await fs.writeFile(catalogPath, JSON.stringify({ tools }, null, 2), 'utf8');
+  return catalogPath;
+}
+
 beforeEach(async () => {
   tmpRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'agent-runtime-adapter-'));
 });
@@ -964,6 +970,236 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
     ).rejects.toThrow(/TOOL_POLICY_BLOCKED|blocked by resolved permissions/);
 
     expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('filters tools/list per agent runtime manifest and annotates permissions', async () => {
+    const contractPath = await writeContractFixture(
+      'tool-list-filter-contract.md',
+      ['# Contract', '', '```markdown', '## Metadata', '## HANDOFF CHECKLIST', '```'].join('\n')
+    );
+    const skillPath = await writeSkillFixture('tool-list-filter-skill.md', contractPath);
+
+    const runtimeManifestDir = path.join(tmpRoot, 'runtime-manifests');
+    await fs.mkdir(runtimeManifestDir, { recursive: true });
+    await fs.writeFile(
+      path.join(runtimeManifestDir, `${AGENT.id}.json`),
+      JSON.stringify(
+        {
+          agentId: AGENT.id,
+          generatedAt: new Date().toISOString(),
+          servers: [
+            {
+              serverId: 'workspace-management',
+              tools: [
+                {
+                  toolId: 'workspace-management.read_workspace',
+                  permissionLevel: 'R',
+                  approvalRequired: false,
+                  blocked: false,
+                },
+                {
+                  toolId: 'workspace-management.delete_workspace',
+                  permissionLevel: 'X',
+                  approvalRequired: false,
+                  blocked: true,
+                },
+              ],
+            },
+            {
+              serverId: 'infra',
+              tools: [
+                {
+                  toolId: 'infra.reboot',
+                  permissionLevel: 'W',
+                  approvalRequired: true,
+                  blocked: false,
+                  degraded: true,
+                },
+              ],
+            },
+          ],
+        },
+        null,
+        2
+      ),
+      'utf8'
+    );
+
+    const catalogPath = await writeToolsCatalogFixture('tools-list-filter.json', [
+      {
+        id: 'tool.workspace-management.read_workspace',
+        description: 'Read workspace',
+        capabilities: { readOnly: true },
+      },
+      {
+        id: 'tool.workspace-management.delete_workspace',
+        description: 'Delete workspace',
+      },
+      {
+        id: 'tool.infra.reboot',
+        description: 'Infra reboot',
+      },
+    ]);
+
+    const complete = vi.fn().mockResolvedValue({
+      content: [
+        '## Metadata',
+        '- Agent: Business Analyst',
+        '',
+        '## HANDOFF CHECKLIST',
+        '- [x] Item 1',
+        '- [x] Item 2',
+        '- [x] Item 3',
+        '- [x] Item 4',
+        '- [x] Item 5',
+        '- [x] Item 6',
+        '- [x] Item 7',
+        '- [x] Item 8',
+        '- [x] Item 9',
+      ].join('\n'),
+      model: 'gpt-test',
+      usage: { promptTokens: 10, completionTokens: 2, totalTokens: 12 },
+      finishReason: 'stop',
+    });
+
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-tools-list-filter',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      toolExecutor: { execute: vi.fn() },
+      runtimeManifestDir,
+      toolCatalogPath: catalogPath,
+      validationMaxRetries: 0,
+    });
+
+    await adapter.invoke(AGENT, PLATFORM, {
+      skillFile: skillPath,
+      predecessorOutputs: {},
+      questionnaireInput: null,
+      role: 'operator',
+      profile: 'test-distributed',
+      sessionState: { mode: 'AUDIT' },
+    });
+
+    const listedTools = complete.mock.calls[0][0].tools;
+    expect(listedTools.map((t) => t.name)).toEqual(['tool.workspace-management.read_workspace']);
+    expect(listedTools[0]).toEqual(
+      expect.objectContaining({
+        permissionLevel: 'R',
+        approvalRequired: false,
+        blocked: false,
+      })
+    );
+  });
+
+  it('returns full unfiltered tools/list for admin debugging', async () => {
+    const contractPath = await writeContractFixture(
+      'tool-list-admin-contract.md',
+      ['# Contract', '', '```markdown', '## Metadata', '## HANDOFF CHECKLIST', '```'].join('\n')
+    );
+    const skillPath = await writeSkillFixture('tool-list-admin-skill.md', contractPath);
+
+    const runtimeManifestDir = path.join(tmpRoot, 'runtime-manifests');
+    await fs.mkdir(runtimeManifestDir, { recursive: true });
+    await fs.writeFile(
+      path.join(runtimeManifestDir, `${AGENT.id}.json`),
+      JSON.stringify(
+        {
+          agentId: AGENT.id,
+          generatedAt: new Date().toISOString(),
+          servers: [
+            {
+              serverId: 'workspace-management',
+              tools: [
+                {
+                  toolId: 'workspace-management.delete_workspace',
+                  permissionLevel: 'X',
+                  approvalRequired: false,
+                  blocked: true,
+                },
+              ],
+            },
+          ],
+        },
+        null,
+        2
+      ),
+      'utf8'
+    );
+
+    const catalogPath = await writeToolsCatalogFixture('tools-list-admin.json', [
+      { id: 'tool.workspace-management.read_workspace', description: 'Read workspace' },
+      { id: 'tool.workspace-management.delete_workspace', description: 'Delete workspace' },
+      { id: 'tool.infra.reboot', description: 'Infra reboot' },
+    ]);
+
+    const complete = vi.fn().mockResolvedValue({
+      content: [
+        '## Metadata',
+        '- Agent: Business Analyst',
+        '',
+        '## HANDOFF CHECKLIST',
+        '- [x] Item 1',
+        '- [x] Item 2',
+        '- [x] Item 3',
+        '- [x] Item 4',
+        '- [x] Item 5',
+        '- [x] Item 6',
+        '- [x] Item 7',
+        '- [x] Item 8',
+        '- [x] Item 9',
+      ].join('\n'),
+      model: 'gpt-test',
+      usage: { promptTokens: 10, completionTokens: 2, totalTokens: 12 },
+      finishReason: 'stop',
+    });
+
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-tools-list-admin',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      toolExecutor: { execute: vi.fn() },
+      runtimeManifestDir,
+      toolCatalogPath: catalogPath,
+      validationMaxRetries: 0,
+    });
+
+    await adapter.invoke(AGENT, PLATFORM, {
+      skillFile: skillPath,
+      predecessorOutputs: {},
+      questionnaireInput: null,
+      role: 'admin',
+      profile: 'production-distributed',
+      sessionState: { mode: 'AUDIT' },
+    });
+
+    const listedTools = complete.mock.calls[0][0].tools;
+    expect(listedTools.map((t) => t.name)).toEqual(
+      expect.arrayContaining([
+        'tool.workspace-management.read_workspace',
+        'tool.workspace-management.delete_workspace',
+        'tool.infra.reboot',
+      ])
+    );
+    expect(listedTools).toHaveLength(3);
   });
 
   it('sanitizes untrusted context and emits trust metadata before model invocation', async () => {

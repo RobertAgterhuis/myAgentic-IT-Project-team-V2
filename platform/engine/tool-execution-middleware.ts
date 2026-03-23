@@ -80,6 +80,8 @@ interface RuntimeToolPermissionRecord {
   permissionLevel: 'N' | 'D' | 'R' | 'P' | 'W' | 'A' | 'X';
   approvalRequired: boolean;
   blocked: boolean;
+  degraded?: boolean;
+  authStatus?: 'ready' | 'auth_pending';
 }
 
 interface RuntimeManifestRecord {
@@ -394,6 +396,36 @@ export class ToolExecutionMiddleware {
     return fallback || null;
   }
 
+  private _parseCanonicalToolId(toolId: string): { serverId: string; operation: string } | null {
+    const match = /^tool\.([^.]+)\.([^.]+)$/i.exec(toolId);
+    if (!match) return null;
+    return { serverId: match[1], operation: match[2] };
+  }
+
+  private _annotateToolDefinition(
+    tool: {
+      name: string;
+      description: string;
+      parameters: Record<string, unknown>;
+    },
+    permission: RuntimeToolPermissionRecord | null
+  ): {
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+    permissionLevel?: RuntimeToolPermissionRecord['permissionLevel'];
+    approvalRequired?: boolean;
+    blocked?: boolean;
+  } {
+    if (!permission) return tool;
+    return {
+      ...tool,
+      permissionLevel: permission.permissionLevel,
+      approvalRequired: permission.approvalRequired,
+      blocked: permission.blocked,
+    };
+  }
+
   private _evaluateRuntimePermissionGate(options: {
     tool: CanonicalTool;
     toolId: string;
@@ -504,8 +536,72 @@ export class ToolExecutionMiddleware {
     name: string;
     description: string;
     parameters: Record<string, unknown>;
+    permissionLevel?: RuntimeToolPermissionRecord['permissionLevel'];
+    approvalRequired?: boolean;
+    blocked?: boolean;
   }> {
-    return (this._catalog.tools || []).map(toToolDefinition);
+    return this.listToolDefinitionsForPolicy({});
+  }
+
+  listToolDefinitionsForPolicy(policy: ToolExecutionPolicy): Array<{
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+    permissionLevel?: RuntimeToolPermissionRecord['permissionLevel'];
+    approvalRequired?: boolean;
+    blocked?: boolean;
+  }> {
+    const role = normalizeRole(policy.role);
+    const agentId = policy.agentId;
+    const hasManifest = !!(agentId && this._readRuntimeManifest(agentId));
+
+    return (this._catalog.tools || []).reduce<
+      Array<{
+        name: string;
+        description: string;
+        parameters: Record<string, unknown>;
+        permissionLevel?: RuntimeToolPermissionRecord['permissionLevel'];
+        approvalRequired?: boolean;
+        blocked?: boolean;
+      }>
+    >((acc, tool) => {
+      const definition = toToolDefinition(tool);
+
+      if (!agentId || role === 'admin') {
+        const parsed = this._parseCanonicalToolId(tool.id);
+        const resolved = parsed
+          ? this._resolveRuntimePermission(agentId || '', parsed.serverId, parsed.operation)
+          : null;
+        acc.push(this._annotateToolDefinition(definition, resolved));
+        return acc;
+      }
+
+      const parsed = this._parseCanonicalToolId(tool.id);
+      if (!parsed) {
+        acc.push(definition);
+        return acc;
+      }
+
+      const resolved = this._resolveRuntimePermission(agentId, parsed.serverId, parsed.operation);
+      if (!resolved) {
+        if (!hasManifest) {
+          acc.push(definition);
+        }
+        return acc;
+      }
+
+      if (
+        resolved.blocked ||
+        resolved.degraded === true ||
+        resolved.permissionLevel === 'X' ||
+        resolved.permissionLevel === 'N'
+      ) {
+        return acc;
+      }
+
+      acc.push(this._annotateToolDefinition(definition, resolved));
+      return acc;
+    }, []);
   }
 
   async execute(call: LlmToolCall, policy: ToolExecutionPolicy = {}): Promise<ToolExecutionResult> {

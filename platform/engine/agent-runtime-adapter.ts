@@ -810,7 +810,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
       maxTokens,
       temperature,
       messages,
-      tools: middleware.listToolDefinitions(),
+      tools: middleware.listToolDefinitionsForPolicy(policy),
     });
 
     while (completion.toolCalls?.length) {
@@ -870,7 +870,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
         maxTokens,
         temperature,
         messages,
-        tools: middleware.listToolDefinitions(),
+        tools: middleware.listToolDefinitionsForPolicy(policy),
       });
     }
 

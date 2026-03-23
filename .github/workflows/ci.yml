@@ -332,7 +332,7 @@ jobs:
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3.0.0
+        uses: docker/setup-buildx-action@v4.0.0
 
       - name: Log in to GitHub Container Registry
         if: github.event_name != 'pull_request'

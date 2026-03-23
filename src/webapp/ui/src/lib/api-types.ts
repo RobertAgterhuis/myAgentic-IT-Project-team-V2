@@ -1057,6 +1057,29 @@ export interface ObservabilityTelemetryContractResponse extends OkResponse {
   };
 }
 
+export interface ObservabilityRagFreshnessCollection {
+  collection_id: string;
+  status: 'healthy' | 'stale' | 'missing' | 'unknown';
+  indexed_files: number;
+  last_indexed_at: string | null;
+  source_paths: string[];
+  source_newest_mtime: string | null;
+  lag_seconds: number | null;
+}
+
+export interface ObservabilityRagFreshnessResponse extends OkResponse {
+  generated_at: string;
+  workspace_id: string;
+  summary: {
+    total_collections: number;
+    healthy_collections: number;
+    stale_collections: number;
+    missing_collections: number;
+    stale_threshold_seconds: number;
+  };
+  collections: ObservabilityRagFreshnessCollection[];
+}
+
 /* ──────────────────────────────────────────────
  * Help (M-UX-1a)
  * ────────────────────────────────────────────── */

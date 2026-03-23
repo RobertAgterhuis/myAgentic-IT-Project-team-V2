@@ -259,4 +259,31 @@ export class RagStore {
         .all(collectionId) as FileIndexEntry[]
     ).map((r) => r.source_path);
   }
+
+  /** Return indexed file count and most recent index timestamp for a collection. */
+  getCollectionFreshnessStats(collectionId: string): {
+    indexedFiles: number;
+    lastIndexedAt: string | null;
+  } {
+    const row = this.db
+      .prepare<
+        [string],
+        {
+          indexed_files: number;
+          last_indexed_at: string | null;
+        }
+      >(
+        `SELECT
+           COUNT(*) AS indexed_files,
+           MAX(indexed_at) AS last_indexed_at
+         FROM rag_file_index
+         WHERE collection_id = ?`
+      )
+      .get(collectionId);
+
+    return {
+      indexedFiles: Number(row?.indexed_files || 0),
+      lastIndexedAt: row?.last_indexed_at || null,
+    };
+  }
 }

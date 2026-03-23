@@ -325,7 +325,7 @@ export class AgentExecutionService {
   }
 
   private async buildRagContext(
-    info: { id: string; name: string },
+    info: { id: string; name: string; phase: string },
     input: ExecuteAgentInput
   ): Promise<{
     query: string;

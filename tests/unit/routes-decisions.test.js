@@ -11,7 +11,7 @@ const createDecisionRoutes = (ctx) => createTestableRoutes(registerRoutes, ctx);
 
 /* ── Temp dir for isolation (real FileStore, real withFileLock) ── */
 
-let tmpRoot, DECISIONS_FILE, DECISIONS_DIR;
+let tmpRoot, DECISIONS_FILE, DECISIONS_DIR, RETROSPECTIVES_DIR, LESSONS_FILE;
 
 const DECISIONS_MD = `# Decisions & Open Questions
 
@@ -54,6 +54,8 @@ beforeAll(() => {
   tmpRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'decisions-test-'));
   DECISIONS_FILE = path.join(tmpRoot, 'decisions.md');
   DECISIONS_DIR = path.join(tmpRoot, 'decisions');
+  RETROSPECTIVES_DIR = path.join(tmpRoot, 'retrospectives');
+  LESSONS_FILE = path.join(RETROSPECTIVES_DIR, 'lessons-learned.md');
 });
 
 afterAll(() => {
@@ -135,6 +137,11 @@ function seedDecisions(content) {
   fs.writeFileSync(DECISIONS_FILE, content || DECISIONS_MD, 'utf8');
 }
 
+function seedLessons(content) {
+  if (!fs.existsSync(RETROSPECTIVES_DIR)) fs.mkdirSync(RETROSPECTIVES_DIR, { recursive: true });
+  fs.writeFileSync(LESSONS_FILE, content, 'utf8');
+}
+
 /* ── Tests ──────────────────────────────────────────────────────── */
 
 describe('decision routes', () => {
@@ -201,6 +208,112 @@ describe('decision routes', () => {
       const res = fakeRes();
       await routes['POST /api/v1/decisions/similar'](similarReq({ query: 'auth' }, 'viewer'), res);
       expect(res.status).toBe(403);
+    });
+
+    it('returns 401 when user is missing and auth is enabled', async () => {
+      seedDecisions();
+      const req = {
+        ...similarReq({ query: 'auth' }, null),
+        user: undefined,
+        raw: {},
+      };
+      const res = fakeRes();
+      await routes['POST /api/v1/decisions/similar'](req, res);
+      expect(res.status).toBe(401);
+    });
+
+    it('returns 500 when RAG services are unavailable', async () => {
+      seedDecisions();
+      const ctx = makeCtx();
+      ctx._ragStore = undefined;
+      const localRoutes = createDecisionRoutes(ctx);
+      const res = fakeRes();
+      await localRoutes['POST /api/v1/decisions/similar'](similarReq({ query: 'auth' }), res);
+      expect(res.status).toBe(500);
+      expect(res.json.code).toBe('INTERNAL_ERROR');
+    });
+
+    it('returns 400 when topK is out of range', async () => {
+      seedDecisions();
+      const res = fakeRes();
+      await routes['POST /api/v1/decisions/similar'](similarReq({ query: 'auth', topK: 99 }), res);
+      expect(res.status).toBe(400);
+      expect(res.json.code).toBe('INVALID_INPUT');
+    });
+
+    it('returns 500 when embedding provider throws', async () => {
+      seedDecisions();
+      const ctx = makeCtx();
+      ctx._embeddingProvider = {
+        embedText: vi.fn().mockRejectedValue(new Error('embed failed')),
+      };
+      const localRoutes = createDecisionRoutes(ctx);
+      const res = fakeRes();
+      await localRoutes['POST /api/v1/decisions/similar'](similarReq({ query: 'auth' }), res);
+      expect(res.status).toBe(500);
+      expect(res.json.code).toBe('INTERNAL_ERROR');
+      expect(res.json.error).toContain('embed failed');
+    });
+
+    it('returns unique mapped matches when retrieval includes duplicate decision ids', async () => {
+      seedDecisions();
+      fs.mkdirSync(DECISIONS_DIR, { recursive: true });
+      fs.writeFileSync(
+        path.join(DECISIONS_DIR, 'auth.md'),
+        `# Decisions: Auth\n\nStack: Identity\nStatus: ACTIVE\nApplicable: YES\n\n| ID | Priority | Scope | Decision | Notes | Date |\n|----|-----------|-------|-----------|-------|------|\n| DEC-AUTH-001 | HIGH | Auth | Require PKCE for Entra sign-in. | Use PKCE everywhere. | 2025-01-03 |\n`,
+        'utf8'
+      );
+
+      const ctx = makeCtx();
+      ctx._ragStore = {
+        query: vi.fn().mockResolvedValue([
+          { chunk: { chunk_text: 'DEC-AUTH-001 first mention' }, score: 0.92 },
+          { chunk: { chunk_text: 'DEC-AUTH-001 duplicate mention' }, score: 0.88 },
+        ]),
+      };
+      const localRoutes = createDecisionRoutes(ctx);
+      const res = fakeRes();
+      await localRoutes['POST /api/v1/decisions/similar'](
+        similarReq({ query: 'auth decision', topK: 3 }),
+        res
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.json).toHaveLength(1);
+      expect(res.json[0].decisionId).toBe('DEC-AUTH-001');
+    });
+
+    it('matches by token overlap when chunk text has no explicit decision id', async () => {
+      seedDecisions();
+      fs.mkdirSync(DECISIONS_DIR, { recursive: true });
+      fs.writeFileSync(
+        path.join(DECISIONS_DIR, 'auth.md'),
+        `# Decisions: Auth\n\nStack: Identity\nStatus: ACTIVE\nApplicable: YES\n\n| ID | Priority | Scope | Decision | Notes | Date |\n|----|-----------|-------|-----------|-------|------|\n| DEC-AUTH-001 | HIGH | Auth | Require PKCE for Entra sign-in. | Use PKCE everywhere. | 2025-01-03 |\n`,
+        'utf8'
+      );
+
+      const ctx = makeCtx();
+      ctx._ragStore = {
+        query: vi.fn().mockResolvedValue([
+          {
+            chunk: {
+              chunk_text:
+                'For enterprise sign in we should require PKCE and stronger Entra login flow.',
+            },
+            score: 0.91,
+          },
+        ]),
+      };
+      const localRoutes = createDecisionRoutes(ctx);
+      const res = fakeRes();
+      await localRoutes['POST /api/v1/decisions/similar'](
+        similarReq({ query: 'secure entra sign in policy', topK: 3 }),
+        res
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.json).toHaveLength(1);
+      expect(res.json[0].decisionId).toBe('DEC-AUTH-001');
     });
   });
 
@@ -818,6 +931,81 @@ Applicable: YES
       const res = fakeRes();
       await routes['POST /api/decisions/activate-category'](catReq({ file: 'file..evil.md' }), res);
       expect(res.status).toBe(400);
+    });
+  });
+
+  describe('POST /api/decisions/promote-lesson', () => {
+    function promoteReq(body) {
+      const bodyStr = JSON.stringify(body);
+      return {
+        url: '/api/decisions/promote-lesson',
+        headers: { 'content-type': 'application/json', host: 'localhost:3000' },
+        on(event, cb) {
+          if (event === 'data') cb(Buffer.from(bodyStr));
+          if (event === 'end') cb();
+        },
+      };
+    }
+
+    it('returns 400 for invalid lesson id format', async () => {
+      seedDecisions();
+      const res = fakeRes();
+      await routes['POST /api/decisions/promote-lesson'](promoteReq({ lessonId: 'BAD-1' }), res);
+      expect(res.status).toBe(400);
+      expect(res.json.code).toBe('VALIDATION_ERROR');
+    });
+
+    it('returns 404 when lessons-learned file does not exist', async () => {
+      seedDecisions();
+      if (fs.existsSync(LESSONS_FILE)) fs.unlinkSync(LESSONS_FILE);
+      const res = fakeRes();
+      await routes['POST /api/decisions/promote-lesson'](promoteReq({ lessonId: 'L100' }), res);
+      expect(res.status).toBe(404);
+      expect(res.json.code).toBe('INTERNAL_ERROR');
+      expect(String(res.json.error)).toMatch(/lessons-learned\.md/i);
+    });
+
+    it('returns 404 when candidate lesson is missing or not flagged for promotion', async () => {
+      seedDecisions();
+      seedLessons(
+        `# Lessons Learned\n\n| ID | Lesson | Type | Applies To | Status |\n|----|--------|------|------------|--------|\n| L100 | Improve logging | process | all | OPEN |\n`
+      );
+      const res = fakeRes();
+      await routes['POST /api/decisions/promote-lesson'](promoteReq({ lessonId: 'L100' }), res);
+      expect(res.status).toBe(404);
+      expect(res.json.code).toBe('INTERNAL_ERROR');
+      expect(String(res.json.error)).toMatch(/L100/i);
+    });
+
+    it('promotes lesson into decisions and marks lesson as promoted', async () => {
+      seedDecisions();
+      seedLessons(
+        `# Lessons Learned\n\n| ID | Lesson | Type | Applies To | Status |\n|----|--------|------|------------|--------|\n| L200 | Enforce PKCE for auth flows | security | auth | PROMOTE_TO_DECISION |\n`
+      );
+      const ctx = makeCtx();
+      const localRoutes = createDecisionRoutes(ctx);
+      const res = fakeRes();
+
+      await localRoutes['POST /api/decisions/promote-lesson'](
+        promoteReq({ lessonId: 'L200', priority: 'HIGH', scope: 'Auth' }),
+        res
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.json.ok).toBe(true);
+      expect(res.json.action).toBe('promoted');
+      expect(res.json.id).toMatch(/^DEC-/);
+
+      const decisionsContent = fs.readFileSync(DECISIONS_FILE, 'utf8');
+      expect(decisionsContent).toContain('Promoted from lesson L200');
+
+      const lessonsContent = fs.readFileSync(LESSONS_FILE, 'utf8');
+      expect(lessonsContent).toContain('PROMOTED');
+
+      expect(ctx.sseNotify).toHaveBeenCalledWith(
+        'decision_update',
+        expect.objectContaining({ action: 'promote-lesson', lessonId: 'L200' })
+      );
     });
   });
 });

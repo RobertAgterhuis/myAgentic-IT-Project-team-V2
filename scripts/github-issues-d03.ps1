@@ -365,6 +365,194 @@ New-Issue "CHAT-2.3.2 - Override context: policy and similar past decisions in p
     "**Effort:** M (2 days)"
 )) @("domain:chat","P1-high","enhancement","tech") $ms114
 
+$e24 = New-Issue "Epic: RAG Grounding in Core Chat Responses" (B @(
+    "## Epic 2.4 - RAG Grounding in Core Chat Responses",
+    "**Milestone:** M-UX-2b - Chat Phase 2",
+    "**Domain:** Chat / Conversational Interface (Domain 03, Phase 2)",
+    "**Depends on:** Domain 01 RAG Phase 2 collections availability",
+    "",
+    "Ensure POST /api/v1/chat/message is truly RAG-backed (not only chat/query), with enforceable grounding and safe fallbacks.",
+    "",
+    "### Issues",
+    "- [ ] Integrate intent-routed RAG retrieval directly into chat/message response pipeline",
+    "- [ ] Enforce citation + confidence thresholds with clarification fallback",
+    "- [ ] Add workspace/global collection scoping policy for multi-workspace correctness"
+)) @("epic","domain:chat","P1-high","enhancement") $ms114
+
+New-Issue "CHAT-2.4.1 - Integrate intent-routed RAG retrieval into POST /api/v1/chat/message" (B @(
+    "**Epic:** #$e24",
+    "**Milestone:** M-UX-2b",
+    "",
+    "Wire RagGroundingService into main chat response path:",
+    "- Resolve intent -> target collections (decision_lookup/workspace_query/artifact_query)",
+    "- Retrieve topK grounded matches before assistant response composition",
+    "- Pass citations and snippets into ChatService response generation",
+    "",
+    "**Acceptance criteria:**",
+    "- /api/v1/chat/message returns grounded citations for retrieval-type intents",
+    "- /api/v1/chat/query and /api/v1/chat/message produce consistent top matches for same query",
+    "",
+    "**Effort:** M (2-3 days)"
+)) @("domain:chat","P1-high","enhancement","tech") $ms114
+
+New-Issue "CHAT-2.4.2 - Citation and confidence enforcement with safe fallback" (B @(
+    "**Epic:** #$e24",
+    "**Milestone:** M-UX-2b",
+    "",
+    "Introduce GroundingValidator for main chat responses:",
+    "- If intent requires grounding and confidence/citation threshold is not met,",
+    "  return clarification prompt (not fabricated answer)",
+    "- Block approval/policy recommendations without supporting citations",
+    "",
+    "**Acceptance criteria:**",
+    "- Governance and status test fixtures contain citations in 100% of substantive responses",
+    "- Low-confidence retrieval test cases return clarification fallback",
+    "",
+    "**Effort:** M (2 days)"
+)) @("domain:chat","P1-high","enhancement","tech","security") $ms114
+
+New-Issue "CHAT-2.4.3 - Workspace/global collection scoping policy for chat grounding" (B @(
+    "**Epic:** #$e24",
+    "**Milestone:** M-UX-2b",
+    "",
+    "Implement deterministic scoping rules for collection selection:",
+    "- Workspace-scoped by default for codebase/sprint artifacts",
+    "- Global-scoped for policies/patterns/retrospectives where appropriate",
+    "- Enforce scope in citations to prevent cross-workspace leakage",
+    "",
+    "**Acceptance criteria:**",
+    "- Multi-workspace tests prove no cross-workspace citation leakage",
+    "- Scope resolution is visible in debug metadata and trace logs",
+    "",
+    "**Effort:** M (2 days)"
+)) @("domain:chat","P1-high","enhancement","tech","security") $ms114
+
+$e25 = New-Issue "Epic: RAG Index Freshness and Availability for Chat" (B @(
+    "## Epic 2.5 - RAG Index Freshness and Availability",
+    "**Milestone:** M-UX-2b - Chat Phase 2",
+    "**Domain:** Chat / Conversational Interface (Domain 03, Phase 2)",
+    "",
+    "Guarantee chat grounding uses fresh and available indexes, with graceful degradation when indexing services are unavailable.",
+    "",
+    "### Issues",
+    "- [ ] Auto-index triggers for high-value artifact changes",
+    "- [ ] Incremental re-index scheduler + stale index detection",
+    "- [ ] Degraded-mode UX when RAG services are unavailable"
+)) @("epic","domain:chat","P1-high","enhancement") $ms114
+
+New-Issue "CHAT-2.5.1 - Auto-index high-value artifact updates for chat freshness" (B @(
+    "**Epic:** #$e25",
+    "**Milestone:** M-UX-2b",
+    "",
+    "Trigger targeted indexing after updates to:",
+    "- decisions and approval artifacts",
+    "- phase output documents",
+    "- session state and sprint artifacts",
+    "",
+    "**Acceptance criteria:**",
+    "- New/updated decision is queryable by chat within 60 seconds",
+    "- Index jobs deduplicate repeated updates during burst writes",
+    "",
+    "**Effort:** M (2-3 days)"
+)) @("domain:chat","P1-high","enhancement","tech") $ms114
+
+New-Issue "CHAT-2.5.2 - Incremental re-index scheduler with stale index detection" (B @(
+    "**Epic:** #$e25",
+    "**Milestone:** M-UX-2b",
+    "",
+    "Add a scheduled health pass that:",
+    "- Detects stale/missing collection indexes",
+    "- Reconciles via incremental sync",
+    "- Emits freshness metrics per collection",
+    "",
+    "**Acceptance criteria:**",
+    "- Scheduler detects stale indexes and self-heals without full reindex by default",
+    "- Freshness status is visible in admin/debug endpoint",
+    "",
+    "**Effort:** M (2 days)"
+)) @("domain:chat","P1-high","enhancement","tech","ops") $ms114
+
+New-Issue "CHAT-2.5.3 - Degraded-mode behavior when RAG services unavailable" (B @(
+    "**Epic:** #$e25",
+    "**Milestone:** M-UX-2b",
+    "",
+    "Define and implement degraded behavior for chat when _ragStore/_embeddingProvider is unavailable:",
+    "- Explicit non-grounded response banner",
+    "- No policy/approval recommendation without grounding",
+    "- Recovery hint and retry action",
+    "",
+    "**Acceptance criteria:**",
+    "- RAG service outage scenario yields safe degraded UX, no silent failures",
+    "- Error telemetry includes failure reason and fallback path used",
+    "",
+    "**Effort:** S-M (1-2 days)"
+)) @("domain:chat","P1-high","enhancement","tech","ux") $ms114
+
+$e26 = New-Issue "Epic: M-UX-2b Quality Gates and Observability" (B @(
+    "## Epic 2.6 - Quality Gates and Observability",
+    "**Milestone:** M-UX-2b - Chat Phase 2",
+    "**Domain:** Chat / Conversational Interface (Domain 03, Phase 2)",
+    "",
+    "Add objective quality and performance gates for RAG-backed chat before milestone close.",
+    "",
+    "### Issues",
+    "- [ ] Retrieval quality evaluation harness for chat intents",
+    "- [ ] Grounding and latency metrics instrumentation",
+    "- [ ] CI gate for precision and latency regression protection"
+)) @("epic","domain:chat","P1-high","enhancement") $ms114
+
+New-Issue "CHAT-2.6.1 - Retrieval quality harness for chat grounding intents" (B @(
+    "**Epic:** #$e26",
+    "**Milestone:** M-UX-2b",
+    "",
+    "Build intent-focused retrieval evaluation set for:",
+    "- gate_explain",
+    "- approval_action",
+    "- artifact_query / decision_lookup",
+    "",
+    "Measure precision@3 and citation validity per fixture.",
+    "",
+    "**Acceptance criteria:**",
+    "- Precision@3 >= 0.75 for M-UX-2b benchmark set",
+    "- 100% citation-valid responses in benchmark fixtures",
+    "",
+    "**Effort:** M (2 days)"
+)) @("domain:chat","P1-high","enhancement","test") $ms114
+
+New-Issue "CHAT-2.6.2 - Instrument grounding and latency metrics for chat pipeline" (B @(
+    "**Epic:** #$e26",
+    "**Milestone:** M-UX-2b",
+    "",
+    "Emit per-request metrics:",
+    "- retrieval latency",
+    "- first token latency",
+    "- citation count",
+    "- fallback rate",
+    "- no-match rate",
+    "",
+    "**Acceptance criteria:**",
+    "- Metrics exposed in runtime metrics payload and dashboard endpoints",
+    "- P95 retrieval latency and fallback rate visible per environment",
+    "",
+    "**Effort:** M (2 days)"
+)) @("domain:chat","P1-high","enhancement","tech","ops") $ms114
+
+New-Issue "CHAT-2.6.3 - CI regression gate for grounding quality and latency budgets" (B @(
+    "**Epic:** #$e26",
+    "**Milestone:** M-UX-2b",
+    "",
+    "Add CI checks that fail on regression below budget:",
+    "- precision@3 < 0.75",
+    "- citation validity < 100% for governance fixtures",
+    "- chat first-token latency budget exceeded in perf smoke suite",
+    "",
+    "**Acceptance criteria:**",
+    "- CI blocks merge when any M-UX-2b quality gate fails",
+    "- Gate outputs actionable failure report",
+    "",
+    "**Effort:** M (2 days)"
+)) @("domain:chat","P1-high","enhancement","test","ci") $ms114
+
 # ── M-UX-3 ──────────────────────────────────────
 Write-Host "`n-- M-UX-3 (Multi-agent Chat & RAG Intelligence) --"
 

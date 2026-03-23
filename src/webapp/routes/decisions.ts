@@ -102,8 +102,9 @@ function buildSimilarDecisionResults(
   topK: number
 ): SimilarDecisionResponse[] {
   const listed = svc.list();
-  const candidates = [...listed.decided, ...listed.deferred].map((decision) => {
-    const title = getDecisionTitle(decision as Record<string, unknown>);
+  const allDecisions = [...listed.decided, ...listed.deferred] as Array<Record<string, unknown>>;
+  const candidates = allDecisions.map((decision) => {
+    const title = getDecisionTitle(decision);
     const searchText = [
       title,
       typeof decision.scope === 'string' ? decision.scope : '',
@@ -161,6 +162,28 @@ function buildSimilarDecisionResults(
   }
 
   return matches;
+}
+
+function triggerDecisionGroundingRefresh(ctx: ServerContext): void {
+  if (!ctx._ragIndexer) return;
+
+  const decisionsPaths = [
+    path.join(ctx.BUSINESS_DOCS, 'decisions.md'),
+    path.join(ctx.BUSINESS_DOCS, 'decisions'),
+  ];
+
+  for (const target of decisionsPaths) {
+    setImmediate(() => {
+      void ctx._ragIndexer
+        ?.syncDirectory('decisions', target, { incremental: true })
+        .then((stats) => {
+          ctx.recordMetric('RAG', '/decisions/refresh', stats.filesProcessed, 200);
+        })
+        .catch(() => {
+          ctx.recordMetric('RAG', '/decisions/refresh', 1, 500);
+        });
+    });
+  }
 }
 
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
@@ -225,8 +248,8 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
       const queryVector = await embeddingProvider.embedText(queryText);
       const results = await store.query('decisions', queryVector, Math.max(topK * 3, topK), 0);
-
-      return reply.send(buildSimilarDecisionResults(svc, results, Math.min(topK, 3)));
+      const payload = buildSimilarDecisionResults(svc, results, Math.min(topK, 3));
+      return reply.type('application/json').send(payload);
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       return reply.code(500).send(errorResponse('RAG_QUERY_ERROR', message));
@@ -261,6 +284,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         );
       }
       ctx.sseNotify('decision_update', { action: body.action as string, id: result.id });
+      triggerDecisionGroundingRefresh(ctx);
       return reply.type('application/json').send(attachSecretWarnings(result, secretWarnings));
     } catch (e) {
       if (e instanceof ServiceValidationError) {
@@ -292,6 +316,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           file: fname,
           name: result.name,
         });
+        triggerDecisionGroundingRefresh(ctx);
         return reply.type('application/json').send(result);
       } catch (e) {
         if (e instanceof ServiceValidationError) {

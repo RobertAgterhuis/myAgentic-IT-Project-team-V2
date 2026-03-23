@@ -12,6 +12,20 @@ import { TestWrapper } from '@/test/test-wrapper';
 import { server } from '@/test/msw-server';
 import type { DriftResponse } from '@/lib/api-types';
 
+const mockRagFreshnessResponse = {
+  ok: true,
+  generated_at: '2026-03-21T09:00:00.000Z',
+  workspace_id: 'default',
+  summary: {
+    total_collections: 4,
+    healthy_collections: 4,
+    stale_collections: 0,
+    missing_collections: 0,
+    stale_threshold_seconds: 3600,
+  },
+  collections: [],
+};
+
 const mockDriftWithAlerts: DriftResponse = {
   generated_at: '2026-03-21T09:00:00.000Z',
   summary: { total_drifts: 2, critical: 1, warning: 1, info: 0 },
@@ -61,7 +75,8 @@ describe('useObservabilityContracts — fallback behaviour', () => {
     // No server.use overrides — both endpoints return 500/network-error → fallback
     server.use(
       http.get('/api/v1/drift', () => HttpResponse.json({}, { status: 500 })),
-      http.get('/api/v1/analytics/trends', () => HttpResponse.json({}, { status: 500 }))
+      http.get('/api/v1/analytics/trends', () => HttpResponse.json({}, { status: 500 })),
+      http.get('/api/v1/observability/rag-freshness', () => HttpResponse.json({}, { status: 500 }))
     );
     const { result } = renderHook(() => useObservabilityContracts(), { wrapper: TestWrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -76,7 +91,10 @@ describe('useObservabilityContracts — drift data', () => {
   it('maps drift entries to alerts with correct severity', async () => {
     server.use(
       http.get('/api/v1/drift', () => HttpResponse.json(mockDriftWithAlerts)),
-      http.get('/api/v1/analytics/trends', () => HttpResponse.json({}, { status: 500 }))
+      http.get('/api/v1/analytics/trends', () => HttpResponse.json({}, { status: 500 })),
+      http.get('/api/v1/observability/rag-freshness', () =>
+        HttpResponse.json(mockRagFreshnessResponse)
+      )
     );
     const { result } = renderHook(() => useObservabilityContracts(), { wrapper: TestWrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -89,7 +107,10 @@ describe('useObservabilityContracts — drift data', () => {
   it('sets all drift-mapped alerts as open', async () => {
     server.use(
       http.get('/api/v1/drift', () => HttpResponse.json(mockDriftWithAlerts)),
-      http.get('/api/v1/analytics/trends', () => HttpResponse.json({}, { status: 500 }))
+      http.get('/api/v1/analytics/trends', () => HttpResponse.json({}, { status: 500 })),
+      http.get('/api/v1/observability/rag-freshness', () =>
+        HttpResponse.json(mockRagFreshnessResponse)
+      )
     );
     const { result } = renderHook(() => useObservabilityContracts(), { wrapper: TestWrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -100,7 +121,10 @@ describe('useObservabilityContracts — drift data', () => {
   it('summary.open_alerts matches drift alerts count when both open', async () => {
     server.use(
       http.get('/api/v1/drift', () => HttpResponse.json(mockDriftWithAlerts)),
-      http.get('/api/v1/analytics/trends', () => HttpResponse.json({}, { status: 500 }))
+      http.get('/api/v1/analytics/trends', () => HttpResponse.json({}, { status: 500 })),
+      http.get('/api/v1/observability/rag-freshness', () =>
+        HttpResponse.json(mockRagFreshnessResponse)
+      )
     );
     const { result } = renderHook(() => useObservabilityContracts(), { wrapper: TestWrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -116,7 +140,10 @@ describe('useObservabilityContracts — drift data', () => {
           drifts: [],
         })
       ),
-      http.get('/api/v1/analytics/trends', () => HttpResponse.json({}, { status: 500 }))
+      http.get('/api/v1/analytics/trends', () => HttpResponse.json({}, { status: 500 })),
+      http.get('/api/v1/observability/rag-freshness', () =>
+        HttpResponse.json(mockRagFreshnessResponse)
+      )
     );
     const { result } = renderHook(() => useObservabilityContracts(), { wrapper: TestWrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -134,7 +161,10 @@ describe('useObservabilityContracts — trends data', () => {
           drifts: [],
         })
       ),
-      http.get('/api/v1/analytics/trends', () => HttpResponse.json(mockTrendsResponse))
+      http.get('/api/v1/analytics/trends', () => HttpResponse.json(mockTrendsResponse)),
+      http.get('/api/v1/observability/rag-freshness', () =>
+        HttpResponse.json(mockRagFreshnessResponse)
+      )
     );
     const { result } = renderHook(() => useObservabilityContracts(), { wrapper: TestWrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -155,7 +185,10 @@ describe('useObservabilityContracts — trends data', () => {
           drifts: [],
         })
       ),
-      http.get('/api/v1/analytics/trends', () => HttpResponse.json(mockTrendsResponse))
+      http.get('/api/v1/analytics/trends', () => HttpResponse.json(mockTrendsResponse)),
+      http.get('/api/v1/observability/rag-freshness', () =>
+        HttpResponse.json(mockRagFreshnessResponse)
+      )
     );
     const { result } = renderHook(() => useObservabilityContracts(), { wrapper: TestWrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -175,12 +208,15 @@ describe('useObservabilityContracts — trends data', () => {
           drifts: [],
         })
       ),
-      http.get('/api/v1/analytics/trends', () => HttpResponse.json(mockTrendsResponse))
+      http.get('/api/v1/analytics/trends', () => HttpResponse.json(mockTrendsResponse)),
+      http.get('/api/v1/observability/rag-freshness', () =>
+        HttpResponse.json(mockRagFreshnessResponse)
+      )
     );
     const { result } = renderHook(() => useObservabilityContracts(), { wrapper: TestWrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data?.summary.stream_count).toBe(2);
-    expect(result.current.data?.summary.stale_streams).toBe(0);
+    expect(result.current.data?.summary.stream_count).toBe(3);
+    expect(result.current.data?.summary.stale_streams).toBe(1);
   });
 });
 
@@ -188,12 +224,15 @@ describe('useObservabilityContracts — combined data', () => {
   it('aggregates both drift alerts and trends streams in a single response', async () => {
     server.use(
       http.get('/api/v1/drift', () => HttpResponse.json(mockDriftWithAlerts)),
-      http.get('/api/v1/analytics/trends', () => HttpResponse.json(mockTrendsResponse))
+      http.get('/api/v1/analytics/trends', () => HttpResponse.json(mockTrendsResponse)),
+      http.get('/api/v1/observability/rag-freshness', () =>
+        HttpResponse.json(mockRagFreshnessResponse)
+      )
     );
     const { result } = renderHook(() => useObservabilityContracts(), { wrapper: TestWrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data?.alerts).toHaveLength(2);
-    expect(result.current.data?.streams).toHaveLength(2);
+    expect(result.current.data?.streams).toHaveLength(3);
     expect(result.current.data?.ok).toBe(true);
   });
 });

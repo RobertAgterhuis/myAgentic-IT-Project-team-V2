@@ -4,6 +4,7 @@
 const {
   AgentExecutionService,
   AgentNotFoundError,
+  AgentCancelledError,
 } = require('../../src/webapp/services/agent-execution-service');
 const { Dispatcher } = require('../../platform/engine/dispatcher');
 
@@ -322,6 +323,15 @@ describe('AgentExecutionService', () => {
       expect(err).toBeInstanceOf(Error);
       expect(err.name).toBe('AgentNotFoundError');
       expect(err.message).toBe('test');
+    });
+  });
+
+  describe('AgentCancelledError', () => {
+    it('is an instance of Error', () => {
+      const err = new AgentCancelledError('cancelled');
+      expect(err).toBeInstanceOf(Error);
+      expect(err.name).toBe('AgentCancelledError');
+      expect(err.message).toBe('cancelled');
     });
   });
 

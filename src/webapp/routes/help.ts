@@ -15,7 +15,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       if (!page) {
         return reply.code(404).send(errorResponse('HELP_PAGE_NOT_FOUND', 'Help page not found'));
       }
-      return reply.send(page);
+      return reply.type('application/json').send(page);
     }
   );
 
@@ -27,7 +27,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       if (!topic) {
         return reply.code(404).send(errorResponse('HELP_TOPIC_NOT_FOUND', 'Help topic not found'));
       }
-      return reply.send(topic);
+      return reply.type('application/json').send(topic);
     }
   );
 

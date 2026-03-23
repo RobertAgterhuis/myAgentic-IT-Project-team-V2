@@ -336,6 +336,14 @@ async function run(overrideProjectRoot?: string): Promise<void> {
       healthy: report.healthy,
       summary: report.summary,
       checks: report.checks,
+      configExists: report.configExists,
+      agentCount: report.agentCount,
+      serverCount: report.serverCount,
+      generatedExists: report.generatedExists,
+      identityIssues: report.identityIssues,
+      agentsWithPendingConsent: report.agentsWithPendingConsent,
+      agentsWithMissingIdentity: report.agentsWithMissingIdentity,
+      agentsWithExpiringCredentials: report.agentsWithExpiringCredentials,
     };
     process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
     if (!report.healthy) {

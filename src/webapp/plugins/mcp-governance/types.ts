@@ -113,6 +113,22 @@ export interface RuntimeToolPermission {
     | 'credential_policy_violation';
 }
 
+export type WorkloadIdentityAuthStatus =
+  | 'consent_granted'
+  | 'consent_pending'
+  | 'identity_not_provisioned'
+  | 'credential_policy_violation'
+  | 'not_configured';
+
+export interface AgentWorkloadIdentity {
+  agentId: string;
+  consentGranted: boolean;
+  servicePrincipalReady: boolean;
+  credentialPolicyValid: boolean;
+  effectiveEnabled: boolean;
+  credentialExpiresAt?: string;
+}
+
 export interface RuntimeManifest {
   agentId: string;
   generatedAt: string;
@@ -121,6 +137,7 @@ export interface RuntimeManifest {
     endpoint: string;
     healthStatus: McpServerHealthStatus;
     authType: McpServerAuthType;
+    authStatus?: WorkloadIdentityAuthStatus;
     tools: RuntimeToolPermission[];
   }>;
 }

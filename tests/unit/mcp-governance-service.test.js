@@ -292,4 +292,156 @@ describe('McpGovernanceService', () => {
     expect(await svc.listServerPolicies()).toEqual([]);
     expect(await svc.listToolPolicies()).toEqual([]);
   });
+
+  it('workload identities default to empty array and can be saved and read back', async () => {
+    const initial = await svc.listWorkloadIdentities();
+    expect(initial).toEqual([]);
+
+    const identities = [
+      {
+        agentId: 'infra',
+        consentGranted: true,
+        servicePrincipalReady: true,
+        credentialPolicyValid: true,
+        effectiveEnabled: true,
+      },
+    ];
+    await svc.saveWorkloadIdentities(identities);
+
+    const stored = await svc.listWorkloadIdentities();
+    expect(stored).toHaveLength(1);
+    expect(stored[0].agentId).toBe('infra');
+    expect(stored[0].consentGranted).toBe(true);
+  });
+
+  it('buildRuntimeArtifacts embeds authStatus for entra servers when identity is configured', async () => {
+    await svc.syncAgents(await svc.getDefinedAgents());
+    await svc.syncServers(await svc.getDefinedServers());
+    await svc.syncServerPolicies(await svc.getDefinedPolicies());
+    await svc.syncToolPolicies(await svc.getDefinedToolPolicies());
+
+    await svc.saveWorkloadIdentities([
+      {
+        agentId: 'infra',
+        consentGranted: true,
+        servicePrincipalReady: true,
+        credentialPolicyValid: true,
+        effectiveEnabled: true,
+      },
+    ]);
+
+    const runtime = await svc.buildRuntimeArtifacts();
+    expect(runtime.manifestCount).toBe(12);
+
+    const manifestPath = require('path').join(runtime.outputDir, 'runtime-manifests', 'infra.json');
+    const manifest = JSON.parse(require('fs').readFileSync(manifestPath, 'utf8'));
+    const entraServer = manifest.servers.find((s) => s.authType === 'entra');
+    if (entraServer) {
+      expect(entraServer.authStatus).toBe('consent_granted');
+    }
+  });
+
+  it('buildRuntimeArtifacts embeds authStatus=consent_pending when consent not granted', async () => {
+    await svc.syncAgents(await svc.getDefinedAgents());
+    await svc.syncServers(await svc.getDefinedServers());
+    await svc.syncServerPolicies(await svc.getDefinedPolicies());
+    await svc.syncToolPolicies(await svc.getDefinedToolPolicies());
+
+    await svc.saveWorkloadIdentities([
+      {
+        agentId: 'infra',
+        consentGranted: false,
+        servicePrincipalReady: true,
+        credentialPolicyValid: true,
+        effectiveEnabled: false,
+      },
+    ]);
+
+    const runtime = await svc.buildRuntimeArtifacts();
+    const manifestPath = require('path').join(runtime.outputDir, 'runtime-manifests', 'infra.json');
+    const manifest = JSON.parse(require('fs').readFileSync(manifestPath, 'utf8'));
+    const entraServer = manifest.servers.find((s) => s.authType === 'entra');
+    if (entraServer) {
+      expect(entraServer.authStatus).toBe('consent_pending');
+    }
+  });
+
+  it('buildRuntimeArtifacts sets authStatus=not_configured when no identity record exists', async () => {
+    await svc.syncAgents(await svc.getDefinedAgents());
+    await svc.syncServers(await svc.getDefinedServers());
+    await svc.syncServerPolicies(await svc.getDefinedPolicies());
+    await svc.syncToolPolicies(await svc.getDefinedToolPolicies());
+
+    const runtime = await svc.buildRuntimeArtifacts();
+    const manifestPath = require('path').join(runtime.outputDir, 'runtime-manifests', 'infra.json');
+    const manifest = JSON.parse(require('fs').readFileSync(manifestPath, 'utf8'));
+    const entraServer = manifest.servers.find((s) => s.authType === 'entra');
+    if (entraServer) {
+      expect(entraServer.authStatus).toBe('not_configured');
+    }
+  });
+
+  it('doctor returns identity issue arrays and counts', async () => {
+    const result = await svc.doctor();
+    expect(Array.isArray(result.identityIssues)).toBe(true);
+    expect(typeof result.agentsWithPendingConsent).toBe('number');
+    expect(typeof result.agentsWithMissingIdentity).toBe('number');
+    expect(typeof result.agentsWithExpiringCredentials).toBe('number');
+  });
+
+  it('doctor flags agents with missing workload identity', async () => {
+    await svc.syncAgents(await svc.getDefinedAgents());
+
+    const result = await svc.doctor();
+    expect(result.agentsWithMissingIdentity).toBeGreaterThan(0);
+    const issue = result.identityIssues.find((i) => i.issue === 'No workload identity configured');
+    expect(issue).toBeDefined();
+    expect(issue.remediation).toMatch(/identity bootstrap/);
+  });
+
+  it('doctor flags agents with pending consent', async () => {
+    await svc.syncAgents(await svc.getDefinedAgents());
+
+    await svc.saveWorkloadIdentities([
+      {
+        agentId: 'infra',
+        consentGranted: false,
+        servicePrincipalReady: true,
+        credentialPolicyValid: true,
+        effectiveEnabled: false,
+      },
+    ]);
+
+    const result = await svc.doctor();
+    expect(result.agentsWithPendingConsent).toBeGreaterThan(0);
+    const issue = result.identityIssues.find(
+      (i) => i.agentId === 'infra' && i.issue === 'Consent not granted'
+    );
+    expect(issue).toBeDefined();
+    expect(issue.remediation).toMatch(/consent status/);
+  });
+
+  it('doctor flags agents with expiring credentials', async () => {
+    await svc.syncAgents(await svc.getDefinedAgents());
+
+    const soonExpiry = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    await svc.saveWorkloadIdentities([
+      {
+        agentId: 'devops',
+        consentGranted: true,
+        servicePrincipalReady: true,
+        credentialPolicyValid: true,
+        effectiveEnabled: true,
+        credentialExpiresAt: soonExpiry,
+      },
+    ]);
+
+    const result = await svc.doctor();
+    expect(result.agentsWithExpiringCredentials).toBe(1);
+    const issue = result.identityIssues.find(
+      (i) => i.agentId === 'devops' && i.issue.includes('Credential expires soon')
+    );
+    expect(issue).toBeDefined();
+    expect(issue.remediation).toMatch(/Rotate credentials/);
+  });
 });

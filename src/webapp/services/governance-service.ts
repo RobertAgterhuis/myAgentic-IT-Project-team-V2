@@ -16,7 +16,16 @@ import type { ServiceContext, ApprovalItem, ApprovalDecisionResult } from './typ
 /** Minimal governance engine shape. */
 interface GovernanceEngine {
   getPendingApprovals(userId?: string): ApprovalRequest[];
+  getApprovals(entityId: string, gateId?: string): ApprovalRequest[];
+  getApprovalById?(approvalId: string): ApprovalRequest | undefined;
+  requestApproval(
+    entityId: string,
+    stage: ApprovalRequest['stage'],
+    gateId: string,
+    requestedBy: string
+  ): ApprovalRequest;
   decide(id: string, user: string, approved: boolean, reason: string): ApprovalRequest;
+  expireTimedOut?(): string[];
   saveTo?(
     store: { writeFile(path: string, data: string): void; mkdirp(dir: string): void },
     path: string
@@ -27,7 +36,10 @@ function isGovernanceEngine(value: unknown): value is GovernanceEngine {
   if (!value || typeof value !== 'object') return false;
   const candidate = value as Record<string, unknown>;
   return (
-    typeof candidate.getPendingApprovals === 'function' && typeof candidate.decide === 'function'
+    typeof candidate.getPendingApprovals === 'function' &&
+    typeof candidate.getApprovals === 'function' &&
+    typeof candidate.requestApproval === 'function' &&
+    typeof candidate.decide === 'function'
   );
 }
 
@@ -42,11 +54,16 @@ export class GovernanceService {
     this._getEngine = (opts?.getEngine as () => GovernanceEngine | null) || null;
   }
 
+  private static readonly TOOL_EXEC_GATE_ID = 'G-REL-01';
+  private static readonly TOOL_EXEC_STAGE = 'RELEASE' as ApprovalRequest['stage'];
+
   /* ── List pending approvals ─────────────────────────────────── */
 
   listApprovals(): { approvals: ApprovalItem[]; count: number } {
     const engine = this.resolveEngine();
     if (!engine) throw new ServiceNotAvailableError('Governance engine not available');
+
+    this.expireTimedOutApprovals(engine);
 
     const pending = engine.getPendingApprovals();
     const approvals = pending.map((a) => ({
@@ -109,7 +126,103 @@ export class GovernanceService {
     };
   }
 
+  requestToolExecutionApproval(input: { entityId: string; requestedBy: string }): {
+    pending: boolean;
+    approvalId: string;
+    status: ApprovalRequest['status'];
+    requiredRole: ApprovalRequest['required_role'];
+    requestedAt: string;
+  } {
+    if (!input.entityId?.trim()) throw new ServiceValidationError('entityId is required');
+    if (!input.requestedBy?.trim()) throw new ServiceValidationError('requestedBy is required');
+
+    const engine = this.resolveEngine();
+    if (!engine) throw new ServiceNotAvailableError('Governance engine not available');
+
+    this.expireTimedOutApprovals(engine);
+
+    const existing = engine
+      .getApprovals(input.entityId, GovernanceService.TOOL_EXEC_GATE_ID)
+      .slice()
+      .sort((a, b) => String(b.requested_at).localeCompare(String(a.requested_at)));
+
+    const pending = existing.find((approval) => approval.status === 'PENDING');
+    if (pending) {
+      return {
+        pending: true,
+        approvalId: pending.id,
+        status: pending.status,
+        requiredRole: pending.required_role,
+        requestedAt: pending.requested_at,
+      };
+    }
+
+    const created = engine.requestApproval(
+      input.entityId,
+      GovernanceService.TOOL_EXEC_STAGE,
+      GovernanceService.TOOL_EXEC_GATE_ID,
+      input.requestedBy
+    );
+    engine.saveTo?.(this.ctx.store, this.governanceStatePath);
+
+    return {
+      pending: created.status === 'PENDING',
+      approvalId: created.id,
+      status: created.status,
+      requiredRole: created.required_role,
+      requestedAt: created.requested_at,
+    };
+  }
+
+  getToolExecutionApprovalStatus(entityId: string): {
+    approved: boolean;
+    pending: boolean;
+    approvalId?: string;
+    status?: ApprovalRequest['status'];
+  } {
+    if (!entityId?.trim()) throw new ServiceValidationError('entityId is required');
+
+    const engine = this.resolveEngine();
+    if (!engine) throw new ServiceNotAvailableError('Governance engine not available');
+
+    this.expireTimedOutApprovals(engine);
+
+    const sorted = engine
+      .getApprovals(entityId, GovernanceService.TOOL_EXEC_GATE_ID)
+      .slice()
+      .sort((a, b) => String(b.requested_at).localeCompare(String(a.requested_at)));
+
+    const approved = sorted.find((approval) => approval.status === 'APPROVED');
+    if (approved) {
+      return { approved: true, pending: false, approvalId: approved.id, status: approved.status };
+    }
+
+    const pending = sorted.find((approval) => approval.status === 'PENDING');
+    if (pending) {
+      return { approved: false, pending: true, approvalId: pending.id, status: pending.status };
+    }
+
+    const latest = sorted[0];
+    if (latest) {
+      return {
+        approved: false,
+        pending: false,
+        approvalId: latest.id,
+        status: latest.status,
+      };
+    }
+
+    return { approved: false, pending: false };
+  }
+
   /* ── Private ────────────────────────────────────────────────── */
+
+  private expireTimedOutApprovals(engine: GovernanceEngine): void {
+    const expired = engine.expireTimedOut?.() || [];
+    if (expired.length > 0) {
+      engine.saveTo?.(this.ctx.store, this.governanceStatePath);
+    }
+  }
 
   private resolveEngine(): GovernanceEngine | null {
     // If an engine factory was provided (HTTP context), use it

@@ -40,6 +40,7 @@ import {
   EnvScopeValidationError,
   McpGovernanceService as RuntimePolicyService,
 } from './plugins/mcp-governance';
+import { ToolExecutionGuard } from './tool-execution-guard';
 
 /* ── Service layer (M20-004) ───────────────────────────────────── */
 import {
@@ -193,21 +194,29 @@ const runtimePolicySvc = new RuntimePolicyService({
   storageProvider: null,
 });
 
+const toolExecutionGuard = new ToolExecutionGuard({
+  projectRoot: PROJECT_ROOT,
+  governanceService: governanceSvc,
+  defaultServerId: 'command-center',
+});
+
 function expectedEnvScope(): 'dev' | 'test' | 'prod' {
   return process.env.ENV_SCOPE === 'test' || process.env.ENV_SCOPE === 'prod'
     ? process.env.ENV_SCOPE
     : 'dev';
 }
 
-function withEnvScopeGuard(
+function withExecutionGuards(
+  toolName: string,
   handler: (params?: Record<string, unknown>) => Promise<McpToolResult>,
   includeParams: boolean
 ): (params?: Record<string, unknown>) => Promise<McpToolResult> {
   return async (params?: Record<string, unknown>) => {
     const payload = params && typeof params === 'object' ? params : {};
 
+    let envScope: 'dev' | 'test' | 'prod';
     try {
-      runtimePolicySvc.validateEnvironmentScope(
+      envScope = runtimePolicySvc.validateEnvironmentScope(
         String(payload.env_scope || ''),
         expectedEnvScope()
       );
@@ -218,8 +227,19 @@ function withEnvScopeGuard(
       throw error;
     }
 
+    const guardResult = await toolExecutionGuard.evaluate({
+      toolName,
+      envScope,
+      expectedEnvScope: expectedEnvScope(),
+      params: payload,
+    });
+    if (guardResult) {
+      return jsonResult(guardResult);
+    }
+
     const nextParams = { ...payload };
     delete nextParams.env_scope;
+    delete nextParams.agent_id;
 
     return includeParams ? handler(nextParams) : handler();
   };
@@ -236,7 +256,8 @@ mcp.tool = ((
     return registerTool(
       name,
       description,
-      withEnvScopeGuard(
+      withExecutionGuards(
+        name,
         schemaOrHandler as (params?: Record<string, unknown>) => Promise<McpToolResult>,
         false
       )
@@ -247,7 +268,11 @@ mcp.tool = ((
     name,
     description,
     schemaOrHandler,
-    withEnvScopeGuard(handler as (params?: Record<string, unknown>) => Promise<McpToolResult>, true)
+    withExecutionGuards(
+      name,
+      handler as (params?: Record<string, unknown>) => Promise<McpToolResult>,
+      true
+    )
   );
 }) as McpServerInstance['tool'];
 

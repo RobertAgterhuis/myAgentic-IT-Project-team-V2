@@ -8,6 +8,7 @@
 
 const path = require('path');
 const fs = require('fs');
+const { GovernanceEngine, DEFAULT_POLICIES } = require('../../platform/sdlc/governance');
 
 const {
   mcp,
@@ -85,6 +86,32 @@ function cleanupTemp() {
   }
   createdPaths.length = 0;
   originalContent.clear();
+}
+
+function writeRuntimeManifest(agentId, tools) {
+  const dir = path.join(_PROJECT_ROOT, '.generated', 'runtime-manifests');
+  const file = path.join(dir, `${agentId}.json`);
+  const manifest = {
+    agentId,
+    generatedAt: new Date().toISOString(),
+    servers: [
+      {
+        serverId: 'command-center',
+        endpoint: 'local://mcp-server',
+        healthStatus: 'healthy',
+        authType: 'none',
+        tools,
+      },
+    ],
+  };
+  writeTemp(file, JSON.stringify(manifest, null, 2));
+}
+
+function writeGovernanceState(configure) {
+  const file = path.join(SESSION_DIR, 'governance-state.json');
+  const engine = new GovernanceEngine([...DEFAULT_POLICIES]);
+  configure(engine);
+  writeTemp(file, JSON.stringify(engine.toJSON(), null, 2));
 }
 
 /* ════════════════════════════════════════════════════════════════ */
@@ -716,6 +743,96 @@ describe('tool: get_audit_log', () => {
     const result = await callTool('get_audit_log', { limit: -10 });
     const data = parseToolResult(result);
     expect(data.total).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('tool execution guard', () => {
+  afterEach(cleanupTemp);
+
+  it('returns structured blocked response when permission is insufficient', async () => {
+    writeRuntimeManifest('orchestrator', [
+      {
+        toolId: 'command-center.queue_command',
+        permissionLevel: 'R',
+        approvalRequired: false,
+        approvalMode: 'none',
+        blocked: false,
+        degraded: false,
+        authStatus: 'ready',
+      },
+    ]);
+
+    const result = await callTool('queue_command', {
+      env_scope: 'dev',
+      agent_id: 'orchestrator',
+      command: 'CREATE',
+      project: 'GuardedProject',
+    });
+
+    expect(result.isError).toBeUndefined();
+    const data = parseToolResult(result);
+    expect(data.blocked).toBe(true);
+    expect(data.reasonCode).toBe('PERMISSION_INSUFFICIENT');
+    expect(data.requiredApprovalMode).toBe('none');
+  });
+
+  it('creates approval when required and allows execution after approval', async () => {
+    writeRuntimeManifest('orchestrator', [
+      {
+        toolId: 'command-center.queue_command',
+        permissionLevel: 'A',
+        approvalRequired: true,
+        approvalMode: 'approval_required',
+        blocked: false,
+        degraded: false,
+        authStatus: 'ready',
+      },
+      {
+        toolId: 'command-center.approve_request',
+        permissionLevel: 'W',
+        approvalRequired: false,
+        approvalMode: 'none',
+        blocked: false,
+        degraded: false,
+        authStatus: 'ready',
+      },
+    ]);
+
+    writeGovernanceState(() => {});
+
+    const firstAttempt = await callTool('queue_command', {
+      env_scope: 'dev',
+      agent_id: 'orchestrator',
+      command: 'CREATE',
+      project: 'GuardedProject',
+    });
+
+    const firstPayload = parseToolResult(firstAttempt);
+    expect(firstPayload.blocked).toBe(true);
+    expect(firstPayload.pending).toBe(true);
+    expect(firstPayload.approvalId).toMatch(/^APR-/);
+    expect(firstPayload.requiredApprovalMode).toBe('approval_required');
+
+    const approveResult = await callTool('approve_request', {
+      env_scope: 'dev',
+      agent_id: 'orchestrator',
+      approval_id: firstPayload.approvalId,
+      user: 'qa-approver',
+      reason: 'Approved for test',
+    });
+    const approvePayload = parseToolResult(approveResult);
+    expect(approvePayload.ok).toBe(true);
+
+    const secondAttempt = await callTool('queue_command', {
+      env_scope: 'dev',
+      agent_id: 'orchestrator',
+      command: 'CREATE',
+      project: 'GuardedProject',
+    });
+
+    const secondPayload = parseToolResult(secondAttempt);
+    expect(secondPayload.queued).toBe(true);
+    expect(secondPayload.text).toContain('CREATE');
   });
 });
 

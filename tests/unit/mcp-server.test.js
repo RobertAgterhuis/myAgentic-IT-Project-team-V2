@@ -32,7 +32,7 @@ const {
 async function callTool(name, args = {}) {
   const tool = mcp._registeredTools[name];
   if (!tool) throw new Error(`Tool not registered: ${name}`);
-  return tool.handler(args, {});
+  return tool.handler({ env_scope: 'dev', ...args }, {});
 }
 
 function parseToolResult(result) {

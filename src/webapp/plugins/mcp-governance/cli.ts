@@ -30,6 +30,7 @@ function printUsage(): void {
       '  npm run plugin -- bootstrap --apply',
       '  npm run plugin -- agents sync [--apply|--dry-run]',
       '  npm run plugin -- mcp sync [--apply|--dry-run]',
+      '  npm run plugin -- policy sync [--apply|--dry-run]',
       '  npm run plugin -- policies sync [--apply|--dry-run]',
       '  npm run plugin -- tool-policies sync [--apply|--dry-run]',
       '  npm run plugin -- runtime build',
@@ -124,13 +125,17 @@ async function run(overrideProjectRoot?: string): Promise<void> {
     return;
   }
 
-  if (cmd === 'policies' && sub === 'sync') {
+  if ((cmd === 'policy' || cmd === 'policies') && sub === 'sync') {
     const apply = parsed.apply || !parsed.dryRun;
     const result = await service.syncServerPolicies(await service.getDefinedPolicies(), {
       dryRun: !apply,
     });
     process.stdout.write(
-      `${JSON.stringify({ ok: true, command: 'policies sync', apply, ...result }, null, 2)}\n`
+      `${JSON.stringify(
+        { ok: true, command: cmd === 'policy' ? 'policy sync' : 'policies sync', apply, ...result },
+        null,
+        2
+      )}\n`
     );
     return;
   }

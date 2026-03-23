@@ -45,6 +45,8 @@ export interface McpServerRegistry {
 
 export type PermissionLevel = 'N' | 'D' | 'R' | 'P' | 'W' | 'A' | 'X';
 
+export type ApprovalMode = 'none' | 'approval_required' | 'two_step';
+
 export type EnvironmentScope = 'dev' | 'test' | 'prod';
 
 export interface AgentServerPolicy {
@@ -79,6 +81,7 @@ export interface ResolvedServerPermission {
   environment: EnvironmentScope;
   permissionLevel: PermissionLevel;
   approvalRequired: boolean;
+  requiredApprovalMode: ApprovalMode;
   blocked: boolean;
   source: 'server-policy' | 'environment-default' | 'implicit-deny';
 }
@@ -90,6 +93,7 @@ export interface ResolvedToolPermission {
   environment: EnvironmentScope;
   permissionLevel: PermissionLevel;
   approvalRequired: boolean;
+  requiredApprovalMode: ApprovalMode;
   blocked: boolean;
   source: 'server-policy' | 'environment-default' | 'tool-override' | 'implicit-deny';
 }
@@ -98,6 +102,7 @@ export interface RuntimeToolPermission {
   toolId: string;
   permissionLevel: PermissionLevel;
   approvalRequired: boolean;
+  approvalMode: ApprovalMode;
   blocked: boolean;
 }
 

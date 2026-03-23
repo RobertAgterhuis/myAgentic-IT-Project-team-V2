@@ -200,7 +200,7 @@ describe('run() CLI commands', () => {
     expect(result.ok).toBe(true);
     expect(result.command).toBe('mcp sync');
     expect(result.apply).toBe(true);
-    expect(result.added).toBeGreaterThan(0);
+    expect(result.added).toBe(8);
   });
 
   it('mcp sync --dry-run does not persist', async () => {
@@ -223,6 +223,15 @@ describe('run() CLI commands', () => {
     const result = parsedOut();
     expect(result.ok).toBe(true);
     expect(result.command).toBe('policies sync');
+    expect(result.added).toBeGreaterThan(0);
+  });
+
+  it('policy sync --apply works as alias for policies sync', async () => {
+    process.argv = argv('policy', 'sync', '--apply');
+    await run(root);
+    const result = parsedOut();
+    expect(result.ok).toBe(true);
+    expect(result.command).toBe('policy sync');
     expect(result.added).toBeGreaterThan(0);
   });
 

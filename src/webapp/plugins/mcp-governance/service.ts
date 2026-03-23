@@ -13,6 +13,7 @@ import {
   DEFAULT_TOOL_POLICIES,
 } from './defaults';
 import type {
+  ApprovalMode,
   AgentToolPolicy,
   AgentServerPolicy,
   AgentType,
@@ -216,6 +217,53 @@ export class McpGovernanceService {
       )) as unknown as McpServerRegistry[];
     }
     return this._readJsonFile<McpServerRegistry[]>(this._serversFile, []);
+  }
+
+  async getServer(serverId: string): Promise<McpServerRegistry | null> {
+    const servers = await this.listServers();
+    return servers.find((server) => server.id === serverId) || null;
+  }
+
+  async createServer(server: McpServerRegistry): Promise<McpServerRegistry> {
+    const servers = await this.listServers();
+    if (servers.some((existing) => existing.id === server.id)) {
+      throw new Error(`MCP server already exists: ${server.id}`);
+    }
+
+    const next = [...servers, server].sort((a, b) => a.id.localeCompare(b.id));
+    await this._writeServers(next);
+    return server;
+  }
+
+  async updateServer(
+    serverId: string,
+    patch: Partial<McpServerRegistry>
+  ): Promise<McpServerRegistry | null> {
+    const servers = await this.listServers();
+    const index = servers.findIndex((server) => server.id === serverId);
+    if (index < 0) {
+      return null;
+    }
+
+    const updated: McpServerRegistry = {
+      ...servers[index],
+      ...patch,
+      id: serverId,
+    };
+    servers[index] = updated;
+    await this._writeServers(servers);
+    return updated;
+  }
+
+  async deleteServer(serverId: string): Promise<boolean> {
+    const servers = await this.listServers();
+    const next = servers.filter((server) => server.id !== serverId);
+    if (next.length === servers.length) {
+      return false;
+    }
+
+    await this._writeServers(next);
+    return true;
   }
 
   async listServerPolicies(): Promise<AgentServerPolicy[]> {
@@ -458,6 +506,51 @@ export class McpGovernanceService {
     return level === 'W' || level === 'A';
   }
 
+  private _permissionRank(level: PermissionLevel): number {
+    const order: Record<PermissionLevel, number> = {
+      X: 0,
+      N: 1,
+      D: 2,
+      R: 3,
+      P: 4,
+      W: 5,
+      A: 6,
+    };
+    return order[level];
+  }
+
+  private _restrictByEnvironment(
+    permissionLevel: PermissionLevel,
+    environmentDefault: PermissionLevel | undefined
+  ): PermissionLevel {
+    if (!environmentDefault) return permissionLevel;
+    if (this._permissionRank(permissionLevel) <= this._permissionRank(environmentDefault)) {
+      return permissionLevel;
+    }
+    return environmentDefault;
+  }
+
+  private _isDestructiveTool(toolId: string): boolean {
+    return /(delete|destroy|drop|purge|remove)/i.test(toolId);
+  }
+
+  private _resolveApprovalMode(
+    permissionLevel: PermissionLevel,
+    environment: EnvironmentScope,
+    toolId?: string
+  ): ApprovalMode {
+    if (permissionLevel === 'X' || permissionLevel === 'N') {
+      return 'none';
+    }
+    if (environment === 'prod' && toolId && this._isDestructiveTool(toolId)) {
+      return 'two_step';
+    }
+    if (permissionLevel === 'A' || (environment === 'prod' && this._isWriteLike(permissionLevel))) {
+      return 'approval_required';
+    }
+    return 'none';
+  }
+
   validateEnvironmentScope(envScope: string | undefined, expectedScope?: string): EnvironmentScope {
     if (!envScope || envScope.trim() === '') {
       throw new EnvScopeValidationError('env_scope is required', 400);
@@ -490,14 +583,23 @@ export class McpGovernanceService {
     );
     const match = scoped || unscoped;
 
-    const level = match?.permission || envPolicy?.defaultPermission || ('N' as PermissionLevel);
-    const source: ResolvedServerPermission['source'] = match
-      ? 'server-policy'
-      : envPolicy
-        ? 'environment-default'
-        : 'implicit-deny';
-    const approvalRequired =
-      level === 'A' || (!!envPolicy?.writeRequiresApproval && this._isWriteLike(level));
+    if (!match) {
+      return {
+        agentId,
+        serverId,
+        environment,
+        permissionLevel: 'N',
+        approvalRequired: false,
+        requiredApprovalMode: 'none',
+        blocked: true,
+        source: 'implicit-deny',
+      };
+    }
+
+    const level = this._restrictByEnvironment(match.permission, envPolicy?.defaultPermission);
+    const source: ResolvedServerPermission['source'] = 'server-policy';
+    const requiredApprovalMode = this._resolveApprovalMode(level, environment);
+    const approvalRequired = requiredApprovalMode !== 'none';
 
     return {
       agentId,
@@ -505,6 +607,7 @@ export class McpGovernanceService {
       environment,
       permissionLevel: level,
       approvalRequired,
+      requiredApprovalMode,
       blocked: level === 'X' || level === 'N',
       source,
     };
@@ -557,9 +660,12 @@ export class McpGovernanceService {
     );
 
     if (!toolPolicy) {
+      const baseApprovalMode = this._resolveApprovalMode(base.permissionLevel, environment, toolId);
       return {
         ...base,
         toolId,
+        approvalRequired: baseApprovalMode !== 'none',
+        requiredApprovalMode: baseApprovalMode,
         source: base.source,
       };
     }
@@ -579,10 +685,18 @@ export class McpGovernanceService {
     }
 
     const envPolicy = envPolicies.find((p) => p.env === environment);
-    const approvalRequired =
-      toolPolicy.approvalRequired === true ||
-      permissionLevel === 'A' ||
-      (!!envPolicy?.writeRequiresApproval && this._isWriteLike(permissionLevel));
+    permissionLevel = this._restrictByEnvironment(permissionLevel, envPolicy?.defaultPermission);
+
+    let requiredApprovalMode = this._resolveApprovalMode(permissionLevel, environment, toolId);
+    if (toolPolicy.approvalRequired === true && requiredApprovalMode === 'none') {
+      requiredApprovalMode = 'approval_required';
+    }
+
+    if (blocked) {
+      requiredApprovalMode = 'none';
+    }
+
+    const approvalRequired = requiredApprovalMode !== 'none';
 
     return {
       agentId,
@@ -591,6 +705,7 @@ export class McpGovernanceService {
       environment,
       permissionLevel,
       approvalRequired,
+      requiredApprovalMode,
       blocked,
       source: 'tool-override',
     };
@@ -645,6 +760,7 @@ export class McpGovernanceService {
                 toolId: `${server.id}.default`,
                 permissionLevel: resolved.permissionLevel,
                 approvalRequired: resolved.approvalRequired,
+                approvalMode: resolved.requiredApprovalMode,
                 blocked: resolved.blocked,
               },
             ],

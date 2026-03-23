@@ -76,11 +76,47 @@ describe('McpGovernanceService', () => {
 
   it('syncs mcp servers in dry-run mode without writing state', async () => {
     const defs = await svc.getDefinedServers();
+    expect(defs).toHaveLength(8);
     const dry = await svc.syncServers(defs, { dryRun: true });
-    expect(dry.added).toBeGreaterThan(0);
+    expect(dry.added).toBe(8);
 
     const stored = await svc.listServers();
     expect(stored).toEqual([]);
+  });
+
+  it('supports CRUD operations for mcp server registry entries', async () => {
+    const server = {
+      id: 'custom-server',
+      endpoint: 'https://mcp.local/custom-server/health',
+      risk: 'medium',
+      authType: 'oauth',
+      healthStatus: 'healthy',
+      tenantEnabled: true,
+      workspaceEnabled: {},
+      lastHealthCheck: null,
+      consecutiveFailures: 0,
+    };
+
+    const created = await svc.createServer(server);
+    expect(created.id).toBe('custom-server');
+
+    const fetched = await svc.getServer('custom-server');
+    expect(fetched).not.toBeNull();
+    expect(fetched.endpoint).toBe(server.endpoint);
+
+    const updated = await svc.updateServer('custom-server', {
+      healthStatus: 'degraded',
+      consecutiveFailures: 2,
+    });
+    expect(updated.healthStatus).toBe('degraded');
+    expect(updated.consecutiveFailures).toBe(2);
+
+    await expect(svc.createServer(server)).rejects.toThrow(/already exists/i);
+
+    const deleted = await svc.deleteServer('custom-server');
+    expect(deleted).toBe(true);
+    expect(await svc.getServer('custom-server')).toBeNull();
+    expect(await svc.deleteServer('custom-server')).toBe(false);
   });
 
   it('resolves server and tool permissions with environment scope', async () => {
@@ -96,6 +132,106 @@ describe('McpGovernanceService', () => {
     );
     expect(tool.permissionLevel).toBe('X');
     expect(tool.blocked).toBe(true);
+  });
+
+  it('defaults to deny (N) for unknown agent/server combinations', async () => {
+    const unknownAgent = await svc.resolveServerPermission(
+      'unknown-agent',
+      'workspace-management',
+      'dev'
+    );
+    expect(unknownAgent.permissionLevel).toBe('N');
+    expect(unknownAgent.blocked).toBe(true);
+
+    const unknownServer = await svc.resolveServerPermission(
+      'orchestrator',
+      'unknown-server',
+      'dev'
+    );
+    expect(unknownServer.permissionLevel).toBe('N');
+    expect(unknownServer.blocked).toBe(true);
+  });
+
+  it('applies environment restriction when environment default is more restrictive', async () => {
+    vi.spyOn(svc, 'getDefinedPolicies').mockResolvedValue([
+      {
+        agentId: 'devops',
+        serverId: 'workspace-management',
+        permission: 'W',
+      },
+    ]);
+
+    vi.spyOn(svc, 'getDefinedEnvironmentPolicies').mockResolvedValue([
+      { env: 'dev', defaultPermission: 'W', writeRequiresApproval: false },
+      { env: 'test', defaultPermission: 'W', writeRequiresApproval: false },
+      { env: 'prod', defaultPermission: 'R', writeRequiresApproval: true },
+    ]);
+
+    const resolved = await svc.resolveServerPermission('devops', 'workspace-management', 'prod');
+    expect(resolved.permissionLevel).toBe('R');
+    expect(resolved.requiredApprovalMode).toBe('none');
+  });
+
+  it('covers all 12x8x3 server permission permutations (288)', async () => {
+    const agents = Array.from({ length: 12 }, (_, i) => `agent-${i + 1}`);
+    const servers = Array.from({ length: 8 }, (_, i) => `server-${i + 1}`);
+    const envs = ['dev', 'test', 'prod'];
+
+    const policies = [];
+    for (const agentId of agents) {
+      for (const serverId of servers) {
+        policies.push({ agentId, serverId, permission: 'W' });
+      }
+    }
+
+    vi.spyOn(svc, 'getDefinedPolicies').mockResolvedValue(policies);
+    vi.spyOn(svc, 'getDefinedEnvironmentPolicies').mockResolvedValue([
+      { env: 'dev', defaultPermission: 'W', writeRequiresApproval: false },
+      { env: 'test', defaultPermission: 'W', writeRequiresApproval: false },
+      { env: 'prod', defaultPermission: 'R', writeRequiresApproval: true },
+    ]);
+
+    let checked = 0;
+    for (const agentId of agents) {
+      for (const serverId of servers) {
+        for (const env of envs) {
+          const resolved = await svc.resolveServerPermission(agentId, serverId, env);
+          expect(resolved.permissionLevel).toBeDefined();
+          checked += 1;
+        }
+      }
+    }
+
+    expect(checked).toBe(288);
+  });
+
+  it('requires two_step approval mode for destructive prod operations', async () => {
+    vi.spyOn(svc, 'getDefinedPolicies').mockResolvedValue([
+      {
+        agentId: 'devops',
+        serverId: 'workspace-management',
+        permission: 'W',
+      },
+    ]);
+
+    vi.spyOn(svc, 'getDefinedEnvironmentPolicies').mockResolvedValue([
+      { env: 'dev', defaultPermission: 'W', writeRequiresApproval: false },
+      { env: 'test', defaultPermission: 'W', writeRequiresApproval: false },
+      { env: 'prod', defaultPermission: 'W', writeRequiresApproval: true },
+    ]);
+
+    vi.spyOn(svc, 'getDefinedToolPolicies').mockResolvedValue([]);
+
+    const resolved = await svc.resolveToolPermission(
+      'devops',
+      'workspace-management',
+      'workspace-management.delete_resource',
+      'prod'
+    );
+
+    expect(resolved.permissionLevel).toBe('W');
+    expect(resolved.approvalRequired).toBe(true);
+    expect(resolved.requiredApprovalMode).toBe('two_step');
   });
 
   it('validates env_scope and rejects missing or invalid values', () => {

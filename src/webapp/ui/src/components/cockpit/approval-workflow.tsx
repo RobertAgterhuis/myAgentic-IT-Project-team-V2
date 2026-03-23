@@ -28,6 +28,7 @@ import {
   FileText,
   ChevronDown,
   ChevronUp,
+  ExternalLink,
 } from 'lucide-react';
 
 /* ── Approval Detail Panel ── */
@@ -151,6 +152,39 @@ export function ApprovalDetailPanel({ approval, onClose }: ApprovalDetailPanelPr
                   </Badge>
                 ))}
               </div>
+            </div>
+          )}
+
+          {approvalDetail?.similar_overrides && approvalDetail.similar_overrides.length > 0 && (
+            <div className="rounded-2xl border border-primary/25 bg-primary/5 p-4 space-y-2">
+              <Text className="text-xs font-semibold text-muted-foreground">
+                Similar Past Overrides
+              </Text>
+              {approvalDetail.similar_overrides.map((lesson) => (
+                <div
+                  key={lesson.id}
+                  className="rounded-xl border border-border/60 bg-background/80 p-3 space-y-1"
+                >
+                  <Text className="text-xs">{lesson.summary}</Text>
+                  <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
+                    <Badge variant="secondary" className="text-[10px]">
+                      score {lesson.score.toFixed(2)}
+                    </Badge>
+                    {lesson.workspace_id && (
+                      <Badge variant="outline" className="text-[10px]">
+                        workspace {lesson.workspace_id}
+                      </Badge>
+                    )}
+                    <a
+                      href={lesson.citation_url}
+                      className="inline-flex items-center gap-1 underline-offset-2 hover:underline"
+                    >
+                      {lesson.citation_label}
+                      <ExternalLink className="size-3" />
+                    </a>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
 

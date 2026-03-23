@@ -9,7 +9,11 @@ export type StandardGroundingCollection =
   | 'decisions'
   | 'phase-outputs'
   | 'codebase'
-  | 'sprint-artifacts';
+  | 'sprint-artifacts'
+  | 'retrospectives';
+
+export type WorkspaceScopedCollection = 'codebase' | 'decisions' | 'sprint-artifacts';
+export type GlobalScopedCollection = 'decisions' | 'patterns' | 'retrospectives';
 
 export interface GroundingMatch {
   text: string;
@@ -197,6 +201,49 @@ function sanitizeWorkspaceId(workspaceId?: string): string {
   const raw = (workspaceId || 'default').trim().toLowerCase();
   const normalized = raw.replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '');
   return normalized || 'default';
+}
+
+export function resolveWorkspaceScopedCollectionId(
+  workspaceId: string | undefined,
+  collection: WorkspaceScopedCollection
+): string {
+  if (collection === 'sprint-artifacts') {
+    return `sprint-artifacts--${sanitizeWorkspaceId(workspaceId)}`;
+  }
+  return `${sanitizeWorkspaceId(workspaceId)}::${collection}`;
+}
+
+export function resolveGlobalScopedCollectionId(collection: GlobalScopedCollection): string {
+  return `global::${collection}`;
+}
+
+export function parseCollectionScope(collectionId: string): {
+  scope: 'workspace' | 'global' | 'default';
+  workspaceId: string | null;
+  collection: string;
+} {
+  if (collectionId.startsWith('global::')) {
+    return {
+      scope: 'global',
+      workspaceId: null,
+      collection: collectionId.slice('global::'.length),
+    };
+  }
+
+  const sep = collectionId.indexOf('::');
+  if (sep > 0) {
+    return {
+      scope: 'workspace',
+      workspaceId: collectionId.slice(0, sep),
+      collection: collectionId.slice(sep + 2),
+    };
+  }
+
+  return {
+    scope: 'default',
+    workspaceId: null,
+    collection: collectionId,
+  };
 }
 
 export function resolveGroundingCollectionId(

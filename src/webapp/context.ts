@@ -53,6 +53,12 @@ export interface RagStoreFacade {
     description: string;
     created_at: string;
   }): void;
+  listCollections(): Array<{
+    id: string;
+    name: string;
+    description: string;
+    created_at: string;
+  }>;
   query(
     collectionId: string,
     queryVector: number[],

@@ -670,7 +670,7 @@ export const ragStandardIndexStart = {
     properties: {
       collection: {
         type: 'string' as const,
-        enum: ['decisions', 'phase-outputs', 'codebase', 'sprint-artifacts'],
+        enum: ['decisions', 'phase-outputs', 'codebase', 'sprint-artifacts', 'retrospectives'],
       },
       workspaceId: {
         type: 'string' as const,
@@ -705,6 +705,21 @@ export const ragQuery = {
         maxLength: 120,
         pattern: '^[A-Za-z0-9_-]+$',
       },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
+export const ragPatternQuery = {
+  tags: ['rag'],
+  body: {
+    type: 'object' as const,
+    required: ['query'],
+    properties: {
+      query: { type: 'string' as const, minLength: 1, maxLength: 5000 },
+      topK: { type: 'number' as const, minimum: 1, maximum: 50 },
+      threshold: { type: 'number' as const, minimum: 0, maximum: 1 },
     },
     additionalProperties: false,
   },

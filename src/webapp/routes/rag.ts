@@ -8,9 +8,19 @@ import { errorResponse } from '../utils/errors';
 import { PersistentQueue } from '../../../platform/engine/jobs';
 import type { StorageProvider } from '../../../platform/engine/persistence';
 import * as RS from '../route-schemas';
-import { resolveGroundingCollectionId } from '../services/rag-grounding-service';
+import {
+  parseCollectionScope,
+  resolveGlobalScopedCollectionId,
+  resolveGroundingCollectionId,
+  resolveWorkspaceScopedCollectionId,
+} from '../services/rag-grounding-service';
 
-type StandardCollectionName = 'decisions' | 'phase-outputs' | 'codebase' | 'sprint-artifacts';
+type StandardCollectionName =
+  | 'decisions'
+  | 'phase-outputs'
+  | 'codebase'
+  | 'sprint-artifacts'
+  | 'retrospectives';
 
 type StandardCollectionSpec = {
   description: string;
@@ -20,6 +30,34 @@ type StandardCollectionSpec = {
 function normalizeWorkspaceId(workspaceId?: string): string {
   const raw = String(workspaceId || 'default').trim();
   return raw || 'default';
+}
+
+function resolveCollectionId(
+  collection: string,
+  workspaceId?: string,
+  options?: { preferGlobal?: boolean }
+): string {
+  const ws = normalizeWorkspaceId(workspaceId);
+  const preferGlobal = options?.preferGlobal ?? false;
+
+  if (collection === 'sprint-artifacts') {
+    return resolveGroundingCollectionId('sprint-artifacts', ws);
+  }
+  if (collection === 'codebase') {
+    return resolveWorkspaceScopedCollectionId(ws, 'codebase');
+  }
+  if (collection === 'decisions') {
+    return preferGlobal
+      ? resolveGlobalScopedCollectionId('decisions')
+      : resolveWorkspaceScopedCollectionId(ws, 'decisions');
+  }
+  if (collection === 'patterns') {
+    return resolveGlobalScopedCollectionId('patterns');
+  }
+  if (collection === 'retrospectives') {
+    return resolveGlobalScopedCollectionId('retrospectives');
+  }
+  return collection;
 }
 
 function ensureAdmin(request: FastifyRequest, reply: FastifyReply, ctx: ServerContext): boolean {
@@ -102,6 +140,7 @@ function getStandardCollectionSpec(
       path.join(businessDocsDir, 'metrics'),
       path.join(businessDocsDir, 'audit'),
     ],
+    retrospectives: [path.join(businessDocsDir, 'retrospectives')],
   } as const;
 
   const descriptions: Record<StandardCollectionName, string> = {
@@ -109,6 +148,7 @@ function getStandardCollectionSpec(
     'phase-outputs': 'Phase deliverables and synthesis outputs across BusinessDocs.',
     codebase: 'Workspace source code for implementation and pattern retrieval.',
     'sprint-artifacts': 'Session state, metrics, and audit artifacts for prior runs.',
+    retrospectives: 'Sprint retrospectives and incident learning records.',
   };
 
   return {
@@ -129,6 +169,22 @@ function getQueue(ctx: ServerContext): PersistentQueue {
   const storageProvider = ctx.getStorageProvider() as StorageProvider | null;
   if (!storageProvider) throw new Error('StorageProvider not initialised');
   return new PersistentQueue(storageProvider);
+}
+
+function extractSprintId(sourcePath: string, text: string): string | null {
+  const source = `${sourcePath} ${text}`;
+
+  const explicit = source.match(/sprint[_\s-]?id["'\s:=]+([A-Za-z0-9_-]+)/i);
+  if (explicit && explicit[1]) {
+    return explicit[1];
+  }
+
+  const numeric = source.match(/sprint[_\s-]?(\d{1,4})/i);
+  if (numeric && numeric[1]) {
+    return `sprint-${numeric[1]}`;
+  }
+
+  return null;
 }
 
 async function runIndexJob(
@@ -203,7 +259,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       try {
         const collection = request.body.collection;
         const workspaceId = normalizeWorkspaceId(request.body.workspaceId);
-        const resolvedCollection = resolveGroundingCollectionId(collection, workspaceId);
+        const resolvedCollection = resolveCollectionId(collection, workspaceId, {
+          preferGlobal: collection === 'decisions' && !request.body.workspaceId,
+        });
         const spec = getStandardCollectionSpec(ctx, collection);
 
         if (spec.paths.length === 0) {
@@ -288,10 +346,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
             .send(errorResponse('INVALID_INPUT', 'At least one path is required'));
         }
 
-        const resolvedCollection =
-          collection === 'sprint-artifacts'
-            ? resolveGroundingCollectionId('sprint-artifacts', workspaceId)
-            : collection;
+        const resolvedCollection = resolveCollectionId(collection, workspaceId, {
+          preferGlobal: collection === 'decisions' && !body.workspaceId,
+        });
 
         const queue = getQueue(ctx);
         const job = await queue.enqueue({
@@ -389,15 +446,19 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       }
 
       const queryVector = await embeddingProvider.embedText(queryText);
-      const resolvedCollection =
-        collection === 'sprint-artifacts'
-          ? resolveGroundingCollectionId('sprint-artifacts', workspaceId)
-          : collection;
+      const resolvedCollection = resolveCollectionId(collection, workspaceId, {
+        preferGlobal: collection === 'decisions' && !body.workspaceId,
+      });
       const results = await store.query(resolvedCollection, queryVector, topK, threshold);
+      const parsedScope = parseCollectionScope(resolvedCollection);
 
       return reply.send({
         ok: true,
         chunks: results.map((r) => ({
+          sprint_id:
+            resolvedCollection === resolveGlobalScopedCollectionId('retrospectives')
+              ? extractSprintId(r.chunk.source_path, r.chunk.chunk_text)
+              : null,
           text: r.chunk.chunk_text,
           source_path: path.isAbsolute(r.chunk.source_path)
             ? path.relative(ctx.PROJECT_ROOT, r.chunk.source_path).replace(/\\/g, '/')
@@ -410,8 +471,92 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
             start_line: r.chunk.start_line,
             collection,
             resolved_collection: resolvedCollection,
+            scope: parsedScope.scope,
+            workspace_id: parsedScope.workspaceId,
           },
         })),
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      return reply.code(500).send(errorResponse('RAG_QUERY_ERROR', message));
+    }
+  });
+
+  app.post<{
+    Body: {
+      query: string;
+      topK?: number;
+      threshold?: number;
+    };
+  }>('/api/v1/rag/patterns/query', { schema: RS.ragPatternQuery }, async (request, reply) => {
+    if (!ensureOperatorOrAdmin(request, reply, ctx)) return;
+
+    try {
+      const store = ctx._ragStore;
+      const embeddingProvider = ctx._embeddingProvider;
+      if (!store || !embeddingProvider) {
+        return reply
+          .code(500)
+          .send(errorResponse('INTERNAL_ERROR', 'RAG services not initialised'));
+      }
+
+      const queryText = String(request.body.query || '').trim();
+      const topK = Number.isFinite(request.body.topK) ? Number(request.body.topK) : 5;
+      const threshold = Number.isFinite(request.body.threshold)
+        ? Number(request.body.threshold)
+        : 0;
+
+      if (!queryText) {
+        return reply.code(400).send(errorResponse('INVALID_INPUT', 'Query is required'));
+      }
+
+      const queryVector = await embeddingProvider.embedText(queryText);
+      const candidateCollections = store
+        .listCollections()
+        .map((c) => c.id)
+        .filter(
+          (id) =>
+            id === resolveGlobalScopedCollectionId('patterns') ||
+            id === resolveGlobalScopedCollectionId('decisions') ||
+            id.endsWith('::decisions')
+        );
+
+      const perCollectionTopK = Math.max(1, Math.min(10, Math.ceil(topK / 2)));
+      const merged: Array<{
+        text: string;
+        source_path: string;
+        start_line: number | null;
+        score: number;
+        collection: string;
+        workspace_id: string | null;
+        sprint_id: string | null;
+      }> = [];
+
+      for (const collectionId of candidateCollections) {
+        const rows = await store.query(collectionId, queryVector, perCollectionTopK, threshold);
+        const scope = parseCollectionScope(collectionId);
+        for (const row of rows) {
+          merged.push({
+            text: row.chunk.chunk_text,
+            source_path: path.isAbsolute(row.chunk.source_path)
+              ? path.relative(ctx.PROJECT_ROOT, row.chunk.source_path).replace(/\\/g, '/')
+              : row.chunk.source_path,
+            start_line: Number.isFinite(row.chunk.start_line) ? row.chunk.start_line : null,
+            score: row.score,
+            collection: collectionId,
+            workspace_id: scope.workspaceId,
+            sprint_id:
+              collectionId === resolveGlobalScopedCollectionId('retrospectives')
+                ? extractSprintId(row.chunk.source_path, row.chunk.chunk_text)
+                : null,
+          });
+        }
+      }
+
+      merged.sort((a, b) => b.score - a.score);
+      return reply.send({
+        ok: true,
+        chunks: merged.slice(0, topK),
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

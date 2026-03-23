@@ -1359,7 +1359,19 @@ export interface ApprovalDetail extends ApprovalEntry {
   risk_assessment: string;
   recommended_action: string;
   related_artifacts: string[];
+  similar_overrides?: SimilarOverrideLesson[];
   comparison?: { before: string; after: string };
+}
+
+export interface SimilarOverrideLesson {
+  id: string;
+  summary: string;
+  source_path: string;
+  start_line: number | null;
+  score: number;
+  workspace_id: string | null;
+  citation_label: string;
+  citation_url: string;
 }
 
 export interface ApprovalDetailResponse extends OkResponse {

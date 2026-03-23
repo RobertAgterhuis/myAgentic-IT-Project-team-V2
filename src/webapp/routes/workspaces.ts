@@ -20,7 +20,10 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
 import type { ServerContext } from '../context';
 import { errorResponse } from '../utils/errors';
+import fs from 'node:fs';
+import path from 'node:path';
 import type { StorageProvider } from '../../../platform/engine/persistence';
+import { PersistentQueue } from '../../../platform/engine/jobs';
 import {
   WorkspaceManager,
   WorkspaceNotFoundError,
@@ -30,6 +33,7 @@ import {
   ValidationError,
 } from '../../../platform/engine/workspace';
 import * as RS from '../route-schemas';
+import { resolveWorkspaceScopedCollectionId } from '../services/rag-grounding-service';
 
 interface WorkspaceCtx {
   getStorageProvider?: () => StorageProvider | null;
@@ -62,6 +66,110 @@ function handleDomainError(err: unknown, reply: FastifyReply): FastifyReply {
   return reply.code(500).send(errorResponse('INTERNAL', message));
 }
 
+function getQueue(ctx: ServerContext): PersistentQueue | null {
+  const provider = ctx.getStorageProvider();
+  if (!provider) return null;
+  return new PersistentQueue(provider);
+}
+
+function resolveRepositoryPath(
+  projectRoot: string,
+  repo: { provider?: string; url?: string }
+): string | null {
+  if (repo.provider !== 'local') return null;
+  const raw = String(repo.url || '').trim();
+  if (!raw) return null;
+
+  const abs = path.isAbsolute(raw) ? raw : path.resolve(projectRoot, raw);
+  const rel = path.relative(projectRoot, abs);
+  if (rel.startsWith('..') || path.isAbsolute(rel)) return null;
+  if (!fs.existsSync(abs)) return null;
+  return abs;
+}
+
+function enqueueWorkspaceCodebaseIndex(
+  ctx: ServerContext,
+  workspaceId: string,
+  indexPath: string,
+  trigger: 'workspace_created' | 'repository_added'
+): void {
+  const queue = getQueue(ctx);
+  const indexer = ctx._ragIndexer;
+  const store = ctx._ragStore;
+  if (!queue || !indexer || !store) return;
+
+  const collectionId = resolveWorkspaceScopedCollectionId(workspaceId, 'codebase');
+
+  void queue
+    .enqueue({
+      type: 'artifact-registration',
+      payload: {
+        operation: 'workspace-rag-index',
+        trigger,
+        workspaceId,
+        collection: collectionId,
+        path: path.relative(ctx.PROJECT_ROOT, indexPath).replace(/\\/g, '/'),
+      },
+      priority: 50,
+      retryCount: 0,
+      maxRetries: 1,
+    })
+    .then((job) => {
+      setImmediate(() => {
+        void (async () => {
+          try {
+            store.ensureCollection({
+              id: collectionId,
+              name: collectionId,
+              description: `Workspace-scoped codebase index for ${workspaceId}`,
+              created_at: new Date().toISOString(),
+            });
+
+            const stat = fs.statSync(indexPath);
+            const result = stat.isDirectory()
+              ? await indexer.syncDirectory(collectionId, indexPath, { incremental: true })
+              : await indexer.indexFile(collectionId, indexPath);
+
+            await queue.complete(job.id, {
+              workspace_id: workspaceId,
+              collection: collectionId,
+              files_processed: result.filesProcessed,
+              chunks_indexed: result.chunksInserted,
+              files_skipped: result.filesSkipped,
+              trigger,
+            });
+
+            ctx.sseNotify('rag_index_completed', {
+              type: 'rag_index_completed',
+              job_id: job.id,
+              collection: collectionId,
+              workspace_id: workspaceId,
+              trigger,
+              chunks_indexed: result.chunksInserted,
+              files_skipped: result.filesSkipped,
+              timestamp: new Date().toISOString(),
+            });
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            await queue.fail(job.id, { message, severity: 'error' });
+            ctx.sseNotify('rag_index_failed', {
+              type: 'rag_index_failed',
+              job_id: job.id,
+              collection: collectionId,
+              workspace_id: workspaceId,
+              trigger,
+              error: message,
+              timestamp: new Date().toISOString(),
+            });
+          }
+        })();
+      });
+    })
+    .catch(() => {
+      /* best effort only */
+    });
+}
+
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const wCtx = ctx as unknown as WorkspaceCtx;
 
@@ -92,6 +200,12 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         name: String(body.name),
         owner: String(body.owner),
       });
+
+      const defaultCodebasePath = path.join(ctx.PROJECT_ROOT, 'src');
+      if (fs.existsSync(defaultCodebasePath)) {
+        enqueueWorkspaceCodebaseIndex(ctx, workspace.id, defaultCodebasePath, 'workspace_created');
+      }
+
       return reply.code(201).send({ ok: true, workspace });
     } catch (err) {
       return handleDomainError(err, reply);
@@ -198,7 +312,21 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           defaultBranch: String(body.defaultBranch),
           tags: Array.isArray(body.tags) ? body.tags.map(String) : [],
         });
-        return reply.code(201).send({ ok: true, repository_count: workspace.repositories.length });
+
+        const addedRepo = workspace.repositories.find((r) => r.id === String(body.id));
+        const repoPath = resolveRepositoryPath(ctx.PROJECT_ROOT, {
+          provider: addedRepo?.provider,
+          url: addedRepo?.url,
+        });
+        if (repoPath) {
+          enqueueWorkspaceCodebaseIndex(ctx, workspaceId, repoPath, 'repository_added');
+        }
+
+        return reply.code(201).send({
+          ok: true,
+          repository_count: workspace.repositories.length,
+          rag_indexing: repoPath ? 'queued' : 'skipped',
+        });
       } catch (err) {
         return handleDomainError(err, reply);
       }

@@ -197,7 +197,7 @@ describe('routes/rag (#896)', () => {
     const payload = JSON.parse(res.body);
     expect(payload.ok).toBe(true);
     expect(payload.collection).toBe('decisions');
-    expect(payload.resolvedCollection).toBe('decisions');
+    expect(payload.resolvedCollection).toBe('global::decisions');
     expect(Array.isArray(payload.paths)).toBe(true);
     expect(payload.paths.length).toBeGreaterThan(0);
   });

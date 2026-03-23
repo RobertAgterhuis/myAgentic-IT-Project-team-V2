@@ -381,6 +381,7 @@ jobs:
         with:
           scan-type: image
           image-ref: app:ci
+          vuln-type: os
           severity: CRITICAL,HIGH
           ignore-unfixed: true
           exit-code: "1"

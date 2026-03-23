@@ -151,7 +151,7 @@ function enqueueWorkspaceCodebaseIndex(
             });
           } catch (err) {
             const message = err instanceof Error ? err.message : String(err);
-            await queue.fail(job.id, { message, severity: 'error' });
+            await queue.fail(job.id, { message, severity: 'fatal' });
             ctx.sseNotify('rag_index_failed', {
               type: 'rag_index_failed',
               job_id: job.id,

@@ -613,36 +613,15 @@ export class McpGovernanceService {
     };
   }
 
-  async resolveServerPermission(
-    agentId: string,
-    serverId: string,
-    environment: EnvironmentScope
-  ): Promise<ResolvedServerPermission> {
-    const [policies, envPolicies] = await Promise.all([
-      this.getDefinedPolicies(),
-      this.getDefinedEnvironmentPolicies(),
-    ]);
-    return this._resolveServerPermissionInternal(
-      agentId,
-      serverId,
-      environment,
-      policies,
-      envPolicies
-    );
-  }
-
-  async resolveToolPermission(
+  private _resolveToolPermissionInternal(
     agentId: string,
     serverId: string,
     toolId: string,
-    environment: EnvironmentScope
-  ): Promise<ResolvedToolPermission> {
-    const [serverPolicies, envPolicies, toolPolicies] = await Promise.all([
-      this.getDefinedPolicies(),
-      this.getDefinedEnvironmentPolicies(),
-      this.getDefinedToolPolicies(),
-    ]);
-
+    environment: EnvironmentScope,
+    serverPolicies: AgentServerPolicy[],
+    envPolicies: EnvironmentPolicy[],
+    toolPolicies: AgentToolPolicy[]
+  ): ResolvedToolPermission {
     const base = this._resolveServerPermissionInternal(
       agentId,
       serverId,
@@ -711,13 +690,84 @@ export class McpGovernanceService {
     };
   }
 
-  async buildRuntimeArtifacts(): Promise<RuntimeBuildResult> {
-    const [agents, servers, policies, envPolicies] = await Promise.all([
-      this.listAgents(),
-      this.listServers(),
+  private _isAuthPending(server: McpServerRegistry): boolean {
+    if (server.authType === 'none') return false;
+    if (!server.tenantEnabled) return true;
+
+    const workspaceStates = Object.values(server.workspaceEnabled || {});
+    if (workspaceStates.length === 0) return false;
+    return workspaceStates.every((enabled) => enabled === false);
+  }
+
+  async resolveServerPermission(
+    agentId: string,
+    serverId: string,
+    environment: EnvironmentScope
+  ): Promise<ResolvedServerPermission> {
+    const [policies, envPolicies] = await Promise.all([
       this.getDefinedPolicies(),
       this.getDefinedEnvironmentPolicies(),
     ]);
+    return this._resolveServerPermissionInternal(
+      agentId,
+      serverId,
+      environment,
+      policies,
+      envPolicies
+    );
+  }
+
+  async resolveToolPermission(
+    agentId: string,
+    serverId: string,
+    toolId: string,
+    environment: EnvironmentScope
+  ): Promise<ResolvedToolPermission> {
+    const [serverPolicies, envPolicies, toolPolicies] = await Promise.all([
+      this.getDefinedPolicies(),
+      this.getDefinedEnvironmentPolicies(),
+      this.getDefinedToolPolicies(),
+    ]);
+    return this._resolveToolPermissionInternal(
+      agentId,
+      serverId,
+      toolId,
+      environment,
+      serverPolicies,
+      envPolicies,
+      toolPolicies
+    );
+  }
+
+  async buildRuntimeArtifacts(): Promise<RuntimeBuildResult> {
+    const [agents, servers, serverPolicies, toolPolicies, envPolicies] = await Promise.all([
+      this.listAgents(),
+      this.listServers(),
+      this.listServerPolicies(),
+      this.listToolPolicies(),
+      this.getDefinedEnvironmentPolicies(),
+    ]);
+
+    if (agents.length === 0) {
+      throw new Error(
+        'Missing runtime policy data: no agents found. Run `npm run plugin -- agents sync --apply` first.'
+      );
+    }
+    if (servers.length === 0) {
+      throw new Error(
+        'Missing runtime policy data: no MCP servers found. Run `npm run plugin -- mcp sync --apply` first.'
+      );
+    }
+    if (serverPolicies.length === 0) {
+      throw new Error(
+        'Missing runtime policy data: no server policies found. Run `npm run plugin -- policies sync --apply` first.'
+      );
+    }
+    if (toolPolicies.length === 0) {
+      throw new Error(
+        'Missing runtime policy data: no tool policies found. Run `npm run plugin -- tool-policies sync --apply` first.'
+      );
+    }
 
     const runtimeDir = path.join(this.generatedDir, 'runtime-manifests');
     const compiledPoliciesPath = path.join(this.generatedDir, 'compiled-policies.json');
@@ -726,7 +776,9 @@ export class McpGovernanceService {
     await fsp.mkdir(runtimeDir, { recursive: true });
     await this._writeJsonFile(compiledPoliciesPath, {
       generatedAt: new Date().toISOString(),
-      policies,
+      serverPolicies,
+      toolPolicies,
+      environmentPolicies: envPolicies,
     });
     await this._writeJsonFile(registryPath, {
       generatedAt: new Date().toISOString(),
@@ -743,27 +795,43 @@ export class McpGovernanceService {
         agentId: agent.id,
         generatedAt: new Date().toISOString(),
         servers: servers.map((server) => {
-          const resolved = this._resolveServerPermissionInternal(
-            agent.id,
-            server.id,
-            environment,
-            policies,
-            envPolicies
+          const scopedToolPolicies = toolPolicies.filter(
+            (p) =>
+              p.agentId === agent.id &&
+              p.serverId === server.id &&
+              (p.envScope === environment || !p.envScope)
           );
+          const toolIds = new Set<string>(['default', ...scopedToolPolicies.map((p) => p.toolId)]);
+          const authStatus = this._isAuthPending(server) ? 'auth_pending' : 'ready';
+          const degraded = server.healthStatus !== 'healthy';
+
           return {
             serverId: server.id,
             endpoint: server.endpoint,
             healthStatus: server.healthStatus,
             authType: server.authType,
-            tools: [
-              {
-                toolId: `${server.id}.default`,
-                permissionLevel: resolved.permissionLevel,
-                approvalRequired: resolved.approvalRequired,
-                approvalMode: resolved.requiredApprovalMode,
-                blocked: resolved.blocked,
-              },
-            ],
+            tools: [...toolIds]
+              .sort((a, b) => a.localeCompare(b))
+              .map((toolId) => {
+                const resolved = this._resolveToolPermissionInternal(
+                  agent.id,
+                  server.id,
+                  toolId,
+                  environment,
+                  serverPolicies,
+                  envPolicies,
+                  toolPolicies
+                );
+                return {
+                  toolId,
+                  permissionLevel: resolved.permissionLevel,
+                  approvalRequired: resolved.approvalRequired,
+                  approvalMode: resolved.requiredApprovalMode,
+                  blocked: resolved.blocked,
+                  degraded,
+                  authStatus,
+                };
+              }),
           };
         }),
       };

@@ -253,6 +253,12 @@ describe('run() CLI commands', () => {
     process.argv = argv('mcp', 'sync', '--apply');
     await run(root);
     capturedOut = [];
+    process.argv = argv('policies', 'sync', '--apply');
+    await run(root);
+    capturedOut = [];
+    process.argv = argv('tool-policies', 'sync', '--apply');
+    await run(root);
+    capturedOut = [];
 
     process.argv = argv('runtime', 'build');
     await run(root);
@@ -260,6 +266,34 @@ describe('run() CLI commands', () => {
     expect(result.ok).toBe(true);
     expect(result.command).toBe('runtime build');
     expect(result.manifestCount).toBe(12);
+  });
+
+  it('runtime build fails when policy data has not been synced', async () => {
+    process.argv = argv('agents', 'sync', '--apply');
+    await run(root);
+    capturedOut = [];
+    process.argv = argv('mcp', 'sync', '--apply');
+    await run(root);
+    capturedOut = [];
+
+    await expect(
+      (async () => {
+        process.argv = argv('runtime', 'build');
+        await run(root);
+      })()
+    ).rejects.toThrow(/Missing runtime policy data/i);
+  });
+
+  it('reconcile --apply syncs state and triggers runtime build', async () => {
+    process.argv = argv('reconcile', '--apply');
+    await run(root);
+    const result = parsedOut();
+
+    expect(result.ok).toBe(true);
+    expect(result.command).toBe('reconcile');
+    expect(result.apply).toBe(true);
+    expect(result.runtimeBuild).not.toBeNull();
+    expect(result.runtimeBuild.manifestCount).toBe(12);
   });
 
   // ── doctor ──────────────────────────────────────────────────────────────────

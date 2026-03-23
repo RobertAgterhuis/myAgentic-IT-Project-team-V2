@@ -104,6 +104,8 @@ export interface RuntimeToolPermission {
   approvalRequired: boolean;
   approvalMode: ApprovalMode;
   blocked: boolean;
+  degraded: boolean;
+  authStatus: 'ready' | 'auth_pending';
 }
 
 export interface RuntimeManifest {

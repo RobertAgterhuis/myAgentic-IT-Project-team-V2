@@ -34,6 +34,7 @@ function printUsage(): void {
       '  npm run plugin -- policies sync [--apply|--dry-run]',
       '  npm run plugin -- tool-policies sync [--apply|--dry-run]',
       '  npm run plugin -- runtime build',
+      '  npm run plugin -- reconcile [--apply|--dry-run]',
       '  npm run plugin -- doctor',
       '',
     ].join('\n')
@@ -155,6 +156,38 @@ async function run(overrideProjectRoot?: string): Promise<void> {
     const result = await service.buildRuntimeArtifacts();
     process.stdout.write(
       `${JSON.stringify({ ok: true, command: 'runtime build', ...result }, null, 2)}\n`
+    );
+    return;
+  }
+
+  if (cmd === 'reconcile') {
+    const apply = parsed.apply && !parsed.dryRun;
+
+    const [agentSync, serverSync, serverPolicySync, toolPolicySync] = await Promise.all([
+      service.syncAgents(await service.getDefinedAgents(), { dryRun: !apply }),
+      service.syncServers(await service.getDefinedServers(), { dryRun: !apply }),
+      service.syncServerPolicies(await service.getDefinedPolicies(), { dryRun: !apply }),
+      service.syncToolPolicies(await service.getDefinedToolPolicies(), { dryRun: !apply }),
+    ]);
+
+    const runtimeBuild = apply ? await service.buildRuntimeArtifacts() : null;
+
+    process.stdout.write(
+      `${JSON.stringify(
+        {
+          ok: true,
+          command: 'reconcile',
+          apply,
+          dryRun: !apply,
+          agents: agentSync,
+          servers: serverSync,
+          serverPolicies: serverPolicySync,
+          toolPolicies: toolPolicySync,
+          runtimeBuild,
+        },
+        null,
+        2
+      )}\n`
     );
     return;
   }

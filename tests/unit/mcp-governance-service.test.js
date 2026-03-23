@@ -64,6 +64,8 @@ describe('McpGovernanceService', () => {
 
     await svc.syncAgents(await svc.getDefinedAgents());
     await svc.syncServers(await svc.getDefinedServers());
+    await svc.syncServerPolicies(await svc.getDefinedPolicies());
+    await svc.syncToolPolicies(await svc.getDefinedToolPolicies());
 
     const runtime = await svc.buildRuntimeArtifacts();
     expect(fs.existsSync(runtime.compiledPoliciesPath)).toBe(true);
@@ -72,6 +74,43 @@ describe('McpGovernanceService', () => {
 
     const manifestPath = path.join(runtime.outputDir, 'runtime-manifests', 'orchestrator.json');
     expect(fs.existsSync(manifestPath)).toBe(true);
+
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    expect(Array.isArray(manifest.servers)).toBe(true);
+    const firstTool = manifest.servers[0].tools[0];
+    expect(firstTool).toHaveProperty('degraded');
+    expect(firstTool).toHaveProperty('authStatus');
+  });
+
+  it('fails runtime build with clear error when policy data is missing', async () => {
+    await svc.syncAgents(await svc.getDefinedAgents());
+    await svc.syncServers(await svc.getDefinedServers());
+
+    await expect(svc.buildRuntimeArtifacts()).rejects.toThrow(/Missing runtime policy data/i);
+  });
+
+  it('marks tools as degraded and auth_pending based on live server state', async () => {
+    await svc.syncAgents(await svc.getDefinedAgents());
+    await svc.syncServers(await svc.getDefinedServers());
+    await svc.syncServerPolicies(await svc.getDefinedPolicies());
+    await svc.syncToolPolicies(await svc.getDefinedToolPolicies());
+
+    await svc.updateServer('workspace-management', {
+      healthStatus: 'unhealthy',
+      tenantEnabled: false,
+    });
+
+    const runtime = await svc.buildRuntimeArtifacts();
+    const manifestPath = path.join(runtime.outputDir, 'runtime-manifests', 'orchestrator.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const server = manifest.servers.find((s) => s.serverId === 'workspace-management');
+
+    expect(server).toBeDefined();
+    expect(server.tools.length).toBeGreaterThan(0);
+    for (const tool of server.tools) {
+      expect(tool.degraded).toBe(true);
+      expect(tool.authStatus).toBe('auth_pending');
+    }
   });
 
   it('syncs mcp servers in dry-run mode without writing state', async () => {

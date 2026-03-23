@@ -301,8 +301,11 @@ describe('run() CLI commands', () => {
     process.argv = argv('doctor');
     await run(root);
     const result = parsedOut();
-    expect(result.ok).toBe(true);
     expect(result.command).toBe('doctor');
-    expect(typeof result.configExists).toBe('boolean');
+    expect(typeof result.ok).toBe('boolean');
+    expect(typeof result.healthy).toBe('boolean');
+    expect(result.ok).toBe(result.healthy);
+    expect(typeof result.summary).toBe('string');
+    expect(Array.isArray(result.checks)).toBe(true);
   });
 });

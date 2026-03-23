@@ -11,6 +11,7 @@ export default [
   /* ── Global ignores ─────────────────────────────────────────── */
   {
     ignores: [
+      '.agentic/',
       'node_modules/',
       'coverage/',
       'dist/',

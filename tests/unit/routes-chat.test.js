@@ -7,6 +7,8 @@ const { registerRoutes } = require('../../src/webapp/routes/chat');
 const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
 
 const CHAT_HISTORY_DIR = path.join(process.cwd(), 'BusinessDocs', 'session', 'chat-history');
+const RUN_HISTORY_FILE = path.join(process.cwd(), 'BusinessDocs', 'session', 'run-history.json');
+let originalRunHistory = '[]';
 
 function createCtx() {
   return {
@@ -32,6 +34,7 @@ function createCtx() {
       embedText: vi.fn().mockResolvedValue([0.2, 0.3, 0.4]),
     },
     sseNotify: vi.fn(),
+    recordMetric: vi.fn(),
   };
 }
 
@@ -65,12 +68,24 @@ function createRes() {
 }
 
 describe('routes/chat', () => {
+  beforeAll(() => {
+    try {
+      originalRunHistory = fs.readFileSync(RUN_HISTORY_FILE, 'utf8');
+    } catch {
+      originalRunHistory = '[]';
+    }
+  });
+
   beforeEach(() => {
     fs.rmSync(CHAT_HISTORY_DIR, { recursive: true, force: true });
   });
 
   afterAll(() => {
     fs.rmSync(CHAT_HISTORY_DIR, { recursive: true, force: true });
+  });
+
+  afterEach(() => {
+    fs.writeFileSync(RUN_HISTORY_FILE, originalRunHistory, 'utf8');
   });
 
   const routes = createTestableRoutes(registerRoutes, createCtx());
@@ -111,6 +126,8 @@ describe('routes/chat', () => {
     expect(payload.message.role).toBe('assistant');
     expect(Array.isArray(payload.citations)).toBe(true);
     expect(Array.isArray(payload.proposed_actions)).toBe(true);
+    expect(payload.grounding).toBeTruthy();
+    expect(payload.grounding.workspace_id).toBe('default');
     expect(
       payload.proposed_actions.some(
         (entry) => entry.type === 'open_screen' && entry.payload?.target === '/pipeline'
@@ -267,5 +284,149 @@ describe('routes/chat', () => {
     expect(actionRes.statusCode).toBe(409);
     const actionPayload = JSON.parse(actionRes.body);
     expect(actionPayload.requires_confirmation).toBe(true);
+  });
+
+  it('falls back to clarification when strict-grounding query has no matches', async () => {
+    const ctx = createCtx();
+    ctx._ragStore.query.mockResolvedValueOnce([]);
+    const localRoutes = createTestableRoutes(registerRoutes, ctx);
+
+    const res = createRes();
+    await localRoutes['POST /api/v1/chat/message'](
+      createReq('/api/v1/chat/message', {
+        message: 'Need policy override guidance for this approval',
+      }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const payload = JSON.parse(res.body);
+    expect(payload.grounding.fallback_reason).toBe('no_matches');
+    expect(payload.proposed_actions).toEqual([]);
+    expect(payload.message.content.toLowerCase()).toContain('grounded context');
+  });
+
+  it('returns degraded grounding metadata when RAG services are unavailable', async () => {
+    const noRagCtx = {
+      ...createCtx(),
+      _ragStore: undefined,
+      _embeddingProvider: undefined,
+    };
+    const localRoutes = createTestableRoutes(registerRoutes, noRagCtx);
+
+    const res = createRes();
+    await localRoutes['POST /api/v1/chat/message'](
+      createReq('/api/v1/chat/message', {
+        message: 'What policy should I use for this approval?',
+      }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const payload = JSON.parse(res.body);
+    expect(payload.grounding.enabled).toBe(false);
+    expect(payload.grounding.degraded).toBe(true);
+    expect(payload.grounding.fallback_reason).toBe('services_unavailable');
+    expect(payload.proposed_actions).toEqual([]);
+  });
+
+  it('returns gate explainer details with rerun action', async () => {
+    const fixture = [
+      {
+        mode: 'CREATE',
+        status: 'STOPPED',
+        started_at: '2026-03-22T10:00:00.000Z',
+        ended_at: '2026-03-22T10:20:00.000Z',
+        gate_results: {
+          'gate.critic-risk-1': {
+            verdict: 'FAILED',
+            unmet_criteria: [
+              'All PHASE_1 handoff checklists complete',
+              'No unresolved BLOCKING items',
+            ],
+          },
+        },
+      },
+    ];
+    fs.writeFileSync(RUN_HISTORY_FILE, JSON.stringify(fixture, null, 2), 'utf8');
+
+    const localRoutes = createTestableRoutes(registerRoutes, createCtx());
+    const res = createRes();
+    await localRoutes['POST /api/v1/chat/message'](
+      createReq('/api/v1/chat/message', { message: 'Why did the critic gate fail?' }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const payload = JSON.parse(res.body);
+    expect(payload.message.content).toContain('gate.critic-risk-1');
+    expect(payload.message.content).toContain('Unmet criteria');
+    expect(payload.proposed_actions.some((entry) => entry.type === 'create_command')).toBe(true);
+  });
+
+  it('returns pending approvals with approve and reject actions', async () => {
+    const approval = {
+      id: 'APR-TEST-001',
+      entity_id: 'task-42',
+      gate_id: 'G-REL-01',
+      stage: 'RELEASE',
+      requested_by: 'user',
+      requested_at: new Date().toISOString(),
+      required_role: 'operator',
+      status: 'PENDING',
+    };
+    const ctx = {
+      ...createCtx(),
+      _getEngine: () => ({
+        getPendingApprovals: () => [approval],
+        getApprovals: () => [approval],
+        requestApproval: () => approval,
+        decide: () => ({ ...approval, status: 'APPROVED' }),
+      }),
+    };
+    const localRoutes = createTestableRoutes(registerRoutes, ctx);
+
+    const res = createRes();
+    await localRoutes['POST /api/v1/chat/message'](
+      createReq('/api/v1/chat/message', { message: 'What approvals are pending?' }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const payload = JSON.parse(res.body);
+    expect(payload.message.content).toContain('APR-TEST-001');
+    expect(payload.proposed_actions.some((entry) => entry.type === 'approve')).toBe(true);
+    expect(payload.proposed_actions.some((entry) => entry.type === 'reject')).toBe(true);
+  });
+
+  it('summarizes current session with elapsed and blocking context', async () => {
+    const fixture = [
+      {
+        mode: 'CREATE',
+        status: 'STOPPED',
+        started_at: new Date(Date.now() - 15 * 60 * 1000).toISOString(),
+        ended_at: null,
+        gate_results: {
+          'gate.critic-risk-2': {
+            verdict: 'FAILED',
+            unmet_criteria: ['Risk agent assessment completed'],
+          },
+        },
+      },
+    ];
+    fs.writeFileSync(RUN_HISTORY_FILE, JSON.stringify(fixture, null, 2), 'utf8');
+
+    const localRoutes = createTestableRoutes(registerRoutes, createCtx());
+    const res = createRes();
+    await localRoutes['POST /api/v1/chat/message'](
+      createReq('/api/v1/chat/message', { message: 'Summarize current session' }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const payload = JSON.parse(res.body);
+    expect(payload.message.content).toContain('Current session summary');
+    expect(payload.message.content).toContain('Elapsed time');
+    expect(payload.message.content).toContain('Blocking items');
   });
 });

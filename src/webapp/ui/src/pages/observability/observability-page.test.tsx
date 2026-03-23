@@ -116,5 +116,7 @@ describe('ObservabilityPage', () => {
         screen.getByText(/live telemetry streams ingested from all connected agent runtimes/i)
       ).toBeInTheDocument();
     });
+    expect(screen.getByRole('heading', { name: /rag freshness/i })).toBeInTheDocument();
+    expect(screen.getByText(/rag index freshness/i)).toBeInTheDocument();
   });
 });

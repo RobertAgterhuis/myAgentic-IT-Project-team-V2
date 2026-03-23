@@ -96,6 +96,10 @@ import { McpGovernanceService, McpHealthMonitor } from './plugins/mcp-governance
 
 const _cache = new FileCache();
 const _audit = new AuditTrail({ logDir: path.join(BUSINESS_DOCS, 'audit') });
+const RAG_FRESHNESS_HEALTH_INTERVAL_MS = Number(
+  process.env.RAG_FRESHNESS_HEALTH_INTERVAL_MS || 5 * 60 * 1000
+);
+const RAG_FRESHNESS_STALE_SEC = Number(process.env.RAG_FRESHNESS_STALE_SEC || 3600);
 const RAG_BASE_DIR = process.env.RAG_BASE_DIR || path.join(PROJECT_ROOT, '.agentic', 'rag');
 const RAG_DB_PATH = process.env.RAG_DB_PATH || path.join(RAG_BASE_DIR, 'rag.sqlite');
 const RAG_LANCE_DIR = process.env.RAG_LANCE_DIR || path.join(RAG_BASE_DIR, 'vectors');
@@ -391,6 +395,93 @@ function scheduleRebuildIndex(): void {
   }, 500);
 }
 
+function newestMtimeIso(paths: string[]): string | null {
+  let newest = 0;
+  for (const p of paths) {
+    try {
+      if (!fs.existsSync(p)) continue;
+      const mtime = fs.statSync(p).mtimeMs;
+      if (mtime > newest) newest = mtime;
+    } catch {
+      // Ignore inaccessible path in best-effort scheduler.
+    }
+  }
+  return newest > 0 ? new Date(newest).toISOString() : null;
+}
+
+let _ragFreshnessPassRunning = false;
+async function runRagFreshnessHealthPass(): Promise<void> {
+  if (_ragFreshnessPassRunning) return;
+  if (!_ragIndexer) return;
+
+  _ragFreshnessPassRunning = true;
+  try {
+    const monitored: Array<{ collectionId: string; sourcePaths: string[] }> = [
+      {
+        collectionId: 'decisions',
+        sourcePaths: [
+          path.join(BUSINESS_DOCS, 'decisions.md'),
+          path.join(BUSINESS_DOCS, 'decisions'),
+        ],
+      },
+      {
+        collectionId: 'codebase',
+        sourcePaths: [path.join(PROJECT_ROOT, 'src')],
+      },
+      {
+        collectionId: 'phase-outputs',
+        sourcePaths: [
+          path.join(BUSINESS_DOCS, 'Phase1-Business'),
+          path.join(BUSINESS_DOCS, 'Phase2-Tech'),
+          path.join(BUSINESS_DOCS, 'Phase3-UX'),
+          path.join(BUSINESS_DOCS, 'session'),
+          path.join(BUSINESS_DOCS, 'synthesis'),
+        ],
+      },
+      {
+        collectionId: 'sprint-artifacts--default',
+        sourcePaths: [path.join(BUSINESS_DOCS, 'session'), path.join(BUSINESS_DOCS, 'metrics')],
+      },
+    ];
+
+    for (const target of monitored) {
+      const sourceNewest = newestMtimeIso(target.sourcePaths);
+      const freshness = _ragStore.getCollectionFreshnessStats(target.collectionId);
+      const hasIndex = freshness.indexedFiles > 0;
+
+      const lagSec =
+        sourceNewest && freshness.lastIndexedAt
+          ? Math.max(
+              0,
+              Math.round((Date.parse(sourceNewest) - Date.parse(freshness.lastIndexedAt)) / 1000)
+            )
+          : null;
+
+      const shouldHeal = !hasIndex || (lagSec !== null && lagSec > RAG_FRESHNESS_STALE_SEC);
+      if (!shouldHeal) continue;
+
+      for (const sourcePath of target.sourcePaths) {
+        if (!fs.existsSync(sourcePath)) continue;
+        try {
+          const stats = await _ragIndexer.syncDirectory(target.collectionId, sourcePath, {
+            incremental: true,
+          });
+          recordMetric('RAG', '/freshness/self-heal', stats.filesProcessed, 200);
+        } catch (err) {
+          structuredLog('warn', 'rag_freshness_self_heal_failed', {
+            collection_id: target.collectionId,
+            source_path: sourcePath,
+            error: (err as Error).message,
+          });
+          recordMetric('RAG', '/freshness/self-heal', 1, 500);
+        }
+      }
+    }
+  } finally {
+    _ragFreshnessPassRunning = false;
+  }
+}
+
 /* (Cross-route wiring for _getLatestCommand, _readCommandQueue, _getEngine
    is now handled inside registerRoutes() of commands.ts and orchestrator.ts) */
 
@@ -652,10 +743,19 @@ if (require.main === module) {
   const snapTimer = setInterval(syncSnapshot, SNAPSHOT_SYNC_INTERVAL_MS);
   snapTimer.unref();
   setTimeout(syncSnapshot, 5000).unref();
+  const ragFreshnessTimer = setInterval(
+    runRagFreshnessHealthPass,
+    RAG_FRESHNESS_HEALTH_INTERVAL_MS
+  );
+  ragFreshnessTimer.unref();
+  setTimeout(() => {
+    void runRagFreshnessHealthPass();
+  }, 15_000).unref();
   const shutdown = (): void => {
     structuredLog('info', 'shutdown_initiated');
     clearInterval(flushTimer);
     clearInterval(snapTimer);
+    clearInterval(ragFreshnessTimer);
     metricsCollector.flush();
     const sp = getStorageProvider();
     if (sp) sp.close().catch(() => {});

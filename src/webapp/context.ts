@@ -59,6 +59,10 @@ export interface RagStoreFacade {
     description: string;
     created_at: string;
   }>;
+  getCollectionFreshnessStats?(collectionId: string): {
+    indexedFiles: number;
+    lastIndexedAt: string | null;
+  };
   query(
     collectionId: string,
     queryVector: number[],

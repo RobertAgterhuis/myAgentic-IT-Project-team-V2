@@ -51,6 +51,17 @@ export interface ChatMessageResponse {
   proposed_actions: ProposedAction[];
 }
 
+export interface SendChatMessageInput {
+  sessionId: string;
+  message: string;
+  contextHints?: string[];
+  contextSnapshot?: ChatContextSnapshot;
+  citations?: ChatCitation[];
+  assistantMessageOverride?: string;
+  suppressActions?: boolean;
+  proposedActionsOverride?: ProposedAction[];
+}
+
 export interface ChatActionEnvelope {
   action: ProposedAction;
   context_snapshot?: ChatContextSnapshot;
@@ -130,13 +141,7 @@ export class ChatService {
     this.actionProposer = options.actionProposer || new ActionProposer();
   }
 
-  sendMessage(input: {
-    sessionId: string;
-    message: string;
-    contextHints?: string[];
-    contextSnapshot?: ChatContextSnapshot;
-    citations?: ChatCitation[];
-  }): ChatMessageResponse {
+  sendMessage(input: SendChatMessageInput): ChatMessageResponse {
     const sessionId = normalizeSessionId(input.sessionId);
     const contextHints = (input.contextHints || []).map((hint) => hint.trim()).filter(Boolean);
     const userMessage = input.message.trim();
@@ -155,18 +160,26 @@ export class ChatService {
     const assistantEntry: ChatHistoryMessage = {
       id: `a-${Date.now().toString(36)}`,
       role: 'assistant',
-      content: buildAssistantResponse({ intent, contextSummary, contextHints }),
+      content:
+        typeof input.assistantMessageOverride === 'string' &&
+        input.assistantMessageOverride.trim().length > 0
+          ? input.assistantMessageOverride.trim()
+          : buildAssistantResponse({ intent, contextSummary, contextHints }),
       created_at: safeNow(),
     };
     session.messages.push(assistantEntry);
     session.updated_at = safeNow();
 
     const citations = input.citations || [];
-    const proposedActions = this.actionProposer.propose({
-      intent,
-      message: userMessage,
-      contextSnapshot: input.contextSnapshot,
-    });
+    const proposedActions = Array.isArray(input.proposedActionsOverride)
+      ? input.proposedActionsOverride
+      : input.suppressActions
+        ? []
+        : this.actionProposer.propose({
+            intent,
+            message: userMessage,
+            contextSnapshot: input.contextSnapshot,
+          });
 
     const actionContexts: Record<string, ChatActionEnvelope> = session.action_contexts || {};
     for (const action of proposedActions) {

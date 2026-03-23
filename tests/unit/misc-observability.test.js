@@ -72,11 +72,15 @@ describe('registerObservabilityRoutes', () => {
       cache: {},
       computePercentiles: () => ({ p50: 0, p95: 0, p99: 0 }),
       flushMetrics: () => {},
+      projectRoot: process.cwd(),
+      businessDocs: `${process.cwd()}/BusinessDocs`,
+      ragStore: { listCollections: () => [], getCollectionFreshnessStats: () => null },
     });
 
     expect(app.routes.has('GET /api/events')).toBe(true);
     expect(app.routes.has('GET /api/metrics')).toBe(true);
     expect(app.routes.has('POST /api/metrics/flush')).toBe(true);
+    expect(app.routes.has('GET /api/v1/observability/rag-freshness')).toBe(true);
   });
 
   it('returns metrics payload shape', async () => {
@@ -95,6 +99,9 @@ describe('registerObservabilityRoutes', () => {
       cache: { stats: () => ({ hits: 3, misses: 1 }) },
       computePercentiles: () => ({ p50: 10, p95: 20, p99: 30 }),
       flushMetrics: () => {},
+      projectRoot: process.cwd(),
+      businessDocs: `${process.cwd()}/BusinessDocs`,
+      ragStore: { listCollections: () => [], getCollectionFreshnessStats: () => null },
     });
 
     const handler = app.routes.get('GET /api/metrics');
@@ -123,6 +130,9 @@ describe('registerObservabilityRoutes', () => {
       cache: {},
       computePercentiles: () => ({ p50: 0, p95: 0, p99: 0 }),
       flushMetrics: () => {},
+      projectRoot: process.cwd(),
+      businessDocs: `${process.cwd()}/BusinessDocs`,
+      ragStore: { listCollections: () => [], getCollectionFreshnessStats: () => null },
     });
 
     const handler = app.routes.get('GET /api/events');
@@ -150,6 +160,9 @@ describe('registerObservabilityRoutes', () => {
       cache: {},
       computePercentiles: () => ({ p50: 0, p95: 0, p99: 0 }),
       flushMetrics: () => {},
+      projectRoot: process.cwd(),
+      businessDocs: `${process.cwd()}/BusinessDocs`,
+      ragStore: { listCollections: () => [], getCollectionFreshnessStats: () => null },
     });
 
     const handler = app.routes.get('GET /api/events');
@@ -180,6 +193,9 @@ describe('registerObservabilityRoutes', () => {
       cache: {},
       computePercentiles: () => ({ p50: 0, p95: 0, p99: 0 }),
       flushMetrics,
+      projectRoot: process.cwd(),
+      businessDocs: `${process.cwd()}/BusinessDocs`,
+      ragStore: { listCollections: () => [], getCollectionFreshnessStats: () => null },
     });
 
     const handler =
@@ -208,6 +224,9 @@ describe('registerObservabilityRoutes', () => {
       cache: {},
       computePercentiles: () => ({ p50: 0, p95: 0, p99: 0 }),
       flushMetrics: () => {},
+      projectRoot: process.cwd(),
+      businessDocs: `${process.cwd()}/BusinessDocs`,
+      ragStore: { listCollections: () => [], getCollectionFreshnessStats: () => null },
     });
 
     const handler = app.routes.get('GET /api/metrics');
@@ -218,5 +237,42 @@ describe('registerObservabilityRoutes', () => {
     expect(reply.payload.error_rate).toBe(0);
     expect(reply.payload.cache_hit_ratio).toBe(0);
     expect(reply.payload.per_endpoint).toEqual({});
+  });
+
+  it('returns rag freshness status summary', async () => {
+    const app = createFakeApp();
+    registerObservabilityRoutes({
+      app,
+      sseManager: { size: 0, addClient: () => {} },
+      metrics: {
+        startedAt: Date.now() - 1000,
+        requestCount: 0,
+        errorCount: 0,
+        responseTimes: [],
+        fileOpsCount: 0,
+        perEndpoint: {},
+      },
+      cache: {},
+      computePercentiles: () => ({ p50: 0, p95: 0, p99: 0 }),
+      flushMetrics: () => {},
+      projectRoot: process.cwd(),
+      businessDocs: `${process.cwd()}/BusinessDocs`,
+      ragStore: {
+        listCollections: () => [{ id: 'decisions' }, { id: 'phase-outputs' }],
+        getCollectionFreshnessStats: () => ({
+          indexedFiles: 3,
+          lastIndexedAt: new Date().toISOString(),
+        }),
+      },
+    });
+
+    const handler = app.routes.get('GET /api/v1/observability/rag-freshness');
+    const reply = createReply();
+    await handler({ query: { workspace_id: 'default' } }, reply);
+
+    expect(reply.statusCode).toBe(200);
+    expect(reply.payload.ok).toBe(true);
+    expect(reply.payload.summary.total_collections).toBeGreaterThan(0);
+    expect(Array.isArray(reply.payload.collections)).toBe(true);
   });
 });

@@ -34,6 +34,21 @@ const baseHandlers = [
     HttpResponse.json({ ok: true, data: {}, timestamp: new Date().toISOString() })
   ),
   http.get('/api/analytics/trends', () => HttpResponse.json({ velocity: [], dora: {} })),
+  http.get('/api/v1/observability/rag-freshness', () =>
+    HttpResponse.json({
+      ok: true,
+      generated_at: new Date().toISOString(),
+      workspace_id: 'default',
+      summary: {
+        total_collections: 4,
+        healthy_collections: 4,
+        stale_collections: 0,
+        missing_collections: 0,
+        stale_threshold_seconds: 3600,
+      },
+      collections: [],
+    })
+  ),
   http.get('/api/analytics/agents', () => HttpResponse.json({ agents: [] })),
   http.get('/api/traceability', () =>
     HttpResponse.json({ entities: [], gaps: [], coverage: { overall: 0 } })

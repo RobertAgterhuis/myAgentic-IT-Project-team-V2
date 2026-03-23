@@ -54,6 +54,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     WEBAPP_DIR,
     ANALYTICS_MAX_EVENTS,
     _readCommandQueue,
+    _ragStore,
     getStorageProvider,
     STORAGE_PROVIDER: _storageProviderType,
   } = ctx;
@@ -172,6 +173,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     cache: _cache,
     computePercentiles,
     flushMetrics,
+    projectRoot: PROJECT_ROOT,
+    businessDocs: ctx.BUSINESS_DOCS,
+    ragStore: _ragStore,
   });
 
   registerAnalyticsRoutes({

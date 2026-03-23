@@ -41,6 +41,22 @@ export default function ObservabilityPage() {
   const { data, isLoading, error, refetch } = useObservabilityContracts();
   const activeTabLabel = tabs.find((tab) => tab.id === activeTab)?.label ?? 'Unknown';
 
+  const ragFreshnessStream = useMemo(
+    () => (data?.streams ?? []).find((stream) => stream.id === 'stream-rag-freshness') ?? null,
+    [data?.streams]
+  );
+
+  const ragFreshnessAlerts = useMemo(
+    () => (data?.alerts ?? []).filter((alert) => alert.source === 'rag-freshness'),
+    [data?.alerts]
+  );
+
+  const ragStatus = useMemo<'healthy' | 'warning' | 'critical'>(() => {
+    if (ragFreshnessAlerts.some((entry) => entry.severity === 'critical')) return 'critical';
+    if (ragFreshnessAlerts.some((entry) => entry.severity === 'warning')) return 'warning';
+    return 'healthy';
+  }, [ragFreshnessAlerts]);
+
   const contextItems = useMemo<ContextStripItem[]>(
     () => [
       { id: 'active-view', label: 'Active view', value: activeTabLabel, tone: 'info' },
@@ -172,6 +188,57 @@ export default function ObservabilityPage() {
             )}
             {activeTab === 'streams' && (
               <div className="space-y-4 pt-2">
+                <section aria-label="RAG freshness" className="space-y-3">
+                  <h3 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">
+                    RAG Freshness
+                  </h3>
+                  <OperationalCard
+                    title="RAG index freshness"
+                    subtitle={
+                      ragStatus === 'critical'
+                        ? 'Critical freshness issues detected'
+                        : ragStatus === 'warning'
+                          ? 'Freshness drift detected'
+                          : 'Collections are healthy'
+                    }
+                    statusLabel={ragStatus.toUpperCase()}
+                    statusTone={
+                      ragStatus === 'critical'
+                        ? 'critical'
+                        : ragStatus === 'warning'
+                          ? 'warning'
+                          : 'success'
+                    }
+                    meta={[
+                      {
+                        id: 'rag-health-ratio',
+                        label: 'Healthy ratio',
+                        value:
+                          ragFreshnessStream && Number.isFinite(ragFreshnessStream.latest)
+                            ? `${ragFreshnessStream.latest}%`
+                            : 'n/a',
+                      },
+                      {
+                        id: 'rag-samples',
+                        label: 'Collections monitored',
+                        value: String(ragFreshnessStream?.sample_count ?? 0),
+                      },
+                      {
+                        id: 'rag-stale',
+                        label: 'Stale/missing alerts',
+                        value: String(ragFreshnessAlerts.length),
+                      },
+                      {
+                        id: 'rag-updated',
+                        label: 'Generated',
+                        value: data?.generated_at
+                          ? new Date(data.generated_at).toLocaleString()
+                          : 'n/a',
+                      },
+                    ]}
+                  />
+                </section>
+
                 <p className="text-sm text-muted-foreground">
                   Live telemetry streams ingested from all connected agent runtimes. Each card
                   represents one instrumented signal channel.

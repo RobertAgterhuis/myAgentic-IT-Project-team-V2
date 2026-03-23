@@ -163,6 +163,28 @@ function buildSimilarDecisionResults(
   return matches;
 }
 
+function triggerDecisionGroundingRefresh(ctx: ServerContext): void {
+  if (!ctx._ragIndexer) return;
+
+  const decisionsPaths = [
+    path.join(ctx.BUSINESS_DOCS, 'decisions.md'),
+    path.join(ctx.BUSINESS_DOCS, 'decisions'),
+  ];
+
+  for (const target of decisionsPaths) {
+    setImmediate(() => {
+      void ctx._ragIndexer
+        ?.syncDirectory('decisions', target, { incremental: true })
+        .then((stats) => {
+          ctx.recordMetric('RAG', '/decisions/refresh', stats.filesProcessed, 200);
+        })
+        .catch(() => {
+          ctx.recordMetric('RAG', '/decisions/refresh', 1, 500);
+        });
+    });
+  }
+}
+
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const svc = new DecisionService(toServiceContext(ctx as unknown as Record<string, unknown>));
 
@@ -261,6 +283,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         );
       }
       ctx.sseNotify('decision_update', { action: body.action as string, id: result.id });
+      triggerDecisionGroundingRefresh(ctx);
       return reply.type('application/json').send(attachSecretWarnings(result, secretWarnings));
     } catch (e) {
       if (e instanceof ServiceValidationError) {
@@ -292,6 +315,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           file: fname,
           name: result.name,
         });
+        triggerDecisionGroundingRefresh(ctx);
         return reply.type('application/json').send(result);
       } catch (e) {
         if (e instanceof ServiceValidationError) {

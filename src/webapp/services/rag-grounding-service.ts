@@ -38,6 +38,7 @@ interface RagGroundingServiceOptions {
 interface QueryCollectionOptions {
   topK?: number;
   threshold?: number;
+  workspaceId?: string;
 }
 
 interface BuildAgentGroundingOptions extends QueryCollectionOptions {

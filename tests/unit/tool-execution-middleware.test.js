@@ -40,6 +40,21 @@ describe('ToolExecutionMiddleware', () => {
     );
   });
 
+  it('lists tool definitions for non-admin policy without runtime manifest', () => {
+    const middleware = new ToolExecutionMiddleware({
+      toolExecutor: { execute: vi.fn() },
+    });
+
+    const defs = middleware.listToolDefinitionsForPolicy({
+      role: 'viewer',
+      profile: 'local-dev',
+      agentId: 'agent-missing-manifest',
+    });
+
+    expect(Array.isArray(defs)).toBe(true);
+    expect(defs.length).toBeGreaterThan(0);
+  });
+
   it('throws ToolValidationError when an unknown canonical tool is requested', async () => {
     const middleware = new ToolExecutionMiddleware({
       toolExecutor: { execute: vi.fn() },
@@ -52,5 +67,79 @@ describe('ToolExecutionMiddleware', () => {
         arguments: { target: 'git', operation: 'status' },
       })
     ).rejects.toBeInstanceOf(ToolValidationError);
+  });
+
+  it('throws ToolAuthorizationError for viewer attempting mutating tool in production profile', async () => {
+    const executeSpy = vi.fn();
+    const middleware = new ToolExecutionMiddleware({
+      toolExecutor: { execute: executeSpy },
+    });
+
+    await expect(
+      middleware.execute(
+        {
+          id: 'tool-call-2',
+          name: 'tool.files.write',
+          arguments: {
+            target: 'files',
+            operation: 'write',
+            params: { path: 'BusinessDocs/test.md', content: 'x' },
+          },
+        },
+        { role: 'viewer', profile: 'production-single-node' }
+      )
+    ).rejects.toBeInstanceOf(ToolAuthorizationError);
+
+    expect(executeSpy).not.toHaveBeenCalled();
+  });
+
+  it('throws ToolValidationError when target/operation are missing', async () => {
+    const middleware = new ToolExecutionMiddleware({
+      toolExecutor: { execute: vi.fn() },
+    });
+
+    await expect(
+      middleware.execute(
+        {
+          id: 'tool-call-3',
+          name: 'tool.files.read',
+          arguments: { params: { path: 'README.md' } },
+        },
+        { role: 'admin' }
+      )
+    ).rejects.toBeInstanceOf(ToolValidationError);
+  });
+
+  it('executes known tool successfully with normalized policy defaults', async () => {
+    const executeSpy = vi.fn().mockResolvedValue({
+      success: true,
+      adapter: 'files',
+      operation: 'read',
+      data: { content: 'ok' },
+      fromCache: false,
+      duration_ms: 3,
+    });
+
+    const middleware = new ToolExecutionMiddleware({
+      toolExecutor: { execute: executeSpy },
+    });
+
+    const result = await middleware.execute(
+      {
+        id: 'tool-call-4',
+        name: 'tool.files.read',
+        arguments: { target: 'files', operation: 'read', params: { path: 'README.md' } },
+      },
+      { role: 'viewer' }
+    );
+
+    expect(result.success).toBe(true);
+    expect(executeSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        target: 'files',
+        operation: 'read',
+        params: { path: 'README.md' },
+      })
+    );
   });
 });

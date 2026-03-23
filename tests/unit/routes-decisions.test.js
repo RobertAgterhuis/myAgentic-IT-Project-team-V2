@@ -282,6 +282,39 @@ describe('decision routes', () => {
       expect(res.json).toHaveLength(1);
       expect(res.json[0].decisionId).toBe('DEC-AUTH-001');
     });
+
+    it('matches by token overlap when chunk text has no explicit decision id', async () => {
+      seedDecisions();
+      fs.mkdirSync(DECISIONS_DIR, { recursive: true });
+      fs.writeFileSync(
+        path.join(DECISIONS_DIR, 'auth.md'),
+        `# Decisions: Auth\n\nStack: Identity\nStatus: ACTIVE\nApplicable: YES\n\n| ID | Priority | Scope | Decision | Notes | Date |\n|----|-----------|-------|-----------|-------|------|\n| DEC-AUTH-001 | HIGH | Auth | Require PKCE for Entra sign-in. | Use PKCE everywhere. | 2025-01-03 |\n`,
+        'utf8'
+      );
+
+      const ctx = makeCtx();
+      ctx._ragStore = {
+        query: vi.fn().mockResolvedValue([
+          {
+            chunk: {
+              chunk_text:
+                'For enterprise sign in we should require PKCE and stronger Entra login flow.',
+            },
+            score: 0.91,
+          },
+        ]),
+      };
+      const localRoutes = createDecisionRoutes(ctx);
+      const res = fakeRes();
+      await localRoutes['POST /api/v1/decisions/similar'](
+        similarReq({ query: 'secure entra sign in policy', topK: 3 }),
+        res
+      );
+
+      expect(res.status).toBe(200);
+      expect(res.json).toHaveLength(1);
+      expect(res.json[0].decisionId).toBe('DEC-AUTH-001');
+    });
   });
 
   /* ── GET /api/decisions ─────────────────────────────────────── */

@@ -5,6 +5,8 @@ import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import Database from 'better-sqlite3';
 import type { StorageProvider } from '../../../../platform/engine/persistence';
+import type { AgentRoleId, AgentWorkloadIdentity } from '../identity/workload-identity-types';
+import { WorkloadIdentityStore } from '../../services/workload-identity-store';
 import {
   DEFAULT_AGENTS,
   DEFAULT_ENVIRONMENT_POLICIES,
@@ -710,6 +712,85 @@ export class McpGovernanceService {
     return workspaceStates.every((enabled) => enabled === false);
   }
 
+  private _isMicrosoftBackedServer(server: McpServerRegistry): boolean {
+    if (server.authType === 'entra') return true;
+    const fingerprint = `${server.id} ${server.endpoint}`.toLowerCase();
+    return (
+      fingerprint.includes('azure') ||
+      fingerprint.includes('microsoft') ||
+      fingerprint.includes('entra')
+    );
+  }
+
+  private _resolveIdentityDbPath(): string {
+    return process.env.STORAGE_PATH || path.join(this.projectRoot, '.agentic', 'data.db');
+  }
+
+  private _loadWorkloadIdentityByRole(): Map<AgentRoleId, AgentWorkloadIdentity> {
+    const map = new Map<AgentRoleId, AgentWorkloadIdentity>();
+    const dbPath = this._resolveIdentityDbPath();
+    if (!fs.existsSync(dbPath)) return map;
+
+    let db: Database.Database | null = null;
+    try {
+      db = new Database(dbPath);
+      const store = new WorkloadIdentityStore(db);
+      store.migrate();
+      const rows = store.listIdentities();
+      for (const row of rows) {
+        map.set(row.agent_role, row);
+      }
+      return map;
+    } catch {
+      return map;
+    } finally {
+      db?.close();
+    }
+  }
+
+  private _resolveRuntimeAuthStatus(
+    agent: AgentType,
+    server: McpServerRegistry,
+    identity: AgentWorkloadIdentity | null
+  ):
+    | 'ready'
+    | 'auth_pending'
+    | 'consent_pending'
+    | 'identity_not_provisioned'
+    | 'credential_policy_violation' {
+    const serverAuthPending = this._isAuthPending(server);
+
+    if (!agent.requiresWorkloadIdentity || !this._isMicrosoftBackedServer(server)) {
+      return serverAuthPending ? 'auth_pending' : 'ready';
+    }
+
+    if (!identity) {
+      return 'identity_not_provisioned';
+    }
+
+    const consentGranted = identity.consent_status === 'consent_granted';
+    if (!consentGranted) {
+      return 'consent_pending';
+    }
+
+    const servicePrincipalReady =
+      identity.service_principal_id.trim().length > 0 &&
+      identity.app_registration_id.trim().length > 0;
+    if (!servicePrincipalReady) {
+      return 'identity_not_provisioned';
+    }
+
+    const credentialNotExpired =
+      !identity.credential_expires_at || new Date(identity.credential_expires_at) >= new Date();
+    const credentialPolicyValid =
+      identity.credential_type.trim().length > 0 && credentialNotExpired;
+    if (!credentialPolicyValid) {
+      return 'credential_policy_violation';
+    }
+
+    return serverAuthPending ? 'auth_pending' : 'ready';
+  }
+
   async resolveServerPermission(
     agentId: string,
     serverId: string,
@@ -796,6 +877,8 @@ export class McpGovernanceService {
       servers,
     });
 
+    const identityByRole = this._loadWorkloadIdentityByRole();
+
     let manifestCount = 0;
     for (const agent of agents) {
       const environment: EnvironmentScope =
@@ -813,7 +896,11 @@ export class McpGovernanceService {
               (p.envScope === environment || !p.envScope)
           );
           const toolIds = new Set<string>(['default', ...scopedToolPolicies.map((p) => p.toolId)]);
-          const authStatus = this._isAuthPending(server) ? 'auth_pending' : 'ready';
+          const authStatus = this._resolveRuntimeAuthStatus(
+            agent,
+            server,
+            identityByRole.get(agent.id as AgentRoleId) || null
+          );
           const degraded = server.healthStatus !== 'healthy';
 
           return {
@@ -956,6 +1043,69 @@ export class McpGovernanceService {
           : `${unhealthyServers.length} unhealthy server(s): ${unhealthyServers.map((s) => s.id).join(', ')}`,
     });
 
+    const identitiesByRole = this._loadWorkloadIdentityByRole();
+    const identityAgents = agents.filter((a) => a.requiresWorkloadIdentity);
+    const microsoftServers = servers.filter((s) => this._isMicrosoftBackedServer(s));
+
+    // Check 9: Entra app registrations present for workload identity agents
+    const missingAppRegistrationRoles = identityAgents
+      .filter((agent) => {
+        const identity = identitiesByRole.get(agent.id as AgentRoleId);
+        return !identity || identity.app_registration_id.trim().length === 0;
+      })
+      .map((agent) => agent.id);
+    checks.push({
+      name: 'identity_app_registration',
+      ok: missingAppRegistrationRoles.length === 0,
+      message:
+        missingAppRegistrationRoles.length === 0
+          ? `All ${identityAgents.length} workload identity agent(s) have app registrations`
+          : `Missing Entra app registration for: ${missingAppRegistrationRoles.join(', ')} — run \`npm run plugin -- identity bootstrap\``,
+    });
+
+    // Check 10: consent granted for workload identity agents on Microsoft-backed servers
+    const consentPendingRoles =
+      microsoftServers.length === 0
+        ? []
+        : identityAgents
+            .filter((agent) => {
+              const identity = identitiesByRole.get(agent.id as AgentRoleId);
+              return !identity || identity.consent_status !== 'consent_granted';
+            })
+            .map((agent) => agent.id);
+    checks.push({
+      name: 'identity_consent',
+      ok: consentPendingRoles.length === 0,
+      message:
+        consentPendingRoles.length === 0
+          ? 'Workload identity consent granted for all Microsoft-backed runtime agents'
+          : `Consent pending for: ${consentPendingRoles.join(', ')} — run \`npm run plugin -- identity consent status\` and grant consent in /admin/identity/consent`,
+    });
+
+    // Check 11: credentials not expired and not expiring within 30 days
+    const now = Date.now();
+    const expiryThresholdDays = 30;
+    const expiringRoles = identityAgents
+      .map((agent) => {
+        const identity = identitiesByRole.get(agent.id as AgentRoleId);
+        if (!identity?.credential_expires_at) return null;
+
+        const expiryMs = new Date(identity.credential_expires_at).getTime();
+        if (!Number.isFinite(expiryMs)) return `${agent.id}(invalid-date)`;
+
+        const daysUntilExpiry = Math.floor((expiryMs - now) / (1000 * 60 * 60 * 24));
+        return daysUntilExpiry <= expiryThresholdDays ? `${agent.id}(${daysUntilExpiry}d)` : null;
+      })
+      .filter((value): value is string => Boolean(value));
+    checks.push({
+      name: 'identity_credential_expiry',
+      ok: expiringRoles.length === 0,
+      message:
+        expiringRoles.length === 0
+          ? 'No workload identity credentials expiring within 30 days'
+          : `Credential expiry risk: ${expiringRoles.join(', ')} — run \`npm run plugin -- identity consent status\` and rotate credentials in Entra`,
+    });
+
     const healthy = checks.every((c) => c.ok);
     const failCount = checks.filter((c) => !c.ok).length;
     const summary = healthy
@@ -1092,7 +1242,13 @@ export class McpGovernanceService {
     ]);
 
     const unhealthyServers = servers.filter((s) => s.healthStatus === 'unhealthy');
-    const authPendingCount = servers.filter((s) => this._isAuthPending(s)).length;
+    const identityByRole = this._loadWorkloadIdentityByRole();
+    const authPendingCount = agents
+      .filter((a) => a.requiresWorkloadIdentity)
+      .filter((a) => {
+        const identity = identityByRole.get(a.id as AgentRoleId);
+        return !identity || identity.consent_status !== 'consent_granted';
+      }).length;
 
     return {
       unhealthyServers,

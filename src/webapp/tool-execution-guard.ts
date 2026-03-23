@@ -12,7 +12,12 @@ interface RuntimeToolPermission {
   approvalMode?: ApprovalMode;
   blocked: boolean;
   degraded?: boolean;
-  authStatus?: 'ready' | 'auth_pending';
+  authStatus?:
+    | 'ready'
+    | 'auth_pending'
+    | 'consent_pending'
+    | 'identity_not_provisioned'
+    | 'credential_policy_violation';
 }
 
 interface RuntimeServerRecord {
@@ -43,6 +48,9 @@ export interface ToolExecutionGuardResponse {
     | 'ENV_SCOPE_NOT_ALLOWED'
     | 'SERVER_DEGRADED'
     | 'SERVER_AUTH_PENDING'
+    | 'CONSENT_PENDING'
+    | 'IDENTITY_NOT_PROVISIONED'
+    | 'CREDENTIAL_POLICY_VIOLATION'
     | 'APPROVAL_PENDING'
     | 'APPROVAL_REJECTED_OR_EXPIRED';
   reason: string;
@@ -152,6 +160,38 @@ export class ToolExecutionGuard {
         reason: `Tool '${input.toolName}' is blocked because authentication is pending.`,
         requiredApprovalMode: permission.approvalMode || 'none',
         remediation: 'Complete consent/auth setup for the backing server, then retry.',
+      };
+    }
+
+    if (permission.authStatus === 'consent_pending') {
+      return {
+        blocked: true,
+        reasonCode: 'CONSENT_PENDING',
+        reason: `Tool '${input.toolName}' is blocked because agent workload identity consent is pending.`,
+        requiredApprovalMode: permission.approvalMode || 'none',
+        remediation:
+          'Run `npm run plugin -- identity consent status` and grant consent in /admin/identity/consent.',
+      };
+    }
+
+    if (permission.authStatus === 'identity_not_provisioned') {
+      return {
+        blocked: true,
+        reasonCode: 'IDENTITY_NOT_PROVISIONED',
+        reason: `Tool '${input.toolName}' is blocked because workload identity is not provisioned.`,
+        requiredApprovalMode: permission.approvalMode || 'none',
+        remediation: 'Run `npm run plugin -- identity bootstrap` and rebuild runtime manifests.',
+      };
+    }
+
+    if (permission.authStatus === 'credential_policy_violation') {
+      return {
+        blocked: true,
+        reasonCode: 'CREDENTIAL_POLICY_VIOLATION',
+        reason: `Tool '${input.toolName}' is blocked due to workload identity credential policy violation.`,
+        requiredApprovalMode: permission.approvalMode || 'none',
+        remediation:
+          'Run `npm run plugin -- identity consent status` and rotate/renew expired credentials in Entra.',
       };
     }
 

@@ -105,7 +105,12 @@ export interface RuntimeToolPermission {
   approvalMode: ApprovalMode;
   blocked: boolean;
   degraded: boolean;
-  authStatus: 'ready' | 'auth_pending';
+  authStatus:
+    | 'ready'
+    | 'auth_pending'
+    | 'consent_pending'
+    | 'identity_not_provisioned'
+    | 'credential_policy_violation';
 }
 
 export interface RuntimeManifest {

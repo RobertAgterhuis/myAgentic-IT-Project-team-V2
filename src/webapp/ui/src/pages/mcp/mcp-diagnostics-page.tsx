@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-// M-INFRA-3c #849: MCP Diagnostics page — /admin/mcp/diagnostics
+// M-INFRA-3c/#849 + M-INFRA-3d: MCP Diagnostics page — /admin/mcp/diagnostics
 
 import { useMemo } from 'react';
 import { Activity, RefreshCw, CheckCircle2, AlertTriangle } from 'lucide-react';
@@ -56,7 +56,7 @@ export default function McpDiagnosticsPage() {
       },
       {
         id: 'diag-authpending',
-        label: 'Auth pending',
+        label: 'Consent pending agents',
         value: String(diagQuery.data?.authPendingCount ?? 0),
         tone: (diagQuery.data?.authPendingCount ?? 0) > 0 ? 'warning' : 'success',
       },
@@ -78,8 +78,8 @@ export default function McpDiagnosticsPage() {
       <div className="space-y-6 p-6" data-testid="mcp-diagnostics-page">
         <PageHeader
           title="MCP Diagnostics"
-          subtitle="Server health, auth-pending agents, and reconcile run history."
-          chips={[{ id: 'chip-milestone', label: 'M-INFRA-3c', tone: 'info' }]}
+          subtitle="Server health, consent-pending workload identities, and reconcile run history."
+          chips={[{ id: 'chip-milestone', label: 'M-INFRA-3d', tone: 'info' }]}
         />
 
         <ContextStrip items={contextItems} />
@@ -147,19 +147,23 @@ export default function McpDiagnosticsPage() {
           )}
         </Card>
 
-        {/* Auth pending summary */}
+        {/* Consent pending workload identity summary */}
         {(diagQuery.data?.authPendingCount ?? 0) > 0 && (
           <Card elevation="flat" className="p-4">
             <div className="flex items-center gap-2">
               <AlertTriangle className="size-4 text-warning" />
               <span className="text-sm font-semibold text-warning">
-                {diagQuery.data?.authPendingCount} server
-                {(diagQuery.data?.authPendingCount ?? 0) > 1 ? 's' : ''} awaiting authentication
+                {diagQuery.data?.authPendingCount} agent
+                {(diagQuery.data?.authPendingCount ?? 0) > 1 ? 's' : ''} awaiting workload identity
+                consent
               </span>
             </div>
             <p className="mt-1 text-xs text-muted-foreground">
-              Run <code className="rounded bg-muted px-1 py-0.5">npm run plugin -- doctor</code> for
-              specific remediation steps.
+              Run <code className="rounded bg-muted px-1 py-0.5">npm run plugin -- doctor</code> and{' '}
+              <code className="rounded bg-muted px-1 py-0.5">
+                npm run plugin -- identity consent status
+              </code>{' '}
+              for remediation steps.
             </p>
           </Card>
         )}

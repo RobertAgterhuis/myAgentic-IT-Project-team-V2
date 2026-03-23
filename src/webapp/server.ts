@@ -61,7 +61,7 @@ import { buildApp } from './app';
 import type { ServerContext } from './context';
 import { RagStore } from './services/rag/rag-store';
 import { RagIndexer } from './services/rag/rag-indexer';
-import { MarkdownChunker } from './services/rag/text-chunker';
+import { AdaptiveChunker } from './services/rag/text-chunker';
 import { createEmbeddingProvider } from './services/rag/embedding-provider';
 
 /* ── Native Fastify route plugins (M30-004) ───────────────────── */
@@ -87,6 +87,7 @@ import { registerRoutes as registerAuthRoutes } from './routes/auth';
 import { registerRoutes as registerMcpRoutes } from './routes/mcp';
 import { registerRoutes as registerHelpRoutes } from './routes/help';
 import { registerRoutes as registerRagRoutes } from './routes/rag';
+import { registerRoutes as registerChatRoutes } from './routes/chat';
 import { registerRoutes as registerGitRoutes } from './routes/git';
 import { registerRoutes as registerMiscRoutes } from './routes/misc';
 import { McpGovernanceService, McpHealthMonitor } from './plugins/mcp-governance';
@@ -100,7 +101,7 @@ fs.mkdirSync(RAG_BASE_DIR, { recursive: true });
 fs.mkdirSync(RAG_LANCE_DIR, { recursive: true });
 const _embeddingProvider = createEmbeddingProvider();
 const _ragStore = new RagStore(RAG_DB_PATH, RAG_LANCE_DIR);
-const _ragIndexer = new RagIndexer(_ragStore, _embeddingProvider, new MarkdownChunker());
+const _ragIndexer = new RagIndexer(_ragStore, _embeddingProvider, new AdaptiveChunker());
 const rateLimiter = createRateLimiter({
   windowMs: RATE_LIMIT_WINDOW_MS,
   maxRequests: RATE_LIMIT_MAX,
@@ -442,6 +443,7 @@ async function createApp() {
   await registerMcpRoutes(app, ctx);
   await registerHelpRoutes(app, ctx);
   await registerRagRoutes(app, ctx);
+  await registerChatRoutes(app, ctx);
   await registerGitRoutes(app, ctx);
   // misc registers last — includes catch-all SPA static handler
   await registerMiscRoutes(app, ctx);

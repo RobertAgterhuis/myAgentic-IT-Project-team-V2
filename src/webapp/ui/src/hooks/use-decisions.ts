@@ -11,6 +11,7 @@ import type {
   DecisionsResponse,
   DecisionPayload,
   DecisionMutationResponse,
+  DecisionSimilarResponse,
   ActivateCategoryPayload,
   ActivateCategoryResponse,
   PromoteLessonPayload,
@@ -22,6 +23,21 @@ export function useDecisions() {
   return useQuery({
     queryKey: queryKeys.decisions.all,
     queryFn: () => apiGet<DecisionsResponse>('/decisions'),
+  });
+}
+
+/** Query semantically related decisions for a decision subject. */
+export function useSimilarDecisions(query: string | null | undefined) {
+  const normalizedQuery = query?.trim() || '';
+
+  return useQuery({
+    queryKey: queryKeys.decisions.similar(normalizedQuery),
+    queryFn: () =>
+      apiPost<DecisionSimilarResponse>('/v1/decisions/similar', {
+        query: normalizedQuery,
+        topK: 3,
+      }),
+    enabled: normalizedQuery.length > 0,
   });
 }
 

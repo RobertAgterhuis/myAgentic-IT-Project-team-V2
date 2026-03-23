@@ -77,7 +77,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       const agentId = decodeURIComponent(request.params.id);
       const body = (request.body as Record<string, unknown>) || {};
       const context = body.context as
-        | { predecessorPaths?: string[]; questionnairePath?: string }
+        | { predecessorPaths?: string[]; questionnairePath?: string; workspaceId?: string }
         | undefined;
 
       structuredLog('info', 'agent_execute_request', { agentId });

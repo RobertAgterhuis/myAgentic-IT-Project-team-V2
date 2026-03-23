@@ -11,7 +11,10 @@ const { Dispatcher } = require('../../platform/engine/dispatcher');
 
 function createMockServiceContext() {
   return {
-    store: {},
+    store: {
+      exists: vi.fn().mockReturnValue(false),
+      readFile: vi.fn(),
+    },
     cache: { get: vi.fn(), set: vi.fn(), del: vi.fn() },
     audit: { log: vi.fn() },
     safeWrite: vi.fn(),
@@ -22,6 +25,8 @@ function createMockServiceContext() {
     decisionsDir: '/tmp/test/BusinessDocs/decisions',
     commandQueue: '/tmp/test/BusinessDocs/session/command-queue.json',
     helpDir: '/tmp/test/docs/help',
+    ragStore: undefined,
+    embeddingProvider: undefined,
   };
 }
 
@@ -113,6 +118,10 @@ describe('AgentExecutionService', () => {
       expect(result.confidence).toBe(0.82);
       expect(result.uncertainty_reasons).toEqual(['Model required 1 retry']);
       expect(result.needs_human_review).toBe(true);
+      expect(result.logs.some((log) => log.message.includes('Confidence score: 82%'))).toBe(true);
+      expect(
+        result.logs.some((log) => log.message.includes('Uncertainty: Model required 1 retry'))
+      ).toBe(true);
     });
 
     it('returns failed result when invoke returns success: false', async () => {
@@ -129,6 +138,10 @@ describe('AgentExecutionService', () => {
       expect(result.error).toBe('Agent failed');
       expect(result.confidence).toBe(0);
       expect(result.needs_human_review).toBe(true);
+      expect(result.logs.some((log) => log.message.includes('Confidence score: 0%'))).toBe(true);
+      expect(result.logs.some((log) => log.message.includes('Uncertainty: Agent failed'))).toBe(
+        true
+      );
     });
 
     it('returns failed result when invoke throws', async () => {
@@ -168,6 +181,138 @@ describe('AgentExecutionService', () => {
           gitService: expect.any(Object),
         })
       );
+    });
+
+    it('injects retrieved RAG context when predecessor or questionnaire files are provided', async () => {
+      const predecessorPath = '/tmp/test/BusinessDocs/Phase2-Tech/05-architecture.md';
+      const questionnairePath = '/tmp/test/BusinessDocs/questionnaire.md';
+      mockCtx.store.exists.mockImplementation((filePath) =>
+        [predecessorPath, questionnairePath].includes(filePath)
+      );
+      mockCtx.store.readFile.mockImplementation((filePath) => {
+        if (filePath === predecessorPath) return 'Use React for the operator-facing shell.';
+        if (filePath === questionnairePath) return 'Which UI framework should we use?';
+        return '';
+      });
+      mockCtx.ragStore = {
+        query: vi.fn().mockResolvedValue([
+          {
+            chunk: {
+              source_path: '/tmp/test/BusinessDocs/decisions.md',
+              chunk_text: 'Use React for the operator-facing web application shell.',
+              start_line: 18,
+            },
+            score: 0.94,
+          },
+        ]),
+      };
+      mockCtx.embeddingProvider = {
+        embedText: vi.fn().mockResolvedValue([0.2, 0.3, 0.4]),
+      };
+      invokeSpy.mockResolvedValue({ success: true, outputPath: '/out.md' });
+
+      await svc.execute({
+        agentId: '05',
+        context: {
+          predecessorPaths: [predecessorPath],
+          questionnairePath,
+        },
+      });
+
+      expect(buildContextSpy).toHaveBeenCalledWith(
+        '05',
+        expect.objectContaining({
+          ragContext: expect.objectContaining({
+            collections: expect.arrayContaining(['decisions']),
+            matches: expect.arrayContaining([
+              expect.objectContaining({
+                source_path: 'BusinessDocs/decisions.md',
+                collection: 'decisions',
+              }),
+            ]),
+          }),
+        })
+      );
+
+      expect(mockCtx.ragStore.query).toHaveBeenCalledWith('codebase', expect.any(Array), 3, 0.12);
+    });
+
+    it('uses non-technical RAG profile collections for strategy agents', async () => {
+      const predecessorPath = '/tmp/test/BusinessDocs/Phase4-Marketing/14-brand.md';
+      mockCtx.store.exists.mockImplementation((filePath) => [predecessorPath].includes(filePath));
+      mockCtx.store.readFile.mockImplementation((filePath) => {
+        if (filePath === predecessorPath) return 'Define brand pillars and launch positioning.';
+        return '';
+      });
+      mockCtx.ragStore = {
+        query: vi.fn().mockResolvedValue([]),
+      };
+      mockCtx.embeddingProvider = {
+        embedText: vi.fn().mockResolvedValue([0.2, 0.3, 0.4]),
+      };
+      invokeSpy.mockResolvedValue({ success: true, outputPath: '/out.md' });
+
+      await svc.execute({
+        agentId: '14',
+        context: {
+          predecessorPaths: [predecessorPath],
+        },
+      });
+
+      const queriedCollections = mockCtx.ragStore.query.mock.calls.map((call) => call[0]);
+      expect(queriedCollections).toEqual(
+        expect.arrayContaining(['decisions', 'phase-outputs', 'sprint-artifacts--default'])
+      );
+      expect(queriedCollections).not.toContain('codebase');
+    });
+
+    it('persists rag_retrieval_score to runtime metrics when grounding is injected', async () => {
+      const predecessorPath = '/tmp/test/BusinessDocs/Phase2-Tech/05-architecture.md';
+      mockCtx.store.exists.mockImplementation((filePath) => filePath === predecessorPath);
+      mockCtx.store.readFile.mockImplementation((filePath) => {
+        if (filePath === predecessorPath) return 'Use provider-based auth with role checks.';
+        return '';
+      });
+      mockCtx.ragStore = {
+        query: vi.fn().mockResolvedValue([
+          {
+            chunk: {
+              source_path: '/tmp/test/BusinessDocs/decisions.md',
+              chunk_text: 'Adopt provider-based auth middleware.',
+              start_line: 10,
+            },
+            score: 0.7,
+          },
+          {
+            chunk: {
+              source_path: '/tmp/test/BusinessDocs/decisions.md',
+              chunk_text: 'Persist authentication context in session.',
+              start_line: 20,
+            },
+            score: 0.9,
+          },
+        ]),
+      };
+      mockCtx.embeddingProvider = {
+        embedText: vi.fn().mockResolvedValue([0.2, 0.3, 0.4]),
+      };
+      invokeSpy.mockResolvedValue({ success: true, outputPath: '/out.md' });
+
+      await svc.execute({
+        agentId: '05',
+        context: {
+          predecessorPaths: [predecessorPath],
+        },
+      });
+
+      expect(mockCtx.safeWrite).toHaveBeenCalled();
+      const [metricsPath, content] = mockCtx.safeWrite.mock.calls.at(-1);
+      expect(metricsPath.replace(/\\/g, '/')).toContain(
+        '/BusinessDocs/metrics/runtime-metrics.json'
+      );
+      const parsed = JSON.parse(content);
+      expect(parsed.rag_retrieval_score).toBeCloseTo(0.8, 6);
+      expect(typeof parsed.rag_retrieval_score).toBe('number');
     });
   });
 

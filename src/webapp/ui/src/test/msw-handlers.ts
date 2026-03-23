@@ -471,6 +471,16 @@ export const handlers = [
   http.post('/api/decisions', () =>
     HttpResponse.json({ ok: true, id: 'DEC-003', action: 'create' })
   ),
+  http.post('/api/v1/decisions/similar', () =>
+    HttpResponse.json([
+      {
+        decisionId: 'DEC-002',
+        title: 'Use React for the web application shell',
+        excerpt: 'Use React for the web application shell and shared design system.',
+        score: 0.93,
+      },
+    ])
+  ),
   http.post('/api/decisions/activate-category', () =>
     HttpResponse.json({ ok: true, action: 'activated', file: 'cat.md', name: 'Cat', stack: 'tech' })
   ),

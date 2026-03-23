@@ -1,0 +1,10 @@
+{
+  "agentProfiles": {
+    "06": {
+      "collections": ["codebase", "decisions", "phase-outputs", "sprint-artifacts"],
+      "topKPerCollection": 3,
+      "threshold": 0.12,
+      "maxMatches": 10
+    }
+  }
+}

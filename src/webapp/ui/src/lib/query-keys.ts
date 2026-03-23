@@ -11,6 +11,7 @@ export const queryKeys = {
   /* Decisions */
   decisions: {
     all: ['decisions'] as const,
+    similar: (query: string) => ['decisions', 'similar', query] as const,
   },
 
   /* Milestones */

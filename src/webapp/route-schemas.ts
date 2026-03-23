@@ -199,6 +199,59 @@ export const decisionPromoteLesson = {
   },
 };
 
+export const decisionSimilar = {
+  tags: ['decisions'],
+  body: {
+    type: 'object' as const,
+    required: ['query'],
+    properties: {
+      query: { type: 'string' as const, minLength: 1, maxLength: 5000 },
+      topK: { type: 'number' as const, minimum: 1, maximum: 10 },
+    },
+    additionalProperties: false,
+  },
+  response: {
+    200: {
+      description: 'Success',
+      type: 'array' as const,
+      items: {
+        type: 'object' as const,
+        required: ['decisionId', 'title', 'score', 'excerpt'],
+        properties: {
+          decisionId: { type: 'string' as const, minLength: 1 },
+          title: { type: 'string' as const, minLength: 1 },
+          score: { type: 'number' as const, minimum: 0, maximum: 1 },
+          excerpt: { type: 'string' as const, minLength: 1 },
+        },
+        additionalProperties: false,
+      },
+    },
+    ...r400,
+    ...r401,
+    ...r403,
+    ...r500,
+  },
+};
+
+export const chatQuery = {
+  tags: ['chat'],
+  body: {
+    type: 'object' as const,
+    required: ['intent', 'message'],
+    properties: {
+      intent: {
+        type: 'string' as const,
+        enum: ['decision_lookup', 'workspace_query', 'artifact_query'],
+      },
+      message: { type: 'string' as const, minLength: 1, maxLength: 5000 },
+      topK: { type: 'number' as const, minimum: 1, maximum: 10 },
+      threshold: { type: 'number' as const, minimum: 0, maximum: 1 },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
 /* ── questionnaires ───────────────────────────────────────────── */
 
 export const questionnairesList = {
@@ -597,6 +650,34 @@ export const ragIndexStart = {
         minItems: 1,
         items: { type: 'string' as const, minLength: 1, maxLength: 2000 },
       },
+      workspaceId: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 120,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
+export const ragStandardIndexStart = {
+  tags: ['rag'],
+  body: {
+    type: 'object' as const,
+    required: ['collection'],
+    properties: {
+      collection: {
+        type: 'string' as const,
+        enum: ['decisions', 'phase-outputs', 'codebase', 'sprint-artifacts'],
+      },
+      workspaceId: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 120,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
     },
     additionalProperties: false,
   },
@@ -618,6 +699,12 @@ export const ragQuery = {
       query: { type: 'string' as const, minLength: 1, maxLength: 5000 },
       topK: { type: 'number' as const, minimum: 1, maximum: 50 },
       threshold: { type: 'number' as const, minimum: 0, maximum: 1 },
+      workspaceId: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 120,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
     },
     additionalProperties: false,
   },

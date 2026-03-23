@@ -9,6 +9,7 @@
  */
 
 import { randomUUID } from 'node:crypto';
+import path from 'node:path';
 import { Dispatcher, PHASE_AGENTS } from '../../../platform/engine/dispatcher';
 import { getStore } from '../store';
 import { sessionTracker } from '../session-tracker';
@@ -17,6 +18,7 @@ import { resolveAdapter } from '../../../platform/engine/agent-runtime-adapter';
 import { AGENT_RUNTIME_ADAPTER } from '../config';
 import { GitBackendRouter } from './git/git-backend-router';
 import { GitService } from './git/git-service';
+import { RagGroundingService } from './rag-grounding-service';
 
 /** All known agents from the PHASE_AGENTS registry, keyed by id. */
 const AGENT_INDEX = new Map<string, { id: string; name: string; phase: string }>();
@@ -81,6 +83,22 @@ function pruneHistory() {
   }
 }
 
+function normalizeConfidence(value: unknown, fallback: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return fallback;
+  }
+  return Math.max(0, Math.min(1, value));
+}
+
+function confidencePercent(value: number): number {
+  return Math.round(value * 100);
+}
+
+function normalizeScore(value: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(1, value));
+}
+
 export class AgentExecutionService {
   private _svc: ServiceContext;
 
@@ -131,11 +149,13 @@ export class AgentExecutionService {
     const dispatcher = new Dispatcher({ store: getStore(), adapter: adapter ?? undefined });
     const workspaceId = input.context?.workspaceId || 'default';
     const gitService = this.createGitService(workspaceId);
+    const ragContext = await this.buildRagContext(info, input);
 
     // Build context
     const ctx = dispatcher.buildContext(info.id, {
       predecessorPaths: input.context?.predecessorPaths ?? [],
       questionnairePath: input.context?.questionnairePath,
+      ragContext,
       workspaceId,
       gitService,
     });
@@ -151,6 +171,26 @@ export class AgentExecutionService {
         level: 'info',
         message: `Dispatching to ${info.name} (${info.phase})`,
       });
+      if (ragContext) {
+        const retrievalScore = normalizeScore(
+          ragContext.matches.length > 0
+            ? ragContext.matches.reduce((sum, match) => sum + match.score, 0) /
+                ragContext.matches.length
+            : 0
+        );
+
+        this.persistRagRetrievalScore(retrievalScore);
+        job.logs.push({
+          timestamp: new Date().toISOString(),
+          level: 'info',
+          message: `Injected ${ragContext.matches.length} RAG match(es) from ${ragContext.collections.join(', ')}`,
+        });
+        job.logs.push({
+          timestamp: new Date().toISOString(),
+          level: 'info',
+          message: `RAG retrieval score: ${retrievalScore.toFixed(3)}`,
+        });
+      }
 
       const result = await dispatcher.invoke({ id: info.id, name: info.name }, info.phase, ctx);
 
@@ -162,8 +202,7 @@ export class AgentExecutionService {
       const completedAt = new Date().toISOString();
       const durationMs = +new Date(completedAt) - +new Date(startedAt);
       const outputPath = result.outputPath as string | undefined;
-      const confidence =
-        typeof result.confidence === 'number' ? result.confidence : result.success ? 0.5 : 0;
+      const confidence = normalizeConfidence(result.confidence, result.success ? 0.5 : 0);
       const uncertaintyReasons = Array.isArray(result.uncertainty_reasons)
         ? (result.uncertainty_reasons as string[])
         : result.success
@@ -192,6 +231,18 @@ export class AgentExecutionService {
         job.confidence = confidence;
         job.uncertainty_reasons = uncertaintyReasons;
         job.needs_human_review = needsHumanReview;
+        job.logs.push({
+          timestamp: completedAt,
+          level: 'info',
+          message: `Confidence score: ${confidencePercent(confidence)}%${needsHumanReview ? ' (human review recommended)' : ''}`,
+        });
+        for (const reason of uncertaintyReasons) {
+          job.logs.push({
+            timestamp: completedAt,
+            level: 'warn',
+            message: `Uncertainty: ${reason}`,
+          });
+        }
         job.logs.push({ timestamp: completedAt, level: 'info', message: 'Execution completed' });
       } else {
         sessionTracker.failAgent(info.id);
@@ -211,6 +262,18 @@ export class AgentExecutionService {
         job.confidence = confidence;
         job.uncertainty_reasons = uncertaintyReasons;
         job.needs_human_review = needsHumanReview;
+        job.logs.push({
+          timestamp: completedAt,
+          level: 'warn',
+          message: `Confidence score: ${confidencePercent(confidence)}% (human review required)`,
+        });
+        for (const reason of uncertaintyReasons) {
+          job.logs.push({
+            timestamp: completedAt,
+            level: 'warn',
+            message: `Uncertainty: ${reason}`,
+          });
+        }
         job.logs.push({
           timestamp: completedAt,
           level: 'error',
@@ -258,6 +321,94 @@ export class AgentExecutionService {
       audit: this._svc.audit,
       repositoryPath,
       actor: 'agent-execution',
+    });
+  }
+
+  private async buildRagContext(
+    info: { id: string; name: string },
+    input: ExecuteAgentInput
+  ): Promise<{
+    query: string;
+    collections: string[];
+    matches: Array<{
+      text: string;
+      source_path: string;
+      start_line: number | null;
+      collection: string;
+      score: number;
+    }>;
+  } | null> {
+    if (!this._svc.ragStore || !this._svc.embeddingProvider) {
+      return null;
+    }
+
+    const predecessorPaths = input.context?.predecessorPaths ?? [];
+    const questionnairePath = input.context?.questionnairePath;
+    const store = this._svc.store as {
+      exists?: (filePath: string) => boolean;
+      readFile?: (filePath: string, encoding?: string) => string;
+    };
+
+    const predecessorOutputs: Record<string, string> = {};
+    if (store.exists && store.readFile) {
+      for (const predecessorPath of predecessorPaths) {
+        if (store.exists(predecessorPath)) {
+          predecessorOutputs[predecessorPath] = store.readFile(predecessorPath);
+        }
+      }
+    }
+
+    const questionnaireInput =
+      questionnairePath && store.exists && store.readFile && store.exists(questionnairePath)
+        ? store.readFile(questionnairePath)
+        : null;
+
+    const grounding = new RagGroundingService({
+      projectRoot: this._svc.projectRoot,
+      ragStore: this._svc.ragStore,
+      embeddingProvider: this._svc.embeddingProvider,
+    });
+
+    return grounding.buildAgentGrounding({
+      agentId: info.id,
+      agentName: info.name,
+      phase: info.phase,
+      workspaceId: input.context?.workspaceId,
+      questionnaireInput,
+      predecessorOutputs,
+    });
+  }
+
+  private persistRagRetrievalScore(score: number): void {
+    const normalized = normalizeScore(score);
+    const metricsPath = path.join(this._svc.businessDocs, 'metrics', 'runtime-metrics.json');
+    const store = this._svc.store as {
+      exists?: (filePath: string) => boolean;
+      readFile?: (filePath: string, encoding?: string) => string;
+    };
+
+    let payload: Record<string, unknown> = {};
+    if (store.exists && store.readFile && store.exists(metricsPath)) {
+      try {
+        const raw = store.readFile(metricsPath, 'utf8');
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          payload = parsed as Record<string, unknown>;
+        }
+      } catch {
+        payload = {};
+      }
+    }
+
+    payload.rag_retrieval_score = normalized;
+    payload.rag_retrieval_updated_at = new Date().toISOString();
+
+    this._svc.safeWrite(metricsPath, JSON.stringify(payload, null, 2), 'utf8', {
+      operation: 'RAG_RETRIEVAL_METRIC_WRITE',
+      entityType: 'metric',
+      entityId: 'runtime-rag-retrieval-score',
+      user: 'agent-execution',
+      summary: `Persisted rag_retrieval_score=${normalized.toFixed(3)}`,
     });
   }
 

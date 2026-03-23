@@ -162,6 +162,15 @@ export interface DecisionMutationResponse extends OkResponse {
   action: string;
 }
 
+export interface SimilarDecisionMatch {
+  decisionId: string;
+  title: string;
+  score: number;
+  excerpt: string;
+}
+
+export type DecisionSimilarResponse = SimilarDecisionMatch[];
+
 export interface ActivateCategoryPayload {
   file: string;
 }

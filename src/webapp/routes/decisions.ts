@@ -35,6 +35,134 @@ import {
 } from '../lesson-promotion';
 import * as RS from '../route-schemas';
 
+type SimilarDecisionResponse = {
+  decisionId: string;
+  title: string;
+  score: number;
+  excerpt: string;
+};
+
+function ensureOperatorOrAdmin(request, reply, ctx: ServerContext): boolean {
+  if (!ctx._authMiddleware) return true;
+
+  const user =
+    (request as { user?: { role?: string } }).user ||
+    (request.raw as { user?: { role?: string } } | undefined)?.user;
+  if (!user) {
+    reply.code(401).send(errorResponse('UNAUTHORIZED', 'Authentication required'));
+    return false;
+  }
+
+  const role = user.role || 'viewer';
+  if (role !== 'operator' && role !== 'admin') {
+    reply.code(403).send(errorResponse('FORBIDDEN', 'Operator or admin role required'));
+    return false;
+  }
+
+  return true;
+}
+
+function truncateExcerpt(value: string, maxLength = 220): string {
+  const normalized = value.replace(/\s+/g, ' ').trim();
+  if (normalized.length <= maxLength) return normalized;
+  return `${normalized.slice(0, maxLength - 3).trim()}...`;
+}
+
+function extractDecisionId(value: string): string | null {
+  const match = value.match(/\bDEC(?:-[A-Za-z0-9]+)+\b/);
+  return match ? match[0] : null;
+}
+
+function tokenize(value: string): Set<string> {
+  return new Set((value.toLowerCase().match(/[a-z0-9]{3,}/g) || []).filter(Boolean));
+}
+
+function overlapRatio(left: Set<string>, right: Set<string>): number {
+  if (left.size === 0 || right.size === 0) return 0;
+  let shared = 0;
+  for (const token of left) {
+    if (right.has(token)) shared += 1;
+  }
+  return shared / Math.max(left.size, right.size);
+}
+
+function getDecisionTitle(decision: Record<string, unknown>): string {
+  if (typeof decision.decision === 'string' && decision.decision.trim())
+    return decision.decision.trim();
+  if (typeof decision.subject === 'string' && decision.subject.trim())
+    return decision.subject.trim();
+  if (typeof decision.question === 'string' && decision.question.trim())
+    return decision.question.trim();
+  return String(decision.id || 'Untitled decision');
+}
+
+function buildSimilarDecisionResults(
+  svc: DecisionService,
+  results: Array<{ chunk: { chunk_text: string }; score: number }>,
+  topK: number
+): SimilarDecisionResponse[] {
+  const listed = svc.list();
+  const candidates = [...listed.decided, ...listed.deferred].map((decision) => {
+    const title = getDecisionTitle(decision as Record<string, unknown>);
+    const searchText = [
+      title,
+      typeof decision.scope === 'string' ? decision.scope : '',
+      typeof (decision as { notes?: unknown }).notes === 'string'
+        ? (decision as { notes: string }).notes
+        : '',
+      typeof (decision as { reason?: unknown }).reason === 'string'
+        ? (decision as { reason: string }).reason
+        : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+
+    return {
+      decisionId: String(decision.id),
+      title,
+      tokens: tokenize(searchText),
+    };
+  });
+  const candidatesById = new Map(candidates.map((candidate) => [candidate.decisionId, candidate]));
+  const matches: SimilarDecisionResponse[] = [];
+  const seen = new Set<string>();
+
+  for (const result of results) {
+    const explicitId = extractDecisionId(result.chunk.chunk_text);
+    const tokenizedResult = tokenize(result.chunk.chunk_text);
+    const resolvedCandidate = explicitId
+      ? candidatesById.get(explicitId) || null
+      : candidates
+          .map((candidate) => ({
+            candidate,
+            score:
+              overlapRatio(candidate.tokens, tokenizedResult) +
+              (result.chunk.chunk_text.toLowerCase().includes(candidate.title.toLowerCase())
+                ? 1
+                : 0),
+          }))
+          .sort((left, right) => right.score - left.score)[0]?.candidate || null;
+
+    if (!resolvedCandidate || seen.has(resolvedCandidate.decisionId)) {
+      continue;
+    }
+
+    seen.add(resolvedCandidate.decisionId);
+    matches.push({
+      decisionId: resolvedCandidate.decisionId,
+      title: resolvedCandidate.title,
+      score: result.score,
+      excerpt: truncateExcerpt(result.chunk.chunk_text),
+    });
+
+    if (matches.length >= topK) {
+      break;
+    }
+  }
+
+  return matches;
+}
+
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const svc = new DecisionService(toServiceContext(ctx as unknown as Record<string, unknown>));
 
@@ -68,6 +196,45 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
   app.get('/api/decisions', { schema: RS.decisionsList }, async (_request, reply) => {
     return reply.send(svc.list());
   });
+
+  const similarHandler = async (request, reply) => {
+    if (!ensureOperatorOrAdmin(request, reply, ctx)) return;
+
+    try {
+      const store = ctx._ragStore;
+      const embeddingProvider = ctx._embeddingProvider;
+      if (!store || !embeddingProvider) {
+        return reply
+          .code(500)
+          .send(errorResponse('INTERNAL_ERROR', 'RAG services not initialised'));
+      }
+
+      const body = (request.body as Record<string, unknown>) || {};
+      const queryText = String(body.query || '').trim();
+      const topK = Number.isFinite(body.topK) ? Number(body.topK) : 3;
+
+      if (!queryText) {
+        return reply.code(400).send(errorResponse('INVALID_INPUT', 'Query is required'));
+      }
+
+      if (topK < 1 || topK > 10) {
+        return reply
+          .code(400)
+          .send(errorResponse('INVALID_INPUT', 'topK must be between 1 and 10'));
+      }
+
+      const queryVector = await embeddingProvider.embedText(queryText);
+      const results = await store.query('decisions', queryVector, Math.max(topK * 3, topK), 0);
+
+      return reply.send(buildSimilarDecisionResults(svc, results, Math.min(topK, 3)));
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      return reply.code(500).send(errorResponse('RAG_QUERY_ERROR', message));
+    }
+  };
+
+  app.post('/api/v1/decisions/similar', { schema: RS.decisionSimilar }, similarHandler);
+  app.post('/api/decisions/similar', { schema: RS.decisionSimilar }, similarHandler);
 
   app.post('/api/decisions', { schema: RS.decisionMutate }, async (request, reply) => {
     const body = request.body as Record<string, unknown>;

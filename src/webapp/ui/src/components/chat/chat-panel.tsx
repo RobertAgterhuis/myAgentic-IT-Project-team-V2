@@ -254,6 +254,8 @@ export function ChatPanel() {
                 onClick={() => void onSend()}
                 disabled={!canSend}
                 loading={sendMessage.isPending}
+                aria-label="Send message"
+                title="Send message"
               >
                 <Send className="size-4" />
               </Button>

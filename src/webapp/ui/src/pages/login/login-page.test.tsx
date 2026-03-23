@@ -27,6 +27,7 @@ const locationStub = {
   replace: vi.fn(),
   reload: vi.fn(),
 };
+
 Object.defineProperty(window, 'location', {
   writable: true,
   configurable: true,
@@ -155,16 +156,110 @@ describe('LoginPage', () => {
       await waitFor(() => {
         expect(screen.getByText(/configuration required/i)).toBeInTheDocument();
       });
-      expect(screen.getByText(/github_client_id/i)).toBeInTheDocument();
-      expect(screen.getByText(/github_client_secret/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/github_client_id/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/github_client_secret/i).length).toBeGreaterThan(0);
     });
 
     it('shows Entra env var instructions in configuration card', async () => {
       renderPage();
       await waitFor(() => {
-        expect(screen.getByText(/entra_client_id/i)).toBeInTheDocument();
+        expect(screen.getAllByText(/entra_client_id/i).length).toBeGreaterThan(0);
       });
-      expect(screen.getByText(/entra_tenant_id/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/entra_tenant_id/i).length).toBeGreaterThan(0);
+    });
+
+    it('shows detailed step-by-step setup guidance for GitHub and Azure', async () => {
+      renderPage();
+      await waitFor(() => {
+        expect(screen.getByText(/github setup steps/i)).toBeInTheDocument();
+      });
+      expect(screen.getByText(/azure \(microsoft entra\) setup steps/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/open microsoft entra admin center/i).length).toBeGreaterThan(0);
+    });
+
+    it('validates configuration and shows pass or missing status per provider', async () => {
+      server.use(
+        http.get('/api/auth/config/validate', () =>
+          HttpResponse.json({
+            allConfigured: false,
+            github: {
+              configured: true,
+              providerEnabled: true,
+              requiredVariables: [
+                { name: 'GITHUB_CLIENT_ID', present: true },
+                { name: 'GITHUB_CLIENT_SECRET', present: true },
+              ],
+              callback: {
+                envName: 'AUTH_CALLBACK_URL',
+                callbackUrl: 'http://localhost:3000/api/auth/callback',
+              },
+            },
+            entra: {
+              configured: false,
+              providerEnabled: false,
+              requiredVariables: [
+                { name: 'ENTRA_CLIENT_ID', present: false },
+                { name: 'ENTRA_TENANT_ID', present: false },
+                { name: 'ENTRA_CLIENT_SECRET', present: false },
+              ],
+              callback: {
+                envName: 'ENTRA_REDIRECT_URI',
+                callbackUrl: 'http://localhost:3000/api/auth/entra/callback',
+              },
+            },
+          })
+        )
+      );
+
+      const user = userEvent.setup();
+      renderPage();
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /validate configuration/i })).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: /validate configuration/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/validation result/i)).toBeInTheDocument();
+      });
+
+      expect(screen.getAllByText(/pass - github_client_id/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/missing - entra_client_id/i).length).toBeGreaterThan(0);
+    });
+
+    it('copies GitHub env snippet to clipboard', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: /copy github \.env snippet/i })
+        ).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: /copy github \.env snippet/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/github snippet copied/i)).toBeInTheDocument();
+      });
+    });
+
+    it('copies Azure env snippet to clipboard', async () => {
+      const user = userEvent.setup();
+      renderPage();
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole('button', { name: /copy azure \.env snippet/i })
+        ).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole('button', { name: /copy azure \.env snippet/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/azure snippet copied/i)).toBeInTheDocument();
+      });
     });
 
     it('does not show login buttons when auth is unavailable', async () => {

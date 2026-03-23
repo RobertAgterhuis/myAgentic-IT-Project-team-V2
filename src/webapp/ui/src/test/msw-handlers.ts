@@ -409,6 +409,22 @@ const mockPageHelpByRoute: Record<
     keywords: ['pipeline', 'gate', 'progress'],
     topicLinks: [{ topicId: 'quality-gates', title: 'Quality Gates' }],
   },
+  agents: {
+    routeSlug: 'agents',
+    routePath: '/agents',
+    pageTitle: 'Agents',
+    purpose: 'Monitor agent execution status and diagnose runtime failures.',
+    coreActions: [
+      { label: 'Inspect status', description: 'Track running, failed, and completed agent runs.' },
+      { label: 'Diagnose errors', description: 'Review execution failures and retry causes.' },
+      { label: 'Re-run safely', description: 'Execute targeted reruns with clear scope.' },
+    ],
+    inputsOutputs: 'Agent runtime state in, execution insight out.',
+    permissions: 'Operator',
+    relatedPages: [{ routeSlug: 'sessions', title: 'Sessions' }],
+    keywords: ['agents', 'runtime', 'errors'],
+    topicLinks: [{ topicId: 'agents-overview', title: 'Agents Overview' }],
+  },
 };
 
 const mockHelpTopicsById: Record<
@@ -454,6 +470,14 @@ const mockHelpTopicsById: Record<
     html: '<h1>Quality Gates</h1><h2>Gate outcomes</h2><p>Each gate may pass, fail, or block progress.</p>',
     keywords: ['quality', 'gates', 'pipeline'],
   },
+  'agents-overview': {
+    topicId: 'agents-overview',
+    title: 'Agents Overview',
+    description: 'How to interpret agent execution status and retries.',
+    markdown: '# Agents Overview\n\n## Status\n\nTrack running, failed, and retried agent runs.',
+    html: '<h1>Agents Overview</h1><h2>Status</h2><p>Track running, failed, and retried agent runs.</p>',
+    keywords: ['agents', 'status', 'retries'],
+  },
 };
 
 export const handlers = [
@@ -461,6 +485,37 @@ export const handlers = [
   /* Auth */
   http.get('/api/auth/me', () => HttpResponse.json({}, { status: 401 })),
   http.get('/api/auth/providers', () => HttpResponse.json({ github: true, entra: false })),
+  http.get('/api/auth/config/validate', () =>
+    HttpResponse.json({
+      allConfigured: false,
+      github: {
+        configured: false,
+        providerEnabled: false,
+        requiredVariables: [
+          { name: 'GITHUB_CLIENT_ID', present: false },
+          { name: 'GITHUB_CLIENT_SECRET', present: false },
+        ],
+        callback: {
+          envName: 'AUTH_CALLBACK_URL',
+          effectiveBaseUrl: 'http://localhost:3000',
+          callbackUrl: 'http://localhost:3000/api/auth/callback',
+        },
+      },
+      entra: {
+        configured: false,
+        providerEnabled: false,
+        requiredVariables: [
+          { name: 'ENTRA_CLIENT_ID', present: false },
+          { name: 'ENTRA_TENANT_ID', present: false },
+          { name: 'ENTRA_CLIENT_SECRET', present: false },
+        ],
+        callback: {
+          envName: 'ENTRA_REDIRECT_URI',
+          callbackUrl: 'http://localhost:3000/api/auth/entra/callback',
+        },
+      },
+    })
+  ),
 
   /* Questionnaires */
   http.get('/api/questionnaires', () => HttpResponse.json(mockQuestionnaires)),

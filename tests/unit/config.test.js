@@ -194,7 +194,8 @@ describe('config.ts exported environment constants', () => {
     expect(config.SESSION_FILE).toContain('session-state.json');
     expect(config.SESSION_AUDIT_FILE).toContain('session-state-audit.json');
     expect(config.COMMAND_QUEUE).toContain('command-queue.json');
-    expect(config.HELP_DIR).toContain('docs');
+    expect(config.HELP_DIR).toContain('src');
+    expect(config.HELP_DIR).toContain('help');
     expect(config.METRICS_FILE).toContain('runtime-metrics.json');
   });
 });

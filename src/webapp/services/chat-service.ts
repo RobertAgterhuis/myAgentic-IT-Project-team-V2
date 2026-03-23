@@ -110,6 +110,18 @@ function buildAssistantResponse(input: {
   contextSummary: string;
   contextHints: string[];
 }): string {
+  if (input.intent === 'decision_lookup') {
+    return `${input.contextSummary} I can ground this with prior decisions and link the relevant decision records.`;
+  }
+
+  if (input.intent === 'workspace_query') {
+    return `${input.contextSummary} I can ground this with codebase evidence and point to relevant source locations.`;
+  }
+
+  if (input.intent === 'artifact_query') {
+    return `${input.contextSummary} I can ground this with phase output artifacts and summarize the relevant sections.`;
+  }
+
   if (input.intent === 'session_status') {
     return `${input.contextSummary} I can also open the pipeline or approval center if you want to continue from here.`;
   }

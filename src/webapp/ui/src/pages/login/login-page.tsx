@@ -17,6 +17,23 @@ interface AuthStatus {
   error?: string;
 }
 
+interface ProviderValidation {
+  configured: boolean;
+  providerEnabled: boolean;
+  requiredVariables: Array<{ name: string; present: boolean }>;
+  callback: {
+    envName: string;
+    callbackUrl: string;
+    effectiveBaseUrl?: string;
+  };
+}
+
+interface AuthValidationResult {
+  allConfigured: boolean;
+  github: ProviderValidation;
+  entra: ProviderValidation;
+}
+
 export default function LoginPage() {
   const loading = useAuthStore((s) => s.loading);
   const [authStatus, setAuthStatus] = useState<AuthStatus>({
@@ -24,6 +41,10 @@ export default function LoginPage() {
     githubEnabled: true,
     entraEnabled: false,
   });
+  const [validation, setValidation] = useState<AuthValidationResult | null>(null);
+  const [validating, setValidating] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState<string | null>(null);
 
   const checkAuthAvailability = useCallback(async () => {
     try {
@@ -83,6 +104,57 @@ export default function LoginPage() {
   function handleEntraLogin() {
     if (!authStatus.available) return;
     window.location.href = '/api/auth/entra/login';
+  }
+
+  async function handleValidateConfiguration() {
+    setValidating(true);
+    setValidationError(null);
+    try {
+      const response = await fetch('/api/auth/config/validate', { credentials: 'include' });
+      if (!response.ok) {
+        throw new Error(`Validation failed (${response.status})`);
+      }
+      const body = (await response.json()) as AuthValidationResult;
+      setValidation(body);
+    } catch {
+      setValidationError('Unable to validate configuration. Check server connectivity and retry.');
+      setValidation(null);
+    } finally {
+      setValidating(false);
+    }
+  }
+
+  async function handleCopySnippet(kind: 'github' | 'entra') {
+    const origin = window.location.origin;
+    const githubSnippet = [
+      `GITHUB_CLIENT_ID=your_github_client_id`,
+      `GITHUB_CLIENT_SECRET=your_github_client_secret`,
+      `AUTH_CALLBACK_URL=${origin}`,
+    ].join('\n');
+    const entraSnippet = [
+      `ENTRA_CLIENT_ID=your_entra_client_id`,
+      `ENTRA_TENANT_ID=your_tenant_id_or_common`,
+      `ENTRA_CLIENT_SECRET=your_entra_client_secret`,
+      `ENTRA_REDIRECT_URI=${origin}/api/auth/entra/callback`,
+    ].join('\n');
+    const snippet = kind === 'github' ? githubSnippet : entraSnippet;
+
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(snippet);
+      } else {
+        // Fallback for older browser contexts
+        const textarea = document.createElement('textarea');
+        textarea.value = snippet;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopyStatus(kind === 'github' ? 'GitHub snippet copied.' : 'Azure snippet copied.');
+    } catch {
+      setCopyStatus('Copy failed. Please copy manually from the snippet above.');
+    }
   }
 
   return (
@@ -159,8 +231,8 @@ export default function LoginPage() {
                   GitHub OAuth Setup
                 </Text>
                 <Text className="text-amber-800 dark:text-amber-200">
-                  This instance requires GitHub OAuth to be configured. Administrators should set
-                  the following environment variables:
+                  Configure GitHub OAuth in your GitHub account settings and then add variables in
+                  your server environment file.
                 </Text>
               </div>
 
@@ -207,15 +279,132 @@ export default function LoginPage() {
 
               <div>
                 <Text className="font-medium text-amber-900 dark:text-amber-100 mb-2">
-                  Steps to Configure:
+                  GitHub setup steps (where and what):
                 </Text>
                 <ol className="list-decimal list-inside space-y-1 text-amber-800 dark:text-amber-200">
-                  <li>Create a GitHub OAuth App at https://github.com/settings/developers</li>
-                  <li>Set the Authorization callback URL to match OAUTH_CALLBACK_URL</li>
-                  <li>Copy Client ID and Client Secret to environment variables</li>
-                  <li>Restart the application</li>
+                  <li>
+                    Open GitHub Developer Settings: https://github.com/settings/developers and
+                    create an OAuth App.
+                  </li>
+                  <li>
+                    In the OAuth App form, set Authorization callback URL to
+                    <span className="font-mono"> {window.location.origin}/api/auth/callback</span>.
+                  </li>
+                  <li>
+                    In your server .env, set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET to the values
+                    from GitHub.
+                  </li>
+                  <li>
+                    In your server .env, set AUTH_CALLBACK_URL to
+                    <span className="font-mono"> {window.location.origin}</span>.
+                  </li>
+                  <li>Restart the backend service so the new variables are loaded.</li>
                 </ol>
               </div>
+
+              <div>
+                <Text className="font-medium text-amber-900 dark:text-amber-100 mb-2">
+                  Azure (Microsoft Entra) setup steps (where and what):
+                </Text>
+                <ol className="list-decimal list-inside space-y-1 text-amber-800 dark:text-amber-200">
+                  <li>
+                    Open Microsoft Entra admin center: https://entra.microsoft.com and create an App
+                    registration.
+                  </li>
+                  <li>
+                    In App registration, add a Web redirect URI:
+                    <span className="font-mono">
+                      {' '}
+                      {window.location.origin}/api/auth/entra/callback
+                    </span>
+                    .
+                  </li>
+                  <li>
+                    In Certificates & secrets, create a client secret and copy the secret value.
+                  </li>
+                  <li>
+                    In your server .env, set ENTRA_CLIENT_ID, ENTRA_TENANT_ID, ENTRA_CLIENT_SECRET,
+                    and ENTRA_REDIRECT_URI.
+                  </li>
+                  <li>Restart the backend service so Entra provider initialization can succeed.</li>
+                </ol>
+              </div>
+
+              <Button
+                variant="default"
+                size="sm"
+                className="w-full mt-2"
+                onClick={handleValidateConfiguration}
+                disabled={validating}
+              >
+                {validating ? 'Validating...' : 'Validate Configuration'}
+              </Button>
+
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopySnippet('github')}
+                  className="text-amber-900 dark:text-amber-100 border-amber-300 dark:border-amber-700"
+                >
+                  Copy GitHub .env Snippet
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleCopySnippet('entra')}
+                  className="text-amber-900 dark:text-amber-100 border-amber-300 dark:border-amber-700"
+                >
+                  Copy Azure .env Snippet
+                </Button>
+              </div>
+
+              {copyStatus && (
+                <Text className="text-xs text-amber-800 dark:text-amber-200">{copyStatus}</Text>
+              )}
+
+              {validationError && (
+                <AlertBanner variant="error" icon={<AlertTriangle className="size-4" />}>
+                  <Text className="text-sm">{validationError}</Text>
+                </AlertBanner>
+              )}
+
+              {validation && (
+                <div className="space-y-3 rounded border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 p-3 text-xs">
+                  <Text className="font-medium text-amber-900 dark:text-amber-100">
+                    Validation result:{' '}
+                    {validation.allConfigured ? 'All configured' : 'Configuration incomplete'}
+                  </Text>
+
+                  <div className="space-y-1">
+                    <Text className="font-medium text-amber-900 dark:text-amber-100">GitHub</Text>
+                    {validation.github.requiredVariables.map((entry) => (
+                      <Text key={entry.name} className="text-amber-800 dark:text-amber-200">
+                        {entry.present ? 'PASS' : 'MISSING'} - {entry.name}
+                      </Text>
+                    ))}
+                    <Text className="text-amber-800 dark:text-amber-200">
+                      Callback ({validation.github.callback.envName}):{' '}
+                      {validation.github.callback.callbackUrl}
+                    </Text>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Text className="font-medium text-amber-900 dark:text-amber-100">
+                      Azure (Entra)
+                    </Text>
+                    {validation.entra.requiredVariables.map((entry) => (
+                      <Text key={entry.name} className="text-amber-800 dark:text-amber-200">
+                        {entry.present ? 'PASS' : 'MISSING'} - {entry.name}
+                      </Text>
+                    ))}
+                    <Text className="text-amber-800 dark:text-amber-200">
+                      Redirect ({validation.entra.callback.envName}):{' '}
+                      {validation.entra.callback.callbackUrl}
+                    </Text>
+                  </div>
+                </div>
+              )}
 
               <Button
                 variant="outline"
@@ -225,6 +414,17 @@ export default function LoginPage() {
               >
                 <span>
                   Create GitHub App <ExternalLink className="size-3 inline ml-1" />
+                </span>
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full mt-2 gap-2 text-amber-900 dark:text-amber-100 border-amber-300 dark:border-amber-700"
+                onClick={() => window.open('https://entra.microsoft.com', '_blank')}
+              >
+                <span>
+                  Open Microsoft Entra Admin Center <ExternalLink className="size-3 inline ml-1" />
                 </span>
               </Button>
 

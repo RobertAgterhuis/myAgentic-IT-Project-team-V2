@@ -25,7 +25,7 @@ function createMockServiceContext() {
     decisionsFile: '/tmp/test/BusinessDocs/decisions.md',
     decisionsDir: '/tmp/test/BusinessDocs/decisions',
     commandQueue: '/tmp/test/BusinessDocs/session/command-queue.json',
-    helpDir: '/tmp/test/docs/help',
+    helpDir: '/tmp/test/src/webapp/ui/src/help',
     ragStore: undefined,
     embeddingProvider: undefined,
   };

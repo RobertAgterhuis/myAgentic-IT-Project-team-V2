@@ -12,7 +12,7 @@ import {
   resolveGroundingCollectionId,
   type ChatGroundingIntent,
 } from '../services/rag-grounding-service';
-import type { ChatIntent } from '../services/chat/intent-classifier';
+import { IntentClassifier, type ChatIntent } from '../services/chat/intent-classifier';
 import {
   CommandService,
   GovernanceService,
@@ -402,6 +402,14 @@ function resolveGroundingIntent(input: {
 }): ChatGroundingIntent | null {
   const normalized = `${input.message} ${input.contextHints.join(' ')}`.toLowerCase();
 
+  if (
+    input.intent === 'decision_lookup' ||
+    input.intent === 'workspace_query' ||
+    input.intent === 'artifact_query'
+  ) {
+    return input.intent;
+  }
+
   if (input.intent === 'workspace_navigation') return 'workspace_query';
   if (input.intent === 'approval_guidance') return 'decision_lookup';
 
@@ -425,7 +433,13 @@ function resolveGroundingIntent(input: {
 }
 
 function requiresStrictGrounding(intent: ChatIntent, message: string): boolean {
-  if (intent === 'approval_guidance' || intent === 'workspace_navigation') {
+  if (
+    intent === 'approval_guidance' ||
+    intent === 'workspace_navigation' ||
+    intent === 'decision_lookup' ||
+    intent === 'workspace_query' ||
+    intent === 'artifact_query'
+  ) {
     return true;
   }
 
@@ -672,6 +686,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     ragStore: ctx._ragStore,
     embeddingProvider: ctx._embeddingProvider,
   });
+  const intentClassifier = new IntentClassifier();
 
   app.post<{
     Body: {
@@ -706,13 +721,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     let groundingCollectionIds: string[] = [];
     let indexRefreshTriggered = false;
 
-    const preClassifiedIntent = (() => {
-      const normalized = `${message} ${contextHints.join(' ')}`.toLowerCase();
-      if (/(approval|override|exception|policy)/.test(normalized)) return 'approval_guidance';
-      if (/(workspace|repo|repository|codebase)/.test(normalized)) return 'workspace_navigation';
-      if (/(status|session|phase|gate|pipeline)/.test(normalized)) return 'session_status';
-      return 'general_assist';
-    })() as ChatIntent;
+    const preClassifiedIntent = intentClassifier.classify(message, contextHints);
 
     const strictGrounding = requiresStrictGrounding(preClassifiedIntent, message);
 
@@ -975,6 +984,11 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         source_type: resolveCitationSourceType(match.source_path),
         deep_link: resolveCitationLink(match.source_path),
       }));
+      const sourceLinks = citations.map((citation) => ({
+        source_path: citation.source_path,
+        start_line: citation.start_line,
+        deep_link: citation.deep_link,
+      }));
 
       return reply.send({
         ok: true,
@@ -984,6 +998,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         answer: summarizeGrounding(intent, grounded.matches.length, grounded.collections[0]),
         references: grounded.matches,
         citations,
+        source_links: sourceLinks,
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

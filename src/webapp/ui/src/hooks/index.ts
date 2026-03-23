@@ -13,6 +13,7 @@ export { useQuestionnaires, useQuestionnaire, useSaveQuestionnaire } from './use
 export {
   useDecisions,
   useDecision,
+  useSimilarDecisions,
   useCreateDecision,
   useUpdateDecision,
   useDeleteDecision,

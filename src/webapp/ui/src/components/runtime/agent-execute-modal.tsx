@@ -245,12 +245,24 @@ function ExecutionLogPanel({ logs }: { logs: ExecutionLogEntry[] }) {
 
 function ExecutionOutputViewer({ result }: { result: AgentExecutionResult }) {
   const [copied, setCopied] = useState(false);
+  const confidencePercent =
+    typeof result.confidence === 'number' && Number.isFinite(result.confidence)
+      ? `${Math.round(Math.max(0, Math.min(1, result.confidence)) * 100)}%`
+      : null;
+  const uncertaintyLines = Array.isArray(result.uncertainty_reasons)
+    ? result.uncertainty_reasons.filter((reason) => typeof reason === 'string' && reason.length > 0)
+    : [];
 
   const summary = [
     `Agent: ${result.agent_name} (${result.agent_id})`,
     `Status: ${result.status}`,
     `Duration: ${((result.duration_ms ?? 0) / 1000).toFixed(1)}s`,
     result.output_path ? `Output: ${result.output_path}` : null,
+    confidencePercent ? `Confidence: ${confidencePercent}` : null,
+    typeof result.needs_human_review === 'boolean'
+      ? `Needs human review: ${result.needs_human_review ? 'yes' : 'no'}`
+      : null,
+    uncertaintyLines.length > 0 ? `Uncertainty: ${uncertaintyLines.join('; ')}` : null,
   ]
     .filter(Boolean)
     .join('\n');
@@ -282,8 +294,23 @@ function ExecutionOutputViewer({ result }: { result: AgentExecutionResult }) {
               <span className="text-xs ml-2 text-muted-foreground">→ {result.output_path}</span>
             )}
           </span>
+          {confidencePercent && (
+            <Badge variant={result.needs_human_review ? 'warning' : 'success'}>
+              Confidence {confidencePercent}
+            </Badge>
+          )}
         </div>
       </AlertBanner>
+
+      {uncertaintyLines.length > 0 && (
+        <AlertBanner variant="warning">
+          <div className="text-xs space-y-1">
+            {uncertaintyLines.map((reason) => (
+              <div key={reason}>{reason}</div>
+            ))}
+          </div>
+        </AlertBanner>
+      )}
 
       {/* Toolbar */}
       <div className="flex gap-2">

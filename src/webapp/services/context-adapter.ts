@@ -43,5 +43,7 @@ export function toServiceContext(ctx: ServerContext | Record<string, unknown>): 
     decisionsDir: (ctx.DECISIONS_DIR || '') as string,
     commandQueue: (ctx.COMMAND_QUEUE || '') as string,
     helpDir: (ctx.HELP_DIR || '') as string,
+    ragStore: ctx._ragStore as ServiceContext['ragStore'],
+    embeddingProvider: ctx._embeddingProvider as ServiceContext['embeddingProvider'],
   };
 }

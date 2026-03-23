@@ -147,7 +147,9 @@ export class HelpService {
       });
     }
 
-    return results.sort((left, right) => right.score - left.score || left.title.localeCompare(right.title));
+    return results.sort(
+      (left, right) => right.score - left.score || left.title.localeCompare(right.title)
+    );
   }
 
   private loadPages(): Map<string, PageHelp> {
@@ -187,7 +189,8 @@ export class HelpService {
         const { frontMatter, content } = parseFrontMatter(raw);
         const title = readString(frontMatter.title) || extractFirstHeading(content) || topicId;
         const description =
-          readString(frontMatter.description) || excerpt(stripMarkdown(content), tokenize(title), 180);
+          readString(frontMatter.description) ||
+          excerpt(stripMarkdown(content), tokenize(title), 180);
         const keywords = normalizeStringArray(frontMatter.keywords);
         const html = sanitizeRenderedHtml(markdown.render(content));
 
@@ -257,7 +260,9 @@ function normalizeRelatedPages(value: unknown): RelatedPage[] {
     .map((entry) => {
       if (!entry || typeof entry !== 'object') return null;
       const related = entry as Record<string, unknown>;
-      const routeSlug = normalizeRouteSlug(readString(related.routeSlug) || readString(related.routePath));
+      const routeSlug = normalizeRouteSlug(
+        readString(related.routeSlug) || readString(related.routePath)
+      );
       const title = readString(related.title);
       if (!routeSlug || !title) return null;
       return { routeSlug, title };
@@ -328,9 +333,7 @@ function readString(value: unknown): string {
 
 function normalizeStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
-  return value
-    .map((entry) => (typeof entry === 'string' ? entry.trim() : ''))
-    .filter(Boolean);
+  return value.map((entry) => (typeof entry === 'string' ? entry.trim() : '')).filter(Boolean);
 }
 
 function normalizeRoutePath(value: string): string {
@@ -341,11 +344,18 @@ function normalizeRoutePath(value: string): string {
 }
 
 function normalizeRouteSlug(value: string): string {
-  return value.toLowerCase().trim().replace(/^\/+|\/+$/g, '').replace(/[^a-z0-9/_-]/g, '');
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/^\/+|\/+$/g, '')
+    .replace(/[^a-z0-9/_-]/g, '');
 }
 
 function sanitizeTopicId(value: string): string {
-  return value.toLowerCase().trim().replace(/[^a-z0-9_-]/g, '');
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9_-]/g, '');
 }
 
 function tokenize(value: string): string[] {
@@ -378,7 +388,9 @@ function excerpt(text: string, terms: string[], maxLength = 220): string {
     .sort((left, right) => left - right)[0];
 
   if (typeof firstHit !== 'number') {
-    return plainText.length <= maxLength ? plainText : `${plainText.slice(0, maxLength - 3).trim()}...`;
+    return plainText.length <= maxLength
+      ? plainText
+      : `${plainText.slice(0, maxLength - 3).trim()}...`;
   }
 
   const start = Math.max(0, firstHit - Math.floor(maxLength / 3));

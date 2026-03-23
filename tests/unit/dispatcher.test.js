@@ -283,6 +283,26 @@ describe('Dispatcher — buildContext', () => {
     const ctx = d.buildContext('01', { sessionState: state });
     expect(ctx.sessionState).toEqual(state);
   });
+
+  it('passes through retrieved RAG context when provided', () => {
+    const d = new Dispatcher({ store: createMockStore() });
+    const ragContext = {
+      query: 'Use React',
+      collections: ['decisions'],
+      matches: [
+        {
+          text: 'Use React for the operator-facing web application shell.',
+          source_path: 'BusinessDocs/decisions.md',
+          start_line: 18,
+          collection: 'decisions',
+          score: 0.94,
+        },
+      ],
+    };
+
+    const ctx = d.buildContext('01', { ragContext });
+    expect(ctx.ragContext).toEqual(ragContext);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────

@@ -337,7 +337,7 @@ function buildSessionSummary(input: {
   failedGate: GateFailureContext | null;
   elapsed: string;
 }): string {
-  const blockers = [];
+  const blockers: string[] = [];
   if (input.pendingApprovals > 0) blockers.push(`${input.pendingApprovals} pending approval(s)`);
   if (input.failedGate) blockers.push(`blocked gate ${input.failedGate.gateId}`);
 

@@ -59,6 +59,7 @@ interface AgentRef {
 }
 
 export interface AgentExecutionContext {
+  [key: string]: unknown;
   agentId: string;
   skillFile: string;
   predecessorOutputs: Record<string, string>;

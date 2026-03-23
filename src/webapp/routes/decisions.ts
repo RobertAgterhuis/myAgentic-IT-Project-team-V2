@@ -102,8 +102,9 @@ function buildSimilarDecisionResults(
   topK: number
 ): SimilarDecisionResponse[] {
   const listed = svc.list();
-  const candidates = [...listed.decided, ...listed.deferred].map((decision) => {
-    const title = getDecisionTitle(decision as Record<string, unknown>);
+  const allDecisions = [...listed.decided, ...listed.deferred] as Array<Record<string, unknown>>;
+  const candidates = allDecisions.map((decision) => {
+    const title = getDecisionTitle(decision);
     const searchText = [
       title,
       typeof decision.scope === 'string' ? decision.scope : '',

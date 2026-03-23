@@ -1,0 +1,11 @@
+{
+  "id": "workspace-management",
+  "endpoint": "https://mcp.local/workspace-management/health",
+  "risk": "medium",
+  "authType": "oauth",
+  "healthStatus": "unhealthy",
+  "tenantEnabled": true,
+  "workspaceEnabled": {},
+  "lastHealthCheck": "2026-03-23T07:00:27.709Z",
+  "consecutiveFailures": 46
+}

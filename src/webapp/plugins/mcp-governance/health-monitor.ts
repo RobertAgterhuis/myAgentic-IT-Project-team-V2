@@ -18,7 +18,9 @@ export class McpHealthMonitor {
 
   constructor(service: McpGovernanceService, opts?: McpHealthMonitorOptions) {
     this._service = service;
-    this._intervalMs = opts?.intervalMs ?? 30000;
+    const envInterval = Number.parseInt(process.env.MCP_HEALTH_INTERVAL_MS || '', 10);
+    this._intervalMs =
+      opts?.intervalMs ?? (Number.isFinite(envInterval) && envInterval > 0 ? envInterval : 30000);
     this._failureThreshold = opts?.failureThreshold ?? 3;
     this._timeoutMs = opts?.timeoutMs ?? 5000;
   }

@@ -1,0 +1,11 @@
+{
+  "id": "project-progress",
+  "endpoint": "https://mcp.local/project-progress/health",
+  "risk": "low",
+  "authType": "oauth",
+  "healthStatus": "unhealthy",
+  "tenantEnabled": true,
+  "workspaceEnabled": {},
+  "lastHealthCheck": "2026-03-23T07:00:27.670Z",
+  "consecutiveFailures": 46
+}

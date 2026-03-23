@@ -100,6 +100,14 @@ describe('ApprovalCenterPage', () => {
     });
   });
 
+  it('renders the page help strip', async () => {
+    mockApprovalData();
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByTestId('page-help-strip-approvals')).toBeInTheDocument();
+    });
+  });
+
   it('renders context strip with queue metrics', async () => {
     mockApprovalData();
     renderPage();

@@ -66,6 +66,8 @@ function makeCtx() {
   return {
     DECISIONS_FILE,
     DECISIONS_DIR,
+    PROJECT_ROOT: tmpRoot,
+    _authMiddleware: { enabled: true },
     _cache: {
       read: (fp) => fs.readFileSync(fp, 'utf8'),
       invalidate: () => {},
@@ -76,6 +78,21 @@ function makeCtx() {
       fs.writeFileSync(fp, data, 'utf8');
     },
     sseNotify: vi.fn(),
+    _ragStore: {
+      query: vi.fn().mockResolvedValue([
+        {
+          chunk: {
+            source_path: path.join(tmpRoot, 'decisions', 'auth.md'),
+            chunk_text: 'DEC-AUTH-001 | Require PKCE for Entra sign-in.',
+            start_line: 14,
+          },
+          score: 0.93,
+        },
+      ]),
+    },
+    _embeddingProvider: {
+      embedText: vi.fn().mockResolvedValue([0.1, 0.2, 0.3]),
+    },
   };
 }
 
@@ -133,6 +150,58 @@ describe('decision routes', () => {
     expect(routes['GET /api/decisions']).toBeTypeOf('function');
     expect(routes['POST /api/decisions']).toBeTypeOf('function');
     expect(routes['POST /api/decisions/activate-category']).toBeTypeOf('function');
+    expect(routes['POST /api/v1/decisions/similar']).toBeTypeOf('function');
+  });
+
+  describe('POST /api/v1/decisions/similar', () => {
+    function similarReq(body, role = 'operator') {
+      const bodyStr = JSON.stringify(body);
+      return {
+        url: '/api/v1/decisions/similar',
+        user: role ? { role } : undefined,
+        raw: { user: role ? { role } : undefined },
+        headers: { 'content-type': 'application/json', host: 'localhost:3000' },
+        on(event, cb) {
+          if (event === 'data') cb(Buffer.from(bodyStr));
+          if (event === 'end') cb();
+        },
+      };
+    }
+
+    it('returns similar decision citations from the decisions collection', async () => {
+      seedDecisions();
+      fs.mkdirSync(DECISIONS_DIR, { recursive: true });
+      fs.writeFileSync(
+        path.join(DECISIONS_DIR, 'auth.md'),
+        `# Decisions: Auth\n\nStack: Identity\nStatus: ACTIVE\nApplicable: YES\n\n| ID | Priority | Scope | Decision | Notes | Date |\n|----|-----------|-------|-----------|-------|------|\n| DEC-AUTH-001 | HIGH | Auth | Require PKCE for Entra sign-in. | Use PKCE everywhere. | 2025-01-03 |\n`,
+        'utf8'
+      );
+      const res = fakeRes();
+      await routes['POST /api/v1/decisions/similar'](
+        similarReq({ query: 'What decisions affect auth?', topK: 3 }),
+        res
+      );
+
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.json)).toBe(true);
+      expect(res.json).toHaveLength(1);
+      expect(res.json[0].decisionId).toBe('DEC-AUTH-001');
+      expect(res.json[0].title).toBe('Require PKCE for Entra sign-in.');
+      expect(res.json[0].excerpt).toContain('DEC-AUTH-001');
+    });
+
+    it('returns 400 for empty query', async () => {
+      const res = fakeRes();
+      await routes['POST /api/v1/decisions/similar'](similarReq({ query: '   ' }), res);
+      expect(res.status).toBe(400);
+    });
+
+    it('returns 403 for viewers when auth is enabled', async () => {
+      seedDecisions();
+      const res = fakeRes();
+      await routes['POST /api/v1/decisions/similar'](similarReq({ query: 'auth' }, 'viewer'), res);
+      expect(res.status).toBe(403);
+    });
   });
 
   /* ── GET /api/decisions ─────────────────────────────────────── */

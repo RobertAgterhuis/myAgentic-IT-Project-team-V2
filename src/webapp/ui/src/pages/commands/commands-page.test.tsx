@@ -2,7 +2,7 @@
  * Commands page tests — M15 / Issue #M15-031
  */
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CommandsPage from './commands-page';
 import { RouterTestWrapper } from '@/test/router-test-wrapper';
@@ -32,6 +32,13 @@ describe('CommandsPage', () => {
     expect(screen.getByText(/how to proceed/i)).toBeInTheDocument();
     expect(screen.getByText(/recommended next step/i)).toBeInTheDocument();
     expect(screen.getByText(/what happens when you click submit brief/i)).toBeInTheDocument();
+  });
+
+  it('renders the page help strip', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByTestId('page-help-strip-commands')).toBeInTheDocument();
+    });
   });
 
   it('renders quick action cards', () => {

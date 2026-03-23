@@ -64,6 +64,8 @@ describe('McpGovernanceService', () => {
 
     await svc.syncAgents(await svc.getDefinedAgents());
     await svc.syncServers(await svc.getDefinedServers());
+    await svc.syncServerPolicies(await svc.getDefinedPolicies());
+    await svc.syncToolPolicies(await svc.getDefinedToolPolicies());
 
     const runtime = await svc.buildRuntimeArtifacts();
     expect(fs.existsSync(runtime.compiledPoliciesPath)).toBe(true);
@@ -72,15 +74,88 @@ describe('McpGovernanceService', () => {
 
     const manifestPath = path.join(runtime.outputDir, 'runtime-manifests', 'orchestrator.json');
     expect(fs.existsSync(manifestPath)).toBe(true);
+
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    expect(Array.isArray(manifest.servers)).toBe(true);
+    const firstTool = manifest.servers[0].tools[0];
+    expect(firstTool).toHaveProperty('degraded');
+    expect(firstTool).toHaveProperty('authStatus');
+  });
+
+  it('fails runtime build with clear error when policy data is missing', async () => {
+    await svc.syncAgents(await svc.getDefinedAgents());
+    await svc.syncServers(await svc.getDefinedServers());
+
+    await expect(svc.buildRuntimeArtifacts()).rejects.toThrow(/Missing runtime policy data/i);
+  });
+
+  it('marks tools as degraded and auth_pending based on live server state', async () => {
+    await svc.syncAgents(await svc.getDefinedAgents());
+    await svc.syncServers(await svc.getDefinedServers());
+    await svc.syncServerPolicies(await svc.getDefinedPolicies());
+    await svc.syncToolPolicies(await svc.getDefinedToolPolicies());
+
+    await svc.updateServer('workspace-management', {
+      healthStatus: 'unhealthy',
+      tenantEnabled: false,
+    });
+
+    const runtime = await svc.buildRuntimeArtifacts();
+    const manifestPath = path.join(runtime.outputDir, 'runtime-manifests', 'orchestrator.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+    const server = manifest.servers.find((s) => s.serverId === 'workspace-management');
+
+    expect(server).toBeDefined();
+    expect(server.tools.length).toBeGreaterThan(0);
+    for (const tool of server.tools) {
+      expect(tool.degraded).toBe(true);
+      expect(tool.authStatus).toBe('auth_pending');
+    }
   });
 
   it('syncs mcp servers in dry-run mode without writing state', async () => {
     const defs = await svc.getDefinedServers();
+    expect(defs).toHaveLength(8);
     const dry = await svc.syncServers(defs, { dryRun: true });
-    expect(dry.added).toBeGreaterThan(0);
+    expect(dry.added).toBe(8);
 
     const stored = await svc.listServers();
     expect(stored).toEqual([]);
+  });
+
+  it('supports CRUD operations for mcp server registry entries', async () => {
+    const server = {
+      id: 'custom-server',
+      endpoint: 'https://mcp.local/custom-server/health',
+      risk: 'medium',
+      authType: 'oauth',
+      healthStatus: 'healthy',
+      tenantEnabled: true,
+      workspaceEnabled: {},
+      lastHealthCheck: null,
+      consecutiveFailures: 0,
+    };
+
+    const created = await svc.createServer(server);
+    expect(created.id).toBe('custom-server');
+
+    const fetched = await svc.getServer('custom-server');
+    expect(fetched).not.toBeNull();
+    expect(fetched.endpoint).toBe(server.endpoint);
+
+    const updated = await svc.updateServer('custom-server', {
+      healthStatus: 'degraded',
+      consecutiveFailures: 2,
+    });
+    expect(updated.healthStatus).toBe('degraded');
+    expect(updated.consecutiveFailures).toBe(2);
+
+    await expect(svc.createServer(server)).rejects.toThrow(/already exists/i);
+
+    const deleted = await svc.deleteServer('custom-server');
+    expect(deleted).toBe(true);
+    expect(await svc.getServer('custom-server')).toBeNull();
+    expect(await svc.deleteServer('custom-server')).toBe(false);
   });
 
   it('resolves server and tool permissions with environment scope', async () => {
@@ -96,6 +171,106 @@ describe('McpGovernanceService', () => {
     );
     expect(tool.permissionLevel).toBe('X');
     expect(tool.blocked).toBe(true);
+  });
+
+  it('defaults to deny (N) for unknown agent/server combinations', async () => {
+    const unknownAgent = await svc.resolveServerPermission(
+      'unknown-agent',
+      'workspace-management',
+      'dev'
+    );
+    expect(unknownAgent.permissionLevel).toBe('N');
+    expect(unknownAgent.blocked).toBe(true);
+
+    const unknownServer = await svc.resolveServerPermission(
+      'orchestrator',
+      'unknown-server',
+      'dev'
+    );
+    expect(unknownServer.permissionLevel).toBe('N');
+    expect(unknownServer.blocked).toBe(true);
+  });
+
+  it('applies environment restriction when environment default is more restrictive', async () => {
+    vi.spyOn(svc, 'getDefinedPolicies').mockResolvedValue([
+      {
+        agentId: 'devops',
+        serverId: 'workspace-management',
+        permission: 'W',
+      },
+    ]);
+
+    vi.spyOn(svc, 'getDefinedEnvironmentPolicies').mockResolvedValue([
+      { env: 'dev', defaultPermission: 'W', writeRequiresApproval: false },
+      { env: 'test', defaultPermission: 'W', writeRequiresApproval: false },
+      { env: 'prod', defaultPermission: 'R', writeRequiresApproval: true },
+    ]);
+
+    const resolved = await svc.resolveServerPermission('devops', 'workspace-management', 'prod');
+    expect(resolved.permissionLevel).toBe('R');
+    expect(resolved.requiredApprovalMode).toBe('none');
+  });
+
+  it('covers all 12x8x3 server permission permutations (288)', async () => {
+    const agents = Array.from({ length: 12 }, (_, i) => `agent-${i + 1}`);
+    const servers = Array.from({ length: 8 }, (_, i) => `server-${i + 1}`);
+    const envs = ['dev', 'test', 'prod'];
+
+    const policies = [];
+    for (const agentId of agents) {
+      for (const serverId of servers) {
+        policies.push({ agentId, serverId, permission: 'W' });
+      }
+    }
+
+    vi.spyOn(svc, 'getDefinedPolicies').mockResolvedValue(policies);
+    vi.spyOn(svc, 'getDefinedEnvironmentPolicies').mockResolvedValue([
+      { env: 'dev', defaultPermission: 'W', writeRequiresApproval: false },
+      { env: 'test', defaultPermission: 'W', writeRequiresApproval: false },
+      { env: 'prod', defaultPermission: 'R', writeRequiresApproval: true },
+    ]);
+
+    let checked = 0;
+    for (const agentId of agents) {
+      for (const serverId of servers) {
+        for (const env of envs) {
+          const resolved = await svc.resolveServerPermission(agentId, serverId, env);
+          expect(resolved.permissionLevel).toBeDefined();
+          checked += 1;
+        }
+      }
+    }
+
+    expect(checked).toBe(288);
+  });
+
+  it('requires two_step approval mode for destructive prod operations', async () => {
+    vi.spyOn(svc, 'getDefinedPolicies').mockResolvedValue([
+      {
+        agentId: 'devops',
+        serverId: 'workspace-management',
+        permission: 'W',
+      },
+    ]);
+
+    vi.spyOn(svc, 'getDefinedEnvironmentPolicies').mockResolvedValue([
+      { env: 'dev', defaultPermission: 'W', writeRequiresApproval: false },
+      { env: 'test', defaultPermission: 'W', writeRequiresApproval: false },
+      { env: 'prod', defaultPermission: 'W', writeRequiresApproval: true },
+    ]);
+
+    vi.spyOn(svc, 'getDefinedToolPolicies').mockResolvedValue([]);
+
+    const resolved = await svc.resolveToolPermission(
+      'devops',
+      'workspace-management',
+      'workspace-management.delete_resource',
+      'prod'
+    );
+
+    expect(resolved.permissionLevel).toBe('W');
+    expect(resolved.approvalRequired).toBe(true);
+    expect(resolved.requiredApprovalMode).toBe('two_step');
   });
 
   it('validates env_scope and rejects missing or invalid values', () => {
@@ -142,6 +317,8 @@ describe('McpGovernanceService', () => {
   it('buildRuntimeArtifacts embeds authStatus for entra servers when identity is configured', async () => {
     await svc.syncAgents(await svc.getDefinedAgents());
     await svc.syncServers(await svc.getDefinedServers());
+    await svc.syncServerPolicies(await svc.getDefinedPolicies());
+    await svc.syncToolPolicies(await svc.getDefinedToolPolicies());
 
     await svc.saveWorkloadIdentities([
       {
@@ -156,11 +333,7 @@ describe('McpGovernanceService', () => {
     const runtime = await svc.buildRuntimeArtifacts();
     expect(runtime.manifestCount).toBe(12);
 
-    const manifestPath = require('path').join(
-      runtime.outputDir,
-      'runtime-manifests',
-      'infra.json'
-    );
+    const manifestPath = require('path').join(runtime.outputDir, 'runtime-manifests', 'infra.json');
     const manifest = JSON.parse(require('fs').readFileSync(manifestPath, 'utf8'));
     const entraServer = manifest.servers.find((s) => s.authType === 'entra');
     if (entraServer) {
@@ -171,6 +344,8 @@ describe('McpGovernanceService', () => {
   it('buildRuntimeArtifacts embeds authStatus=consent_pending when consent not granted', async () => {
     await svc.syncAgents(await svc.getDefinedAgents());
     await svc.syncServers(await svc.getDefinedServers());
+    await svc.syncServerPolicies(await svc.getDefinedPolicies());
+    await svc.syncToolPolicies(await svc.getDefinedToolPolicies());
 
     await svc.saveWorkloadIdentities([
       {
@@ -183,11 +358,7 @@ describe('McpGovernanceService', () => {
     ]);
 
     const runtime = await svc.buildRuntimeArtifacts();
-    const manifestPath = require('path').join(
-      runtime.outputDir,
-      'runtime-manifests',
-      'infra.json'
-    );
+    const manifestPath = require('path').join(runtime.outputDir, 'runtime-manifests', 'infra.json');
     const manifest = JSON.parse(require('fs').readFileSync(manifestPath, 'utf8'));
     const entraServer = manifest.servers.find((s) => s.authType === 'entra');
     if (entraServer) {
@@ -198,13 +369,11 @@ describe('McpGovernanceService', () => {
   it('buildRuntimeArtifacts sets authStatus=not_configured when no identity record exists', async () => {
     await svc.syncAgents(await svc.getDefinedAgents());
     await svc.syncServers(await svc.getDefinedServers());
+    await svc.syncServerPolicies(await svc.getDefinedPolicies());
+    await svc.syncToolPolicies(await svc.getDefinedToolPolicies());
 
     const runtime = await svc.buildRuntimeArtifacts();
-    const manifestPath = require('path').join(
-      runtime.outputDir,
-      'runtime-manifests',
-      'infra.json'
-    );
+    const manifestPath = require('path').join(runtime.outputDir, 'runtime-manifests', 'infra.json');
     const manifest = JSON.parse(require('fs').readFileSync(manifestPath, 'utf8'));
     const entraServer = manifest.servers.find((s) => s.authType === 'entra');
     if (entraServer) {
@@ -225,9 +394,7 @@ describe('McpGovernanceService', () => {
 
     const result = await svc.doctor();
     expect(result.agentsWithMissingIdentity).toBeGreaterThan(0);
-    const issue = result.identityIssues.find(
-      (i) => i.issue === 'No workload identity configured'
-    );
+    const issue = result.identityIssues.find((i) => i.issue === 'No workload identity configured');
     expect(issue).toBeDefined();
     expect(issue.remediation).toMatch(/identity bootstrap/);
   });

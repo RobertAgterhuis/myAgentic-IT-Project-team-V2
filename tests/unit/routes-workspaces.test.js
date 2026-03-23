@@ -88,6 +88,7 @@ function createRoutesWithProvider(provider) {
   return createTestableRoutes(registerRoutes, {
     getStorageProvider: () => provider,
     sseNotify: vi.fn(),
+    PROJECT_ROOT: process.cwd(),
   });
 }
 
@@ -96,6 +97,7 @@ describe('routes/workspaces', () => {
     const routes = createTestableRoutes(registerRoutes, {
       getStorageProvider: () => null,
       sseNotify: vi.fn(),
+      PROJECT_ROOT: process.cwd(),
     });
 
     const res = createRes();

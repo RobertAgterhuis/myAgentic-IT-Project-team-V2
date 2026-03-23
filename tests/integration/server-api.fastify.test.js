@@ -95,11 +95,16 @@ const DECISIONS_MD = `# Decisions & Open Questions
 function seedFiles() {
   const qPath = path.join(BUSINESS_DOCS, Q_FILE_REL);
   const helpPath = path.join(HELP_DIR, 'getting-started.md');
+  const commandsPath = path.join(HELP_DIR, 'commands.md');
+  const pageHelpPath = path.join(HELP_DIR, 'page-help.yaml');
   return {
     [qPath]: QUESTIONNAIRE_MD,
     [SESSION_FILE]: JSON.stringify(SESSION_STATE),
     [DECISIONS_FILE]: DECISIONS_MD,
     [helpPath]: '# Getting Started\n\nWelcome to the help.',
+    [commandsPath]:
+      '# Commands Reference\n\nUse `CREATE` to start a new run.\n\n<script>alert("x")</script>\n\n[Danger](javascript:alert(1))',
+    [pageHelpPath]: `pages:\n  - routeSlug: commands\n    routePath: /commands\n    pageTitle: Commands\n    purpose: Queue runs and inspect command behavior.\n    coreActions:\n      - label: Queue command\n        description: Submit CREATE or AUDIT runs.\n    inputsOutputs: Reads command details and writes queued work.\n    permissions: Operator access required for queue mutations.\n    relatedPages:\n      - routeSlug: pipeline\n        title: Pipeline\n    keywords: [commands, queue, create]\n    topicLinks:\n      - topicId: commands\n        title: Commands Reference\n`,
   };
 }
 
@@ -619,6 +624,54 @@ describe('GET /api/help', () => {
   it('rejects path traversal in topic', async () => {
     const r = await inject('GET', '/api/help?topic=../secrets');
     expect(r.statusCode).toBe(400);
+  });
+});
+
+describe('GET /api/v1/help/page/:routeSlug', () => {
+  it('returns structured page help for known routes', async () => {
+    const r = await inject('GET', '/api/v1/help/page/commands');
+    expect(r.statusCode).toBe(200);
+    const body = r.json();
+    expect(body.routeSlug).toBe('commands');
+    expect(body.pageTitle).toBe('Commands');
+    expect(body.topicLinks[0].topicId).toBe('commands');
+  });
+
+  it('returns 404 for unknown routes', async () => {
+    const r = await inject('GET', '/api/v1/help/page/unknown-route');
+    expect(r.statusCode).toBe(404);
+  });
+});
+
+describe('GET /api/v1/help/topic/:topicId', () => {
+  it('returns rendered HTML and strips raw script tags', async () => {
+    const r = await inject('GET', '/api/v1/help/topic/commands');
+    expect(r.statusCode).toBe(200);
+    const body = r.json();
+    expect(body.title).toBe('Commands Reference');
+    expect(body.html).toContain('<h1>Commands Reference</h1>');
+    expect(body.html).not.toContain('<script>');
+    expect(body.html).not.toContain('href="javascript:');
+  });
+
+  it('returns 404 for unknown topics', async () => {
+    const r = await inject('GET', '/api/v1/help/topic/not-a-topic');
+    expect(r.statusCode).toBe(404);
+  });
+});
+
+describe('GET /api/v1/help/search', () => {
+  it('returns matching page and topic results', async () => {
+    const r = await inject('GET', '/api/v1/help/search?q=create');
+    expect(r.statusCode).toBe(200);
+    const body = r.json();
+    expect(body.count).toBeGreaterThan(0);
+    expect(body.results.some((result) => result.kind === 'page' && result.id === 'commands')).toBe(
+      true
+    );
+    expect(Array.isArray(body.pages)).toBe(true);
+    expect(Array.isArray(body.topics)).toBe(true);
+    expect(body.pages.some((page) => page.routeSlug === 'commands')).toBe(true);
   });
 });
 

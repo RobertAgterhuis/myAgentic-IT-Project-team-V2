@@ -2,8 +2,15 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
 import path from 'node:path';
+import Database from 'better-sqlite3';
 import { createStorageProvider } from '../../../../platform/engine/persistence';
 import { McpGovernanceService } from './service';
+import { WorkloadIdentityStore } from '../../services/workload-identity-store';
+import {
+  WorkloadIdentityService,
+  type ConsentStatusResult,
+} from '../identity/workload-identity-service';
+import type { AgentRoleId } from '../identity/workload-identity-types';
 
 interface CliArgs {
   command: string[];
@@ -26,13 +33,19 @@ function printUsage(): void {
       'MCP Governance CLI',
       '',
       'Usage:',
+      '  npx my-plugin identity plan',
+      '  npx my-plugin identity bootstrap',
+      '  npx my-plugin identity consent status [agent-role]',
+      '',
       '  npm run plugin -- init',
       '  npm run plugin -- bootstrap --apply',
       '  npm run plugin -- agents sync [--apply|--dry-run]',
       '  npm run plugin -- mcp sync [--apply|--dry-run]',
+      '  npm run plugin -- policy sync [--apply|--dry-run]',
       '  npm run plugin -- policies sync [--apply|--dry-run]',
       '  npm run plugin -- tool-policies sync [--apply|--dry-run]',
       '  npm run plugin -- runtime build',
+      '  npm run plugin -- reconcile [--apply|--dry-run]',
       '  npm run plugin -- doctor',
       '',
     ].join('\n')
@@ -59,9 +72,41 @@ async function buildService(projectRoot: string): Promise<McpGovernanceService> 
   });
 }
 
+function resolveIdentityDbPath(projectRoot: string): string {
+  return process.env.STORAGE_PATH || path.join(projectRoot, '.agentic', 'data.db');
+}
+
+function buildIdentityService(projectRoot: string): {
+  service: WorkloadIdentityService;
+  close: () => void;
+} {
+  const dbPath = resolveIdentityDbPath(projectRoot);
+  const db = new Database(dbPath);
+  const store = new WorkloadIdentityStore(db);
+  store.migrate();
+
+  return {
+    service: new WorkloadIdentityService(store),
+    close: () => db.close(),
+  };
+}
+
+function toIdentityCliShape(rows: ConsentStatusResult[]): Array<Record<string, unknown>> {
+  return rows.map((row) => ({
+    agent_role: row.agent_role,
+    consent_status: row.consent_status,
+    app_registration_id: row.app_registration_id,
+    service_principal_id: row.service_principal_id,
+    credential_type: row.credential_type,
+    credential_expires_at: row.credential_expires_at,
+    effective_enabled: row.effective_enabled,
+    warning: row.warning,
+  }));
+}
+
 async function run(overrideProjectRoot?: string): Promise<void> {
   const parsed = parseArgs(process.argv);
-  const [cmd, sub] = parsed.command;
+  const [cmd, sub, sub2] = parsed.command;
 
   if (!cmd) {
     printUsage();
@@ -70,6 +115,77 @@ async function run(overrideProjectRoot?: string): Promise<void> {
   }
 
   const projectRoot = overrideProjectRoot ?? path.resolve(__dirname, '../../../..');
+
+  if (cmd === 'identity' && sub === 'plan') {
+    const identity = buildIdentityService(projectRoot);
+    try {
+      const result = identity.service.plan();
+      process.stdout.write(
+        `${JSON.stringify(
+          {
+            ok: true,
+            command: 'identity plan',
+            schema: 'AgentWorkloadIdentity',
+            ...result,
+          },
+          null,
+          2
+        )}\n`
+      );
+      return;
+    } finally {
+      identity.close();
+    }
+  }
+
+  if (cmd === 'identity' && sub === 'bootstrap') {
+    const identity = buildIdentityService(projectRoot);
+    try {
+      const result = identity.service.bootstrap();
+      process.stdout.write(
+        `${JSON.stringify(
+          {
+            ok: true,
+            command: 'identity bootstrap',
+            schema: 'AgentWorkloadIdentity',
+            idempotent: true,
+            ...result,
+          },
+          null,
+          2
+        )}\n`
+      );
+      return;
+    } finally {
+      identity.close();
+    }
+  }
+
+  if (cmd === 'identity' && sub === 'consent' && sub2 === 'status') {
+    const identity = buildIdentityService(projectRoot);
+    try {
+      const requestedRole = parsed.command[3] as AgentRoleId | undefined;
+      const rows = identity.service.consentStatus(requestedRole);
+
+      process.stdout.write(
+        `${JSON.stringify(
+          {
+            ok: true,
+            command: 'identity consent status',
+            schema: 'AgentWorkloadIdentity',
+            count: rows.length,
+            identities: toIdentityCliShape(rows),
+          },
+          null,
+          2
+        )}\n`
+      );
+      return;
+    } finally {
+      identity.close();
+    }
+  }
+
   const service = await buildService(projectRoot);
 
   if (cmd === 'init') {
@@ -124,13 +240,17 @@ async function run(overrideProjectRoot?: string): Promise<void> {
     return;
   }
 
-  if (cmd === 'policies' && sub === 'sync') {
+  if ((cmd === 'policy' || cmd === 'policies') && sub === 'sync') {
     const apply = parsed.apply || !parsed.dryRun;
     const result = await service.syncServerPolicies(await service.getDefinedPolicies(), {
       dryRun: !apply,
     });
     process.stdout.write(
-      `${JSON.stringify({ ok: true, command: 'policies sync', apply, ...result }, null, 2)}\n`
+      `${JSON.stringify(
+        { ok: true, command: cmd === 'policy' ? 'policy sync' : 'policies sync', apply, ...result },
+        null,
+        2
+      )}\n`
     );
     return;
   }
@@ -154,11 +274,81 @@ async function run(overrideProjectRoot?: string): Promise<void> {
     return;
   }
 
-  if (cmd === 'doctor') {
-    const result = await service.doctor();
+  if (cmd === 'reconcile') {
+    const apply = parsed.apply && !parsed.dryRun;
+    const startTime = Date.now();
+
+    const [agentSync, serverSync, serverPolicySync, toolPolicySync] = await Promise.all([
+      service.syncAgents(await service.getDefinedAgents(), { dryRun: !apply }),
+      service.syncServers(await service.getDefinedServers(), { dryRun: !apply }),
+      service.syncServerPolicies(await service.getDefinedPolicies(), { dryRun: !apply }),
+      service.syncToolPolicies(await service.getDefinedToolPolicies(), { dryRun: !apply }),
+    ]);
+
+    const runtimeBuild = apply ? await service.buildRuntimeArtifacts() : null;
+    const durationMs = Date.now() - startTime;
+
+    const totalAdded =
+      agentSync.added + serverSync.added + serverPolicySync.added + toolPolicySync.added;
+    const totalUpdated =
+      agentSync.updated + serverSync.updated + serverPolicySync.updated + toolPolicySync.updated;
+
+    if (apply) {
+      try {
+        await service.createReconcileRun({
+          ranAt: new Date().toISOString(),
+          ranBy: process.env.USER || process.env.USERNAME || 'system',
+          durationMs,
+          changesApplied: { added: totalAdded, updated: totalUpdated, removed: 0 },
+          status: 'success',
+        });
+      } catch {
+        // non-fatal — audit logging failure should not block the operator
+      }
+    }
+
     process.stdout.write(
-      `${JSON.stringify({ ok: true, command: 'doctor', ...result }, null, 2)}\n`
+      `${JSON.stringify(
+        {
+          ok: true,
+          command: 'reconcile',
+          apply,
+          dryRun: !apply,
+          durationMs,
+          agents: agentSync,
+          servers: serverSync,
+          serverPolicies: serverPolicySync,
+          toolPolicies: toolPolicySync,
+          runtimeBuild,
+        },
+        null,
+        2
+      )}\n`
     );
+    return;
+  }
+
+  if (cmd === 'doctor') {
+    const report = await service.doctor();
+    const output = {
+      ok: report.healthy,
+      command: 'doctor',
+      healthy: report.healthy,
+      summary: report.summary,
+      checks: report.checks,
+      configExists: report.configExists,
+      agentCount: report.agentCount,
+      serverCount: report.serverCount,
+      generatedExists: report.generatedExists,
+      identityIssues: report.identityIssues,
+      agentsWithPendingConsent: report.agentsWithPendingConsent,
+      agentsWithMissingIdentity: report.agentsWithMissingIdentity,
+      agentsWithExpiringCredentials: report.agentsWithExpiringCredentials,
+    };
+    process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
+    if (!report.healthy) {
+      process.exitCode = 1;
+    }
     return;
   }
 

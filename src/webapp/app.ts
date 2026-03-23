@@ -112,6 +112,7 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
         { name: 'dashboard', description: 'Dashboard home' },
         { name: 'decisions', description: 'Decision management' },
         { name: 'drift', description: 'Drift detection' },
+        { name: 'help', description: 'Contextual help and documentation' },
         { name: 'jobs', description: 'Background job queue' },
         { name: 'metrics', description: 'Velocity & KPI metrics' },
         { name: 'milestones', description: 'Milestone management' },

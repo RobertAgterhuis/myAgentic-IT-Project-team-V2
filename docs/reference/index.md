@@ -26,3 +26,4 @@ facts. It is intended for focused reading rather than first-time onboarding.
 - [File System Reference](file-system-reference)
 - [Agent Index](agent-index)
 - [Architecture Index](architecture-index)
+- [RAG Scaling Governance](rag-scaling-governance)

@@ -6,6 +6,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import {
   useDecisions,
   useDecision,
+  useSimilarDecisions,
   useCreateDecision,
   useUpdateDecision,
   useDeleteDecision,
@@ -39,6 +40,15 @@ describe('useDecision', () => {
     const { result } = renderHook(() => useDecision('DEC-999'), { wrapper: TestWrapper });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(result.current.data).toBeNull();
+  });
+});
+
+describe('useSimilarDecisions', () => {
+  it('fetches related decisions for a decision subject', async () => {
+    const { result } = renderHook(() => useSimilarDecisions('Use React'), { wrapper: TestWrapper });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toHaveLength(1);
+    expect(result.current.data?.[0].decisionId).toBe('DEC-002');
   });
 });
 

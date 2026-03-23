@@ -1,0 +1,152 @@
+pages:
+  - routeSlug: commands
+    routePath: /commands
+    pageTitle: Commands
+    purpose: Queue new orchestration runs, inspect command history, and understand which execution mode fits the work you need to do.
+    coreActions:
+      - label: Queue a run
+        description: Submit CREATE, AUDIT, FEATURE, SCOPE CHANGE, HOTFIX, and CONTINUE commands for the active workspace.
+      - label: Review the queue
+        description: Inspect queued and recent commands before starting another run.
+      - label: Check prerequisites
+        description: Confirm workspace, project, and session prerequisites before submitting work.
+    inputsOutputs: Consumes the command mode, project binding, and brief metadata; produces queued commands and the initial session bootstrap files.
+    permissions: Viewing is broadly available; mutating command actions require operator access when API auth is enabled.
+    relatedPages:
+      - routeSlug: pipeline
+        title: Pipeline
+      - routeSlug: sessions
+        title: Sessions
+    keywords:
+      - commands
+      - queue
+      - create
+      - audit
+      - feature
+      - hotfix
+      - approvals
+      - governance
+    topicLinks:
+      - topicId: commands-modes
+        title: Command Modes
+      - topicId: commands-prerequisites
+        title: Command Prerequisites
+  - routeSlug: sessions
+    routePath: /sessions
+    pageTitle: Sessions
+    purpose: Review active and historical orchestration sessions so you can continue work, inspect status, and recover stalled runs.
+    coreActions:
+      - label: Find active sessions
+        description: Identify the run that is still progressing or waiting for input.
+      - label: Inspect execution status
+        description: Review current phase, current agent, and blocker details.
+      - label: Recover stalled work
+        description: Use session details to decide whether to continue, reevaluate, or restart.
+    inputsOutputs: Reads persisted session state, timelines, and audit information; surfaces status without directly mutating session files.
+    permissions: Session visibility is available to signed-in users; admin access may be required for destructive session operations.
+    relatedPages:
+      - routeSlug: commands
+        title: Commands
+      - routeSlug: pipeline
+        title: Pipeline
+    keywords:
+      - sessions
+      - continue
+      - resume
+      - status
+      - recovery
+      - gate
+    topicLinks:
+      - topicId: sessions-lifecycle
+        title: Session Lifecycle
+      - topicId: troubleshooting
+        title: Troubleshooting
+  - routeSlug: approvals
+    routePath: /approvals
+    pageTitle: Approvals
+    purpose: Review governance approvals and exceptions that block or shape the current delivery flow.
+    coreActions:
+      - label: Review pending approvals
+        description: See what is awaiting a decision before the run can continue.
+      - label: Approve or reject requests
+        description: Record approval decisions with reasoned outcomes and audit visibility.
+      - label: Investigate policy context
+        description: Check which governance rule or exception request triggered the approval item.
+    inputsOutputs: Reads governance requests and writes approval decisions, rationale, and audit events.
+    permissions: Approval decisions require elevated access; read-only visibility depends on the configured RBAC policy.
+    relatedPages:
+      - routeSlug: pipeline
+        title: Pipeline
+      - routeSlug: agents
+        title: Agents
+    keywords:
+      - approvals
+      - governance
+      - exception
+      - policy
+      - review
+    topicLinks:
+      - topicId: approvals-when-required
+        title: When Approvals Are Required
+      - topicId: approvals-hotfix-bypass
+        title: Hotfix Bypass
+      - topicId: approvals-override-decisions
+        title: Override Decisions and Audit
+  - routeSlug: pipeline
+    routePath: /pipeline
+    pageTitle: Pipeline
+    purpose: Monitor phase progress, gate outcomes, and sprint execution so you know what the orchestrator is doing now and what is next.
+    coreActions:
+      - label: Track current phase
+        description: See which phase and agent are active in the current run.
+      - label: Inspect gate outcomes
+        description: Understand critic and risk results at each phase boundary.
+      - label: Follow sprint delivery
+        description: Review sprint progress and implementation readiness after synthesis.
+    inputsOutputs: Reads session progress, phase outputs, and sprint status data; surfaces progress state without mutating artifacts.
+    permissions: Read access is typically open to authenticated users; follow-up actions depend on the owning workflow and role.
+    relatedPages:
+      - routeSlug: commands
+        title: Commands
+      - routeSlug: approvals
+        title: Approvals
+    keywords:
+      - pipeline
+      - progress
+      - gates
+      - synthesis
+      - sprints
+    topicLinks:
+      - topicId: pipeline-phases
+        title: Pipeline Phases
+      - topicId: pipeline-gates
+        title: Gate Types and Overrides
+  - routeSlug: agents
+    routePath: /agents
+    pageTitle: Agents
+    purpose: Inspect the agent roster, execution status, and handoff state for the current orchestration run.
+    coreActions:
+      - label: Browse agent status
+        description: Review active, completed, and blocked agents across the delivery flow.
+      - label: Inspect handoffs
+        description: Understand dependencies between agents and where the run is paused.
+      - label: Diagnose failures
+        description: Use agent state to locate execution problems before resuming work.
+    inputsOutputs: Reads agent definitions, phase assignments, and execution metadata; highlights dependencies and current status.
+    permissions: Viewing is generally allowed for authenticated users; reruns or overrides may require operator or admin access.
+    relatedPages:
+      - routeSlug: pipeline
+        title: Pipeline
+      - routeSlug: sessions
+        title: Sessions
+    keywords:
+      - agents
+      - roster
+      - execution
+      - status
+      - handoff
+    topicLinks:
+      - topicId: agents-overview
+        title: Agent Catalog and Dependencies
+      - topicId: agents-confidence
+        title: Confidence Scores

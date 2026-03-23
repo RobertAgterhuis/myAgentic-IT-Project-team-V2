@@ -162,6 +162,15 @@ export interface DecisionMutationResponse extends OkResponse {
   action: string;
 }
 
+export interface SimilarDecisionMatch {
+  decisionId: string;
+  title: string;
+  score: number;
+  excerpt: string;
+}
+
+export type DecisionSimilarResponse = SimilarDecisionMatch[];
+
 export interface ActivateCategoryPayload {
   file: string;
 }
@@ -761,6 +770,64 @@ export interface ApprovalDecideResponse extends OkResponse {
 }
 
 /* ──────────────────────────────────────────────
+ * Chat (M-UX-2a)
+ * ────────────────────────────────────────────── */
+
+export type ChatCitationSourceType = 'artifact' | 'decision' | 'policy' | 'session' | 'rag_chunk';
+
+export interface ChatCitation {
+  source_path: string;
+  excerpt: string;
+  start_line: number | null;
+  source_type?: ChatCitationSourceType;
+  deep_link?: string;
+}
+
+export type ChatProposedActionType =
+  | 'create_command'
+  | 'approve'
+  | 'reject'
+  | 'resume'
+  | 'pause'
+  | 'open_screen';
+
+export interface ChatProposedAction {
+  id: string;
+  label: string;
+  type: ChatProposedActionType;
+  payload?: Record<string, unknown>;
+  requires_confirmation: boolean;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  created_at: string;
+}
+
+export interface ChatMessageResponse extends OkResponse {
+  session_id: string;
+  intent: string;
+  message: ChatMessage;
+  citations: ChatCitation[];
+  proposed_actions: ChatProposedAction[];
+}
+
+export interface ChatHistoryResponse extends OkResponse {
+  session_id: string;
+  count: number;
+  messages: ChatMessage[];
+}
+
+export interface ChatActionResponse extends OkResponse {
+  session_id: string;
+  action: ChatProposedAction;
+  replay_context: Record<string, unknown> | null;
+  result: Record<string, unknown>;
+}
+
+/* ──────────────────────────────────────────────
  * Policies (M22 / Policy-as-Code Governance)
  * ────────────────────────────────────────────── */
 
@@ -988,6 +1055,71 @@ export interface ObservabilityTelemetryContractResponse extends OkResponse {
     stream_count: number;
     stale_streams: number;
   };
+}
+
+/* ──────────────────────────────────────────────
+ * Help (M-UX-1a)
+ * ────────────────────────────────────────────── */
+
+export interface HelpAction {
+  label: string;
+  description: string;
+}
+
+export interface HelpRelatedPage {
+  routeSlug: string;
+  title: string;
+}
+
+export interface HelpTopicLink {
+  topicId: string;
+  title: string;
+}
+
+export interface HelpStateVariant {
+  condition: string;
+  additionalContent: string;
+}
+
+export interface PageHelpResponse {
+  routeSlug: string;
+  routePath: string;
+  pageTitle: string;
+  purpose: string;
+  coreActions: HelpAction[];
+  inputsOutputs: string;
+  permissions: string;
+  relatedPages: HelpRelatedPage[];
+  keywords: string[];
+  topicLinks: HelpTopicLink[];
+  stateVariants?: HelpStateVariant[];
+}
+
+export interface HelpTopicResponse {
+  topicId: string;
+  title: string;
+  description: string;
+  markdown: string;
+  html: string;
+  keywords: string[];
+}
+
+export interface HelpSearchResult {
+  kind: 'page' | 'topic';
+  id: string;
+  title: string;
+  snippet: string;
+  routePath?: string;
+  topicId?: string;
+  score: number;
+}
+
+export interface HelpSearchResponse {
+  query: string;
+  count: number;
+  results: HelpSearchResult[];
+  pages: PageHelpResponse[];
+  topics: HelpTopicLink[];
 }
 
 /* ──────────────────────────────────────────────
@@ -1285,7 +1417,19 @@ export interface ApprovalDetail extends ApprovalEntry {
   risk_assessment: string;
   recommended_action: string;
   related_artifacts: string[];
+  similar_overrides?: SimilarOverrideLesson[];
   comparison?: { before: string; after: string };
+}
+
+export interface SimilarOverrideLesson {
+  id: string;
+  summary: string;
+  source_path: string;
+  start_line: number | null;
+  score: number;
+  workspace_id: string | null;
+  citation_label: string;
+  citation_url: string;
 }
 
 export interface ApprovalDetailResponse extends OkResponse {

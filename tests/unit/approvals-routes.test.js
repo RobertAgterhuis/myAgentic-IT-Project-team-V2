@@ -62,18 +62,43 @@ const MOCK_APPROVAL = {
 };
 
 function createMockGovernance(overrides = {}) {
-  return {
-    getPendingApprovals: overrides.getPendingApprovals || (() => [MOCK_APPROVAL]),
-    decide:
-      overrides.decide ||
-      ((id, user, approved, reason) => ({
-        id,
+  const approvals = [{ ...MOCK_APPROVAL }];
+  const engine = {
+    getPendingApprovals: () => approvals.filter((a) => a.status === 'PENDING'),
+    getApprovals: (entityId, gateId) =>
+      approvals.filter((a) => a.entity_id === entityId && (!gateId || a.gate_id === gateId)),
+    getApprovalById: (approvalId) => approvals.find((a) => a.id === approvalId),
+    requestApproval: (entityId, stage, gateId, requestedBy) => {
+      const created = {
+        ...MOCK_APPROVAL,
+        id: `APR-${approvals.length + 1}`,
+        entity_id: entityId,
+        stage,
+        gate_id: gateId,
+        requested_by: requestedBy,
+        status: 'PENDING',
+      };
+      approvals.push(created);
+      return created;
+    },
+    decide: (id, user, approved, reason) => {
+      const idx = approvals.findIndex((a) => a.id === id);
+      if (idx < 0) throw new Error('Approval not found');
+      if (approvals[idx].status !== 'PENDING') throw new Error('Request already decided');
+
+      approvals[idx] = {
+        ...approvals[idx],
         status: approved ? 'APPROVED' : 'REJECTED',
         decided_by: user,
         decided_at: '2026-03-01T12:00:00Z',
         reason,
-      })),
+      };
+
+      return approvals[idx];
+    },
   };
+
+  return { ...engine, ...overrides };
 }
 
 function createCtx(governance = null) {

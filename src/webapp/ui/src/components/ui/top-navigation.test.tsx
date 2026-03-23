@@ -54,6 +54,14 @@ describe('TopNavigation', () => {
     expect(onMenuToggle).toHaveBeenCalledOnce();
   });
 
+  it('help button calls onHelpClick', async () => {
+    const user = userEvent.setup();
+    const onHelpClick = vi.fn();
+    renderNavigation({ onHelpClick });
+    await user.click(screen.getByRole('button', { name: 'Help for this page' }));
+    expect(onHelpClick).toHaveBeenCalledOnce();
+  });
+
   it('shows Ctrl+K shortcut hint in search placeholder', () => {
     renderNavigation();
     expect(screen.getByPlaceholderText(/Ctrl\+K/)).toBeInTheDocument();

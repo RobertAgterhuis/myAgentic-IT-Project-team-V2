@@ -39,6 +39,12 @@ function formatDuration(ms: number | undefined): string {
   return `${(ms / 1000).toFixed(1)}s`;
 }
 
+function formatConfidence(confidence: number | undefined): string {
+  if (typeof confidence !== 'number' || !Number.isFinite(confidence)) return '—';
+  const clamped = Math.max(0, Math.min(1, confidence));
+  return `${Math.round(clamped * 100)}%`;
+}
+
 export default function ExecutionHistoryPage() {
   const { data, isLoading, isError, error } = useExecutionHistory();
   const [filter, setFilter] = useState('');
@@ -108,6 +114,7 @@ export default function ExecutionHistoryPage() {
                 <th className="px-4 py-2 font-medium">Status</th>
                 <th className="px-4 py-2 font-medium">Duration</th>
                 <th className="px-4 py-2 font-medium">Output</th>
+                <th className="px-4 py-2 font-medium">Confidence</th>
                 <th className="px-4 py-2 font-medium">Time</th>
               </tr>
             </thead>
@@ -126,6 +133,26 @@ export default function ExecutionHistoryPage() {
                   </td>
                   <td className="px-4 py-2 text-xs text-muted-foreground max-w-50 truncate">
                     {exec.output_path ?? '—'}
+                  </td>
+                  <td className="px-4 py-2">
+                    <div className="flex flex-col gap-1">
+                      <Badge
+                        variant={
+                          exec.confidence == null
+                            ? 'neutral'
+                            : exec.needs_human_review
+                              ? 'warning'
+                              : 'success'
+                        }
+                      >
+                        {formatConfidence(exec.confidence)}
+                      </Badge>
+                      {exec.needs_human_review && (
+                        <span className="text-[10px] text-warning-foreground/80">
+                          review needed
+                        </span>
+                      )}
+                    </div>
                   </td>
                   <td className="px-4 py-2 text-xs text-muted-foreground">
                     {exec.started_at ? new Date(exec.started_at).toLocaleString() : '—'}

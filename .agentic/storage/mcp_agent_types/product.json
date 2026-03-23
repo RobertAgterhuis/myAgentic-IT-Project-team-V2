@@ -1,0 +1,8 @@
+{
+  "id": "product",
+  "category": "product",
+  "controlPosture": "balanced",
+  "requiresWorkloadIdentity": true,
+  "appRegistrationRef": "entra://agents/product",
+  "templateCategory": "phase"
+}

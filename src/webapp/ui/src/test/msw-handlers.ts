@@ -330,7 +330,138 @@ export const mockAgentsList: AgentsListResponse = {
   agents: [mockAgentDetail],
 };
 
+const mockPageHelpByRoute: Record<
+  string,
+  {
+    routeSlug: string;
+    routePath: string;
+    pageTitle: string;
+    purpose: string;
+    coreActions: Array<{ label: string; description: string }>;
+    inputsOutputs: string;
+    permissions: string;
+    relatedPages: Array<{ routeSlug: string; title: string }>;
+    keywords: string[];
+    topicLinks: Array<{ topicId: string; title: string }>;
+  }
+> = {
+  commands: {
+    routeSlug: 'commands',
+    routePath: '/commands',
+    pageTitle: 'Commands',
+    purpose: 'Queue and guide orchestrator commands with clear project intent.',
+    coreActions: [
+      { label: 'Create', description: 'Start a full delivery cycle from the brief.' },
+      { label: 'Audit', description: 'Assess an existing system before changes.' },
+      { label: 'Feature', description: 'Run scoped feature delivery.' },
+    ],
+    inputsOutputs: 'Project name and brief in, queued command out.',
+    permissions: 'Operator',
+    relatedPages: [{ routeSlug: 'pipeline', title: 'Pipeline' }],
+    keywords: ['commands', 'queue', 'brief'],
+    topicLinks: [{ topicId: 'commands-overview', title: 'Commands overview' }],
+  },
+  sessions: {
+    routeSlug: 'sessions',
+    routePath: '/sessions',
+    pageTitle: 'Sessions',
+    purpose: 'Track active and historical runs with clear recovery context.',
+    coreActions: [
+      { label: 'Review active', description: 'Open currently running orchestration sessions.' },
+      { label: 'Inspect history', description: 'Check completed runs for evidence and outcomes.' },
+      { label: 'Recover', description: 'Prioritize paused or failed runs that need intervention.' },
+    ],
+    inputsOutputs: 'Session list in, run-level insight out.',
+    permissions: 'Operator',
+    relatedPages: [{ routeSlug: 'commands', title: 'Commands' }],
+    keywords: ['sessions', 'runs', 'history', 'gate'],
+    topicLinks: [{ topicId: 'sessions-overview', title: 'Sessions overview' }],
+  },
+  approvals: {
+    routeSlug: 'approvals',
+    routePath: '/approvals',
+    pageTitle: 'Approval Center',
+    purpose: 'Review and decide pending governance approvals in one queue.',
+    coreActions: [
+      { label: 'Filter', description: 'Narrow approvals by status.' },
+      { label: 'Review', description: 'Open a request to inspect context.' },
+      { label: 'Decide', description: 'Approve or reject with rationale.' },
+    ],
+    inputsOutputs: 'Approval requests in, audit-ready decisions out.',
+    permissions: 'Operator',
+    relatedPages: [{ routeSlug: 'sessions', title: 'Sessions' }],
+    keywords: ['approvals', 'governance', 'decisions'],
+    topicLinks: [{ topicId: 'approval-workflow', title: 'Approval workflow' }],
+  },
+  pipeline: {
+    routeSlug: 'pipeline',
+    routePath: '/pipeline',
+    pageTitle: 'Pipeline',
+    purpose: 'Track phases, critic/risk gates, and sprint readiness.',
+    coreActions: [
+      { label: 'Inspect gates', description: 'Review why a gate passed or failed.' },
+      { label: 'Track progress', description: 'Monitor run phase transitions.' },
+      { label: 'Review readiness', description: 'Confirm sprint gate criteria.' },
+    ],
+    inputsOutputs: 'Pipeline events in, phase/gate insight out.',
+    permissions: 'Operator',
+    relatedPages: [{ routeSlug: 'sessions', title: 'Sessions' }],
+    keywords: ['pipeline', 'gate', 'progress'],
+    topicLinks: [{ topicId: 'quality-gates', title: 'Quality Gates' }],
+  },
+};
+
+const mockHelpTopicsById: Record<
+  string,
+  {
+    topicId: string;
+    title: string;
+    description: string;
+    markdown: string;
+    html: string;
+    keywords: string[];
+  }
+> = {
+  'commands-overview': {
+    topicId: 'commands-overview',
+    title: 'Commands overview',
+    description: 'Command modes and expected outcomes.',
+    markdown: '# Commands overview\n\n## Queueing\n\nUse CREATE to start a run.',
+    html: '<h1>Commands overview</h1><h2>Queueing</h2><p>Use CREATE to start a run.</p>',
+    keywords: ['commands', 'create'],
+  },
+  'sessions-overview': {
+    topicId: 'sessions-overview',
+    title: 'Sessions overview',
+    description: 'Track active and historical sessions.',
+    markdown: '# Sessions overview\n\n## Recovery\n\nResume paused work safely.',
+    html: '<h1>Sessions overview</h1><h2>Recovery</h2><p>Resume paused work safely.</p>',
+    keywords: ['sessions', 'recovery'],
+  },
+  'approval-workflow': {
+    topicId: 'approval-workflow',
+    title: 'Approval workflow',
+    description: 'How governance approvals progress.',
+    markdown: '# Approval workflow\n\n## Decisioning\n\nApprove or reject with rationale.',
+    html: '<h1>Approval workflow</h1><h2>Decisioning</h2><p>Approve or reject with rationale.</p>',
+    keywords: ['approval', 'governance'],
+  },
+  'quality-gates': {
+    topicId: 'quality-gates',
+    title: 'Quality Gates',
+    description: 'How phase boundaries and gate outcomes are evaluated.',
+    markdown: '# Quality Gates\n\n## Gate outcomes\n\nEach gate may pass, fail, or block progress.',
+    html: '<h1>Quality Gates</h1><h2>Gate outcomes</h2><p>Each gate may pass, fail, or block progress.</p>',
+    keywords: ['quality', 'gates', 'pipeline'],
+  },
+};
+
 export const handlers = [
+  /* Questionnaires */
+  /* Auth */
+  http.get('/api/auth/me', () => HttpResponse.json({}, { status: 401 })),
+  http.get('/api/auth/providers', () => HttpResponse.json({ github: true, entra: false })),
+
   /* Questionnaires */
   http.get('/api/questionnaires', () => HttpResponse.json(mockQuestionnaires)),
   http.post('/api/save', () => HttpResponse.json({ ok: true, saved: 1 })),
@@ -339,6 +470,16 @@ export const handlers = [
   http.get('/api/decisions', () => HttpResponse.json(mockDecisions)),
   http.post('/api/decisions', () =>
     HttpResponse.json({ ok: true, id: 'DEC-003', action: 'create' })
+  ),
+  http.post('/api/v1/decisions/similar', () =>
+    HttpResponse.json([
+      {
+        decisionId: 'DEC-002',
+        title: 'Use React for the web application shell',
+        excerpt: 'Use React for the web application shell and shared design system.',
+        score: 0.93,
+      },
+    ])
   ),
   http.post('/api/decisions/activate-category', () =>
     HttpResponse.json({ ok: true, action: 'activated', file: 'cat.md', name: 'Cat', stack: 'tech' })
@@ -524,6 +665,80 @@ export const handlers = [
     }
     const resp: AgentDetailResponse = { ok: true, agent: mockAgentDetail };
     return HttpResponse.json(resp);
+  }),
+
+  /* Help */
+  http.get('/api/v1/help/page/:routeSlug', ({ params }) => {
+    const routeSlug = String(params.routeSlug ?? '').toLowerCase();
+    const page = mockPageHelpByRoute[routeSlug];
+    if (!page) {
+      return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    return HttpResponse.json(page);
+  }),
+  http.get('/api/v1/help/topic/:topicId', ({ params }) => {
+    const topicId = String(params.topicId ?? '').toLowerCase();
+    const topic = mockHelpTopicsById[topicId];
+    if (!topic) {
+      return HttpResponse.json({ error: 'Not found' }, { status: 404 });
+    }
+    return HttpResponse.json(topic);
+  }),
+  http.get('/api/v1/help/search', ({ request }) => {
+    const url = new URL(request.url);
+    const query = (url.searchParams.get('q') || '').trim().toLowerCase();
+    if (!query) {
+      return HttpResponse.json({ error: 'Query is required' }, { status: 400 });
+    }
+
+    const allPages = Object.values(mockPageHelpByRoute);
+    const matchedPages = allPages.filter((page) => {
+      const haystack = [
+        page.routeSlug,
+        page.pageTitle,
+        page.purpose,
+        page.keywords.join(' '),
+        page.coreActions.map((action) => `${action.label} ${action.description}`).join(' '),
+      ]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+
+    const allTopics = Object.values(mockHelpTopicsById);
+    const matchedTopics = allTopics.filter((topic) => {
+      const haystack = [topic.topicId, topic.title, topic.description, topic.keywords.join(' ')]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+
+    const results = [
+      ...matchedPages.map((page) => ({
+        kind: 'page' as const,
+        id: page.routeSlug,
+        title: page.pageTitle,
+        snippet: page.purpose,
+        routePath: page.routePath,
+        score: 0.85,
+      })),
+      ...matchedTopics.map((topic) => ({
+        kind: 'topic' as const,
+        id: topic.topicId,
+        topicId: topic.topicId,
+        title: topic.title,
+        snippet: topic.description,
+        score: 0.8,
+      })),
+    ];
+
+    return HttpResponse.json({
+      query,
+      count: results.length,
+      results,
+      pages: matchedPages,
+      topics: matchedTopics.map((topic) => ({ topicId: topic.topicId, title: topic.title })),
+    });
   }),
 
   /* SSE — not mockable via MSW HTTP handlers, tested separately */

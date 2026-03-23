@@ -1,0 +1,8 @@
+{
+  "id": "qa",
+  "category": "quality",
+  "controlPosture": "strict",
+  "requiresWorkloadIdentity": true,
+  "appRegistrationRef": "entra://agents/qa",
+  "templateCategory": "phase"
+}

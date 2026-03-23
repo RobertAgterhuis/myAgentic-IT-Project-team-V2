@@ -45,6 +45,18 @@ const TEST_CONFIG = {
   enabled: true,
 };
 
+const ENTRA_TEST_CONFIG = {
+  entraClientId: 'entra-client-id',
+  entraTenantId: 'common',
+  entraCallbackUrl: 'http://localhost:3000/api/auth/entra/callback',
+};
+
+function createUnsignedJwt(payload) {
+  const header = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString('base64url');
+  const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  return `${header}.${body}.`;
+}
+
 function createReq(url, method = 'GET', { headers = {}, body = null } = {}) {
   const chunks = body ? [Buffer.from(JSON.stringify(body))] : [];
   return {
@@ -146,6 +158,158 @@ describe('routes/auth handlers', () => {
 
       expect(res.statusCode).toBe(302);
       expect(res._headers['Location']).toContain('state=');
+    });
+  });
+
+  describe('GET /api/auth/entra/login', () => {
+    it('returns 503 when Entra provider is not configured', async () => {
+      const handler = routes['GET /api/auth/entra/login'];
+      const req = createReq('/api/auth/entra/login');
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(503);
+      expect(parsed(res).error).toBe('AUTH_PROVIDER_DISABLED');
+    });
+
+    it('redirects to Entra authorize endpoint when provider is configured', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({ ...TEST_CONFIG, ...ENTRA_TEST_CONFIG, dbPath });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      const handler = routes['GET /api/auth/entra/login'];
+      const req = createReq('/api/auth/entra/login?redirect=/dashboard');
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(302);
+      expect(res._headers['Location']).toContain('login.microsoftonline.com');
+      expect(res._headers['Location']).toContain('code_challenge_method=S256');
+      expect(res._headers['Location']).toContain('client_id=entra-client-id');
+    });
+  });
+
+  describe('POST /api/auth/link/entra', () => {
+    it('returns 401 when no authenticated session is present', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({ ...TEST_CONFIG, ...ENTRA_TEST_CONFIG, dbPath });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      const handler = routes['POST /api/auth/link/entra'];
+      const req = createReq('/api/auth/link/entra', 'POST', { body: { redirect: '/settings' } });
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(401);
+      expect(parsed(res).code).toBe('UNAUTHORIZED');
+    });
+
+    it('returns Entra login URL for authenticated user without existing Entra link', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({ ...TEST_CONFIG, ...ENTRA_TEST_CONFIG, dbPath });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      const user = manager.store.upsertUser({
+        provider: 'github',
+        providerId: 'gh-link-user-1',
+        providerUsername: 'ghlink1',
+        email: 'gh-link1@example.com',
+        name: 'GH Link 1',
+        avatarUrl: '',
+      });
+      const session = manager.createSession(user.id, 'github');
+
+      const handler = routes['POST /api/auth/link/entra'];
+      const req = createReq('/api/auth/link/entra', 'POST', {
+        headers: { cookie: `sid=${session.primary_provider}.${session.id}` },
+        body: { redirect: '/settings/identity' },
+      });
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(200);
+      const body = parsed(res);
+      expect(body.ok).toBe(true);
+      expect(body.provider).toBe('entra');
+      expect(body.url).toContain('login.microsoftonline.com');
+      expect(body.url).toContain('state=');
+    });
+
+    it('returns 409 when user already linked Entra provider', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({ ...TEST_CONFIG, ...ENTRA_TEST_CONFIG, dbPath });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      const user = manager.store.upsertUser({
+        provider: 'github',
+        providerId: 'gh-link-user-2',
+        providerUsername: 'ghlink2',
+        email: 'gh-link2@example.com',
+        name: 'GH Link 2',
+        avatarUrl: '',
+      });
+      manager.store.linkProviderAccount({
+        userId: user.id,
+        provider: 'entra',
+        providerId: 'entra-linked-user-2',
+        providerUsername: 'entra.user2@example.com',
+      });
+      const session = manager.createSession(user.id, 'github');
+
+      const handler = routes['POST /api/auth/link/entra'];
+      const req = createReq('/api/auth/link/entra', 'POST', {
+        headers: { cookie: `sid=${session.primary_provider}.${session.id}` },
+      });
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(409);
+      expect(parsed(res).code).toBe('CONFLICT');
     });
   });
 
@@ -257,6 +421,240 @@ describe('routes/auth handlers', () => {
     });
   });
 
+  describe('GET /api/auth/entra/callback', () => {
+    it('returns 503 when Entra provider is not configured', async () => {
+      const handler = routes['GET /api/auth/entra/callback'];
+      const req = createReq('/api/auth/entra/callback');
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(503);
+      expect(parsed(res).error).toBe('AUTH_PROVIDER_DISABLED');
+    });
+
+    it('completes Entra OAuth flow and creates session on valid callback', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({ ...TEST_CONFIG, ...ENTRA_TEST_CONFIG, dbPath });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      const loginUrl = manager.getLoginUrlForProvider('entra', '/dashboard');
+      const stateParam = new URL(loginUrl).searchParams.get('state');
+
+      const origFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        const urlStr = typeof url === 'string' ? url : url.toString();
+        if (urlStr.includes('/oauth2/v2.0/token')) {
+          return {
+            ok: true,
+            json: async () => ({
+              access_token: 'entra-access-token',
+              refresh_token: 'entra-refresh-token',
+              expires_in: 3600,
+              id_token: createUnsignedJwt({
+                oid: 'entra-user-001',
+                tid: 'tenant-001',
+                preferred_username: 'entra.user@example.com',
+                name: 'Entra User',
+                email: 'entra.user@example.com',
+              }),
+            }),
+          };
+        }
+        return origFetch(url);
+      };
+
+      try {
+        const handler = routes['GET /api/auth/entra/callback'];
+        const req = createReq(
+          `/api/auth/entra/callback?code=mock-code&state=${encodeURIComponent(stateParam)}`
+        );
+        const res = createRes();
+
+        await handler(req, res);
+
+        expect(res.statusCode).toBe(302);
+        expect(res._headers['Location']).toBe('/dashboard');
+
+        const user = manager.store.findUserByProvider('entra', 'entra-user-001');
+        expect(user).not.toBeNull();
+        expect(user.email).toBe('entra.user@example.com');
+
+        const entraAccount = user.linked_accounts.find((a) => a.provider === 'entra');
+        expect(entraAccount).not.toBeNull();
+        expect(entraAccount.tenant_id).toBe('tenant-001');
+        expect(entraAccount.provider_username).toBe('entra.user@example.com');
+      } finally {
+        globalThis.fetch = origFetch;
+      }
+    });
+
+    it('links Entra account to existing GitHub session without logout', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({ ...TEST_CONFIG, ...ENTRA_TEST_CONFIG, dbPath });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      const user = manager.store.upsertUser({
+        provider: 'github',
+        providerId: 'gh-link-entra-001',
+        providerUsername: 'gh-link-user',
+        email: 'gh.link@example.com',
+        name: 'GH Link User',
+        avatarUrl: '',
+      });
+      const session = manager.createSession(user.id, 'github');
+
+      const linkRedirect = `/__auth/link/entra?uid=${encodeURIComponent(user.id)}&redirect=${encodeURIComponent('/settings/identity')}`;
+      const loginUrl = manager.getLoginUrlForProvider('entra', linkRedirect);
+      const stateParam = new URL(loginUrl).searchParams.get('state');
+
+      const origFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        const urlStr = typeof url === 'string' ? url : url.toString();
+        if (urlStr.includes('/oauth2/v2.0/token')) {
+          return {
+            ok: true,
+            json: async () => ({
+              access_token: 'entra-access-token-link',
+              refresh_token: 'entra-refresh-token-link',
+              expires_in: 3600,
+              id_token: createUnsignedJwt({
+                oid: 'entra-user-link-001',
+                tid: 'tenant-link-001',
+                preferred_username: 'linked.user@example.com',
+                name: 'Linked User',
+                email: 'linked.user@example.com',
+              }),
+            }),
+          };
+        }
+        return origFetch(url);
+      };
+
+      try {
+        const handler = routes['GET /api/auth/entra/callback'];
+        const req = createReq(
+          `/api/auth/entra/callback?code=mock-code&state=${encodeURIComponent(stateParam)}`,
+          'GET',
+          { headers: { cookie: `sid=${session.primary_provider}.${session.id}` } }
+        );
+        const res = createRes();
+
+        await handler(req, res);
+
+        expect(res.statusCode).toBe(302);
+        expect(res._headers['Location']).toBe('/settings/identity?linked=entra');
+
+        const linkedUser = manager.store.findUserById(user.id);
+        const linkedProviders = linkedUser.linked_accounts.map((a) => a.provider).sort();
+        expect(linkedProviders).toEqual(['entra', 'github']);
+
+        const persistedSession = manager.store.findSession(session.id);
+        expect(persistedSession).not.toBeNull();
+        expect(persistedSession.primary_provider).toBe('github');
+      } finally {
+        globalThis.fetch = origFetch;
+      }
+    });
+
+    it('maps Entra admin group claim to admin role on login', async () => {
+      manager.close();
+      rmDir(dbPath);
+
+      dbPath = tmpDbPath();
+      manager = new AuthManager({
+        ...TEST_CONFIG,
+        ...ENTRA_TEST_CONFIG,
+        dbPath,
+        entraAdminGroupIds: ['entra-admin-group-001'],
+      });
+      middleware = createAuthMiddleware({
+        authManager: manager,
+        log: () => {},
+      });
+      routes = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+      });
+
+      // Consume bootstrap admin role so Entra user role assertion is meaningful.
+      manager.store.upsertUser({
+        provider: 'github',
+        providerId: 'bootstrap-admin-gh',
+        providerUsername: 'bootstrap',
+        email: 'bootstrap@example.com',
+        name: 'Bootstrap',
+        avatarUrl: '',
+      });
+
+      const loginUrl = manager.getLoginUrlForProvider('entra', '/dashboard');
+      const stateParam = new URL(loginUrl).searchParams.get('state');
+
+      const origFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        const urlStr = typeof url === 'string' ? url : url.toString();
+        if (urlStr.includes('/oauth2/v2.0/token')) {
+          return {
+            ok: true,
+            json: async () => ({
+              access_token: 'entra-access-token-admin',
+              refresh_token: 'entra-refresh-token-admin',
+              expires_in: 3600,
+              id_token: createUnsignedJwt({
+                oid: 'entra-admin-user-001',
+                tid: 'tenant-admin-001',
+                preferred_username: 'admin.user@example.com',
+                name: 'Admin User',
+                email: 'admin.user@example.com',
+                groups: ['entra-admin-group-001'],
+              }),
+            }),
+          };
+        }
+        return origFetch(url);
+      };
+
+      try {
+        const handler = routes['GET /api/auth/entra/callback'];
+        const req = createReq(
+          `/api/auth/entra/callback?code=mock-code&state=${encodeURIComponent(stateParam)}`
+        );
+        const res = createRes();
+
+        await handler(req, res);
+
+        expect(res.statusCode).toBe(302);
+        expect(res._headers['Location']).toBe('/dashboard');
+
+        const user = manager.store.findUserByProvider('entra', 'entra-admin-user-001');
+        expect(user).not.toBeNull();
+        expect(user.role).toBe('admin');
+      } finally {
+        globalThis.fetch = origFetch;
+      }
+    });
+  });
+
   /* ── POST /api/auth/logout ───────────────────────────────────── */
 
   describe('POST /api/auth/logout', () => {
@@ -355,6 +753,59 @@ describe('routes/auth handlers', () => {
 
       expect(res.statusCode).toBe(401);
       expect(parsed(res).code).toBe('UNAUTHORIZED');
+    });
+  });
+
+  /* ── GET /api/auth/providers ─────────────────────────────────── */
+
+  describe('GET /api/auth/providers', () => {
+    it('returns github:true entra:false when only GitHub is configured', async () => {
+      const handler = routes['GET /api/auth/providers'];
+      const req = createReq('/api/auth/providers');
+      const res = createRes();
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(200);
+      const body = parsed(res);
+      expect(body.github).toBe(true);
+      expect(body.entra).toBe(false);
+    });
+
+    it('returns github:true entra:true when both providers are configured', async () => {
+      const dbPath2 = tmpDbPath();
+      const cfg = {
+        ...TEST_CONFIG,
+        dbPath: dbPath2,
+        ...ENTRA_TEST_CONFIG,
+        entraClientSecret: 'entra-secret',
+      };
+      const mgr2 = new AuthManager(cfg);
+      const mw2 = createAuthMiddleware({ authManager: mgr2, log: () => {} });
+      const routes2 = createAuthRoutes({ _authManager: mgr2, _authMiddleware: mw2 });
+
+      const handler = routes2['GET /api/auth/providers'];
+      const req = createReq('/api/auth/providers');
+      const res = createRes();
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(200);
+      const body = parsed(res);
+      expect(body.github).toBe(true);
+      expect(body.entra).toBe(true);
+
+      mgr2.close();
+      rmDir(dbPath2);
+    });
+
+    it('returns 503 when auth is disabled', async () => {
+      const routes3 = createAuthRoutes({ _authManager: undefined, _authMiddleware: undefined });
+      const handler = routes3['GET /api/auth/providers'];
+      const req = createReq('/api/auth/providers');
+      const res = createRes();
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(503);
+      expect(parsed(res).error).toBe('AUTH_DISABLED');
     });
   });
 
@@ -540,6 +991,20 @@ describe('routes/auth handlers', () => {
       const req = createReq('/api/auth/callback');
       const res = createRes();
       await disabledRoutes['GET /api/auth/callback'](req, res);
+      expect(res.statusCode).toBe(503);
+    });
+
+    it('GET /api/auth/entra/login returns 503', async () => {
+      const req = createReq('/api/auth/entra/login');
+      const res = createRes();
+      await disabledRoutes['GET /api/auth/entra/login'](req, res);
+      expect(res.statusCode).toBe(503);
+    });
+
+    it('GET /api/auth/entra/callback returns 503', async () => {
+      const req = createReq('/api/auth/entra/callback');
+      const res = createRes();
+      await disabledRoutes['GET /api/auth/entra/callback'](req, res);
       expect(res.statusCode).toBe(503);
     });
 

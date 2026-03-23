@@ -199,6 +199,118 @@ export const decisionPromoteLesson = {
   },
 };
 
+export const decisionSimilar = {
+  tags: ['decisions'],
+  body: {
+    type: 'object' as const,
+    required: ['query'],
+    properties: {
+      query: { type: 'string' as const, minLength: 1, maxLength: 5000 },
+      topK: { type: 'number' as const, minimum: 1, maximum: 10 },
+    },
+    additionalProperties: false,
+  },
+  response: {
+    200: {
+      description: 'Success',
+      type: 'array' as const,
+      items: {
+        type: 'object' as const,
+        required: ['decisionId', 'title', 'score', 'excerpt'],
+        properties: {
+          decisionId: { type: 'string' as const, minLength: 1 },
+          title: { type: 'string' as const, minLength: 1 },
+          score: { type: 'number' as const, minimum: 0, maximum: 1 },
+          excerpt: { type: 'string' as const, minLength: 1 },
+        },
+        additionalProperties: false,
+      },
+    },
+    ...r400,
+    ...r401,
+    ...r403,
+    ...r500,
+  },
+};
+
+export const chatQuery = {
+  tags: ['chat'],
+  body: {
+    type: 'object' as const,
+    required: ['intent', 'message'],
+    properties: {
+      intent: {
+        type: 'string' as const,
+        enum: ['decision_lookup', 'workspace_query', 'artifact_query'],
+      },
+      message: { type: 'string' as const, minLength: 1, maxLength: 5000 },
+      topK: { type: 'number' as const, minimum: 1, maximum: 10 },
+      threshold: { type: 'number' as const, minimum: 0, maximum: 1 },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
+export const chatMessage = {
+  tags: ['chat'],
+  body: {
+    type: 'object' as const,
+    required: ['message'],
+    properties: {
+      message: { type: 'string' as const, minLength: 1, maxLength: 5000 },
+      context_hints: {
+        type: 'array' as const,
+        maxItems: 20,
+        items: { type: 'string' as const, minLength: 1, maxLength: 500 },
+      },
+      session_id: { type: 'string' as const, minLength: 1, maxLength: 200 },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
+export const chatHistory = {
+  tags: ['chat'],
+  querystring: {
+    type: 'object' as const,
+    properties: {
+      session_id: { type: 'string' as const, minLength: 1, maxLength: 200 },
+      limit: { type: 'number' as const, minimum: 1, maximum: 200 },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
+export const chatSessionDelete = {
+  tags: ['chat'],
+  body: {
+    type: 'object' as const,
+    properties: {
+      session_id: { type: 'string' as const, minLength: 1, maxLength: 200 },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
+export const chatAction = {
+  tags: ['chat'],
+  body: {
+    type: 'object' as const,
+    required: ['actionId'],
+    properties: {
+      actionId: { type: 'string' as const, minLength: 1, maxLength: 120 },
+      session_id: { type: 'string' as const, minLength: 1, maxLength: 200 },
+      confirmed: { type: 'boolean' as const },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r404, ...r409, ...r500 },
+};
+
 /* ── questionnaires ───────────────────────────────────────────── */
 
 export const questionnairesList = {
@@ -261,6 +373,53 @@ export const subscribe = {
     additionalProperties: false,
   },
   response: { ...mutationResponses, ...r201, ...r409, ...r500, ...r503 },
+};
+
+/* ── git credentials ─────────────────────────────────────────── */
+
+export const gitCredentialCreate = {
+  tags: ['git'],
+  body: {
+    type: 'object' as const,
+    required: ['provider'],
+    properties: {
+      provider: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 64,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
+      username: { type: 'string' as const, maxLength: 512 },
+      password: { type: 'string' as const, maxLength: 4096 },
+      token: { type: 'string' as const, maxLength: 4096 },
+      expiresAt: { type: 'string' as const, maxLength: 128 },
+    },
+    additionalProperties: false,
+  },
+  response: { ...mutationResponses, ...r401 },
+};
+
+export const gitCredentialDelete = {
+  tags: ['git'],
+  params: {
+    type: 'object' as const,
+    required: ['provider'],
+    properties: {
+      provider: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 64,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
+    },
+    additionalProperties: false,
+  },
+  response: { ...mutationResponses, ...r401 },
+};
+
+export const gitCredentialStatus = {
+  tags: ['git'],
+  response: { ...listResponses, ...r401 },
 };
 
 /* ── milestones ───────────────────────────────────────────────── */
@@ -531,6 +690,101 @@ export const jobCancel = {
   response: { ...mutationResponses, ...r404 },
 };
 
+/* ── rag ──────────────────────────────────────────────────────── */
+
+export const ragIndexStart = {
+  tags: ['rag'],
+  body: {
+    type: 'object' as const,
+    required: ['collection', 'paths'],
+    properties: {
+      collection: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 100,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
+      paths: {
+        type: 'array' as const,
+        minItems: 1,
+        items: { type: 'string' as const, minLength: 1, maxLength: 2000 },
+      },
+      workspaceId: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 120,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
+export const ragStandardIndexStart = {
+  tags: ['rag'],
+  body: {
+    type: 'object' as const,
+    required: ['collection'],
+    properties: {
+      collection: {
+        type: 'string' as const,
+        enum: ['decisions', 'phase-outputs', 'codebase', 'sprint-artifacts', 'retrospectives'],
+      },
+      workspaceId: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 120,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
+export const ragQuery = {
+  tags: ['rag'],
+  body: {
+    type: 'object' as const,
+    required: ['collection', 'query'],
+    properties: {
+      collection: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 100,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
+      query: { type: 'string' as const, minLength: 1, maxLength: 5000 },
+      topK: { type: 'number' as const, minimum: 1, maximum: 50 },
+      threshold: { type: 'number' as const, minimum: 0, maximum: 1 },
+      workspaceId: {
+        type: 'string' as const,
+        minLength: 1,
+        maxLength: 120,
+        pattern: '^[A-Za-z0-9_-]+$',
+      },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
+export const ragPatternQuery = {
+  tags: ['rag'],
+  body: {
+    type: 'object' as const,
+    required: ['query'],
+    properties: {
+      query: { type: 'string' as const, minLength: 1, maxLength: 5000 },
+      topK: { type: 'number' as const, minimum: 1, maximum: 50 },
+      threshold: { type: 'number' as const, minimum: 0, maximum: 1 },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
 /* ── orchestrator ─────────────────────────────────────────────── */
 
 export const orchestratorAdvance = {
@@ -707,7 +961,7 @@ export const auditGet = {
 };
 
 export const helpGet = {
-  tags: ['system'],
+  tags: ['help'],
   querystring: {
     type: 'object' as const,
     properties: {
@@ -716,6 +970,43 @@ export const helpGet = {
     additionalProperties: false,
   },
   response: readResponses,
+};
+
+export const helpPageGet = {
+  tags: ['help'],
+  params: {
+    type: 'object' as const,
+    required: ['routeSlug'],
+    properties: {
+      routeSlug: { type: 'string' as const, minLength: 1, pattern: '^[A-Za-z0-9/_-]+$' },
+    },
+  },
+  response: readResponses,
+};
+
+export const helpTopicGet = {
+  tags: ['help'],
+  params: {
+    type: 'object' as const,
+    required: ['topicId'],
+    properties: {
+      topicId: { type: 'string' as const, minLength: 1, pattern: '^[a-z0-9_-]+$' },
+    },
+  },
+  response: readResponses,
+};
+
+export const helpSearchGet = {
+  tags: ['help'],
+  querystring: {
+    type: 'object' as const,
+    required: ['q'],
+    properties: {
+      q: { type: 'string' as const, minLength: 1, maxLength: 200 },
+    },
+    additionalProperties: false,
+  },
+  response: listResponses,
 };
 
 /* ── analytics v1 ─────────────────────────────────────────────── */

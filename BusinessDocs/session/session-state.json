@@ -1,8 +1,1 @@
-{
-  "status": "IDLE",
-  "mode": "AUDIT",
-  "state_history": [],
-  "gate_results": {},
-  "last_updated": "2026-03-21T12:08:13.784Z",
-  "degradation_log": []
-}
+{"status":"IDLE","mode":"CREATE","state_history":[]}

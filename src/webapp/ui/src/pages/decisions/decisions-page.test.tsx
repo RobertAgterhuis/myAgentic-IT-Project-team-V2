@@ -2,7 +2,7 @@
  * Decisions page tests — Issue #243 (S9G-36)
  */
 import { describe, it, expect } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import DecisionsPage from './decisions-page';
 import { RouterTestWrapper } from '@/test/router-test-wrapper';
@@ -84,6 +84,52 @@ describe('DecisionsPage', () => {
     await waitFor(() => {
       expect(screen.getByText('DEC-001')).toBeInTheDocument();
       expect(screen.getByText('DEC-002')).toBeInTheDocument();
+    });
+  });
+
+  it('shows related decisions while creating a decision', async () => {
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: /new decision/i }).length).toBeGreaterThan(0);
+    });
+
+    fireEvent.click(screen.getAllByRole('button', { name: /new decision/i })[0]);
+
+    await waitFor(() => {
+      expect(screen.getByTestId('related-decisions-panel-create')).toBeInTheDocument();
+    });
+
+    fireEvent.change(screen.getByLabelText(/question \/ decision/i), {
+      target: { value: 'Use React for the shell' },
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.getByRole('heading', { name: /use react for the web application shell/i, level: 4 })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /open source decision dec-002/i })
+      ).toBeInTheDocument();
+    });
+  });
+
+  it('shows related decisions in the detail view', async () => {
+    renderPage();
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /view dec-001/i })).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: /view dec-001/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId('related-decisions-panel-detail')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText(/top similar past decisions/i)).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText(/shared design system/i)).toBeInTheDocument();
     });
   });
 

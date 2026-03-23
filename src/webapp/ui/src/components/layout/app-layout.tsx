@@ -15,10 +15,12 @@ import { useCurrentUser } from '@/hooks/use-auth';
 import { useSSEEvents } from '@/hooks/use-sse-events';
 import { useRuntimeEvents } from '@/hooks/use-runtime-events';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
+import { resolveHelpRouteSlug } from '@/hooks/use-help';
 import { routes, buildBreadcrumbs, DOMAIN_ORDER, type DomainSection } from '@/lib/routes';
 import { AppShell } from '@/components/layout/app-shell';
 import { SidebarNav } from '@/components/layout/sidebar-nav';
 import { BreadcrumbNav } from '@/components/layout/breadcrumb-nav';
+import { ChatPanel } from '@/components/chat/chat-panel';
 import {
   LayoutDashboard,
   Terminal,
@@ -123,7 +125,9 @@ export function AppLayout() {
   const sidebarOpen = useUIStore((s) => s.sidebarOpen);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const helpOpen = useUIStore((s) => s.helpOpen);
-  const toggleHelp = useUIStore((s) => s.toggleHelp);
+  const closeHelp = useUIStore((s) => s.closeHelp);
+  const openHelpForRoute = useUIStore((s) => s.openHelpForRoute);
+  const toggleChat = useUIStore((s) => s.toggleChat);
   const connectionStatus = useUIStore((s) => s.connectionStatus);
 
   const { data: orchestratorStatus } = useOrchestratorStatus();
@@ -148,6 +152,8 @@ export function AppLayout() {
           orchestratorState={orchestratorStatus?.state}
           connectionStatus={connectionStatus}
           onMenuToggle={toggleSidebar}
+          onHelpClick={() => openHelpForRoute(resolveHelpRouteSlug(location.pathname))}
+          onChatClick={toggleChat}
         />
       }
       sidebar={
@@ -160,7 +166,8 @@ export function AppLayout() {
         />
       }
       breadcrumbs={<BreadcrumbNav items={buildBreadcrumbs(location.pathname)} />}
-      helpPanel={helpOpen ? <HelpPanel onClose={toggleHelp} /> : null}
+      helpPanel={helpOpen ? <HelpPanel onClose={closeHelp} /> : null}
+      chatPanel={<ChatPanel />}
     >
       <ErrorBoundary>
         <Suspense fallback={<PageSpinner />}>

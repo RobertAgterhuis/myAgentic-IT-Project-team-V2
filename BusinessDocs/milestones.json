@@ -4,7 +4,7 @@
     "name": "M0: Repo Restructuring (AUDIT)",
     "status": "done",
     "progress": 100,
-    "completion": "2026-01-15",
+    "completion": "2026-03-13",
     "archived": false
   },
   {
@@ -12,7 +12,7 @@
     "name": "M1: Sprint 2 Completion",
     "status": "done",
     "progress": 100,
-    "completion": "2026-01-20",
+    "completion": "2026-03-13",
     "archived": false
   },
   {
@@ -20,7 +20,7 @@
     "name": "M2: Pipeline Hardening (AUDIT)",
     "status": "done",
     "progress": 100,
-    "completion": "2026-01-25",
+    "completion": "2026-03-13",
     "archived": false
   },
   {
@@ -28,7 +28,7 @@
     "name": "M3: Code Orchestrator (FEAT-05)",
     "status": "done",
     "progress": 100,
-    "completion": "2026-02-01",
+    "completion": "2026-03-13",
     "archived": false
   },
   {
@@ -36,7 +36,7 @@
     "name": "M4: Canonical Schema (FEAT-03)",
     "status": "done",
     "progress": 100,
-    "completion": "2026-02-05",
+    "completion": "2026-03-13",
     "archived": false
   },
   {
@@ -44,31 +44,31 @@
     "name": "M5: Security + TypeScript (AUDIT)",
     "status": "done",
     "progress": 100,
-    "completion": "2026-02-10",
+    "completion": "2026-03-13",
     "archived": false
   },
   {
     "id": "M6",
     "name": "M6: v1.0 GA",
-    "status": "in progress",
-    "progress": 57,
-    "completion": "2026-06-01",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-03-15",
     "archived": false
   },
   {
     "id": "M7",
     "name": "M7: Tool Abstraction (FEAT-04)",
-    "status": "not started",
-    "progress": 0,
-    "completion": "2026-06-15",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-03-15",
     "archived": false
   },
   {
     "id": "M8",
     "name": "M8: Claude + OpenAI (FEAT-06/07)",
-    "status": "not started",
-    "progress": 0,
-    "completion": "2026-07-01",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-03-15",
     "archived": false
   },
   {
@@ -76,15 +76,15 @@
     "name": "M9: Enterprise UI (FEAT-02)",
     "status": "done",
     "progress": 100,
-    "completion": "2026-03-01",
+    "completion": "2026-03-14",
     "archived": false
   },
   {
     "id": "M10",
     "name": "M10: MCP + Context (FEAT-08/09)",
-    "status": "not started",
-    "progress": 0,
-    "completion": "2026-07-15",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-03-15",
     "archived": false
   },
   {
@@ -92,7 +92,7 @@
     "name": "M11: Docs→BusinessDocs Restructure (BLOCKING)",
     "status": "done",
     "progress": 100,
-    "completion": "2026-03-10",
+    "completion": "2026-03-14",
     "archived": false
   },
   {
@@ -100,7 +100,7 @@
     "name": "M12: Docker/Infra Restructure",
     "status": "done",
     "progress": 100,
-    "completion": "2026-03-12",
+    "completion": "2026-03-14",
     "archived": false
   },
   {
@@ -121,8 +121,104 @@
   },
   {
     "id": "M31",
-    "name": "M31: UI-Triggered Agent Execution",
-    "status": "in-progress",
+    "name": "SDLC5 M31: UI-Triggered Agent Execution",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-03-18",
+    "archived": false
+  },
+  {
+    "id": "GH-100",
+    "name": "M-INFRA-2a - Auth Provider Abstraction",
+    "status": "done",
+    "progress": 100,
+    "completion": "2026-03-22",
+    "archived": false
+  },
+  {
+    "id": "GH-105",
+    "name": "M-INFRA-2b - Entra OIDC Provider",
+    "status": "completed",
+    "progress": 100,
+    "completion": "2026-03-22",
+    "archived": false
+  },
+  {
+    "id": "GH-106",
+    "name": "M-INTEL-2 - RAG Collections & Semantic Search",
+    "status": "not started",
+    "progress": 0,
+    "completion": null,
+    "archived": false
+  },
+  {
+    "id": "GH-108",
+    "name": "M-INFRA-3b - Runtime Plane",
+    "status": "not started",
+    "progress": 0,
+    "completion": null,
+    "archived": false
+  },
+  {
+    "id": "GH-109",
+    "name": "M-UX-2a - Chat Service Phase 1",
+    "status": "not started",
+    "progress": 0,
+    "completion": null,
+    "archived": false
+  },
+  {
+    "id": "GH-110",
+    "name": "M-UX-1b - Full Help System with LLM Drawer",
+    "status": "not started",
+    "progress": 0,
+    "completion": null,
+    "archived": false
+  },
+  {
+    "id": "GH-111",
+    "name": "M-INFRA-3c - Experience Plane & Reconcile Loop",
+    "status": "not started",
+    "progress": 0,
+    "completion": null,
+    "archived": false
+  },
+  {
+    "id": "GH-112",
+    "name": "M-INFRA-2c - Agent Workload Identity",
+    "status": "not started",
+    "progress": 0,
+    "completion": null,
+    "archived": false
+  },
+  {
+    "id": "GH-113",
+    "name": "M-INFRA-3d - Workload Identity in MCP Runtime",
+    "status": "not started",
+    "progress": 0,
+    "completion": null,
+    "archived": false
+  },
+  {
+    "id": "GH-114",
+    "name": "M-UX-2b - Chat Phase 2 (RAG-backed)",
+    "status": "not started",
+    "progress": 0,
+    "completion": null,
+    "archived": false
+  },
+  {
+    "id": "GH-115",
+    "name": "M-INTEL-3 - Cross-session Learning",
+    "status": "not started",
+    "progress": 0,
+    "completion": null,
+    "archived": false
+  },
+  {
+    "id": "GH-117",
+    "name": "M-UX-3 - Multi-agent Chat & Session Copilot",
+    "status": "not started",
     "progress": 0,
     "completion": null,
     "archived": false

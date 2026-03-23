@@ -11,6 +11,7 @@ export const queryKeys = {
   /* Decisions */
   decisions: {
     all: ['decisions'] as const,
+    similar: (query: string) => ['decisions', 'similar', query] as const,
   },
 
   /* Milestones */
@@ -58,6 +59,12 @@ export const queryKeys = {
     current: ['session'] as const,
   },
 
+  /* Chat */
+  chat: {
+    history: (sessionId: string) => ['chat', 'history', sessionId] as const,
+    stream: (sessionId: string) => ['chat', 'stream', sessionId] as const,
+  },
+
   /* Server metrics */
   serverMetrics: {
     all: ['server-metrics'] as const,
@@ -88,6 +95,13 @@ export const queryKeys = {
     policyEvaluation: ['governance', 'policy-evaluation'] as const,
   },
 
+  /* Help (M-UX-1a) */
+  help: {
+    page: (routeSlug: string) => ['help', 'page', routeSlug] as const,
+    topic: (topicId: string) => ['help', 'topic', topicId] as const,
+    search: (query: string) => ['help', 'search', query] as const,
+  },
+
   /* Workspaces (UI-014) */
   workspaces: {
     all: ['workspaces'] as const,
@@ -103,6 +117,11 @@ export const queryKeys = {
   administration: {
     users: ['administration', 'users'] as const,
     integrations: ['administration', 'integrations'] as const,
+  },
+
+  /* Identity (M-INFRA-2c) */
+  identity: {
+    consentCenter: ['identity', 'consent-center'] as const,
   },
 
   /* Traceability (M10) */
@@ -165,5 +184,14 @@ export const queryKeys = {
         : (['cockpit', 'root-cause'] as const),
     approvalDetail: (id: string) => ['cockpit', 'approval', id] as const,
     approvalHistory: ['cockpit', 'approval-history'] as const,
+  },
+
+  /* MCP Experience Plane (M-INFRA-3c) */
+  mcp: {
+    matrix: ['mcp', 'matrix'] as const,
+    agentPermissions: (agentId: string) => ['mcp', 'agents', agentId, 'permissions'] as const,
+    overrides: ['mcp', 'overrides'] as const,
+    diagnostics: ['mcp', 'diagnostics'] as const,
+    reconcileRuns: ['mcp', 'reconcile-runs'] as const,
   },
 } as const;

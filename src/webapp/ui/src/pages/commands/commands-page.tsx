@@ -11,6 +11,7 @@ import { EmptyState } from '@/components/ui/empty-state';
 import { InputField } from '@/components/ui/input-field';
 import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
+import { PageHelpStrip } from '@/components/help-panel/page-help-strip';
 import { useOrchestratorStatus, useOrchestratorQueue, useQueueCommand } from '@/hooks';
 import type { OrchestratorCommandName } from '@/lib/api-types';
 import { cn } from '@/lib/utils';
@@ -208,6 +209,8 @@ export default function CommandsPage() {
           },
         ]}
       />
+
+      <PageHelpStrip routeSlug="commands" />
 
       <ContextStrip items={contextItems} />
 

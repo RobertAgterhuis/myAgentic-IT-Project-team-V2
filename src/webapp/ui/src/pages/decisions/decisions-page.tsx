@@ -19,6 +19,7 @@ import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { LifecycleFlow } from '@/components/decisions/lifecycle-flow';
 import { CreateDecisionDialog } from '@/components/decisions/create-decision-dialog';
+import { RelatedDecisionsPanel } from '@/components/decisions/related-decisions-panel';
 import { getColumns } from './columns';
 import { statusBadge, priorityBadge } from './constants';
 import { getDecisionSubject } from './presentation';
@@ -154,9 +155,11 @@ function EditDecisionDialog({
 function DecisionDetailDialog({
   decision,
   onClose,
+  onOpenDecision,
 }: {
   decision: DecisionItem | null;
   onClose: () => void;
+  onOpenDecision: (decisionId: string) => void;
 }) {
   if (!decision) return null;
 
@@ -248,6 +251,14 @@ function DecisionDetailDialog({
             <p className="mt-1">{decision.reason}</p>
           </div>
         )}
+
+        <RelatedDecisionsPanel
+          query={subject}
+          excludeDecisionId={decision.id}
+          onOpenDecision={onOpenDecision}
+          emptyHint="No decision subject is available to retrieve similar past decisions."
+          testId="related-decisions-panel-detail"
+        />
       </div>
     </ModalDialog>
   );
@@ -321,6 +332,17 @@ export default function DecisionsPage() {
       }
     },
     [deleteDecision, updateDecision]
+  );
+
+  const openDecisionById = useCallback(
+    (decisionId: string) => {
+      const target = allDecisions.find((decision) => decision.id === decisionId) || null;
+      if (!target) return;
+      setShowCreate(false);
+      setEditingDecision(null);
+      setSelectedDecision(target);
+    },
+    [allDecisions]
   );
 
   const columns = useMemo(() => getColumns(handleAction, setSelectedDecision), [handleAction]);
@@ -572,10 +594,18 @@ export default function DecisionsPage() {
       )}
 
       {/* Create Dialog */}
-      <CreateDecisionDialog open={showCreate} onOpenChange={setShowCreate} />
+      <CreateDecisionDialog
+        open={showCreate}
+        onOpenChange={setShowCreate}
+        onOpenDecision={openDecisionById}
+      />
 
       {/* Detail Dialog */}
-      <DecisionDetailDialog decision={selectedDecision} onClose={() => setSelectedDecision(null)} />
+      <DecisionDetailDialog
+        decision={selectedDecision}
+        onClose={() => setSelectedDecision(null)}
+        onOpenDecision={openDecisionById}
+      />
 
       {/* Edit Dialog */}
       <EditDecisionDialog decision={editingDecision} onClose={() => setEditingDecision(null)} />

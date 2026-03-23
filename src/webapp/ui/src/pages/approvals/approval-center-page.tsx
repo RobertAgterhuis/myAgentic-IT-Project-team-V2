@@ -20,6 +20,7 @@ import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
+import { PageHelpStrip } from '@/components/help-panel/page-help-strip';
 import { useApprovals, useApproveRequest, useRejectRequest, useApprovalDetail } from '@/hooks';
 import type { ApprovalEntry } from '@/lib/api-types';
 import {
@@ -30,6 +31,7 @@ import {
   RefreshCw,
   AlertTriangle,
   ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 
 /* ── Status badge mapping ── */
@@ -161,6 +163,37 @@ function ApprovalDecisionPanel({
             <span className="font-medium">{(approval as { risk_level?: string }).risk_level}</span>
           </span>
         </div>
+      )}
+
+      {approval.similar_overrides && approval.similar_overrides.length > 0 && (
+        <Card elevation="flat" className="p-3 bg-primary/5 border border-primary/20 space-y-2">
+          <p className="text-xs font-semibold">Similar past overrides</p>
+          {approval.similar_overrides.map((lesson) => (
+            <div
+              key={lesson.id}
+              className="rounded-lg border border-border/60 bg-background/70 p-2"
+            >
+              <p className="text-xs">{lesson.summary}</p>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
+                <Badge variant="secondary" className="text-[10px]">
+                  score {lesson.score.toFixed(2)}
+                </Badge>
+                {lesson.workspace_id && (
+                  <Badge variant="outline" className="text-[10px]">
+                    workspace {lesson.workspace_id}
+                  </Badge>
+                )}
+                <a
+                  href={lesson.citation_url}
+                  className="inline-flex items-center gap-1 underline-offset-2 hover:underline"
+                >
+                  {lesson.citation_label}
+                  <ExternalLink className="size-3" />
+                </a>
+              </div>
+            </div>
+          ))}
+        </Card>
       )}
 
       {actionError && (
@@ -354,6 +387,8 @@ export default function ApprovalCenterPage() {
             { id: 'audit', label: 'Audit-captured' },
           ]}
         />
+
+        <PageHelpStrip routeSlug="approvals" />
 
         <ContextStrip items={contextItems} />
 

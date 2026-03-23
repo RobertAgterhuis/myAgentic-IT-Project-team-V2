@@ -2,202 +2,6 @@
   {
     "mode": "CREATE",
     "status": "STOPPED",
-    "started_at": "2026-03-17T16:25:45.938Z",
-    "ended_at": "2026-03-17T16:25:45.951Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T16:25:45.939Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
-    "started_at": "2026-03-17T16:27:11.879Z",
-    "ended_at": "2026-03-17T16:27:11.895Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T16:27:11.881Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
-    "started_at": "2026-03-17T16:37:21.707Z",
-    "ended_at": "2026-03-17T16:37:21.723Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T16:37:21.708Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
-    "started_at": "2026-03-17T17:25:43.101Z",
-    "ended_at": "2026-03-17T17:25:43.116Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T17:25:43.102Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
-    "started_at": "2026-03-17T17:27:07.745Z",
-    "ended_at": "2026-03-17T17:27:07.762Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T17:27:07.746Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
-    "started_at": "2026-03-17T17:29:40.579Z",
-    "ended_at": "2026-03-17T17:29:40.595Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T17:29:40.580Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
-    "started_at": "2026-03-17T17:30:42.668Z",
-    "ended_at": "2026-03-17T17:30:42.685Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T17:30:42.669Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
-    "started_at": "2026-03-17T17:32:42.894Z",
-    "ended_at": "2026-03-17T17:32:42.913Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T17:32:42.895Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
-    "started_at": "2026-03-17T19:23:29.581Z",
-    "ended_at": "2026-03-17T19:23:29.595Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T19:23:29.582Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
-    "started_at": "2026-03-17T19:25:49.338Z",
-    "ended_at": "2026-03-17T19:25:49.354Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T19:25:49.339Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
-    "started_at": "2026-03-17T19:26:59.858Z",
-    "ended_at": "2026-03-17T19:26:59.872Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T19:26:59.859Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
-    "started_at": "2026-03-17T19:28:05.476Z",
-    "ended_at": "2026-03-17T19:28:05.492Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T19:28:05.477Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
-    "started_at": "2026-03-17T19:33:00.539Z",
-    "ended_at": "2026-03-17T19:33:00.558Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T19:33:00.540Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
-    "started_at": "2026-03-17T19:35:41.271Z",
-    "ended_at": "2026-03-17T19:35:41.287Z",
-    "state_history": [
-      {
-        "from": "IDLE",
-        "to": "ONBOARDING",
-        "timestamp": "2026-03-17T19:35:41.272Z"
-      }
-    ],
-    "gate_results": {}
-  },
-  {
-    "mode": "CREATE",
-    "status": "STOPPED",
     "started_at": "2026-03-17T20:23:32.013Z",
     "ended_at": "2026-03-17T20:23:32.024Z",
     "state_history": [
@@ -695,6 +499,202 @@
         "from": "IDLE",
         "to": "ONBOARDING",
         "timestamp": "2026-03-22T09:04:57.936Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-22T12:00:18.764Z",
+    "ended_at": "2026-03-22T12:00:18.781Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-22T12:00:18.765Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-22T17:05:39.312Z",
+    "ended_at": "2026-03-22T17:05:39.330Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-22T17:05:39.313Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-22T18:10:11.420Z",
+    "ended_at": "2026-03-22T18:10:11.440Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-22T18:10:11.421Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-22T18:13:37.060Z",
+    "ended_at": "2026-03-22T18:13:37.076Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-22T18:13:37.061Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-22T18:15:43.754Z",
+    "ended_at": "2026-03-22T18:15:43.771Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-22T18:15:43.755Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-22T18:41:55.159Z",
+    "ended_at": "2026-03-22T18:41:55.173Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-22T18:41:55.160Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-22T19:01:46.345Z",
+    "ended_at": "2026-03-22T19:01:46.362Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-22T19:01:46.346Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-22T19:38:33.123Z",
+    "ended_at": "2026-03-22T19:38:33.139Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-22T19:38:33.124Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-22T19:49:40.342Z",
+    "ended_at": "2026-03-22T19:49:40.364Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-22T19:49:40.343Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-22T20:09:22.776Z",
+    "ended_at": "2026-03-22T20:09:22.794Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-22T20:09:22.777Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-22T20:22:45.706Z",
+    "ended_at": "2026-03-22T20:22:45.725Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-22T20:22:45.707Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-23T05:09:42.218Z",
+    "ended_at": "2026-03-23T05:09:42.231Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-23T05:09:42.220Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-23T05:37:32.852Z",
+    "ended_at": "2026-03-23T05:37:32.869Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-23T05:37:32.853Z"
+      }
+    ],
+    "gate_results": {}
+  },
+  {
+    "mode": "CREATE",
+    "status": "STOPPED",
+    "started_at": "2026-03-23T05:38:58.800Z",
+    "ended_at": "2026-03-23T05:38:58.816Z",
+    "state_history": [
+      {
+        "from": "IDLE",
+        "to": "ONBOARDING",
+        "timestamp": "2026-03-23T05:38:58.801Z"
       }
     ],
     "gate_results": {}

@@ -5,13 +5,16 @@ import { InputField } from '@/components/ui/input-field';
 import { FormRow } from '@/components/ui/form-row';
 import { useCreateDecision } from '@/hooks';
 import type { DecisionPriority } from '@/lib/api-types';
+import { RelatedDecisionsPanel } from './related-decisions-panel';
 
 export function CreateDecisionDialog({
   open,
   onOpenChange,
+  onOpenDecision,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onOpenDecision?: (decisionId: string) => void;
 }) {
   const create = useCreateDecision();
   const [scope, setScope] = useState('');
@@ -68,6 +71,7 @@ export function CreateDecisionDialog({
         <FormRow label="Priority">
           <select
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            aria-label="Priority"
             value={priority}
             onChange={(e) => setPriority(e.target.value as DecisionPriority)}
           >
@@ -76,6 +80,13 @@ export function CreateDecisionDialog({
             <option value="LOW">Low</option>
           </select>
         </FormRow>
+
+        <RelatedDecisionsPanel
+          query={text}
+          onOpenDecision={onOpenDecision}
+          emptyHint="Start typing a decision or question to retrieve similar past decisions."
+          testId="related-decisions-panel-create"
+        />
       </div>
     </ModalDialog>
   );

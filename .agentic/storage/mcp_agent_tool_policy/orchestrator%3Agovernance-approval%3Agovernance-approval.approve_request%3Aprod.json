@@ -1,0 +1,11 @@
+{
+  "agentId": "orchestrator",
+  "serverId": "governance-approval",
+  "toolId": "governance-approval.approve_request",
+  "overrideMode": "set",
+  "permission": "A",
+  "approvalRequired": true,
+  "blocked": false,
+  "envScope": "prod",
+  "id": "orchestrator%3Agovernance-approval%3Agovernance-approval.approve_request%3Aprod"
+}

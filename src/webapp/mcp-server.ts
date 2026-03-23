@@ -36,6 +36,11 @@ import { withFileLock } from './file-lock';
 import * as schemas from './schemas';
 import { createStorageProvider } from '../../platform/engine/persistence';
 import type { StorageProvider } from '../../platform/engine/persistence';
+import {
+  EnvScopeValidationError,
+  McpGovernanceService as RuntimePolicyService,
+} from './plugins/mcp-governance';
+import { ToolExecutionGuard } from './tool-execution-guard';
 
 /* ── Service layer (M20-004) ───────────────────────────────────── */
 import {
@@ -183,6 +188,93 @@ const mcp: McpServerInstance = new McpServer(
   { name: 'agentic-it-project-team', version: '1.0.0' },
   { capabilities: { tools: {}, resources: {} } }
 );
+
+const runtimePolicySvc = new RuntimePolicyService({
+  projectRoot: PROJECT_ROOT,
+  storageProvider: null,
+});
+
+const toolExecutionGuard = new ToolExecutionGuard({
+  projectRoot: PROJECT_ROOT,
+  governanceService: governanceSvc,
+  defaultServerId: 'command-center',
+});
+
+function expectedEnvScope(): 'dev' | 'test' | 'prod' {
+  return process.env.ENV_SCOPE === 'test' || process.env.ENV_SCOPE === 'prod'
+    ? process.env.ENV_SCOPE
+    : 'dev';
+}
+
+function withExecutionGuards(
+  toolName: string,
+  handler: (params?: Record<string, unknown>) => Promise<McpToolResult>,
+  includeParams: boolean
+): (params?: Record<string, unknown>) => Promise<McpToolResult> {
+  return async (params?: Record<string, unknown>) => {
+    const payload = params && typeof params === 'object' ? params : {};
+
+    let envScope: 'dev' | 'test' | 'prod';
+    try {
+      envScope = runtimePolicySvc.validateEnvironmentScope(
+        String(payload.env_scope || ''),
+        expectedEnvScope()
+      );
+    } catch (error) {
+      if (error instanceof EnvScopeValidationError) {
+        return errorResult(error.message);
+      }
+      throw error;
+    }
+
+    const guardResult = await toolExecutionGuard.evaluate({
+      toolName,
+      envScope,
+      expectedEnvScope: expectedEnvScope(),
+      params: payload,
+    });
+    if (guardResult) {
+      return jsonResult(guardResult);
+    }
+
+    const nextParams = { ...payload };
+    delete nextParams.env_scope;
+    delete nextParams.agent_id;
+
+    return includeParams ? handler(nextParams) : handler();
+  };
+}
+
+const registerTool = mcp.tool.bind(mcp);
+mcp.tool = ((
+  name: string,
+  description: string,
+  schemaOrHandler: unknown,
+  handler?: (params: Record<string, unknown>) => Promise<McpToolResult>
+) => {
+  if (typeof schemaOrHandler === 'function') {
+    return registerTool(
+      name,
+      description,
+      withExecutionGuards(
+        name,
+        schemaOrHandler as (params?: Record<string, unknown>) => Promise<McpToolResult>,
+        false
+      )
+    );
+  }
+
+  return registerTool(
+    name,
+    description,
+    schemaOrHandler,
+    withExecutionGuards(
+      name,
+      handler as (params?: Record<string, unknown>) => Promise<McpToolResult>,
+      true
+    )
+  );
+}) as McpServerInstance['tool'];
 
 /* ════════════════════════════════════════════════════════════════ */
 /*  TOOLS                                                          */

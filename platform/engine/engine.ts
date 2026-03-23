@@ -32,6 +32,8 @@ import {
   saveTransitionComplete,
   addDegradationEntry,
 } from './state-persistence';
+import { spawnSync } from 'node:child_process';
+import path from 'node:path';
 import { runGate } from './gate-validator';
 import { runSprintGate } from './sprint-gate';
 import { loadTemplate } from './template-loader';
@@ -69,6 +71,42 @@ interface EngineHooks {
   afterTransition?: ((event: { from: string; to: string; timestamp: string }) => void)[];
   onGateResult?: ((state: string, result: Record<string, unknown>) => void)[];
   onError?: ((event: { from: string; reason: string }) => void)[];
+}
+
+interface GitCommandResult {
+  status: number | null;
+  stdout: string;
+  stderr: string;
+}
+
+type GitCommandRunner = (args: string[], cwd: string) => GitCommandResult;
+
+interface GateCommitMetadata {
+  gateId: string;
+  phaseLabel: string;
+}
+
+const PHASE_GATE_TRANSITION_MAP: Record<string, GateCommitMetadata> = {
+  'CRITIC_1->PHASE_2': { gateId: 'gate.critic-risk-1', phaseLabel: '1' },
+  'CRITIC_2->PHASE_3': { gateId: 'gate.critic-risk-2', phaseLabel: '2' },
+  'CRITIC_3->PHASE_4': { gateId: 'gate.critic-risk-3', phaseLabel: '3' },
+  'CRITIC_4->SYNTHESIS': { gateId: 'gate.critic-risk-4', phaseLabel: '4' },
+};
+
+function defaultGitRunner(args: string[], cwd: string): GitCommandResult {
+  const result = spawnSync('git', args, {
+    cwd,
+    encoding: 'utf8',
+  });
+  return {
+    status: result.status,
+    stdout: String(result.stdout || ''),
+    stderr: String(result.stderr || ''),
+  };
+}
+
+function resolveGateCommitMetadata(from: string, to: string): GateCommitMetadata | null {
+  return PHASE_GATE_TRANSITION_MAP[`${from}->${to}`] || null;
 }
 
 /**
@@ -120,6 +158,9 @@ function createEngine(options: Record<string, unknown>) {
     hooks?: EngineHooks;
     governancePoliciesPath?: string;
     projectContext?: ProjectContext;
+    artifactOutputDir?: string;
+    gitRunner?: GitCommandRunner;
+    autoCommitPhaseGates?: boolean;
   };
 
   if (!store) throw new Error('Engine requires a store');
@@ -141,6 +182,16 @@ function createEngine(options: Record<string, unknown>) {
       },
     ],
   };
+
+  const artifactOutputDir =
+    typeof options.artifactOutputDir === 'string' && options.artifactOutputDir.trim() !== ''
+      ? options.artifactOutputDir.trim()
+      : 'BusinessDocs';
+  const gitRunner = (options.gitRunner as GitCommandRunner) || defaultGitRunner;
+  const autoCommitPhaseGates =
+    typeof options.autoCommitPhaseGates === 'boolean'
+      ? options.autoCommitPhaseGates
+      : process.env.NODE_ENV !== 'test';
 
   // Load template manifest (defaults to 'sdlc')
   let template: TemplateConfig | null = null;
@@ -226,6 +277,52 @@ function createEngine(options: Record<string, unknown>) {
       ...((userHooks && userHooks.onError) || []),
     ],
   };
+
+  function readSessionId(): string {
+    const target =
+      typeof sessionPath === 'string' && sessionPath.trim() !== ''
+        ? sessionPath
+        : path.resolve(process.cwd(), 'BusinessDocs', 'session', 'session-state.json');
+    if (!store.exists(target)) {
+      return 'unknown';
+    }
+
+    try {
+      const raw = JSON.parse(store.readFile(target)) as Record<string, unknown>;
+      const candidate = raw.session_id || raw.sessionId || raw.id;
+      if (typeof candidate === 'string' && candidate.trim() !== '') {
+        return candidate.trim();
+      }
+    } catch {
+      // Best-effort session id lookup; fallback below.
+    }
+
+    return 'unknown';
+  }
+
+  function maybeAutoCommitGateArtifacts(event: {
+    from: string;
+    to: string;
+    timestamp: string;
+  }): void {
+    if (!autoCommitPhaseGates) return;
+
+    const gate = resolveGateCommitMetadata(event.from, event.to);
+    if (!gate) return;
+
+    const repoRoot = process.cwd();
+    const statusResult = gitRunner(['status', '--porcelain', '--', artifactOutputDir], repoRoot);
+    if (statusResult.status !== 0) return;
+    if (statusResult.stdout.trim() === '') return;
+
+    const sessionId = readSessionId();
+    const message = `chore(sdlc): phase ${gate.phaseLabel} gate passed [session=${sessionId}] [gate=${gate.gateId}]`;
+
+    const addResult = gitRunner(['add', '--', artifactOutputDir], repoRoot);
+    if (addResult.status !== 0) return;
+
+    gitRunner(['commit', '-m', message, '--', artifactOutputDir], repoRoot);
+  }
 
   // Auto-persist: save to session-state.json on every transition/error
   const autoPersist = createAutoPersist(
@@ -327,6 +424,12 @@ function createEngine(options: Record<string, unknown>) {
         } catch {
           /* logged, not fatal */
         }
+      }
+
+      try {
+        maybeAutoCommitGateArtifacts(result);
+      } catch {
+        // Auto-commit is best effort and must never block state progression.
       }
 
       // Write-ahead: mark transition complete

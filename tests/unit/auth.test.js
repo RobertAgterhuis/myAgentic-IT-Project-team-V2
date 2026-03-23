@@ -11,7 +11,13 @@ const fs = require('fs');
 const crypto = require('crypto');
 
 // Dynamic import wrapper for the TS auth module
-let AuthStore, AuthManager, createAuthMiddleware, loadAuthConfig;
+let AuthStore,
+  AuthManager,
+  createAuthMiddleware,
+  loadAuthConfig,
+  ProviderRegistry,
+  GitHubAuthProvider,
+  EntraAuthProvider;
 
 beforeAll(async () => {
   const mod = await import('../../src/webapp/auth.ts');
@@ -19,6 +25,9 @@ beforeAll(async () => {
   AuthManager = mod.AuthManager;
   createAuthMiddleware = mod.createAuthMiddleware;
   loadAuthConfig = mod.loadAuthConfig;
+  ProviderRegistry = mod.ProviderRegistry;
+  GitHubAuthProvider = mod.GitHubAuthProvider;
+  EntraAuthProvider = mod.EntraAuthProvider;
 });
 
 /** Create a temporary database path that is cleaned up after each test. */
@@ -61,7 +70,8 @@ describe('AuthStore', () => {
         avatarUrl: 'https://example.com/alice.png',
       });
       expect(user).toBeDefined();
-      expect(user.github_id).toBe(1001);
+      expect(user.provider_id).toBe('1001');
+      expect(user.primary_provider).toBe('github');
       expect(user.role).toBe('admin');
       expect(user.email).toBe('alice@example.com');
     });
@@ -93,6 +103,7 @@ describe('AuthStore', () => {
         avatarUrl: '',
       });
       expect(store.findUserByGithubId(9999)).toBeDefined();
+      expect(store.findUserByProvider('github', '9999')).toBeDefined();
       expect(store.findUserById(created.id)).toBeDefined();
       expect(store.findUserByGithubId(0)).toBeNull();
       expect(store.findUserById('nonexistent')).toBeNull();
@@ -219,6 +230,157 @@ describe('AuthManager', () => {
     expect(url).toContain('state=');
   });
 
+  it('registers and resolves providers through ProviderRegistry', () => {
+    const registry = new ProviderRegistry();
+    const provider = new GitHubAuthProvider(config);
+    registry.registerProvider('github', provider);
+    expect(registry.getProvider('github')).toBe(provider);
+    expect(registry.getProvider('entra')).toBeNull();
+  });
+
+  it('registers Entra provider when ENTRA_CLIENT_ID is configured', () => {
+    const entraManager = new AuthManager({
+      ...config,
+      dbPath: tmpDbPath(),
+      entraClientId: 'entra-client',
+      entraTenantId: 'common',
+      entraCallbackUrl: 'http://localhost:3000/api/auth/entra/callback',
+    });
+
+    try {
+      const provider = entraManager.getProvider('entra');
+      expect(provider).toBeInstanceOf(EntraAuthProvider);
+
+      const entraLoginUrl = entraManager.getLoginUrlForProvider('entra', '/dashboard');
+      expect(entraLoginUrl).toContain('login.microsoftonline.com');
+      expect(entraLoginUrl).toContain('code_challenge_method=S256');
+      expect(entraLoginUrl).toContain('client_id=entra-client');
+    } finally {
+      const pathToDelete = entraManager.config.dbPath;
+      entraManager.close();
+      rmDir(pathToDelete);
+    }
+  });
+
+  describe('EntraAuthProvider claims extraction (#868)', () => {
+    let entraManager;
+    let entraProvider;
+
+    beforeEach(() => {
+      entraManager = new AuthManager({
+        ...config,
+        dbPath: tmpDbPath(),
+        entraClientId: 'entra-client',
+        entraTenantId: 'test-tenant',
+        entraClientSecret: 'entra-secret',
+        entraCallbackUrl: 'http://localhost:3000/api/auth/entra/callback',
+      });
+      entraProvider = entraManager.getProvider('entra');
+    });
+
+    afterEach(() => {
+      const pathToDelete = entraManager.config.dbPath;
+      entraManager.close();
+      rmDir(pathToDelete);
+    });
+
+    function makeUnsignedJwt(payload) {
+      const header = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString('base64url');
+      const body = Buffer.from(JSON.stringify(payload)).toString('base64url');
+      return `${header}.${body}.`;
+    }
+
+    async function authenticateWithClaims(claims) {
+      const loginUrl = entraProvider.getLoginUrl('/dashboard');
+      const stateParam = new URL(loginUrl).searchParams.get('state');
+      const origFetch = globalThis.fetch;
+      globalThis.fetch = async (url) => {
+        const urlStr = typeof url === 'string' ? url : url.toString();
+        if (urlStr.includes('/oauth2/v2.0/token')) {
+          return {
+            ok: true,
+            json: async () => ({
+              access_token: 'entra-at',
+              refresh_token: 'entra-rt',
+              expires_in: 3600,
+              id_token: makeUnsignedJwt(claims),
+            }),
+          };
+        }
+        return origFetch(url);
+      };
+      try {
+        return await entraProvider.authenticate('mock-code', stateParam);
+      } finally {
+        globalThis.fetch = origFetch;
+      }
+    }
+
+    it('extracts oid → providerId and tid → tenantId from id_token', async () => {
+      const result = await authenticateWithClaims({
+        oid: 'entra-obj-id-001',
+        tid: 'a1b2c3d4-0000-0000-0000-000000000001',
+        preferred_username: 'alice@contoso.com',
+        name: 'Alice',
+        email: 'alice@contoso.com',
+      });
+
+      expect(result.provider).toBe('entra');
+      expect(result.providerId).toBe('entra-obj-id-001');
+      expect(result.tenantId).toBe('a1b2c3d4-0000-0000-0000-000000000001');
+      expect(result.username).toBe('alice@contoso.com');
+    });
+
+    it('uses upn claim as provider_username when preferred_username is absent (v1.0 token)', async () => {
+      const result = await authenticateWithClaims({
+        oid: 'entra-obj-id-002',
+        tid: 'a1b2c3d4-0000-0000-0000-000000000002',
+        upn: 'bob@contoso.com',
+        name: 'Bob',
+      });
+
+      expect(result.username).toBe('bob@contoso.com');
+    });
+
+    it('persists tenant_id and provider_username (UPN) in linked_accounts', async () => {
+      const providerUser = await authenticateWithClaims({
+        oid: 'entra-obj-id-003',
+        tid: 'tenant-persist-001',
+        preferred_username: 'carol@contoso.com',
+        name: 'Carol',
+        email: 'carol@contoso.com',
+      });
+
+      const user = entraManager.store.upsertUser({
+        provider: providerUser.provider,
+        providerId: providerUser.providerId,
+        providerUsername: providerUser.username,
+        email: providerUser.email,
+        name: providerUser.name,
+        avatarUrl: providerUser.avatarUrl,
+        tokenPair: providerUser.tokenPair,
+        tenantId: providerUser.tenantId,
+      });
+
+      const entraAccount = user.linked_accounts.find((a) => a.provider === 'entra');
+      expect(entraAccount).not.toBeNull();
+      expect(entraAccount.provider_id).toBe('entra-obj-id-003');
+      expect(entraAccount.tenant_id).toBe('tenant-persist-001');
+      expect(entraAccount.provider_username).toBe('carol@contoso.com');
+    });
+
+    it('extracts groups claim from Entra id_token', async () => {
+      const result = await authenticateWithClaims({
+        oid: 'entra-obj-id-004',
+        tid: 'tenant-groups-001',
+        preferred_username: 'dana@contoso.com',
+        groups: ['group-admin', 'group-ops'],
+      });
+
+      expect(result.groups).toEqual(['group-admin', 'group-ops']);
+    });
+  });
+
   it('generates login URL with redirect_to encoded in state', () => {
     const url = manager.getLoginUrl('/dashboard');
     expect(url).toContain('state=');
@@ -262,11 +424,19 @@ describe('AuthManager', () => {
       const session = manager.createSession(userId);
       // Mock IncomingMessage with cookie header
       const mockReq = {
-        headers: { cookie: `sid=${session.id}` },
+        headers: { cookie: `sid=${session.primary_provider}.${session.id}` },
       };
       const found = manager.getSessionFromRequest(mockReq);
       expect(found).toBeDefined();
       expect(found.id).toBe(session.id);
+    });
+
+    it('rejects mismatched provider in session cookie', () => {
+      const session = manager.createSession(userId, 'github');
+      const mockReq = {
+        headers: { cookie: `sid=entra.${session.id}` },
+      };
+      expect(manager.getSessionFromRequest(mockReq)).toBeNull();
     });
 
     it('returns null for missing session cookie', () => {
@@ -571,6 +741,8 @@ describe('loadAuthConfig', () => {
   it('returns null when GITHUB_CLIENT_ID is missing', () => {
     delete process.env.GITHUB_CLIENT_ID;
     delete process.env.GITHUB_CLIENT_SECRET;
+    delete process.env.ENTRA_CLIENT_ID;
+    delete process.env.ENTRA_TENANT_ID;
     expect(loadAuthConfig()).toBeNull();
   });
 
@@ -606,6 +778,56 @@ describe('loadAuthConfig', () => {
     process.env.AUTH_SECURE_COOKIES = 'true';
     const config = loadAuthConfig();
     expect(config.secureCookies).toBe(true);
+  });
+
+  it('returns config when ENTRA_CLIENT_ID is set without GitHub credentials', () => {
+    delete process.env.GITHUB_CLIENT_ID;
+    delete process.env.GITHUB_CLIENT_SECRET;
+    process.env.ENTRA_CLIENT_ID = 'entra-client-id';
+    process.env.ENTRA_TENANT_ID = 'tenant-id';
+
+    const config = loadAuthConfig();
+    expect(config).not.toBeNull();
+    expect(config.entraClientId).toBe('entra-client-id');
+    expect(config.entraTenantId).toBe('tenant-id');
+    expect(config.entraCallbackUrl).toContain('/api/auth/entra/callback');
+  });
+
+  it('uses ENTRA_REDIRECT_URI when set, overriding the derived entraCallbackUrl', () => {
+    process.env.ENTRA_CLIENT_ID = 'entra-id';
+    process.env.ENTRA_TENANT_ID = 'common';
+    process.env.AUTH_CALLBACK_URL = 'https://app.example.com';
+    process.env.ENTRA_REDIRECT_URI = 'https://custom.example.com/auth/entra/cb';
+
+    const config = loadAuthConfig();
+    expect(config.entraCallbackUrl).toBe('https://custom.example.com/auth/entra/cb');
+  });
+
+  it('disables Entra provider when ENTRA_CLIENT_ID is not set', () => {
+    process.env.GITHUB_CLIENT_ID = 'gh-id';
+    process.env.GITHUB_CLIENT_SECRET = 'gh-secret';
+    delete process.env.ENTRA_CLIENT_ID;
+
+    const config = loadAuthConfig();
+    expect(config).not.toBeNull();
+    expect(config.entraClientId).toBeFalsy();
+
+    const manager = new AuthManager({ ...config, dbPath: tmpDbPath() });
+    try {
+      expect(manager.getProvider('entra')).toBeNull();
+    } finally {
+      const p = manager.config.dbPath;
+      manager.close();
+      rmDir(p);
+    }
+  });
+
+  it('parses ENTRA_ADMIN_GROUP_ID as comma-separated group IDs', () => {
+    process.env.ENTRA_CLIENT_ID = 'entra-client-id';
+    process.env.ENTRA_ADMIN_GROUP_ID = 'group-a, group-b ,group-c';
+
+    const config = loadAuthConfig();
+    expect(config.entraAdminGroupIds).toEqual(['group-a', 'group-b', 'group-c']);
   });
 });
 

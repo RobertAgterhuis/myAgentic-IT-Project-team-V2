@@ -13,6 +13,7 @@ export { useQuestionnaires, useQuestionnaire, useSaveQuestionnaire } from './use
 export {
   useDecisions,
   useDecision,
+  useSimilarDecisions,
   useCreateDecision,
   useUpdateDecision,
   useDeleteDecision,
@@ -73,6 +74,9 @@ export { useSSEEvents } from './use-sse-events';
 /* Keyboard Shortcuts (#241) */
 export { useKeyboardShortcuts } from './use-keyboard-shortcuts';
 
+/* Help (M-UX-1a) */
+export { usePageHelp, useHelpTopic, useHelpSearch, resolveHelpRouteSlug } from './use-help';
+
 /* Analytics (M7) */
 export { useAnalyticsTrends, useAnalyticsAgents, useAnalyticsMetrics } from './use-analytics';
 
@@ -118,6 +122,14 @@ export {
 /* Runtime Events (M15) */
 export { useRuntimeEvents } from './use-runtime-events';
 
+/* Chat (M-UX-2a) */
+export {
+  useChatHistory,
+  useSendChatMessage,
+  useExecuteChatAction,
+  useClearChatSession,
+} from './use-chat';
+
 /* Cockpit (M27) */
 export {
   useCockpitHealth,
@@ -149,3 +161,34 @@ export { usePromptContractAssets } from './use-prompt-contracts';
 
 /* Administration (UI-016) */
 export { useAdminUsers, useAdministrationOverview } from './use-administration';
+
+/* Identity Consent Center (M-INFRA-2c) */
+export {
+  useIdentityConsentCenter,
+  useGrantIdentityConsent,
+  useRevokeIdentityConsent,
+  useRefreshIdentityConsent,
+} from './use-identity-consent';
+
+export {
+  useMcpMatrix,
+  useMcpAgentPermissions,
+  useMcpOverrides,
+  useCreateMcpOverride,
+  useExpireMcpOverride,
+  useMcpDiagnostics,
+  useMcpReconcileRuns,
+  PERMISSION_LEVEL_LABELS,
+  type PermissionLevel,
+  type AgentEntry,
+  type ServerEntry,
+  type MatrixEntry,
+  type MatrixResponse,
+  type AgentPermission,
+  type AgentPermissionsResponse,
+  type McpOverride,
+  type OverridesResponse,
+  type ReconcileRun,
+  type DiagnosticsResponse,
+  type ReconcileRunsResponse,
+} from './use-mcp-experience';

@@ -52,6 +52,7 @@ const { registerRoutes: registerWorkspaceRoutes } = require('../../src/webapp/ro
 const { registerRoutes: registerCockpitRoutes } = require('../../src/webapp/routes/cockpit');
 const { registerRoutes: registerAuthRoutes } = require('../../src/webapp/routes/auth');
 const { registerRoutes: registerMcpRoutes } = require('../../src/webapp/routes/mcp');
+const { registerRoutes: registerHelpRoutes } = require('../../src/webapp/routes/help');
 const { registerRoutes: registerMiscRoutes } = require('../../src/webapp/routes/misc');
 
 /* ── Path constants ───────────────────────────────────────────── */
@@ -185,6 +186,7 @@ async function createTestApp(seedFiles = {}) {
   await registerCockpitRoutes(app, ctx);
   await registerAuthRoutes(app, ctx);
   await registerMcpRoutes(app, ctx);
+  await registerHelpRoutes(app, ctx);
   await registerMiscRoutes(app, ctx);
 
   await app.ready();

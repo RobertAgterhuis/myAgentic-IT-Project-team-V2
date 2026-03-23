@@ -21,6 +21,7 @@ import type { ServerContext } from '../context';
 import fs from 'fs';
 import path from 'path';
 import { errorResponse } from '../utils/errors';
+import { parseCollectionScope } from '../services/rag-grounding-service';
 
 function getRepoRoot(ctx: Record<string, unknown>): string {
   return (ctx?.PROJECT_ROOT as string) || path.resolve(__dirname, '..', '..', '..');
@@ -42,6 +43,90 @@ function computeScore(factors: { label: string; value: number; weight: number }[
   if (totalWeight === 0) return 0;
   const weighted = factors.reduce((sum, f) => sum + f.value * f.weight, 0);
   return Math.round(weighted / totalWeight);
+}
+
+async function findSimilarApprovalLessons(
+  ctx: ServerContext,
+  approval: Record<string, unknown>
+): Promise<
+  Array<{
+    id: string;
+    summary: string;
+    source_path: string;
+    start_line: number | null;
+    score: number;
+    workspace_id: string | null;
+    citation_label: string;
+    citation_url: string;
+  }>
+> {
+  const ragStore = ctx._ragStore;
+  const embeddingProvider = ctx._embeddingProvider;
+  if (!ragStore || !embeddingProvider) return [];
+
+  const query = [
+    String(approval.gate_id ?? ''),
+    String(approval.stage ?? ''),
+    String(approval.context ?? ''),
+    String(approval.risk_assessment ?? ''),
+  ]
+    .join(' ')
+    .trim();
+  if (!query) return [];
+
+  const vector = await embeddingProvider.embedText(query);
+  const collections = ragStore
+    .listCollections()
+    .map((c) => c.id)
+    .filter(
+      (id) =>
+        id === 'global::decisions' ||
+        id === 'global::patterns' ||
+        id === 'global::retrospectives' ||
+        id.endsWith('::decisions')
+    );
+
+  const rows: Array<{
+    text: string;
+    source_path: string;
+    start_line: number | null;
+    score: number;
+    workspace_id: string | null;
+  }> = [];
+
+  for (const collectionId of collections) {
+    const scope = parseCollectionScope(collectionId);
+    const matches = await ragStore.query(collectionId, vector, 3, 0.12);
+    for (const match of matches) {
+      rows.push({
+        text: match.chunk.chunk_text,
+        source_path: path.isAbsolute(match.chunk.source_path)
+          ? path.relative(ctx.PROJECT_ROOT, match.chunk.source_path).replace(/\\/g, '/')
+          : match.chunk.source_path,
+        start_line: Number.isFinite(match.chunk.start_line) ? match.chunk.start_line : null,
+        score: match.score,
+        workspace_id: scope.workspaceId,
+      });
+    }
+  }
+
+  rows.sort((a, b) => b.score - a.score);
+
+  return rows.slice(0, 5).map((row, index) => {
+    const summary = row.text.replace(/\s+/g, ' ').trim().slice(0, 220);
+    const citationLabel = row.start_line ? `${row.source_path}:${row.start_line}` : row.source_path;
+
+    return {
+      id: `lesson-${index + 1}`,
+      summary,
+      source_path: row.source_path,
+      start_line: row.start_line,
+      score: Number(row.score.toFixed(4)),
+      workspace_id: row.workspace_id,
+      citation_label: citationLabel,
+      citation_url: '/artifacts',
+    };
+  });
 }
 
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
@@ -503,7 +588,33 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         return reply.code(404).send(errorResponse('NOT_FOUND', `Approval not found: ${id}`));
       }
 
-      return reply.send({ ok: true, approval });
+      let similarOverrides: Array<{
+        id: string;
+        summary: string;
+        source_path: string;
+        start_line: number | null;
+        score: number;
+        workspace_id: string | null;
+        citation_label: string;
+        citation_url: string;
+      }> = [];
+
+      try {
+        similarOverrides = await findSimilarApprovalLessons(
+          ctx,
+          approval as Record<string, unknown>
+        );
+      } catch {
+        similarOverrides = [];
+      }
+
+      return reply.send({
+        ok: true,
+        approval: {
+          ...(approval as Record<string, unknown>),
+          similar_overrides: similarOverrides,
+        },
+      });
     }
   );
 

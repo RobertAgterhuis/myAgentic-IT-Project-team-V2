@@ -58,6 +58,27 @@ interface AgentRef {
   name: string;
 }
 
+export interface AgentExecutionContext {
+  agentId: string;
+  skillFile: string;
+  predecessorOutputs: Record<string, string>;
+  questionnaireInput: string | null;
+  ragContext: {
+    query: string;
+    collections: string[];
+    matches: Array<{
+      text: string;
+      source_path: string;
+      start_line: number | null;
+      collection: string;
+      score: number;
+    }>;
+  } | null;
+  sessionState: unknown;
+  workspaceId: string | null;
+  gitService?: unknown;
+}
+
 interface CanonicalSchemaAgent {
   id?: unknown;
   name?: unknown;
@@ -595,6 +616,7 @@ class Dispatcher {
    * @param {object} options
    * @param {string[]} [options.predecessorPaths] - Paths to predecessor outputs
    * @param {string} [options.questionnairePath] - Path to questionnaire answers
+   * @param {object} [options.ragContext] - Retrieved RAG context injected into runtime
    * @param {object} [options.sessionState] - Current session state
    * @returns {object} Assembled context object
    */
@@ -602,24 +624,27 @@ class Dispatcher {
     const {
       predecessorPaths = [],
       questionnairePath,
+      ragContext,
       sessionState,
+      workspaceId,
+      gitService,
     } = options as {
       predecessorPaths?: string[];
       questionnairePath?: string;
+      ragContext?: AgentExecutionContext['ragContext'];
       sessionState?: unknown;
+      workspaceId?: string;
+      gitService?: unknown;
     };
-    const context: {
-      agentId: string;
-      skillFile: string;
-      predecessorOutputs: Record<string, string>;
-      questionnaireInput: string | null;
-      sessionState: unknown;
-    } = {
+    const context: AgentExecutionContext = {
       agentId,
       skillFile: path.join(this._config.skillsDir as string, `${agentId}-*.md`),
       predecessorOutputs: {},
       questionnaireInput: null,
+      ragContext: ragContext || null,
       sessionState: sessionState || null,
+      workspaceId: workspaceId || null,
+      gitService,
     };
 
     // AC-3: Load predecessor outputs

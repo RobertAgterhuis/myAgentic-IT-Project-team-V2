@@ -43,6 +43,13 @@ describe('SessionsPage', () => {
     });
   });
 
+  it('renders the page help strip', async () => {
+    renderPage();
+    await waitFor(() => {
+      expect(screen.getByTestId('page-help-strip-sessions')).toBeInTheDocument();
+    });
+  });
+
   it('renders guidance explaining how to use sessions', async () => {
     renderPage();
     await waitFor(() => {
@@ -55,21 +62,21 @@ describe('SessionsPage', () => {
   it('shows session cards from mock data', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByText('TestProject')).toBeInTheDocument();
+      expect(screen.getAllByText('TestProject').length).toBeGreaterThan(0);
     });
   });
 
   it('shows session status badge', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByText('active')).toBeInTheDocument();
+      expect(screen.getAllByText('active').length).toBeGreaterThan(0);
     });
   });
 
   it('shows session flow and phase', async () => {
     renderPage();
     await waitFor(() => {
-      expect(screen.getByText(/CREATE/)).toBeInTheDocument();
+      expect(screen.getAllByText(/CREATE/).length).toBeGreaterThan(0);
     });
   });
 });

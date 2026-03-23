@@ -1,0 +1,8 @@
+{
+  "id": "orchestrator",
+  "category": "orchestration",
+  "controlPosture": "strict",
+  "requiresWorkloadIdentity": true,
+  "appRegistrationRef": "entra://agents/orchestrator",
+  "templateCategory": "governance"
+}

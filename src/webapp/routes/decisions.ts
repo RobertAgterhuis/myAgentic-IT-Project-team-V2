@@ -247,8 +247,8 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
       const queryVector = await embeddingProvider.embedText(queryText);
       const results = await store.query('decisions', queryVector, Math.max(topK * 3, topK), 0);
-
-      return reply.send(buildSimilarDecisionResults(svc, results, Math.min(topK, 3)));
+      const payload = buildSimilarDecisionResults(svc, results, Math.min(topK, 3));
+      return reply.type('application/json').send(payload);
     } catch (e) {
       const message = e instanceof Error ? e.message : String(e);
       return reply.code(500).send(errorResponse('RAG_QUERY_ERROR', message));

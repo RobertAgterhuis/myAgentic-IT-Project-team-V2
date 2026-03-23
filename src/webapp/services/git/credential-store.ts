@@ -36,7 +36,7 @@ function encryptCredential(
   iv: string;
 } {
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', masterKey, iv);
+  const cipher = crypto.createCipheriv('aes-256-gcm', masterKey, iv, { authTagLength: 16 });
   const plaintext = JSON.stringify(credential);
   const ciphertext = Buffer.concat([cipher.update(plaintext, 'utf8'), cipher.final()]);
   const tag = cipher.getAuthTag();
@@ -52,7 +52,14 @@ function decryptCredential(
   masterKey: Buffer,
   row: { ciphertext: string; tag: string; iv: string }
 ): GitCredential {
-  const decipher = crypto.createDecipheriv('aes-256-gcm', masterKey, Buffer.from(row.iv, 'base64'));
+  const decipher = crypto.createDecipheriv(
+    'aes-256-gcm',
+    masterKey,
+    Buffer.from(row.iv, 'base64'),
+    {
+      authTagLength: 16,
+    }
+  );
   decipher.setAuthTag(Buffer.from(row.tag, 'base64'));
 
   const plaintext = Buffer.concat([

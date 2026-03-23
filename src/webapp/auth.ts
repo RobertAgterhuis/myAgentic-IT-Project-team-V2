@@ -677,7 +677,7 @@ function encryptToken(value: string | null | undefined): string | null {
   if (!key) return null;
 
   const iv = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv, { authTagLength: 16 });
   const encrypted = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
   const authTag = cipher.getAuthTag();
   return Buffer.concat([iv, authTag, encrypted]).toString('base64');
@@ -692,7 +692,7 @@ function _decryptToken(value: string | null | undefined): string | null {
 
   for (const key of getTokenEncryptionKeys()) {
     try {
-      const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+      const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv, { authTagLength: 16 });
       decipher.setAuthTag(authTag);
       const decrypted = Buffer.concat([decipher.update(ciphertext), decipher.final()]);
       return decrypted.toString('utf8');

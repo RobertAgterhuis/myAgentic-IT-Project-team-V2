@@ -16,6 +16,7 @@ import type {
   AgentToolPolicy,
   AgentServerPolicy,
   AgentType,
+  AgentWorkloadIdentity,
   EnvironmentPolicy,
   EnvironmentScope,
   McpServerRegistry,
@@ -24,6 +25,7 @@ import type {
   ResolvedServerPermission,
   ResolvedToolPermission,
   RuntimeManifest,
+  WorkloadIdentityAuthStatus,
 } from './types';
 
 interface SyncOptions {
@@ -77,6 +79,7 @@ export class McpGovernanceService {
   private readonly _serversFile: string;
   private readonly _serverPoliciesFile: string;
   private readonly _toolPoliciesFile: string;
+  private readonly _workloadIdentitiesFile: string;
 
   constructor(opts?: { projectRoot?: string; storageProvider?: StorageProvider | null }) {
     this.projectRoot = opts?.projectRoot || path.resolve(__dirname, '../../../..');
@@ -95,6 +98,7 @@ export class McpGovernanceService {
     this._serversFile = path.join(this._stateDir, 'mcp-servers.json');
     this._serverPoliciesFile = path.join(this._stateDir, 'agent-server-policies.json');
     this._toolPoliciesFile = path.join(this._stateDir, 'agent-tool-policies.json');
+    this._workloadIdentitiesFile = path.join(this._stateDir, 'workload-identities.json');
   }
 
   private async _readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
@@ -234,6 +238,24 @@ export class McpGovernanceService {
       )) as unknown as AgentToolPolicy[];
     }
     return this._readJsonFile<AgentToolPolicy[]>(this._toolPoliciesFile, []);
+  }
+
+  async listWorkloadIdentities(): Promise<AgentWorkloadIdentity[]> {
+    return this._readJsonFile<AgentWorkloadIdentity[]>(this._workloadIdentitiesFile, []);
+  }
+
+  async saveWorkloadIdentities(identities: AgentWorkloadIdentity[]): Promise<void> {
+    await this._writeJsonFile(this._workloadIdentitiesFile, identities);
+  }
+
+  private _deriveAuthStatus(
+    identity: AgentWorkloadIdentity | undefined
+  ): WorkloadIdentityAuthStatus {
+    if (!identity) return 'not_configured';
+    if (!identity.servicePrincipalReady) return 'identity_not_provisioned';
+    if (!identity.consentGranted) return 'consent_pending';
+    if (!identity.credentialPolicyValid) return 'credential_policy_violation';
+    return 'consent_granted';
   }
 
   private async _writeAgents(rows: AgentType[]): Promise<void> {
@@ -597,11 +619,12 @@ export class McpGovernanceService {
   }
 
   async buildRuntimeArtifacts(): Promise<RuntimeBuildResult> {
-    const [agents, servers, policies, envPolicies] = await Promise.all([
+    const [agents, servers, policies, envPolicies, workloadIdentities] = await Promise.all([
       this.listAgents(),
       this.listServers(),
       this.getDefinedPolicies(),
       this.getDefinedEnvironmentPolicies(),
+      this.listWorkloadIdentities(),
     ]);
 
     const runtimeDir = path.join(this.generatedDir, 'runtime-manifests');
@@ -618,12 +641,15 @@ export class McpGovernanceService {
       servers,
     });
 
+    const identityMap = new Map(workloadIdentities.map((i) => [i.agentId, i]));
+
     let manifestCount = 0;
     for (const agent of agents) {
       const environment: EnvironmentScope =
         process.env.ENV_SCOPE === 'prod' || process.env.ENV_SCOPE === 'test'
           ? (process.env.ENV_SCOPE as EnvironmentScope)
           : 'dev';
+      const agentIdentity = agent.requiresWorkloadIdentity ? identityMap.get(agent.id) : undefined;
       const manifest: RuntimeManifest = {
         agentId: agent.id,
         generatedAt: new Date().toISOString(),
@@ -635,11 +661,16 @@ export class McpGovernanceService {
             policies,
             envPolicies
           );
+          const authStatus =
+            agent.requiresWorkloadIdentity && server.authType === 'entra'
+              ? this._deriveAuthStatus(agentIdentity)
+              : undefined;
           return {
             serverId: server.id,
             endpoint: server.endpoint,
             healthStatus: server.healthStatus,
             authType: server.authType,
+            ...(authStatus !== undefined && { authStatus }),
             tools: [
               {
                 toolId: `${server.id}.default`,
@@ -669,13 +700,90 @@ export class McpGovernanceService {
     agentCount: number;
     serverCount: number;
     generatedExists: boolean;
+    identityIssues: Array<{ agentId: string; issue: string; remediation: string }>;
+    agentsWithPendingConsent: number;
+    agentsWithMissingIdentity: number;
+    agentsWithExpiringCredentials: number;
   }> {
-    const [agents, servers] = await Promise.all([this.listAgents(), this.listServers()]);
+    const [agents, servers, workloadIdentities] = await Promise.all([
+      this.listAgents(),
+      this.listServers(),
+      this.listWorkloadIdentities(),
+    ]);
+
+    const identityMap = new Map(workloadIdentities.map((i) => [i.agentId, i]));
+    const identityIssues: Array<{ agentId: string; issue: string; remediation: string }> = [];
+    const CREDENTIAL_EXPIRY_WARNING_DAYS = 30;
+    const credentialExpiryWarningMs = CREDENTIAL_EXPIRY_WARNING_DAYS * 24 * 60 * 60 * 1000;
+    const now = Date.now();
+
+    let agentsWithPendingConsent = 0;
+    let agentsWithMissingIdentity = 0;
+    let agentsWithExpiringCredentials = 0;
+
+    for (const agent of agents) {
+      if (!agent.requiresWorkloadIdentity) continue;
+
+      const identity = identityMap.get(agent.id);
+
+      if (!identity) {
+        agentsWithMissingIdentity += 1;
+        identityIssues.push({
+          agentId: agent.id,
+          issue: 'No workload identity configured',
+          remediation: `Run 'npx plugin identity bootstrap' to provision workload identity for agent '${agent.id}'.`,
+        });
+        continue;
+      }
+
+      if (!identity.servicePrincipalReady) {
+        agentsWithMissingIdentity += 1;
+        identityIssues.push({
+          agentId: agent.id,
+          issue: 'Service principal not ready',
+          remediation: `Run 'npx plugin identity bootstrap' to provision the service principal for agent '${agent.id}'.`,
+        });
+      }
+
+      if (!identity.consentGranted) {
+        agentsWithPendingConsent += 1;
+        identityIssues.push({
+          agentId: agent.id,
+          issue: 'Consent not granted',
+          remediation: `Run 'npx plugin identity consent status' and grant admin consent for agent '${agent.id}'.`,
+        });
+      }
+
+      if (!identity.credentialPolicyValid) {
+        identityIssues.push({
+          agentId: agent.id,
+          issue: 'Credential policy violation',
+          remediation: `Check and update credential configuration for agent '${agent.id}'.`,
+        });
+      }
+
+      if (identity.credentialExpiresAt) {
+        const expiresMs = new Date(identity.credentialExpiresAt).getTime();
+        if (expiresMs - now < credentialExpiryWarningMs) {
+          agentsWithExpiringCredentials += 1;
+          identityIssues.push({
+            agentId: agent.id,
+            issue: `Credential expires soon (${identity.credentialExpiresAt})`,
+            remediation: `Rotate credentials for agent '${agent.id}' before expiry.`,
+          });
+        }
+      }
+    }
+
     return {
       configExists: fs.existsSync(this.configDir),
       agentCount: agents.length,
       serverCount: servers.length,
       generatedExists: fs.existsSync(this.generatedDir),
+      identityIssues,
+      agentsWithPendingConsent,
+      agentsWithMissingIdentity,
+      agentsWithExpiringCredentials,
     };
   }
 }

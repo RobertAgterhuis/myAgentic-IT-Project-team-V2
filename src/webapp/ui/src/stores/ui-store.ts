@@ -18,6 +18,11 @@ export interface UIState {
   activePage: string;
   setActivePage: (page: string) => void;
 
+  /* Chat panel */
+  chatOpen: boolean;
+  toggleChat: () => void;
+  setChatOpen: (open: boolean) => void;
+
   /* Help panel */
   helpOpen: boolean;
   helpRouteSlug: string | null;
@@ -55,6 +60,10 @@ export const useUIStore = create<UIState>((set) => ({
 
   activePage: 'dashboard',
   setActivePage: (page) => set({ activePage: page }),
+
+  chatOpen: false,
+  toggleChat: () => set((s) => ({ chatOpen: !s.chatOpen })),
+  setChatOpen: (open) => set({ chatOpen: open }),
 
   helpOpen: false,
   helpRouteSlug: null,

@@ -3,6 +3,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { IntentClassifier, type ChatIntent } from './chat/intent-classifier';
+import { ActionProposer } from './chat/action-proposer';
 
 export interface ChatContextSnapshot {
   sessionStatus?: string;
@@ -16,13 +17,24 @@ export interface ChatCitation {
   source_path: string;
   excerpt: string;
   start_line: number | null;
+  source_type?: 'artifact' | 'decision' | 'policy' | 'session' | 'rag_chunk';
+  deep_link?: string;
 }
+
+export type ProposedActionType =
+  | 'create_command'
+  | 'approve'
+  | 'reject'
+  | 'resume'
+  | 'pause'
+  | 'open_screen';
 
 export interface ProposedAction {
   id: string;
   label: string;
-  type: 'navigation' | 'refresh';
-  target?: string;
+  type: ProposedActionType;
+  payload?: Record<string, unknown>;
+  requires_confirmation: boolean;
 }
 
 export interface ChatHistoryMessage {
@@ -39,16 +51,24 @@ export interface ChatMessageResponse {
   proposed_actions: ProposedAction[];
 }
 
+export interface ChatActionEnvelope {
+  action: ProposedAction;
+  context_snapshot?: ChatContextSnapshot;
+  created_at: string;
+}
+
 export interface ChatSession {
   session_id: string;
   updated_at: string;
   messages: ChatHistoryMessage[];
+  action_contexts?: Record<string, ChatActionEnvelope>;
 }
 
 interface ChatServiceOptions {
   projectRoot: string;
   sessionDir: string;
   intentClassifier?: IntentClassifier;
+  actionProposer?: ActionProposer;
 }
 
 function safeNow(): string {
@@ -98,57 +118,16 @@ function buildAssistantResponse(input: {
   return `${input.contextSummary} Ask me for session status, pending approvals, or where to navigate next.`;
 }
 
-function buildProposedActions(intent: ChatIntent): ProposedAction[] {
-  if (intent === 'session_status') {
-    return [
-      {
-        id: 'open-pipeline',
-        label: 'Open pipeline status',
-        type: 'navigation',
-        target: '/pipeline',
-      },
-    ];
-  }
-
-  if (intent === 'approval_guidance') {
-    return [
-      {
-        id: 'open-approvals',
-        label: 'Open approval center',
-        type: 'navigation',
-        target: '/approvals',
-      },
-    ];
-  }
-
-  if (intent === 'workspace_navigation') {
-    return [
-      {
-        id: 'open-workspaces',
-        label: 'Open workspaces',
-        type: 'navigation',
-        target: '/workspaces',
-      },
-    ];
-  }
-
-  return [
-    {
-      id: 'refresh-chat-context',
-      label: 'Refresh session context',
-      type: 'refresh',
-    },
-  ];
-}
-
 export class ChatService {
   private readonly sessionDir: string;
   private readonly cache = new Map<string, ChatSession>();
   private readonly intentClassifier: IntentClassifier;
+  private readonly actionProposer: ActionProposer;
 
   constructor(options: ChatServiceOptions) {
     this.sessionDir = path.join(options.projectRoot, options.sessionDir, 'chat-history');
     this.intentClassifier = options.intentClassifier || new IntentClassifier();
+    this.actionProposer = options.actionProposer || new ActionProposer();
   }
 
   sendMessage(input: {
@@ -183,7 +162,22 @@ export class ChatService {
     session.updated_at = safeNow();
 
     const citations = input.citations || [];
-    const proposedActions = buildProposedActions(intent);
+    const proposedActions = this.actionProposer.propose({
+      intent,
+      message: userMessage,
+      contextSnapshot: input.contextSnapshot,
+    });
+
+    const actionContexts: Record<string, ChatActionEnvelope> = session.action_contexts || {};
+    for (const action of proposedActions) {
+      actionContexts[action.id] = {
+        action,
+        context_snapshot: input.contextSnapshot,
+        created_at: safeNow(),
+      };
+    }
+    session.action_contexts = actionContexts;
+
     this.persistSession(session);
 
     return {
@@ -192,6 +186,34 @@ export class ChatService {
       citations,
       proposed_actions: proposedActions,
     };
+  }
+
+  getHistory(input: { sessionId: string; limit?: number }): ChatHistoryMessage[] {
+    const sessionId = normalizeSessionId(input.sessionId);
+    const session = this.readSession(sessionId);
+    const limit = Number.isFinite(input.limit) ? Math.max(1, Number(input.limit)) : 50;
+    return session.messages.slice(-limit);
+  }
+
+  clearSession(input: { sessionId: string }): { cleared: boolean } {
+    const sessionId = normalizeSessionId(input.sessionId);
+    this.cache.delete(sessionId);
+
+    const filePath = this.sessionPath(sessionId);
+    if (fs.existsSync(filePath)) {
+      fs.rmSync(filePath, { force: true });
+    }
+
+    return { cleared: true };
+  }
+
+  getActionEnvelope(input: { sessionId: string; actionId: string }): ChatActionEnvelope | null {
+    const sessionId = normalizeSessionId(input.sessionId);
+    const actionId = String(input.actionId || '').trim();
+    if (!actionId) return null;
+
+    const session = this.readSession(sessionId);
+    return session.action_contexts?.[actionId] || null;
   }
 
   private sessionPath(sessionId: string): string {
@@ -219,6 +241,7 @@ export class ChatService {
       session_id: sessionId,
       updated_at: safeNow(),
       messages: [],
+      action_contexts: {},
     };
     this.cache.set(sessionId, fresh);
     return fresh;

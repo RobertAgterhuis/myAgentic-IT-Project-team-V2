@@ -6,6 +6,7 @@ interface AppShellProps {
   breadcrumbs?: React.ReactNode;
   children: React.ReactNode;
   helpPanel?: React.ReactNode;
+  chatPanel?: React.ReactNode;
 }
 
 /**
@@ -17,6 +18,7 @@ export function AppShell({
   breadcrumbs,
   children,
   helpPanel,
+  chatPanel,
 }: AppShellProps) {
   return (
     <div className="relative flex h-screen flex-col overflow-hidden bg-transparent text-foreground">
@@ -39,6 +41,7 @@ export function AppShell({
       </div>
 
       {helpPanel}
+      {chatPanel}
     </div>
   );
 }

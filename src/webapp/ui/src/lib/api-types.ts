@@ -770,6 +770,64 @@ export interface ApprovalDecideResponse extends OkResponse {
 }
 
 /* ──────────────────────────────────────────────
+ * Chat (M-UX-2a)
+ * ────────────────────────────────────────────── */
+
+export type ChatCitationSourceType = 'artifact' | 'decision' | 'policy' | 'session' | 'rag_chunk';
+
+export interface ChatCitation {
+  source_path: string;
+  excerpt: string;
+  start_line: number | null;
+  source_type?: ChatCitationSourceType;
+  deep_link?: string;
+}
+
+export type ChatProposedActionType =
+  | 'create_command'
+  | 'approve'
+  | 'reject'
+  | 'resume'
+  | 'pause'
+  | 'open_screen';
+
+export interface ChatProposedAction {
+  id: string;
+  label: string;
+  type: ChatProposedActionType;
+  payload?: Record<string, unknown>;
+  requires_confirmation: boolean;
+}
+
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  created_at: string;
+}
+
+export interface ChatMessageResponse extends OkResponse {
+  session_id: string;
+  intent: string;
+  message: ChatMessage;
+  citations: ChatCitation[];
+  proposed_actions: ChatProposedAction[];
+}
+
+export interface ChatHistoryResponse extends OkResponse {
+  session_id: string;
+  count: number;
+  messages: ChatMessage[];
+}
+
+export interface ChatActionResponse extends OkResponse {
+  session_id: string;
+  action: ChatProposedAction;
+  replay_context: Record<string, unknown> | null;
+  result: Record<string, unknown>;
+}
+
+/* ──────────────────────────────────────────────
  * Policies (M22 / Policy-as-Code Governance)
  * ────────────────────────────────────────────── */
 

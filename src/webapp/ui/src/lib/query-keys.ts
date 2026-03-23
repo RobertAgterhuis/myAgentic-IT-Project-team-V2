@@ -59,6 +59,12 @@ export const queryKeys = {
     current: ['session'] as const,
   },
 
+  /* Chat */
+  chat: {
+    history: (sessionId: string) => ['chat', 'history', sessionId] as const,
+    stream: (sessionId: string) => ['chat', 'stream', sessionId] as const,
+  },
+
   /* Server metrics */
   serverMetrics: {
     all: ['server-metrics'] as const,

@@ -271,6 +271,46 @@ export const chatMessage = {
   response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
 };
 
+export const chatHistory = {
+  tags: ['chat'],
+  querystring: {
+    type: 'object' as const,
+    properties: {
+      session_id: { type: 'string' as const, minLength: 1, maxLength: 200 },
+      limit: { type: 'number' as const, minimum: 1, maximum: 200 },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
+export const chatSessionDelete = {
+  tags: ['chat'],
+  body: {
+    type: 'object' as const,
+    properties: {
+      session_id: { type: 'string' as const, minLength: 1, maxLength: 200 },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
+export const chatAction = {
+  tags: ['chat'],
+  body: {
+    type: 'object' as const,
+    required: ['actionId'],
+    properties: {
+      actionId: { type: 'string' as const, minLength: 1, maxLength: 120 },
+      session_id: { type: 'string' as const, minLength: 1, maxLength: 200 },
+      confirmed: { type: 'boolean' as const },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r404, ...r409, ...r500 },
+};
+
 /* ── questionnaires ───────────────────────────────────────────── */
 
 export const questionnairesList = {

@@ -20,6 +20,7 @@ import { routes, buildBreadcrumbs, DOMAIN_ORDER, type DomainSection } from '@/li
 import { AppShell } from '@/components/layout/app-shell';
 import { SidebarNav } from '@/components/layout/sidebar-nav';
 import { BreadcrumbNav } from '@/components/layout/breadcrumb-nav';
+import { ChatPanel } from '@/components/chat/chat-panel';
 import {
   LayoutDashboard,
   Terminal,
@@ -126,6 +127,7 @@ export function AppLayout() {
   const helpOpen = useUIStore((s) => s.helpOpen);
   const closeHelp = useUIStore((s) => s.closeHelp);
   const openHelpForRoute = useUIStore((s) => s.openHelpForRoute);
+  const toggleChat = useUIStore((s) => s.toggleChat);
   const connectionStatus = useUIStore((s) => s.connectionStatus);
 
   const { data: orchestratorStatus } = useOrchestratorStatus();
@@ -151,6 +153,7 @@ export function AppLayout() {
           connectionStatus={connectionStatus}
           onMenuToggle={toggleSidebar}
           onHelpClick={() => openHelpForRoute(resolveHelpRouteSlug(location.pathname))}
+          onChatClick={toggleChat}
         />
       }
       sidebar={
@@ -164,6 +167,7 @@ export function AppLayout() {
       }
       breadcrumbs={<BreadcrumbNav items={buildBreadcrumbs(location.pathname)} />}
       helpPanel={helpOpen ? <HelpPanel onClose={closeHelp} /> : null}
+      chatPanel={<ChatPanel />}
     >
       <ErrorBoundary>
         <Suspense fallback={<PageSpinner />}>

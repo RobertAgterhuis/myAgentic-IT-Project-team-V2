@@ -59,6 +59,9 @@ function getInvalidationKeys(eventType: string): readonly (readonly string[])[] 
     case 'agent_execution_cancelled':
     case 'agent_execution_log':
       return [queryKeys.agents.all, queryKeys.sessions.all];
+    case 'chat_stream_complete':
+    case 'chat_action_executed':
+      return [['chat', 'history'] as const];
     case 'gate_passed':
     case 'gate_failed':
       return [queryKeys.sessions.all, queryKeys.progress.all];
@@ -95,6 +98,9 @@ function notifyUser(event: SSEEvent) {
       break;
     case 'agent_execution_cancelled':
       showToast.info(`Agent execution cancelled: ${String(event.job_id ?? 'unknown')}`);
+      break;
+    case 'chat_action_executed':
+      showToast.success(`Chat action executed: ${String(event.action_type ?? 'action')}`);
       break;
   }
 }

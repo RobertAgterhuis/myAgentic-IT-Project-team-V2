@@ -62,6 +62,8 @@ export class ContextAssembler {
         source_path: toRelativeSourcePath(this.projectRoot, sessionFile),
         excerpt: `status=${parsed.status || 'UNKNOWN'}, mode=${parsed.mode || 'UNKNOWN'}, phase=${parsed.current_phase || 'n/a'}, agent=${parsed.current_agent || 'n/a'}`,
         start_line: 1,
+        source_type: 'session',
+        deep_link: '/sessions',
       };
 
       return {

@@ -122,6 +122,14 @@ export {
 /* Runtime Events (M15) */
 export { useRuntimeEvents } from './use-runtime-events';
 
+/* Chat (M-UX-2a) */
+export {
+  useChatHistory,
+  useSendChatMessage,
+  useExecuteChatAction,
+  useClearChatSession,
+} from './use-chat';
+
 /* Cockpit (M27) */
 export {
   useCockpitHealth,

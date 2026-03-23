@@ -1,11 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
-import type {
-  ChatContextSnapshot,
-  ChatIntent,
-  ProposedAction,
-  ProposedActionType,
-} from '../chat-service';
+import type { ChatContextSnapshot, ProposedAction, ProposedActionType } from '../chat-service';
+import type { ChatIntent } from './intent-classifier';
 
 interface ActionProposerInput {
   intent: ChatIntent;

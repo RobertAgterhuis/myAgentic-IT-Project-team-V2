@@ -1,14 +1,21 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 'use strict';
 
+const fs = require('node:fs');
 const path = require('node:path');
 const { registerRoutes } = require('../../src/webapp/routes/chat');
 const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+
+const CHAT_HISTORY_DIR = path.join(process.cwd(), 'BusinessDocs', 'session', 'chat-history');
 
 function createCtx() {
   return {
     _authMiddleware: { enabled: true },
     PROJECT_ROOT: process.cwd(),
+    SESSION_DIR: 'BusinessDocs/session',
+    resolveSessionFile: () =>
+      path.join(process.cwd(), 'BusinessDocs', 'session', 'session-state.json'),
+    _getHumanOverrideEvents: () => [],
     _ragStore: {
       query: vi.fn().mockResolvedValue([
         {
@@ -57,10 +64,40 @@ function createRes() {
 }
 
 describe('routes/chat', () => {
+  beforeEach(() => {
+    fs.rmSync(CHAT_HISTORY_DIR, { recursive: true, force: true });
+  });
+
+  afterAll(() => {
+    fs.rmSync(CHAT_HISTORY_DIR, { recursive: true, force: true });
+  });
+
   const routes = createTestableRoutes(registerRoutes, createCtx());
+
+  it('registers POST /api/v1/chat/message', () => {
+    expect(routes).toHaveProperty('POST /api/v1/chat/message');
+  });
 
   it('registers POST /api/v1/chat/query', () => {
     expect(routes).toHaveProperty('POST /api/v1/chat/query');
+  });
+
+  it('returns chat message with citations and proposed actions', async () => {
+    const res = createRes();
+    await routes['POST /api/v1/chat/message'](
+      createReq('/api/v1/chat/message', {
+        message: 'What is the current session status?',
+      }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const payload = JSON.parse(res.body);
+    expect(payload.ok).toBe(true);
+    expect(payload.message.role).toBe('assistant');
+    expect(Array.isArray(payload.citations)).toBe(true);
+    expect(Array.isArray(payload.proposed_actions)).toBe(true);
+    expect(payload.proposed_actions.some((entry) => entry.id === 'open-pipeline')).toBe(true);
   });
 
   it('returns grounded references for a decision lookup query', async () => {

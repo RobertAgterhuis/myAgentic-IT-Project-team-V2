@@ -252,6 +252,25 @@ export const chatQuery = {
   response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
 };
 
+export const chatMessage = {
+  tags: ['chat'],
+  body: {
+    type: 'object' as const,
+    required: ['message'],
+    properties: {
+      message: { type: 'string' as const, minLength: 1, maxLength: 5000 },
+      context_hints: {
+        type: 'array' as const,
+        maxItems: 20,
+        items: { type: 'string' as const, minLength: 1, maxLength: 500 },
+      },
+      session_id: { type: 'string' as const, minLength: 1, maxLength: 200 },
+    },
+    additionalProperties: false,
+  },
+  response: { ...r200Ok, ...r400, ...r401, ...r403, ...r500 },
+};
+
 /* ── questionnaires ───────────────────────────────────────────── */
 
 export const questionnairesList = {

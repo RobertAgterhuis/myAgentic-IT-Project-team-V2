@@ -539,3 +539,46 @@ describe('validateGithubSnapshot', () => {
     expect(r.valid).toBe(false);
   });
 });
+
+describe('validateAnalyticsEventArray — upper bound', () => {
+  it('rejects an array with more than 100 events', () => {
+    const events = Array.from({ length: 101 }, () => ({ event: 'page_view' }));
+    const r = validateAnalyticsEventArray(events);
+    expect(r.valid).toBe(false);
+    expect(r.errors[0]).toMatch(/1–100/);
+  });
+
+  it('accepts an array with exactly 100 events', () => {
+    const events = Array.from({ length: 100 }, () => ({ event: 'page_view' }));
+    const r = validateAnalyticsEventArray(events);
+    expect(r.valid).toBe(true);
+  });
+});
+
+describe('validateDecisionCreate — OPEN_QUESTION type', () => {
+  const base = { type: 'OPEN_QUESTION', priority: 'HIGH', scope: 'TECH', text: 'Should we use X?' };
+
+  it('accepts OPEN_QUESTION as a valid decision type', () => {
+    const r = validateDecisionCreate(base);
+    expect(r.valid).toBe(true);
+  });
+});
+
+describe('validateDecisionMutation — promote-lesson action', () => {
+  it('accepts promote-lesson as a valid action', () => {
+    const r = validateDecisionMutation({ action: 'promote-lesson', id: 'DEC-001' });
+    expect(r.valid).toBe(true);
+  });
+});
+
+describe('validateSessionState — accepted with github_sync object', () => {
+  it('accepts a session state where github_sync has nested string fields', () => {
+    const r = validateSessionState({
+      session_id: 'S-001',
+      cycle_type: 'CREATE',
+      status: 'ACTIVE',
+      github_sync: { repo: 'owner/repo', milestone: 'M1', last_synced_at: '2026-01-01' },
+    });
+    expect(r.valid).toBe(true);
+  });
+});

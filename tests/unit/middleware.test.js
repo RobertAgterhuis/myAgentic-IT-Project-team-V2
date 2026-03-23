@@ -20,6 +20,10 @@ const {
   handleRouteError,
   handleMethodNotAllowed,
   setSecurityHeaders,
+  readBody,
+  parseBody,
+  json,
+  MAX_BODY,
 } = require('../../src/webapp/middleware');
 
 function makeMockRes(opts = {}) {
@@ -357,6 +361,170 @@ describe('SP-11-612: Middleware Utility Tests', () => {
       const res = makeMockRes();
       const matched = handleMethodNotAllowed(res, '/api/items/123', routes);
       expect(matched).toBe(true);
+    });
+  });
+
+  describe('MAX_BODY — payload size constant', () => {
+    it('equals 1 048 576 bytes (1 MB)', () => {
+      expect(MAX_BODY).toBe(1_048_576);
+    });
+  });
+
+  describe('json — JSON response helper', () => {
+    it('writes the correct status code', () => {
+      const res = makeMockRes();
+      json(res, 201, { created: true });
+      expect(res._status).toBe(201);
+    });
+
+    it('sets Content-Type to application/json', () => {
+      const res = makeMockRes();
+      json(res, 200, { ok: true });
+      expect(res._headers['Content-Type']).toBe('application/json; charset=utf-8');
+    });
+
+    it('sets Cache-Control to no-store', () => {
+      const res = makeMockRes();
+      json(res, 200, {});
+      expect(res._headers['Cache-Control']).toBe('no-store');
+    });
+
+    it('serializes data to JSON in the response body', () => {
+      const res = makeMockRes();
+      json(res, 200, { hello: 'world' });
+      expect(res._body).toBe('{"hello":"world"}');
+    });
+  });
+
+  describe('readBody — stream body reading', () => {
+    it('resolves with the full request body', async () => {
+      const handlers = {};
+      const req = {
+        headers: {},
+        on(event, cb) {
+          handlers[event] = cb;
+          return this;
+        },
+        destroy: vi.fn(),
+      };
+      const promise = readBody(req);
+      handlers.data(Buffer.from('hello world'));
+      handlers.end();
+      await expect(promise).resolves.toBe('hello world');
+    });
+
+    it('rejects with 413 when payload exceeds MAX_BODY', async () => {
+      const handlers = {};
+      const req = {
+        headers: {},
+        on(event, cb) {
+          handlers[event] = cb;
+          return this;
+        },
+        destroy: vi.fn(),
+      };
+      const promise = readBody(req);
+      handlers.data(Buffer.alloc(MAX_BODY + 1));
+      await expect(promise).rejects.toMatchObject({ status: 413, errorCode: 'PAYLOAD_TOO_LARGE' });
+      expect(req.destroy).toHaveBeenCalled();
+    });
+
+    it('rejects on request stream error', async () => {
+      const handlers = {};
+      const req = {
+        headers: {},
+        on(event, cb) {
+          handlers[event] = cb;
+          return this;
+        },
+        destroy: vi.fn(),
+      };
+      const promise = readBody(req);
+      handlers.error(new Error('stream broken'));
+      await expect(promise).rejects.toThrow('stream broken');
+    });
+
+    it('strips control characters from body', async () => {
+      const handlers = {};
+      const req = {
+        headers: {},
+        on(event, cb) {
+          handlers[event] = cb;
+          return this;
+        },
+        destroy: vi.fn(),
+      };
+      const promise = readBody(req);
+      handlers.data(Buffer.from('hello\x00\x1fworld\x07'));
+      handlers.end();
+      await expect(promise).resolves.toBe('helloworld');
+    });
+  });
+
+  describe('parseBody — JSON body parsing', () => {
+    it('parses a valid application/json request body', async () => {
+      const handlers = {};
+      const req = {
+        headers: { 'content-type': 'application/json' },
+        on(event, cb) {
+          handlers[event] = cb;
+          return this;
+        },
+        destroy: vi.fn(),
+      };
+      const promise = parseBody(req);
+      handlers.data(Buffer.from('{"key":"value"}'));
+      handlers.end();
+      await expect(promise).resolves.toEqual({ key: 'value' });
+    });
+
+    it('rejects with 415 for non-application/json content-type', async () => {
+      const req = {
+        headers: { 'content-type': 'text/plain' },
+        on(_event, _cb) {
+          return this;
+        },
+        destroy: vi.fn(),
+      };
+      await expect(parseBody(req)).rejects.toMatchObject({
+        status: 415,
+        errorCode: 'INVALID_CONTENT_TYPE',
+      });
+    });
+
+    it('rejects with 400 for invalid JSON body', async () => {
+      const handlers = {};
+      const req = {
+        headers: { 'content-type': 'application/json' },
+        on(event, cb) {
+          handlers[event] = cb;
+          return this;
+        },
+        destroy: vi.fn(),
+      };
+      const promise = parseBody(req);
+      handlers.data(Buffer.from('not-valid-json'));
+      handlers.end();
+      await expect(promise).rejects.toMatchObject({
+        status: 400,
+        errorCode: 'INVALID_JSON',
+      });
+    });
+
+    it('accepts content-type with charset parameter', async () => {
+      const handlers = {};
+      const req = {
+        headers: { 'content-type': 'application/json; charset=utf-8' },
+        on(event, cb) {
+          handlers[event] = cb;
+          return this;
+        },
+        destroy: vi.fn(),
+      };
+      const promise = parseBody(req);
+      handlers.data(Buffer.from('{"x":1}'));
+      handlers.end();
+      await expect(promise).resolves.toEqual({ x: 1 });
     });
   });
 });

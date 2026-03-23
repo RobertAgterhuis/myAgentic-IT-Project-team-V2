@@ -3,9 +3,9 @@
   "endpoint": "https://mcp.local/github-repository/health",
   "risk": "medium",
   "authType": "oauth",
-  "healthStatus": "healthy",
+  "healthStatus": "unhealthy",
   "tenantEnabled": true,
   "workspaceEnabled": {},
-  "lastHealthCheck": null,
-  "consecutiveFailures": 0
+  "lastHealthCheck": "2026-03-23T07:00:27.650Z",
+  "consecutiveFailures": 46
 }

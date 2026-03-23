@@ -111,6 +111,24 @@ export const routes = {
     icon: 'ShieldCheck',
     section: 'Administration',
   },
+  mcpMatrix: {
+    path: '/admin/mcp/matrix',
+    label: 'Agent Permission Matrix',
+    icon: 'Grid3X3',
+    section: 'Administration',
+  },
+  mcpOverrides: {
+    path: '/admin/mcp/overrides',
+    label: 'Override Console',
+    icon: 'ShieldAlert',
+    section: 'Administration',
+  },
+  mcpDiagnostics: {
+    path: '/admin/mcp/diagnostics',
+    label: 'MCP Diagnostics',
+    icon: 'Activity',
+    section: 'Administration',
+  },
 } as const satisfies Record<string, RouteEntry>;
 
 /** Build breadcrumb segments from a pathname. */

@@ -179,4 +179,13 @@ export const queryKeys = {
     approvalDetail: (id: string) => ['cockpit', 'approval', id] as const,
     approvalHistory: ['cockpit', 'approval-history'] as const,
   },
+
+  /* MCP Experience Plane (M-INFRA-3c) */
+  mcp: {
+    matrix: ['mcp', 'matrix'] as const,
+    agentPermissions: (agentId: string) => ['mcp', 'agents', agentId, 'permissions'] as const,
+    overrides: ['mcp', 'overrides'] as const,
+    diagnostics: ['mcp', 'diagnostics'] as const,
+    reconcileRuns: ['mcp', 'reconcile-runs'] as const,
+  },
 } as const;

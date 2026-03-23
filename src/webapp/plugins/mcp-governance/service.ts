@@ -17,11 +17,18 @@ import type {
   AgentToolPolicy,
   AgentServerPolicy,
   AgentType,
+  AgentPermissionView,
+  DoctorReport,
+  DoctorCheckResult,
   EnvironmentPolicy,
   EnvironmentScope,
+  McpDiagnosticsReport,
+  McpOverride,
   McpServerRegistry,
   McpSyncResult,
   PermissionLevel,
+  PermissionMatrix,
+  ReconcileRun,
   ResolvedServerPermission,
   ResolvedToolPermission,
   RuntimeManifest,
@@ -78,6 +85,8 @@ export class McpGovernanceService {
   private readonly _serversFile: string;
   private readonly _serverPoliciesFile: string;
   private readonly _toolPoliciesFile: string;
+  private readonly _overridesFile: string;
+  private readonly _reconcileRunsFile: string;
 
   constructor(opts?: { projectRoot?: string; storageProvider?: StorageProvider | null }) {
     this.projectRoot = opts?.projectRoot || path.resolve(__dirname, '../../../..');
@@ -96,6 +105,8 @@ export class McpGovernanceService {
     this._serversFile = path.join(this._stateDir, 'mcp-servers.json');
     this._serverPoliciesFile = path.join(this._stateDir, 'agent-server-policies.json');
     this._toolPoliciesFile = path.join(this._stateDir, 'agent-tool-policies.json');
+    this._overridesFile = path.join(this._stateDir, 'overrides.json');
+    this._reconcileRunsFile = path.join(this._stateDir, 'reconcile-runs.json');
   }
 
   private async _readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
@@ -848,18 +859,318 @@ export class McpGovernanceService {
     };
   }
 
-  async doctor(): Promise<{
-    configExists: boolean;
-    agentCount: number;
-    serverCount: number;
-    generatedExists: boolean;
-  }> {
-    const [agents, servers] = await Promise.all([this.listAgents(), this.listServers()]);
-    return {
-      configExists: fs.existsSync(this.configDir),
-      agentCount: agents.length,
-      serverCount: servers.length,
-      generatedExists: fs.existsSync(this.generatedDir),
+  async doctor(): Promise<DoctorReport> {
+    const checks: DoctorCheckResult[] = [];
+
+    // Check 1: config directory exists
+    const configExists = fs.existsSync(this.configDir);
+    checks.push({
+      name: 'config_dir',
+      ok: configExists,
+      message: configExists
+        ? `Config directory found: ${this.configDir}`
+        : `Config directory missing: ${this.configDir} — run \`npm run plugin -- init\``,
+    });
+
+    // Check 2: agents config present and populated
+    const agents = await this.listAgents();
+    checks.push({
+      name: 'agents_loaded',
+      ok: agents.length > 0,
+      message:
+        agents.length > 0
+          ? `${agents.length} agent(s) loaded`
+          : 'No agents found — run `npm run plugin -- agents sync --apply`',
+    });
+
+    // Check 3: servers config present and populated
+    const servers = await this.listServers();
+    checks.push({
+      name: 'servers_loaded',
+      ok: servers.length > 0,
+      message:
+        servers.length > 0
+          ? `${servers.length} MCP server(s) loaded`
+          : 'No MCP servers found — run `npm run plugin -- mcp sync --apply`',
+    });
+
+    // Check 4: server policies present and populated
+    const serverPolicies = await this.listServerPolicies();
+    checks.push({
+      name: 'server_policies_loaded',
+      ok: serverPolicies.length > 0,
+      message:
+        serverPolicies.length > 0
+          ? `${serverPolicies.length} server polic${serverPolicies.length === 1 ? 'y' : 'ies'} loaded`
+          : 'No server policies found — run `npm run plugin -- policies sync --apply`',
+    });
+
+    // Check 5: tool policies present and populated
+    const toolPolicies = await this.listToolPolicies();
+    checks.push({
+      name: 'tool_policies_loaded',
+      ok: toolPolicies.length > 0,
+      message:
+        toolPolicies.length > 0
+          ? `${toolPolicies.length} tool polic${toolPolicies.length === 1 ? 'y' : 'ies'} loaded`
+          : 'No tool policies found — run `npm run plugin -- tool-policies sync --apply`',
+    });
+
+    // Check 6: generated directory exists
+    const generatedExists = fs.existsSync(this.generatedDir);
+    checks.push({
+      name: 'generated_dir',
+      ok: generatedExists,
+      message: generatedExists
+        ? `Generated directory found: ${this.generatedDir}`
+        : `Generated directory missing — run \`npm run plugin -- runtime build\``,
+    });
+
+    // Check 7: at least one runtime manifest exists
+    const runtimeDir = path.join(this.generatedDir, 'runtime-manifests');
+    let manifestCount = 0;
+    if (generatedExists && fs.existsSync(runtimeDir)) {
+      try {
+        manifestCount = (await fsp.readdir(runtimeDir)).filter((f) => f.endsWith('.json')).length;
+      } catch {
+        manifestCount = 0;
+      }
+    }
+    checks.push({
+      name: 'runtime_manifests',
+      ok: manifestCount > 0,
+      message:
+        manifestCount > 0
+          ? `${manifestCount} runtime manifest(s) found`
+          : 'No runtime manifests found — run `npm run plugin -- runtime build`',
+    });
+
+    // Check 8: no unhealthy servers
+    const unhealthyServers = servers.filter((s) => s.healthStatus === 'unhealthy');
+    checks.push({
+      name: 'server_health',
+      ok: unhealthyServers.length === 0,
+      message:
+        unhealthyServers.length === 0
+          ? 'All MCP servers are healthy or degraded'
+          : `${unhealthyServers.length} unhealthy server(s): ${unhealthyServers.map((s) => s.id).join(', ')}`,
+    });
+
+    const healthy = checks.every((c) => c.ok);
+    const failCount = checks.filter((c) => !c.ok).length;
+    const summary = healthy
+      ? `All ${checks.length} checks passed`
+      : `${failCount} of ${checks.length} check(s) failed`;
+
+    return { checks, healthy, summary };
+  }
+
+  // ── Overrides (#848) ────────────────────────────────────────────
+
+  async listOverrides(): Promise<McpOverride[]> {
+    if (this._storageProvider) {
+      const rows = (await this._storageProvider.list('mcp_overrides')) as unknown as McpOverride[];
+      return rows.filter((r) => !r.expiredAt);
+    }
+    const all = await this._readJsonFile<McpOverride[]>(this._overridesFile, []);
+    return all.filter((r) => !r.expiredAt);
+  }
+
+  async createOverride(data: Omit<McpOverride, 'id' | 'createdAt'>): Promise<McpOverride> {
+    const override: McpOverride = {
+      ...data,
+      id: `ovr-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      createdAt: new Date().toISOString(),
     };
+
+    if (this._storageProvider) {
+      await this._storageProvider.transaction([
+        {
+          type: 'write',
+          collection: 'mcp_overrides',
+          id: override.id,
+          data: override as unknown as import('../../../../platform/engine/persistence').Document,
+        },
+      ]);
+    } else {
+      const all = await this._readJsonFile<McpOverride[]>(this._overridesFile, []);
+      await this._writeJsonFile(this._overridesFile, [...all, override]);
+    }
+
+    return override;
+  }
+
+  async expireOverride(id: string): Promise<boolean> {
+    if (this._storageProvider) {
+      const existing = (await this._storageProvider.read(
+        'mcp_overrides',
+        id
+      )) as unknown as McpOverride | null;
+      if (!existing) return false;
+      await this._storageProvider.transaction([
+        {
+          type: 'write',
+          collection: 'mcp_overrides',
+          id,
+          data: { ...existing, expiredAt: new Date().toISOString() },
+        },
+      ]);
+      return true;
+    }
+
+    const all = await this._readJsonFile<McpOverride[]>(this._overridesFile, []);
+    const idx = all.findIndex((r) => r.id === id);
+    if (idx < 0) return false;
+    all[idx] = { ...all[idx], expiredAt: new Date().toISOString() };
+    await this._writeJsonFile(this._overridesFile, all);
+    return true;
+  }
+
+  // ── Permission Matrix (#846) ────────────────────────────────────
+
+  async getMatrix(): Promise<PermissionMatrix> {
+    const [agents, servers, serverPolicies] = await Promise.all([
+      this.listAgents(),
+      this.listServers(),
+      this.listServerPolicies(),
+    ]);
+
+    const matrix = agents.flatMap((agent) =>
+      servers.map((server) => {
+        const policy = serverPolicies.find(
+          (p) => p.agentId === agent.id && p.serverId === server.id && !p.envScope
+        );
+        const permissionLevel: PermissionLevel = policy?.permission ?? 'N';
+        return { agentId: agent.id, serverId: server.id, permissionLevel };
+      })
+    );
+
+    return { agents, servers, matrix };
+  }
+
+  // ── Agent Permission View (#847) ────────────────────────────────
+
+  async getAgentPermissions(agentId: string): Promise<AgentPermissionView | null> {
+    const [agents, servers, serverPolicies] = await Promise.all([
+      this.listAgents(),
+      this.listServers(),
+      this.listServerPolicies(),
+    ]);
+
+    const agent = agents.find((a) => a.id === agentId);
+    if (!agent) return null;
+
+    const permissions = servers.map((server) => {
+      const policy = serverPolicies.find(
+        (p) => p.agentId === agentId && p.serverId === server.id && !p.envScope
+      );
+      const envPolicy = serverPolicies.find(
+        (p) => p.agentId === agentId && p.serverId === server.id && p.envScope
+      );
+      const permissionLevel: PermissionLevel = policy?.permission ?? envPolicy?.permission ?? 'N';
+      const approvalRequired = permissionLevel === 'W' || permissionLevel === 'A';
+      const blocked = permissionLevel === 'N';
+      return {
+        server,
+        permissionLevel,
+        envScope: envPolicy?.envScope ?? undefined,
+        approvalRequired,
+        blocked,
+      };
+    });
+
+    return { agent, permissions };
+  }
+
+  // ── Diagnostics (#849) ──────────────────────────────────────────
+
+  async getDiagnostics(): Promise<McpDiagnosticsReport> {
+    const [agents, servers, recentRuns] = await Promise.all([
+      this.listAgents(),
+      this.listServers(),
+      this.listReconcileRuns(),
+    ]);
+
+    const unhealthyServers = servers.filter((s) => s.healthStatus === 'unhealthy');
+    const authPendingCount = servers.filter((s) => this._isAuthPending(s)).length;
+
+    return {
+      unhealthyServers,
+      authPendingCount,
+      totalAgents: agents.length,
+      totalServers: servers.length,
+      recentReconcileRuns: recentRuns.slice(0, 10),
+    };
+  }
+
+  // ── Reconcile Runs (#851, #852) ──────────────────────────────────
+
+  async listReconcileRuns(): Promise<ReconcileRun[]> {
+    if (this._storageProvider) {
+      const rows = (await this._storageProvider.list(
+        'mcp_reconcile_runs'
+      )) as unknown as ReconcileRun[];
+      return rows.sort((a, b) => b.ranAt.localeCompare(a.ranAt));
+    }
+    const all = await this._readJsonFile<ReconcileRun[]>(this._reconcileRunsFile, []);
+    return all.sort((a, b) => b.ranAt.localeCompare(a.ranAt));
+  }
+
+  async createReconcileRun(run: Omit<ReconcileRun, 'id'>): Promise<ReconcileRun> {
+    const record: ReconcileRun = {
+      ...run,
+      id: `rec-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    };
+
+    if (this._storageProvider) {
+      await this._storageProvider.transaction([
+        {
+          type: 'write',
+          collection: 'mcp_reconcile_runs',
+          id: record.id,
+          data: record as unknown as import('../../../../platform/engine/persistence').Document,
+        },
+      ]);
+    } else {
+      const all = await this._readJsonFile<ReconcileRun[]>(this._reconcileRunsFile, []);
+      await this._writeJsonFile(this._reconcileRunsFile, [...all, record]);
+    }
+
+    return record;
+  }
+
+  // ── SQLite migration for 002 ─────────────────────────────────────
+
+  async runSqliteMigration002(dbPath?: string): Promise<{ applied: string[] }> {
+    const sqlitePath =
+      dbPath || process.env.STORAGE_PATH || path.join(this.projectRoot, '.agentic', 'data.db');
+    await fsp.mkdir(path.dirname(sqlitePath), { recursive: true });
+
+    const migrationId = '002_experience_plane';
+    const migrationSqlPath = path.join(
+      this.projectRoot,
+      'src',
+      'webapp',
+      'plugins',
+      'mcp-governance',
+      'migrations',
+      '002_experience_plane.sql'
+    );
+    const sql = await fsp.readFile(migrationSqlPath, 'utf8');
+
+    const Database = (await import('better-sqlite3')).default;
+    const db = new Database(sqlitePath);
+    try {
+      db.exec('CREATE TABLE IF NOT EXISTS mcp_migrations (id TEXT PRIMARY KEY, applied_at TEXT)');
+      const exists = db.prepare('SELECT id FROM mcp_migrations WHERE id = ?').get(migrationId) as
+        | { id: string }
+        | undefined;
+      if (exists) return { applied: [] };
+
+      db.exec(sql);
+      return { applied: [migrationId] };
+    } finally {
+      db.close();
+    }
   }
 }

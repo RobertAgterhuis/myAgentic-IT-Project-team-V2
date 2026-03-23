@@ -8,7 +8,7 @@ import { ContextStrip, type ContextStripItem } from '@/components/layout/context
 import { useAdministrationOverview, useAdminUsers, useAuthorization } from '@/hooks';
 import { Link } from 'react-router-dom';
 import type { AdminUser, AdministrationIntegrationStatus } from '@/lib/api-types';
-import { KeyRound, Settings2, Users } from 'lucide-react';
+import { Activity, Grid3X3, KeyRound, Settings2, ShieldAlert, Users } from 'lucide-react';
 
 const statusVariant = {
   healthy: 'success',
@@ -92,12 +92,33 @@ export default function AdministrationPage() {
           ]}
         />
 
-        <div className="flex justify-end">
+        <div className="flex flex-wrap justify-end gap-2">
           <Link
             to="/admin/identity/consent"
             className="rounded-md border border-border/70 px-3 py-2 text-sm text-foreground hover:bg-muted"
           >
             Open Identity Consent Center
+          </Link>
+          <Link
+            to="/admin/mcp/matrix"
+            className="rounded-md border border-border/70 px-3 py-2 text-sm text-foreground hover:bg-muted"
+          >
+            <Grid3X3 className="mr-1.5 inline-block size-3.5 align-text-bottom" />
+            Permission Matrix
+          </Link>
+          <Link
+            to="/admin/mcp/overrides"
+            className="rounded-md border border-border/70 px-3 py-2 text-sm text-foreground hover:bg-muted"
+          >
+            <ShieldAlert className="mr-1.5 inline-block size-3.5 align-text-bottom" />
+            Override Console
+          </Link>
+          <Link
+            to="/admin/mcp/diagnostics"
+            className="rounded-md border border-border/70 px-3 py-2 text-sm text-foreground hover:bg-muted"
+          >
+            <Activity className="mr-1.5 inline-block size-3.5 align-text-bottom" />
+            MCP Diagnostics
           </Link>
         </div>
 

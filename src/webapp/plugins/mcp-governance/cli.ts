@@ -276,6 +276,7 @@ async function run(overrideProjectRoot?: string): Promise<void> {
 
   if (cmd === 'reconcile') {
     const apply = parsed.apply && !parsed.dryRun;
+    const startTime = Date.now();
 
     const [agentSync, serverSync, serverPolicySync, toolPolicySync] = await Promise.all([
       service.syncAgents(await service.getDefinedAgents(), { dryRun: !apply }),
@@ -285,6 +286,26 @@ async function run(overrideProjectRoot?: string): Promise<void> {
     ]);
 
     const runtimeBuild = apply ? await service.buildRuntimeArtifacts() : null;
+    const durationMs = Date.now() - startTime;
+
+    const totalAdded =
+      agentSync.added + serverSync.added + serverPolicySync.added + toolPolicySync.added;
+    const totalUpdated =
+      agentSync.updated + serverSync.updated + serverPolicySync.updated + toolPolicySync.updated;
+
+    if (apply) {
+      try {
+        await service.createReconcileRun({
+          ranAt: new Date().toISOString(),
+          ranBy: process.env.USER || process.env.USERNAME || 'system',
+          durationMs,
+          changesApplied: { added: totalAdded, updated: totalUpdated, removed: 0 },
+          status: 'success',
+        });
+      } catch {
+        // non-fatal — audit logging failure should not block the operator
+      }
+    }
 
     process.stdout.write(
       `${JSON.stringify(
@@ -293,6 +314,7 @@ async function run(overrideProjectRoot?: string): Promise<void> {
           command: 'reconcile',
           apply,
           dryRun: !apply,
+          durationMs,
           agents: agentSync,
           servers: serverSync,
           serverPolicies: serverPolicySync,
@@ -307,10 +329,18 @@ async function run(overrideProjectRoot?: string): Promise<void> {
   }
 
   if (cmd === 'doctor') {
-    const result = await service.doctor();
-    process.stdout.write(
-      `${JSON.stringify({ ok: true, command: 'doctor', ...result }, null, 2)}\n`
-    );
+    const report = await service.doctor();
+    const output = {
+      ok: report.healthy,
+      command: 'doctor',
+      healthy: report.healthy,
+      summary: report.summary,
+      checks: report.checks,
+    };
+    process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
+    if (!report.healthy) {
+      process.exitCode = 1;
+    }
     return;
   }
 

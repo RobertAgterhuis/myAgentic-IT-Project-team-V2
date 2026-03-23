@@ -3,9 +3,9 @@
   "endpoint": "https://mcp.local/azure-management/health",
   "risk": "high",
   "authType": "entra",
-  "healthStatus": "healthy",
+  "healthStatus": "unhealthy",
   "tenantEnabled": true,
   "workspaceEnabled": {},
-  "lastHealthCheck": null,
-  "consecutiveFailures": 0
+  "lastHealthCheck": "2026-03-23T07:00:25.374Z",
+  "consecutiveFailures": 46
 }

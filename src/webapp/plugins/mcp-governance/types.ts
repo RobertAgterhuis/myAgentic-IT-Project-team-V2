@@ -125,3 +125,73 @@ export interface McpSyncResult {
   updated: number;
   unchanged: number;
 }
+
+// ── M-INFRA-3c: Experience Plane & Reconcile Loop ─────────────────
+
+export interface McpOverride {
+  id: string;
+  agentId: string;
+  serverId: string;
+  toolId?: string;
+  permissionLevel: PermissionLevel;
+  overrideReason: string;
+  author: string;
+  justification: string;
+  expiry: string; // ISO-8601
+  createdAt: string;
+  expiredAt?: string;
+}
+
+export interface ReconcileRun {
+  id: string;
+  ranAt: string;
+  ranBy: string;
+  durationMs: number;
+  changesApplied: { added: number; updated: number; removed: number };
+  status: 'success' | 'failed' | 'dry_run';
+  error?: string;
+}
+
+export interface DoctorCheckResult {
+  name: string;
+  ok: boolean;
+  message: string;
+}
+
+export interface DoctorReport {
+  checks: DoctorCheckResult[];
+  healthy: boolean;
+  summary: string;
+}
+
+export interface PermissionMatrixEntry {
+  agentId: string;
+  serverId: string;
+  permissionLevel: PermissionLevel;
+  envScope?: string;
+}
+
+export interface PermissionMatrix {
+  agents: AgentType[];
+  servers: McpServerRegistry[];
+  matrix: PermissionMatrixEntry[];
+}
+
+export interface AgentPermissionView {
+  agent: AgentType;
+  permissions: Array<{
+    server: McpServerRegistry;
+    permissionLevel: PermissionLevel;
+    envScope?: string;
+    approvalRequired: boolean;
+    blocked: boolean;
+  }>;
+}
+
+export interface McpDiagnosticsReport {
+  unhealthyServers: McpServerRegistry[];
+  authPendingCount: number;
+  totalAgents: number;
+  totalServers: number;
+  recentReconcileRuns: ReconcileRun[];
+}

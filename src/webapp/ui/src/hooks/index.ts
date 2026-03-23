@@ -161,3 +161,26 @@ export {
   useRevokeIdentityConsent,
   useRefreshIdentityConsent,
 } from './use-identity-consent';
+
+export {
+  useMcpMatrix,
+  useMcpAgentPermissions,
+  useMcpOverrides,
+  useCreateMcpOverride,
+  useExpireMcpOverride,
+  useMcpDiagnostics,
+  useMcpReconcileRuns,
+  PERMISSION_LEVEL_LABELS,
+  type PermissionLevel,
+  type AgentEntry,
+  type ServerEntry,
+  type MatrixEntry,
+  type MatrixResponse,
+  type AgentPermission,
+  type AgentPermissionsResponse,
+  type McpOverride,
+  type OverridesResponse,
+  type ReconcileRun,
+  type DiagnosticsResponse,
+  type ReconcileRunsResponse,
+} from './use-mcp-experience';

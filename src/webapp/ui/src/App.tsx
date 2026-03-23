@@ -25,6 +25,10 @@ const ApprovalCenterPage = lazy(() => import('@/pages/approvals/approval-center-
 const PromptsContractsPage = lazy(() => import('@/pages/prompts/prompts-contracts-page'));
 const AdministrationPage = lazy(() => import('@/pages/administration/administration-page'));
 const IdentityConsentPage = lazy(() => import('@/pages/identity/identity-consent-page'));
+const McpMatrixPage = lazy(() => import('@/pages/mcp/mcp-matrix-page'));
+const McpAgentViewPage = lazy(() => import('@/pages/mcp/mcp-agent-view-page'));
+const McpOverridesPage = lazy(() => import('@/pages/mcp/mcp-overrides-page'));
+const McpDiagnosticsPage = lazy(() => import('@/pages/mcp/mcp-diagnostics-page'));
 const CockpitDashboardPage = lazy(() => import('@/pages/cockpit/cockpit-dashboard-page'));
 const ExecutionHistoryPage = lazy(() => import('@/pages/agents/execution-history-page'));
 const ApprovalDetailPage = lazy(() => import('@/pages/cockpit/approval-detail-page'));
@@ -94,6 +98,38 @@ const router = createBrowserRouter([
       {
         path: 'administration/identity/consent',
         element: <Navigate to="/admin/identity/consent" replace />,
+      },
+      {
+        path: 'admin/mcp/matrix',
+        element: (
+          <AccessGuard requiredRole="admin">
+            <McpMatrixPage />
+          </AccessGuard>
+        ),
+      },
+      {
+        path: 'admin/mcp/agents/:agentId',
+        element: (
+          <AccessGuard requiredRole="admin">
+            <McpAgentViewPage />
+          </AccessGuard>
+        ),
+      },
+      {
+        path: 'admin/mcp/overrides',
+        element: (
+          <AccessGuard requiredRole="admin">
+            <McpOverridesPage />
+          </AccessGuard>
+        ),
+      },
+      {
+        path: 'admin/mcp/diagnostics',
+        element: (
+          <AccessGuard requiredRole="admin">
+            <McpDiagnosticsPage />
+          </AccessGuard>
+        ),
       },
       {
         path: 'cockpit/approvals/:id',

@@ -1,11 +1,11 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
-import fs from 'node:fs';
 import path from 'node:path';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { ServerContext } from '../context';
 import { errorResponse } from '../utils/errors';
-import { ChatService, type ChatCitation } from '../services/chat-service';
+import { ChatService } from '../services/chat-service';
+import { ContextAssembler } from '../services/chat/context-assembler';
 import { RagGroundingService, type ChatGroundingIntent } from '../services/rag-grounding-service';
 import * as RS from '../route-schemas';
 
@@ -43,68 +43,6 @@ function summarizeGrounding(
   return `Found ${resultCount} grounded result${resultCount === 1 ? '' : 's'} for ${intent} in ${collection}.`;
 }
 
-function toRelativeSourcePath(projectRoot: string, filePath: string): string {
-  return path.relative(projectRoot, filePath).replace(/\\/g, '/');
-}
-
-function readSessionSnapshot(ctx: ServerContext): {
-  citation: ChatCitation | null;
-  snapshot: {
-    sessionStatus?: string;
-    mode?: string;
-    currentPhase?: string;
-    currentAgent?: string;
-    pendingApprovals?: number;
-  };
-} {
-  const sessionFile = ctx.resolveSessionFile();
-  if (!sessionFile || !fs.existsSync(sessionFile)) {
-    return {
-      citation: null,
-      snapshot: {
-        pendingApprovals: ctx._getHumanOverrideEvents
-          ? ctx._getHumanOverrideEvents().filter((evt) => evt.state === 'OPEN').length
-          : undefined,
-      },
-    };
-  }
-
-  try {
-    const parsed = JSON.parse(fs.readFileSync(sessionFile, 'utf8')) as {
-      status?: string;
-      mode?: string;
-      current_phase?: string;
-      current_agent?: string;
-    };
-    const summary = `status=${parsed.status || 'UNKNOWN'}, mode=${parsed.mode || 'UNKNOWN'}, phase=${parsed.current_phase || 'n/a'}, agent=${parsed.current_agent || 'n/a'}`;
-    return {
-      citation: {
-        source_path: toRelativeSourcePath(ctx.PROJECT_ROOT, sessionFile),
-        excerpt: summary,
-        start_line: 1,
-      },
-      snapshot: {
-        sessionStatus: parsed.status,
-        mode: parsed.mode,
-        currentPhase: parsed.current_phase,
-        currentAgent: parsed.current_agent,
-        pendingApprovals: ctx._getHumanOverrideEvents
-          ? ctx._getHumanOverrideEvents().filter((evt) => evt.state === 'OPEN').length
-          : undefined,
-      },
-    };
-  } catch {
-    return {
-      citation: null,
-      snapshot: {
-        pendingApprovals: ctx._getHumanOverrideEvents
-          ? ctx._getHumanOverrideEvents().filter((evt) => evt.state === 'OPEN').length
-          : undefined,
-      },
-    };
-  }
-}
-
 function resolveChatSessionId(request: FastifyRequest): string {
   const body = request.body as { session_id?: string } | undefined;
   if (typeof body?.session_id === 'string' && body.session_id.trim().length > 0) {
@@ -135,6 +73,11 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     projectRoot: ctx.PROJECT_ROOT,
     sessionDir: path.relative(ctx.PROJECT_ROOT, ctx.SESSION_DIR),
   });
+  const contextAssembler = new ContextAssembler({
+    projectRoot: ctx.PROJECT_ROOT,
+    resolveSessionFile: () => ctx.resolveSessionFile(),
+    getHumanOverrideEvents: ctx._getHumanOverrideEvents,
+  });
   const grounding = new RagGroundingService({
     projectRoot: ctx.PROJECT_ROOT,
     ragStore: ctx._ragStore,
@@ -156,13 +99,13 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     }
 
     const sessionId = resolveChatSessionId(request);
-    const { citation, snapshot } = readSessionSnapshot(ctx);
+    const assembled = contextAssembler.assemble();
     const response = chatService.sendMessage({
       sessionId,
       message,
       contextHints: request.body.context_hints,
-      contextSnapshot: snapshot,
-      citations: citation ? [citation] : [],
+      contextSnapshot: assembled.snapshot,
+      citations: assembled.citations,
     });
 
     return reply.send({

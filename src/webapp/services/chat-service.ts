@@ -2,6 +2,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { IntentClassifier, type ChatIntent } from './chat/intent-classifier';
 
 export interface ChatContextSnapshot {
   sessionStatus?: string;
@@ -32,6 +33,7 @@ export interface ChatHistoryMessage {
 }
 
 export interface ChatMessageResponse {
+  intent: ChatIntent;
   message: ChatHistoryMessage;
   citations: ChatCitation[];
   proposed_actions: ProposedAction[];
@@ -46,6 +48,7 @@ export interface ChatSession {
 interface ChatServiceOptions {
   projectRoot: string;
   sessionDir: string;
+  intentClassifier?: IntentClassifier;
 }
 
 function safeNow(): string {
@@ -72,13 +75,20 @@ function buildContextSummary(snapshot?: ChatContextSnapshot): string {
 }
 
 function buildAssistantResponse(input: {
-  userMessage: string;
+  intent: ChatIntent;
   contextSummary: string;
   contextHints: string[];
 }): string {
-  const lower = input.userMessage.toLowerCase();
-  if (lower.includes('current session status') || lower.includes('session status')) {
+  if (input.intent === 'session_status') {
     return `${input.contextSummary} I can also open the pipeline or approval center if you want to continue from here.`;
+  }
+
+  if (input.intent === 'approval_guidance') {
+    return `${input.contextSummary} I can guide you through pending approvals and open the approval center for the next decision.`;
+  }
+
+  if (input.intent === 'workspace_navigation') {
+    return `${input.contextSummary} I can take you to workspaces and help you navigate repository-level context.`;
   }
 
   if (input.contextHints.length > 0) {
@@ -88,54 +98,57 @@ function buildAssistantResponse(input: {
   return `${input.contextSummary} Ask me for session status, pending approvals, or where to navigate next.`;
 }
 
-function buildProposedActions(userMessage: string): ProposedAction[] {
-  const lower = userMessage.toLowerCase();
-  const actions: ProposedAction[] = [];
-
-  if (lower.includes('status') || lower.includes('phase') || lower.includes('session')) {
-    actions.push({
-      id: 'open-pipeline',
-      label: 'Open pipeline status',
-      type: 'navigation',
-      target: '/pipeline',
-    });
+function buildProposedActions(intent: ChatIntent): ProposedAction[] {
+  if (intent === 'session_status') {
+    return [
+      {
+        id: 'open-pipeline',
+        label: 'Open pipeline status',
+        type: 'navigation',
+        target: '/pipeline',
+      },
+    ];
   }
 
-  if (lower.includes('approval') || lower.includes('override')) {
-    actions.push({
-      id: 'open-approvals',
-      label: 'Open approval center',
-      type: 'navigation',
-      target: '/approvals',
-    });
+  if (intent === 'approval_guidance') {
+    return [
+      {
+        id: 'open-approvals',
+        label: 'Open approval center',
+        type: 'navigation',
+        target: '/approvals',
+      },
+    ];
   }
 
-  if (lower.includes('workspace') || lower.includes('repo')) {
-    actions.push({
-      id: 'open-workspaces',
-      label: 'Open workspaces',
-      type: 'navigation',
-      target: '/workspaces',
-    });
+  if (intent === 'workspace_navigation') {
+    return [
+      {
+        id: 'open-workspaces',
+        label: 'Open workspaces',
+        type: 'navigation',
+        target: '/workspaces',
+      },
+    ];
   }
 
-  if (actions.length === 0) {
-    actions.push({
+  return [
+    {
       id: 'refresh-chat-context',
       label: 'Refresh session context',
       type: 'refresh',
-    });
-  }
-
-  return actions;
+    },
+  ];
 }
 
 export class ChatService {
   private readonly sessionDir: string;
   private readonly cache = new Map<string, ChatSession>();
+  private readonly intentClassifier: IntentClassifier;
 
   constructor(options: ChatServiceOptions) {
     this.sessionDir = path.join(options.projectRoot, options.sessionDir, 'chat-history');
+    this.intentClassifier = options.intentClassifier || new IntentClassifier();
   }
 
   sendMessage(input: {
@@ -148,6 +161,7 @@ export class ChatService {
     const sessionId = normalizeSessionId(input.sessionId);
     const contextHints = (input.contextHints || []).map((hint) => hint.trim()).filter(Boolean);
     const userMessage = input.message.trim();
+    const intent = this.intentClassifier.classify(userMessage, contextHints);
 
     const session = this.readSession(sessionId);
     const userEntry: ChatHistoryMessage = {
@@ -162,17 +176,18 @@ export class ChatService {
     const assistantEntry: ChatHistoryMessage = {
       id: `a-${Date.now().toString(36)}`,
       role: 'assistant',
-      content: buildAssistantResponse({ userMessage, contextSummary, contextHints }),
+      content: buildAssistantResponse({ intent, contextSummary, contextHints }),
       created_at: safeNow(),
     };
     session.messages.push(assistantEntry);
     session.updated_at = safeNow();
 
     const citations = input.citations || [];
-    const proposedActions = buildProposedActions(userMessage);
+    const proposedActions = buildProposedActions(intent);
     this.persistSession(session);
 
     return {
+      intent,
       message: assistantEntry,
       citations,
       proposed_actions: proposedActions,

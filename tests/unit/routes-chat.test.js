@@ -94,6 +94,7 @@ describe('routes/chat', () => {
     expect(res.statusCode).toBe(200);
     const payload = JSON.parse(res.body);
     expect(payload.ok).toBe(true);
+    expect(payload.intent).toBe('session_status');
     expect(payload.message.role).toBe('assistant');
     expect(Array.isArray(payload.citations)).toBe(true);
     expect(Array.isArray(payload.proposed_actions)).toBe(true);

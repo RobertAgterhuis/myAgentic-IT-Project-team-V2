@@ -1,0 +1,6 @@
+{
+  "agentId": "orchestrator",
+  "serverId": "workspace-management",
+  "permission": "R",
+  "id": "orchestrator%3Aworkspace-management%3A%2A"
+}

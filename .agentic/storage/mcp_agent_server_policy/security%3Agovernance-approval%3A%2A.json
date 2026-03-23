@@ -1,0 +1,6 @@
+{
+  "agentId": "security",
+  "serverId": "governance-approval",
+  "permission": "W",
+  "id": "security%3Agovernance-approval%3A%2A"
+}

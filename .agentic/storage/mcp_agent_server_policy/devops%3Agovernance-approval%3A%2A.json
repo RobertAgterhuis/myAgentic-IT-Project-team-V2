@@ -1,0 +1,6 @@
+{
+  "agentId": "devops",
+  "serverId": "governance-approval",
+  "permission": "A",
+  "id": "devops%3Agovernance-approval%3A%2A"
+}

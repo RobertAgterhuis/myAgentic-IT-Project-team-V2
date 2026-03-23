@@ -1,0 +1,11 @@
+{
+  "id": "questionnaire-management",
+  "endpoint": "https://mcp.local/questionnaire-management/health",
+  "risk": "medium",
+  "authType": "oauth",
+  "healthStatus": "healthy",
+  "tenantEnabled": true,
+  "workspaceEnabled": {},
+  "lastHealthCheck": null,
+  "consecutiveFailures": 0
+}

@@ -1,0 +1,11 @@
+{
+  "id": "governance-approval",
+  "endpoint": "https://mcp.local/governance-approval/health",
+  "risk": "high",
+  "authType": "entra",
+  "healthStatus": "healthy",
+  "tenantEnabled": true,
+  "workspaceEnabled": {},
+  "lastHealthCheck": null,
+  "consecutiveFailures": 0
+}

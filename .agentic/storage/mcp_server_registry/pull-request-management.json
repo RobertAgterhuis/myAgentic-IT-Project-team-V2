@@ -1,0 +1,11 @@
+{
+  "id": "pull-request-management",
+  "endpoint": "https://mcp.local/pull-request-management/health",
+  "risk": "medium",
+  "authType": "oauth",
+  "healthStatus": "healthy",
+  "tenantEnabled": true,
+  "workspaceEnabled": {},
+  "lastHealthCheck": null,
+  "consecutiveFailures": 0
+}

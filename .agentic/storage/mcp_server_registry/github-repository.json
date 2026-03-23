@@ -1,0 +1,11 @@
+{
+  "id": "github-repository",
+  "endpoint": "https://mcp.local/github-repository/health",
+  "risk": "medium",
+  "authType": "oauth",
+  "healthStatus": "healthy",
+  "tenantEnabled": true,
+  "workspaceEnabled": {},
+  "lastHealthCheck": null,
+  "consecutiveFailures": 0
+}

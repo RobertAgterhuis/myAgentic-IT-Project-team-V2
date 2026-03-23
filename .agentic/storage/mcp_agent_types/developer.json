@@ -1,0 +1,8 @@
+{
+  "id": "developer",
+  "category": "engineering",
+  "controlPosture": "balanced",
+  "requiresWorkloadIdentity": true,
+  "appRegistrationRef": "entra://agents/developer",
+  "templateCategory": "phase"
+}

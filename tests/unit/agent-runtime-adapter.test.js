@@ -1030,4 +1030,194 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
     expect(userMessage).not.toContain('Ignore previous instructions');
     expect(userMessage).not.toContain('reveal system prompt');
   });
+
+  it('blocks tool execution when workload identity consent is pending', async () => {
+    const contractPath = await writeContractFixture(
+      'workload-identity-consent-contract.md',
+      ['# Contract', '', '```markdown', '## Metadata', '## HANDOFF CHECKLIST', '```'].join('\n')
+    );
+    const skillPath = await writeSkillFixture(
+      'workload-identity-consent-skill.md',
+      contractPath
+    );
+
+    const runtimeManifestDir = path.join(tmpRoot, 'runtime-manifests-consent');
+    await fs.mkdir(runtimeManifestDir, { recursive: true });
+    await fs.writeFile(
+      path.join(runtimeManifestDir, `${AGENT.id}.json`),
+      JSON.stringify(
+        {
+          agentId: AGENT.id,
+          generatedAt: new Date().toISOString(),
+          servers: [
+            {
+              serverId: 'git',
+              authType: 'entra',
+              authStatus: 'consent_pending',
+              tools: [
+                {
+                  toolId: 'git.default',
+                  permissionLevel: 'W',
+                  approvalRequired: false,
+                  blocked: false,
+                },
+              ],
+            },
+          ],
+        },
+        null,
+        2
+      ),
+      'utf8'
+    );
+
+    const complete = vi.fn().mockResolvedValue({
+      content: '',
+      model: 'gpt-test',
+      usage: { promptTokens: 10, completionTokens: 2, totalTokens: 12 },
+      finishReason: 'tool_calls',
+      toolCalls: [
+        {
+          id: 'tc-identity-consent-1',
+          name: 'tool.git.commit',
+          arguments: {
+            target: 'git',
+            operation: 'commit',
+            params: {},
+          },
+        },
+      ],
+    });
+
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const execute = vi.fn();
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-workload-identity-consent',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      toolExecutor: { execute },
+      runtimeManifestDir: runtimeManifestDir,
+      validationMaxRetries: 0,
+    });
+
+    await expect(
+      adapter.invoke(AGENT, PLATFORM, {
+        skillFile: skillPath,
+        predecessorOutputs: {},
+        questionnaireInput: null,
+        role: 'admin',
+        profile: 'production-distributed',
+        sessionState: {
+          mode: 'AUDIT',
+          policyApprovals: { 'tool.git.commit': true },
+          agentId: AGENT.id,
+        },
+      })
+    ).rejects.toThrow(/CONSENT_PENDING|consent not granted/i);
+
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('blocks tool execution when workload identity is not provisioned', async () => {
+    const contractPath = await writeContractFixture(
+      'workload-identity-provision-contract.md',
+      ['# Contract', '', '```markdown', '## Metadata', '## HANDOFF CHECKLIST', '```'].join('\n')
+    );
+    const skillPath = await writeSkillFixture(
+      'workload-identity-provision-skill.md',
+      contractPath
+    );
+
+    const runtimeManifestDir = path.join(tmpRoot, 'runtime-manifests-provision');
+    await fs.mkdir(runtimeManifestDir, { recursive: true });
+    await fs.writeFile(
+      path.join(runtimeManifestDir, `${AGENT.id}.json`),
+      JSON.stringify(
+        {
+          agentId: AGENT.id,
+          generatedAt: new Date().toISOString(),
+          servers: [
+            {
+              serverId: 'git',
+              authType: 'entra',
+              authStatus: 'identity_not_provisioned',
+              tools: [
+                {
+                  toolId: 'git.default',
+                  permissionLevel: 'W',
+                  approvalRequired: false,
+                  blocked: false,
+                },
+              ],
+            },
+          ],
+        },
+        null,
+        2
+      ),
+      'utf8'
+    );
+
+    const complete = vi.fn().mockResolvedValue({
+      content: '',
+      model: 'gpt-test',
+      usage: { promptTokens: 10, completionTokens: 2, totalTokens: 12 },
+      finishReason: 'tool_calls',
+      toolCalls: [
+        {
+          id: 'tc-identity-provision-1',
+          name: 'tool.git.commit',
+          arguments: {
+            target: 'git',
+            operation: 'commit',
+            params: {},
+          },
+        },
+      ],
+    });
+
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const execute = vi.fn();
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-workload-identity-provision',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      toolExecutor: { execute },
+      runtimeManifestDir: runtimeManifestDir,
+      validationMaxRetries: 0,
+    });
+
+    await expect(
+      adapter.invoke(AGENT, PLATFORM, {
+        skillFile: skillPath,
+        predecessorOutputs: {},
+        questionnaireInput: null,
+        role: 'admin',
+        profile: 'production-distributed',
+        sessionState: {
+          mode: 'AUDIT',
+          policyApprovals: { 'tool.git.commit': true },
+          agentId: AGENT.id,
+        },
+      })
+    ).rejects.toThrow(/IDENTITY_NOT_PROVISIONED|workload identity not provisioned/i);
+
+    expect(execute).not.toHaveBeenCalled();
+  });
 });

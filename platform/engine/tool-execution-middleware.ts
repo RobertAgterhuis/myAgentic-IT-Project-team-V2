@@ -86,6 +86,7 @@ interface RuntimeManifestRecord {
   generatedAt: string;
   servers: Array<{
     serverId: string;
+    authStatus?: string;
     tools: RuntimeToolPermissionRecord[];
   }>;
 }
@@ -448,6 +449,43 @@ export class ToolExecutionMiddleware {
     return { allowed: true, decisionRefs: approval.decisionRefs };
   }
 
+  private _evaluateWorkloadIdentityGate(
+    agentId: string,
+    serverId: string
+  ): { allowed: boolean; message?: string; errorCode?: string } {
+    const manifest = this._readRuntimeManifest(agentId);
+    if (!manifest) return { allowed: true };
+
+    const server = manifest.servers.find((s) => s.serverId === serverId);
+    if (!server || !server.authStatus) return { allowed: true };
+
+    const authStatus = server.authStatus;
+    if (authStatus === 'consent_pending') {
+      return {
+        allowed: false,
+        errorCode: 'CONSENT_PENDING',
+        message: `Agent '${agentId}' cannot execute tools on server '${serverId}': consent not granted (CONSENT_PENDING).`,
+      };
+    }
+    if (authStatus === 'identity_not_provisioned' || authStatus === 'not_configured') {
+      // Both 'identity_not_provisioned' (SP created but not ready) and 'not_configured'
+      // (no identity record at all) are treated as the same provisioning failure.
+      return {
+        allowed: false,
+        errorCode: 'IDENTITY_NOT_PROVISIONED',
+        message: `Agent '${agentId}' cannot execute tools on server '${serverId}': workload identity not provisioned (IDENTITY_NOT_PROVISIONED).`,
+      };
+    }
+    if (authStatus === 'credential_policy_violation') {
+      return {
+        allowed: false,
+        errorCode: 'CREDENTIAL_POLICY_VIOLATION',
+        message: `Agent '${agentId}' cannot execute tools on server '${serverId}': credential policy violation (CREDENTIAL_POLICY_VIOLATION).`,
+      };
+    }
+    return { allowed: true };
+  }
+
   private _evaluateSideEffectPolicy(
     toolId: string,
     profile: string,
@@ -581,6 +619,28 @@ export class ToolExecutionMiddleware {
       throw new ToolValidationError(
         `Tool call '${toolId}' must include string arguments 'target' and 'operation'.`
       );
+    }
+
+    if (policy.agentId) {
+      const identityGate = this._evaluateWorkloadIdentityGate(policy.agentId, target);
+      if (!identityGate.allowed) {
+        const event: ToolExecutionAuditEvent = {
+          timestamp: new Date().toISOString(),
+          traceId,
+          toolCallId: call.id,
+          toolId,
+          role,
+          profile,
+          paramsHash,
+          success: false,
+          errorCode: identityGate.errorCode || 'TOOL_UNAUTHORIZED',
+          error: identityGate.message,
+        };
+        this._audit?.logToolExecution(event);
+        throw new ToolAuthorizationError(
+          event.error || 'Workload identity gate blocked tool operation'
+        );
+      }
     }
 
     const runtimePermissionGate = this._evaluateRuntimePermissionGate({

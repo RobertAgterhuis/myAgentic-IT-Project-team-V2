@@ -261,5 +261,9 @@ describe('run() CLI commands', () => {
     expect(result.ok).toBe(true);
     expect(result.command).toBe('doctor');
     expect(typeof result.configExists).toBe('boolean');
+    expect(Array.isArray(result.identityIssues)).toBe(true);
+    expect(typeof result.agentsWithPendingConsent).toBe('number');
+    expect(typeof result.agentsWithMissingIdentity).toBe('number');
+    expect(typeof result.agentsWithExpiringCredentials).toBe('number');
   });
 });

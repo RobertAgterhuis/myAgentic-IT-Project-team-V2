@@ -113,6 +113,11 @@ export const queryKeys = {
     integrations: ['administration', 'integrations'] as const,
   },
 
+  /* Identity (M-INFRA-2c) */
+  identity: {
+    consentCenter: ['identity', 'consent-center'] as const,
+  },
+
   /* Traceability (M10) */
   traceability: {
     chains: ['traceability', 'chains'] as const,

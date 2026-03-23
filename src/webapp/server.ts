@@ -85,6 +85,7 @@ import { registerRoutes as registerWorkspaceRoutes } from './routes/workspaces';
 import { registerRoutes as registerCockpitRoutes } from './routes/cockpit';
 import { registerRoutes as registerAuthRoutes } from './routes/auth';
 import { registerRoutes as registerMcpRoutes } from './routes/mcp';
+import { registerRoutes as registerIdentityRoutes } from './routes/identity';
 import { registerRoutes as registerHelpRoutes } from './routes/help';
 import { registerRoutes as registerRagRoutes } from './routes/rag';
 import { registerRoutes as registerChatRoutes } from './routes/chat';
@@ -441,6 +442,7 @@ async function createApp() {
   await registerCockpitRoutes(app, ctx);
   await registerAuthRoutes(app, ctx);
   await registerMcpRoutes(app, ctx);
+  await registerIdentityRoutes(app, ctx);
   await registerHelpRoutes(app, ctx);
   await registerRagRoutes(app, ctx);
   await registerChatRoutes(app, ctx);

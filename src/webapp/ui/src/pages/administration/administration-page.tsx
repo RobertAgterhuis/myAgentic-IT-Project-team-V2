@@ -6,6 +6,7 @@ import { PageShell } from '@/components/ui/page-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { useAdministrationOverview, useAdminUsers, useAuthorization } from '@/hooks';
+import { Link } from 'react-router-dom';
 import type { AdminUser, AdministrationIntegrationStatus } from '@/lib/api-types';
 import { KeyRound, Settings2, Users } from 'lucide-react';
 
@@ -90,6 +91,15 @@ export default function AdministrationPage() {
             },
           ]}
         />
+
+        <div className="flex justify-end">
+          <Link
+            to="/admin/identity/consent"
+            className="rounded-md border border-border/70 px-3 py-2 text-sm text-foreground hover:bg-muted"
+          >
+            Open Identity Consent Center
+          </Link>
+        </div>
 
         <ContextStrip items={contextItems} />
 

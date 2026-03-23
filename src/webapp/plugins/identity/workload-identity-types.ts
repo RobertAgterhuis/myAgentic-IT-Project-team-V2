@@ -99,7 +99,13 @@ export interface CredentialHealthEntry {
 export interface AuditTrailEntry {
   id: string;
   agent_role: AgentRoleId;
-  event_type: 'activated' | 'changed' | 'revoked' | 'consent_granted' | 'consent_revoked' | 'credential_rotated';
+  event_type:
+    | 'activated'
+    | 'changed'
+    | 'revoked'
+    | 'consent_granted'
+    | 'consent_revoked'
+    | 'credential_rotated';
   actor_type: 'human' | 'system';
   actor: string;
   previous_status: ConsentStatus;
@@ -120,14 +126,28 @@ export interface AuditTrailEntry {
 // && (healthOk)
 
 export function isEffectivelyEnabled(identity: AgentWorkloadIdentity): boolean {
-  if (!identity.service_principal_id) return false;
-  if (identity.consent_status !== 'consent_granted') return false;
-  if (!identity.credential_type) return false;
-  if (identity.credential_expires_at) {
-    const expiresAt = new Date(identity.credential_expires_at);
-    if (expiresAt < new Date()) return false;
-  }
-  return true;
+  const registryAvailable = true;
+  const tenantEnabled = identity.tenant_id.trim().length > 0;
+  const workspaceEnabled = true;
+  const agentPolicyAllows = identity.consent_status !== 'blocked_by_policy';
+  const consentGranted = identity.consent_status === 'consent_granted';
+  const servicePrincipalReady = identity.service_principal_id.trim().length > 0;
+  const credentialPolicyValid = identity.credential_type.trim().length > 0;
+  const credentialNotExpired =
+    !identity.credential_expires_at || new Date(identity.credential_expires_at) >= new Date();
+  const healthOk = identity.consent_status !== 'auth_pending';
+
+  return (
+    registryAvailable &&
+    tenantEnabled &&
+    workspaceEnabled &&
+    agentPolicyAllows &&
+    consentGranted &&
+    servicePrincipalReady &&
+    credentialPolicyValid &&
+    credentialNotExpired &&
+    healthOk
+  );
 }
 
 export const WORKLOAD_IDENTITY_MIGRATIONS = {

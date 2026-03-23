@@ -153,3 +153,11 @@ export { usePromptContractAssets } from './use-prompt-contracts';
 
 /* Administration (UI-016) */
 export { useAdminUsers, useAdministrationOverview } from './use-administration';
+
+/* Identity Consent Center (M-INFRA-2c) */
+export {
+  useIdentityConsentCenter,
+  useGrantIdentityConsent,
+  useRevokeIdentityConsent,
+  useRefreshIdentityConsent,
+} from './use-identity-consent';

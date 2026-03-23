@@ -24,6 +24,7 @@ const ObservabilityPage = lazy(() => import('@/pages/observability/observability
 const ApprovalCenterPage = lazy(() => import('@/pages/approvals/approval-center-page'));
 const PromptsContractsPage = lazy(() => import('@/pages/prompts/prompts-contracts-page'));
 const AdministrationPage = lazy(() => import('@/pages/administration/administration-page'));
+const IdentityConsentPage = lazy(() => import('@/pages/identity/identity-consent-page'));
 const CockpitDashboardPage = lazy(() => import('@/pages/cockpit/cockpit-dashboard-page'));
 const ExecutionHistoryPage = lazy(() => import('@/pages/agents/execution-history-page'));
 const ApprovalDetailPage = lazy(() => import('@/pages/cockpit/approval-detail-page'));
@@ -83,6 +84,18 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: 'admin/identity/consent',
+        element: (
+          <AccessGuard requiredRole="admin">
+            <IdentityConsentPage />
+          </AccessGuard>
+        ),
+      },
+      {
+        path: 'administration/identity/consent',
+        element: <Navigate to="/admin/identity/consent" replace />,
+      },
+      {
         path: 'cockpit/approvals/:id',
         element: (
           <AccessGuard requiredRole="operator">
@@ -97,6 +110,7 @@ const router = createBrowserRouter([
       { path: 'analytics', element: <Navigate to="/observability" replace /> },
       { path: 'traceability', element: <Navigate to="/observability" replace /> },
       { path: 'governance', element: <Navigate to="/approvals" replace /> },
+      { path: 'admin', element: <Navigate to="/administration" replace /> },
       { path: 'audit', element: <Navigate to="/artifacts" replace /> },
       { path: 'overview', element: <Navigate to="/dashboard" replace /> },
 

@@ -105,6 +105,12 @@ export const routes = {
     icon: 'Settings2',
     section: 'Administration',
   },
+  identityConsent: {
+    path: '/admin/identity/consent',
+    label: 'Identity Consent Center',
+    icon: 'ShieldCheck',
+    section: 'Administration',
+  },
 } as const satisfies Record<string, RouteEntry>;
 
 /** Build breadcrumb segments from a pathname. */

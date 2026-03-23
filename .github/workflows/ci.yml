@@ -328,7 +328,7 @@ jobs:
         run: npm run build
 
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3.0.0
+        uses: docker/setup-qemu-action@v4.0.0
         if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/')
 
       - name: Set up Docker Buildx

@@ -27,3 +27,4 @@ facts. It is intended for focused reading rather than first-time onboarding.
 - [Agent Index](agent-index)
 - [Architecture Index](architecture-index)
 - [RAG Scaling Governance](rag-scaling-governance)
+- [Frontend State Ownership Contract](frontend-state-ownership-contract)

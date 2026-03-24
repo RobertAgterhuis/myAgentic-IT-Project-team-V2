@@ -15,13 +15,15 @@ import type {
   AgentJobResultResponse,
   AgentExecutionHistoryResponse,
 } from '@/lib/api-types';
+import { useSSEAwareRefetchInterval } from '@/hooks/use-sse-aware-polling';
 
 /** List all tracked agents. */
 export function useAgents() {
+  const refetchInterval = useSSEAwareRefetchInterval(10_000);
   return useQuery({
     queryKey: queryKeys.agents.all,
     queryFn: () => apiGet<AgentsListResponse>('/agents'),
-    refetchInterval: 10_000,
+    refetchInterval,
   });
 }
 
@@ -105,9 +107,10 @@ export function useCancelAgentJob() {
 
 /** List execution history (M31-009). */
 export function useExecutionHistory() {
+  const refetchInterval = useSSEAwareRefetchInterval(10_000);
   return useQuery({
     queryKey: ['agents', 'executions'],
     queryFn: () => apiGet<AgentExecutionHistoryResponse>('/agents/executions'),
-    refetchInterval: 10_000,
+    refetchInterval,
   });
 }

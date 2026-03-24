@@ -52,6 +52,9 @@ export {
   useGates,
   useOrchestratorErrors,
   useOnboardingDiagnostics,
+  usePauseOrchestrator,
+  useResumeOrchestrator,
+  useOverrideOrchestrator,
 } from './use-orchestrator';
 
 /* Dashboard (#237) */

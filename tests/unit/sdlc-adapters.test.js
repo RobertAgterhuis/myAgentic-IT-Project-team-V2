@@ -146,6 +146,93 @@ describe('GitAdapter', () => {
     expect(result.valid).toBe(true);
     expect(result.errors).toHaveLength(0);
   });
+
+  it('execute() create-branch succeeds with injected git service', async () => {
+    const gitService = {
+      branch: vi.fn(async () => [{ info: { branches: ['main', 'feature/test'] } }, null]),
+      log: vi.fn(async () => [{ entries: [] }, null]),
+      status: vi.fn(async () => [{ entries: [], clean: true }, null]),
+    };
+
+    const result = await adapter.execute('create-branch', {
+      name: 'feature/test',
+      __agentContext: { gitService },
+    });
+
+    expect(result.success).toBe(true);
+    expect(result.data).toEqual({ branch: 'feature/test', created: true });
+    expect(gitService.branch).toHaveBeenCalledWith({ op: 'create', name: 'feature/test' });
+  });
+
+  it('execute() list-branches returns adapter error when git service tuple has error', async () => {
+    const gitService = {
+      branch: vi.fn(async () => [null, new Error('branch list failed')]),
+      log: vi.fn(async () => [{ entries: [] }, null]),
+      status: vi.fn(async () => [{ entries: [], clean: true }, null]),
+    };
+
+    const result = await adapter.execute('list-branches', {
+      __agentContext: { gitService },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('branch list failed');
+  });
+
+  it('execute() list-commits returns adapter error when git service tuple has error', async () => {
+    const gitService = {
+      branch: vi.fn(async () => [{ info: { branches: ['main'] } }, null]),
+      log: vi.fn(async () => [null, new Error('log failed')]),
+      status: vi.fn(async () => [{ entries: [], clean: true }, null]),
+    };
+
+    const result = await adapter.execute('list-commits', {
+      limit: 2,
+      __agentContext: { gitService },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('log failed');
+  });
+
+  it('execute() status returns adapter error when git service tuple has error', async () => {
+    const gitService = {
+      branch: vi.fn(async () => [{ info: { branches: ['main'] } }, null]),
+      log: vi.fn(async () => [{ entries: [] }, null]),
+      status: vi.fn(async () => [null, new Error('status failed')]),
+    };
+
+    const result = await adapter.execute('status', {
+      __agentContext: { gitService },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('status failed');
+  });
+
+  it('execute() returns timeout error for long-running git service operation', async () => {
+    const timeoutAdapter = new GitAdapter({ repository_path: '/repo', timeout: 1 });
+    const hangingService = {
+      branch: vi.fn(() => new Promise(() => {})),
+      log: vi.fn(async () => [{ entries: [] }, null]),
+      status: vi.fn(async () => [{ entries: [], clean: true }, null]),
+    };
+
+    const result = await timeoutAdapter.execute('list-branches', {
+      __agentContext: { gitService: hangingService },
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('Git operation timeout');
+  });
+
+  it('healthCheck() returns UNCONFIGURED when repository path is missing', async () => {
+    const unconfiguredAdapter = new GitAdapter({ repository_path: '' });
+    const check = await unconfiguredAdapter.healthCheck();
+
+    expect(check.status).toBe('UNCONFIGURED');
+    expect(check.message).toContain('No repository path configured');
+  });
 });
 
 // ─── Concrete Adapters — category and name checks ────────────

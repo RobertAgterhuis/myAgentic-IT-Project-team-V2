@@ -4,6 +4,7 @@ import { queryKeys } from '@/lib/query-keys';
 import type {
   AdminUsersResponse,
   AdministrationOverviewResponse,
+  ExternalIntegrationReadinessResponse,
   PolicySignalsResponse,
   TimestampedResponse,
   DashboardHealth,
@@ -22,10 +23,11 @@ export function useAdministrationOverview() {
   return useQuery({
     queryKey: queryKeys.administration.integrations,
     queryFn: async (): Promise<AdministrationOverviewResponse> => {
-      const [usersRes, signalsRes, healthRes] = await Promise.all([
+      const [usersRes, signalsRes, healthRes, readinessRes] = await Promise.all([
         apiGet<AdminUsersResponse>('/admin/users'),
         apiGet<PolicySignalsResponse>('/v1/policies/signals'),
         apiGet<TimestampedResponse<DashboardHealth>>('/dashboard/health'),
+        apiGet<ExternalIntegrationReadinessResponse>('/v1/integrations/readiness'),
       ]);
 
       const role_counts = {
@@ -67,6 +69,16 @@ export function useAdministrationOverview() {
               : 'offline') as 'healthy' | 'degraded' | 'offline',
           detail: String(healthRes.data.deployment.details ?? healthRes.data.deployment.label),
         },
+        ...readinessRes.integrations.map((integration) => ({
+          id: `external-${integration.id}`,
+          label: `${integration.label} readiness`,
+          status: (integration.status === 'ready'
+            ? 'healthy'
+            : integration.status === 'partial'
+              ? 'degraded'
+              : 'offline') as 'healthy' | 'degraded' | 'offline',
+          detail: integration.summary,
+        })),
       ];
 
       return {

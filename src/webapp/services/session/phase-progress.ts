@@ -7,16 +7,32 @@ import {
 } from '../../../../platform/engine/dispatcher';
 import { STATES } from '../../../../platform/engine/state-machine';
 
-type AgentDef = { id: string; name: string };
+type AgentAutomationLevel = 'autonomous' | 'supervised' | 'human_required';
+
+type AgentDef = { id: string; name: string; automation_level: AgentAutomationLevel };
 
 type PhaseProgressItem = {
   key: string;
   label: string;
   status: string;
-  agents: Array<{ id: string; name: string; status: string }>;
+  agents: Array<{
+    id: string;
+    name: string;
+    status: string;
+    automation_level: AgentAutomationLevel;
+  }>;
   done: number;
   total: number;
 };
+
+const SUPERVISED_AGENT_IDS = new Set(['00', '18', '19', '21', '22', '29', '38']);
+const HUMAN_REQUIRED_AGENT_IDS = new Set(['33', '36']);
+
+function resolveAutomationLevel(agentId: string): AgentAutomationLevel {
+  if (HUMAN_REQUIRED_AGENT_IDS.has(agentId)) return 'human_required';
+  if (SUPERVISED_AGENT_IDS.has(agentId)) return 'supervised';
+  return 'autonomous';
+}
 
 const PHASE_ORDER = [
   'ONBOARDING',
@@ -57,12 +73,17 @@ function compileProgressPhaseAgents(runtimePhaseAgents: Record<string, AgentDef[
     phaseAgents[progressPhase] = (runtimePhaseAgents[runtimeState] || []).map((agent) => ({
       id: agent.id,
       name: agent.name,
+      automation_level: resolveAutomationLevel(agent.id),
     }));
   }
 
   // Preserve critic gate visibility in phase progress while keeping phase
   // specialists sourced from canonical runtime schema.
-  const criticRollup: AgentDef = { id: 'critic_risk', name: 'Critic + Risk' };
+  const criticRollup: AgentDef = {
+    id: 'critic_risk',
+    name: 'Critic + Risk',
+    automation_level: 'supervised',
+  };
   for (const phaseKey of ['PHASE-1', 'PHASE-2', 'PHASE-3', 'PHASE-4']) {
     phaseAgents[phaseKey].push({ ...criticRollup });
   }
@@ -187,6 +208,7 @@ export function buildPhaseProgress(session: SessionState): PhaseProgressItem[] {
         currentAgents,
         phaseOutputs
       ),
+      automation_level: a.automation_level,
     }));
 
     const phaseStatus = resolvePhaseStatus(phaseKey, completedPhases, currentPhase, session);
@@ -212,6 +234,7 @@ export function buildEmptyPhases(): PhaseProgressItem[] {
       id: a.id,
       name: a.name,
       status: 'pending',
+      automation_level: a.automation_level,
     })),
     done: 0,
     total: (PHASE_AGENTS[key] || []).length,

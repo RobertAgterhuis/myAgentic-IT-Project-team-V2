@@ -47,6 +47,14 @@ interface SwimlanePhase extends Omit<PhaseEntry, 'agents' | 'status'> {
   humanBlockers: number;
 }
 
+type GuidanceCard = {
+  id: string;
+  title: string;
+  blocker: string;
+  nextAction: string;
+  tone: 'warning' | 'critical' | 'info';
+};
+
 const laneTone: Record<SwimlaneStatus, 'default' | 'info' | 'warning' | 'success'> = {
   pending: 'default',
   active: 'info',
@@ -248,6 +256,48 @@ function getPipelineGuidance(
   };
 }
 
+function buildGuidanceCards(input: {
+  session: SessionInfo | null;
+  openEscalations: number;
+  humanBlockers: number;
+  fallbackActionLabel: string;
+}): GuidanceCard[] {
+  const cards: GuidanceCard[] = [];
+
+  if (input.openEscalations > 0 || input.humanBlockers > 0) {
+    cards.push({
+      id: 'human-blocker',
+      title: 'Human input required',
+      blocker: `${input.openEscalations} escalation(s) and ${input.humanBlockers} blocker(s) are currently open.`,
+      nextAction: 'Open the active session, resolve the pending question, then continue execution.',
+      tone: 'critical',
+    });
+  }
+
+  const runtimeAlerts = input.session?.runtime_alerts ?? [];
+  for (const alert of runtimeAlerts) {
+    cards.push({
+      id: `runtime-${alert.id}`,
+      title: alert.title,
+      blocker: alert.detail,
+      nextAction: alert.next_action,
+      tone: alert.severity === 'critical' ? 'critical' : 'warning',
+    });
+  }
+
+  if (cards.length === 0) {
+    cards.push({
+      id: 'default-guidance',
+      title: 'Pipeline is healthy',
+      blocker: 'No explicit blockers are active for the current run.',
+      nextAction: input.fallbackActionLabel,
+      tone: 'info',
+    });
+  }
+
+  return cards;
+}
+
 /* ── Main page ── */
 
 export default function PipelinePage() {
@@ -292,6 +342,12 @@ export default function PipelinePage() {
     openEscalations,
     humanBlockers
   );
+  const guidanceCards = buildGuidanceCards({
+    session: progress?.session ?? null,
+    openEscalations,
+    humanBlockers,
+    fallbackActionLabel: `${nextStep.actionLabel} to keep the pipeline moving.`,
+  });
   const activeAgentIds = getCurrentAgentIds(progress?.session ?? null);
   const activeAgentsLabel = formatCurrentAgentsLabel(activeAgentIds);
   const contextItems: ContextStripItem[] = [
@@ -359,6 +415,29 @@ export default function PipelinePage() {
       <PageHelpStrip routeSlug="pipeline" />
 
       <ContextStrip items={contextItems} />
+
+      <section aria-label="Blockers and next actions" className="grid gap-4 md:grid-cols-2">
+        {guidanceCards.map((card) => (
+          <Card key={card.id} elevation="flat" className="space-y-3 p-4">
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold">{card.title}</p>
+              <Badge
+                variant={
+                  card.tone === 'critical' ? 'error' : card.tone === 'warning' ? 'warning' : 'info'
+                }
+              >
+                {card.tone === 'critical'
+                  ? 'Blocking'
+                  : card.tone === 'warning'
+                    ? 'Attention'
+                    : 'Guidance'}
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground">{card.blocker}</p>
+            <p className="text-sm">{card.nextAction}</p>
+          </Card>
+        ))}
+      </section>
 
       <MissionControlHero
         heroId="pipeline"

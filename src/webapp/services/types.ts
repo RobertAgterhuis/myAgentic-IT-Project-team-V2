@@ -178,6 +178,7 @@ export interface SessionState {
   current_step?: string | null;
   initiated_at?: string;
   last_updated?: string;
+  phase_started_at?: string;
   phases?: unknown[];
   activeSprint?: unknown | null;
   completed_phases?: string[];
@@ -190,6 +191,15 @@ export interface SessionState {
   };
   blockers?: unknown[];
   open_human_escalations?: Array<{ status: string; [k: string]: unknown }>;
+}
+
+export interface RuntimeAlert {
+  id: string;
+  kind: 'timeout' | 'stall';
+  severity: 'warning' | 'critical';
+  title: string;
+  detail: string;
+  next_action: string;
 }
 
 export interface ProgressInfo {

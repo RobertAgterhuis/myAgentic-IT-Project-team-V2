@@ -4,7 +4,7 @@
  * RuntimeLog (bottom), ExplainabilityPanel (contextual).
  * M15 / Issues #M15-029, #M15-034, #M15-035, #M15-036, #M15-037
  */
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Heading, Text } from '@/components/ui/typography';
 import { Badge } from '@/components/ui/badge';
@@ -22,15 +22,8 @@ import { AgentActivity, type AgentEntry } from '@/components/runtime/agent-activ
 import { RuntimeLog, type RuntimeLogEvent } from '@/components/runtime/runtime-log';
 import { ExplainabilityPanel } from '@/components/runtime/explainability-panel';
 import { ExecutionTimeline } from '@/components/cockpit/execution-timeline';
-import {
-  useSession,
-  useOrchestratorStatus,
-  usePauseOrchestrator,
-  useResumeOrchestrator,
-  useOverrideOrchestrator,
-  useExecutionHistory,
-  useCancelAgentJob,
-} from '@/hooks';
+import { InterventionConsole } from '@/components/cockpit/intervention-console';
+import { useSession, useOrchestratorStatus, useExecutionHistory } from '@/hooks';
 import { useRuntimeStore } from '@/stores/runtime-store';
 import type {
   SessionStatus,
@@ -138,17 +131,9 @@ export default function SessionDetailPage() {
   const [explainAgent, setExplainAgent] = useState<AgentDetailEntry | null>(null);
   const [gateFailure, setGateFailure] = useState<GateFailureInfo | null>(null);
   const [phaseFilter, setPhaseFilter] = useState<string | null>(null);
-  const [interventionReason, setInterventionReason] = useState('Operator intervention requested');
-  const [rerouteMode, setRerouteMode] = useState('FEATURE');
-  const [reroutePhases, setReroutePhases] = useState('PHASE_5_EXECUTING');
-  const [selectedRunningJob, setSelectedRunningJob] = useState<string>('');
 
   const orchestratorStatus = useOrchestratorStatus();
-  const pauseMutation = usePauseOrchestrator();
-  const resumeMutation = useResumeOrchestrator();
-  const overrideMutation = useOverrideOrchestrator();
   const executionHistory = useExecutionHistory();
-  const cancelJobMutation = useCancelAgentJob();
 
   // M15-036: Merge query timeline with live SSE events from runtime store
   const storeEvents = useRuntimeStore((s) => s.events);
@@ -202,12 +187,6 @@ export default function SessionDetailPage() {
     () => (executionHistory.data?.executions ?? []).filter((item) => item.status === 'running'),
     [executionHistory.data?.executions]
   );
-
-  useEffect(() => {
-    if (!selectedRunningJob && runningJobs.length > 0) {
-      setSelectedRunningJob(runningJobs[0].job_id);
-    }
-  }, [runningJobs, selectedRunningJob]);
 
   // M15-037: Detect gate failures from merged events
   const latestGateFailure = useMemo(() => {
@@ -365,111 +344,7 @@ export default function SessionDetailPage() {
         <ContextStrip items={contextItems} />
 
         <section aria-label="Intervention console">
-          <Card elevation="flat" className="p-4 space-y-3" data-testid="intervention-console">
-            <div className="flex items-center justify-between gap-3">
-              <Heading level={2} className="text-sm">
-                Intervention Console
-              </Heading>
-              <Badge variant="info">
-                {(orchestratorStatus.data?.human_override as { paused?: boolean } | undefined)
-                  ?.paused
-                  ? 'Paused'
-                  : 'Running'}
-              </Badge>
-            </div>
-            <Text muted className="text-xs">
-              Pause, resume, reroute, or cancel from one operator surface.
-            </Text>
-
-            <textarea
-              value={interventionReason}
-              onChange={(event) => setInterventionReason(event.target.value)}
-              className="w-full rounded-xl border border-border/70 bg-background/80 px-3 py-2 text-sm min-h-20 resize-y"
-              placeholder="Operator rationale for this intervention"
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-              <Button
-                variant="outline"
-                onClick={() =>
-                  pauseMutation.mutate({
-                    rationale: interventionReason,
-                    requested_by: 'operator-ui',
-                  })
-                }
-                disabled={pauseMutation.isPending}
-              >
-                Pause
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() =>
-                  resumeMutation.mutate({
-                    rationale: interventionReason,
-                    requested_by: 'operator-ui',
-                  })
-                }
-                disabled={resumeMutation.isPending}
-              >
-                Resume
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
-              <input
-                value={rerouteMode}
-                onChange={(event) => setRerouteMode(event.target.value)}
-                className="rounded-xl border border-border/70 bg-background/80 px-3 py-2 text-sm"
-                placeholder="Mode"
-              />
-              <input
-                value={reroutePhases}
-                onChange={(event) => setReroutePhases(event.target.value)}
-                className="rounded-xl border border-border/70 bg-background/80 px-3 py-2 text-sm"
-                placeholder="Comma-separated phases"
-              />
-              <Button
-                variant="default"
-                onClick={() =>
-                  overrideMutation.mutate({
-                    rationale: interventionReason,
-                    requested_by: 'operator-ui',
-                    mode: rerouteMode.trim() || undefined,
-                    phases: reroutePhases
-                      .split(',')
-                      .map((value) => value.trim())
-                      .filter(Boolean),
-                  })
-                }
-                disabled={overrideMutation.isPending}
-              >
-                Reroute
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 items-center">
-              <select
-                value={selectedRunningJob}
-                onChange={(event) => setSelectedRunningJob(event.target.value)}
-                aria-label="Running execution jobs"
-                className="rounded-xl border border-border/70 bg-background/80 px-3 py-2 text-sm md:col-span-2"
-              >
-                <option value="">Select running job to cancel</option>
-                {runningJobs.map((job) => (
-                  <option key={job.job_id} value={job.job_id}>
-                    {job.agent_name} ({job.job_id})
-                  </option>
-                ))}
-              </select>
-              <Button
-                variant="outline"
-                onClick={() => selectedRunningJob && cancelJobMutation.mutate(selectedRunningJob)}
-                disabled={!selectedRunningJob || cancelJobMutation.isPending}
-              >
-                Cancel Job
-              </Button>
-            </div>
-          </Card>
+          <InterventionConsole status={orchestratorStatus.data} runningJobs={runningJobs} />
         </section>
 
         <MissionControlHero

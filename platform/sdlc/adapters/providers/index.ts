@@ -14,3 +14,4 @@ export { VitestTestingProvider, type VitestTestingConfig } from './vitest-testin
 export { OpenAILLMProvider, type OpenAIConfig } from './openai-llm.js';
 export { AnthropicLLMProvider, type AnthropicConfig } from './anthropic-llm.js';
 export { CopilotLLMProvider, type CopilotConfig } from './copilot-llm.js';
+export { LocalLLMProvider, type LocalLLMConfig } from './local-llm.js';

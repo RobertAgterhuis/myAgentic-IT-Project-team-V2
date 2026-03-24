@@ -139,9 +139,10 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           status: result.status,
           duration_ms: result.duration_ms,
           error: result.error,
-          confidence: result.confidence,
-          uncertainty_reasons: result.uncertainty_reasons,
-          needs_human_review: result.needs_human_review,
+          // Confidence telemetry is omitted from SSE broadcasts (#1063):
+          // SSE is a global push channel with no per-subscriber role filtering.
+          // Authorized users (admin/operator) retrieve these fields via
+          // GET /api/agents/jobs/:jobId/result which enforces role-based redaction.
           timestamp: new Date().toISOString(),
         });
 

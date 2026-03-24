@@ -6,6 +6,6 @@
   "healthStatus": "unhealthy",
   "tenantEnabled": true,
   "workspaceEnabled": {},
-  "lastHealthCheck": "2026-03-24T05:08:10.537Z",
-  "consecutiveFailures": 213
+  "lastHealthCheck": "2026-03-24T15:17:21.302Z",
+  "consecutiveFailures": 327
 }

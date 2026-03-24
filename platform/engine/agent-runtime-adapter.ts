@@ -32,6 +32,10 @@ import type {
   CompletionResult,
 } from '../sdlc/adapters/contracts/llm-provider.js';
 import { loadContractSections, validateDocument } from './gate-validator.js';
+import {
+  assessDeliverableQuality,
+  type DeliverableQualityAssessment,
+} from './deliverable-quality.js';
 import { ToolExecutor } from './tool-executor.js';
 import {
   ToolExecutionMiddleware,
@@ -162,6 +166,7 @@ export interface AgentResponseEnvelope {
   toolTraceId?: string;
   toolInvocationCount?: number;
   toolAuditEvents?: ToolExecutionAuditEvent[];
+  deliverableQuality?: DeliverableQualityAssessment;
   contractValidation?: {
     status: 'passed';
     contractPaths: string[];
@@ -204,13 +209,14 @@ export interface RuntimeAdapterResult {
 interface ProviderBackedRuntimeAdapterConfig {
   name: string;
   providerName: string;
+  fallbackProviderNames?: string[];
   model?: string;
   maxTokens?: number;
   temperature?: number;
   timeout?: number;
   validationMaxRetries?: number;
   outputDir?: string;
-  providerRegistry?: Pick<ProviderRegistry, 'getProvider'>;
+  providerRegistry?: Pick<ProviderRegistry, 'getProvider' | 'getProviderWithFallback'>;
   toolExecutor?: Pick<ToolExecutor, 'execute'>;
   toolAudit?: { logToolExecution(event: ToolExecutionAuditEvent): void };
   toolCatalogPath?: string;
@@ -223,6 +229,7 @@ interface MockRuntimeAdapterConfig {
 
 const DEFAULT_OUTPUT_DIR = path.resolve(process.cwd(), 'BusinessDocs', 'session', 'agent-runs');
 const DEFAULT_PROVIDER_REGISTRY = createDefaultRegistry();
+const DEFAULT_LLM_FALLBACK_PROVIDER_NAMES = ['copilot', 'anthropic', 'openai', 'local'];
 const TOOL_EXECUTION_CACHE_STORE = {
   _files: {} as Record<string, string>,
   exists(filePath: string) {
@@ -737,10 +744,28 @@ function formatArtifact(
     `- Finish Reason: ${response.finishReason}`,
     `- Attempts: ${response.attempts}`,
     `- Total Tokens: ${response.usage.totalTokens}`,
+    response.deliverableQuality
+      ? `- Deliverable Quality Score: ${response.deliverableQuality.score}`
+      : '- Deliverable Quality Score: not assessed',
+    response.deliverableQuality
+      ? `- Approval Signal: ${response.deliverableQuality.approvalSignal}`
+      : '- Approval Signal: unavailable',
     response.contractValidation
       ? `- Contract Validation: passed on attempt ${response.contractValidation.attempt}`
       : '- Contract Validation: not applied',
     '',
+    ...(response.deliverableQuality
+      ? [
+          '## Quality Assessment',
+          '',
+          response.deliverableQuality.summary,
+          '',
+          ...response.deliverableQuality.metrics.map(
+            (metric) => `- ${metric.label}: ${metric.score} (${metric.detail})`
+          ),
+          '',
+        ]
+      : []),
     '## Output',
     '',
     output,
@@ -827,12 +852,16 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
   readonly name: string;
 
   private readonly _providerName: string;
+  private readonly _fallbackProviderNames: string[];
   private readonly _model?: string;
   private readonly _maxTokens: number;
   private readonly _temperature: number;
   private readonly _timeout?: number;
   private readonly _validationMaxRetries: number;
-  private readonly _providerRegistry: Pick<ProviderRegistry, 'getProvider'>;
+  private readonly _providerRegistry: Pick<
+    ProviderRegistry,
+    'getProvider' | 'getProviderWithFallback'
+  >;
   private readonly _toolExecutor: Pick<ToolExecutor, 'execute'>;
   private readonly _toolAudit?: { logToolExecution(event: ToolExecutionAuditEvent): void };
   private readonly _toolCatalogPath?: string;
@@ -842,6 +871,11 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
     super(config.outputDir);
     this.name = config.name;
     this._providerName = config.providerName;
+    this._fallbackProviderNames = (
+      config.fallbackProviderNames || DEFAULT_LLM_FALLBACK_PROVIDER_NAMES
+    )
+      .filter((name) => name && name !== config.providerName)
+      .filter((name, index, list) => list.indexOf(name) === index);
     this._model = config.model;
     this._maxTokens = config.maxTokens ?? 4096;
     this._temperature = config.temperature ?? 0.1;
@@ -870,6 +904,13 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
     if (profile.startsWith('production-')) return 'prod';
     if (profile.startsWith('test-')) return 'test';
     return 'dev';
+  }
+
+  private _shouldFallbackProvider(error: unknown): boolean {
+    const message = error instanceof Error ? error.message : String(error);
+    return /(auth|api.?key|credential|rate.?limit|401|429|503|timeout|timed out|econn|network|provider not found|failed validation)/i.test(
+      message
+    );
   }
 
   private async _completeWithToolExecution(options: {
@@ -1109,76 +1150,116 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
       JSON.stringify(promptEnvelope, null, 2),
     ].join('\n');
 
-    const provider = this._providerRegistry.getProvider('llm', this._providerName, {
-      model: this._model,
-      maxTokens: this._maxTokens,
-      timeout: this._timeout,
-    }) as LLMProvider;
-
-    const messages: LLMMessage[] = [
+    const baseMessages: LLMMessage[] = [
       { role: 'system' as const, content: promptEnvelope.prompt.system },
       { role: 'user' as const, content: promptEnvelope.prompt.user },
     ];
 
+    let provider!: LLMProvider;
     let result;
     let toolAuditEvents: ToolExecutionAuditEvent[] = [];
     let validation: ContractValidationResult = { valid: true, findings: [] };
     let attempts = 0;
 
-    while (attempts <= this._validationMaxRetries) {
-      attempts += 1;
-      const completionResult = await this._completeWithToolExecution({
-        provider,
-        messages,
-        model: this._model,
-        maxTokens: this._maxTokens,
-        temperature: this._temperature,
-        policy: {
-          role: runtimeContext.role,
-          profile:
-            runtimeContext.profile ||
-            (runtimeContext.sessionState as { profile?: string } | undefined)?.profile,
-          agentId: agent.id,
-          envScope: this._deriveEnvScope(
-            runtimeContext.profile ||
-              (runtimeContext.sessionState as { profile?: string } | undefined)?.profile
-          ),
-          traceId: toolTraceId,
-          approvedActions: resolvedPolicyApprovals,
-          executionContext: runtimeContext as Record<string, unknown>,
-        },
-      });
+    const providerNames = [this._providerName, ...this._fallbackProviderNames];
+    let lastProviderError: unknown;
+    for (let providerIndex = 0; providerIndex < providerNames.length; providerIndex += 1) {
+      const providerName = providerNames[providerIndex];
+      const messages: LLMMessage[] = baseMessages.map((message) => ({ ...message }));
+      try {
+        provider =
+          providerIndex === 0 && this._providerRegistry.getProviderWithFallback
+            ? (this._providerRegistry.getProviderWithFallback('llm', {
+                primaryName: providerName,
+                fallbackNames: this._fallbackProviderNames,
+                config: {
+                  model: this._model,
+                  maxTokens: this._maxTokens,
+                  timeout: this._timeout,
+                },
+              }) as LLMProvider)
+            : (this._providerRegistry.getProvider('llm', providerName, {
+                model: this._model,
+                maxTokens: this._maxTokens,
+                timeout: this._timeout,
+              }) as LLMProvider);
 
-      result = completionResult.completion;
-      toolAuditEvents = completionResult.toolAuditEvents;
+        attempts = 0;
+        toolAuditEvents = [];
+        validation = { valid: true, findings: [] };
 
-      validation = validateContractOutput(result.content, contractBinding, runtimeContext);
-      if (validation.valid) {
+        while (attempts <= this._validationMaxRetries) {
+          attempts += 1;
+          const completionResult = await this._completeWithToolExecution({
+            provider,
+            messages,
+            model: this._model,
+            maxTokens: this._maxTokens,
+            temperature: this._temperature,
+            policy: {
+              role: runtimeContext.role,
+              profile:
+                runtimeContext.profile ||
+                (runtimeContext.sessionState as { profile?: string } | undefined)?.profile,
+              agentId: agent.id,
+              envScope: this._deriveEnvScope(
+                runtimeContext.profile ||
+                  (runtimeContext.sessionState as { profile?: string } | undefined)?.profile
+              ),
+              traceId: toolTraceId,
+              approvedActions: resolvedPolicyApprovals,
+              executionContext: runtimeContext as Record<string, unknown>,
+            },
+          });
+
+          result = completionResult.completion;
+          toolAuditEvents = completionResult.toolAuditEvents;
+
+          validation = validateContractOutput(result.content, contractBinding, runtimeContext);
+          if (validation.valid) {
+            break;
+          }
+
+          if (attempts > this._validationMaxRetries) {
+            throw createValidationError(validation.findings, attempts);
+          }
+
+          messages.push({ role: 'assistant', content: result.content });
+          messages.push({
+            role: 'user',
+            content: buildRepairPrompt(
+              contractBinding,
+              validation.findings,
+              result.content,
+              attempts + 1,
+              this._validationMaxRetries + 1
+            ),
+          });
+        }
+
         break;
+      } catch (err) {
+        lastProviderError = err;
+        if (providerIndex >= providerNames.length - 1 || !this._shouldFallbackProvider(err)) {
+          throw err;
+        }
       }
-
-      if (attempts > this._validationMaxRetries) {
-        throw createValidationError(validation.findings, attempts);
-      }
-
-      messages.push({ role: 'assistant', content: result.content });
-      messages.push({
-        role: 'user',
-        content: buildRepairPrompt(
-          contractBinding,
-          validation.findings,
-          result.content,
-          attempts + 1,
-          this._validationMaxRetries + 1
-        ),
-      });
     }
 
     if (!result) {
-      throw new Error('Provider did not return a completion result.');
+      const message = lastProviderError instanceof Error ? lastProviderError.message : '';
+      throw new Error(
+        message ||
+          'Provider did not return a completion result after exhausting fallback providers.'
+      );
     }
 
     const completedAt = new Date().toISOString();
+    const deliverableQuality = assessDeliverableQuality(result.content, {
+      requiredSections: contractBinding.requiredSections,
+      validationPassed: validation.valid,
+      findings: validation.findings,
+    });
     const response: AgentResponseEnvelope = {
       version: '2026-03-19',
       requestId,
@@ -1193,6 +1274,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
       toolTraceId,
       toolInvocationCount: toolAuditEvents.length,
       toolAuditEvents,
+      deliverableQuality,
       contractValidation:
         contractBinding.contractPaths.length > 0
           ? {

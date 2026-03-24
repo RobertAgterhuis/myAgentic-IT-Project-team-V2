@@ -25,6 +25,13 @@ export interface RouteEntry {
   section: DomainSection;
 }
 
+export type PersonaRole = 'admin' | 'operator' | 'viewer' | null | undefined;
+
+interface PersonaPreset {
+  landingPath: string;
+  prioritizedPaths: string[];
+}
+
 export const routes = {
   /* Overview */
   dashboard: { path: '/', label: 'Overview', icon: 'LayoutDashboard', section: 'Overview' },
@@ -130,6 +137,55 @@ export const routes = {
     section: 'Administration',
   },
 } as const satisfies Record<string, RouteEntry>;
+
+const PERSONA_PRESETS: Record<'admin' | 'operator' | 'viewer', PersonaPreset> = {
+  admin: {
+    landingPath: '/administration',
+    prioritizedPaths: ['/administration', '/admin/mcp/diagnostics', '/approvals'],
+  },
+  operator: {
+    landingPath: '/cockpit',
+    prioritizedPaths: ['/cockpit', '/approvals', '/sessions'],
+  },
+  viewer: {
+    landingPath: '/',
+    prioritizedPaths: ['/observability', '/artifacts', '/workspaces'],
+  },
+};
+
+export function getPersonaPreset(role: PersonaRole): PersonaPreset {
+  if (!role) return { landingPath: '/', prioritizedPaths: [] };
+  return PERSONA_PRESETS[role];
+}
+
+export function prioritizeNavSections<
+  T extends { id: string; title: string; items: Array<{ id: string }> },
+>(sections: T[], role: PersonaRole): T[] {
+  const preset = getPersonaPreset(role);
+  if (preset.prioritizedPaths.length === 0) return sections;
+
+  const prioritizedItems = sections
+    .flatMap((section) => section.items)
+    .filter((item) => preset.prioritizedPaths.includes(item.id));
+
+  if (prioritizedItems.length === 0) return sections;
+
+  const trimmedSections = sections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => !preset.prioritizedPaths.includes(item.id)),
+    }))
+    .filter((section) => section.items.length > 0);
+
+  return [
+    {
+      id: 'persona-priority',
+      title: role === 'viewer' ? 'Reviewer focus' : `${role} priority`,
+      items: prioritizedItems,
+    } as T,
+    ...trimmedSections,
+  ];
+}
 
 /** Build breadcrumb segments from a pathname. */
 export function buildBreadcrumbs(pathname: string): { label: string; path: string }[] {

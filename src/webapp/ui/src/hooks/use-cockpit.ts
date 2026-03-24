@@ -5,6 +5,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPost } from '@/lib/api-client';
 import { queryKeys } from '@/lib/query-keys';
+import { useSSEAwareRefetchInterval } from '@/hooks/use-sse-aware-polling';
 import type {
   CockpitHealthResponse,
   DependencyGraphResponse,
@@ -20,24 +21,27 @@ const POLL_ENABLED = import.meta.env.MODE !== 'test';
 
 /** Confidence scores — session health, sprint readiness, agent confidence. */
 export function useCockpitHealth() {
+  const refetchInterval = useSSEAwareRefetchInterval(15_000);
   return useQuery({
     queryKey: queryKeys.cockpit.health,
     queryFn: () => apiGet<CockpitHealthResponse>('/v1/cockpit/health'),
-    refetchInterval: POLL_ENABLED ? 15_000 : false,
+    refetchInterval: POLL_ENABLED ? refetchInterval : false,
   });
 }
 
 /** Dependency graph — decisions → gates → sprints. */
 export function useDependencyGraph() {
+  const refetchInterval = useSSEAwareRefetchInterval(30_000);
   return useQuery({
     queryKey: queryKeys.cockpit.dependencies,
     queryFn: () => apiGet<DependencyGraphResponse>('/v1/cockpit/dependencies'),
-    refetchInterval: POLL_ENABLED ? 30_000 : false,
+    refetchInterval: POLL_ENABLED ? refetchInterval : false,
   });
 }
 
 /** Decision provenance feed across human overrides and machine governance events. */
 export function useDecisionProvenance(params?: ProvenanceQueryParams) {
+  const refetchInterval = useSSEAwareRefetchInterval(30_000);
   const queryParams = params
     ? {
         actor_type: params.actor_type,
@@ -65,17 +69,18 @@ export function useDecisionProvenance(params?: ProvenanceQueryParams) {
         : undefined
     ),
     queryFn: () => apiGet<ProvenanceResponse>('/v1/cockpit/provenance', queryParams),
-    refetchInterval: POLL_ENABLED ? 30_000 : false,
+    refetchInterval: POLL_ENABLED ? refetchInterval : false,
   });
 }
 
 /** Root-cause analysis items, optionally scoped to a session. */
 export function useRootCause(sessionId?: string) {
+  const refetchInterval = useSSEAwareRefetchInterval(30_000);
   const params = sessionId ? { session_id: sessionId } : undefined;
   return useQuery({
     queryKey: queryKeys.cockpit.rootCause(sessionId),
     queryFn: () => apiGet<RootCauseResponse>('/v1/cockpit/root-cause', params),
-    refetchInterval: POLL_ENABLED ? 30_000 : false,
+    refetchInterval: POLL_ENABLED ? refetchInterval : false,
   });
 }
 

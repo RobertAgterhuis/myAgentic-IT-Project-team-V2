@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from './input';
-import { Label } from './label';
+import { FormRow } from './form-row';
 
 export interface InputFieldProps extends React.ComponentProps<'input'> {
   label?: string;
@@ -23,13 +23,6 @@ function InputField({
   id: idProp,
   ...props
 }: InputFieldProps) {
-  const generatedId = React.useId();
-  const id = idProp ?? generatedId;
-  const helperId = `${id}-helper`;
-  const errorId = `${id}-error`;
-  const describedBy =
-    [error ? errorId : null, helperText ? helperId : null].filter(Boolean).join(' ') || undefined;
-
   const [charCount, setCharCount] = React.useState(
     typeof props.value === 'string'
       ? props.value.length
@@ -42,17 +35,24 @@ function InputField({
   };
 
   return (
-    <div className={cn('grid gap-1.5', className)}>
-      {label && (
-        <Label htmlFor={id} className={cn(error && 'text-destructive')}>
-          {label}
-        </Label>
-      )}
+    <FormRow
+      label={label}
+      htmlFor={idProp}
+      helperText={helperText}
+      error={error}
+      className={className}
+      footer={
+        showCount && maxLength ? (
+          <div className="flex justify-end">
+            <p className="text-xs text-muted-foreground" aria-live="polite">
+              {charCount}/{maxLength}
+            </p>
+          </div>
+        ) : undefined
+      }
+    >
       <Input
-        id={id}
         maxLength={maxLength}
-        aria-invalid={!!error || undefined}
-        aria-describedby={describedBy}
         className={cn(
           success && 'border-success focus-visible:ring-success/50',
           error && 'border-destructive focus-visible:ring-destructive/50'
@@ -60,26 +60,7 @@ function InputField({
         {...props}
         onChange={handleChange}
       />
-      <div className="flex justify-between">
-        <div>
-          {error && (
-            <p id={errorId} className="text-sm text-destructive" role="alert">
-              {error}
-            </p>
-          )}
-          {!error && helperText && (
-            <p id={helperId} className="text-sm text-muted-foreground">
-              {helperText}
-            </p>
-          )}
-        </div>
-        {showCount && maxLength && (
-          <p className="text-xs text-muted-foreground" aria-live="polite">
-            {charCount}/{maxLength}
-          </p>
-        )}
-      </div>
-    </div>
+    </FormRow>
   );
 }
 

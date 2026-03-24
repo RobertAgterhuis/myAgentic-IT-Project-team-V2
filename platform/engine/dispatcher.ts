@@ -214,6 +214,11 @@ interface InvocationResponseContract {
   status?: string;
   finishReason?: string;
   attempts?: number;
+  deliverableQuality?: {
+    score?: number;
+    approvalSignal?: string;
+    summary?: string;
+  };
   usage?: {
     promptTokens?: number;
     completionTokens?: number;
@@ -345,6 +350,31 @@ function normalizeInvocationResponse(value: unknown): InvocationResponseContract
     };
   }
 
+  const deliverableQualityRaw = value.deliverableQuality;
+  let deliverableQuality: InvocationResponseContract['deliverableQuality'];
+  if (deliverableQualityRaw !== undefined) {
+    if (!isRecord(deliverableQualityRaw)) {
+      throw new Error('Invocation result response.deliverableQuality must be an object');
+    }
+    deliverableQuality = {
+      score: readOptionalNumber(
+        deliverableQualityRaw,
+        'score',
+        'Invocation result response.deliverableQuality'
+      ),
+      approvalSignal: readOptionalString(
+        deliverableQualityRaw,
+        'approvalSignal',
+        'Invocation result response.deliverableQuality'
+      ),
+      summary: readOptionalString(
+        deliverableQualityRaw,
+        'summary',
+        'Invocation result response.deliverableQuality'
+      ),
+    };
+  }
+
   return {
     provider: readOptionalString(value, 'provider', 'Invocation result response'),
     model: readOptionalString(value, 'model', 'Invocation result response'),
@@ -359,6 +389,7 @@ function normalizeInvocationResponse(value: unknown): InvocationResponseContract
       'Invocation result response'
     ),
     toolAuditEvents: normalizeToolAuditEvents(value.toolAuditEvents, 'Invocation result response'),
+    deliverableQuality,
     contractValidation,
     requestedAt: readOptionalString(value, 'requestedAt', 'Invocation result response'),
     completedAt: readOptionalString(value, 'completedAt', 'Invocation result response'),
@@ -426,7 +457,8 @@ function assessConfidence(
     | undefined,
   attempt: number,
   success: boolean,
-  error?: string
+  error?: string,
+  threshold: number = 0.6
 ): ConfidenceAssessment {
   if (!success) {
     return {
@@ -472,7 +504,7 @@ function assessConfidence(
   }
 
   const confidence = Math.round(clamp01(score) * 100) / 100;
-  const needs_human_review = confidence < 0.6 || uncertaintyReasons.length > 0;
+  const needs_human_review = confidence < threshold || uncertaintyReasons.length > 0;
   return {
     confidence,
     uncertainty_reasons: uncertaintyReasons,
@@ -627,6 +659,13 @@ const DEFAULT_CONFIG = Object.freeze({
   docsDir: 'docs',
   maxConcurrency: 3, // bounded parallelism ceiling per group
   enforcePredecessorContractContinuity: false,
+  /**
+   * Per-phase human-review confidence thresholds (#1062).
+   * Keys are SDLC state names (e.g. "PHASE_1", "PHASE_2") or "default".
+   * An agent whose assessed confidence falls below its phase threshold
+   * is flagged needs_human_review=true.
+   */
+  humanReviewThresholds: { default: 0.6 } as Record<string, number>,
 });
 
 // ─── Invocation Log Entry ────────────────────────────────────
@@ -854,6 +893,11 @@ class Dispatcher {
     const platform = (agentConfig.platform || config.platform) as string;
     let lastError: { message: string } | null = null;
 
+    // Per-phase human-review threshold (#1062): look up by state, fall back to "default" or 0.6
+    const thresholdMap = (config.humanReviewThresholds ??
+      DEFAULT_CONFIG.humanReviewThresholds) as Record<string, number>;
+    const confidenceThreshold = thresholdMap[state] ?? thresholdMap['default'] ?? 0.6;
+
     // maxTransientRetries governs classified-TRANSIENT retries; fall back to legacy maxRetries
     const maxRetries = (config.maxTransientRetries ?? config.maxRetries ?? 3) as number;
 
@@ -908,7 +952,13 @@ class Dispatcher {
           state,
           agent.id
         );
-        const baseConfidence = assessConfidence(response, attempt, true);
+        const baseConfidence = assessConfidence(
+          response,
+          attempt,
+          true,
+          undefined,
+          confidenceThreshold
+        );
         const confidence =
           continuityWarnings.length > 0
             ? {
@@ -972,7 +1022,8 @@ class Dispatcher {
           undefined,
           attempt,
           false,
-          (err as { message: string }).message
+          (err as { message: string }).message,
+          confidenceThreshold
         );
         entry.confidence = confidence.confidence;
         entry.uncertainty_reasons = confidence.uncertainty_reasons;
@@ -1008,7 +1059,8 @@ class Dispatcher {
       undefined,
       maxRetries + 1,
       false,
-      lastError ? lastError.message : 'Unknown error'
+      lastError ? lastError.message : 'Unknown error',
+      confidenceThreshold
     );
     return {
       success: false,

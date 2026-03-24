@@ -148,6 +148,43 @@ describe('cockpit provenance route', () => {
     expect(pagedBody.count).toBe(1);
   });
 
+  it('adds feedback propagation markers to human interventions when downstream machine events exist', async () => {
+    const root = createTmpRoot();
+    writeAudit(root, [
+      JSON.stringify({
+        event: 'gate_failed',
+        description: 'Gate blocked after review',
+        phase: 'PHASE_2',
+        timestamp: '2026-03-20T10:10:00.000Z',
+      }),
+    ]);
+
+    const routes = createTestableRoutes(registerRoutes, {
+      PROJECT_ROOT: root,
+      _getHumanOverrideEvents: () => [
+        {
+          type: 'pause',
+          rationale: 'Manual checkpoint requested',
+          requested_by: 'qa-user',
+          timestamp: '2026-03-20T10:00:00.000Z',
+          state: 'PHASE_2',
+          mode: 'CREATE',
+        },
+      ],
+    });
+
+    const res = createRes();
+    await routes['GET /api/v1/cockpit/provenance'](createReq(), res);
+
+    expect(res.statusCode).toBe(200);
+    const body = parsed(res);
+    const intervention = body.items.find((item) => item.decision_type === 'human_override');
+    expect(intervention.feedback_propagation).toBeTruthy();
+    expect(intervention.feedback_propagation.status).toBe('observed');
+    expect(intervention.feedback_propagation.impacted_event_count).toBe(1);
+    expect(intervention.feedback_propagation.downstream_event_types).toEqual(['gate_failure']);
+  });
+
   it('returns computed health scores from session-state', async () => {
     const root = createTmpRoot();
     writeJson(root, 'BusinessDocs/session/session-state.json', {
@@ -323,6 +360,54 @@ describe('cockpit provenance route', () => {
     const body = parsed(res);
     expect(body.ok).toBe(true);
     expect(body.approval.id).toBe('apr-2');
+  });
+
+  it('adds deliverable quality evidence when a related artifact is available', async () => {
+    const root = createTmpRoot();
+    const artifactPath = path.join(root, 'BusinessDocs', 'Phase2-Tech', 'quality-check.md');
+    fs.mkdirSync(path.dirname(artifactPath), { recursive: true });
+    fs.writeFileSync(
+      artifactPath,
+      [
+        '# Architecture Review',
+        '',
+        '## Findings',
+        '- Source: docs/architecture/system.md',
+        '',
+        '## HANDOFF CHECKLIST',
+        '- [x] All required sections are filled',
+        '- [x] All findings include a source reference',
+      ].join('\n'),
+      'utf8'
+    );
+
+    const routes = createTestableRoutes(registerRoutes, {
+      PROJECT_ROOT: root,
+      _getHumanOverrideEvents: () => [],
+      _getEngine: () => ({
+        approvalRegistry: {
+          get: () => ({
+            id: 'apr-3',
+            status: 'PENDING',
+            gate_id: 'G-2',
+            related_artifacts: ['BusinessDocs/Phase2-Tech/quality-check.md'],
+          }),
+        },
+      }),
+    });
+
+    const res = createRes();
+    await routes['GET /api/v1/approvals/:id/detail'](
+      createReq('/api/v1/approvals/apr-3/detail'),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const body = parsed(res);
+    expect(body.approval.deliverable_quality).toBeTruthy();
+    expect(body.approval.deliverable_quality.source_artifact).toBe(
+      'BusinessDocs/Phase2-Tech/quality-check.md'
+    );
   });
 
   it('returns approvals history from audit log', async () => {

@@ -17,6 +17,7 @@ import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { ConfidencePanel } from '@/components/cockpit/confidence-indicators';
 import { DependencyGraph } from '@/components/cockpit/dependency-graph';
 import { DecisionProvenanceView } from '@/components/cockpit/decision-provenance-view';
+import { InterventionConsole } from '@/components/cockpit/intervention-console';
 import { RootCauseView } from '@/components/cockpit/root-cause-view';
 import { ApprovalHistoryTimeline } from '@/components/cockpit/approval-workflow';
 import {
@@ -25,6 +26,7 @@ import {
   useDecisionProvenance,
   useRootCause,
   useApprovalHistory,
+  useOrchestratorStatus,
 } from '@/hooks';
 import type {
   CockpitHealthResponse,
@@ -54,6 +56,7 @@ export default function CockpitDashboardPage() {
   const provenanceQuery = useDecisionProvenance();
   const rootCauseQuery = useRootCause();
   const approvalHistoryQuery = useApprovalHistory();
+  const orchestratorStatus = useOrchestratorStatus();
 
   const handleRootCauseNavigate = useCallback(
     (link: string, type: string) => {
@@ -153,6 +156,13 @@ export default function CockpitDashboardPage() {
         asideTitle="Investigation path"
         asideDescription="Start with Health & Confidence, then move into Dependencies or Root-Cause Analysis when the system needs explanation rather than status tracking."
       />
+
+      <section aria-label="Unified intervention console">
+        <InterventionConsole
+          status={orchestratorStatus.data}
+          description="Intervene from Cockpit without switching to session detail when you need to pause, resume, reroute, or cancel the active run."
+        />
+      </section>
 
       {/* Tab bar */}
       <div

@@ -202,6 +202,32 @@ function ApprovalDecisionPanel({
         </div>
       )}
 
+      {approval.deliverable_quality && (
+        <Card elevation="flat" className="p-3 bg-info/8 border border-info/20 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-semibold">Deliverable quality</p>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">score {approval.deliverable_quality.score}</Badge>
+              <Badge
+                variant={
+                  approval.deliverable_quality.approvalSignal === 'approve'
+                    ? 'success'
+                    : approval.deliverable_quality.approvalSignal === 'review'
+                      ? 'warning'
+                      : 'error'
+                }
+              >
+                {approval.deliverable_quality.approvalSignal}
+              </Badge>
+            </div>
+          </div>
+          <p className="text-sm">{approval.deliverable_quality.summary}</p>
+          <p className="text-xs text-muted-foreground">
+            Source artifact: {approval.deliverable_quality.source_artifact}
+          </p>
+        </Card>
+      )}
+
       {approval.similar_overrides && approval.similar_overrides.length > 0 && (
         <Card elevation="flat" className="p-3 bg-primary/5 border border-primary/20 space-y-2">
           <p className="text-xs font-semibold">Similar past overrides</p>

@@ -88,6 +88,14 @@ describe('SessionDetailPage', () => {
     });
   });
 
+  it('renders the shared intervention console', async () => {
+    await renderPage();
+    await waitFor(() => {
+      expect(screen.getByTestId('intervention-console')).toBeInTheDocument();
+    });
+    expect(screen.getByRole('button', { name: /cancel run/i })).toBeInTheDocument();
+  });
+
   it('shows not found for unknown session', async () => {
     await renderPage('unknown-id');
     await waitFor(() => {

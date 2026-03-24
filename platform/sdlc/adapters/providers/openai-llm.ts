@@ -179,10 +179,107 @@ export class OpenAILLMProvider implements LLMProvider {
     input: CompletionInput,
     onChunk: (chunk: string) => void
   ): Promise<CompletionResult> {
-    // Stream not implemented via curl — fall back to full completion
-    const result = await this.complete(input);
-    onChunk(result.content);
-    return result;
+    const model = input.model || this._model;
+    const maxTokens = input.maxTokens ?? this._maxTokens;
+    const body: Record<string, unknown> = {
+      model,
+      messages: input.messages,
+      max_tokens: maxTokens,
+      stream: true,
+      stream_options: { include_usage: true },
+    };
+    if (input.temperature !== undefined) body.temperature = input.temperature;
+    if (input.tools?.length) {
+      body.tools = input.tools.map((t) => ({
+        type: 'function',
+        function: { name: t.name, description: t.description, parameters: t.parameters },
+      }));
+    }
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: this._headers(),
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(this._timeout),
+    });
+
+    if (!response.ok) {
+      const payload = await response.text();
+      throw new Error(`OpenAI API error (HTTP ${response.status}): ${payload}`);
+    }
+
+    if (!response.body) {
+      const fallback = await this.complete(input);
+      onChunk(fallback.content);
+      return fallback;
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let content = '';
+    let finishReason = 'stream_end';
+    let returnedModel = model;
+    let usage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+
+    for (;;) {
+      const { value, done } = await reader.read();
+      if (done) break;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const rawLine of lines) {
+        const line = rawLine.trim();
+        if (!line.startsWith('data:')) continue;
+
+        const payload = line.slice(5).trim();
+        if (!payload) continue;
+        if (payload === '[DONE]') {
+          finishReason = 'stop';
+          continue;
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let parsed: any;
+        try {
+          parsed = JSON.parse(payload);
+        } catch {
+          continue;
+        }
+
+        if (typeof parsed.model === 'string' && parsed.model.length > 0) {
+          returnedModel = parsed.model;
+        }
+
+        if (parsed.usage && typeof parsed.usage === 'object') {
+          usage = {
+            promptTokens: Number(parsed.usage.prompt_tokens) || 0,
+            completionTokens: Number(parsed.usage.completion_tokens) || 0,
+            totalTokens: Number(parsed.usage.total_tokens) || 0,
+          };
+        }
+
+        const delta = parsed.choices?.[0]?.delta?.content;
+        if (typeof delta === 'string' && delta.length > 0) {
+          content += delta;
+          onChunk(delta);
+        }
+
+        const finish = parsed.choices?.[0]?.finish_reason;
+        if (typeof finish === 'string' && finish.length > 0) {
+          finishReason = finish;
+        }
+      }
+    }
+
+    return {
+      content,
+      model: returnedModel,
+      usage,
+      finishReason,
+    };
   }
 
   async listModels(): Promise<string[]> {

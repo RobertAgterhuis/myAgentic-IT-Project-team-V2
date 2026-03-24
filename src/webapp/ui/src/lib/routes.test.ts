@@ -1,5 +1,34 @@
-import { describe, it, expect } from 'vitest';
-import { buildBreadcrumbs, routes } from './routes';
+import { describe, expect, it } from 'vitest';
+import { buildBreadcrumbs, getPersonaPreset, prioritizeNavSections, routes } from './routes';
+
+describe('routes persona presets', () => {
+  it('returns cockpit as the operator landing path', () => {
+    expect(getPersonaPreset('operator').landingPath).toBe('/cockpit');
+  });
+
+  it('moves prioritized items into a persona section', () => {
+    const sections = [
+      {
+        id: 'runs',
+        title: 'Runs',
+        items: [
+          { id: '/sessions', label: 'Sessions' },
+          { id: '/commands', label: 'Commands' },
+        ],
+      },
+      {
+        id: 'observability',
+        title: 'Observability',
+        items: [{ id: '/cockpit', label: 'Cockpit' }],
+      },
+    ];
+
+    const prioritized = prioritizeNavSections(sections, 'operator');
+
+    expect(prioritized[0].id).toBe('persona-priority');
+    expect(prioritized[0].items.map((item) => item.id)).toEqual(['/sessions', '/cockpit']);
+  });
+});
 
 describe('routes', () => {
   it('has expected route entries', () => {

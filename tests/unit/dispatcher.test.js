@@ -252,6 +252,43 @@ describe('Dispatcher — buildContext', () => {
     expect(ctx.predecessorOutputs['/BusinessDocs/phase-1/02.md']).toBe('domain expert output');
   });
 
+  it('derives structured predecessor contract summaries', () => {
+    const store = createMockStore({
+      '/BusinessDocs/phase-1/01.md': [
+        '# Analysis - Business',
+        '',
+        '## Findings',
+        '- item',
+        '',
+        '## HANDOFF CHECKLIST',
+        '- [x] Complete context',
+        '- [ ] Follow-up',
+      ].join('\n'),
+    });
+
+    const d = new Dispatcher({ store });
+    const ctx = d.buildContext('03', {
+      predecessorPaths: ['/BusinessDocs/phase-1/01.md'],
+    });
+
+    expect(ctx.predecessorContracts).toHaveLength(1);
+    expect(ctx.predecessorContracts[0]).toMatchObject({
+      source: '/BusinessDocs/phase-1/01.md',
+      hasHandoffChecklist: true,
+      headingCount: 3,
+      checklist: {
+        total: 2,
+        checked: 1,
+        completionRatio: 0.5,
+      },
+    });
+    expect(ctx.predecessorContracts[0].headings).toEqual([
+      'Analysis - Business',
+      'Findings',
+      'HANDOFF CHECKLIST',
+    ]);
+  });
+
   it('skips missing predecessor files', () => {
     const d = new Dispatcher({ store: createMockStore() });
     const ctx = d.buildContext('03', {
@@ -631,6 +668,29 @@ describe('Dispatcher — dispatchState', () => {
     expect(callCount).toBe(2);
   });
 
+  it('defaults PHASE_1 dispatch to bounded parallel execution', async () => {
+    let active = 0;
+    let observedOverlap = false;
+
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        active += 1;
+        if (active > 1) observedOverlap = true;
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        active -= 1;
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+    });
+
+    const result = await d.dispatchState(STATES.PHASE_1, {}, {}, { maxConcurrency: 2 });
+
+    expect(result.completed.length).toBe(5);
+    expect(result.failed).toEqual([]);
+    expect(observedOverlap).toBe(true);
+    expect(result.concurrencyHighWaterMark).toBeGreaterThan(1);
+  });
+
   it('reports failed agents', async () => {
     let calls = 0;
     const d = new Dispatcher({
@@ -647,18 +707,20 @@ describe('Dispatcher — dispatchState', () => {
     expect(failed).toEqual(['19']);
   });
 
-  it('chains predecessor paths from completed agents', async () => {
+  it('keeps sequential predecessor chaining for states not defaulted to parallel', async () => {
     const contexts = [];
     const d = new Dispatcher({
-      store: createMockStore({ '/out/01.md': 'content' }),
+      store: createMockStore({ '/existing.md': 'content' }),
       invoker: async (agent, _platform, ctx) => {
         contexts.push({ ...ctx });
         return { outputPath: `/out/${agent.id}.md` };
       },
     });
     await d.dispatchState(STATES.CRITIC_1, { predecessorPaths: ['/existing.md'] });
-    // Second agent should have first agent's output in predecessorPaths
+
     expect(contexts.length).toBe(2);
+    expect(contexts[0].predecessorOutputs).toEqual({ '/existing.md': 'content' });
+    expect(contexts[1].predecessorOutputs).toEqual({ '/existing.md': 'content' });
   });
 
   it('returns empty for unknown state', async () => {
@@ -1456,5 +1518,136 @@ describe('Dispatcher — helper path coverage buffer', () => {
         'Token usage signal is empty',
       ])
     );
+  });
+
+  it('flags human review when predecessor handoff checklist is incomplete', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: createSuccessInvoker('/out/continuity.md'),
+    });
+
+    const context = d.buildContext('03', {
+      predecessorPaths: ['/BusinessDocs/phase-1/incomplete.md'],
+    });
+    context.predecessorOutputs['/BusinessDocs/phase-1/incomplete.md'] = [
+      '# Analysis - Business',
+      '',
+      '## HANDOFF CHECKLIST',
+      '- [x] Item 1',
+      '- [ ] Item 2',
+    ].join('\n');
+    context.predecessorContracts = [
+      {
+        source: '/BusinessDocs/phase-1/incomplete.md',
+        headingCount: 2,
+        headings: ['Analysis - Business', 'HANDOFF CHECKLIST'],
+        hasHandoffChecklist: true,
+        checklist: {
+          total: 2,
+          checked: 1,
+          completionRatio: 0.5,
+        },
+      },
+    ];
+
+    const result = await d.invoke({ id: '03', name: 'Sales Strategist' }, STATES.PHASE_1, context);
+
+    expect(result.success).toBe(true);
+    expect(result.needs_human_review).toBe(true);
+    expect(result.uncertainty_reasons).toEqual(
+      expect.arrayContaining([
+        'Predecessor handoff checklist incomplete: /BusinessDocs/phase-1/incomplete.md (1/2 checked)',
+      ])
+    );
+  });
+
+  it('fails fast on incomplete predecessor checklist when strict continuity mode is enabled', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: createSuccessInvoker('/out/continuity-strict.md'),
+      config: { enforcePredecessorContractContinuity: true },
+    });
+
+    const context = {
+      predecessorContracts: [
+        {
+          source: '/BusinessDocs/phase-1/incomplete.md',
+          headingCount: 2,
+          headings: ['Analysis - Business', 'HANDOFF CHECKLIST'],
+          hasHandoffChecklist: true,
+          checklist: {
+            total: 2,
+            checked: 1,
+            completionRatio: 0.5,
+          },
+        },
+      ],
+      predecessorOutputs: {
+        '/BusinessDocs/phase-1/incomplete.md': '# Analysis',
+      },
+    };
+
+    const result = await d.invoke({ id: '03', name: 'Sales Strategist' }, STATES.PHASE_1, context);
+
+    expect(result.success).toBe(false);
+    expect(result.severity).toBe('RECOVERABLE');
+    expect(result.degraded).toBe(true);
+    expect(result.needs_human_review).toBe(true);
+    expect(result.error).toContain('Predecessor handoff checklist incomplete');
+    expect(d.log[d.log.length - 1].status).toBe('failure');
+    expect(d.log[d.log.length - 1].errorSeverity).toBe('RECOVERABLE');
+  });
+
+  it('enforces strict continuity only for configured states/agents', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: createSuccessInvoker('/out/continuity-selective.md'),
+      config: {
+        enforcePredecessorContractContinuity: {
+          states: [STATES.PHASE_2],
+          agents: ['05'],
+        },
+      },
+    });
+
+    const context = {
+      predecessorContracts: [
+        {
+          source: '/BusinessDocs/phase-1/incomplete.md',
+          headingCount: 2,
+          headings: ['Analysis - Business', 'HANDOFF CHECKLIST'],
+          hasHandoffChecklist: true,
+          checklist: {
+            total: 2,
+            checked: 1,
+            completionRatio: 0.5,
+          },
+        },
+      ],
+      predecessorOutputs: {
+        '/BusinessDocs/phase-1/incomplete.md': '# Analysis',
+      },
+    };
+
+    const notEnforced = await d.invoke(
+      { id: '03', name: 'Sales Strategist' },
+      STATES.PHASE_1,
+      context
+    );
+    expect(notEnforced.success).toBe(true);
+
+    const enforcedByState = await d.invoke(
+      { id: '06', name: 'Senior Developer' },
+      STATES.PHASE_2,
+      context
+    );
+    expect(enforcedByState.success).toBe(false);
+
+    const enforcedByAgent = await d.invoke(
+      { id: '05', name: 'Software Architect' },
+      STATES.PHASE_1,
+      context
+    );
+    expect(enforcedByAgent.success).toBe(false);
   });
 });

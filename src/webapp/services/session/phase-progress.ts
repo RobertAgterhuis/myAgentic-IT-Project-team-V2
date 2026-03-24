@@ -84,12 +84,14 @@ function isAgentActive(
   agent: AgentDef,
   phaseKey: string,
   currentPhase: string | null,
-  currentAgent: string | null
+  currentAgent: string | null,
+  currentAgents: string[]
 ): boolean {
+  const activeAgents =
+    currentAgents.length > 0 ? currentAgents : currentAgent ? [currentAgent] : [];
   return (
     currentPhase === phaseKey &&
-    !!currentAgent &&
-    (currentAgent.startsWith(agent.id + '-') || currentAgent === agent.id)
+    activeAgents.some((entry) => entry.startsWith(agent.id + '-') || entry === agent.id)
   );
 }
 
@@ -99,10 +101,11 @@ function resolveAgentStatus(
   completedAgents: string[],
   currentPhase: string | null,
   currentAgent: string | null,
+  currentAgents: string[],
   phaseOutputs: Record<string, unknown>
 ): string {
   if (isAgentCompleted(agent, completedAgents)) return 'done';
-  if (isAgentActive(agent, phaseKey, currentPhase, currentAgent)) return 'active';
+  if (isAgentActive(agent, phaseKey, currentPhase, currentAgent, currentAgents)) return 'active';
 
   const po = phaseOutputs[phaseKey.toLowerCase()];
   if (
@@ -145,16 +148,20 @@ export function buildProgressMcp(session: SessionState | null): ProgressInfo {
       mode: null,
       currentPhase: null,
       currentAgent: null,
+      currentAgents: [],
       phases: [],
       activeSprint: null,
     };
   }
+
+  const currentAgents = session.currentAgents || session.current_agents || [];
 
   return {
     projectName: session.projectName || null,
     mode: session.mode || null,
     currentPhase: session.currentPhase || session.current_phase || null,
     currentAgent: session.currentAgent || session.current_agent || null,
+    currentAgents,
     phases: session.phases || [],
     activeSprint: session.activeSprint || null,
   };
@@ -164,6 +171,7 @@ export function buildPhaseProgress(session: SessionState): PhaseProgressItem[] {
   const completedPhases = session.completed_phases || [];
   const completedAgents = session.completed_agents || [];
   const currentPhase = session.current_phase || null;
+  const currentAgents = session.currentAgents || session.current_agents || [];
   const phaseOutputs = session.phase_outputs || {};
 
   return PHASE_ORDER.map((phaseKey) => {
@@ -176,6 +184,7 @@ export function buildPhaseProgress(session: SessionState): PhaseProgressItem[] {
         completedAgents,
         currentPhase,
         session.current_agent || null,
+        currentAgents,
         phaseOutputs
       ),
     }));

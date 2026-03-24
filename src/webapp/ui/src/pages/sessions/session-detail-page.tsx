@@ -115,6 +115,22 @@ function toLogEvent(event: TimelineEvent): RuntimeLogEvent {
   };
 }
 
+function getActiveAgents(session: {
+  current_agent: string | null;
+  current_agents?: string[];
+}): string[] {
+  const raw = (session.current_agents || []).filter((agent): agent is string => !!agent);
+  const fallback = session.current_agent ? [session.current_agent] : [];
+  return Array.from(new Set(raw.length > 0 ? raw : fallback));
+}
+
+function formatActiveAgentsLabel(activeAgents: string[]): string {
+  if (activeAgents.length === 0) return 'No active agent';
+  if (activeAgents.length === 1) return activeAgents[0];
+  if (activeAgents.length === 2) return `${activeAgents[0]}, ${activeAgents[1]}`;
+  return `${activeAgents[0]}, ${activeAgents[1]} +${activeAgents.length - 2}`;
+}
+
 export default function SessionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -271,7 +287,8 @@ export default function SessionDetailPage() {
   }
 
   const config = statusConfig[session.status];
-  const activeAgent = session.current_agent ?? 'No active agent';
+  const activeAgents = getActiveAgents(session);
+  const activeAgentsLabel = formatActiveAgentsLabel(activeAgents);
   const artifactCount = artifactEvents.length;
   const decisionCount = decisionEvents.length;
   const gateFailuresCount = mergedLogEvents.filter((e) => e.type === 'gate_failed').length;
@@ -290,9 +307,9 @@ export default function SessionDetailPage() {
     },
     {
       id: 'agent',
-      label: 'Active agent',
-      value: activeAgent,
-      tone: session.current_agent ? 'success' : 'neutral',
+      label: activeAgents.length > 1 ? 'Active agents' : 'Active agent',
+      value: activeAgentsLabel,
+      tone: activeAgents.length > 0 ? 'success' : 'neutral',
     },
     {
       id: 'evidence',
@@ -463,7 +480,7 @@ export default function SessionDetailPage() {
           badges={
             <>
               <ControlSignalBadge signal="governed" />
-              {session.current_agent && <ControlSignalBadge signal="active-agent" />}
+              {activeAgents.length > 0 && <ControlSignalBadge signal="active-agent" />}
               {gateFailuresCount > 0 && <ControlSignalBadge signal="needs-human-input" />}
               <Badge variant={config.variant} className="gap-1">
                 {config.icon}
@@ -474,7 +491,14 @@ export default function SessionDetailPage() {
           metrics={[
             { label: 'Flow', value: session.flow, detail: 'Execution mode for this session' },
             { label: 'Current phase', value: session.phase, detail: 'Where the run is now' },
-            { label: 'Active agent', value: activeAgent, detail: 'Current responsible executor' },
+            {
+              label: activeAgents.length > 1 ? 'Active agents' : 'Active agent',
+              value: activeAgentsLabel,
+              detail:
+                activeAgents.length > 1
+                  ? 'Concurrent executors for this runtime step'
+                  : 'Current responsible executor',
+            },
             {
               label: 'Progress',
               value: `${Math.round(session.progress)}%`,

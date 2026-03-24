@@ -30,6 +30,22 @@ const statusConfig: Record<
   paused: { variant: 'warning', icon: <Pause className="size-3" /> },
 };
 
+function getActiveAgents(session: {
+  current_agent: string | null;
+  current_agents?: string[];
+}): string[] {
+  const raw = (session.current_agents || []).filter((agent): agent is string => !!agent);
+  const fallback = session.current_agent ? [session.current_agent] : [];
+  return Array.from(new Set(raw.length > 0 ? raw : fallback));
+}
+
+function formatActiveAgentsLabel(activeAgents: string[]): string {
+  if (activeAgents.length === 0) return 'Unassigned';
+  if (activeAgents.length === 1) return activeAgents[0];
+  if (activeAgents.length === 2) return `${activeAgents[0]}, ${activeAgents[1]}`;
+  return `${activeAgents[0]}, ${activeAgents[1]} +${activeAgents.length - 2}`;
+}
+
 function getSessionGuidance(
   sessions: Array<{
     id: string;
@@ -116,36 +132,41 @@ export default function SessionsPage() {
       ? `${Math.round(Math.max(...sessions.map((session) => session.progress)))}%`
       : '0%';
 
-  const queueItems = sessions.slice(0, 6).map<QueueTriageItem>((session) => ({
-    id: session.id,
-    title: session.project,
-    subtitle: `${session.flow} · ${session.phase}`,
-    statusLabel: session.status,
-    statusTone:
-      session.status === 'failed'
-        ? 'critical'
-        : session.status === 'paused'
-          ? 'warning'
-          : session.status === 'active'
-            ? 'info'
-            : 'success',
-    priority: session.status === 'failed' ? 'high' : session.status === 'paused' ? 'medium' : 'low',
-    icon: statusConfig[session.status].icon,
-    actionLabel: 'Open run',
-    meta: [
-      {
-        id: `${session.id}-progress`,
-        label: 'Progress',
-        value: `${Math.round(session.progress)}%`,
-      },
-      {
-        id: `${session.id}-agent`,
-        label: 'Agent',
-        value: session.current_agent ?? 'Unassigned',
-        tone: session.current_agent ? 'success' : 'neutral',
-      },
-    ],
-  }));
+  const queueItems = sessions.slice(0, 6).map<QueueTriageItem>((session) => {
+    const activeAgents = getActiveAgents(session);
+
+    return {
+      id: session.id,
+      title: session.project,
+      subtitle: `${session.flow} · ${session.phase}`,
+      statusLabel: session.status,
+      statusTone:
+        session.status === 'failed'
+          ? 'critical'
+          : session.status === 'paused'
+            ? 'warning'
+            : session.status === 'active'
+              ? 'info'
+              : 'success',
+      priority:
+        session.status === 'failed' ? 'high' : session.status === 'paused' ? 'medium' : 'low',
+      icon: statusConfig[session.status].icon,
+      actionLabel: 'Open run',
+      meta: [
+        {
+          id: `${session.id}-progress`,
+          label: 'Progress',
+          value: `${Math.round(session.progress)}%`,
+        },
+        {
+          id: `${session.id}-agent`,
+          label: activeAgents.length > 1 ? 'Agents' : 'Agent',
+          value: formatActiveAgentsLabel(activeAgents),
+          tone: activeAgents.length > 0 ? 'success' : 'neutral',
+        },
+      ],
+    };
+  });
 
   return (
     <PageShell
@@ -350,6 +371,8 @@ export default function SessionsPage() {
           <div className="space-y-3">
             {sessions.map((session) => {
               const config = statusConfig[session.status];
+              const activeAgents = getActiveAgents(session);
+              const activeAgentsLabel = formatActiveAgentsLabel(activeAgents);
               return (
                 <Card
                   key={session.id}
@@ -383,9 +406,10 @@ export default function SessionsPage() {
                       </div>
                     </div>
                   </div>
-                  {session.current_agent && (
+                  {activeAgents.length > 0 && (
                     <p className="text-xs text-muted-foreground mt-2">
-                      Current agent: <span className="font-medium">{session.current_agent}</span>
+                      {activeAgents.length > 1 ? 'Current agents: ' : 'Current agent: '}
+                      <span className="font-medium">{activeAgentsLabel}</span>
                     </p>
                   )}
                 </Card>

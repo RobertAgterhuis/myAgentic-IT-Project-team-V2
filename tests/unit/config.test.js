@@ -7,7 +7,10 @@
  * are pure and deterministic.
  */
 
-const { parseTrustedProxySetting } = require('../../src/webapp/config');
+const {
+  parseTrustedProxySetting,
+  parsePredecessorContractContinuitySetting,
+} = require('../../src/webapp/config');
 
 async function loadFreshConfig() {
   vi.resetModules();
@@ -116,6 +119,48 @@ describe('SP-11-612: config.ts — parseTrustedProxySetting', () => {
   });
 });
 
+describe('config.ts — parsePredecessorContractContinuitySetting', () => {
+  it('returns undefined for empty values', () => {
+    expect(parsePredecessorContractContinuitySetting(undefined)).toBeUndefined();
+    expect(parsePredecessorContractContinuitySetting('')).toBeUndefined();
+    expect(parsePredecessorContractContinuitySetting('   ')).toBeUndefined();
+  });
+
+  it('parses boolean shorthands', () => {
+    expect(parsePredecessorContractContinuitySetting('true')).toBe(true);
+    expect(parsePredecessorContractContinuitySetting('strict')).toBe(true);
+    expect(parsePredecessorContractContinuitySetting('0')).toBe(false);
+    expect(parsePredecessorContractContinuitySetting('off')).toBe(false);
+  });
+
+  it('parses JSON boolean values', () => {
+    expect(parsePredecessorContractContinuitySetting('true')).toBe(true);
+    expect(parsePredecessorContractContinuitySetting('false')).toBe(false);
+  });
+
+  it('parses scoped JSON object and normalizes lists', () => {
+    const result = parsePredecessorContractContinuitySetting(
+      JSON.stringify({
+        states: ['PHASE_2', '  PHASE_2  ', '', 42],
+        agents: ['05', '05', '  ', null],
+      })
+    );
+
+    expect(result).toEqual({
+      states: ['PHASE_2'],
+      agents: ['05'],
+    });
+  });
+
+  it('returns undefined for invalid JSON or empty scoped object', () => {
+    expect(parsePredecessorContractContinuitySetting('{invalid-json')).toBeUndefined();
+    expect(parsePredecessorContractContinuitySetting('{}')).toBeUndefined();
+    expect(
+      parsePredecessorContractContinuitySetting(JSON.stringify({ states: [], agents: [] }))
+    ).toBeUndefined();
+  });
+});
+
 describe('config.ts exported environment constants', () => {
   const originalEnv = { ...process.env };
 
@@ -152,6 +197,20 @@ describe('config.ts exported environment constants', () => {
     expect(config.STORAGE_PATH).toBe('/tmp/app.db');
     expect(config.QUEUE_PROVIDER).toBe('bullmq');
     expect(config.SESSION_STORE).toBe('redis');
+  });
+
+  it('exports parsed continuity enforcement mode from env', async () => {
+    process.env.ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY = JSON.stringify({
+      states: ['PHASE_2'],
+      agents: ['05'],
+    });
+
+    const config = await loadFreshConfig();
+
+    expect(config.ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY).toEqual({
+      states: ['PHASE_2'],
+      agents: ['05'],
+    });
   });
 
   it('accepts the persistent queue provider', async () => {

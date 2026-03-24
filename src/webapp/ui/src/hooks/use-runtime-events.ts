@@ -83,6 +83,20 @@ export function useRuntimeEvents() {
         agent: event.agent as string | undefined,
         phase: event.phase as string | undefined,
         artifactId: event.artifact_id as string | undefined,
+        metadata: Object.fromEntries(
+          Object.entries(event).filter(
+            ([key]) =>
+              ![
+                'type',
+                'timestamp',
+                'description',
+                'agent',
+                'phase',
+                'artifact_id',
+                'session_id',
+              ].includes(key)
+          )
+        ),
       });
 
       // Track active session

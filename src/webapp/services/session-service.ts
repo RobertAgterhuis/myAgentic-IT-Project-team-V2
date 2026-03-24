@@ -88,6 +88,7 @@ export class SessionService {
       status: session.status,
       current_phase: session.current_phase || null,
       current_agent: session.current_agent || null,
+      current_agents: session.currentAgents || session.current_agents || [],
       current_step: session.current_step || null,
       initiated_at: session.initiated_at,
       last_updated: session.last_updated,

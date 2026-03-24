@@ -173,6 +173,8 @@ export interface SessionState {
   current_phase?: string | null;
   currentAgent?: string | null;
   current_agent?: string | null;
+  currentAgents?: string[];
+  current_agents?: string[];
   current_step?: string | null;
   initiated_at?: string;
   last_updated?: string;
@@ -195,6 +197,7 @@ export interface ProgressInfo {
   mode: string | null;
   currentPhase: string | null;
   currentAgent: string | null;
+  currentAgents?: string[];
   phases: unknown[];
   activeSprint: unknown | null;
 }

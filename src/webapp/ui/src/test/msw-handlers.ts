@@ -256,6 +256,7 @@ export const mockSession: Session = {
   started_at: '2026-03-01T10:00:00Z',
   completed_at: null,
   current_agent: '01-business-analyst',
+  current_agents: ['01-business-analyst'],
 };
 
 export const mockSessionsList: SessionsListResponse = {

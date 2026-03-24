@@ -2,6 +2,8 @@ export default {
   mutate: [
     'platform/engine/dispatcher.ts',
     'platform/engine/engine.ts',
+    'platform/engine/deliverable-quality.ts',
+    'platform/engine/agent-runtime-adapter.ts',
     'platform/sdlc/governance.ts',
     'platform/sdlc/observability.ts',
   ],

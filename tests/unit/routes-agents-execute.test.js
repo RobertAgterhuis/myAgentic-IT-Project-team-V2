@@ -15,12 +15,12 @@ function createCtx() {
 
 /* ── Helpers ──────────────────────────────────────────────── */
 
-function createReq(url, method = 'GET', body) {
+function createReq(url, method = 'GET', body, headers = {}) {
   return {
     url,
     method,
     body,
-    headers: { host: 'localhost:3001', 'content-type': 'application/json' },
+    headers: { host: 'localhost:3001', 'content-type': 'application/json', ...headers },
   };
 }
 
@@ -120,13 +120,60 @@ describe('agents execute route (M31)', () => {
         expect(body.execution).toBeDefined();
         expect(body.execution.agent_id).toBe('05');
         expect(['completed', 'failed']).toContain(body.execution.status);
-        expect(body.execution).toHaveProperty('confidence');
-        expect(body.execution).toHaveProperty('uncertainty_reasons');
-        expect(body.execution).toHaveProperty('needs_human_review');
+        expect(body.execution).toHaveProperty('job_id');
+        expect(body.execution).toHaveProperty('logs');
       } else {
         // Execution error is still a valid server response
         expect(res.statusCode).toBe(500);
         expect(body.code).toBe('EXECUTION_ERROR');
+      }
+    });
+
+    it('hides confidence telemetry for viewer role', async () => {
+      const res = createRes();
+      await routes['POST /api/agents/:id/execute'](
+        createReq(
+          '/api/agents/05/execute',
+          'POST',
+          {},
+          {
+            'x-user-role': 'viewer',
+          }
+        ),
+        res
+      );
+
+      if (res.statusCode === 200) {
+        const body = parsed(res);
+        expect(body.execution.confidence).toBeUndefined();
+        expect(body.execution.uncertainty_reasons).toBeUndefined();
+        expect(body.execution.needs_human_review).toBeUndefined();
+      } else {
+        expect(res.statusCode).toBe(500);
+      }
+    });
+
+    it('shows confidence telemetry for operator role', async () => {
+      const res = createRes();
+      await routes['POST /api/agents/:id/execute'](
+        createReq(
+          '/api/agents/05/execute',
+          'POST',
+          {},
+          {
+            'x-user-role': 'operator',
+          }
+        ),
+        res
+      );
+
+      if (res.statusCode === 200) {
+        const body = parsed(res);
+        expect(body.execution).toHaveProperty('confidence');
+        expect(body.execution).toHaveProperty('uncertainty_reasons');
+        expect(body.execution).toHaveProperty('needs_human_review');
+      } else {
+        expect(res.statusCode).toBe(500);
       }
     });
 

@@ -4,6 +4,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const Database = require('better-sqlite3');
 const { AuditTrail } = require('../../src/webapp/audit');
 
 let tempDir;
@@ -112,5 +113,38 @@ describe('AuditTrail', () => {
 
   it('logPath returns correct path', () => {
     expect(trail.logPath).toBe(path.join(tempDir, 'audit-log.jsonl'));
+  });
+
+  it('persists audit entries in sqlite append-only table', () => {
+    trail.log({ operation: 'create', entityType: 'decision', entityId: 'DEC-1', user: 'tester' });
+    trail.log({ operation: 'update', entityType: 'decision', entityId: 'DEC-1', user: 'tester' });
+
+    const dbPath = path.join(tempDir, 'audit-log.db');
+    expect(fs.existsSync(dbPath)).toBe(true);
+
+    const db = new Database(dbPath, { readonly: true });
+    try {
+      const row = db.prepare('SELECT COUNT(*) as count FROM audit_events').get();
+      expect(row.count).toBe(2);
+    } finally {
+      db.close();
+    }
+  });
+
+  it('rejects sqlite updates/deletes for immutable audit events', () => {
+    trail.log({ operation: 'create', entityType: 'decision', entityId: 'DEC-9', user: 'tester' });
+
+    const dbPath = path.join(tempDir, 'audit-log.db');
+    const db = new Database(dbPath);
+    try {
+      expect(() =>
+        db.prepare("UPDATE audit_events SET user = 'hacker' WHERE id = 1").run()
+      ).toThrow(/append-only/);
+      expect(() => db.prepare('DELETE FROM audit_events WHERE id = 1').run()).toThrow(
+        /append-only/
+      );
+    } finally {
+      db.close();
+    }
   });
 });

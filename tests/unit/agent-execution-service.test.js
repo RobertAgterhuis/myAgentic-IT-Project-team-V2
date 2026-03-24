@@ -153,6 +153,44 @@ describe('AgentExecutionService', () => {
       expect(result.error).toBe('Dispatcher crash');
     });
 
+    it('uses stricter confidence threshold for high-risk phases', async () => {
+      invokeSpy.mockResolvedValue({
+        success: true,
+        outputPath: '/output/security.md',
+        confidence: 0.7,
+        uncertainty_reasons: [],
+      });
+
+      const result = await svc.execute({ agentId: '08' });
+      expect(result.status).toBe('completed');
+      expect(result.confidence).toBe(0.7);
+      expect(result.needs_human_review).toBe(true);
+      expect(result.logs.some((log) => log.message.includes('review threshold'))).toBe(true);
+    });
+
+    it('applies NEEDS_HUMAN_REVIEW_THRESHOLDS env override', async () => {
+      const previous = process.env.NEEDS_HUMAN_REVIEW_THRESHOLDS;
+      try {
+        process.env.NEEDS_HUMAN_REVIEW_THRESHOLDS = JSON.stringify({ PHASE_2: 0.65 });
+
+        invokeSpy.mockResolvedValue({
+          success: true,
+          outputPath: '/output/security.md',
+          confidence: 0.7,
+          uncertainty_reasons: [],
+        });
+
+        const result = await svc.execute({ agentId: '08' });
+        expect(result.needs_human_review).toBe(false);
+      } finally {
+        if (previous === undefined) {
+          delete process.env.NEEDS_HUMAN_REVIEW_THRESHOLDS;
+        } else {
+          process.env.NEEDS_HUMAN_REVIEW_THRESHOLDS = previous;
+        }
+      }
+    });
+
     it('logs to audit on success', async () => {
       invokeSpy.mockResolvedValue({ success: true, outputPath: '/out.md' });
 

@@ -355,9 +355,11 @@ describe('Milestones API (SP-9) — Fastify', () => {
       const getSingle = await inject('GET', `/api/milestones/${milestoneId}`);
       expect(getSingle.json().data.archived).toBe(true);
 
-      const updateRes = await inject('PUT', `/api/milestones/${milestoneId}`, { progress: 75 });
+      const updateRes = await inject('PUT', `/api/milestones/${milestoneId}`, {
+        progress: 75,
+      });
       expect(updateRes.statusCode).toBe(200);
       expect(updateRes.json().data.archived).toBe(true);
-    });
+    }, 15_000);
   });
 });

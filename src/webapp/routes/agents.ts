@@ -23,6 +23,40 @@ import { AgentExecutionService, AgentNotFoundError, toServiceContext } from '../
 import { structuredLog } from '../middleware';
 import * as RS from '../route-schemas';
 
+type AuthRole = 'admin' | 'operator' | 'viewer';
+
+function resolveRole(request: FastifyRequest): AuthRole {
+  const user =
+    (request as FastifyRequest & { user?: { role?: string } }).user ||
+    ((request.raw as FastifyRequest['raw'] & { user?: { role?: string } }).user ?? undefined);
+  const role = user?.role;
+  const headerRole = String(request.headers['x-user-role'] || '').toLowerCase();
+  if (role === 'admin' || role === 'operator' || role === 'viewer') {
+    return role;
+  }
+  if (headerRole === 'admin' || headerRole === 'operator' || headerRole === 'viewer') {
+    return headerRole;
+  }
+  return 'viewer';
+}
+
+function canViewConfidenceTelemetry(role: AuthRole): boolean {
+  return role === 'admin' || role === 'operator';
+}
+
+function redactExecutionTelemetry<T extends object>(value: T, role: AuthRole): T {
+  if (canViewConfidenceTelemetry(role)) {
+    return value;
+  }
+
+  return {
+    ...value,
+    confidence: undefined,
+    uncertainty_reasons: undefined,
+    needs_human_review: undefined,
+  };
+}
+
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const execService = new AgentExecutionService(
     toServiceContext(ctx as unknown as Record<string, unknown>)
@@ -74,6 +108,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     '/api/agents/:id/execute',
     { schema: RS.agentExecute },
     async (request, reply) => {
+      const role = resolveRole(request);
       const agentId = decodeURIComponent(request.params.id);
       const body = (request.body as Record<string, unknown>) || {};
       const context = body.context as
@@ -129,7 +164,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           durationMs: result.duration_ms,
         });
 
-        return reply.send({ ok: true, execution: result });
+        return reply.send({ ok: true, execution: redactExecutionTelemetry(result, role) });
       } catch (err) {
         if (err instanceof AgentNotFoundError) {
           return reply.code(404).send(errorResponse('NOT_FOUND', err.message));
@@ -158,6 +193,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     '/api/agents/jobs/:jobId/status',
     { schema: RS.agentJobStatus },
     async (request, reply) => {
+      const role = resolveRole(request);
       const jobId = decodeURIComponent(request.params.jobId);
       const job = execService.getJobStatus(jobId);
       if (!job) {
@@ -172,9 +208,14 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         started_at: job.started_at,
         completed_at: job.completed_at,
         duration_ms: job.duration_ms,
-        confidence: job.confidence,
-        uncertainty_reasons: job.uncertainty_reasons,
-        needs_human_review: job.needs_human_review,
+        ...redactExecutionTelemetry(
+          {
+            confidence: job.confidence,
+            uncertainty_reasons: job.uncertainty_reasons,
+            needs_human_review: job.needs_human_review,
+          },
+          role
+        ),
       });
     }
   );
@@ -185,6 +226,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     '/api/agents/jobs/:jobId/result',
     { schema: RS.agentJobResult },
     async (request, reply) => {
+      const role = resolveRole(request);
       const jobId = decodeURIComponent(request.params.jobId);
       const job = execService.getJobResult(jobId);
       if (!job) {
@@ -199,7 +241,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       }
       return reply.send({
         ok: true,
-        execution: job,
+        execution: redactExecutionTelemetry(job, role),
       });
     }
   );

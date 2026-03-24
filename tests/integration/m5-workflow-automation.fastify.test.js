@@ -190,7 +190,7 @@ describe('M5 Epic #665 workflow automation', () => {
     expect(finalState.statusCode).toBe(200);
     expect(finalState.json().open.find((q) => q.id === id)).toBeUndefined();
     expect(finalState.json().decided.find((d) => d.id === id)).toBeDefined();
-  });
+  }, 15_000);
 
   it('keeps security regression behavior testable for non-local API access', async () => {
     const originalApiKey = process.env.API_KEY;

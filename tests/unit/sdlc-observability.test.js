@@ -99,6 +99,23 @@ describe('computeLeadTime', () => {
     ];
     expect(computeLeadTime(commits, deployments)).toBe(0);
   });
+
+  it('ignores unknown commit ids and negative lead-time deltas', () => {
+    const commits = [
+      { id: 'c1', timestamp: '2025-01-03T00:00:00Z', author: 'dev', branch: 'main' },
+    ];
+    const deployments = [
+      {
+        id: 'd1',
+        timestamp: '2025-01-02T00:00:00Z',
+        environment: 'prod',
+        release_version: '1.0',
+        success: true,
+        commit_ids: ['c1', 'missing-id'],
+      },
+    ];
+    expect(computeLeadTime(commits, deployments)).toBe(0);
+  });
 });
 
 // ─── Deployment Frequency ────────────────────────────────────
@@ -138,6 +155,33 @@ describe('computeDeploymentFrequency', () => {
     // 2 successful in 7 days = 0.2857...
     const freq = computeDeploymentFrequency(deploys, '2025-01-01', '2025-01-08');
     expect(freq).toBeCloseTo(2 / 7, 4);
+  });
+
+  it('includes events exactly on period boundaries', () => {
+    const deploys = [
+      {
+        id: 'd1',
+        timestamp: '2025-01-01T00:00:00Z',
+        environment: 'prod',
+        release_version: '1.0',
+        success: true,
+        commit_ids: [],
+      },
+      {
+        id: 'd2',
+        timestamp: '2025-01-02T00:00:00Z',
+        environment: 'prod',
+        release_version: '1.1',
+        success: true,
+        commit_ids: [],
+      },
+    ];
+    const freq = computeDeploymentFrequency(
+      deploys,
+      '2025-01-01T00:00:00Z',
+      '2025-01-02T00:00:00Z'
+    );
+    expect(freq).toBe(2);
   });
 });
 
@@ -179,6 +223,45 @@ describe('computeChangeFailureRate', () => {
     // 1 out of 2 = 50%
     expect(computeChangeFailureRate(deploys, incidents)).toBe(50);
   });
+
+  it('counts each deployment once even if multiple incidents reference it', () => {
+    const deploys = [
+      {
+        id: 'd1',
+        timestamp: '2025-01-01T00:00:00Z',
+        environment: 'prod',
+        release_version: '1.0',
+        success: true,
+        commit_ids: [],
+      },
+      {
+        id: 'd2',
+        timestamp: '2025-01-02T00:00:00Z',
+        environment: 'prod',
+        release_version: '1.1',
+        success: true,
+        commit_ids: [],
+      },
+    ];
+    const incidents = [
+      {
+        id: 'i1',
+        opened_at: '2025-01-01T01:00:00Z',
+        resolved_at: '2025-01-01T02:00:00Z',
+        severity: 'HIGH',
+        deployment_id: 'd1',
+      },
+      {
+        id: 'i2',
+        opened_at: '2025-01-01T03:00:00Z',
+        resolved_at: '2025-01-01T04:00:00Z',
+        severity: 'MEDIUM',
+        deployment_id: 'd1',
+      },
+    ];
+
+    expect(computeChangeFailureRate(deploys, incidents)).toBe(50);
+  });
 });
 
 // ─── MTTR ────────────────────────────────────────────────────
@@ -218,6 +301,26 @@ describe('computeMTTR', () => {
     ];
     // (2 + 4) / 2 = 3 hours
     expect(computeMTTR(incidents)).toBe(3);
+  });
+
+  it('handles unresolved incidents by excluding them from MTTR', () => {
+    const incidents = [
+      {
+        id: 'i1',
+        opened_at: '2025-01-01T00:00:00Z',
+        resolved_at: '2025-01-01T02:00:00Z',
+        severity: 'HIGH',
+        deployment_id: 'd1',
+      },
+      {
+        id: 'i2',
+        opened_at: '2025-01-01T00:00:00Z',
+        resolved_at: null,
+        severity: 'HIGH',
+        deployment_id: 'd2',
+      },
+    ];
+    expect(computeMTTR(incidents)).toBe(2);
   });
 });
 

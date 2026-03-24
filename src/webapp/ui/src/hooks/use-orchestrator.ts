@@ -22,13 +22,15 @@ import type {
   CommandQueueResponse,
   OkResponse,
 } from '@/lib/api-types';
+import { useSSEAwareRefetchInterval } from '@/hooks/use-sse-aware-polling';
 
 /** Current orchestrator state — polled frequently. */
 export function useOrchestratorStatus() {
+  const refetchInterval = useSSEAwareRefetchInterval(5_000);
   return useQuery({
     queryKey: queryKeys.orchestrator.status,
     queryFn: () => apiGet<OrchestratorStatus>('/orchestrator/status'),
-    refetchInterval: 5_000,
+    refetchInterval,
   });
 }
 
@@ -130,6 +132,7 @@ export function useValidateGate() {
 
 /** Gate diagnostics for a session (gate failures and unmet criteria). */
 export function useGateDiagnostics(sessionId: string) {
+  const refetchInterval = useSSEAwareRefetchInterval(10_000);
   return useQuery({
     queryKey: queryKeys.orchestrator.gateDiagnostics(sessionId),
     queryFn: () =>
@@ -137,7 +140,7 @@ export function useGateDiagnostics(sessionId: string) {
         `/orchestrator/gate-diagnostics/${encodeURIComponent(sessionId)}`
       ),
     enabled: !!sessionId,
-    refetchInterval: 10_000,
+    refetchInterval,
   });
 }
 
@@ -175,10 +178,57 @@ export function useSprintGate() {
 
 /** Command queue (latest command + full queue). */
 export function useOrchestratorQueue() {
+  const refetchInterval = useSSEAwareRefetchInterval(5_000);
   return useQuery({
     queryKey: queryKeys.orchestrator.queue,
     queryFn: () => apiGet<CommandQueueResponse>('/command'),
-    refetchInterval: 5_000,
+    refetchInterval,
+  });
+}
+
+/** Pause orchestrator at checkpoint. */
+export function usePauseOrchestrator() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { rationale: string; requested_by?: string }) =>
+      apiPost<OkResponse>('/orchestrator/pause', payload),
+    onSuccess: () => {
+      showToast.warning('Orchestrator paused');
+      qc.invalidateQueries({ queryKey: queryKeys.orchestrator.status });
+      qc.invalidateQueries({ queryKey: queryKeys.progress.all });
+    },
+  });
+}
+
+/** Resume orchestrator after pause/override. */
+export function useResumeOrchestrator() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: { rationale: string; requested_by?: string }) =>
+      apiPost<OkResponse>('/orchestrator/resume', payload),
+    onSuccess: () => {
+      showToast.success('Orchestrator resumed');
+      qc.invalidateQueries({ queryKey: queryKeys.orchestrator.status });
+      qc.invalidateQueries({ queryKey: queryKeys.progress.all });
+    },
+  });
+}
+
+/** Override orchestrator mode/phases for reroute scenarios. */
+export function useOverrideOrchestrator() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: {
+      rationale: string;
+      requested_by?: string;
+      mode?: string;
+      phases?: string[];
+    }) => apiPost<OkResponse>('/orchestrator/override', payload),
+    onSuccess: () => {
+      showToast.info('Orchestrator rerouted');
+      qc.invalidateQueries({ queryKey: queryKeys.orchestrator.status });
+      qc.invalidateQueries({ queryKey: queryKeys.progress.all });
+    },
   });
 }
 

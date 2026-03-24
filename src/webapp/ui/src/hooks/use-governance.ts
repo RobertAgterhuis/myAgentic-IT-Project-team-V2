@@ -16,13 +16,15 @@ import type {
   PolicyPacksResponse,
   PolicySignalsResponse,
 } from '@/lib/api-types';
+import { useSSEAwareRefetchInterval } from '@/hooks/use-sse-aware-polling';
 
 /** List pending approvals. */
 export function useApprovals() {
+  const refetchInterval = useSSEAwareRefetchInterval(15_000);
   return useQuery({
     queryKey: queryKeys.governance.approvals,
     queryFn: () => apiGet<ApprovalsListResponse>('/v1/approvals'),
-    refetchInterval: 15_000,
+    refetchInterval,
   });
 }
 

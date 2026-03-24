@@ -99,6 +99,43 @@ function normalizeScore(value: number): number {
   return Math.max(0, Math.min(1, value));
 }
 
+const DEFAULT_REVIEW_THRESHOLD = 0.6;
+const PHASE_REVIEW_THRESHOLDS: Record<string, number> = {
+  ONBOARDING: 0.65,
+  PHASE_1: 0.65,
+  CRITIC_1: 0.75,
+  PHASE_2: 0.75,
+  CRITIC_2: 0.82,
+  PHASE_3: 0.62,
+  CRITIC_3: 0.72,
+  PHASE_4: 0.58,
+  CRITIC_4: 0.68,
+  SYNTHESIS: 0.7,
+  SPRINT_GATE: 0.78,
+  PHASE_5_EXECUTING: 0.7,
+};
+
+function parsePhaseThresholdOverrides(raw: string | undefined): Record<string, number> {
+  if (!raw) return {};
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const overrides: Record<string, number> = {};
+    for (const [phase, value] of Object.entries(parsed)) {
+      if (typeof value !== 'number' || !Number.isFinite(value)) continue;
+      overrides[phase] = normalizeScore(value);
+    }
+    return overrides;
+  } catch {
+    return {};
+  }
+}
+
+function getNeedsHumanReviewThreshold(phase: string): number {
+  const envOverrides = parsePhaseThresholdOverrides(process.env.NEEDS_HUMAN_REVIEW_THRESHOLDS);
+  const merged = { ...PHASE_REVIEW_THRESHOLDS, ...envOverrides };
+  return merged[phase] ?? DEFAULT_REVIEW_THRESHOLD;
+}
+
 export class AgentExecutionService {
   private _svc: ServiceContext;
 
@@ -203,6 +240,7 @@ export class AgentExecutionService {
       const durationMs = +new Date(completedAt) - +new Date(startedAt);
       const outputPath = result.outputPath as string | undefined;
       const confidence = normalizeConfidence(result.confidence, result.success ? 0.5 : 0);
+      const phaseThreshold = getNeedsHumanReviewThreshold(info.phase);
       const uncertaintyReasons = Array.isArray(result.uncertainty_reasons)
         ? (result.uncertainty_reasons as string[])
         : result.success
@@ -211,7 +249,7 @@ export class AgentExecutionService {
       const needsHumanReview =
         typeof result.needs_human_review === 'boolean'
           ? result.needs_human_review
-          : !result.success || confidence < 0.6 || uncertaintyReasons.length > 0;
+          : !result.success || confidence < phaseThreshold || uncertaintyReasons.length > 0;
 
       if (result.success) {
         sessionTracker.completeAgent(info.id, outputPath ? [outputPath] : []);
@@ -234,7 +272,7 @@ export class AgentExecutionService {
         job.logs.push({
           timestamp: completedAt,
           level: 'info',
-          message: `Confidence score: ${confidencePercent(confidence)}%${needsHumanReview ? ' (human review recommended)' : ''}`,
+          message: `Confidence score: ${confidencePercent(confidence)}% (review threshold ${confidencePercent(phaseThreshold)}%)${needsHumanReview ? ' (human review recommended)' : ''}`,
         });
         for (const reason of uncertaintyReasons) {
           job.logs.push({
@@ -265,7 +303,7 @@ export class AgentExecutionService {
         job.logs.push({
           timestamp: completedAt,
           level: 'warn',
-          message: `Confidence score: ${confidencePercent(confidence)}% (human review required)`,
+          message: `Confidence score: ${confidencePercent(confidence)}% (review threshold ${confidencePercent(phaseThreshold)}%, human review required)`,
         });
         for (const reason of uncertaintyReasons) {
           job.logs.push({

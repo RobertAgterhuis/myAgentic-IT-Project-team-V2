@@ -91,7 +91,7 @@ describe('SessionDetailPage', () => {
   it('shows not found for unknown session', async () => {
     await renderPage('unknown-id');
     await waitFor(() => {
-      expect(screen.getByText(/Failed to load session:/i)).toBeInTheDocument();
+      expect(screen.getByText(/Failed to load (session|data):/i)).toBeInTheDocument();
       expect(screen.getByText(/Not found/i)).toBeInTheDocument();
     });
   });

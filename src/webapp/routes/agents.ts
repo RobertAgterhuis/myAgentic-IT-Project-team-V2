@@ -44,7 +44,7 @@ function canViewConfidenceTelemetry(role: AuthRole): boolean {
   return role === 'admin' || role === 'operator';
 }
 
-function redactExecutionTelemetry<T extends Record<string, unknown>>(value: T, role: AuthRole): T {
+function redactExecutionTelemetry<T extends object>(value: T, role: AuthRole): T {
   if (canViewConfidenceTelemetry(role)) {
     return value;
   }

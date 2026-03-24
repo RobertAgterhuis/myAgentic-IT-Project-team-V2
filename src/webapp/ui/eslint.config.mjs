@@ -30,7 +30,10 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       'react-refresh/only-export-components': [
         'warn',
-        { allowConstantExport: true, allowExportNames: ['badgeVariants', 'buttonVariants', 'showToast'] },
+        {
+          allowConstantExport: true,
+          allowExportNames: ['badgeVariants', 'buttonVariants', 'showToast'],
+        },
       ],
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -47,7 +50,11 @@ export default tseslint.config(
 
   /* ── Test utilities + non-component files: relax react-refresh ─ */
   {
-    files: ['src/test/**/*.{ts,tsx}', 'src/lib/query-provider.tsx', 'src/components/ui/toast-system.tsx'],
+    files: [
+      'src/test/**/*.{ts,tsx}',
+      'src/lib/query-provider.tsx',
+      'src/components/ui/toast-system.tsx',
+    ],
     rules: {
       'react-refresh/only-export-components': 'off',
     },
@@ -76,5 +83,5 @@ export default tseslint.config(
   },
 
   /* ── Storybook stories ──────────────────────────────────────── */
-  ...storybook.configs['flat/recommended'],
+  ...storybook.configs['flat/recommended']
 );

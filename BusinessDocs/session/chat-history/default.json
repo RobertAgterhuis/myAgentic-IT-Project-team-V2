@@ -1,0 +1,132 @@
+{
+  "session_id": "default",
+  "updated_at": "2026-03-24T06:26:24.933Z",
+  "messages": [
+    {
+      "id": "u-mn48ek9g",
+      "role": "user",
+      "content": "What policy should I follow for this approval override?",
+      "created_at": "2026-03-24T06:26:24.916Z"
+    },
+    {
+      "id": "a-mn48ek9g",
+      "role": "assistant",
+      "content": "Session status: PAUSED. Mode: CREATE. Current phase: PHASE_2. Current agent: developer. Pending approvals: 1. I can guide you through pending approvals and open the approval center for the next decision.",
+      "created_at": "2026-03-24T06:26:24.916Z"
+    },
+    {
+      "id": "u-mn48ek9h",
+      "role": "user",
+      "content": "Where in the workspace is the chat message route implemented?",
+      "created_at": "2026-03-24T06:26:24.917Z"
+    },
+    {
+      "id": "a-mn48ek9h",
+      "role": "assistant",
+      "content": "Session status: PAUSED. Mode: CREATE. Current phase: PHASE_2. Current agent: developer. Pending approvals: 1. I can ground this with codebase evidence and point to relevant source locations.",
+      "created_at": "2026-03-24T06:26:24.917Z"
+    },
+    {
+      "id": "u-mn48ek9q",
+      "role": "user",
+      "content": "Why did the gate fail in the current run?",
+      "created_at": "2026-03-24T06:26:24.926Z"
+    },
+    {
+      "id": "a-mn48ek9q",
+      "role": "assistant",
+      "content": "No failed gate details were found in the latest run context. If you just retried, open Pipeline to inspect the latest gate verdict.",
+      "created_at": "2026-03-24T06:26:24.926Z"
+    },
+    {
+      "id": "u-mn48ek9x",
+      "role": "user",
+      "content": "What approvals are pending right now?",
+      "created_at": "2026-03-24T06:26:24.933Z"
+    },
+    {
+      "id": "a-mn48ek9x",
+      "role": "assistant",
+      "content": "No pending approvals were found at the moment.",
+      "created_at": "2026-03-24T06:26:24.933Z"
+    }
+  ],
+  "action_contexts": {
+    "open_screen-mn48ek9g-hwoe2": {
+      "action": {
+        "id": "open_screen-mn48ek9g-hwoe2",
+        "label": "Open approval center",
+        "type": "open_screen",
+        "payload": {
+          "target": "/approvals"
+        },
+        "requires_confirmation": false
+      },
+      "context_snapshot": {
+        "sessionStatus": "PAUSED",
+        "mode": "CREATE",
+        "currentPhase": "PHASE_2",
+        "currentAgent": "developer",
+        "pendingApprovals": 1
+      },
+      "created_at": "2026-03-24T06:26:24.916Z"
+    },
+    "open_screen-mn48ek9h-7f58e": {
+      "action": {
+        "id": "open_screen-mn48ek9h-7f58e",
+        "label": "Open workspaces",
+        "type": "open_screen",
+        "payload": {
+          "target": "/workspaces"
+        },
+        "requires_confirmation": false
+      },
+      "context_snapshot": {
+        "sessionStatus": "PAUSED",
+        "mode": "CREATE",
+        "currentPhase": "PHASE_2",
+        "currentAgent": "developer",
+        "pendingApprovals": 1
+      },
+      "created_at": "2026-03-24T06:26:24.917Z"
+    },
+    "open_screen-mn48ek9q-7gg8i": {
+      "action": {
+        "id": "open_screen-mn48ek9q-7gg8i",
+        "label": "Open pipeline status",
+        "type": "open_screen",
+        "payload": {
+          "target": "/pipeline"
+        },
+        "requires_confirmation": false
+      },
+      "context_snapshot": {
+        "sessionStatus": "PAUSED",
+        "mode": "CREATE",
+        "currentPhase": "PHASE_2",
+        "currentAgent": "developer",
+        "pendingApprovals": 1
+      },
+      "created_at": "2026-03-24T06:26:24.926Z"
+    },
+    "open_screen-mn48ek9x-6nnxy": {
+      "action": {
+        "id": "open_screen-mn48ek9x-6nnxy",
+        "label": "Open approval center",
+        "type": "open_screen",
+        "payload": {
+          "target": "/approvals"
+        },
+        "requires_confirmation": false
+      },
+      "context_snapshot": {
+        "sessionStatus": "PAUSED",
+        "mode": "CREATE",
+        "currentPhase": "PHASE_2",
+        "currentAgent": "developer",
+        "pendingApprovals": 1
+      },
+      "created_at": "2026-03-24T06:26:24.933Z"
+    }
+  }
+}

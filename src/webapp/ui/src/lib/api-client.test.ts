@@ -2,7 +2,15 @@
  * Tests: API client utility
  */
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { apiGet, apiPost, apiPut, apiPatch, apiDelete, ApiError } from '@/lib/api-client';
+import {
+  apiGet,
+  apiPost,
+  apiPut,
+  apiPatch,
+  apiDelete,
+  ApiError,
+  AUTH_EXPIRED_EVENT,
+} from '@/lib/api-client';
 
 describe('api-client', () => {
   const originalFetch = globalThis.fetch;
@@ -82,5 +90,16 @@ describe('api-client', () => {
     } catch (e) {
       expect((e as ApiError).message).toBe('Test Status');
     }
+  });
+
+  it('dispatches auth-expired event on 401 responses', async () => {
+    const listener = vi.fn();
+    window.addEventListener(AUTH_EXPIRED_EVENT, listener as EventListener);
+
+    mockFetch(401, { error: 'Unauthorized' });
+    await expect(apiGet('/auth/check')).rejects.toThrow(ApiError);
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    window.removeEventListener(AUTH_EXPIRED_EVENT, listener as EventListener);
   });
 });

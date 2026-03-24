@@ -3,6 +3,7 @@
  * Uses React Router's <Outlet> for nested page rendering.
  */
 import { Suspense } from 'react';
+import { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { TopNavigation } from '@/components/ui/top-navigation';
 import { type NavSection } from '@/components/ui/side-panel';
@@ -21,6 +22,8 @@ import { AppShell } from '@/components/layout/app-shell';
 import { SidebarNav } from '@/components/layout/sidebar-nav';
 import { BreadcrumbNav } from '@/components/layout/breadcrumb-nav';
 import { ChatPanel } from '@/components/chat/chat-panel';
+import { showToast } from '@/components/ui/toast-system';
+import { AUTH_EXPIRED_EVENT } from '@/lib/api-client';
 import {
   LayoutDashboard,
   Terminal,
@@ -143,6 +146,21 @@ export function AppLayout() {
 
   // Global keyboard shortcuts
   useKeyboardShortcuts();
+
+  useEffect(() => {
+    const onAuthExpired = () => {
+      const next = `${location.pathname}${location.search}${location.hash}`;
+      showToast.warning('Your session expired. Please sign in again to continue.');
+      navigate(`/login?reason=session-expired&next=${encodeURIComponent(next)}`, {
+        replace: true,
+      });
+    };
+
+    window.addEventListener(AUTH_EXPIRED_EVENT, onAuthExpired as EventListener);
+    return () => {
+      window.removeEventListener(AUTH_EXPIRED_EVENT, onAuthExpired as EventListener);
+    };
+  }, [location.hash, location.pathname, location.search, navigate]);
 
   return (
     <AppShell

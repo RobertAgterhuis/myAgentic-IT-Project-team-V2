@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ShieldOff } from 'lucide-react';
 import { PageShell } from '@/components/ui/page-shell';
 import { useAuthorization, type RoleRequirement } from '@/hooks/use-auth';
@@ -11,6 +11,7 @@ interface AccessGuardProps {
 
 export function AccessGuard({ requiredRole, children }: AccessGuardProps) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, loading, hasRequiredRole } = useAuthorization();
 
   if (!requiredRole) return <>{children}</>;
@@ -31,7 +32,15 @@ export function AccessGuard({ requiredRole, children }: AccessGuardProps) {
           icon: <ShieldOff className="size-8" />,
           title: 'Sign in required',
           description: 'You need an authenticated session to access this area.',
-          action: { label: 'Go to login', onClick: () => navigate('/login') },
+          action: {
+            label: 'Go to login',
+            onClick: () =>
+              navigate(
+                `/login?reason=auth-required&next=${encodeURIComponent(
+                  `${location.pathname}${location.search}${location.hash}`
+                )}`
+              ),
+          },
         }}
       >
         {null}

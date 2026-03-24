@@ -136,5 +136,71 @@ describe('route-adapter', () => {
       // Error handler should have ended the response
       expect(endFn).toHaveBeenCalled();
     });
+
+    it('creates a proxy with stream methods bound to a PassThrough for Buffer bodies', async () => {
+      const app = createMockApp();
+      let receivedReq;
+      const legacyHandler = vi.fn(async (req) => {
+        receivedReq = req;
+      });
+      registerLegacyRoutes(app, { 'POST /api/upload': legacyHandler });
+
+      const registeredRoute = app._registered[0];
+      const mockRequest = {
+        raw: { url: '/api/upload', method: 'POST', on: vi.fn(), once: vi.fn() },
+        body: Buffer.from('{"data":"test"}'),
+      };
+      const mockReply = { hijack: vi.fn(), raw: { writableEnded: true } };
+      await registeredRoute.handler(mockRequest, mockReply);
+
+      // The proxy should have overridden 'on' (it won't be the raw.on)
+      expect(receivedReq.on).not.toBe(mockRequest.raw.on);
+    });
+
+    it('invokes proxy.destroy which in turn destroys both bodyStream and raw', async () => {
+      const app = createMockApp();
+      let capturedReq;
+      const legacyHandler = vi.fn(async (req) => {
+        capturedReq = req;
+      });
+      registerLegacyRoutes(app, { 'POST /api/upload': legacyHandler });
+
+      const registeredRoute = app._registered[0];
+      const rawDestroy = vi.fn(() => rawDestroy);
+      const mockRequest = {
+        raw: {
+          url: '/api/upload',
+          method: 'POST',
+          on: vi.fn(),
+          once: vi.fn(),
+          destroy: rawDestroy,
+        },
+        body: Buffer.from('{"d":1}'),
+      };
+      const mockReply = { hijack: vi.fn(), raw: { writableEnded: true } };
+      await registeredRoute.handler(mockRequest, mockReply);
+
+      // proxy.destroy must be callable without throwing
+      expect(() => capturedReq.destroy()).not.toThrow();
+      expect(rawDestroy).toHaveBeenCalled();
+    });
+
+    it('returns raw request when body is empty Buffer', async () => {
+      const app = createMockApp();
+      let receivedReq;
+      const legacyHandler = vi.fn(async (req) => {
+        receivedReq = req;
+      });
+      registerLegacyRoutes(app, { 'GET /api/noop': legacyHandler });
+
+      const registeredRoute = app._registered[0];
+      const rawReq = { url: '/api/noop', method: 'GET', on: vi.fn(), once: vi.fn() };
+      const mockRequest = { raw: rawReq, body: Buffer.alloc(0) };
+      const mockReply = { hijack: vi.fn(), raw: { writableEnded: true } };
+      await registeredRoute.handler(mockRequest, mockReply);
+
+      // Empty Buffer → returns raw directly (not a proxy)
+      expect(receivedReq).toBe(rawReq);
+    });
   });
 });

@@ -65,6 +65,10 @@ interface HelpServiceOptions {
 }
 
 const DEFAULT_CONFIG_FILE = 'page-help.yaml';
+const SESSION_STATE_FILE = 'session-state.json';
+const GOVERNANCE_STATE_FILE = 'governance-state.json';
+const RUN_HISTORY_FILE = 'run-history.json';
+const COMMAND_QUEUE_FILE = 'command-queue.json';
 
 const markdown = new MarkdownIt({
   html: false,
@@ -86,7 +90,21 @@ export class HelpService {
 
   getPageHelp(routeSlug: string): PageHelp | null {
     const normalized = normalizeRouteSlug(routeSlug);
-    return this.pages.get(normalized) || null;
+    const page = this.pages.get(normalized);
+    if (!page) return null;
+
+    if (!page.stateVariants || page.stateVariants.length === 0) {
+      return page;
+    }
+
+    const runtime = this.loadRuntimeHelpState();
+    const evaluator = new StateEvaluator(runtime);
+    const activeVariants = evaluator.getActiveVariants(page.stateVariants);
+
+    return {
+      ...page,
+      stateVariants: activeVariants.length > 0 ? activeVariants : undefined,
+    };
   }
 
   getTopic(topicId: string): HelpTopic | null {
@@ -209,6 +227,172 @@ export class HelpService {
       return new Map();
     }
   }
+
+  private loadRuntimeHelpState(): RuntimeHelpState {
+    const sessionStatePath = path.join(this.ctx.sessionDir, SESSION_STATE_FILE);
+    const governanceStatePath = path.join(this.ctx.sessionDir, GOVERNANCE_STATE_FILE);
+    const runHistoryPath = path.join(this.ctx.sessionDir, RUN_HISTORY_FILE);
+    const commandQueuePath = path.join(this.ctx.sessionDir, COMMAND_QUEUE_FILE);
+
+    const sessionState = readJsonFile(this.ctx, sessionStatePath);
+    const governanceState = readJsonFile(this.ctx, governanceStatePath);
+    const runHistory = readJsonArrayFile(this.ctx, runHistoryPath);
+    const commandQueue = readJsonArrayFile(this.ctx, commandQueuePath);
+
+    return {
+      sessionState,
+      governanceState,
+      runHistory,
+      commandQueue,
+    };
+  }
+}
+
+interface RuntimeHelpState {
+  sessionState: Record<string, unknown> | null;
+  governanceState: Record<string, unknown> | null;
+  runHistory: unknown[];
+  commandQueue: unknown[];
+}
+
+class StateEvaluator {
+  private readonly runtime: RuntimeHelpState;
+
+  constructor(runtime: RuntimeHelpState) {
+    this.runtime = runtime;
+  }
+
+  getActiveVariants(variants: HelpStateVariant[]): HelpStateVariant[] {
+    return variants.filter((variant) => this.isConditionActive(variant.condition));
+  }
+
+  private isConditionActive(condition: string): boolean {
+    switch (condition.toLowerCase()) {
+      case 'no_active_workspace':
+        return hasNoActiveWorkspace(this.runtime.sessionState);
+      case 'gate_failed':
+        return hasGateFailure(this.runtime.sessionState, this.runtime.runHistory);
+      case 'pending_approvals_gt_0':
+        return hasPendingApprovals(this.runtime.governanceState);
+      case 'agent_has_error':
+        return hasAgentError(
+          this.runtime.sessionState,
+          this.runtime.runHistory,
+          this.runtime.commandQueue
+        );
+      default:
+        return false;
+    }
+  }
+}
+
+function readJsonFile(ctx: ServiceContext, filePath: string): Record<string, unknown> | null {
+  if (!ctx.store.exists(filePath)) return null;
+  try {
+    const parsed = JSON.parse(ctx.store.readFile(filePath)) as unknown;
+    return isRecord(parsed) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function readJsonArrayFile(ctx: ServiceContext, filePath: string): unknown[] {
+  if (!ctx.store.exists(filePath)) return [];
+  try {
+    const parsed = JSON.parse(ctx.store.readFile(filePath)) as unknown;
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+}
+
+function readStateValue(state: Record<string, unknown> | null, key: string): string {
+  if (!state) return '';
+  const value = state[key];
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+function hasNoActiveWorkspace(state: Record<string, unknown> | null): boolean {
+  if (!state) return true;
+
+  const workspaceId = readStateValue(state, 'workspace_id') || readStateValue(state, 'workspaceId');
+  const workspaceName =
+    readStateValue(state, 'workspace_name') || readStateValue(state, 'workspaceName');
+  const projectName = readStateValue(state, 'projectName') || readStateValue(state, 'project');
+
+  return !(workspaceId || workspaceName || projectName);
+}
+
+function hasPendingApprovals(governance: Record<string, unknown> | null): boolean {
+  if (!governance) return false;
+  const approvals = governance.approvals;
+  if (!Array.isArray(approvals)) return false;
+
+  return approvals.some((entry) => {
+    if (!isRecord(entry)) return false;
+    return String(entry.status || '').toUpperCase() === 'PENDING';
+  });
+}
+
+function hasGateFailure(state: Record<string, unknown> | null, runHistory: unknown[]): boolean {
+  const stateHistory = state?.state_history;
+  if (Array.isArray(stateHistory)) {
+    for (const entry of stateHistory) {
+      if (!isRecord(entry)) continue;
+      const to = String(entry.to || '').toUpperCase();
+      if (to === 'ERROR' || to === 'FAILED') {
+        return true;
+      }
+    }
+  }
+
+  for (const run of runHistory) {
+    if (!isRecord(run)) continue;
+    const gateResults = run.gate_results;
+    if (!isRecord(gateResults)) continue;
+    for (const value of Object.values(gateResults)) {
+      if (value === false) return true;
+      if (!isRecord(value)) continue;
+      const verdict = String(value.verdict || value.status || '').toUpperCase();
+      if (verdict.includes('FAIL') || verdict.includes('REJECT') || verdict.includes('ERROR')) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function hasAgentError(
+  state: Record<string, unknown> | null,
+  runHistory: unknown[],
+  commandQueue: unknown[]
+): boolean {
+  const status = readStateValue(state, 'status').toUpperCase();
+  if (status === 'ERROR' || status === 'FAILED') {
+    return true;
+  }
+
+  for (const command of commandQueue) {
+    if (!isRecord(command)) continue;
+    if (String(command.status || '').toUpperCase() === 'ERROR') {
+      return true;
+    }
+  }
+
+  for (const run of runHistory) {
+    if (!isRecord(run)) continue;
+    const runStatus = String(run.status || '').toUpperCase();
+    if (runStatus === 'FAILED' || runStatus === 'ERROR') {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 function toPageHelp(value: unknown): PageHelp | null {

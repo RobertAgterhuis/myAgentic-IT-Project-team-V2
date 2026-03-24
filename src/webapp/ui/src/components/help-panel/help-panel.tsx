@@ -74,6 +74,13 @@ export function HelpPanel({ onClose }: HelpPanelProps) {
               <p className="truncate text-xs text-muted-foreground">
                 {pageHelp?.purpose || 'No contextual help configured for this route.'}
               </p>
+              {pageHelp?.stateVariants && pageHelp.stateVariants.length > 0 && (
+                <ul className="mt-2 space-y-1 text-xs text-warning">
+                  {pageHelp.stateVariants.map((variant) => (
+                    <li key={variant.condition}>{variant.additionalContent}</li>
+                  ))}
+                </ul>
+              )}
             </div>
             <button
               type="button"

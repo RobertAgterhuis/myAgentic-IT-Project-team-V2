@@ -264,7 +264,7 @@ function ApprovalRow({
   onSelect: () => void;
 }) {
   return (
-    <button
+    <Button
       className={[
         'w-full text-left p-3 rounded-xl border transition-colors',
         isSelected
@@ -290,7 +290,7 @@ function ApprovalRow({
       <p className="text-xs text-muted-foreground mt-1">
         {new Date(approval.requested_at).toLocaleString()}
       </p>
-    </button>
+    </Button>
   );
 }
 

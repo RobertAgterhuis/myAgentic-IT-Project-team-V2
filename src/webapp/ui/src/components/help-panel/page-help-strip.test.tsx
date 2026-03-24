@@ -108,4 +108,42 @@ describe('PageHelpStrip', () => {
     expect(useUIStore.getState().helpRouteSlug).toBe('commands');
     expect(useUIStore.getState().helpTopicId).toBe('commands-overview');
   });
+
+  it('renders state-variant guidance and quick action links', async () => {
+    server.use(
+      http.get('/api/v1/help/page/:routeSlug', () =>
+        HttpResponse.json({
+          routeSlug: 'commands',
+          routePath: '/commands',
+          pageTitle: 'Commands',
+          purpose: 'Purpose text',
+          coreActions: [],
+          inputsOutputs: 'x',
+          permissions: 'Operator',
+          relatedPages: [],
+          keywords: [],
+          topicLinks: [],
+          stateVariants: [
+            {
+              condition: 'no_active_workspace',
+              additionalContent: 'You need an active workspace and project first.',
+            },
+            {
+              condition: 'pending_approvals_gt_0',
+              additionalContent: 'N approvals pending. Each requires review to continue.',
+            },
+          ],
+        })
+      )
+    );
+
+    renderStrip('commands');
+
+    await waitFor(() => {
+      expect(screen.getByText(/active workspace and project first/i)).toBeInTheDocument();
+    });
+
+    expect(screen.getByRole('button', { name: /open workspaces/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /open approval center/i })).toBeInTheDocument();
+  });
 });

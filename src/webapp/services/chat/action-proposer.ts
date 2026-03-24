@@ -118,7 +118,27 @@ export class ActionProposer {
       });
     }
 
-    if (input.intent === 'approval_guidance') {
+    if (input.intent === 'decision_lookup') {
+      actions.push({
+        id: makeActionId('open_screen'),
+        label: 'Open decisions',
+        type: 'open_screen',
+        payload: {
+          target: '/decisions',
+        },
+        requires_confirmation: false,
+      });
+    } else if (input.intent === 'artifact_query') {
+      actions.push({
+        id: makeActionId('open_screen'),
+        label: 'Open artifacts',
+        type: 'open_screen',
+        payload: {
+          target: '/artifacts',
+        },
+        requires_confirmation: false,
+      });
+    } else if (input.intent === 'approval_guidance') {
       actions.push({
         id: makeActionId('open_screen'),
         label: 'Open approval center',
@@ -128,7 +148,7 @@ export class ActionProposer {
         },
         requires_confirmation: false,
       });
-    } else if (input.intent === 'workspace_navigation') {
+    } else if (input.intent === 'workspace_navigation' || input.intent === 'workspace_query') {
       actions.push({
         id: makeActionId('open_screen'),
         label: 'Open workspaces',

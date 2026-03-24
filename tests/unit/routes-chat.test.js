@@ -188,6 +188,87 @@ describe('routes/chat', () => {
     expect(payload.collection).toBe('decisions');
     expect(payload.references).toHaveLength(1);
     expect(payload.references[0].source_path).toBe('BusinessDocs/decisions.md');
+    expect(payload.source_links).toHaveLength(1);
+    expect(payload.source_links[0].deep_link).toBe('/decisions');
+  });
+
+  it('returns grounded references for a workspace query with source links', async () => {
+    const ctx = createCtx();
+    ctx._ragStore.query.mockImplementation(async (collectionId) => {
+      if (collectionId !== 'codebase') return [];
+      return [
+        {
+          chunk: {
+            source_path: path.join(process.cwd(), 'src', 'webapp', 'utils', 'errors.ts'),
+            chunk_text: 'Centralized error helpers normalize service failures.',
+            start_line: 14,
+          },
+          score: 0.9,
+        },
+      ];
+    });
+
+    const localRoutes = createTestableRoutes(registerRoutes, ctx);
+    const res = createRes();
+    await localRoutes['POST /api/v1/chat/query'](
+      createReq('/api/v1/chat/query', {
+        intent: 'workspace_query',
+        message: 'What patterns exist for error handling?',
+      }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const payload = JSON.parse(res.body);
+    expect(payload.ok).toBe(true);
+    expect(payload.intent).toBe('workspace_query');
+    expect(payload.collection).toBe('codebase');
+    expect(payload.references).toHaveLength(1);
+    expect(payload.references[0].source_path).toContain('src');
+    expect(payload.citations[0].deep_link).toBe('/workspaces');
+    expect(payload.source_links[0].deep_link).toBe('/workspaces');
+  });
+
+  it('returns grounded references for an artifact query against phase outputs', async () => {
+    const ctx = createCtx();
+    ctx._ragStore.query.mockImplementation(async (collectionId) => {
+      if (collectionId !== 'phase-outputs') return [];
+      return [
+        {
+          chunk: {
+            source_path: path.join(
+              process.cwd(),
+              'BusinessDocs',
+              'Phase2-Tech',
+              'architecture-review.md'
+            ),
+            chunk_text: 'Architecture review: split orchestration from delivery runtime.',
+            start_line: 6,
+          },
+          score: 0.89,
+        },
+      ];
+    });
+
+    const localRoutes = createTestableRoutes(registerRoutes, ctx);
+    const res = createRes();
+    await localRoutes['POST /api/v1/chat/query'](
+      createReq('/api/v1/chat/query', {
+        intent: 'artifact_query',
+        message: 'Summarize the architecture review',
+      }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const payload = JSON.parse(res.body);
+    expect(payload.ok).toBe(true);
+    expect(payload.intent).toBe('artifact_query');
+    expect(payload.collection).toBe('phase-outputs');
+    expect(payload.references).toHaveLength(1);
+    expect(payload.references[0].source_path).toContain('Phase2-Tech');
+    expect(payload.citations[0].deep_link).toBe('/artifacts');
+    expect(payload.source_links[0].deep_link).toBe('/artifacts');
   });
 
   it('returns 403 for viewers', async () => {

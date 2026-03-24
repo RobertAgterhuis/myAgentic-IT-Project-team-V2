@@ -1,0 +1,337 @@
+pages:
+  - routeSlug: commands
+    routePath: /commands
+    pageTitle: Commands
+    purpose: Queue orchestrator commands and launch the correct workflow for your objective.
+    coreActions:
+      - label: Queue command
+        description: Submit CREATE, AUDIT, FEATURE, or HOTFIX with a clear brief.
+      - label: Validate context
+        description: Confirm project and scope before dispatching to the pipeline.
+      - label: Track outcomes
+        description: Follow command progress from queue to completion.
+    inputsOutputs: Project brief and command mode in, queued execution intent out.
+    permissions: Operator
+    relatedPages:
+      - routeSlug: pipeline
+        title: Pipeline
+      - routeSlug: sessions
+        title: Sessions
+    keywords: [commands, queue, brief, modes]
+    topicLinks:
+      - topicId: commands
+        title: Commands Reference
+      - topicId: commands-modes
+        title: Command Modes
+      - topicId: commands-prerequisites
+        title: Command Prerequisites
+    stateVariants:
+      - condition: no_active_workspace
+        additionalContent: You need an active workspace and project first.
+      - condition: pending_approvals_gt_0
+        additionalContent: There are pending approvals that may block downstream execution.
+
+  - routeSlug: pipeline
+    routePath: /pipeline
+    pageTitle: Pipeline
+    purpose: Monitor phase progress, gate outcomes, and readiness to continue.
+    coreActions:
+      - label: Inspect active phase
+        description: Identify the current phase and responsible agent.
+      - label: Review gate diagnostics
+        description: Understand why progression passed, failed, or is blocked.
+      - label: Resolve blockers
+        description: Address open escalations and failed checks before retry.
+    inputsOutputs: Pipeline state and event timeline in, actionable phase insight out.
+    permissions: Operator
+    relatedPages:
+      - routeSlug: sessions
+        title: Sessions
+      - routeSlug: approvals
+        title: Approval Center
+    keywords: [pipeline, phases, gates, blockers]
+    topicLinks:
+      - topicId: pipeline-phases
+        title: Pipeline Phases
+      - topicId: pipeline-gates
+        title: Quality Gates
+    stateVariants:
+      - condition: gate_failed
+        additionalContent: Current run blocked at gate. Here is why and what to do.
+      - condition: agent_has_error
+        additionalContent: An agent reported an error; inspect the failing run logs before retrying.
+
+  - routeSlug: agents
+    routePath: /agents
+    pageTitle: Agents
+    purpose: Monitor agent execution status, retries, and failures with direct diagnostic context.
+    coreActions:
+      - label: Inspect execution status
+        description: Track running, failed, and completed agent runs.
+      - label: Diagnose failures
+        description: Review errors and retries before re-execution.
+      - label: Re-run safely
+        description: Execute targeted retries with explicit operator intent.
+    inputsOutputs: Agent runtime state in, explainable execution status and actions out.
+    permissions: Operator
+    relatedPages:
+      - routeSlug: sessions
+        title: Sessions
+      - routeSlug: cockpit
+        title: Cockpit
+    keywords: [agents, runtime, retries, failures]
+    topicLinks:
+      - topicId: agents-overview
+        title: Agents Overview
+      - topicId: agents-confidence
+        title: Agent Confidence Signals
+    stateVariants:
+      - condition: agent_has_error
+        additionalContent: An agent has execution errors. Review the timeline for details.
+
+  - routeSlug: sessions
+    routePath: /sessions
+    pageTitle: Sessions
+    purpose: Track run lifecycle, current status, and evidence across active and completed sessions.
+    coreActions:
+      - label: Open session details
+        description: Drill into timeline, phase state, and artifacts for a run.
+      - label: Triage failures
+        description: Find failed runs and identify corrective actions.
+      - label: Compare outcomes
+        description: Use historical runs to validate process improvements.
+    inputsOutputs: Session metadata in, operational status and traceability out.
+    permissions: Operator
+    relatedPages:
+      - routeSlug: pipeline
+        title: Pipeline
+      - routeSlug: artifacts
+        title: Artifacts
+    keywords: [sessions, lifecycle, timeline, runs]
+    topicLinks:
+      - topicId: sessions-lifecycle
+        title: Session Lifecycle
+
+  - routeSlug: approvals
+    routePath: /approvals
+    pageTitle: Approval Center
+    purpose: Review and decide governance approvals that affect delivery progression.
+    coreActions:
+      - label: Review pending approvals
+        description: See what requests are waiting for a human decision.
+      - label: Approve with context
+        description: Confirm safe progression with rationale.
+      - label: Reject with reason
+        description: Block unsafe progress and provide remediation direction.
+    inputsOutputs: Approval requests in, auditable decisions out.
+    permissions: Operator
+    relatedPages:
+      - routeSlug: cockpit
+        title: Cockpit
+      - routeSlug: pipeline
+        title: Pipeline
+    keywords: [approvals, governance, overrides, decisions]
+    topicLinks:
+      - topicId: approvals-when-required
+        title: When Approvals Are Required
+      - topicId: approvals-hotfix-bypass
+        title: Hotfix Bypass Rules
+      - topicId: approvals-override-decisions
+        title: Override Decision Trail
+    stateVariants:
+      - condition: pending_approvals_gt_0
+        additionalContent: N approvals pending. Each requires review to continue.
+
+  - routeSlug: artifacts
+    routePath: /artifacts
+    pageTitle: Artifacts
+    purpose: Browse generated outputs, inspect lineage, and verify phase deliverables.
+    coreActions:
+      - label: Filter artifacts
+        description: Narrow by phase, type, and status.
+      - label: Trace lineage
+        description: Follow artifact dependencies across phases.
+      - label: Validate completeness
+        description: Confirm expected deliverables are present before gates.
+    inputsOutputs: Artifact catalog in, traceable evidence and exports out.
+    permissions: Operator
+    relatedPages:
+      - routeSlug: sessions
+        title: Sessions
+      - routeSlug: cockpit
+        title: Cockpit
+    keywords: [artifacts, lineage, evidence, exports]
+    topicLinks:
+      - topicId: artifacts-overview
+        title: Artifact Browser Overview
+      - topicId: audit-overview
+        title: Audit Trail Overview
+
+  - routeSlug: audit
+    routePath: /audit
+    pageTitle: Audit Trail
+    purpose: Review who changed what, when, and why across governed operations.
+    coreActions:
+      - label: Filter audit events
+        description: Focus on actor, operation, and entity type.
+      - label: Investigate changes
+        description: Reconstruct decisions and mutations over time.
+      - label: Export evidence
+        description: Produce audit records for governance review.
+    inputsOutputs: Event records in, compliance-ready evidence out.
+    permissions: Operator
+    relatedPages:
+      - routeSlug: artifacts
+        title: Artifacts
+      - routeSlug: approvals
+        title: Approval Center
+    keywords: [audit, compliance, events, evidence]
+    topicLinks:
+      - topicId: audit-overview
+        title: Audit Trail Overview
+
+  - routeSlug: questionnaires
+    routePath: /questionnaires
+    pageTitle: Questionnaires
+    purpose: Complete missing inputs that unblock phases and improve output quality.
+    coreActions:
+      - label: Answer required questions
+        description: Resolve open dependencies for active phases.
+      - label: Save progress
+        description: Persist partial answers safely for later completion.
+      - label: Re-evaluate scope
+        description: Trigger reassessment after key answers change.
+    inputsOutputs: Structured questions in, validated answers and status updates out.
+    permissions: Operator
+    relatedPages:
+      - routeSlug: decisions
+        title: Decisions
+      - routeSlug: pipeline
+        title: Pipeline
+    keywords: [questionnaires, prompts, requirements, reevaluate]
+    topicLinks:
+      - topicId: questionnaires-overview
+        title: Questionnaire Workflow
+
+  - routeSlug: workspaces
+    routePath: /workspaces
+    pageTitle: Workspaces
+    purpose: Manage workspace context, credentials, and project registration boundaries.
+    coreActions:
+      - label: Create workspace
+        description: Define an isolated workspace for a project stream.
+      - label: Register repository
+        description: Link source repositories and associated projects.
+      - label: Validate credentials
+        description: Confirm tokens and identities are configured.
+    inputsOutputs: Workspace metadata in, scoped execution context out.
+    permissions: Operator
+    relatedPages:
+      - routeSlug: commands
+        title: Commands
+      - routeSlug: administration
+        title: Administration
+    keywords: [workspaces, repositories, projects, credentials]
+    topicLinks:
+      - topicId: workspaces-overview
+        title: Workspace Model
+    stateVariants:
+      - condition: no_active_workspace
+        additionalContent: No active workspace is selected; create or select one to continue.
+
+  - routeSlug: dashboard
+    routePath: /dashboard
+    pageTitle: Dashboard
+    purpose: Monitor operational KPIs, health signals, and what to do next.
+    coreActions:
+      - label: Read KPI signals
+        description: Interpret trend and status indicators.
+      - label: Follow guidance
+        description: Use recommendation cards to choose the next action.
+      - label: Watch runtime health
+        description: Detect degradation and intervene early.
+    inputsOutputs: Aggregated telemetry in, operational guidance out.
+    permissions: Operator
+    relatedPages:
+      - routeSlug: cockpit
+        title: Cockpit
+      - routeSlug: pipeline
+        title: Pipeline
+    keywords: [dashboard, metrics, kpi, health]
+    topicLinks:
+      - topicId: dashboard-metrics
+        title: Dashboard Metrics Guide
+
+  - routeSlug: administration
+    routePath: /administration
+    pageTitle: Administration
+    purpose: Configure platform settings, roles, identity policies, and MCP controls.
+    coreActions:
+      - label: Manage platform settings
+        description: Update system-level operational parameters.
+      - label: Configure identity and consent
+        description: Control access and delegated permissions.
+      - label: Review MCP controls
+        description: Audit and adjust tool permissions and overrides.
+    inputsOutputs: Admin policies in, enforced platform configuration out.
+    permissions: Admin
+    relatedPages:
+      - routeSlug: approvals
+        title: Approval Center
+      - routeSlug: cockpit
+        title: Cockpit
+    keywords: [administration, identity, consent, mcp]
+    topicLinks:
+      - topicId: administration-overview
+        title: Administration Overview
+
+  - routeSlug: cockpit
+    routePath: /cockpit
+    pageTitle: Cockpit
+    purpose: Observe live runtime telemetry, approvals, alerts, and execution risk at a glance.
+    coreActions:
+      - label: Watch live telemetry
+        description: Track event stream and current execution conditions.
+      - label: Prioritize interventions
+        description: Address blocking approvals and failures quickly.
+      - label: Navigate to root cause
+        description: Jump from signal to detail views for action.
+    inputsOutputs: Live operational signals in, incident response direction out.
+    permissions: Operator
+    relatedPages:
+      - routeSlug: approvals
+        title: Approval Center
+      - routeSlug: sessions
+        title: Sessions
+    keywords: [cockpit, telemetry, observability, alerts]
+    topicLinks:
+      - topicId: cockpit-overview
+        title: Cockpit Overview
+    stateVariants:
+      - condition: pending_approvals_gt_0
+        additionalContent: Pending approvals are visible and require operator action.
+      - condition: agent_has_error
+        additionalContent: At least one agent error was detected; drill into recent run diagnostics.
+
+  - routeSlug: decisions
+    routePath: /decisions
+    pageTitle: Policies and Decisions
+    purpose: Manage open questions, policy decisions, and operational governance outcomes.
+    coreActions:
+      - label: Create open questions
+        description: Capture unresolved decisions that block progress.
+      - label: Resolve decisions
+        description: Record approved outcomes and rationale.
+      - label: Track deferred items
+        description: Keep postponed decisions visible and accountable.
+    inputsOutputs: Decision records in, governed policy outcomes out.
+    permissions: Operator
+    relatedPages:
+      - routeSlug: approvals
+        title: Approval Center
+      - routeSlug: questionnaires
+        title: Questionnaires
+    keywords: [policies, decisions, governance, questions]
+    topicLinks:
+      - topicId: policies-overview
+        title: Policies and Decisions Overview

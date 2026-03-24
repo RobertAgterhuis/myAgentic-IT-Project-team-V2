@@ -494,6 +494,56 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     }
   );
 
+  /* ── GET /api/auth/config/validate ───────────────────────── */
+  app.get(
+    '/api/auth/config/validate',
+    { schema: { tags: ['auth'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      const host = process.env.HOST || '127.0.0.1';
+      const port = process.env.PORT || '3000';
+      const callbackBase = process.env.AUTH_CALLBACK_URL || `http://${host}:${port}`;
+      const githubExpectedCallback = `${callbackBase}/api/auth/callback`;
+      const entraExpectedCallback =
+        process.env.ENTRA_REDIRECT_URI || `${callbackBase}/api/auth/entra/callback`;
+
+      const githubVars = [
+        { name: 'GITHUB_CLIENT_ID', present: Boolean(process.env.GITHUB_CLIENT_ID) },
+        { name: 'GITHUB_CLIENT_SECRET', present: Boolean(process.env.GITHUB_CLIENT_SECRET) },
+      ];
+      const githubConfigured = githubVars.every((entry) => entry.present);
+
+      const entraVars = [
+        { name: 'ENTRA_CLIENT_ID', present: Boolean(process.env.ENTRA_CLIENT_ID) },
+        { name: 'ENTRA_TENANT_ID', present: Boolean(process.env.ENTRA_TENANT_ID) },
+        { name: 'ENTRA_CLIENT_SECRET', present: Boolean(process.env.ENTRA_CLIENT_SECRET) },
+      ];
+      const entraConfigured = entraVars.every((entry) => entry.present);
+
+      return reply.send({
+        allConfigured: githubConfigured && entraConfigured,
+        github: {
+          configured: githubConfigured,
+          providerEnabled: authManager ? authManager.getProvider('github') !== null : false,
+          requiredVariables: githubVars,
+          callback: {
+            envName: 'AUTH_CALLBACK_URL',
+            effectiveBaseUrl: callbackBase,
+            callbackUrl: githubExpectedCallback,
+          },
+        },
+        entra: {
+          configured: entraConfigured,
+          providerEnabled: authManager ? authManager.getProvider('entra') !== null : false,
+          requiredVariables: entraVars,
+          callback: {
+            envName: 'ENTRA_REDIRECT_URI',
+            callbackUrl: entraExpectedCallback,
+          },
+        },
+      });
+    }
+  );
+
   /* ── GET /api/admin/users ─────────────────────────────────── */
   app.get(
     '/api/admin/users',

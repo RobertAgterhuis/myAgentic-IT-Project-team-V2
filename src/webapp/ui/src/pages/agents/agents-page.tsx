@@ -6,6 +6,7 @@ import { useState, useMemo } from 'react';
 import { Text } from '@/components/ui/typography';
 import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
+import { PageHelpStrip } from '@/components/help-panel/page-help-strip';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { EmptyState } from '@/components/ui/empty-state';
@@ -123,6 +124,8 @@ export default function AgentsPage() {
           { id: 'governed', label: 'Governed' },
         ]}
       />
+
+      <PageHelpStrip routeSlug="agents" />
 
       <ContextStrip items={contextItems} />
 

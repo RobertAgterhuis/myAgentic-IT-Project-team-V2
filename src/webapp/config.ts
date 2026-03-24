@@ -54,7 +54,7 @@ export const Q_INDEX_FILE = path.join(BUSINESS_DOCS, 'questionnaire-index.md');
 export const DECISIONS_FILE = path.join(BUSINESS_DOCS, 'decisions.md');
 export const DECISIONS_DIR = path.join(BUSINESS_DOCS, 'decisions');
 export const COMMAND_QUEUE = path.join(SESSION_DIR, 'command-queue.json');
-export const HELP_DIR = path.join(PROJECT_ROOT, 'docs', 'help');
+export const HELP_DIR = path.join(PROJECT_ROOT, 'src', 'webapp', 'ui', 'src', 'help');
 export const ANALYTICS_FILE = path.join(BUSINESS_DOCS, 'analytics-events.json');
 export const METRICS_FILE = path.join(BUSINESS_DOCS, 'metrics', 'runtime-metrics.json');
 

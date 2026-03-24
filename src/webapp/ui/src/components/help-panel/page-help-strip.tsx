@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronDown, ChevronRight, HelpCircle, Lightbulb } from 'lucide-react';
 import { usePageHelp } from '@/hooks';
 import { useUIStore } from '@/stores/ui-store';
@@ -27,13 +28,52 @@ interface PageHelpStripProps {
   className?: string;
 }
 
+interface VariantAction {
+  key: string;
+  label: string;
+  to: string;
+}
+
 export function PageHelpStrip({ routeSlug, className }: PageHelpStripProps) {
+  const navigate = useNavigate();
   const storageKey = `${STORAGE_PREFIX}${routeSlug}`;
   const [collapsed, setCollapsed] = useState<boolean>(() => readCollapsed(storageKey));
   const { data: pageHelp } = usePageHelp(routeSlug);
   const openHelpForRoute = useUIStore((s) => s.openHelpForRoute);
 
   const topActions = useMemo(() => pageHelp?.coreActions.slice(0, 5) ?? [], [pageHelp]);
+  const activeVariants = useMemo(() => pageHelp?.stateVariants ?? [], [pageHelp]);
+  const variantActions = useMemo(
+    () =>
+      activeVariants.reduce<VariantAction[]>((actions, variant) => {
+        switch (variant.condition) {
+          case 'no_active_workspace':
+            actions.push({ key: variant.condition, label: 'Open Workspaces', to: '/workspaces' });
+            break;
+          case 'pending_approvals_gt_0':
+            actions.push({
+              key: variant.condition,
+              label: 'Open Approval Center',
+              to: '/approvals',
+            });
+            break;
+          case 'gate_failed':
+            actions.push({ key: variant.condition, label: 'Open Pipeline', to: '/pipeline' });
+            break;
+          case 'agent_has_error':
+            actions.push({
+              key: variant.condition,
+              label: 'Open Sessions Timeline',
+              to: '/sessions',
+            });
+            break;
+          default:
+            break;
+        }
+        return actions;
+      }, []),
+    [activeVariants]
+  );
 
   if (!pageHelp) {
     return null;
@@ -106,6 +146,35 @@ export function PageHelpStrip({ routeSlug, className }: PageHelpStripProps) {
             </li>
           ))}
         </ul>
+      )}
+
+      {!collapsed && activeVariants.length > 0 && (
+        <div className="mt-3 rounded-lg border border-warning/40 bg-warning/10 p-2">
+          <div className="text-xs font-semibold uppercase tracking-wide text-warning">
+            Context-aware guidance
+          </div>
+          <ul className="mt-1 space-y-1">
+            {activeVariants.map((variant) => (
+              <li key={variant.condition} className="text-xs text-foreground/90">
+                {variant.additionalContent}
+              </li>
+            ))}
+          </ul>
+          {variantActions.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {variantActions.map((action) => (
+                <button
+                  key={action.key}
+                  type="button"
+                  className="inline-flex items-center rounded-md border border-border/60 bg-background/80 px-2 py-1 text-xs font-medium hover:bg-background"
+                  onClick={() => navigate(action.to)}
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       )}
     </section>
   );

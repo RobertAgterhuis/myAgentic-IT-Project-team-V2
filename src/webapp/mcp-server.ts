@@ -128,7 +128,7 @@ interface QuestionnaireSummary {
 const PROJECT_ROOT: string = path.resolve(__dirname, '../..');
 const DOC_ROOT: string = path.join(PROJECT_ROOT, 'docs');
 const BUSINESS_DOCS: string = path.join(PROJECT_ROOT, 'BusinessDocs');
-const HELP_DIR: string = path.join(PROJECT_ROOT, 'docs', 'help');
+const HELP_DIR: string = path.join(PROJECT_ROOT, 'src', 'webapp', 'ui', 'src', 'help');
 const SESSION_DIR: string = path.join(BUSINESS_DOCS, 'session');
 const DECISIONS_PATH: string = path.join(BUSINESS_DOCS, 'decisions.md');
 const AUDIT_DIR: string = path.join(BUSINESS_DOCS, 'audit');

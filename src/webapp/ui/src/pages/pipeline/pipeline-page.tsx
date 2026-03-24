@@ -16,6 +16,7 @@ import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
 import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
+import { PageHelpStrip } from '@/components/help-panel/page-help-strip';
 import { useOrchestratorStatus, useProgress } from '@/hooks';
 import type { AgentEntry, PhaseEntry, SessionInfo } from '@/lib/api-types';
 import { cn } from '@/lib/utils';
@@ -329,6 +330,8 @@ export default function PipelinePage() {
           </Button>
         }
       />
+
+      <PageHelpStrip routeSlug="pipeline" />
 
       <ContextStrip items={contextItems} />
 

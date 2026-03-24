@@ -809,6 +809,41 @@ describe('routes/auth handlers', () => {
     });
   });
 
+  describe('GET /api/auth/config/validate', () => {
+    it('returns validation payload with github and entra sections', async () => {
+      const handler = routes['GET /api/auth/config/validate'];
+      const req = createReq('/api/auth/config/validate');
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(200);
+      const body = parsed(res);
+      expect(typeof body.allConfigured).toBe('boolean');
+      expect(body.github).toBeDefined();
+      expect(body.entra).toBeDefined();
+      expect(Array.isArray(body.github.requiredVariables)).toBe(true);
+      expect(Array.isArray(body.entra.requiredVariables)).toBe(true);
+    });
+
+    it('returns providerEnabled false when auth manager is unavailable', async () => {
+      const routesNoAuth = createAuthRoutes({
+        _authManager: undefined,
+        _authMiddleware: undefined,
+      });
+      const handler = routesNoAuth['GET /api/auth/config/validate'];
+      const req = createReq('/api/auth/config/validate');
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(200);
+      const body = parsed(res);
+      expect(body.github.providerEnabled).toBe(false);
+      expect(body.entra.providerEnabled).toBe(false);
+    });
+  });
+
   /* ── GET /api/admin/users ────────────────────────────────────── */
 
   describe('GET /api/admin/users', () => {

@@ -1,1 +1,6 @@
-{"status":"IDLE","mode":"CREATE","state_history":[]}
+{
+  "status": "PAUSED",
+  "mode": "CREATE",
+  "current_phase": "PHASE_2",
+  "current_agent": "developer"
+}

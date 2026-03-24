@@ -1,15 +1,28 @@
 'use strict';
 
+// Track the module loaded per-test so afterEach closes the correct instance.
+let _currentMod;
+
 async function loadRedisModule() {
   vi.resetModules();
-  return import('../../src/webapp/redis.ts');
+  _currentMod = await import('../../src/webapp/redis.ts');
+  return _currentMod;
 }
 
 describe('redis.ts', () => {
   afterEach(async () => {
     delete process.env.REDIS_URL;
-    const mod = await loadRedisModule();
-    await mod.closeRedisConnection();
+    if (_currentMod) {
+      await _currentMod.closeRedisConnection();
+      _currentMod = null;
+    }
+  });
+
+  afterAll(async () => {
+    // Allow any in-flight ioredis retry timers and console-log callbacks to
+    // drain before Vitest closes the worker RPC channel (prevents
+    // EnvironmentTeardownError: Closing rpc while onUserConsoleLog was pending).
+    await new Promise((resolve) => setTimeout(resolve, 200));
   });
 
   it('returns null when no redis url is configured', async () => {

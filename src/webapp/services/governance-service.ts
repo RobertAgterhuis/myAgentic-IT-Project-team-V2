@@ -55,6 +55,7 @@ export class GovernanceService {
   }
 
   private static readonly TOOL_EXEC_GATE_ID = 'G-REL-01';
+  private static readonly TOOL_EXEC_ESCALATION_GATE_ID = 'G-REL-03';
   private static readonly TOOL_EXEC_STAGE = 'RELEASE' as ApprovalRequest['stage'];
 
   /* ── List pending approvals ─────────────────────────────────── */
@@ -141,10 +142,7 @@ export class GovernanceService {
 
     this.expireTimedOutApprovals(engine);
 
-    const existing = engine
-      .getApprovals(input.entityId, GovernanceService.TOOL_EXEC_GATE_ID)
-      .slice()
-      .sort((a, b) => String(b.requested_at).localeCompare(String(a.requested_at)));
+    const existing = this.getToolExecutionApprovals(engine, input.entityId);
 
     const pending = existing.find((approval) => approval.status === 'PENDING');
     if (pending) {
@@ -154,6 +152,19 @@ export class GovernanceService {
         status: pending.status,
         requiredRole: pending.required_role,
         requestedAt: pending.requested_at,
+      };
+    }
+
+    const latest = existing[0];
+    if (latest?.status === 'EXPIRED') {
+      const escalated = this.createEscalatedToolExecutionApproval(engine, input.entityId);
+      engine.saveTo?.(this.ctx.store, this.governanceStatePath);
+      return {
+        pending: true,
+        approvalId: escalated.id,
+        status: escalated.status,
+        requiredRole: escalated.required_role,
+        requestedAt: escalated.requested_at,
       };
     }
 
@@ -187,10 +198,7 @@ export class GovernanceService {
 
     this.expireTimedOutApprovals(engine);
 
-    const sorted = engine
-      .getApprovals(entityId, GovernanceService.TOOL_EXEC_GATE_ID)
-      .slice()
-      .sort((a, b) => String(b.requested_at).localeCompare(String(a.requested_at)));
+    const sorted = this.getToolExecutionApprovals(engine, entityId);
 
     const approved = sorted.find((approval) => approval.status === 'APPROVED');
     if (approved) {
@@ -203,6 +211,17 @@ export class GovernanceService {
     }
 
     const latest = sorted[0];
+    if (latest?.status === 'EXPIRED') {
+      const escalated = this.createEscalatedToolExecutionApproval(engine, entityId);
+      engine.saveTo?.(this.ctx.store, this.governanceStatePath);
+      return {
+        approved: false,
+        pending: true,
+        approvalId: escalated.id,
+        status: escalated.status,
+      };
+    }
+
     if (latest) {
       return {
         approved: false,
@@ -222,6 +241,37 @@ export class GovernanceService {
     if (expired.length > 0) {
       engine.saveTo?.(this.ctx.store, this.governanceStatePath);
     }
+  }
+
+  private getToolExecutionApprovals(engine: GovernanceEngine, entityId: string): ApprovalRequest[] {
+    return [
+      ...engine.getApprovals(entityId, GovernanceService.TOOL_EXEC_GATE_ID),
+      ...engine.getApprovals(entityId, GovernanceService.TOOL_EXEC_ESCALATION_GATE_ID),
+    ]
+      .slice()
+      .sort((a, b) => String(b.requested_at).localeCompare(String(a.requested_at)));
+  }
+
+  private createEscalatedToolExecutionApproval(
+    engine: GovernanceEngine,
+    entityId: string
+  ): ApprovalRequest {
+    const existingEscalation = engine
+      .getApprovals(entityId, GovernanceService.TOOL_EXEC_ESCALATION_GATE_ID)
+      .slice()
+      .sort((a, b) => String(b.requested_at).localeCompare(String(a.requested_at)));
+
+    const pendingEscalation = existingEscalation.find((approval) => approval.status === 'PENDING');
+    if (pendingEscalation) {
+      return pendingEscalation;
+    }
+
+    return engine.requestApproval(
+      entityId,
+      GovernanceService.TOOL_EXEC_STAGE,
+      GovernanceService.TOOL_EXEC_ESCALATION_GATE_ID,
+      'system-escalation'
+    );
   }
 
   private resolveEngine(): GovernanceEngine | null {

@@ -77,6 +77,14 @@ const LESSONS_LEARNED_PATH = 'BusinessDocs/retrospectives/lessons-learned.md';
 const VELOCITY_LOG_PATH = 'BusinessDocs/retrospectives/velocity-log.json';
 const BLOCKER_MATRIX_PATH = 'BusinessDocs/synthesis/cross-team-blocker-matrix.md';
 const REEVALUATE_TRIGGER_PATH = 'BusinessDocs/session/reevaluate-trigger.json';
+const SYNTHESIS_REQUIRED_PATHS = [
+  'BusinessDocs/synthesis/final-report-master.md',
+  'BusinessDocs/synthesis/final-report-business.md',
+  'BusinessDocs/synthesis/final-report-tech.md',
+  'BusinessDocs/synthesis/final-report-ux.md',
+  'BusinessDocs/synthesis/final-report-marketing.md',
+  'BusinessDocs/synthesis/cross-team-blocker-matrix.md',
+];
 
 /** Trailing sprint count for velocity average */
 const VELOCITY_WINDOW = 3;
@@ -287,6 +295,65 @@ function loadDecisionsAndTriggers(
     blockingQuestions,
     reevaluate,
     activeCategories,
+  };
+}
+
+function validateSynthesisArtifacts(
+  store: SprintGateStore,
+  options: {
+    synthesisPaths?: string[];
+    minContentChars?: number;
+  } = {}
+) {
+  const synthesisPaths =
+    Array.isArray(options.synthesisPaths) && options.synthesisPaths.length > 0
+      ? options.synthesisPaths
+      : SYNTHESIS_REQUIRED_PATHS;
+  const minContentChars =
+    typeof options.minContentChars === 'number' && options.minContentChars > 0
+      ? options.minContentChars
+      : 80;
+
+  const issues: Array<Record<string, unknown>> = [];
+  const checkedFiles: Array<{ path: string; exists: boolean; chars: number }> = [];
+
+  for (const filePath of synthesisPaths) {
+    if (!store.exists(filePath)) {
+      checkedFiles.push({ path: filePath, exists: false, chars: 0 });
+      issues.push({
+        severity: 'CRITICAL',
+        rule: 'MISSING_SYNTHESIS_ARTIFACT',
+        description: `Missing required synthesis artifact: ${filePath}`,
+        path: filePath,
+      });
+      continue;
+    }
+
+    let chars = 0;
+    try {
+      chars = store.readFile(filePath).trim().length;
+    } catch {
+      chars = 0;
+    }
+
+    checkedFiles.push({ path: filePath, exists: true, chars });
+    if (chars < minContentChars) {
+      issues.push({
+        severity: 'CRITICAL',
+        rule: 'INVALID_SYNTHESIS_ARTIFACT',
+        description: `Synthesis artifact appears incomplete: ${filePath}`,
+        path: filePath,
+        actualChars: chars,
+        minChars: minContentChars,
+      });
+    }
+  }
+
+  return {
+    valid: issues.length === 0,
+    issues,
+    checkedFiles,
+    minContentChars,
   };
 }
 
@@ -780,6 +847,17 @@ function runSprintGate(store: SprintGateStore, options: Record<string, unknown>)
   // Step 0: Decisions & reevaluate triggers
   const step0 = loadDecisionsAndTriggers(store, sprintId, paths, templateConfig);
 
+  // Step 0.5: Synthesis artifact re-validation
+  const step0_5 = validateSynthesisArtifacts(store, {
+    synthesisPaths: Array.isArray((paths as Record<string, unknown>).synthesisPaths)
+      ? ((paths as Record<string, unknown>).synthesisPaths as string[])
+      : undefined,
+    minContentChars:
+      typeof (paths as Record<string, unknown>).synthesisMinContentChars === 'number'
+        ? ((paths as Record<string, unknown>).synthesisMinContentChars as number)
+        : undefined,
+  });
+
   // Step 1: Definition of Ready
   const step1 = checkDefinitionOfReady(stories);
 
@@ -835,6 +913,9 @@ function runSprintGate(store: SprintGateStore, options: Record<string, unknown>)
     });
   }
 
+  // Step 0.5 blockers: synthesis output must be valid before planning proceeds.
+  allBlockers.push(...step0_5.issues.filter((i) => i.severity === 'CRITICAL'));
+
   // Step 1 blockers
   allBlockers.push(...step1.issues.filter((i) => i.severity === 'CRITICAL'));
 
@@ -867,6 +948,12 @@ function runSprintGate(store: SprintGateStore, options: Record<string, unknown>)
       blockingQuestions: step0.blockingQuestions,
       reevaluate: step0.reevaluate,
       activeCategories: step0.activeCategories,
+    },
+    step0_5_synthesisValidation: {
+      valid: step0_5.valid,
+      issues: step0_5.issues,
+      checkedFiles: step0_5.checkedFiles,
+      minContentChars: step0_5.minContentChars,
     },
     step1_definitionOfReady: {
       ready: step1.ready,
@@ -918,6 +1005,7 @@ function runSprintGate(store: SprintGateStore, options: Record<string, unknown>)
     velocityRatio: step3.ratio,
     openBlockerCount: step4.openBlockers.length,
     advisoryCount: step4.advisories.length,
+    synthesisIssues: step0_5.issues.length,
     decisionsLoaded: step0.decisions.length,
     activeCategoryCount: step0.activeCategories.length,
     policyFailures: step5.report?.summary.failed ?? 0,
@@ -1030,12 +1118,14 @@ export {
   VELOCITY_LOG_PATH,
   BLOCKER_MATRIX_PATH,
   REEVALUATE_TRIGGER_PATH,
+  SYNTHESIS_REQUIRED_PATHS,
   VELOCITY_WINDOW,
   CAPACITY_THRESHOLD,
   METRICS_STORE_PATH,
   parseDecisions,
   loadReevaluateTrigger,
   loadDecisionsAndTriggers,
+  validateSynthesisArtifacts,
   checkDefinitionOfReady,
   parseLessonsLearned,
   loadLessonsLearned,

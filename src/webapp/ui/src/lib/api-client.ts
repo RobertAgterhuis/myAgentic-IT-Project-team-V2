@@ -15,9 +15,32 @@ export class ApiError extends Error {
 }
 
 const BASE_URL = '/api';
+export const AUTH_EXPIRED_EVENT = 'agentic:auth-expired';
+const AUTH_EXPIRED_DEBOUNCE_MS = 15_000;
+
+let lastAuthExpiredEventAt = 0;
+
+function emitAuthExpiredEvent(status: number, endpoint: string): void {
+  if (typeof window === 'undefined') return;
+  const now = Date.now();
+  if (now - lastAuthExpiredEventAt < AUTH_EXPIRED_DEBOUNCE_MS) return;
+  lastAuthExpiredEventAt = now;
+  window.dispatchEvent(
+    new CustomEvent(AUTH_EXPIRED_EVENT, {
+      detail: {
+        status,
+        endpoint,
+        at: new Date(now).toISOString(),
+      },
+    })
+  );
+}
 
 async function handleResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
+    if (response.status === 401) {
+      emitAuthExpiredEvent(response.status, response.url || 'unknown');
+    }
     let body: unknown;
     try {
       body = await response.json();

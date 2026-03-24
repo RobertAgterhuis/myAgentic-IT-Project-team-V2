@@ -30,8 +30,10 @@ const {
   VELOCITY_LOG_PATH,
   BLOCKER_MATRIX_PATH,
   REEVALUATE_TRIGGER_PATH,
+  SYNTHESIS_REQUIRED_PATHS,
   VELOCITY_WINDOW,
   CAPACITY_THRESHOLD,
+  validateSynthesisArtifacts,
 } = require('../../platform/engine/sprint-gate');
 
 // ─── Test Helpers ────────────────────────────────────────────
@@ -173,6 +175,15 @@ function buildStory(overrides = {}) {
     dependencies: [],
     ...overrides,
   };
+}
+
+function buildSynthesisFiles(paths = SYNTHESIS_REQUIRED_PATHS) {
+  return Object.fromEntries(
+    paths.map((p) => [
+      p,
+      '# Synthesis Report\n\nThis artifact contains validated synthesis content and operator-ready planning guidance for sprint gating.',
+    ])
+  );
 }
 
 // ═════════════════════════════════════════════════════════════
@@ -766,12 +777,37 @@ describe('checkBlockers', () => {
   });
 });
 
+describe('validateSynthesisArtifacts', () => {
+  test('passes when all required synthesis artifacts exist with content', () => {
+    const files = buildSynthesisFiles();
+    const store = createMockStore(files);
+    const result = validateSynthesisArtifacts(store);
+    expect(result.valid).toBe(true);
+    expect(result.issues).toHaveLength(0);
+    expect(result.checkedFiles).toHaveLength(SYNTHESIS_REQUIRED_PATHS.length);
+  });
+
+  test('fails when a required synthesis artifact is missing', () => {
+    const files = Object.fromEntries(
+      SYNTHESIS_REQUIRED_PATHS.slice(1).map((p) => [p, '# Report\n\ncontent'])
+    );
+    const store = createMockStore(files);
+    const result = validateSynthesisArtifacts(store);
+    expect(result.valid).toBe(false);
+    expect(result.issues.some((i) => i.rule === 'MISSING_SYNTHESIS_ARTIFACT')).toBe(true);
+  });
+});
+
 // ═════════════════════════════════════════════════════════════
 // AC-7: SPRINT GATE RUNNER — VERDICT
 // ═════════════════════════════════════════════════════════════
 
 describe('runSprintGate', () => {
   function buildFullStore(overrides = {}) {
+    const synthesisFixtures = buildSynthesisFiles(
+      SYNTHESIS_REQUIRED_PATHS.filter((p) => p !== BLOCKER_MATRIX_PATH)
+    );
+
     return createMockStore({
       [DECISIONS_PATH]: overrides.decisions || buildDecisionsMd(),
       [LESSONS_LEARNED_PATH]:
@@ -797,6 +833,7 @@ describe('runSprintGate', () => {
             status: 'RESOLVED',
           },
         ]),
+      ...synthesisFixtures,
       ...(overrides.extra || {}),
     });
   }
@@ -965,13 +1002,14 @@ describe('runSprintGate', () => {
     expect(s).toHaveProperty('timestamp');
   });
 
-  test('steps object contains all 5 step results', () => {
+  test('steps object contains all sprint-gate step results', () => {
     const store = buildFullStore();
     const result = runSprintGate(store, {
       sprintId: 'SP-5',
       stories: [buildStory()],
     });
     expect(result.steps).toHaveProperty('step0_decisions');
+    expect(result.steps).toHaveProperty('step0_5_synthesisValidation');
     expect(result.steps).toHaveProperty('step1_definitionOfReady');
     expect(result.steps).toHaveProperty('step2_lessonsLearned');
     expect(result.steps).toHaveProperty('step3_velocityCapacity');
@@ -1001,30 +1039,53 @@ describe('runSprintGate', () => {
     expect(result.summary.exitCriteria.unmet.some((c) => c.id === 'B1-SPR-003')).toBe(true);
   });
 
+  test('returns NOT_READY when synthesis artifacts fail validation', () => {
+    const store = buildFullStore();
+    delete store._files['BusinessDocs/synthesis/final-report-master.md'];
+    const result = runSprintGate(store, {
+      sprintId: 'SP-5',
+      stories: [buildStory()],
+    });
+    expect(result.verdict).toBe('NOT_READY');
+    expect(result.blockers.some((b) => b.rule === 'MISSING_SYNTHESIS_ARTIFACT')).toBe(true);
+    expect(result.steps.step0_5_synthesisValidation.valid).toBe(false);
+  });
+
   test('handles gracefully when all data files are missing', () => {
     const store = createMockStore({});
     const result = runSprintGate(store, {
       sprintId: 'SP-5',
       stories: [buildStory()],
     });
-    // Should still produce a verdict (READY since no blockers detected from missing files)
-    expect(result.verdict).toBe('READY');
+    // Missing required synthesis artifacts must block sprint planning.
+    expect(result.verdict).toBe('NOT_READY');
+    expect(result.blockers.some((b) => b.rule === 'MISSING_SYNTHESIS_ARTIFACT')).toBe(true);
     expect(result.steps.step2_lessonsLearned.count).toBe(0);
   });
 
   test('accepts custom paths for all data files', () => {
+    const customSynthesisPaths = [
+      'custom/synthesis-master.md',
+      'custom/synthesis-business.md',
+      'custom/synthesis-tech.md',
+      'custom/synthesis-ux.md',
+      'custom/synthesis-marketing.md',
+      'custom/blockers.md',
+    ];
     const customPaths = {
       decisionsPath: 'custom/decisions.md',
       lessonsPath: 'custom/lessons.md',
       velocityPath: 'custom/velocity.json',
       blockerPath: 'custom/blockers.md',
       triggerPath: 'custom/trigger.json',
+      synthesisPaths: customSynthesisPaths,
     };
     const store = createMockStore({
       'custom/decisions.md': buildDecisionsMd(),
       'custom/lessons.md': buildLessonsLearnedMd(),
       'custom/velocity.json': buildVelocityLogJson([{ id: 'SP-1', planned: 5, completed: 5 }]),
       'custom/blockers.md': buildBlockerMatrixMd([]),
+      ...buildSynthesisFiles(customSynthesisPaths.filter((p) => p !== 'custom/blockers.md')),
     });
     const result = runSprintGate(store, {
       sprintId: 'SP-5',
@@ -1116,6 +1177,7 @@ describe('engine integration — sprintGate', () => {
       [LESSONS_LEARNED_PATH]: buildLessonsLearnedMd(),
       [VELOCITY_LOG_PATH]: buildVelocityLogJson([{ id: 'SP-1', planned: 10, completed: 10 }]),
       [BLOCKER_MATRIX_PATH]: buildBlockerMatrixMd([]),
+      ...buildSynthesisFiles(SYNTHESIS_REQUIRED_PATHS.filter((p) => p !== BLOCKER_MATRIX_PATH)),
     });
     const engine = createEngine({
       store,

@@ -46,6 +46,15 @@ export default function LoginPage() {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
 
+  const search = new URLSearchParams(window.location.search);
+  const reason = search.get('reason');
+  const reasonMessage =
+    reason === 'session-expired'
+      ? 'Your session has expired. Sign in again to continue where you left off.'
+      : reason === 'auth-required'
+        ? 'Sign in is required to access that page.'
+        : null;
+
   const checkAuthAvailability = useCallback(async () => {
     try {
       const response = await fetch('/api/auth/me', { credentials: 'include' });
@@ -169,6 +178,15 @@ export default function LoginPage() {
             <Text className="text-muted-foreground text-sm">Sign in to access the platform.</Text>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
+            {reasonMessage && (
+              <AlertBanner variant="warning" icon={<AlertTriangle className="size-4" />}>
+                <div className="space-y-1">
+                  <Text className="font-medium">Re-authentication required</Text>
+                  <Text className="text-sm">{reasonMessage}</Text>
+                </div>
+              </AlertBanner>
+            )}
+
             {!authStatus.available && (
               <AlertBanner variant="error" icon={<AlertTriangle className="size-4" />}>
                 <div className="space-y-1">

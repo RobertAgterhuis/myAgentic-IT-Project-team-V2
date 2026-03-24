@@ -65,13 +65,17 @@ export { VitestTestingProvider, type VitestTestingConfig } from './providers/vit
 export { OpenAILLMProvider, type OpenAIConfig } from './providers/openai-llm.js';
 export { AnthropicLLMProvider, type AnthropicConfig } from './providers/anthropic-llm.js';
 export { CopilotLLMProvider, type CopilotConfig } from './providers/copilot-llm.js';
+export { LocalLLMProvider, type LocalLLMConfig } from './providers/local-llm.js';
 
 // ─── Provider Registry ───────────────────────────────────────
 
 export {
   ProviderRegistry,
   createDefaultRegistry,
+  probeProviderHealth,
+  buildLlmFallbackPolicy,
   type ProviderType,
   type ProviderTypeMap,
   type ProviderFactory,
+  type ProviderFallbackPolicy,
 } from './registry.js';

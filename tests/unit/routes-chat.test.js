@@ -171,6 +171,166 @@ describe('routes/chat', () => {
     ).toBe(true);
   });
 
+  it('emits chat token and completion SSE events for streamed responses', async () => {
+    const ctx = createCtx();
+    const localRoutes = createTestableRoutes(registerRoutes, ctx);
+    const res = createRes();
+
+    await localRoutes['POST /api/v1/chat/message'](
+      createReq('/api/v1/chat/message', {
+        message: 'What is the current session status?',
+      }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+
+    const tokenCalls = ctx.sseNotify.mock.calls.filter(
+      (call) => call[0] === 'message' && call[1]?.type === 'chat_token'
+    );
+    expect(tokenCalls.length).toBeGreaterThan(0);
+
+    expect(
+      ctx.sseNotify.mock.calls.some(
+        (call) => call[0] === 'message' && call[1]?.type === 'chat_stream_complete'
+      )
+    ).toBe(true);
+  });
+
+  it('streams provider-native chat chunks to SSE when chat LLM provider is configured', async () => {
+    const ctx = {
+      ...createCtx(),
+      _chatLlmProvider: {
+        providerName: 'mock-llm',
+        capabilities: {
+          supportsStreaming: true,
+          supportsToolUse: false,
+          supportsEmbeddings: false,
+          supportsVision: false,
+        },
+        complete: vi.fn().mockResolvedValue({
+          content: 'Live tokens',
+          model: 'mock-model',
+          usage: { promptTokens: 1, completionTokens: 2, totalTokens: 3 },
+          finishReason: 'stop',
+        }),
+        embed: vi.fn().mockResolvedValue({
+          embedding: [],
+          model: 'mock-model',
+          usage: { totalTokens: 0 },
+        }),
+        listModels: vi.fn().mockResolvedValue(['mock-model']),
+        stream: vi.fn().mockImplementation(async (_input, onChunk) => {
+          onChunk('Live ');
+          onChunk('tokens');
+          return {
+            content: 'Live tokens',
+            model: 'mock-model',
+            usage: { promptTokens: 1, completionTokens: 2, totalTokens: 3 },
+            finishReason: 'stop',
+          };
+        }),
+      },
+    };
+    const localRoutes = createTestableRoutes(registerRoutes, ctx);
+    const res = createRes();
+
+    await localRoutes['POST /api/v1/chat/message'](
+      createReq('/api/v1/chat/message', {
+        message: 'Can you summarize the current status with context?',
+      }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const payload = JSON.parse(res.body);
+    expect(payload.message.content).toBe('Live tokens');
+
+    const tokenCalls = ctx.sseNotify.mock.calls.filter(
+      (call) => call[0] === 'message' && call[1]?.type === 'chat_token'
+    );
+    expect(tokenCalls.map((call) => call[1].token)).toEqual(['Live ', 'tokens']);
+  });
+
+  it('executes provider tool-use loop and uses final completion in one turn', async () => {
+    const completeMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        content: '',
+        model: 'mock-model',
+        usage: { promptTokens: 10, completionTokens: 2, totalTokens: 12 },
+        finishReason: 'tool_calls',
+        toolCalls: [
+          {
+            id: 'tool-1',
+            name: 'get_session_context',
+            arguments: {},
+          },
+        ],
+      })
+      .mockResolvedValueOnce({
+        content: 'I checked the session context and there are no blockers right now.',
+        model: 'mock-model',
+        usage: { promptTokens: 22, completionTokens: 8, totalTokens: 30 },
+        finishReason: 'stop',
+      });
+
+    const streamMock = vi.fn().mockResolvedValue({
+      content: 'stream fallback',
+      model: 'mock-model',
+      usage: { promptTokens: 1, completionTokens: 1, totalTokens: 2 },
+      finishReason: 'stop',
+    });
+
+    const ctx = {
+      ...createCtx(),
+      _chatLlmProvider: {
+        providerName: 'mock-llm',
+        capabilities: {
+          supportsStreaming: true,
+          supportsToolUse: true,
+          supportsEmbeddings: false,
+          supportsVision: false,
+        },
+        complete: completeMock,
+        embed: vi.fn().mockResolvedValue({
+          embedding: [],
+          model: 'mock-model',
+          usage: { totalTokens: 0 },
+        }),
+        listModels: vi.fn().mockResolvedValue(['mock-model']),
+        stream: streamMock,
+      },
+      _getEngine: () => ({
+        getPendingApprovals: () => [],
+        getApprovals: () => [],
+        requestApproval: () => null,
+        decide: () => null,
+      }),
+    };
+    const localRoutes = createTestableRoutes(registerRoutes, ctx);
+    const res = createRes();
+
+    await localRoutes['POST /api/v1/chat/message'](
+      createReq('/api/v1/chat/message', {
+        message: 'Need a grounded status analysis for this session with current context.',
+      }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const payload = JSON.parse(res.body);
+    expect(payload.message.content).toContain('session context');
+    expect(completeMock).toHaveBeenCalledTimes(2);
+    expect(completeMock.mock.calls[0][0].tools.length).toBeGreaterThan(0);
+    expect(
+      completeMock.mock.calls[1][0].messages.some((entry) =>
+        /Tool execution results/.test(entry.content)
+      )
+    ).toBe(true);
+    expect(streamMock).not.toHaveBeenCalled();
+  });
+
   it('returns grounded references for a decision lookup query', async () => {
     const res = createRes();
     await routes['POST /api/v1/chat/query'](

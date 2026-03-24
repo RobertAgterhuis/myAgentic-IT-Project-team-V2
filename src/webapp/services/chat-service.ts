@@ -60,6 +60,7 @@ export interface SendChatMessageInput {
   assistantMessageOverride?: string;
   suppressActions?: boolean;
   proposedActionsOverride?: ProposedAction[];
+  onToken?: (token: string, index: number) => void;
 }
 
 export interface ChatActionEnvelope {
@@ -141,6 +142,14 @@ function buildAssistantResponse(input: {
   return `${input.contextSummary} Ask me for session status, pending approvals, or where to navigate next.`;
 }
 
+function chunkTextForStreaming(text: string): string[] {
+  const parts = text.match(/\S+\s*/g);
+  if (!parts || parts.length === 0) {
+    return text.length > 0 ? [text] : [];
+  }
+  return parts;
+}
+
 export class ChatService {
   private readonly sessionDir: string;
   private readonly cache = new Map<string, ChatSession>();
@@ -169,14 +178,23 @@ export class ChatService {
     session.messages.push(userEntry);
 
     const contextSummary = buildContextSummary(input.contextSnapshot);
+    const assistantContent =
+      typeof input.assistantMessageOverride === 'string' &&
+      input.assistantMessageOverride.trim().length > 0
+        ? input.assistantMessageOverride.trim()
+        : buildAssistantResponse({ intent, contextSummary, contextHints });
+
+    if (typeof input.onToken === 'function') {
+      const chunks = chunkTextForStreaming(assistantContent);
+      chunks.forEach((token, index) => {
+        input.onToken?.(token, index);
+      });
+    }
+
     const assistantEntry: ChatHistoryMessage = {
       id: `a-${Date.now().toString(36)}`,
       role: 'assistant',
-      content:
-        typeof input.assistantMessageOverride === 'string' &&
-        input.assistantMessageOverride.trim().length > 0
-          ? input.assistantMessageOverride.trim()
-          : buildAssistantResponse({ intent, contextSummary, contextHints }),
+      content: assistantContent,
       created_at: safeNow(),
     };
     session.messages.push(assistantEntry);

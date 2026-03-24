@@ -65,3 +65,7 @@ test-*.json
 s9g-test-output.txt
 cov-out.txt
 coverage-output.txt
+
+# SQLite WAL auxiliary files
+*.sqlite-shm
+*.sqlite-wal

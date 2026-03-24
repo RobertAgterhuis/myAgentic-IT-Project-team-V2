@@ -607,6 +607,9 @@ export const handlers = [
   http.post('/api/orchestrator/error', () => HttpResponse.json({ ok: true })),
   http.post('/api/orchestrator/recover', () => HttpResponse.json({ ok: true })),
   http.post('/api/orchestrator/reset', () => HttpResponse.json({ ok: true })),
+  http.post('/api/orchestrator/pause', () => HttpResponse.json({ ok: true, paused: true })),
+  http.post('/api/orchestrator/resume', () => HttpResponse.json({ ok: true, resumed: true })),
+  http.post('/api/orchestrator/override', () => HttpResponse.json({ ok: true, paused: true })),
   http.post('/api/orchestrator/stop', () => HttpResponse.json({ ok: true })),
   http.post('/api/orchestrator/validate-gate', () =>
     HttpResponse.json({
@@ -653,6 +656,13 @@ export const handlers = [
           state: 'PHASE_2',
           mode: 'CREATE',
           timestamp: new Date().toISOString(),
+          feedback_propagation: {
+            status: 'observed',
+            impacted_event_count: 1,
+            downstream_event_types: ['gate_failure'],
+            latest_timestamp: new Date().toISOString(),
+            summary: 'Observed 1 downstream machine event after this intervention.',
+          },
         },
         {
           id: 'prov-2',
@@ -722,6 +732,9 @@ export const handlers = [
     const resp: AgentDetailResponse = { ok: true, agent: mockAgentDetail };
     return HttpResponse.json(resp);
   }),
+  http.post('/api/agents/jobs/:jobId/cancel', () =>
+    HttpResponse.json({ ok: true, message: 'cancelled' })
+  ),
 
   /* Help */
   http.get('/api/v1/help/page/:routeSlug', ({ params }) => {

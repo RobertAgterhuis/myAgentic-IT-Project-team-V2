@@ -415,11 +415,15 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
       status: 'passed',
       attempt: 1,
     });
+    expect(result.response.deliverableQuality).toMatchObject({
+      approvalSignal: 'review',
+    });
 
     const artifact = await fs.readFile(result.outputPath, 'utf8');
     expect(artifact).toContain('Provider: openai');
     expect(artifact).toContain('Model: gpt-test');
     expect(artifact).toContain('Attempts: 1');
+    expect(artifact).toContain('## Quality Assessment');
     expect(artifact).toContain('## HANDOFF CHECKLIST');
   });
 
@@ -534,6 +538,96 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
       })
     ).rejects.toThrow(/failed contract validation/);
     expect(complete).toHaveBeenCalledTimes(2);
+  });
+
+  it('falls back to a secondary provider when the primary provider fails', async () => {
+    const contractPath = await writeContractFixture(
+      'fallback-contract.md',
+      [
+        '# Contract',
+        '',
+        '```markdown',
+        '## Metadata',
+        '## Findings',
+        '## HANDOFF CHECKLIST',
+        '```',
+      ].join('\n')
+    );
+    const skillPath = await writeSkillFixture('fallback-skill.md', contractPath);
+
+    const primaryComplete = vi.fn().mockRejectedValue(new Error('AUTH_FAILURE: missing API key'));
+    const fallbackComplete = vi.fn().mockResolvedValue({
+      content: [
+        '## Metadata',
+        '- Agent: Business Analyst',
+        '',
+        '## Findings',
+        '- Finding: fallback provider succeeded',
+        '',
+        '## HANDOFF CHECKLIST',
+        '- [x] Item 1',
+        '- [x] Item 2',
+        '- [x] Item 3',
+        '- [x] Item 4',
+        '- [x] Item 5',
+        '- [x] Item 6',
+        '- [x] Item 7',
+        '- [x] Item 8',
+        '- [x] Item 9',
+      ].join('\n'),
+      model: 'fallback-model',
+      usage: { promptTokens: 9, completionTokens: 5, totalTokens: 14 },
+      finishReason: 'stop',
+    });
+
+    const providerRegistry = {
+      getProviderWithFallback: vi.fn(),
+      getProvider: vi.fn((type, name) => {
+        if (type !== 'llm') throw new Error('unexpected provider type');
+        if (name === 'openai') {
+          return {
+            providerName: 'openai',
+            capabilities: {},
+            complete: primaryComplete,
+          };
+        }
+        if (name === 'copilot') {
+          return {
+            providerName: 'copilot',
+            capabilities: {},
+            complete: fallbackComplete,
+          };
+        }
+        throw new Error(`unexpected provider ${name}`);
+      }),
+    };
+
+    providerRegistry.getProviderWithFallback.mockImplementation((_type, options) => {
+      return providerRegistry.getProvider('llm', options.primaryName);
+    });
+
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-fallback',
+      providerName: 'openai',
+      fallbackProviderNames: ['copilot'],
+      outputDir: tmpRoot,
+      providerRegistry,
+    });
+
+    const result = await adapter.invoke(AGENT, PLATFORM, {
+      skillFile: skillPath,
+      predecessorOutputs: {},
+      questionnaireInput: null,
+      sessionState: { mode: 'AUDIT' },
+    });
+
+    expect(primaryComplete).toHaveBeenCalledTimes(1);
+    expect(fallbackComplete).toHaveBeenCalledTimes(1);
+    expect(result.response).toMatchObject({
+      provider: 'copilot',
+      model: 'fallback-model',
+      attempts: 1,
+    });
   });
 
   it('routes model tool calls through ToolExecutor middleware when authorized', async () => {

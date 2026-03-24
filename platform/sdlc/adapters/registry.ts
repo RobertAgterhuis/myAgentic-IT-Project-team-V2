@@ -170,6 +170,45 @@ export class ProviderRegistry {
   }
 
   /**
+   * Resolve a provider using ordered fallback names.
+   * Useful for provider failover when a primary is unavailable or misconfigured.
+   */
+  getProviderWithFallback<K extends ProviderType>(
+    type: K,
+    options: {
+      primaryName?: string;
+      fallbackNames?: string[];
+      config?: Record<string, unknown>;
+    } = {}
+  ): ProviderTypeMap[K] {
+    const orderedNames = [
+      options.primaryName || this._defaults.get(type),
+      ...(options.fallbackNames || []),
+    ]
+      .filter((name): name is string => typeof name === 'string' && name.length > 0)
+      .filter((name, index, list) => list.indexOf(name) === index);
+
+    if (orderedNames.length === 0) {
+      throw new Error(`No provider registered for type: ${type}`);
+    }
+
+    const failures: string[] = [];
+    for (const name of orderedNames) {
+      try {
+        return this.getProvider(type, name, options.config);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        failures.push(`${name}: ${message}`);
+      }
+    }
+
+    throw new Error(
+      `No available provider for type ${type}. Tried ${orderedNames.join(', ')}. ` +
+        `Failures: ${failures.join(' | ')}`
+    );
+  }
+
+  /**
    * Check if a provider is registered for the given type and name.
    */
   hasProvider(type: ProviderType, name?: string): boolean {
@@ -219,6 +258,76 @@ export class ProviderRegistry {
     this._entries.clear();
     this._defaults.clear();
   }
+}
+
+// ─── Provider Fallback Policy ───────────────────────────────
+
+/**
+ * Defines an ordered fallback chain for a provider type.
+ * Used by the engine and chat route to route around unavailable providers.
+ */
+export interface ProviderFallbackPolicy {
+  /** Primary provider name to attempt first. */
+  primaryName: string;
+  /** Ordered list of fallback names to try when primary fails. */
+  fallbackNames: string[];
+  /** When true, local (no-credential) provider is always appended as last resort. */
+  localFallback: boolean;
+}
+
+/**
+ * Per-provider API key environment variable names.
+ * Used by probeProviderHealth to fast-path unavailability detection.
+ */
+const PROVIDER_KEY_ENV: Record<string, string> = {
+  openai: 'OPENAI_API_KEY',
+  anthropic: 'ANTHROPIC_API_KEY',
+  copilot: 'GITHUB_TOKEN',
+};
+
+/**
+ * Probe whether a provider is likely available before attempting a call.
+ *
+ * For known external providers checks that the required API key env var is set.
+ * For 'local' (or any unknown provider) always reports healthy.
+ *
+ * Returns { healthy: false, reason } when the provider should be skipped;
+ * { healthy: true } when it appears reachable.
+ */
+export function probeProviderHealth(providerName: string): { healthy: boolean; reason?: string } {
+  const envVar = PROVIDER_KEY_ENV[providerName];
+  if (!envVar) return { healthy: true };
+  const value = process.env[envVar];
+  if (!value || value.trim().length === 0) {
+    return { healthy: false, reason: `${envVar} is not set` };
+  }
+  return { healthy: true };
+}
+
+/**
+ * Build an LLM ProviderFallbackPolicy driven by environment variables.
+ *
+ * The primary provider defaults to the first one whose API key is present
+ * (checked in order: openai → anthropic → copilot).  When no key is found,
+ * falls through to local mode.
+ *
+ * @param overrides - Partial overrides for primaryName / fallbackNames / localFallback.
+ */
+export function buildLlmFallbackPolicy(
+  overrides: Partial<ProviderFallbackPolicy> = {}
+): ProviderFallbackPolicy {
+  const ordered = ['openai', 'anthropic', 'copilot'];
+  const available = ordered.filter((n) => probeProviderHealth(n).healthy);
+  const unavailable = ordered.filter((n) => !probeProviderHealth(n).healthy);
+
+  const primaryName = overrides.primaryName ?? available[0] ?? 'local';
+  const fallbackNames = overrides.fallbackNames ?? [
+    ...available.filter((n) => n !== primaryName),
+    ...unavailable.filter((n) => n !== primaryName),
+  ];
+  const localFallback = overrides.localFallback ?? true;
+
+  return { primaryName, fallbackNames, localFallback };
 }
 
 // ─── Auto-registration helper ────────────────────────────────
@@ -291,6 +400,12 @@ export function createDefaultRegistry(): ProviderRegistry {
       maxTokens: config?.maxTokens as number,
       timeout: config?.timeout as number,
     });
+  });
+
+  // LLM: Local (last-resort fallback — no API key required)
+  registry.registerProvider('llm', 'local', (config) => {
+    const { LocalLLMProvider } = require('./providers/local-llm.js');
+    return new LocalLLMProvider({ label: (config?.label as string) || 'local' });
   });
 
   return registry;

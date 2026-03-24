@@ -10,14 +10,22 @@ const {
   classifyMTTR,
   computeDoraReport,
   computeDefectDensity,
+  computeLeadTime,
+  classifyDeploymentFrequency,
+  computeVelocityTrend,
   createMetricsStore,
   appendMetric,
   queryMetric,
   serializeMetricsStore,
+  deserializeMetricsStore,
+  ensureMetric,
   recordAgentPerformance,
   computeAgentStats,
   computeVelocityTrendEntry,
   recordSprintBoundary,
+  recordToolExecutionTrace,
+  computeStageLatencyStats,
+  computeToolLatencyStats,
 } = require('../../platform/sdlc/observability');
 
 // ── Test Data Factories ──────────────────────────────────────
@@ -407,5 +415,238 @@ describe('recordSprintBoundary', () => {
     store = recordSprintBoundary(store, sprint);
     expect(store.metrics['sprint_planned_points']).toBeDefined();
     expect(store.metrics['dora_lead_time_hours']).toBeUndefined();
+  });
+});
+
+// ── computeLeadTime ──────────────────────────────────────────
+
+describe('computeLeadTime', () => {
+  it('returns average hours from commit to successful deploy', () => {
+    const commits = [
+      makeCommit('c1', '2025-01-01T00:00:00Z'),
+      makeCommit('c2', '2025-01-02T00:00:00Z'),
+    ];
+    const deploys = [
+      makeDeploy('d1', '2025-01-01T12:00:00Z', ['c1']), // 12 h lead
+      makeDeploy('d2', '2025-01-03T00:00:00Z', ['c2']), // 24 h lead
+    ];
+    const lt = computeLeadTime(commits, deploys);
+    expect(lt).toBeCloseTo(18, 1); // avg(12, 24) = 18
+  });
+
+  it('ignores failed deployments', () => {
+    const commits = [makeCommit('c1', '2025-01-01T00:00:00Z')];
+    const deploys = [makeDeploy('d1', '2025-01-01T06:00:00Z', ['c1'], false)];
+    expect(computeLeadTime(commits, deploys)).toBe(0);
+  });
+
+  it('returns 0 when no commits', () => {
+    const deploys = [makeDeploy('d1', '2025-01-01T12:00:00Z', ['c1'])];
+    expect(computeLeadTime([], deploys)).toBe(0);
+  });
+
+  it('returns 0 when commit ids have no matching commits', () => {
+    const commits = [makeCommit('c99', '2025-01-01T00:00:00Z')];
+    const deploys = [makeDeploy('d1', '2025-01-01T12:00:00Z', ['c1'])];
+    expect(computeLeadTime(commits, deploys)).toBe(0);
+  });
+});
+
+// ── classifyDeploymentFrequency ──────────────────────────────
+
+describe('classifyDeploymentFrequency', () => {
+  it('returns ELITE for ≥1 deploy per day', () => {
+    expect(classifyDeploymentFrequency(1)).toBe(DORA_LEVELS.ELITE);
+    expect(classifyDeploymentFrequency(3)).toBe(DORA_LEVELS.ELITE);
+  });
+
+  it('returns HIGH for roughly weekly cadence', () => {
+    expect(classifyDeploymentFrequency(1 / 7)).toBe(DORA_LEVELS.HIGH);
+  });
+
+  it('returns MEDIUM for roughly monthly cadence', () => {
+    expect(classifyDeploymentFrequency(1 / 30)).toBe(DORA_LEVELS.MEDIUM);
+  });
+
+  it('returns LOW for less than monthly', () => {
+    expect(classifyDeploymentFrequency(1 / 60)).toBe(DORA_LEVELS.LOW);
+    expect(classifyDeploymentFrequency(0)).toBe(DORA_LEVELS.LOW);
+  });
+});
+
+// ── computeVelocityTrend ─────────────────────────────────────
+
+describe('computeVelocityTrend', () => {
+  it('returns completed_points for each sprint in order', () => {
+    const sprints = [
+      makeSprint('s1', { completed: 10 }),
+      makeSprint('s2', { completed: 14 }),
+      makeSprint('s3', { completed: 12 }),
+    ];
+    expect(computeVelocityTrend(sprints)).toEqual([10, 14, 12]);
+  });
+
+  it('returns empty array for empty input', () => {
+    expect(computeVelocityTrend([])).toEqual([]);
+  });
+});
+
+// ── ensureMetric ─────────────────────────────────────────────
+
+describe('ensureMetric', () => {
+  it('creates a new metric series when absent', () => {
+    const store = createMetricsStore();
+    const metric = ensureMetric(store, 'my_metric', 'ms');
+    expect(metric.name).toBe('my_metric');
+    expect(metric.unit).toBe('ms');
+    expect(metric.data_points).toHaveLength(0);
+    expect(store.metrics['my_metric']).toBe(metric);
+  });
+
+  it('returns the existing metric series when already present', () => {
+    const store = createMetricsStore();
+    const m1 = ensureMetric(store, 'counter', 'count');
+    const m2 = ensureMetric(store, 'counter', 'count');
+    expect(m1).toBe(m2); // same object reference
+  });
+});
+
+// ── deserializeMetricsStore ──────────────────────────────────
+
+describe('deserializeMetricsStore', () => {
+  it('round-trips a serialized store', () => {
+    let store = createMetricsStore();
+    store = appendMetric(store, 'rt_metric', 'ms', 42, { label: 'x' });
+    const json = serializeMetricsStore(store);
+    const restored = deserializeMetricsStore(json);
+    expect(restored.metrics['rt_metric'].data_points[0].value).toBe(42);
+    expect(restored.metrics['rt_metric'].data_points[0].labels).toEqual({ label: 'x' });
+  });
+
+  it('returns an empty store for invalid JSON', () => {
+    const result = deserializeMetricsStore('not valid json!');
+    expect(result.metrics).toEqual({});
+  });
+
+  it('returns an empty store when required fields are missing', () => {
+    const result = deserializeMetricsStore(JSON.stringify({ foo: 'bar' }));
+    expect(result.metrics).toEqual({});
+  });
+});
+
+// ── recordToolExecutionTrace ─────────────────────────────────
+
+describe('recordToolExecutionTrace', () => {
+  it('appends duration and success data points', () => {
+    let store = createMetricsStore();
+    store = recordToolExecutionTrace(store, {
+      agent_id: 'a1',
+      agent_name: 'Agent One',
+      state: 'PHASE_1',
+      tool_id: 'tool.files.read',
+      operation: 'read',
+      duration_ms: 120,
+      success: true,
+    });
+    expect(store.metrics['tool_execution_duration_ms'].data_points).toHaveLength(1);
+    expect(store.metrics['tool_execution_duration_ms'].data_points[0].value).toBe(120);
+    expect(store.metrics['tool_execution_success'].data_points[0].value).toBe(1);
+  });
+
+  it('records failure as success=0', () => {
+    let store = createMetricsStore();
+    store = recordToolExecutionTrace(store, {
+      agent_id: 'a1',
+      agent_name: 'Agent One',
+      state: 'PHASE_2',
+      tool_id: 'tool.files.write',
+      operation: 'write',
+      duration_ms: 50,
+      success: false,
+      error_code: 'PERMISSION_DENIED',
+    });
+    expect(store.metrics['tool_execution_success'].data_points[0].value).toBe(0);
+    expect(store.metrics['tool_execution_success'].data_points[0].labels?.error_code).toBe(
+      'PERMISSION_DENIED'
+    );
+  });
+});
+
+// ── computeStageLatencyStats ─────────────────────────────────
+
+describe('computeStageLatencyStats', () => {
+  it('returns empty array when store has no agent metrics', () => {
+    const store = createMetricsStore();
+    expect(computeStageLatencyStats(store)).toEqual([]);
+  });
+
+  it('computes p50/p95, failure rate grouped by state', () => {
+    let store = createMetricsStore();
+    const agentBase = {
+      agent_id: 'a1',
+      agent_name: 'A1',
+      state: 'PHASE_1',
+      started_at: '2025-01-01T00:00:00Z',
+      ended_at: '2025-01-01T00:00:01Z',
+      attempt: 1,
+      provider: 'copilot',
+    };
+    // 3 successful invocations for PHASE_1
+    for (const ms of [100, 200, 300]) {
+      store = recordAgentPerformance(store, { ...agentBase, duration_ms: ms, success: true });
+    }
+    // 1 failed invocation for PHASE_1
+    store = recordAgentPerformance(store, { ...agentBase, duration_ms: 50, success: false });
+
+    const stats = computeStageLatencyStats(store);
+    expect(stats).toHaveLength(1);
+    const row = stats[0];
+    expect(row.stage).toBe('PHASE_1');
+    expect(row.total_invocations).toBe(4);
+    expect(row.failure_rate_pct).toBeCloseTo(25, 1); // 1 of 4 failed
+    expect(row.p50_duration_ms).toBeGreaterThan(0);
+    expect(row.p95_duration_ms).toBeGreaterThanOrEqual(row.p50_duration_ms);
+  });
+});
+
+// ── computeToolLatencyStats ──────────────────────────────────
+
+describe('computeToolLatencyStats', () => {
+  it('returns empty array when store has no tool execution metrics', () => {
+    const store = createMetricsStore();
+    expect(computeToolLatencyStats(store)).toEqual([]);
+  });
+
+  it('groups stats by tool_id + operation', () => {
+    let store = createMetricsStore();
+    const base = {
+      agent_id: 'a1',
+      agent_name: 'A1',
+      state: 'PHASE_1',
+      tool_id: 'tool.files.read',
+      operation: 'read',
+    };
+    for (const ms of [80, 120, 100]) {
+      store = recordToolExecutionTrace(store, { ...base, duration_ms: ms, success: true });
+    }
+    store = recordToolExecutionTrace(store, { ...base, duration_ms: 200, success: false });
+    // A different tool
+    store = recordToolExecutionTrace(store, {
+      ...base,
+      tool_id: 'tool.files.write',
+      operation: 'write',
+      duration_ms: 60,
+      success: true,
+    });
+
+    const stats = computeToolLatencyStats(store);
+    expect(stats.length).toBeGreaterThanOrEqual(2);
+    const readRow = stats.find((s) => s.tool_id === 'tool.files.read' && s.operation === 'read');
+    expect(readRow).toBeDefined();
+    expect(readRow.total_invocations).toBe(4);
+    expect(readRow.failure_rate_pct).toBeCloseTo(25, 1);
+    const writeRow = stats.find((s) => s.tool_id === 'tool.files.write');
+    expect(writeRow).toBeDefined();
+    expect(writeRow.total_invocations).toBe(1);
   });
 });

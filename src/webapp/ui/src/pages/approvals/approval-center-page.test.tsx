@@ -58,6 +58,20 @@ const mockApprovalDetailResponse = {
     context: 'Phase 1 produced blocking violations that need review.',
     risk_assessment: 'Two blocking rules were violated.',
     recommended_action: 'Review the violations and add rationale before approving.',
+    deliverable_quality: {
+      score: 78,
+      approvalSignal: 'review',
+      summary: 'Manual review should focus on checklist completion.',
+      source_artifact: 'BusinessDocs/decisions/adr-001.md',
+      metrics: [
+        {
+          id: 'contract',
+          label: 'Contract compliance',
+          score: 100,
+          detail: 'Contract validation passed.',
+        },
+      ],
+    },
     related_artifacts: ['BusinessDocs/decisions/adr-001.md'],
   },
 };
@@ -146,6 +160,7 @@ describe('ApprovalCenterPage', () => {
     await waitFor(() => {
       expect(screen.getByTestId('approval-decision-panel')).toBeInTheDocument();
     });
+    expect(screen.getByText(/deliverable quality/i)).toBeInTheDocument();
   });
 
   it('filters by status — shows only PENDING when filter is set', async () => {

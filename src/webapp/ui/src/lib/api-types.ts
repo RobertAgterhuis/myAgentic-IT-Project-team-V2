@@ -1277,6 +1277,13 @@ export interface ProvenanceEntry {
   state?: string;
   mode?: string;
   timestamp: string;
+  feedback_propagation?: {
+    status: 'observed' | 'awaiting';
+    impacted_event_count: number;
+    downstream_event_types: Array<'gate_failure' | 'error'>;
+    latest_timestamp?: string;
+    summary: string;
+  };
   metadata?: Record<string, unknown>;
 }
 
@@ -1473,6 +1480,18 @@ export interface ApprovalDetail extends ApprovalEntry {
   risk_assessment: string;
   recommended_action: string;
   related_artifacts: string[];
+  deliverable_quality?: {
+    score: number;
+    approvalSignal: 'approve' | 'review' | 'block';
+    summary: string;
+    source_artifact: string;
+    metrics: Array<{
+      id: string;
+      label: string;
+      score: number;
+      detail: string;
+    }>;
+  };
   similar_overrides?: SimilarOverrideLesson[];
   comparison?: { before: string; after: string };
 }

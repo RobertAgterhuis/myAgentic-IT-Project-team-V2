@@ -31,6 +31,7 @@ export interface AuthMiddleware {
   isPublicPath(pathname: string): boolean;
 }
 import type { StorageProvider } from '../../platform/engine/persistence';
+import type { LLMProvider } from '../../platform/sdlc/adapters/contracts/llm-provider';
 import type { StorageProviderType } from './config';
 
 /* ── Audit interface (subset exposed to routes) ───────────────── */
@@ -174,6 +175,7 @@ export interface ServerContext {
   readonly _ragStore?: RagStoreFacade;
   readonly _ragIndexer?: RagIndexerFacade;
   readonly _embeddingProvider?: EmbeddingProviderFacade;
+  readonly _chatLlmProvider?: LLMProvider;
 
   /* ── Cross-route wiring (set after route registration) ─────── */
   _rebuildQuestionnaireIndex?: () => Promise<void>;

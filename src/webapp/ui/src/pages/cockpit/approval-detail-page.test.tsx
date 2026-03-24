@@ -29,6 +29,20 @@ const approvalDetailResponse = {
     context: 'Phase 1 produced blocking violations that need review.',
     risk_assessment: 'Two blocking rules were violated.',
     recommended_action: 'Review the violations and add rationale before approving.',
+    deliverable_quality: {
+      score: 91,
+      approvalSignal: 'approve',
+      summary: 'Strong contract alignment, evidence coverage, and deliverable depth.',
+      source_artifact: 'BusinessDocs/decisions/adr-m29-auth-architecture.md',
+      metrics: [
+        {
+          id: 'contract',
+          label: 'Contract compliance',
+          score: 100,
+          detail: 'Contract validation passed.',
+        },
+      ],
+    },
     related_artifacts: ['BusinessDocs/decisions/adr-m29-auth-architecture.md'],
   },
 };
@@ -86,5 +100,6 @@ describe('ApprovalDetailPage', () => {
     expect(
       screen.getByText(/review the gate, risk context, artifacts, and recommendation/i)
     ).toBeInTheDocument();
+    expect(screen.getAllByText(/quality score/i).length).toBeGreaterThan(0);
   });
 });

@@ -72,6 +72,21 @@ export default function ApprovalDetailPage() {
     },
     { id: 'gate', label: 'Gate', value: data.approval.gate_id },
     { id: 'stage', label: 'Stage', value: data.approval.stage },
+    ...(data.approval.deliverable_quality
+      ? [
+          {
+            id: 'quality-score',
+            label: 'Quality score',
+            value: String(data.approval.deliverable_quality.score),
+            tone:
+              data.approval.deliverable_quality.approvalSignal === 'approve'
+                ? ('success' as const)
+                : data.approval.deliverable_quality.approvalSignal === 'review'
+                  ? ('warning' as const)
+                  : ('critical' as const),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -104,6 +119,15 @@ export default function ApprovalDetailPage() {
           { label: 'Status', value: data.approval.status, detail: 'Current approval state' },
           { label: 'Gate', value: data.approval.gate_id, detail: 'Controlled checkpoint' },
           { label: 'Stage', value: data.approval.stage, detail: 'Workflow stage in review' },
+          ...(data.approval.deliverable_quality
+            ? [
+                {
+                  label: 'Quality score',
+                  value: String(data.approval.deliverable_quality.score),
+                  detail: `${data.approval.deliverable_quality.approvalSignal} signal`,
+                },
+              ]
+            : []),
         ]}
         motifs={
           <>

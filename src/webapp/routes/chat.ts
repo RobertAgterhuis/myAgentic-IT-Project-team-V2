@@ -20,6 +20,14 @@ import {
   ServiceValidationError,
   toServiceContext,
 } from '../services';
+import { createDefaultRegistry } from '../../../platform/sdlc/adapters/registry';
+import type {
+  CompletionResult,
+  LLMMessage,
+  LLMProvider,
+  ToolCall,
+  ToolDefinition,
+} from '../../../platform/sdlc/adapters/contracts/llm-provider';
 import * as RS from '../route-schemas';
 
 type ChatActionType = 'create_command' | 'approve' | 'reject' | 'resume' | 'pause' | 'open_screen';
@@ -65,8 +73,40 @@ const CHAT_GROUNDING_TOPK = Number(process.env.CHAT_GROUNDING_TOPK ?? '4');
 const CHAT_AUTO_REFRESH_COOLDOWN_MS = Number(
   process.env.CHAT_GROUNDING_REFRESH_COOLDOWN_MS ?? '60000'
 );
+const CHAT_LLM_PROVIDER_NAME = String(process.env.CHAT_LLM_PROVIDER || '')
+  .trim()
+  .toLowerCase();
+const CHAT_LLM_MODEL = String(process.env.CHAT_LLM_MODEL || '').trim();
+const CHAT_LLM_MAX_TOKENS = Number(process.env.CHAT_LLM_MAX_TOKENS || 1024);
+const CHAT_LLM_TEMPERATURE = Number(process.env.CHAT_LLM_TEMPERATURE || 0.2);
+const CHAT_LLM_TOOL_MAX_ROUNDS = Number(process.env.CHAT_LLM_TOOL_MAX_ROUNDS || 4);
 
 const groundingRefreshState = new Map<string, number>();
+let configuredChatLlmProvider: LLMProvider | null | undefined;
+
+function resolveConfiguredChatLlmProvider(): LLMProvider | null {
+  if (configuredChatLlmProvider !== undefined) {
+    return configuredChatLlmProvider;
+  }
+
+  if (!CHAT_LLM_PROVIDER_NAME) {
+    configuredChatLlmProvider = null;
+    return configuredChatLlmProvider;
+  }
+
+  try {
+    const registry = createDefaultRegistry();
+    configuredChatLlmProvider = registry.getProvider('llm', CHAT_LLM_PROVIDER_NAME, {
+      model: CHAT_LLM_MODEL || undefined,
+      maxTokens: Number.isFinite(CHAT_LLM_MAX_TOKENS) ? CHAT_LLM_MAX_TOKENS : undefined,
+      timeout: 30_000,
+    });
+  } catch {
+    configuredChatLlmProvider = null;
+  }
+
+  return configuredChatLlmProvider;
+}
 
 function makeActionId(type: ChatActionType): string {
   return `${type}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
@@ -580,27 +620,266 @@ function resolveCitationSourceType(
   return 'rag_chunk';
 }
 
-function streamTokens(ctx: ServerContext, sessionId: string, text: string): void {
-  const parts = text.split(/(\s+)/).filter((part) => part.length > 0);
-  parts.forEach((token, index) => {
-    setTimeout(() => {
-      ctx.sseNotify('message', {
-        type: 'chat_token',
-        session_id: sessionId,
-        token,
-        index,
-        timestamp: new Date().toISOString(),
-      });
+function buildChatLlmMessages(input: {
+  message: string;
+  contextHints: string[];
+  snapshot: {
+    sessionStatus?: string;
+    mode?: string;
+    currentPhase?: string;
+    currentAgent?: string;
+    pendingApprovals?: number;
+  };
+  citations: Array<{ source_path: string; excerpt: string }>;
+}): LLMMessage[] {
+  const contextSummary = [
+    `Session status: ${input.snapshot.sessionStatus || 'UNKNOWN'}`,
+    `Mode: ${input.snapshot.mode || 'UNKNOWN'}`,
+    `Current phase: ${input.snapshot.currentPhase || 'n/a'}`,
+    `Current agent: ${input.snapshot.currentAgent || 'n/a'}`,
+    `Pending approvals: ${String(input.snapshot.pendingApprovals ?? 'n/a')}`,
+  ].join(' | ');
 
-      if (index === parts.length - 1) {
-        ctx.sseNotify('message', {
-          type: 'chat_stream_complete',
-          session_id: sessionId,
-          timestamp: new Date().toISOString(),
-        });
-      }
-    }, index * 18);
+  const hintText =
+    input.contextHints.length > 0
+      ? input.contextHints.map((hint) => `- ${hint}`).join('\n')
+      : '- (none)';
+
+  const citationText =
+    input.citations.length > 0
+      ? input.citations
+          .slice(0, 5)
+          .map((citation) => `- ${citation.source_path}: ${citation.excerpt}`)
+          .join('\n')
+      : '- (none)';
+
+  return [
+    {
+      role: 'system',
+      content:
+        'You are a workflow assistant for an agentic SDLC platform. Provide concise, accurate responses grounded in supplied context and citations only.',
+    },
+    {
+      role: 'user',
+      content: [
+        `User message: ${input.message}`,
+        `Context summary: ${contextSummary}`,
+        'Context hints:',
+        hintText,
+        'Retrieved citations:',
+        citationText,
+      ].join('\n\n'),
+    },
+  ];
+}
+
+function buildChatLlmToolDefinitions(): ToolDefinition[] {
+  return [
+    {
+      name: 'get_session_context',
+      description:
+        'Get the current workflow session context including status, phase, current agent, and latest failed gate summary.',
+      parameters: {
+        type: 'object',
+        properties: {
+          include_failed_gate: {
+            type: 'boolean',
+            description: 'Whether to include failed gate details if present.',
+            default: true,
+          },
+        },
+        additionalProperties: false,
+      },
+    },
+    {
+      name: 'list_pending_approvals',
+      description:
+        'List currently pending governance approvals for this session to help determine next actions.',
+      parameters: {
+        type: 'object',
+        properties: {
+          limit: {
+            type: 'number',
+            description: 'Maximum number of approvals to return.',
+            minimum: 1,
+            maximum: 25,
+          },
+        },
+        additionalProperties: false,
+      },
+    },
+  ];
+}
+
+function toToolArguments(value: unknown): Record<string, unknown> {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  return {};
+}
+
+function clampLimit(value: unknown, fallback = 5): number {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(1, Math.min(25, Math.floor(n)));
+}
+
+function buildToolExecutionResult(input: {
+  toolCall: ToolCall;
+  assembledSnapshot: {
+    sessionStatus?: string;
+    mode?: string;
+    currentPhase?: string;
+    currentAgent?: string;
+    pendingApprovals?: number;
+  };
+  runContext: LatestRunContext;
+  workspaceId: string;
+  governanceService: GovernanceService;
+}): Record<string, unknown> {
+  const args = toToolArguments(input.toolCall.arguments);
+
+  if (input.toolCall.name === 'get_session_context') {
+    const includeFailedGate = args.include_failed_gate !== false;
+    return {
+      id: input.toolCall.id,
+      name: input.toolCall.name,
+      success: true,
+      data: {
+        workspace_id: input.workspaceId,
+        session_status:
+          input.assembledSnapshot.sessionStatus || input.runContext.status || 'UNKNOWN',
+        mode: input.assembledSnapshot.mode || 'UNKNOWN',
+        current_phase: input.assembledSnapshot.currentPhase || 'n/a',
+        current_agent: input.assembledSnapshot.currentAgent || 'n/a',
+        pending_approvals: Number(input.assembledSnapshot.pendingApprovals || 0),
+        latest_run_status: input.runContext.status,
+        failed_gate: includeFailedGate ? input.runContext.failedGate : null,
+      },
+    };
+  }
+
+  if (input.toolCall.name === 'list_pending_approvals') {
+    try {
+      const listed = input.governanceService.listApprovals();
+      const limit = clampLimit(args.limit, 5);
+      const approvals = listed.approvals.slice(0, limit).map((entry) => ({
+        id: entry.id,
+        stage: entry.stage,
+        required_role: entry.required_role,
+        status: entry.status,
+        requested_at: entry.requested_at,
+      }));
+
+      return {
+        id: input.toolCall.id,
+        name: input.toolCall.name,
+        success: true,
+        data: {
+          count: approvals.length,
+          approvals,
+        },
+      };
+    } catch (err) {
+      return {
+        id: input.toolCall.id,
+        name: input.toolCall.name,
+        success: false,
+        error: err instanceof Error ? err.message : String(err),
+      };
+    }
+  }
+
+  return {
+    id: input.toolCall.id,
+    name: input.toolCall.name,
+    success: false,
+    error: `Unsupported tool: ${input.toolCall.name}`,
+  };
+}
+
+async function runChatLlmToolUseLoop(input: {
+  provider: LLMProvider;
+  messages: LLMMessage[];
+  model?: string;
+  maxTokens?: number;
+  temperature?: number;
+  tools: ToolDefinition[];
+  maxRounds: number;
+  assembledSnapshot: {
+    sessionStatus?: string;
+    mode?: string;
+    currentPhase?: string;
+    currentAgent?: string;
+    pendingApprovals?: number;
+  };
+  runContext: LatestRunContext;
+  workspaceId: string;
+  governanceService: GovernanceService;
+}): Promise<{
+  messages: LLMMessage[];
+  completion: CompletionResult;
+  toolRounds: number;
+  toolCallsExecuted: number;
+}> {
+  const messages = [...input.messages];
+  let completion = await input.provider.complete({
+    messages,
+    model: input.model,
+    maxTokens: input.maxTokens,
+    temperature: input.temperature,
+    tools: input.tools,
   });
+
+  let toolRounds = 0;
+  let toolCallsExecuted = 0;
+
+  while (completion.toolCalls?.length) {
+    toolRounds += 1;
+    if (toolRounds > input.maxRounds) {
+      throw new Error(`TOOL_ROUND_LIMIT_EXCEEDED: maxRounds=${input.maxRounds}`);
+    }
+
+    const toolResults: Array<Record<string, unknown>> = [];
+    for (const toolCall of completion.toolCalls) {
+      const result = buildToolExecutionResult({
+        toolCall,
+        assembledSnapshot: input.assembledSnapshot,
+        runContext: input.runContext,
+        workspaceId: input.workspaceId,
+        governanceService: input.governanceService,
+      });
+      toolCallsExecuted += 1;
+      toolResults.push(result);
+    }
+
+    messages.push({
+      role: 'assistant',
+      content:
+        completion.content?.trim().length > 0
+          ? completion.content
+          : `Executed ${completion.toolCalls.length} tool call(s).`,
+    });
+    messages.push({
+      role: 'user',
+      content: `Tool execution results (JSON):\n${JSON.stringify(toolResults, null, 2)}`,
+    });
+
+    completion = await input.provider.complete({
+      messages,
+      model: input.model,
+      maxTokens: input.maxTokens,
+      temperature: input.temperature,
+      tools: input.tools,
+    });
+  }
+
+  return {
+    messages,
+    completion,
+    toolRounds,
+    toolCallsExecuted,
+  };
 }
 
 function ensureOperatorOrAdmin(
@@ -904,6 +1183,92 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       ];
     }
 
+    const chatLlmProvider = ctx._chatLlmProvider || resolveConfiguredChatLlmProvider();
+    let providerTokenIndex = 0;
+    let providerStreamed = false;
+    const providerChunks: string[] = [];
+
+    if (chatLlmProvider && !assistantMessageOverride) {
+      try {
+        const baseMessages = buildChatLlmMessages({
+          message,
+          contextHints,
+          snapshot: assembled.snapshot,
+          citations: chatCitations,
+        });
+
+        let streamMessages = baseMessages;
+        const model = CHAT_LLM_MODEL || undefined;
+        const maxTokens = Number.isFinite(CHAT_LLM_MAX_TOKENS) ? CHAT_LLM_MAX_TOKENS : undefined;
+        const temperature = Number.isFinite(CHAT_LLM_TEMPERATURE)
+          ? CHAT_LLM_TEMPERATURE
+          : undefined;
+
+        if (chatLlmProvider.capabilities.supportsToolUse) {
+          const toolLoop = await runChatLlmToolUseLoop({
+            provider: chatLlmProvider,
+            messages: baseMessages,
+            model,
+            maxTokens,
+            temperature,
+            tools: buildChatLlmToolDefinitions(),
+            maxRounds: Number.isFinite(CHAT_LLM_TOOL_MAX_ROUNDS) ? CHAT_LLM_TOOL_MAX_ROUNDS : 4,
+            assembledSnapshot: assembled.snapshot,
+            runContext,
+            workspaceId,
+            governanceService,
+          });
+
+          streamMessages = toolLoop.messages;
+          if (toolLoop.toolRounds > 0) {
+            ctx.recordMetric('CHAT', '/message/provider-tool-rounds', toolLoop.toolRounds, 200);
+            ctx.recordMetric(
+              'CHAT',
+              '/message/provider-tool-calls',
+              toolLoop.toolCallsExecuted,
+              200
+            );
+          }
+
+          if (toolLoop.completion.content.trim().length > 0) {
+            assistantMessageOverride = toolLoop.completion.content.trim();
+          }
+        }
+
+        if (!assistantMessageOverride) {
+          const completion = await chatLlmProvider.stream(
+            {
+              messages: streamMessages,
+              model,
+              maxTokens,
+              temperature,
+            },
+            (chunk) => {
+              if (!chunk) return;
+              providerStreamed = true;
+              providerChunks.push(chunk);
+              ctx.sseNotify('message', {
+                type: 'chat_token',
+                session_id: sessionId,
+                token: chunk,
+                index: providerTokenIndex++,
+                timestamp: new Date().toISOString(),
+              });
+            }
+          );
+
+          const streamedText = providerChunks.join('').trim();
+          if (completion.content.trim().length > 0) {
+            assistantMessageOverride = completion.content.trim();
+          } else if (streamedText.length > 0) {
+            assistantMessageOverride = streamedText;
+          }
+        }
+      } catch {
+        ctx.recordMetric('CHAT', '/message/provider-stream-failure', 1, 500);
+      }
+    }
+
     const response = chatService.sendMessage({
       sessionId,
       message,
@@ -913,6 +1278,17 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       assistantMessageOverride,
       suppressActions: Boolean(fallbackReason),
       proposedActionsOverride,
+      onToken: providerStreamed
+        ? undefined
+        : (token, index) => {
+            ctx.sseNotify('message', {
+              type: 'chat_token',
+              session_id: sessionId,
+              token,
+              index,
+              timestamp: new Date().toISOString(),
+            });
+          },
     });
 
     const firstTokenLatencyMs = Date.now() - requestStartedAt;
@@ -927,7 +1303,12 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       ctx.recordMetric('CHAT', '/message/no-match', 1, 200);
     }
 
-    streamTokens(ctx, sessionId, response.message.content);
+    ctx.sseNotify('message', {
+      type: 'chat_stream_complete',
+      session_id: sessionId,
+      message_id: response.message.id,
+      timestamp: new Date().toISOString(),
+    });
 
     const groundingSummary: ChatGroundingSummary = {
       enabled: grounding.hasServices(),

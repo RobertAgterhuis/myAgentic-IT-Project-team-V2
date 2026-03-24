@@ -31,6 +31,12 @@ import {
   ExternalLink,
 } from 'lucide-react';
 
+function qualityVariant(signal: 'approve' | 'review' | 'block'): 'success' | 'warning' | 'error' {
+  if (signal === 'approve') return 'success';
+  if (signal === 'review') return 'warning';
+  return 'error';
+}
+
 /* ── Approval Detail Panel ── */
 
 interface ApprovalDetailPanelProps {
@@ -137,6 +143,46 @@ export function ApprovalDetailPanel({ approval, onClose }: ApprovalDetailPanelPr
               <Text className="text-sm text-info-foreground">
                 {approvalDetail.recommended_action}
               </Text>
+            </div>
+          )}
+
+          {approvalDetail?.deliverable_quality && (
+            <div className="rounded-2xl border border-border/60 bg-background/60 p-4 space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <div>
+                  <Text className="text-xs font-semibold text-muted-foreground">
+                    Deliverable Quality
+                  </Text>
+                  <Text className="text-sm">{approvalDetail.deliverable_quality.summary}</Text>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline">score {approvalDetail.deliverable_quality.score}</Badge>
+                  <Badge
+                    variant={qualityVariant(approvalDetail.deliverable_quality.approvalSignal)}
+                  >
+                    {approvalDetail.deliverable_quality.approvalSignal}
+                  </Badge>
+                </div>
+              </div>
+              <Text className="text-xs text-muted-foreground">
+                Source artifact: {approvalDetail.deliverable_quality.source_artifact}
+              </Text>
+              <div className="grid gap-2 md:grid-cols-2">
+                {approvalDetail.deliverable_quality.metrics.map((metric) => (
+                  <div
+                    key={metric.id}
+                    className="rounded-xl border border-border/60 bg-background/80 p-3"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <Text className="text-xs font-semibold text-muted-foreground">
+                        {metric.label}
+                      </Text>
+                      <Badge variant="secondary">{metric.score}</Badge>
+                    </div>
+                    <Text className="text-xs mt-1">{metric.detail}</Text>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

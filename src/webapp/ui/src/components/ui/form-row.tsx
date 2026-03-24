@@ -3,11 +3,12 @@ import { cn } from '@/lib/utils';
 import { Label } from './label';
 
 interface FormRowProps {
-  label: string;
+  label?: string;
   htmlFor?: string;
   helperText?: string;
   error?: string;
   required?: boolean;
+  footer?: React.ReactNode;
   className?: string;
   children: React.ReactElement<{
     id?: string;
@@ -22,6 +23,7 @@ function FormRow({
   helperText,
   error,
   required,
+  footer,
   className,
   children,
 }: FormRowProps) {
@@ -42,14 +44,16 @@ function FormRow({
 
   return (
     <div className={cn('grid gap-1.5', className)}>
-      <Label htmlFor={inputId} className={cn(error && 'text-destructive')}>
-        {label}
-        {required && (
-          <span className="text-destructive ml-0.5" aria-hidden="true">
-            *
-          </span>
-        )}
-      </Label>
+      {label && (
+        <Label htmlFor={inputId} className={cn(error && 'text-destructive')}>
+          {label}
+          {required && (
+            <span className="text-destructive ml-0.5" aria-hidden="true">
+              *
+            </span>
+          )}
+        </Label>
+      )}
       {child}
       {error && (
         <p id={errorId} className="text-sm text-destructive" role="alert">
@@ -61,6 +65,7 @@ function FormRow({
           {helperText}
         </p>
       )}
+      {footer}
     </div>
   );
 }

@@ -22,6 +22,7 @@ import fs from 'fs';
 import path from 'path';
 import { errorResponse } from '../utils/errors';
 import { parseCollectionScope } from '../services/rag-grounding-service';
+import { assessDeliverableQuality } from '../../../platform/engine/deliverable-quality.js';
 
 function getRepoRoot(ctx: Record<string, unknown>): string {
   return (ctx?.PROJECT_ROOT as string) || path.resolve(__dirname, '..', '..', '..');
@@ -33,6 +34,87 @@ function safeReadJson(filePath: string, fallback: unknown): unknown {
   } catch {
     return fallback;
   }
+}
+
+function normalizePhaseToken(value: unknown): string | undefined {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return undefined;
+  }
+
+  return value
+    .trim()
+    .toUpperCase()
+    .replace(/[_\s]+/g, '-');
+}
+
+function extractProvenancePhase(item: {
+  state?: string;
+  metadata?: Record<string, unknown>;
+}): string | undefined {
+  const directState = normalizePhaseToken(item.state);
+  if (directState) {
+    return directState;
+  }
+
+  const metadata = item.metadata;
+  if (!metadata) {
+    return undefined;
+  }
+
+  const phase = normalizePhaseToken(metadata.phase);
+  if (phase) {
+    return phase;
+  }
+
+  const phases = Array.isArray(metadata.phases)
+    ? metadata.phases.find((value): value is string => typeof value === 'string')
+    : undefined;
+  return normalizePhaseToken(phases);
+}
+
+function extractProvenanceGateId(item: { metadata?: Record<string, unknown> }): string | undefined {
+  const gateId = item.metadata?.gate_id;
+  return typeof gateId === 'string' && gateId.trim().length > 0 ? gateId.trim() : undefined;
+}
+
+function resolveDeliverableQuality(
+  repoRoot: string,
+  approval: Record<string, unknown>
+):
+  | {
+      score: number;
+      approvalSignal: 'approve' | 'review' | 'block';
+      summary: string;
+      metrics: Array<{ id: string; label: string; score: number; detail: string }>;
+      source_artifact: string;
+    }
+  | undefined {
+  const relatedArtifacts = Array.isArray(approval.related_artifacts)
+    ? approval.related_artifacts.filter((value): value is string => typeof value === 'string')
+    : [];
+
+  for (const artifactPath of relatedArtifacts) {
+    const absolutePath = path.isAbsolute(artifactPath)
+      ? artifactPath
+      : path.join(repoRoot, artifactPath.replace(/\//g, path.sep));
+
+    if (!fs.existsSync(absolutePath) || !fs.statSync(absolutePath).isFile()) {
+      continue;
+    }
+
+    try {
+      const content = fs.readFileSync(absolutePath, 'utf8');
+      const assessment = assessDeliverableQuality(content);
+      return {
+        ...assessment,
+        source_artifact: path.relative(repoRoot, absolutePath).replace(/\\/g, '/'),
+      };
+    } catch {
+      continue;
+    }
+  }
+
+  return undefined;
 }
 
 /**
@@ -109,7 +191,6 @@ async function findSimilarApprovalLessons(
       });
     }
   }
-
   rows.sort((a, b) => b.score - a.score);
 
   return rows.slice(0, 5).map((row, index) => {
@@ -129,6 +210,31 @@ async function findSimilarApprovalLessons(
   });
 }
 
+function isHumanIntervention(item: {
+  actor_type: 'human' | 'machine';
+  decision_type: 'human_override' | 'approval' | 'policy_exception' | 'gate_failure' | 'error';
+}): boolean {
+  return (
+    item.actor_type === 'human' &&
+    (item.decision_type === 'human_override' ||
+      item.decision_type === 'approval' ||
+      item.decision_type === 'policy_exception')
+  );
+}
+
+function isMachineOutcome(item: {
+  actor_type: 'human' | 'machine';
+  decision_type: 'human_override' | 'approval' | 'policy_exception' | 'gate_failure' | 'error';
+}): item is {
+  actor_type: 'machine';
+  decision_type: 'gate_failure' | 'error';
+} {
+  return (
+    item.actor_type === 'machine' &&
+    (item.decision_type === 'gate_failure' || item.decision_type === 'error')
+  );
+}
+
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const legacyCtx = ctx as unknown as Record<string, unknown>;
 
@@ -143,6 +249,15 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     state?: string;
     mode?: string;
     timestamp: string;
+    feedback_propagation?: {
+      status: 'observed' | 'awaiting';
+      impacted_event_count: number;
+      downstream_event_types: Array<
+        'gate_failure' | 'error' | 'policy_exception' | 'approval' | 'human_override'
+      >;
+      latest_timestamp?: string;
+      summary: string;
+    };
     metadata?: Record<string, unknown>;
   };
 
@@ -155,6 +270,60 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     page?: string;
     page_size?: string;
   };
+
+  function isPropagationLinked(source: ProvenanceItem, candidate: ProvenanceItem): boolean {
+    const sourceTs = Date.parse(source.timestamp);
+    const candidateTs = Date.parse(candidate.timestamp);
+    if (!Number.isFinite(sourceTs) || !Number.isFinite(candidateTs) || candidateTs <= sourceTs) {
+      return false;
+    }
+
+    const sourcePhase = extractProvenancePhase(source);
+    const candidatePhase = extractProvenancePhase(candidate);
+    if (sourcePhase && candidatePhase) {
+      return sourcePhase === candidatePhase;
+    }
+
+    const sourceGateId = extractProvenanceGateId(source);
+    const candidateGateId = extractProvenanceGateId(candidate);
+    if (sourceGateId && candidateGateId) {
+      return sourceGateId === candidateGateId;
+    }
+
+    return candidateTs - sourceTs <= 6 * 60 * 60 * 1000;
+  }
+
+  function annotateFeedbackPropagation(items: ProvenanceItem[]): void {
+    const chronological = [...items].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+
+    for (const item of chronological) {
+      if (!isHumanIntervention(item)) {
+        continue;
+      }
+
+      const downstream = chronological.filter(
+        (candidate) => isMachineOutcome(candidate) && isPropagationLinked(item, candidate)
+      );
+
+      if (downstream.length === 0) {
+        item.feedback_propagation = {
+          status: 'awaiting',
+          impacted_event_count: 0,
+          downstream_event_types: [],
+          summary: 'No downstream machine events are recorded yet for this intervention.',
+        };
+        continue;
+      }
+
+      item.feedback_propagation = {
+        status: 'observed',
+        impacted_event_count: downstream.length,
+        downstream_event_types: [...new Set(downstream.map((entry) => entry.decision_type))],
+        latest_timestamp: downstream[downstream.length - 1]?.timestamp,
+        summary: `Observed ${downstream.length} downstream machine event${downstream.length === 1 ? '' : 's'} after this intervention.`,
+      };
+    }
+  }
 
   // ── GET /api/v1/cockpit/health ───────────────────────────
 
@@ -501,6 +670,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         /* audit log may not exist */
       }
 
+      annotateFeedbackPropagation(items);
       items.sort((a, b) => (a.timestamp > b.timestamp ? -1 : 1));
       let filtered = items;
 
@@ -588,6 +758,11 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         return reply.code(404).send(errorResponse('NOT_FOUND', `Approval not found: ${id}`));
       }
 
+      const deliverableQuality = resolveDeliverableQuality(
+        getRepoRoot(legacyCtx),
+        approval as Record<string, unknown>
+      );
+
       let similarOverrides: Array<{
         id: string;
         summary: string;
@@ -612,6 +787,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         ok: true,
         approval: {
           ...(approval as Record<string, unknown>),
+          deliverable_quality: deliverableQuality,
           similar_overrides: similarOverrides,
         },
       });

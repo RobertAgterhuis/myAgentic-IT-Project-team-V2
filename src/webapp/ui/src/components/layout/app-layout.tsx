@@ -1,8 +1,10 @@
+import * as React from 'react';
+import { Suspense } from 'react';
+
 /**
  * App shell layout — persistent TopNavigation + SidePanel wrapping page content.
  * Uses React Router's <Outlet> for nested page rendering.
  */
-import { Suspense } from 'react';
 import { useEffect } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { TopNavigation } from '@/components/ui/top-navigation';
@@ -17,7 +19,14 @@ import { useSSEEvents } from '@/hooks/use-sse-events';
 import { useRuntimeEvents } from '@/hooks/use-runtime-events';
 import { useKeyboardShortcuts } from '@/hooks/use-keyboard-shortcuts';
 import { resolveHelpRouteSlug } from '@/hooks/use-help';
-import { routes, buildBreadcrumbs, DOMAIN_ORDER, type DomainSection } from '@/lib/routes';
+import {
+  routes,
+  buildBreadcrumbs,
+  DOMAIN_ORDER,
+  getPersonaPreset,
+  prioritizeNavSections,
+  type DomainSection,
+} from '@/lib/routes';
 import { AppShell } from '@/components/layout/app-shell';
 import { SidebarNav } from '@/components/layout/sidebar-nav';
 import { BreadcrumbNav } from '@/components/layout/breadcrumb-nav';
@@ -111,8 +120,6 @@ function resolveActiveNavPath(pathname: string): string {
   return parentMatch?.path ?? pathname;
 }
 
-const navSections = buildSections();
-
 function PageSpinner() {
   return (
     <div className="flex flex-1 items-center justify-center p-8">
@@ -136,7 +143,12 @@ export function AppLayout() {
   const { data: orchestratorStatus } = useOrchestratorStatus();
 
   // Fetch current user session (M29-006)
-  useCurrentUser();
+  const currentUserQuery = useCurrentUser();
+  const personaRole = currentUserQuery.data?.role;
+  const navSections = React.useMemo(
+    () => prioritizeNavSections(buildSections(), personaRole),
+    [personaRole]
+  );
 
   // SSE for real-time cache invalidation
   useSSEEvents();
@@ -161,6 +173,17 @@ export function AppLayout() {
       window.removeEventListener(AUTH_EXPIRED_EVENT, onAuthExpired as EventListener);
     };
   }, [location.hash, location.pathname, location.search, navigate]);
+
+  useEffect(() => {
+    if (location.pathname !== '/' || currentUserQuery.isLoading) {
+      return;
+    }
+
+    const landingPath = getPersonaPreset(personaRole).landingPath;
+    if (landingPath && landingPath !== '/') {
+      navigate(landingPath, { replace: true });
+    }
+  }, [currentUserQuery.isLoading, location.pathname, navigate, personaRole]);
 
   return (
     <AppShell

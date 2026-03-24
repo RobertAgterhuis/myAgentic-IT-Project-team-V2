@@ -74,7 +74,7 @@ export function ChatPanel() {
       setStreamText((current) => `${current}${String(lastSSEEvent.token || '')}`);
     }
     if (lastSSEEvent.type === 'chat_stream_complete' && lastSSEEvent.session_id === sessionId) {
-      history.refetch();
+      void history.refetch().finally(() => setStreamText(''));
     }
   }, [history, lastSSEEvent, sessionId]);
 

@@ -51,6 +51,7 @@ export interface TrackedSession {
   started_at: string;
   completed_at: string | null;
   current_agent: string | null;
+  current_agents: string[];
 }
 
 /* ── AgentDetail fields (M15-023) ────────────────────────────── */
@@ -101,6 +102,7 @@ export class SessionTracker {
       started_at: now,
       completed_at: null,
       current_agent: null,
+      current_agents: [],
     };
     this.sessions.set(id, session);
     this.timelines.set(id, []);
@@ -139,7 +141,9 @@ export class SessionTracker {
   /** Update session state. */
   updateSession(
     id: string,
-    updates: Partial<Pick<TrackedSession, 'phase' | 'status' | 'progress' | 'current_agent'>>
+    updates: Partial<
+      Pick<TrackedSession, 'phase' | 'status' | 'progress' | 'current_agent' | 'current_agents'>
+    >
   ): TrackedSession | undefined {
     const session = this.sessions.get(id);
     if (!session) return undefined;
@@ -148,9 +152,11 @@ export class SessionTracker {
     if (updates.status !== undefined) session.status = updates.status;
     if (updates.progress !== undefined) session.progress = updates.progress;
     if (updates.current_agent !== undefined) session.current_agent = updates.current_agent;
+    if (updates.current_agents !== undefined) session.current_agents = updates.current_agents;
 
     if (updates.status === 'completed' || updates.status === 'failed') {
       session.completed_at = new Date().toISOString();
+      session.current_agents = [];
     }
 
     return session;

@@ -7,6 +7,7 @@ import os from 'os';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { registerRoutes } from '../../src/webapp/routes/orchestrator.js';
+import { sessionTracker } from '../../src/webapp/session-tracker.js';
 import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
 
 const createOrchestratorRoutes = (ctx) => createTestableRoutes(registerRoutes, ctx);
@@ -72,6 +73,7 @@ function fakeGetReq() {
 
 describe('orchestrator routes (integration)', () => {
   let routes;
+  let sseNotify;
   let originalSession;
   let originalHumanOverride;
 
@@ -94,12 +96,14 @@ describe('orchestrator routes (integration)', () => {
   });
 
   beforeEach(() => {
+    sessionTracker.reset();
     // Ensure the session directory exists (may not in CI)
     fs.mkdirSync(path.dirname(SESSION_FILE), { recursive: true });
     // Write clean IDLE state so each test starts fresh
     fs.writeFileSync(SESSION_FILE, IDLE_STATE);
     fs.rmSync(HUMAN_OVERRIDE_FILE, { force: true });
-    routes = createTestableRoutes(registerRoutes, { sseNotify: vi.fn() });
+    sseNotify = vi.fn();
+    routes = createTestableRoutes(registerRoutes, { sseNotify });
   });
 
   it('exports all 10 route handlers', () => {
@@ -149,6 +153,21 @@ describe('orchestrator routes (integration)', () => {
       expect(res.body.history).toBeInstanceOf(Array);
       expect(res.body.human_override).toBeDefined();
       expect(res.body.human_override.paused).toBe(false);
+    });
+  });
+
+  describe('GET /onboarding-diagnostics', () => {
+    it('returns runtime profile continuity diagnostics', async () => {
+      const res = fakeRes();
+      await routes['GET /api/orchestrator/onboarding-diagnostics'](fakeGetReq(), res);
+
+      expect(res.status).toBe(200);
+      expect(res.body.ok).toBe(true);
+      expect(res.body.profile).toBeTypeOf('string');
+      expect(res.body.predecessorContractContinuity).toBeDefined();
+      expect(res.body.predecessorContractContinuity).toHaveProperty('mode');
+      expect(res.body.predecessorContractContinuity).toHaveProperty('source');
+      expect(['env', 'profile-default']).toContain(res.body.predecessorContractContinuity.source);
     });
   });
 
@@ -259,6 +278,94 @@ describe('orchestrator routes (integration)', () => {
       );
       expect(res2.status).toBe(200);
       expect(res2.body.transition.to).toBe('PHASE_1');
+    });
+
+    it('starts all Phase 1 agents in session tracking and SSE when entering PHASE_1', async () => {
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), fakeRes());
+
+      const res = fakeRes();
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), res);
+
+      expect(res.status).toBe(200);
+      expect(res.body.transition.to).toBe('PHASE_1');
+
+      const [session] = sessionTracker.listSessions();
+      expect(session).toBeDefined();
+      expect(session.current_agent).toBe('01-business-analyst');
+      expect(session.current_agents).toEqual([
+        '01-business-analyst',
+        '02-domain-expert',
+        '03-sales-strategist',
+        '04-financial-analyst',
+        '34-product-manager',
+      ]);
+
+      const agents = sessionTracker.listAgentsBySession(session.id);
+      expect(agents).toHaveLength(6);
+      const phase1Agents = agents.filter((agent) => agent.phase === 'PHASE-1');
+      expect(phase1Agents).toHaveLength(5);
+      expect(phase1Agents.every((agent) => agent.status === 'running')).toBe(true);
+      expect(phase1Agents.map((agent) => agent.name)).toEqual([
+        'Business Analyst',
+        'Domain Expert',
+        'Sales Strategist',
+        'Financial Analyst',
+        'Product Manager',
+      ]);
+
+      const parallelStarts = sseNotify.mock.calls.filter(
+        ([type, payload]) => type === 'agent_start' && payload.parallel_group === true
+      );
+      expect(parallelStarts).toHaveLength(5);
+      expect(parallelStarts[0][1].parallel_group_id).toBe('phase_1');
+      expect(parallelStarts[0][1].parallel_group_state).toBe('PHASE_1');
+      expect(parallelStarts[0][1].parallel_group_size).toBe(5);
+      expect(parallelStarts[0][1].parallel_group_agents).toEqual([
+        '01-business-analyst',
+        '02-domain-expert',
+        '03-sales-strategist',
+        '04-financial-analyst',
+        '34-product-manager',
+      ]);
+    });
+
+    it('completes all Phase 1 agents when advancing from PHASE_1 to CRITIC_1', async () => {
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), fakeRes());
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), fakeRes());
+
+      const res = fakeRes();
+      await routes['POST /api/orchestrator/advance'](fakeReq({}), res);
+
+      expect(res.status).toBe(200);
+      expect(res.body.transition.to).toBe('CRITIC_1');
+
+      const [session] = sessionTracker.listSessions();
+      expect(session.current_agent).toBe('18-critic-agent');
+      expect(session.current_agents).toEqual(['18-critic-agent']);
+
+      const agents = sessionTracker.listAgentsBySession(session.id);
+      const phase1AgentIds = [
+        '01-business-analyst',
+        '02-domain-expert',
+        '03-sales-strategist',
+        '04-financial-analyst',
+        '34-product-manager',
+      ];
+      const phase1Agents = agents.filter((agent) => phase1AgentIds.includes(agent.id));
+      expect(phase1Agents).toHaveLength(5);
+      expect(phase1Agents.every((agent) => agent.status === 'completed')).toBe(true);
+      expect(agents.find((agent) => agent.id === '18-critic-agent')?.status).toBe('running');
+
+      const parallelCompletes = sseNotify.mock.calls.filter(
+        ([type, payload]) => type === 'agent_complete' && payload.parallel_group === true
+      );
+      expect(parallelCompletes).toHaveLength(5);
+      expect(parallelCompletes[0][1].parallel_group_size).toBe(5);
+
+      const stateEvent = sseNotify.mock.calls.find(
+        ([type, payload]) => type === 'orchestrator_state' && payload.to === 'CRITIC_1'
+      );
+      expect(stateEvent[1].parallel_group).toBeNull();
     });
 
     it('returns 400 when advance is not possible', async () => {

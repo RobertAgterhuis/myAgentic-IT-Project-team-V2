@@ -1,4 +1,3 @@
-````markdown
 # Contract: Session State
 
 > Version 1.0 | Defines how the Orchestrator and agents track progress and
@@ -387,9 +386,9 @@ The Orchestrator processes this and writes the state update to
 1. **Single-writer guarantee:** Only the Orchestrator writes to
    `session-state.json`. Agents never write directly — they emit a STATE UPDATE
    block in their handoff and the Orchestrator applies it.
-2. **Sequential agent execution:** Within a phase, agents execute strictly in
-   order (no parallel phase agents). Parallel execution only occurs for Phase 5
-   Implementation Agent instances working on independent stories.
+2. **Bounded phase concurrency:** Within a phase, agents execute in dependency-safe
+   order. Independent Phase 1 agents may run in bounded parallel groups, while
+   phases with ordered predecessor requirements still run sequentially.
 3. **Phase 5 parallel stories:** When multiple Implementation Agent instances
    run in parallel, each produces a separate STATE UPDATE. The Orchestrator
    applies these sequentially after all stories in the parallel track complete.
@@ -595,4 +594,3 @@ keyed by sprint ID:
   }
 }
 ```
-````

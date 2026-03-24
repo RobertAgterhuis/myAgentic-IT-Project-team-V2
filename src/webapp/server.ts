@@ -50,6 +50,7 @@ import {
   REDIS_URL,
   QUEUE_PROVIDER,
   SESSION_STORE,
+  resolvePredecessorContractContinuityMode,
 } from './config';
 import { createStorageProvider } from '../../platform/engine/persistence';
 import type { StorageProvider } from '../../platform/engine/persistence';
@@ -302,7 +303,14 @@ function assertStartupSecurityModel(): void {
   });
 }
 
-function validateStartupRuntimeProfile(host: string = HOST): void {
+function validateStartupRuntimeProfile(host: string = HOST): {
+  profile: string;
+  warnings: string[];
+  predecessorContractContinuity: {
+    mode: boolean | { states?: string[]; agents?: string[] };
+    source: 'env' | 'profile-default';
+  };
+} {
   const validation = validateProfile({
     nodeEnv: process.env.NODE_ENV,
     host,
@@ -336,10 +344,20 @@ function validateStartupRuntimeProfile(host: string = HOST): void {
     );
   }
 
+  const continuity = resolvePredecessorContractContinuityMode(validation.profile);
+
   structuredLog('info', 'startup_runtime_profile_validated', {
     profile: validation.profile,
     warnings: validation.warnings.length,
+    predecessorContractContinuity: continuity.mode,
+    predecessorContractContinuitySource: continuity.source,
   });
+
+  return {
+    profile: validation.profile,
+    warnings: validation.warnings,
+    predecessorContractContinuity: continuity,
+  };
 }
 
 /* ── Typed Server Context (M30-002) ───────────────────────────── */

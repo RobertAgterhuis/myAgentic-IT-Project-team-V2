@@ -572,6 +572,7 @@ export interface SessionInfo {
   status: string;
   current_phase: string;
   current_agent: string;
+  current_agents?: string[];
   current_step: string;
   initiated_at: string;
   last_updated: string;
@@ -1161,6 +1162,7 @@ export interface Session {
   started_at: string;
   completed_at: string | null;
   current_agent: string | null;
+  current_agents?: string[];
 }
 
 export interface SessionsListResponse extends OkResponse {

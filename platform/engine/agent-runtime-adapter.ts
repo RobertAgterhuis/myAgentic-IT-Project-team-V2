@@ -68,6 +68,17 @@ interface AgentInvocationContext {
   agentId?: string;
   skillFile?: string;
   predecessorOutputs?: Record<string, string>;
+  predecessorContracts?: Array<{
+    source: string;
+    headingCount: number;
+    headings: string[];
+    hasHandoffChecklist: boolean;
+    checklist: {
+      total: number;
+      checked: number;
+      completionRatio: number;
+    } | null;
+  }>;
   questionnaireInput?: string | null;
   ragContext?: {
     query: string;
@@ -109,6 +120,17 @@ export interface AgentPromptEnvelope {
   context: {
     skillFile: string | null;
     predecessorOutputs: Array<{ source: string; excerpt: string }>;
+    predecessorContracts: Array<{
+      source: string;
+      headingCount: number;
+      headings: string[];
+      hasHandoffChecklist: boolean;
+      checklist: {
+        total: number;
+        checked: number;
+        completionRatio: number;
+      } | null;
+    }>;
     questionnaireInput: string | null;
     ragContext: {
       query: string;
@@ -282,6 +304,87 @@ function stringifySessionState(value: unknown): string | null {
   } catch {
     return '[unserializable session state]';
   }
+}
+
+function summarizePredecessorContract(content: string): {
+  headingCount: number;
+  headings: string[];
+  hasHandoffChecklist: boolean;
+  checklist: {
+    total: number;
+    checked: number;
+    completionRatio: number;
+  } | null;
+} {
+  const headings = (content.match(/^#{1,6}\s+.+$/gm) || [])
+    .map((line) => sanitizeModelBoundText(line.replace(/^#{1,6}\s+/, '').trim()))
+    .filter((line) => line.length > 0)
+    .slice(0, 12);
+
+  const checklistItems = content.match(/^\s*-\s*\[(?: |x|X)\]\s+.+$/gm) || [];
+  const checkedItems = content.match(/^\s*-\s*\[(?:x|X)\]\s+.+$/gm) || [];
+
+  const hasHandoffChecklist = /(^|\n)\s*##\s+HANDOFF\s+CHECKLIST\b/im.test(content);
+  const checklist =
+    checklistItems.length > 0
+      ? {
+          total: checklistItems.length,
+          checked: checkedItems.length,
+          completionRatio:
+            checklistItems.length > 0
+              ? Math.round((checkedItems.length / checklistItems.length) * 100) / 100
+              : 0,
+        }
+      : null;
+
+  return {
+    headingCount: headings.length,
+    headings,
+    hasHandoffChecklist,
+    checklist,
+  };
+}
+
+function normalizePredecessorContracts(
+  contracts: AgentInvocationContext['predecessorContracts']
+): AgentPromptEnvelope['context']['predecessorContracts'] | null {
+  if (!Array.isArray(contracts) || contracts.length === 0) return null;
+
+  const normalized = contracts
+    .filter(
+      (contract) =>
+        !!contract &&
+        typeof contract.source === 'string' &&
+        Array.isArray(contract.headings) &&
+        typeof contract.hasHandoffChecklist === 'boolean'
+    )
+    .map((contract) => {
+      const headings = contract.headings
+        .map((heading) => sanitizeModelBoundText(String(heading)))
+        .filter((heading) => heading.length > 0)
+        .slice(0, 12);
+
+      const checklist = contract.checklist
+        ? {
+            total: Number(contract.checklist.total) || 0,
+            checked: Number(contract.checklist.checked) || 0,
+            completionRatio: Number(contract.checklist.completionRatio) || 0,
+          }
+        : null;
+
+      return {
+        source: contract.source,
+        headingCount:
+          typeof contract.headingCount === 'number' && Number.isFinite(contract.headingCount)
+            ? contract.headingCount
+            : headings.length,
+        headings,
+        hasHandoffChecklist: contract.hasHandoffChecklist,
+        checklist,
+      };
+    });
+
+  return normalized.length > 0 ? normalized : null;
 }
 
 async function resolveSkillFile(pattern: string | undefined): Promise<string | null> {
@@ -891,6 +994,12 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
     const requestedAt = new Date().toISOString();
     const requestId = createRequestId(agent.id);
     const toolTraceId = requestId;
+    const predecessorContracts =
+      normalizePredecessorContracts(runtimeContext.predecessorContracts) ||
+      Object.entries(runtimeContext.predecessorOutputs || {}).map(([source, content]) => ({
+        source,
+        ...summarizePredecessorContract(content),
+      }));
     const predecessorOutputs = Object.entries(runtimeContext.predecessorOutputs || {}).map(
       ([source, content]) => ({ source, excerpt: truncate(sanitizeModelBoundText(content), 2500) })
     );
@@ -976,6 +1085,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
       context: {
         skillFile: skillPath,
         predecessorOutputs,
+        predecessorContracts,
         questionnaireInput: sanitizedQuestionnaireInput,
         ragContext,
         sessionState,

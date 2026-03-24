@@ -14,6 +14,7 @@ export interface RuntimeStoreEvent {
   agent?: string;
   phase?: string;
   artifactId?: string;
+  metadata?: Record<string, unknown>;
 }
 
 const MAX_EVENTS = 500;

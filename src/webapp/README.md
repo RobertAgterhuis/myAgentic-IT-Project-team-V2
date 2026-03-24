@@ -90,20 +90,21 @@ All configuration is environment-based. See `src/webapp/config.ts` for parsed de
 
 ### Quick Reference Table
 
-| Variable               | Default                           | Production            | Notes                                                                                              |
-| ---------------------- | --------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------- |
-| `PORT`                 | `3000`                            | `3000`                | Port to listen on (1–65535 range validated)                                                        |
-| `HOST`                 | `127.0.0.1`                       | varies                | Bind address; non-local bindings require auth or API_KEY                                           |
-| `NODE_ENV`             | `development`                     | `production`          | Affects startup strictness: `production` enforces storage provider success                         |
-| `STORAGE_PROVIDER`     | `file`                            | `sqlite`              | `file` = JSON in BusinessDocs/, `sqlite` = SQLite database                                         |
-| `STORAGE_PATH`         | `{PROJECT_ROOT}/.agentic/storage` | `/data/agentic.db`    | Path to storage backend (required for sqlite)                                                      |
-| `QUEUE_PROVIDER`       | `memory`                          | `persistent`/`bullmq` | Async job queue: `memory` = in-process, `persistent` = on-disk, `bullmq` = Redis-backed            |
-| `SESSION_STORE`        | `sqlite`                          | `redis`               | Session state: `sqlite` = local database, `redis` = distributed                                    |
-| `REDIS_URL`            | _(none)_                          | varies                | Enable Redis features (sessions, pub/sub, BullMQ) — fails startup if set but unreachable           |
-| `API_KEY`              | _(none)_                          | {24+ chars}           | Enable API-only (non-OAuth) access for non-local bindings (minimum 24 characters)                  |
-| `GITHUB_CLIENT_ID`     | _(none)_                          | {GitHub App ID}       | GitHub OAuth client ID for login                                                                   |
-| `GITHUB_CLIENT_SECRET` | _(none)_                          | {GitHub App Secret}   | GitHub OAuth client secret                                                                         |
-| `TRUST_PROXY`          | `false`                           | varies                | Trusted proxy configuration (false/true/hop-count/CIDR/list); defaults to reject all forwarded IPs |
+| Variable                                  | Default                                               | Production            | Notes                                                                                                                      |
+| ----------------------------------------- | ----------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `PORT`                                    | `3000`                                                | `3000`                | Port to listen on (1–65535 range validated)                                                                                |
+| `HOST`                                    | `127.0.0.1`                                           | varies                | Bind address; non-local bindings require auth or API_KEY                                                                   |
+| `NODE_ENV`                                | `development`                                         | `production`          | Affects startup strictness: `production` enforces storage provider success                                                 |
+| `STORAGE_PROVIDER`                        | `file`                                                | `sqlite`              | `file` = JSON in BusinessDocs/, `sqlite` = SQLite database                                                                 |
+| `STORAGE_PATH`                            | `{PROJECT_ROOT}/.agentic/storage`                     | `/data/agentic.db`    | Path to storage backend (required for sqlite)                                                                              |
+| `QUEUE_PROVIDER`                          | `memory`                                              | `persistent`/`bullmq` | Async job queue: `memory` = in-process, `persistent` = on-disk, `bullmq` = Redis-backed                                    |
+| `SESSION_STORE`                           | `sqlite`                                              | `redis`               | Session state: `sqlite` = local database, `redis` = distributed                                                            |
+| `REDIS_URL`                               | _(none)_                                              | varies                | Enable Redis features (sessions, pub/sub, BullMQ) — fails startup if set but unreachable                                   |
+| `API_KEY`                                 | _(none)_                                              | {24+ chars}           | Enable API-only (non-OAuth) access for non-local bindings (minimum 24 characters)                                          |
+| `GITHUB_CLIENT_ID`                        | _(none)_                                              | {GitHub App ID}       | GitHub OAuth client ID for login                                                                                           |
+| `GITHUB_CLIENT_SECRET`                    | _(none)_                                              | {GitHub App Secret}   | GitHub OAuth client secret                                                                                                 |
+| `TRUST_PROXY`                             | `false`                                               | varies                | Trusted proxy configuration (false/true/hop-count/CIDR/list); defaults to reject all forwarded IPs                         |
+| `ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY` | auto-by-profile (`false` local/CI, `true` production) | `true` or scoped JSON | Dispatcher continuity policy override. Accepts booleans (`true`/`false`) or JSON: `{"states":["PHASE_2"],"agents":["05"]}` |
 
 ### Startup Behavior
 

@@ -21,6 +21,7 @@ const ENV_KEYS = [
   'GITHUB_CLIENT_ID',
   'GITHUB_CLIENT_SECRET',
   'TRUST_PROXY',
+  'ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY',
 ];
 
 function resetModuleCache() {
@@ -126,5 +127,27 @@ describe('startup runtime profile validation', () => {
 
     const { validateStartupRuntimeProfile } = loadServerModule();
     expect(() => validateStartupRuntimeProfile()).not.toThrow();
+  });
+
+  it('returns strict predecessor continuity by default in production profile', () => {
+    setEnv({
+      NODE_ENV: 'production',
+      HOST: '0.0.0.0',
+      STORAGE_PROVIDER: 'sqlite',
+      QUEUE_PROVIDER: 'persistent',
+      SESSION_STORE: 'sqlite',
+      API_KEY: 'abcdefghijklmnopqrstuvwxyz123456',
+      TRUST_PROXY: '1',
+      ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY: undefined,
+    });
+
+    const { validateStartupRuntimeProfile } = loadServerModule();
+    const result = validateStartupRuntimeProfile();
+
+    expect(result.profile).toBe('production-single-node');
+    expect(result.predecessorContractContinuity).toEqual({
+      mode: true,
+      source: 'profile-default',
+    });
   });
 });

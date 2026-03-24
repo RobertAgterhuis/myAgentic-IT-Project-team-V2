@@ -58,11 +58,24 @@ interface AgentRef {
   name: string;
 }
 
+interface PredecessorContractSummary {
+  source: string;
+  headingCount: number;
+  headings: string[];
+  hasHandoffChecklist: boolean;
+  checklist: {
+    total: number;
+    checked: number;
+    completionRatio: number;
+  } | null;
+}
+
 export interface AgentExecutionContext {
   [key: string]: unknown;
   agentId: string;
   skillFile: string;
   predecessorOutputs: Record<string, string>;
+  predecessorContracts: PredecessorContractSummary[];
   questionnaireInput: string | null;
   ragContext: {
     query: string;
@@ -128,6 +141,71 @@ interface ConfidenceAssessment {
   confidence: number;
   uncertainty_reasons: string[];
   needs_human_review: boolean;
+}
+
+function evaluatePredecessorContractContinuity(context: Record<string, unknown>): string[] {
+  const contracts = context.predecessorContracts;
+  if (!Array.isArray(contracts) || contracts.length === 0) return [];
+
+  const warnings: string[] = [];
+  for (const contract of contracts) {
+    if (!contract || typeof contract !== 'object') continue;
+
+    const row = contract as {
+      source?: unknown;
+      hasHandoffChecklist?: unknown;
+      checklist?: { total?: unknown; checked?: unknown } | null;
+    };
+
+    if (row.hasHandoffChecklist !== true || !row.checklist) continue;
+
+    const total =
+      typeof row.checklist.total === 'number' && Number.isFinite(row.checklist.total)
+        ? row.checklist.total
+        : 0;
+    const checked =
+      typeof row.checklist.checked === 'number' && Number.isFinite(row.checklist.checked)
+        ? row.checklist.checked
+        : 0;
+
+    if (total > 0 && checked < total) {
+      const source = typeof row.source === 'string' ? row.source : 'unknown-source';
+      warnings.push(
+        `Predecessor handoff checklist incomplete: ${source} (${checked}/${total} checked)`
+      );
+    }
+  }
+
+  return warnings;
+}
+
+function shouldEnforcePredecessorContractContinuity(
+  config: Record<string, unknown>,
+  state: string,
+  agentId: string
+): boolean {
+  const mode = config.enforcePredecessorContractContinuity;
+  if (mode === true) return true;
+  if (mode === false || mode === undefined || mode === null) return false;
+
+  if (typeof mode === 'object' && !Array.isArray(mode)) {
+    const typed = mode as { states?: unknown; agents?: unknown };
+    const hasStateFilter = Array.isArray(typed.states);
+    const hasAgentFilter = Array.isArray(typed.agents);
+
+    const stateMatch = hasStateFilter
+      ? (typed.states as unknown[]).some((entry) => entry === state)
+      : false;
+    const agentMatch = hasAgentFilter
+      ? (typed.agents as unknown[]).some((entry) => entry === agentId)
+      : false;
+
+    if (hasStateFilter || hasAgentFilter) {
+      return stateMatch || agentMatch;
+    }
+  }
+
+  return false;
 }
 
 interface InvocationResponseContract {
@@ -284,6 +362,34 @@ function normalizeInvocationResponse(value: unknown): InvocationResponseContract
     contractValidation,
     requestedAt: readOptionalString(value, 'requestedAt', 'Invocation result response'),
     completedAt: readOptionalString(value, 'completedAt', 'Invocation result response'),
+  };
+}
+
+function summarizePredecessorContract(source: string, content: string): PredecessorContractSummary {
+  const headings = (content.match(/^#{1,6}\s+.+$/gm) || [])
+    .map((line) => line.replace(/^#{1,6}\s+/, '').trim())
+    .filter((line) => line.length > 0)
+    .slice(0, 12);
+
+  const checklistItems = content.match(/^\s*-\s*\[(?: |x|X)\]\s+.+$/gm) || [];
+  const checkedItems = content.match(/^\s*-\s*\[(?:x|X)\]\s+.+$/gm) || [];
+
+  return {
+    source,
+    headingCount: headings.length,
+    headings,
+    hasHandoffChecklist: /(^|\n)\s*##\s+HANDOFF\s+CHECKLIST\b/im.test(content),
+    checklist:
+      checklistItems.length > 0
+        ? {
+            total: checklistItems.length,
+            checked: checkedItems.length,
+            completionRatio:
+              checklistItems.length > 0
+                ? Math.round((checkedItems.length / checklistItems.length) * 100) / 100
+                : 0,
+          }
+        : null,
   };
 }
 
@@ -507,6 +613,8 @@ const AGENT_GROUPS: Record<string, string[][]> = Object.freeze({
   ],
 } as Record<string, string[][]>);
 
+const DEFAULT_PARALLEL_DISPATCH_STATES = new Set<string>([STATES.PHASE_1]);
+
 // ─── Default Configuration ───────────────────────────────────
 const DEFAULT_CONFIG = Object.freeze({
   platform: PLATFORMS.COPILOT,
@@ -518,6 +626,7 @@ const DEFAULT_CONFIG = Object.freeze({
   skillsDir: 'templates/sdlc/agents',
   docsDir: 'docs',
   maxConcurrency: 3, // bounded parallelism ceiling per group
+  enforcePredecessorContractContinuity: false,
 });
 
 // ─── Invocation Log Entry ────────────────────────────────────
@@ -608,6 +717,32 @@ class Dispatcher {
     return this._phaseAgents[state] || [];
   }
 
+  _shouldUseDefaultParallelDispatch(state: string): boolean {
+    if (!DEFAULT_PARALLEL_DISPATCH_STATES.has(state)) {
+      return false;
+    }
+
+    const groups = AGENT_GROUPS[state];
+    const stateAgents = this.getAgentsForState(state);
+    if (!groups || groups.length === 0 || stateAgents.length === 0) {
+      return false;
+    }
+
+    const availableIds = new Set(stateAgents.map((agent) => agent.id));
+    const groupedIds = new Set(groups.flat());
+    if (groupedIds.size <= 1) {
+      return false;
+    }
+
+    for (const agentId of groupedIds) {
+      if (!availableIds.has(agentId)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   /**
    * Build agent invocation context.
    * AC-3: Reads predecessor output files and injects as context.
@@ -641,6 +776,7 @@ class Dispatcher {
       agentId,
       skillFile: path.join(this._config.skillsDir as string, `${agentId}-*.md`),
       predecessorOutputs: {},
+      predecessorContracts: [],
       questionnaireInput: null,
       ragContext: ragContext || null,
       sessionState: sessionState || null,
@@ -651,7 +787,9 @@ class Dispatcher {
     // AC-3: Load predecessor outputs
     for (const p of predecessorPaths as string[]) {
       if (this._store.exists(p)) {
-        context.predecessorOutputs[p] = this._store.read(p);
+        const output = this._store.read(p);
+        context.predecessorOutputs[p] = output;
+        context.predecessorContracts.push(summarizePredecessorContract(p, output));
       }
     }
 
@@ -764,7 +902,43 @@ class Dispatcher {
               : undefined;
         }
 
-        const confidence = assessConfidence(response, attempt, true);
+        const continuityWarnings = evaluatePredecessorContractContinuity(context);
+        const enforceContinuity = shouldEnforcePredecessorContractContinuity(
+          config,
+          state,
+          agent.id
+        );
+        const baseConfidence = assessConfidence(response, attempt, true);
+        const confidence =
+          continuityWarnings.length > 0
+            ? {
+                confidence: Math.max(0, Math.round((baseConfidence.confidence - 0.15) * 100) / 100),
+                uncertainty_reasons: [...baseConfidence.uncertainty_reasons, ...continuityWarnings],
+                needs_human_review: true,
+              }
+            : baseConfidence;
+
+        if (enforceContinuity && continuityWarnings.length > 0) {
+          const continuityError = continuityWarnings.join('; ');
+          entry.status = 'failure';
+          entry.error = continuityError;
+          entry.errorSeverity = ErrorSeverity.RECOVERABLE;
+          entry.confidence = confidence.confidence;
+          entry.uncertainty_reasons = confidence.uncertainty_reasons;
+          entry.needs_human_review = true;
+          this._logEntry(entry);
+
+          return {
+            success: false,
+            error: continuityError,
+            severity: ErrorSeverity.RECOVERABLE,
+            degraded: true,
+            confidence: confidence.confidence,
+            uncertainty_reasons: confidence.uncertainty_reasons,
+            needs_human_review: true,
+          };
+        }
+
         entry.confidence = confidence.confidence;
         entry.uncertainty_reasons = confidence.uncertainty_reasons;
         entry.needs_human_review = confidence.needs_human_review;
@@ -850,15 +1024,7 @@ class Dispatcher {
     };
   }
 
-  /**
-   * Dispatch all agents for a given state sequentially.
-   * @param {string} state
-   * @param {object} contextOptions - Options for buildContext
-   * @param {object} [agentConfigs] - Map of agentId → config overrides
-   * @param {object} [dispatchOptions] - { onFailure: 'continue'|'abort'|'escalate' }
-   * @returns {Promise<{completed: string[], failed: string[], results: object[], escalated: boolean}>}
-   */
-  async dispatchState(
+  async _dispatchStateSequential(
     state: string,
     contextOptions: Record<string, unknown> = {},
     agentConfigs: Record<string, Record<string, unknown>> = {},
@@ -899,6 +1065,32 @@ class Dispatcher {
     }
 
     return { completed, failed, results, escalated };
+  }
+
+  /**
+   * Dispatch agents for a state.
+   *
+   * PHASE_1 defaults to bounded parallel dispatch because its agents are
+   * independent in the merged milestone dependency model. States that still
+   * rely on ordered predecessor chaining continue to use the sequential path.
+   *
+   * @param {string} state
+   * @param {object} contextOptions - Options for buildContext
+   * @param {object} [agentConfigs] - Map of agentId → config overrides
+   * @param {object} [dispatchOptions] - { onFailure: 'continue'|'abort'|'escalate', forceSequential?: boolean }
+   * @returns {Promise<{completed: string[], failed: string[], results: object[], escalated: boolean}>}
+   */
+  async dispatchState(
+    state: string,
+    contextOptions: Record<string, unknown> = {},
+    agentConfigs: Record<string, Record<string, unknown>> = {},
+    dispatchOptions: Record<string, unknown> = {}
+  ) {
+    if (dispatchOptions.forceSequential !== true && this._shouldUseDefaultParallelDispatch(state)) {
+      return this.dispatchStateParallel(state, contextOptions, agentConfigs, dispatchOptions);
+    }
+
+    return this._dispatchStateSequential(state, contextOptions, agentConfigs, dispatchOptions);
   }
 
   // ─── Internal ────────────────────────────────────────────
@@ -1080,7 +1272,12 @@ class Dispatcher {
   }> {
     const groups = AGENT_GROUPS[state];
     if (!groups) {
-      const r = await this.dispatchState(state, contextOptions, agentConfigs, dispatchOptions);
+      const r = await this._dispatchStateSequential(
+        state,
+        contextOptions,
+        agentConfigs,
+        dispatchOptions
+      );
       return { ...r, concurrencyHighWaterMark: 1, totalWaitMs: 0 };
     }
 

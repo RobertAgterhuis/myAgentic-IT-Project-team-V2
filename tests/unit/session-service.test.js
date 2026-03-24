@@ -51,6 +51,14 @@ const SESSION_STATE = {
   ],
 };
 
+const PHASE_1_PARALLEL_AGENT_IDS = [
+  '01-business-analyst',
+  '02-domain-expert',
+  '03-sales-strategist',
+  '04-financial-analyst',
+  '34-product-manager',
+];
+
 describe('SessionService', () => {
   let store;
   let svc;
@@ -90,6 +98,7 @@ describe('SessionService', () => {
     const info = svc.buildProgressMcp(SESSION_STATE);
     expect(info.currentPhase).toBe('PHASE-2');
     expect(info.currentAgent).toBe('05-software-architect');
+    expect(info.currentAgents).toEqual([]);
   });
 
   it('builds progress MCP info when session is null', () => {
@@ -131,8 +140,35 @@ describe('SessionService', () => {
   it('builds session summary', () => {
     const summary = svc.buildSessionSummary(SESSION_STATE);
     expect(summary.session_id).toBe('test-001');
+    expect(summary.current_agents).toEqual([]);
     expect(summary.blockers).toHaveLength(1);
     expect(summary.open_human_escalations).toHaveLength(1); // only OPEN ones
+  });
+
+  it('marks all tracked Phase 1 agents active when current_agents is populated', () => {
+    const state5 = {
+      ...SESSION_STATE,
+      current_phase: 'PHASE-1',
+      current_agent: '01-business-analyst',
+      current_agents: PHASE_1_PARALLEL_AGENT_IDS,
+      completed_phases: ['ONBOARDING'],
+      completed_agents: ['25-onboarding-agent'],
+    };
+
+    const info = svc.buildProgressMcp(state5);
+    expect(info.currentAgents).toEqual(PHASE_1_PARALLEL_AGENT_IDS);
+
+    const phases = svc.buildPhaseProgress(state5);
+    const phase1 = phases.find((p) => p.key === 'PHASE-1');
+    const activePhase1Agents = phase1.agents
+      .filter((agent) =>
+        PHASE_1_PARALLEL_AGENT_IDS.includes(
+          `${agent.id}-${agent.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`
+        )
+      )
+      .filter((agent) => agent.status === 'active');
+
+    expect(activePhase1Agents).toHaveLength(5);
   });
 
   it('reads audit log', () => {

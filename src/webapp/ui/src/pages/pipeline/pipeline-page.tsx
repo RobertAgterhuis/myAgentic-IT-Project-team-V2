@@ -108,12 +108,35 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+function getCurrentAgentIds(session: SessionInfo | null): string[] {
+  if (!session) return [];
+
+  const currentAgents = Array.isArray(session.current_agents)
+    ? session.current_agents.filter(
+        (agent): agent is string => typeof agent === 'string' && !!agent
+      )
+    : [];
+
+  if (currentAgents.length > 0) {
+    return Array.from(new Set(currentAgents));
+  }
+
+  return session.current_agent ? [session.current_agent] : [];
+}
+
+function formatCurrentAgentsLabel(currentAgents: string[]): string {
+  if (currentAgents.length === 0) return 'No active agent';
+  if (currentAgents.length === 1) return currentAgents[0];
+  if (currentAgents.length === 2) return `${currentAgents[0]}, ${currentAgents[1]}`;
+  return `${currentAgents[0]}, ${currentAgents[1]} +${currentAgents.length - 2}`;
+}
+
 function isCurrentAgent(session: SessionInfo | null, phaseKey: string, agentId: string): boolean {
   const currentPhase = session?.current_phase ?? null;
-  const currentAgent = session?.current_agent ?? null;
+  const currentAgents = getCurrentAgentIds(session);
 
-  if (!currentAgent || currentPhase !== phaseKey) return false;
-  return currentAgent === agentId || currentAgent.startsWith(`${agentId}-`);
+  if (currentAgents.length === 0 || currentPhase !== phaseKey) return false;
+  return currentAgents.some((agent) => agent === agentId || agent.startsWith(`${agentId}-`));
 }
 
 function isHumanRequiredBlocker(blocker: unknown): boolean {
@@ -269,6 +292,8 @@ export default function PipelinePage() {
     openEscalations,
     humanBlockers
   );
+  const activeAgentIds = getCurrentAgentIds(progress?.session ?? null);
+  const activeAgentsLabel = formatCurrentAgentsLabel(activeAgentIds);
   const contextItems: ContextStripItem[] = [
     {
       id: 'phases',
@@ -343,7 +368,7 @@ export default function PipelinePage() {
         badges={
           <>
             <ControlSignalBadge signal="governed" />
-            {progress?.session?.current_agent && <ControlSignalBadge signal="active-agent" />}
+            {activeAgentIds.length > 0 && <ControlSignalBadge signal="active-agent" />}
             {(openEscalations > 0 || humanBlockers > 0) && (
               <ControlSignalBadge signal="needs-human-input" />
             )}
@@ -507,11 +532,9 @@ export default function PipelinePage() {
             </div>
             <div>
               <Text muted className="text-xs">
-                Agent
+                {activeAgentIds.length > 1 ? 'Agents' : 'Agent'}
               </Text>
-              <span className="font-medium">
-                {renderSessionValue(progress.session.current_agent, 'No active agent')}
-              </span>
+              <span className="font-medium">{activeAgentsLabel}</span>
             </div>
             <div>
               <Text muted className="text-xs">

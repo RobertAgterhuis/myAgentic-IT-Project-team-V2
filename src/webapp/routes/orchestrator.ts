@@ -35,12 +35,15 @@ import {
   SESSION_STORE,
   REDIS_URL,
   TRUST_PROXY,
+  resolvePredecessorContractContinuityMode,
 } from '../config';
 import { validateProfile, hasAuthConfigured, PROFILE_CONTRACTS } from '../runtime-profiles';
 
 type OrchestratorEngine = ReturnType<typeof createEngine>;
 type OrchestratorStatus = ReturnType<OrchestratorEngine['status']>;
 type PhaseAgent = { id: string; name: string };
+
+type TrackedPhaseAgent = PhaseAgent & { trackedId: string };
 
 type HumanOverrideEventType = 'pause' | 'override' | 'resume';
 
@@ -53,6 +56,8 @@ type HumanOverrideEvent = {
   mode: string;
   phases?: string[];
 };
+
+const PARALLEL_SESSION_STATES = new Set(['PHASE_1']);
 
 function getErrorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -93,9 +98,56 @@ function toTrackedAgentId(agent: PhaseAgent): string {
   return `${agent.id}-${agent.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 }
 
-function getPrimaryAgent(state: string): string | null {
+function getTrackedAgentsForState(state: string): TrackedPhaseAgent[] {
   const agents = PHASE_AGENTS[state as keyof typeof PHASE_AGENTS] as PhaseAgent[] | undefined;
-  return agents && agents.length > 0 ? toTrackedAgentId(agents[0]) : null;
+  return (agents || []).map((agent) => ({
+    ...agent,
+    trackedId: toTrackedAgentId(agent),
+  }));
+}
+
+function isParallelTrackedState(state: string): boolean {
+  return PARALLEL_SESSION_STATES.has(state);
+}
+
+function getTrackedAgentName(state: string, trackedId: string | null): string | null {
+  if (!trackedId) return null;
+  const agent = getTrackedAgentsForState(state).find((entry) => entry.trackedId === trackedId);
+  return agent?.name || trackedId;
+}
+
+function buildParallelGroupTelemetry(
+  state: string,
+  trackedAgents: TrackedPhaseAgent[],
+  trackedId?: string
+): Record<string, unknown> {
+  const groupAgents = trackedAgents.map((agent) => agent.trackedId);
+  const payload: Record<string, unknown> = {
+    parallel_group: true,
+    parallel_group_id: state.toLowerCase(),
+    parallel_group_state: state,
+    parallel_group_size: groupAgents.length,
+    parallel_group_agents: groupAgents,
+  };
+
+  if (trackedId) {
+    payload.parallel_group_index = Math.max(groupAgents.indexOf(trackedId), 0) + 1;
+  }
+
+  return payload;
+}
+
+function buildParallelStateTelemetry(state: string): Record<string, unknown> {
+  const trackedAgents = getTrackedAgentsForState(state);
+  return {
+    parallel_group: buildParallelGroupTelemetry(state, trackedAgents),
+    active_agents: trackedAgents.map((agent) => agent.trackedId),
+  };
+}
+
+function getPrimaryAgent(state: string): string | null {
+  const agents = getTrackedAgentsForState(state);
+  return agents.length > 0 ? agents[0].trackedId : null;
 }
 
 function getSessionRuntime(status: OrchestratorStatus): {
@@ -106,6 +158,79 @@ function getSessionRuntime(status: OrchestratorStatus): {
     phase: toSessionPhase(status.state),
     agent: getPrimaryAgent(status.state),
   };
+}
+
+function startParallelTrackedAgents(
+  sessionId: string,
+  state: string,
+  phase: string,
+  sseNotify: ServerContext['sseNotify']
+): string[] {
+  const trackedAgents = getTrackedAgentsForState(state);
+  const startedIds: string[] = [];
+
+  for (const agent of trackedAgents) {
+    const telemetry = buildParallelGroupTelemetry(state, trackedAgents, agent.trackedId);
+    sessionTracker.startAgent(sessionId, agent.trackedId, agent.name, phase, `Processing ${phase}`);
+    sessionTracker.addTimelineEvent(sessionId, {
+      type: 'agent_start',
+      description: `Agent started: ${agent.name}`,
+      agent: agent.trackedId,
+      phase,
+      metadata: { agent_name: agent.name, ...telemetry },
+    });
+    sseNotify('agent_start', {
+      type: 'agent_start',
+      session_id: sessionId,
+      agent: agent.trackedId,
+      agent_name: agent.name,
+      phase,
+      ...telemetry,
+      timestamp: new Date().toISOString(),
+    });
+    startedIds.push(agent.trackedId);
+  }
+
+  return startedIds;
+}
+
+function completeParallelTrackedAgents(
+  sessionId: string,
+  state: string,
+  phase: string,
+  sseNotify: ServerContext['sseNotify']
+): string[] {
+  const trackedAgents = getTrackedAgentsForState(state);
+  const completedIds: string[] = [];
+
+  for (const agent of trackedAgents) {
+    const telemetry = buildParallelGroupTelemetry(state, trackedAgents, agent.trackedId);
+    const current = sessionTracker.getAgent(agent.trackedId);
+    if (!current || current.session_id !== sessionId || current.status === 'completed') {
+      continue;
+    }
+
+    sessionTracker.completeAgent(agent.trackedId);
+    sessionTracker.addTimelineEvent(sessionId, {
+      type: 'agent_complete',
+      description: `Agent completed: ${agent.name}`,
+      agent: agent.trackedId,
+      phase,
+      metadata: { agent_name: agent.name, ...telemetry },
+    });
+    sseNotify('agent_complete', {
+      type: 'agent_complete',
+      session_id: sessionId,
+      agent: agent.trackedId,
+      agent_name: agent.name,
+      phase,
+      ...telemetry,
+      timestamp: new Date().toISOString(),
+    });
+    completedIds.push(agent.trackedId);
+  }
+
+  return completedIds;
 }
 
 function getRepoRoot(ctx: Record<string, unknown>): string {
@@ -223,6 +348,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         });
 
         const contract = PROFILE_CONTRACTS[validation.profile];
+        const continuity = resolvePredecessorContractContinuityMode(validation.profile);
 
         return reply.send({
           ok: true,
@@ -233,6 +359,10 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
             valid: validation.valid,
             errors: validation.errors,
             warnings: validation.warnings,
+          },
+          predecessorContractContinuity: {
+            mode: continuity.mode,
+            source: continuity.source,
           },
           environment: {
             nodeEnv: process.env.NODE_ENV ?? 'development',
@@ -339,43 +469,93 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
             sessionTracker.updateSession(currentSession.id, { phase: nextRuntime.phase });
           }
 
+          if (
+            isParallelTrackedState(prevState) &&
+            prevState !== newStatus.state &&
+            prevRuntime.phase
+          ) {
+            completeParallelTrackedAgents(
+              currentSession.id,
+              prevState,
+              prevRuntime.phase,
+              sseNotify
+            );
+          }
+
+          if (
+            isParallelTrackedState(newStatus.state) &&
+            prevState !== newStatus.state &&
+            nextRuntime.phase
+          ) {
+            const activeAgents = startParallelTrackedAgents(
+              currentSession.id,
+              newStatus.state,
+              nextRuntime.phase,
+              sseNotify
+            );
+            sessionTracker.updateSession(currentSession.id, {
+              current_agent: activeAgents[0] || null,
+              current_agents: activeAgents,
+            });
+          }
+
           // Track agent transitions
-          if (prevRuntime.agent !== nextRuntime.agent && nextRuntime.agent) {
-            if (prevRuntime.agent) {
+          if (!isParallelTrackedState(newStatus.state) && prevRuntime.agent !== nextRuntime.agent) {
+            if (prevRuntime.agent && !isParallelTrackedState(prevState)) {
+              const prevAgentName =
+                getTrackedAgentName(prevState, prevRuntime.agent) || prevRuntime.agent;
               sessionTracker.completeAgent(prevRuntime.agent);
               sessionTracker.addTimelineEvent(currentSession.id, {
                 type: 'agent_complete',
-                description: `Agent completed: ${prevRuntime.agent}`,
+                description: `Agent completed: ${prevAgentName}`,
                 agent: prevRuntime.agent,
                 phase: prevRuntime.phase || undefined,
+                metadata: { agent_name: prevAgentName },
               });
               sseNotify('agent_complete', {
                 type: 'agent_complete',
                 session_id: currentSession.id,
                 agent: prevRuntime.agent,
+                agent_name: prevAgentName,
                 timestamp: new Date().toISOString(),
               });
             }
-            sessionTracker.startAgent(
-              currentSession.id,
-              nextRuntime.agent,
-              nextRuntime.agent,
-              nextRuntime.phase || 'UNKNOWN',
-              `Processing ${nextRuntime.phase || 'unknown'}`
-            );
-            sessionTracker.addTimelineEvent(currentSession.id, {
-              type: 'agent_start',
-              description: `Agent started: ${nextRuntime.agent}`,
-              agent: nextRuntime.agent,
-              phase: nextRuntime.phase || undefined,
-            });
-            sseNotify('agent_start', {
-              type: 'agent_start',
-              session_id: currentSession.id,
-              agent: nextRuntime.agent,
-              timestamp: new Date().toISOString(),
-            });
-            sessionTracker.updateSession(currentSession.id, { current_agent: nextRuntime.agent });
+            if (nextRuntime.agent) {
+              const nextAgentName =
+                getTrackedAgentName(newStatus.state, nextRuntime.agent) || nextRuntime.agent;
+              sessionTracker.startAgent(
+                currentSession.id,
+                nextRuntime.agent,
+                nextAgentName,
+                nextRuntime.phase || 'UNKNOWN',
+                `Processing ${nextRuntime.phase || 'unknown'}`
+              );
+              sessionTracker.addTimelineEvent(currentSession.id, {
+                type: 'agent_start',
+                description: `Agent started: ${nextAgentName}`,
+                agent: nextRuntime.agent,
+                phase: nextRuntime.phase || undefined,
+                metadata: { agent_name: nextAgentName },
+              });
+              sseNotify('agent_start', {
+                type: 'agent_start',
+                session_id: currentSession.id,
+                agent: nextRuntime.agent,
+                agent_name: nextAgentName,
+                timestamp: new Date().toISOString(),
+              });
+              sessionTracker.updateSession(currentSession.id, {
+                current_agent: nextRuntime.agent,
+                current_agents: [nextRuntime.agent],
+              });
+            } else {
+              sessionTracker.updateSession(currentSession.id, {
+                current_agent: null,
+                current_agents: [],
+              });
+            }
+          } else if (!isParallelTrackedState(newStatus.state) && prevState !== newStatus.state) {
+            sessionTracker.updateSession(currentSession.id, { current_agents: [] });
           }
 
           // Session completion on DONE/COMPLETE
@@ -397,6 +577,12 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           to: newStatus.state,
           phase: nextRuntime.phase || undefined,
           agent: nextRuntime.agent || undefined,
+          ...(isParallelTrackedState(newStatus.state)
+            ? buildParallelStateTelemetry(newStatus.state)
+            : {
+                active_agents: nextRuntime.agent ? [nextRuntime.agent] : [],
+                parallel_group: null,
+              }),
           timestamp: new Date().toISOString(),
         });
         return reply.send({ ok: true, transition: result, status: newStatus });

@@ -15,10 +15,20 @@ import { getStore } from '../store';
 import { sessionTracker } from '../session-tracker';
 import type { ServiceContext } from './types';
 import { resolveAdapter } from '../../../platform/engine/agent-runtime-adapter';
-import { AGENT_RUNTIME_ADAPTER } from '../config';
+import {
+  AGENT_RUNTIME_ADAPTER,
+  HOST,
+  STORAGE_PROVIDER,
+  QUEUE_PROVIDER,
+  SESSION_STORE,
+  REDIS_URL,
+  TRUST_PROXY,
+  resolvePredecessorContractContinuityMode,
+} from '../config';
 import { GitBackendRouter } from './git/git-backend-router';
 import { GitService } from './git/git-service';
 import { RagGroundingService } from './rag-grounding-service';
+import { hasAuthConfigured, validateProfile } from '../runtime-profiles';
 
 /** All known agents from the PHASE_AGENTS registry, keyed by id. */
 const AGENT_INDEX = new Map<string, { id: string; name: string; phase: string }>();
@@ -136,6 +146,29 @@ function getNeedsHumanReviewThreshold(phase: string): number {
   return merged[phase] ?? DEFAULT_REVIEW_THRESHOLD;
 }
 
+function resolvePredecessorContinuityMode():
+  | boolean
+  | {
+      states?: string[];
+      agents?: string[];
+    } {
+  const validation = validateProfile({
+    nodeEnv: process.env.NODE_ENV,
+    host: HOST,
+    storageProvider: STORAGE_PROVIDER,
+    queueProvider: QUEUE_PROVIDER,
+    sessionStore: SESSION_STORE,
+    redisUrl: REDIS_URL,
+    hasAuth: hasAuthConfigured({
+      githubClientId: process.env.GITHUB_CLIENT_ID,
+      apiKey: process.env.API_KEY,
+    }),
+    trustProxy: TRUST_PROXY,
+  });
+
+  return resolvePredecessorContractContinuityMode(validation.profile).mode;
+}
+
 export class AgentExecutionService {
   private _svc: ServiceContext;
 
@@ -183,7 +216,13 @@ export class AgentExecutionService {
 
     // I-A1-003: resolve adapter from registry; Dispatcher uses it instead of bare throw.
     const { adapter } = resolveAdapter({ adapterName: AGENT_RUNTIME_ADAPTER });
-    const dispatcher = new Dispatcher({ store: getStore(), adapter: adapter ?? undefined });
+    const dispatcher = new Dispatcher({
+      store: getStore(),
+      adapter: adapter ?? undefined,
+      config: {
+        enforcePredecessorContractContinuity: resolvePredecessorContinuityMode(),
+      },
+    });
     const workspaceId = input.context?.workspaceId || 'default';
     const gitService = this.createGitService(workspaceId);
     const ragContext = await this.buildRagContext(info, input);

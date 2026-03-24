@@ -20,6 +20,24 @@ export const HOST: string =
 
 export type TrustedProxyConfig = boolean | number | string | string[];
 
+export type PredecessorContractContinuityConfig =
+  | boolean
+  | {
+      states?: string[];
+      agents?: string[];
+    };
+
+export type RuntimeProfileName =
+  | 'local-dev'
+  | 'ci-test'
+  | 'production-single-node'
+  | 'production-distributed';
+
+export interface PredecessorContractContinuityResolution {
+  mode: PredecessorContractContinuityConfig;
+  source: 'env' | 'profile-default';
+}
+
 export function parseTrustedProxySetting(raw: string | undefined): TrustedProxyConfig {
   if (!raw || !raw.trim()) return false;
 
@@ -39,6 +57,78 @@ export function parseTrustedProxySetting(raw: string | undefined): TrustedProxyC
   }
 
   return value;
+}
+
+function normalizeStringList(input: unknown): string[] | undefined {
+  if (!Array.isArray(input)) return undefined;
+
+  const list = input
+    .filter((entry): entry is string => typeof entry === 'string')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+
+  if (list.length === 0) return undefined;
+  return [...new Set(list)];
+}
+
+export function parsePredecessorContractContinuitySetting(
+  raw: string | undefined
+): PredecessorContractContinuityConfig | undefined {
+  if (!raw || !raw.trim()) return undefined;
+
+  const value = raw.trim();
+  const lower = value.toLowerCase();
+  if (
+    lower === 'true' ||
+    lower === 'on' ||
+    lower === 'yes' ||
+    lower === '1' ||
+    lower === 'strict'
+  ) {
+    return true;
+  }
+  if (lower === 'false' || lower === 'off' || lower === 'no' || lower === '0') {
+    return false;
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (typeof parsed === 'boolean') return parsed;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return undefined;
+
+    const states = normalizeStringList((parsed as { states?: unknown }).states);
+    const agents = normalizeStringList((parsed as { agents?: unknown }).agents);
+    if (!states && !agents) return undefined;
+
+    return {
+      ...(states ? { states } : {}),
+      ...(agents ? { agents } : {}),
+    };
+  } catch {
+    return undefined;
+  }
+}
+
+export function defaultPredecessorContractContinuityModeForProfile(
+  profile: RuntimeProfileName
+): PredecessorContractContinuityConfig {
+  return profile === 'production-single-node' || profile === 'production-distributed';
+}
+
+export function resolvePredecessorContractContinuityMode(
+  profile: RuntimeProfileName
+): PredecessorContractContinuityResolution {
+  if (ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY !== undefined) {
+    return {
+      mode: ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY,
+      source: 'env',
+    };
+  }
+
+  return {
+    mode: defaultPredecessorContractContinuityModeForProfile(profile),
+    source: 'profile-default',
+  };
 }
 
 export const TRUST_PROXY: TrustedProxyConfig = parseTrustedProxySetting(process.env.TRUST_PROXY);
@@ -96,3 +186,9 @@ export const SESSION_STORE: SessionStoreType = (() => {
 /** Name of the AgentRuntimeAdapter to use. Resolved via AdapterRegistry at startup. */
 export const AGENT_RUNTIME_ADAPTER: string | undefined =
   process.env.AGENT_RUNTIME_ADAPTER || undefined;
+
+export const ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY:
+  | PredecessorContractContinuityConfig
+  | undefined = parsePredecessorContractContinuitySetting(
+  process.env.ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY
+);

@@ -14,6 +14,7 @@ import { SidePanel, type NavSection } from '@/components/ui/side-panel';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
+import { ValidationSummary } from '@/components/ui/validation-summary';
 import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { useQuestionnaires, useQuestionnaire, useSaveQuestionnaire } from '@/hooks';
@@ -82,6 +83,7 @@ export default function QuestionnairesPage() {
   });
   const [searchTerm, setSearchTerm] = useState(() => searchParams.get('q') ?? '');
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [saveErrors, setSaveErrors] = useState<string[]>([]);
 
   useEffect(() => {
     const next = new URLSearchParams();
@@ -195,6 +197,19 @@ export default function QuestionnairesPage() {
   function handleSave() {
     if (!selectedFile || !selected) return;
 
+    const errors: string[] = [];
+    const requiredMissing = selected.questions.filter((question) => {
+      if (question.classification !== 'REQUIRED') return false;
+      const effectiveAnswer = drafts[question.id] ?? question.answer;
+      return !effectiveAnswer.trim();
+    });
+
+    if (requiredMissing.length > 0) {
+      errors.push(
+        `${requiredMissing.length} required question${requiredMissing.length === 1 ? '' : 's'} still missing an answer.`
+      );
+    }
+
     const updates: QuestionUpdate[] = Object.entries(drafts)
       .filter(([id]) => selected.questions.some((q) => q.id === id))
       .map(([questionId, answer]) => ({
@@ -203,12 +218,24 @@ export default function QuestionnairesPage() {
         status: answer.trim() ? ('ANSWERED' as const) : ('OPEN' as const),
       }));
 
-    if (updates.length === 0) return;
+    if (updates.length === 0) {
+      errors.push('No draft changes available to save.');
+    }
+
+    if (errors.length > 0) {
+      setSaveErrors(errors);
+      return;
+    }
+
+    setSaveErrors([]);
 
     save.mutate(
       { file: selectedFile, updates },
       {
-        onSuccess: () => setDrafts({}),
+        onSuccess: () => {
+          setDrafts({});
+          setSaveErrors([]);
+        },
       }
     );
   }
@@ -335,6 +362,8 @@ export default function QuestionnairesPage() {
             </Button>
           </div>
         )}
+
+        <ValidationSummary errors={saveErrors} />
 
         <ContextStrip items={contextItems} />
 

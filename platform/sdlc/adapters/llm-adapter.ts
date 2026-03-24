@@ -7,7 +7,7 @@
  * documentation generation, architecture analysis, test generation.
  *
  * Supports multiple providers (OpenAI, Azure OpenAI, Anthropic) via a
- * unified HTTP interface using curl (no SDK dependency). Includes token
+ * unified HTTP interface using native fetch/undici (no SDK dependency). Includes token
  * budget enforcement and rate-limit retry with exponential backoff.
  *
  * API keys are sourced from environment variables only — never from config.
@@ -175,35 +175,56 @@ function resolveProvider(config: LlmConfig): ProviderEndpoint | null {
   }
 }
 
-// ─── HTTP call via curl ──────────────────────────────────────
+// ─── HTTP call via fetch (undici runtime) ────────────────────
+
+type FetchLike = (
+  input: string,
+  init?: {
+    method?: string;
+    headers?: Record<string, string>;
+    body?: string;
+    signal?: AbortSignal;
+  }
+) => Promise<{
+  status: number;
+  text(): Promise<string>;
+}>;
 
 async function httpPost(
   url: string,
   headers: Record<string, string>,
   body: Record<string, unknown>,
   timeout: number,
-  exec: typeof shellExec = shellExec
+  fetchImpl: FetchLike
 ): Promise<{ status: number; body: unknown }> {
-  const args = ['-s', '-w', '\n%{http_code}', '-X', 'POST'];
-  for (const [k, v] of Object.entries(headers)) {
-    args.push('-H', `${k}: ${v}`);
-  }
-  args.push('-d', JSON.stringify(body));
-  args.push(url);
+  const ac = new AbortController();
+  const timer = setTimeout(() => ac.abort(), timeout);
 
-  const result = await exec('curl', args, { timeout });
-  const lines = result.stdout.trimEnd().split('\n');
-  const statusCode = parseInt(lines[lines.length - 1], 10) || 0;
-  const jsonBody = lines.slice(0, -1).join('\n');
-
-  let parsed: unknown;
   try {
-    parsed = JSON.parse(jsonBody);
-  } catch {
-    parsed = { raw: jsonBody };
-  }
+    const response = await fetchImpl(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+      signal: ac.signal,
+    });
 
-  return { status: statusCode, body: parsed };
+    const rawBody = await response.text();
+    let parsed: unknown;
+    try {
+      parsed = rawBody ? JSON.parse(rawBody) : {};
+    } catch {
+      parsed = { raw: rawBody };
+    }
+
+    return { status: response.status, body: parsed };
+  } catch (err) {
+    if ((err as Error).name === 'AbortError') {
+      throw new Error(`LLM API timeout after ${timeout}ms`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ─── LlmAdapter ──────────────────────────────────────────────
@@ -220,6 +241,14 @@ export class LlmAdapter extends BaseAdapter {
 
   /** @internal — test-only override for shellExec */
   _exec: typeof shellExec = shellExec;
+
+  /** @internal — test-only override for HTTP transport */
+  _fetch: FetchLike =
+    typeof globalThis.fetch === 'function'
+      ? (globalThis.fetch as unknown as FetchLike)
+      : async () => {
+          throw new Error('global fetch is unavailable in this runtime');
+        };
 
   constructor(config: LlmConfig = { provider: 'generic' }) {
     super();
@@ -338,7 +367,7 @@ export class LlmAdapter extends BaseAdapter {
 
     let lastErr: Error | null = null;
     for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-      const resp = await httpPost(provider.url, provider.headers, body, this._timeout, this._exec);
+      const resp = await httpPost(provider.url, provider.headers, body, this._timeout, this._fetch);
 
       if (resp.status >= 200 && resp.status < 300) {
         return provider.parseResponse(resp.body);

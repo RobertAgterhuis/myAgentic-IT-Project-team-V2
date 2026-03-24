@@ -38,6 +38,32 @@ const HELP_TOC = [
 
 const MAX_EXPORT_SIZE = 10 * 1024 * 1024;
 
+type IntegrationReadinessStatus = 'ready' | 'partial' | 'not_ready';
+
+type IntegrationCheck = {
+  id: string;
+  passed: boolean;
+  detail: string;
+};
+
+function toReadinessStatus(checks: IntegrationCheck[]): IntegrationReadinessStatus {
+  const passed = checks.filter((check) => check.passed).length;
+  if (passed === checks.length) return 'ready';
+  if (passed === 0) return 'not_ready';
+  return 'partial';
+}
+
+function buildReadinessSummary(
+  status: IntegrationReadinessStatus,
+  checks: IntegrationCheck[]
+): string {
+  const passed = checks.filter((check) => check.passed).length;
+  const base = `${passed}/${checks.length} checks passed`;
+  if (status === 'ready') return `${base} — integration is operationally ready.`;
+  if (status === 'partial') return `${base} — integration is partially configured.`;
+  return `${base} — integration is not ready.`;
+}
+
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const {
     _cache,
@@ -199,6 +225,88 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     reply.send({ entries: result.entries, total: result.total, limit });
   }
 
+  async function apiGetIntegrationReadiness(_request: FastifyRequest, reply: FastifyReply) {
+    const store = getStore();
+
+    const canvaChecks: IntegrationCheck[] = [
+      {
+        id: 'brand-agent-skill',
+        passed: store.exists(
+          path.join(PROJECT_ROOT, 'templates', 'sdlc', 'agents', '30-brand-assets-agent.md')
+        ),
+        detail: 'Brand & Assets (Canva) skill template is present',
+      },
+      {
+        id: 'canva-credentials',
+        passed: Boolean(process.env.CANVA_API_KEY || process.env.CANVA_ACCESS_TOKEN),
+        detail: 'CANVA_API_KEY or CANVA_ACCESS_TOKEN is configured',
+      },
+    ];
+
+    const storybookChecks: IntegrationCheck[] = [
+      {
+        id: 'storybook-config',
+        passed: store.exists(
+          path.join(PROJECT_ROOT, 'src', 'webapp', 'ui', '.storybook', 'main.ts')
+        ),
+        detail: 'Storybook config exists under src/webapp/ui/.storybook/main.ts',
+      },
+      {
+        id: 'storybook-package',
+        passed: store.exists(path.join(PROJECT_ROOT, 'src', 'webapp', 'ui', 'package.json')),
+        detail: 'UI package.json exists for Storybook scripts/dependencies',
+      },
+    ];
+
+    const matomoChecks: IntegrationCheck[] = [
+      {
+        id: 'matomo-compose',
+        passed: store.exists(path.join(PROJECT_ROOT, 'infra', 'docker-compose.analytics.yml')),
+        detail: 'Matomo docker-compose manifest exists',
+      },
+      {
+        id: 'matomo-env',
+        passed: Boolean(process.env.MATOMO_DB_PASSWORD || process.env.MATOMO_PORT),
+        detail: 'MATOMO_DB_PASSWORD or MATOMO_PORT environment variable is configured',
+      },
+    ];
+
+    const weblateChecks: IntegrationCheck[] = [
+      {
+        id: 'weblate-compose',
+        passed: store.exists(path.join(PROJECT_ROOT, 'infra', 'docker-compose.weblate.yml')),
+        detail: 'Weblate docker-compose manifest exists',
+      },
+      {
+        id: 'weblate-env',
+        passed: Boolean(process.env.WEBLATE_TOKEN || process.env.WEBLATE_ADMIN_PASSWORD),
+        detail: 'WEBLATE_TOKEN or WEBLATE_ADMIN_PASSWORD is configured',
+      },
+    ];
+
+    const integrations = [
+      { id: 'canva', label: 'Canva', checks: canvaChecks },
+      { id: 'storybook', label: 'Storybook', checks: storybookChecks },
+      { id: 'matomo', label: 'Matomo', checks: matomoChecks },
+      { id: 'weblate', label: 'Weblate', checks: weblateChecks },
+    ].map((integration) => {
+      const status = toReadinessStatus(integration.checks);
+      return {
+        id: integration.id,
+        label: integration.label,
+        status,
+        checks: integration.checks,
+        summary: buildReadinessSummary(status, integration.checks),
+      };
+    });
+
+    reply.send({
+      ok: true,
+      generated_at: models.isoNow(),
+      integrations,
+    });
+  }
+
   /* ── Register routes ────────────────────────────────────────── */
 
   app.get('/api/session', apiGetSession);
@@ -206,6 +314,11 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
   app.get('/api/export', apiGetExport);
   app.get('/api/help', { schema: RS.helpGet }, apiGetHelp);
   app.get('/api/audit', { schema: RS.auditGet }, apiGetAudit);
+  app.get(
+    '/api/v1/integrations/readiness',
+    { schema: { tags: ['system'] } },
+    apiGetIntegrationReadiness
+  );
 
   registerHealthRoutes({
     app,

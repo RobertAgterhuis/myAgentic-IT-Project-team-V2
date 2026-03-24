@@ -32,6 +32,7 @@
 
 import { createEngine } from './engine';
 import { MODE_CONFIGS as _MODE_CONFIGS } from './state-machine';
+import { assertRuntimeSchemaParity, PHASE_AGENTS } from './dispatcher';
 
 // ─── Argument Parser ─────────────────────────────────────────
 
@@ -62,6 +63,7 @@ interface ParsedArgs {
   project: string | null;
   platform: string;
   resume: boolean;
+  dryRun: boolean;
   interactive: boolean;
   singleStep: boolean;
   checkpoint: boolean;
@@ -92,6 +94,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     project: null,
     platform: 'copilot',
     resume: false,
+    dryRun: false,
     interactive: false,
     singleStep: false,
     checkpoint: false,
@@ -112,6 +115,11 @@ function parseArgs(argv: string[]): ParsedArgs {
 
     if (arg === '--resume') {
       result.resume = true;
+      continue;
+    }
+
+    if (arg === '--dry-run') {
+      result.dryRun = true;
       continue;
     }
 
@@ -241,6 +249,7 @@ Commands:
 Options:
   --platform <name>   AI platform: copilot | claude | codex  (default: copilot)
   --resume            Resume from the last saved session state
+  --dry-run           Validate command/runtime config without executing transitions
   --interactive       Enable interactive mode (prompt at gate boundaries)
   --reason <text>     Reason for approval/rejection decision
   --single-step       Process one state transition and exit
@@ -266,6 +275,85 @@ function executeCommand(
   deps: { write?: (msg: string) => unknown; promptFn?: (...args: unknown[]) => unknown } = {}
 ) {
   const write = deps.write || ((msg: string) => process.stdout.write(msg));
+
+  function runDryRunValidation() {
+    if (!parsed.command) {
+      return {
+        ok: false,
+        valid: false,
+        errors: ['No command specified'],
+        checks: [],
+      };
+    }
+
+    const checks: Array<{ name: string; passed: boolean; detail: string }> = [];
+    const errors: string[] = [];
+
+    const isMetaCommand = parsed.command.startsWith('_');
+    checks.push({
+      name: 'command',
+      passed: true,
+      detail: isMetaCommand ? 'Meta command dry-run validated' : `Mode command ${parsed.command}`,
+    });
+
+    if (!isMetaCommand) {
+      const modeExists = Object.prototype.hasOwnProperty.call(_MODE_CONFIGS, parsed.command);
+      checks.push({
+        name: 'mode-config',
+        passed: modeExists,
+        detail: modeExists
+          ? 'Mode exists in MODE_CONFIGS'
+          : `Mode ${parsed.command} missing from MODE_CONFIGS`,
+      });
+      if (!modeExists) {
+        errors.push(`Mode ${parsed.command} is not configured`);
+      }
+
+      try {
+        assertRuntimeSchemaParity(PHASE_AGENTS);
+        checks.push({
+          name: 'dispatcher-schema-parity',
+          passed: true,
+          detail: 'Runtime dispatcher phase-agent map matches canonical schema',
+        });
+      } catch (err) {
+        const message = (err as Error).message;
+        checks.push({
+          name: 'dispatcher-schema-parity',
+          passed: false,
+          detail: message,
+        });
+        errors.push(message);
+      }
+    }
+
+    const platformValid = VALID_PLATFORMS.includes(parsed.platform);
+    checks.push({
+      name: 'platform',
+      passed: platformValid,
+      detail: platformValid ? `Platform ${parsed.platform} is supported` : 'Invalid platform',
+    });
+    if (!platformValid) {
+      errors.push(`Invalid platform ${parsed.platform}`);
+    }
+
+    return {
+      ok: errors.length === 0,
+      valid: errors.length === 0,
+      dryRun: true,
+      command: parsed.command,
+      platform: parsed.platform,
+      project: parsed.project,
+      checks,
+      errors,
+    };
+  }
+
+  if (parsed.dryRun) {
+    const validation = runDryRunValidation();
+    write(JSON.stringify(validation, null, 2) + '\n');
+    return validation;
+  }
 
   if (parsed.command === '_STATUS') {
     const st = engine.status();

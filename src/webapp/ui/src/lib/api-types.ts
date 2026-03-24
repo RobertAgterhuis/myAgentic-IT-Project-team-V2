@@ -548,11 +548,13 @@ export interface DriftResponse {
  * ────────────────────────────────────────────── */
 
 export type AgentStatus = 'pending' | 'active' | 'done';
+export type AgentAutomationLevel = 'autonomous' | 'supervised' | 'human_required';
 
 export interface AgentEntry {
   id: string;
   name: string;
   status: AgentStatus;
+  automation_level?: AgentAutomationLevel;
 }
 
 export type PhaseKey = 'ONBOARDING' | 'PHASE-1' | 'PHASE-2' | 'PHASE-3' | 'PHASE-4' | 'PHASE-5';
@@ -578,6 +580,18 @@ export interface SessionInfo {
   last_updated: string;
   blockers: unknown[];
   open_human_escalations: unknown[];
+  runtime_alerts?: Array<{
+    id: string;
+    kind: 'timeout' | 'stall';
+    severity: 'warning' | 'critical';
+    title: string;
+    detail: string;
+    next_action: string;
+  }>;
+  phase_watch?: {
+    timeout_ms: number;
+    stall_alert_ms: number;
+  };
 }
 
 export interface ProgressResponse {
@@ -1368,6 +1382,23 @@ export interface AdministrationIntegrationStatus {
   label: string;
   status: 'healthy' | 'degraded' | 'offline';
   detail: string;
+}
+
+export interface ExternalIntegrationReadiness {
+  id: 'canva' | 'storybook' | 'matomo' | 'weblate';
+  label: string;
+  status: 'ready' | 'partial' | 'not_ready';
+  checks: Array<{
+    id: string;
+    passed: boolean;
+    detail: string;
+  }>;
+  summary: string;
+}
+
+export interface ExternalIntegrationReadinessResponse extends OkResponse {
+  generated_at: string;
+  integrations: ExternalIntegrationReadiness[];
 }
 
 export interface AdministrationOverviewResponse extends OkResponse {

@@ -14,6 +14,40 @@ function injectMocks(adapter) {
   const mockExec = vi.fn();
   const mockAvail = vi.fn();
   adapter._exec = mockExec;
+  if ('_fetch' in adapter) {
+    adapter._fetch = async (url, init = {}) => {
+      const args = ['-X', init.method || 'POST'];
+      const headers = init.headers || {};
+      for (const [k, v] of Object.entries(headers)) {
+        args.push('-H', `${k}: ${v}`);
+      }
+      if (typeof init.body === 'string') {
+        args.push('-d', init.body);
+      }
+      args.push(url);
+
+      const mocked = await mockExec('fetch', args, { signal: init.signal });
+
+      if (mocked && typeof mocked.status === 'number' && typeof mocked.text === 'function') {
+        return mocked;
+      }
+
+      const stdout = typeof mocked?.stdout === 'string' ? mocked.stdout : '';
+      const lines = stdout.trimEnd().split('\n');
+      const statusFromTail = Number.parseInt(lines[lines.length - 1], 10);
+      const status = Number.isFinite(statusFromTail)
+        ? statusFromTail
+        : typeof mocked?.status === 'number'
+          ? mocked.status
+          : 500;
+      const body = Number.isFinite(statusFromTail) ? lines.slice(0, -1).join('\n') : stdout;
+
+      return {
+        status,
+        text: async () => body,
+      };
+    };
+  }
   if ('_isAvail' in adapter) adapter._isAvail = mockAvail;
   return { mockExec, mockAvail };
 }

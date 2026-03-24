@@ -4,7 +4,7 @@
  * Replaces the split between Governance dashboard and Cockpit approval detail
  * with a single page: list on the left, decision context on the right.
  */
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +40,43 @@ const statusVariant: Record<string, 'success' | 'warning' | 'secondary'> = {
   APPROVED: 'success',
   REJECTED: 'secondary',
 };
+
+/* ── P1-UI-E4-I1: SLA timer ── */
+const SLA_MS = 24 * 60 * 60 * 1000; // 24-hour SLA window
+
+function SlaTimerBadge({ requestedAt }: { requestedAt: string }) {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(Date.now()), 60_000); // refresh every minute
+    return () => clearInterval(interval);
+  }, []);
+
+  const deadlineMs = new Date(requestedAt).getTime() + SLA_MS;
+  const remainingMs = deadlineMs - now;
+  const isOverdue = remainingMs <= 0;
+
+  if (isOverdue) {
+    return (
+      <Badge variant="error">
+        <Clock className="size-3 mr-1" aria-hidden="true" />
+        SLA overdue
+      </Badge>
+    );
+  }
+
+  const hours = Math.floor(remainingMs / (60 * 60 * 1000));
+  const minutes = Math.floor((remainingMs % (60 * 60 * 1000)) / 60_000);
+  const label = hours > 0 ? `${hours}h ${minutes}m left` : `${minutes}m left`;
+  const variant = hours < 4 ? 'warning' : 'secondary';
+
+  return (
+    <Badge variant={variant} aria-label={`SLA: ${label}`}>
+      <Clock className="size-3 mr-1" aria-hidden="true" />
+      {label}
+    </Badge>
+  );
+}
 
 /* ── Decision context panel ── */
 function ApprovalDecisionPanel({
@@ -290,6 +327,11 @@ function ApprovalRow({
       <p className="text-xs text-muted-foreground mt-1">
         {new Date(approval.requested_at).toLocaleString()}
       </p>
+      {approval.status === 'PENDING' && (
+        <div className="mt-1.5">
+          <SlaTimerBadge requestedAt={approval.requested_at} />
+        </div>
+      )}
     </Button>
   );
 }

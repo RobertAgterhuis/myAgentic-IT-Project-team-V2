@@ -432,6 +432,70 @@ describe('Dispatcher — invoke (success)', () => {
     expect(result.success).toBe(false);
     expect(result.error).toContain('Invocation result outputPath must be a string');
   });
+
+  it('fails when response.usage is non-object', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/01.md',
+        response: { usage: 'bad-usage-shape' },
+      }),
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('response.usage must be an object');
+  });
+
+  it('fails when response.toolAuditEvents is non-array', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/01.md',
+        response: { toolAuditEvents: 'bad-events-shape' },
+      }),
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('toolAuditEvents must be an array');
+  });
+
+  it('fails when response.toolAuditEvents item has missing toolId', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/01.md',
+        response: { toolAuditEvents: [{ success: true }] },
+      }),
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('toolAuditEvents[0].toolId is required');
+  });
+
+  it('fails when response.toolAuditEvents success is not boolean', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/01.md',
+        response: { toolAuditEvents: [{ toolId: 'tool.read', success: 'yes' }] },
+      }),
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('toolAuditEvents[0].success must be boolean');
+  });
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -492,6 +556,42 @@ describe('Dispatcher — invoke (retry)', () => {
     expect(result.error).toBe('plain recoverable failure');
     expect(result.severity).toBe('RECOVERABLE');
     expect(result.degraded).toBe(true);
+  });
+
+  it('does not retry fatal errors', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: createFailInvoker('authentication failed (401)'),
+      config: { maxRetries: 3 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(false);
+    expect(result.severity).toBe('FATAL');
+    expect(d.log.length).toBe(1);
+    expect(d.log[0].status).toBe('failure');
+    expect(d.log[0].errorSeverity).toBe('FATAL');
+  });
+
+  it('retries transient errors before success', async () => {
+    let calls = 0;
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => {
+        calls += 1;
+        if (calls === 1) throw new Error('ECONNRESET while calling provider');
+        return { outputPath: '/out/recovered.md' };
+      },
+      config: { maxRetries: 2 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+
+    expect(result.success).toBe(true);
+    expect(d.log.length).toBe(2);
+    expect(d.log[0].status).toBe('retry');
+    expect(d.log[0].errorSeverity).toBe('TRANSIENT');
   });
 });
 
@@ -807,6 +907,18 @@ describe('Dispatcher — internal helpers', () => {
     const d = new Dispatcher({ store: createMockStore() });
 
     await expect(d._withTimeout(Promise.reject(new Error('boom')), 100)).rejects.toThrow('boom');
+  });
+
+  it('classifyError() maps transient/fatal/recoverable patterns', () => {
+    expect(Dispatcher.classifyError({ message: 'timeout while waiting for provider' })).toBe(
+      'TRANSIENT'
+    );
+    expect(Dispatcher.classifyError({ message: 'contract violation detected in output' })).toBe(
+      'FATAL'
+    );
+    expect(Dispatcher.classifyError({ message: 'unexpected adapter response shape' })).toBe(
+      'RECOVERABLE'
+    );
   });
 });
 

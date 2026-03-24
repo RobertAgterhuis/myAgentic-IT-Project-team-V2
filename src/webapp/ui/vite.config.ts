@@ -12,7 +12,17 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    // P1-UI-E3-I2: Sourcemaps only in non-production builds to avoid leaking source in prod bundles.
+    sourcemap: process.env.NODE_ENV !== 'production',
+    rollupOptions: {
+      output: {
+        // Split large peer deps into a stable vendor chunk for better long-term caching.
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'react-router-dom'],
+          query: ['@tanstack/react-query'],
+        },
+      },
+    },
   },
   server: {
     port: 5173,

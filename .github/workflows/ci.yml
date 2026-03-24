@@ -79,6 +79,14 @@ jobs:
       - name: Run unit tests with coverage
         run: npm run test:coverage
 
+      - name: Enforce coverage thresholds
+        run: npm run test:coverage:gate
+        env:
+          COVERAGE_MIN_STATEMENTS: 70
+          COVERAGE_MIN_BRANCHES: 55
+          COVERAGE_MIN_FUNCTIONS: 70
+          COVERAGE_MIN_LINES: 70
+
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v5
         if: always()
@@ -214,6 +222,9 @@ jobs:
 
       - name: Build web app for Playwright
         run: npm run build
+
+      - name: Bundle budget gate (P1-UI-E3-I1)
+        run: node scripts/check-bundle-budget.mjs
 
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium

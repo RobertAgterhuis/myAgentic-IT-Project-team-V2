@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/ui/theme-provider';
 import { applyTheme, getStoredTheme } from '@/components/ui/theme-utils';
 import App from './App';
 import './index.css';
+import { initWebVitals } from '@/lib/web-vitals';
 
 applyTheme(getStoredTheme());
 
@@ -19,3 +20,6 @@ createRoot(document.getElementById('root')!).render(
     </ThemeProvider>
   </StrictMode>
 );
+
+// P1-UI-E3-I3: Report CLS, INP, LCP to backend metrics endpoint (best-effort, non-blocking).
+initWebVitals();

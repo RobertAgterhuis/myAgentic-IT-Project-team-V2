@@ -15,6 +15,8 @@
  */
 
 import type { FastifyInstance } from 'fastify';
+import fs from 'node:fs';
+import path from 'node:path';
 import type { ServerContext } from '../context';
 import { errorResponse } from '../utils/errors';
 import * as RS from '../route-schemas';
@@ -132,6 +134,61 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
 
       const lineage = registry.getLineage(id);
       return reply.send({ ok: true, artifact_id: id, lineage });
+    }
+  );
+
+  // ── GET /api/v1/artifacts/:id/content ────────────────────
+
+  app.get<{ Params: { id: string } }>(
+    '/api/v1/artifacts/:id/content',
+    { schema: { tags: ['artifacts'] } },
+    async (request, reply) => {
+      const registry = getRegistry();
+      if (!registry) {
+        return reply
+          .code(503)
+          .send(errorResponse('REGISTRY_UNAVAILABLE', 'Artifact registry not initialized'));
+      }
+
+      const id = decodeURIComponent(request.params.id);
+      if (!id) {
+        return reply.code(400).send(errorResponse('MISSING_ID', 'Artifact ID is required'));
+      }
+
+      const artifact = registry.get(id) as { path?: string; mime_type?: string } | undefined;
+      if (!artifact) {
+        return reply.code(404).send(errorResponse('NOT_FOUND', `Artifact not found: ${id}`));
+      }
+      if (!artifact.path) {
+        return reply
+          .code(404)
+          .send(errorResponse('MISSING_PATH', `Artifact ${id} has no readable file path`));
+      }
+
+      const projectRoot = path.resolve(ctx.PROJECT_ROOT);
+      const absolutePath = path.resolve(projectRoot, artifact.path);
+      const isInsideProject =
+        absolutePath === projectRoot || absolutePath.startsWith(`${projectRoot}${path.sep}`);
+      if (!isInsideProject) {
+        return reply
+          .code(403)
+          .send(errorResponse('FORBIDDEN_PATH', 'Artifact path resolves outside project root'));
+      }
+      if (!fs.existsSync(absolutePath)) {
+        return reply
+          .code(404)
+          .send(errorResponse('FILE_NOT_FOUND', `Artifact file not found: ${artifact.path}`));
+      }
+
+      const content = fs.readFileSync(absolutePath, 'utf8');
+      return reply.send({
+        ok: true,
+        artifact_id: id,
+        path: artifact.path,
+        mime_type: artifact.mime_type || 'text/plain',
+        size_bytes: Buffer.byteLength(content, 'utf8'),
+        content,
+      });
     }
   );
 }

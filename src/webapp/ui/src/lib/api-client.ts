@@ -14,7 +14,13 @@ export class ApiError extends Error {
   }
 }
 
-const BASE_URL = '/api';
+function resolveApiBaseUrl(): string {
+  const configured = String(import.meta.env.VITE_API_BASE_URL || '').trim();
+  if (!configured) return '/api';
+  return configured;
+}
+
+const BASE_URL = resolveApiBaseUrl();
 export const AUTH_EXPIRED_EVENT = 'agentic:auth-expired';
 const AUTH_EXPIRED_DEBOUNCE_MS = 15_000;
 

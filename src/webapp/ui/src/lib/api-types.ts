@@ -713,6 +713,8 @@ export interface Artifact {
   stage: string;
   status: string;
   content_hash: string;
+  path?: string;
+  mime_type?: string;
   created_at: string;
   updated_at: string;
   metadata?: Record<string, unknown>;
@@ -752,6 +754,14 @@ export interface ArtifactLineage {
 export interface ArtifactLineageResponse extends OkResponse {
   artifact_id: string;
   lineage: ArtifactLineage;
+}
+
+export interface ArtifactContentResponse extends OkResponse {
+  artifact_id: string;
+  path: string;
+  mime_type: string;
+  size_bytes: number;
+  content: string;
 }
 
 /* ──────────────────────────────────────────────

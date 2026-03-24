@@ -84,7 +84,13 @@ export { usePageHelp, useHelpTopic, useHelpSearch, resolveHelpRouteSlug } from '
 export { useAnalyticsTrends, useAnalyticsAgents, useAnalyticsMetrics } from './use-analytics';
 
 /* Artifacts (M10) */
-export { useArtifacts, useArtifact, useArtifactLineage, useArtifactStats } from './use-artifacts';
+export {
+  useArtifacts,
+  useArtifact,
+  useArtifactLineage,
+  useArtifactStats,
+  useArtifactContent,
+} from './use-artifacts';
 
 /* Governance (M10) */
 export { useApprovals, useApproveRequest, useRejectRequest } from './use-governance';

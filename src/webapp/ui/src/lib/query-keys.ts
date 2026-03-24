@@ -82,6 +82,7 @@ export const queryKeys = {
   artifacts: {
     all: ['artifacts'] as const,
     detail: (id: string) => ['artifacts', id] as const,
+    content: (id: string) => ['artifacts', id, 'content'] as const,
     lineage: (id: string) => ['artifacts', id, 'lineage'] as const,
     stats: ['artifacts', 'stats'] as const,
   },

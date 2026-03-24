@@ -2,7 +2,8 @@
  * Decisions page — filter bar, lifecycle flow, detail views.
  * Issue #243 (S9G-36)
  */
-import { useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Text } from '@/components/ui/typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -266,13 +267,19 @@ function DecisionDetailDialog({
 
 /* ── Main Page ── */
 export default function DecisionsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data, isLoading, error, refetch } = useDecisions();
   const updateDecision = useUpdateDecision();
   const deleteDecision = useDeleteDecision();
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(() => {
+    const raw = searchParams.get('status');
+    return raw === 'open' || raw === 'decided' || raw === 'deferred' ? raw : 'all';
+  });
+  const [categoryFilter, setCategoryFilter] = useState<string>(
+    () => searchParams.get('scope') ?? 'all'
+  );
+  const [dateFrom, setDateFrom] = useState(() => searchParams.get('from') ?? '');
+  const [dateTo, setDateTo] = useState(() => searchParams.get('to') ?? '');
   const [showCreate, setShowCreate] = useState(false);
   const [selectedDecision, setSelectedDecision] = useState<DecisionItem | null>(null);
   const [editingDecision, setEditingDecision] = useState<EditableDecision | null>(null);
@@ -312,6 +319,15 @@ export default function DecisionsPage() {
   }, [allDecisions, statusFilter, categoryFilter, dateFrom, dateTo]);
 
   const hasActiveFilters = statusFilter !== 'all' || categoryFilter !== 'all' || dateFrom || dateTo;
+
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (statusFilter !== 'all') next.set('status', statusFilter);
+    if (categoryFilter !== 'all') next.set('scope', categoryFilter);
+    if (dateFrom) next.set('from', dateFrom);
+    if (dateTo) next.set('to', dateTo);
+    setSearchParams(next, { replace: true });
+  }, [statusFilter, categoryFilter, dateFrom, dateTo, setSearchParams]);
 
   const clearFilters = useCallback(() => {
     setStatusFilter('all');

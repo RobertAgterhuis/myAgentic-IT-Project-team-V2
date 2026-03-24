@@ -8,6 +8,7 @@ import { queryKeys } from '@/lib/query-keys';
 import type {
   ArtifactListResponse,
   ArtifactDetailResponse,
+  ArtifactContentResponse,
   ArtifactLineageResponse,
   ArtifactStatsResponse,
 } from '@/lib/api-types';
@@ -31,6 +32,16 @@ export function useArtifact(id: string) {
   return useQuery({
     queryKey: queryKeys.artifacts.detail(id),
     queryFn: () => apiGet<ArtifactDetailResponse>(`/v1/artifacts/${encodeURIComponent(id)}`),
+    enabled: !!id,
+  });
+}
+
+/** Get plain-text content for an artifact file. */
+export function useArtifactContent(id: string) {
+  return useQuery({
+    queryKey: queryKeys.artifacts.content(id),
+    queryFn: () =>
+      apiGet<ArtifactContentResponse>(`/v1/artifacts/${encodeURIComponent(id)}/content`),
     enabled: !!id,
   });
 }

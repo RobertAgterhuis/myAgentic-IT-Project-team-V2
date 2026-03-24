@@ -164,6 +164,14 @@ describe('validateManifest', () => {
     expect(result.errors.some((e) => e.includes('must be an array'))).toBe(true);
   });
 
+  test('accepts phaseAgents entry with an empty array', () => {
+    const manifest = createMinimalManifest({
+      phaseAgents: { ONBOARDING: [] },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
+  });
+
   test('rejects modes without label', () => {
     const manifest = createMinimalManifest({
       modes: { CREATE: { phases: ['PHASE_1'] } },
@@ -695,6 +703,29 @@ describe('validateManifest — lifecycle (v1.1.0)', () => {
     expect(result.errors.some((e) => e.includes('stages must be a non-empty array'))).toBe(true);
   });
 
+  test('rejects lifecycle when not an object', () => {
+    const manifest = createMinimalManifest({
+      lifecycle: 'invalid-lifecycle-shape',
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('lifecycle must be an object'))).toBe(true);
+  });
+
+  test('rejects lifecycle when transitions is not an array', () => {
+    const manifest = createMinimalManifest({
+      lifecycle: {
+        stages: ['A', 'B'],
+        transitions: { from: 'A', to: 'B' },
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('lifecycle.transitions must be an array'))).toBe(
+      true
+    );
+  });
+
   test('rejects lifecycle transition without from/to', () => {
     const manifest = createMinimalManifest({
       lifecycle: { stages: ['A', 'B'], transitions: [{ to: 'B' }] },
@@ -716,6 +747,29 @@ describe('validateManifest — lifecycle (v1.1.0)', () => {
     expect(result.errors.some((e) => e.includes('bad_type'))).toBe(true);
   });
 
+  test('rejects lifecycle gate without required id/type', () => {
+    const manifest = createMinimalManifest({
+      lifecycle: {
+        stages: ['A', 'B'],
+        transitions: [{ from: 'A', to: 'B', gates: [{ id: 'G-01' }] }],
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes("must have 'id' and 'type'"))).toBe(true);
+  });
+
+  test('ignores non-array gates without crashing validation', () => {
+    const manifest = createMinimalManifest({
+      lifecycle: {
+        stages: ['A', 'B'],
+        transitions: [{ from: 'A', to: 'B', gates: { id: 'G-01', type: 'artifact_approved' } }],
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
+  });
+
   test('accepts all valid gate types', () => {
     const types = [
       'artifact_approved',
@@ -734,6 +788,39 @@ describe('validateManifest — lifecycle (v1.1.0)', () => {
       const result = validateManifest(manifest);
       expect(result.valid).toBe(true);
     }
+  });
+
+  test('accepts lifecycle transition without gates', () => {
+    const manifest = createMinimalManifest({
+      lifecycle: {
+        stages: ['A', 'B'],
+        transitions: [{ from: 'A', to: 'B' }],
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
+  });
+
+  test('accepts lifecycle transition with empty gates array', () => {
+    const manifest = createMinimalManifest({
+      lifecycle: {
+        stages: ['A', 'B'],
+        transitions: [{ from: 'A', to: 'B', gates: [] }],
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
+  });
+
+  test('accepts lifecycle with empty transitions array', () => {
+    const manifest = createMinimalManifest({
+      lifecycle: {
+        stages: ['A', 'B'],
+        transitions: [],
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
   });
 });
 

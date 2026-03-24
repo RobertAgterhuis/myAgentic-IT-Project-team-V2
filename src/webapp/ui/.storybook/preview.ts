@@ -29,9 +29,22 @@ const preview: Preview = {
       test: 'error',
       config: {
         rules: [
-          // Dark-theme color contrast exceptions: primary brand colors on dark backgrounds
-          // are intentionally lower-contrast in the design system's dark mode.
-          { id: 'color-contrast', enabled: false },
+          // P1-UI-E2-I1: color-contrast re-enabled with relaxed ratio.
+          // WCAG AA requires 4.5:1 for normal text; we use 3.0:1 for large text / UI components
+          // on intentional low-contrast dark-mode brand surfaces (info, warning badges on dark bg).
+          // Document each deliberate exception here rather than disabling globally.
+          {
+            id: 'color-contrast',
+            enabled: true,
+            options: {
+              // Allow 3:1 for large text (18pt / 14pt bold) and interactive components.
+              // Standard AA for small text (3+ characters) remains at 4.5:1 via axe default.
+              contrastRatio: {
+                normal: { expected: 4.5 },
+                large: { expected: 3.0 },
+              },
+            },
+          },
         ],
       },
     },

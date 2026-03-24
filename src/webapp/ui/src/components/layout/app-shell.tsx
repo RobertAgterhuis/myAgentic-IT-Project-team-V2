@@ -22,6 +22,13 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <div className="relative flex h-screen flex-col overflow-hidden bg-transparent text-foreground">
+      {/* P1-UI-E2-I2: Skip link for keyboard / assistive-tech navigation */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:left-4 focus:top-4 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:text-foreground focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-ring"
+      >
+        Skip to main content
+      </a>
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,color-mix(in_srgb,var(--color-border)_30%,transparent)_1px,transparent_1px),linear-gradient(to_bottom,color-mix(in_srgb,var(--color-border)_20%,transparent)_1px,transparent_1px)] bg-size-[88px_88px] opacity-50" />
         <div className="absolute -left-28 top-0 h-72 w-72 rounded-full bg-info/15 blur-3xl" />
@@ -34,7 +41,10 @@ export function AppShell({
       <div className="relative z-10 flex flex-1 overflow-hidden">
         {sidebar}
 
-        <main className="scrollbar-surface relative flex flex-1 flex-col overflow-y-auto">
+        <main
+          id="main-content"
+          className="scrollbar-surface relative flex flex-1 flex-col overflow-y-auto"
+        >
           {breadcrumbs}
           {children}
         </main>

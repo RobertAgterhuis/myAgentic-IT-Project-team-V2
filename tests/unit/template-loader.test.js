@@ -172,6 +172,16 @@ describe('validateManifest', () => {
     expect(result.valid).toBe(true);
   });
 
+  test('accepts phaseAgents object with valid agent entries', () => {
+    const manifest = createMinimalManifest({
+      phaseAgents: {
+        ONBOARDING: [{ id: '01', name: 'Business Analyst' }],
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
+  });
+
   test('rejects modes without label', () => {
     const manifest = createMinimalManifest({
       modes: { CREATE: { phases: ['PHASE_1'] } },
@@ -188,6 +198,17 @@ describe('validateManifest', () => {
     const result = validateManifest(manifest);
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('phases must be an array'))).toBe(true);
+  });
+
+  test('accepts modes with array phases', () => {
+    const manifest = createMinimalManifest({
+      modes: {
+        CREATE: { phases: ['PHASE_1'], label: 'Create mode' },
+        EXECUTE: { phases: ['PHASE_2', 'PHASE_3'], label: 'Execute mode' },
+      },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
   });
 
   test('rejects criticToPhase with bad key pattern', () => {
@@ -905,6 +926,27 @@ describe('resolveTemplatePaths — extended sections (v1.1.0)', () => {
     const manifest = createMinimalManifest();
     const resolved = resolveTemplatePaths(manifest, '/root');
     expect(resolved.outputTemplates).toEqual([]);
+  });
+
+  test('passes through optional artifact/output collections when present', () => {
+    const manifest = createMinimalManifest({
+      decisionCategories: ['architecture', 'security'],
+      phaseArtifacts: {
+        PHASE_1: [{ id: 'P1-brief', type: 'DOCUMENT', stage: 'REQUIREMENTS', path: 'brief.md' }],
+      },
+      phaseLineage: {
+        PHASE_2: { consumes: ['PHASE_1'] },
+      },
+      outputTemplates: ['templates/summary.md'],
+    });
+
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.decisionCategories).toEqual(['architecture', 'security']);
+    expect(resolved.phaseArtifacts).toEqual({
+      PHASE_1: [{ id: 'P1-brief', type: 'DOCUMENT', stage: 'REQUIREMENTS', path: 'brief.md' }],
+    });
+    expect(resolved.phaseLineage).toEqual({ PHASE_2: { consumes: ['PHASE_1'] } });
+    expect(resolved.outputTemplates).toEqual(['templates/summary.md']);
   });
 });
 

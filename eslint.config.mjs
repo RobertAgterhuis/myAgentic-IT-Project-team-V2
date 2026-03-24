@@ -95,8 +95,6 @@ export default [
     },
   },
 
-
-
   /* ── TypeScript files: disable no-undef (TS handles this) ──── */
   {
     files: ['**/*.ts', '**/*.tsx'],

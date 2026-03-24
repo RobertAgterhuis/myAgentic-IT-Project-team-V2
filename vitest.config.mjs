@@ -29,7 +29,10 @@ function resolveJsToTs() {
       }
 
       // Case 2: no extension (bare require) → try .ts first, then .js
-      const hasExt = jsExts.some((e) => source.endsWith(e)) || source.endsWith('.ts') || source.endsWith('.json');
+      const hasExt =
+        jsExts.some((e) => source.endsWith(e)) ||
+        source.endsWith('.ts') ||
+        source.endsWith('.json');
       if (!hasExt) {
         const base = path.resolve(dir, source);
         const tsPath = base + '.ts';
@@ -53,9 +56,7 @@ export default defineConfig({
       inline: [/./],
     },
     setupFiles: ['tests/setup-require-hook.js'],
-    include: [
-      'tests/**/*.test.js',
-    ],
+    include: ['tests/**/*.test.js'],
     exclude: [
       '**/node_modules/**',
       'tests/integration/git-adapter.integration.test.js',
@@ -63,7 +64,11 @@ export default defineConfig({
     ],
     coverage: {
       provider: 'v8',
-      include: ['src/webapp/**/*.{js,ts}', 'platform/engine/**/*.{js,ts}', 'platform/sdlc/**/*.{js,ts}'],
+      include: [
+        'src/webapp/**/*.{js,ts}',
+        'platform/engine/**/*.{js,ts}',
+        'platform/sdlc/**/*.{js,ts}',
+      ],
       exclude: [
         'src/webapp/node_modules/**',
         'src/webapp/ui/**',

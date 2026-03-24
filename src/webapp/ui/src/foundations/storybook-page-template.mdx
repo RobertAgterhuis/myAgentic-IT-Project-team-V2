@@ -61,7 +61,9 @@ export const Error: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get('/api/*', () => HttpResponse.json({ error: 'Internal Server Error' }, { status: 500 })),
+        http.get('/api/*', () =>
+          HttpResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+        ),
       ],
     },
   },

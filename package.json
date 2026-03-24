@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "test:coverage:gate": "node scripts/check-coverage-thresholds.mjs",
     "test:integration": "vitest run tests/integration/",
     "test:smoke": "vitest run tests/smoke/",
     "test:chat-grounding": "vitest run tests/unit/chat-grounding-quality.test.js tests/unit/routes-chat.test.js tests/unit/rag-grounding-service.test.js",

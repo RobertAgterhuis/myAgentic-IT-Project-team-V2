@@ -353,6 +353,189 @@ describe('ProviderRegistry', () => {
     expect(registry.listProviders()).toEqual([]);
     expect(registry.hasProvider('git')).toBe(false);
   });
+
+  it('reuses cached provider instance when config is not passed', () => {
+    const factory = vi.fn(() => ({
+      providerName: 'cached-git',
+      capabilities: {},
+      listBranches: () => {},
+      createBranch: () => {},
+      listCommits: () => {},
+      getDiff: () => {},
+    }));
+
+    registry.registerProvider('git', 'cached', factory);
+
+    const first = registry.getProvider('git', 'cached');
+    const second = registry.getProvider('git', 'cached');
+
+    expect(first).toBe(second);
+    expect(factory).toHaveBeenCalledTimes(1);
+  });
+
+  it('re-instantiates provider when config is passed', () => {
+    const factory = vi.fn((config) => ({
+      providerName: 'cfg-git',
+      capabilities: { config },
+      listBranches: () => {},
+      createBranch: () => {},
+      listCommits: () => {},
+      getDiff: () => {},
+    }));
+
+    registry.registerProvider('git', 'cfg', factory);
+
+    const first = registry.getProvider('git', 'cfg', { token: 'a' });
+    const second = registry.getProvider('git', 'cfg', { token: 'b' });
+
+    expect(first).not.toBe(second);
+    expect(factory).toHaveBeenCalledTimes(2);
+  });
+
+  it('getProviderWithFallback ignores empty names and de-duplicates repeated names', () => {
+    const provider = {
+      providerName: 'dedupe-git',
+      capabilities: {},
+      listBranches: () => {},
+      createBranch: () => {},
+      listCommits: () => {},
+      getDiff: () => {},
+    };
+    const factory = vi.fn(() => provider);
+    registry.registerProvider('git', 'a', factory);
+
+    const result = registry.getProviderWithFallback('git', {
+      primaryName: 'a',
+      fallbackNames: ['', 'a', 'a', ''],
+    });
+
+    expect(result).toBe(provider);
+    expect(factory).toHaveBeenCalledTimes(1);
+  });
+
+  it('getProviderWithFallback throws when no primary, no fallback, and no default exist', () => {
+    expect(() => registry.getProviderWithFallback('git', {})).toThrow(
+      /No provider registered for type: git/i
+    );
+  });
+});
+
+describe('probeProviderHealth', () => {
+  const originalOpenAi = process.env.OPENAI_API_KEY;
+  const originalAnthropic = process.env.ANTHROPIC_API_KEY;
+  const originalGithub = process.env.GITHUB_TOKEN;
+
+  afterEach(() => {
+    if (originalOpenAi === undefined) {
+      delete process.env.OPENAI_API_KEY;
+    } else {
+      process.env.OPENAI_API_KEY = originalOpenAi;
+    }
+    if (originalAnthropic === undefined) {
+      delete process.env.ANTHROPIC_API_KEY;
+    } else {
+      process.env.ANTHROPIC_API_KEY = originalAnthropic;
+    }
+    if (originalGithub === undefined) {
+      delete process.env.GITHUB_TOKEN;
+    } else {
+      process.env.GITHUB_TOKEN = originalGithub;
+    }
+  });
+
+  it('returns healthy for unknown providers', () => {
+    expect(probeProviderHealth('local')).toEqual({ healthy: true });
+    expect(probeProviderHealth('some-custom-provider')).toEqual({ healthy: true });
+  });
+
+  it('returns unhealthy when required key is missing', () => {
+    delete process.env.OPENAI_API_KEY;
+    expect(probeProviderHealth('openai')).toEqual({
+      healthy: false,
+      reason: 'OPENAI_API_KEY is not set',
+    });
+  });
+
+  it('returns unhealthy when required key is blank/whitespace', () => {
+    process.env.ANTHROPIC_API_KEY = '   ';
+    expect(probeProviderHealth('anthropic')).toEqual({
+      healthy: false,
+      reason: 'ANTHROPIC_API_KEY is not set',
+    });
+  });
+
+  it('returns healthy when required key is present', () => {
+    process.env.GITHUB_TOKEN = 'token-123';
+    expect(probeProviderHealth('copilot')).toEqual({ healthy: true });
+  });
+});
+
+describe('buildLlmFallbackPolicy', () => {
+  const originalOpenAi = process.env.OPENAI_API_KEY;
+  const originalAnthropic = process.env.ANTHROPIC_API_KEY;
+  const originalGithub = process.env.GITHUB_TOKEN;
+
+  afterEach(() => {
+    if (originalOpenAi === undefined) {
+      delete process.env.OPENAI_API_KEY;
+    } else {
+      process.env.OPENAI_API_KEY = originalOpenAi;
+    }
+    if (originalAnthropic === undefined) {
+      delete process.env.ANTHROPIC_API_KEY;
+    } else {
+      process.env.ANTHROPIC_API_KEY = originalAnthropic;
+    }
+    if (originalGithub === undefined) {
+      delete process.env.GITHUB_TOKEN;
+    } else {
+      process.env.GITHUB_TOKEN = originalGithub;
+    }
+  });
+
+  it('chooses first healthy provider as primary and orders fallbacks', () => {
+    process.env.OPENAI_API_KEY = 'openai-key';
+    delete process.env.ANTHROPIC_API_KEY;
+    process.env.GITHUB_TOKEN = 'gh-key';
+
+    const policy = buildLlmFallbackPolicy();
+    expect(policy).toEqual({
+      primaryName: 'openai',
+      fallbackNames: ['copilot', 'anthropic'],
+      localFallback: true,
+    });
+  });
+
+  it('falls back to local when no provider keys are set', () => {
+    delete process.env.OPENAI_API_KEY;
+    delete process.env.ANTHROPIC_API_KEY;
+    delete process.env.GITHUB_TOKEN;
+
+    const policy = buildLlmFallbackPolicy();
+    expect(policy).toEqual({
+      primaryName: 'local',
+      fallbackNames: ['openai', 'anthropic', 'copilot'],
+      localFallback: true,
+    });
+  });
+
+  it('applies overrides for primary/fallback/localFallback', () => {
+    process.env.OPENAI_API_KEY = 'openai-key';
+    process.env.ANTHROPIC_API_KEY = 'anthropic-key';
+    process.env.GITHUB_TOKEN = 'gh-key';
+
+    const policy = buildLlmFallbackPolicy({
+      primaryName: 'copilot',
+      fallbackNames: ['anthropic'],
+      localFallback: false,
+    });
+
+    expect(policy).toEqual({
+      primaryName: 'copilot',
+      fallbackNames: ['anthropic'],
+      localFallback: false,
+    });
+  });
 });
 
 // ─── createDefaultRegistry ──────────────────────────────────

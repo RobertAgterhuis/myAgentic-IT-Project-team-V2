@@ -19,7 +19,8 @@ const failures = [];
 
 const apiMetric = readApiMetric(artifacts.api);
 if (apiMetric == null) {
-  if (requireArtifacts) failures.push(`Missing API perf artifact: ${path.relative(root, artifacts.api)}`);
+  if (requireArtifacts)
+    failures.push(`Missing API perf artifact: ${path.relative(root, artifacts.api)}`);
 } else if (apiMetric > budget.apiP95Ms) {
   failures.push(`API p95 ${apiMetric}ms exceeds budget ${budget.apiP95Ms}ms`);
 }
@@ -44,7 +45,9 @@ if (failures.length > 0) {
 }
 
 if (apiMetric == null || lighthouseScore == null) {
-  console.warn('Performance gate passed with missing optional artifacts (set REQUIRE_PERF_ARTIFACTS=1 in CI to enforce).');
+  console.warn(
+    'Performance gate passed with missing optional artifacts (set REQUIRE_PERF_ARTIFACTS=1 in CI to enforce).'
+  );
 } else {
   console.log('Performance regression gate passed.');
 }

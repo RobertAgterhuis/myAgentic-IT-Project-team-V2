@@ -77,7 +77,9 @@ function checkFile(filePath, ext) {
     }
 
     if (fontFamilyInCode.test(line)) {
-      violations.push(`${rel(filePath)}:${lineNo} avoid inline fontFamily; use tokenized class styles.`);
+      violations.push(
+        `${rel(filePath)}:${lineNo} avoid inline fontFamily; use tokenized class styles.`
+      );
     }
     fontFamilyInCode.lastIndex = 0;
 

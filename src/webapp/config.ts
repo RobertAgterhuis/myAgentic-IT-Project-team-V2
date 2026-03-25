@@ -163,6 +163,18 @@ export const METRICS_FLUSH_INTERVAL_MS = 60000;
 export const SNAPSHOT_SYNC_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 export const RATE_LIMIT_WINDOW_MS = parsePositiveIntFromEnv('RATE_LIMIT_WINDOW_MS', 60_000);
 export const RATE_LIMIT_MAX = parsePositiveIntFromEnv('RATE_LIMIT_MAX', 30);
+export const RATE_LIMIT_AUTH_MAX = parsePositiveIntFromEnv('RATE_LIMIT_AUTH_MAX', 10);
+export const RATE_LIMIT_ADMIN_MAX = parsePositiveIntFromEnv('RATE_LIMIT_ADMIN_MAX', 20);
+export const RATE_LIMIT_MUTATION_MAX = parsePositiveIntFromEnv('RATE_LIMIT_MUTATION_MAX', 15);
+export const SEMANTIC_MEMORY_SWEEPER_INTERVAL_MS = parsePositiveIntFromEnv(
+  'SEMANTIC_MEMORY_SWEEPER_INTERVAL_MS',
+  5 * 60 * 1000
+);
+export const SEMANTIC_MEMORY_SWEEPER_ENABLED =
+  String(
+    process.env.SEMANTIC_MEMORY_SWEEPER_ENABLED ??
+      (process.env.NODE_ENV === 'test' ? 'false' : 'true')
+  ).toLowerCase() !== 'false';
 
 /* ── Persistence layer (M23-005) ──────────────────────────────── */
 export type StorageProviderType = 'file' | 'sqlite';

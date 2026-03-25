@@ -55,7 +55,20 @@ export const SuccessTone: Story = {
 };
 
 export const Clickable: Story = {
-  render: () => <CardTemplate clickable onClick={() => alert('Card clicked!')} />,
+  render: () => (
+    <Card clickable onClick={() => undefined} className="w-80">
+      <CardHeader>
+        <CardTitle>Clickable Card</CardTitle>
+        <CardDescription>Card acts as a single interactive target.</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p>Click anywhere on this card to trigger its action.</p>
+      </CardContent>
+      <CardFooter>
+        <span className="text-sm text-muted-foreground">No nested interactive controls.</span>
+      </CardFooter>
+    </Card>
+  ),
 };
 
 export const AllElevations: Story = {

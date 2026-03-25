@@ -49,7 +49,14 @@ function ProgressBar({
           {showPercentage && <span className="font-medium">{Math.round(pct)}%</span>}
         </div>
       )}
-      <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+      <div
+        role="progressbar"
+        aria-label={label ?? 'Progress'}
+        aria-valuemin={0}
+        aria-valuemax={max}
+        aria-valuenow={Number.isFinite(value) ? Math.min(max, Math.max(0, value)) : 0}
+        className="h-2 w-full overflow-hidden rounded-full bg-muted"
+      >
         <div
           className={cn(
             'h-full rounded-full bg-primary transition-[width] duration-300 ease-in-out',

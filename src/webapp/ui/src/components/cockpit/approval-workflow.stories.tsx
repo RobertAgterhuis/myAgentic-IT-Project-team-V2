@@ -36,14 +36,13 @@ export const Approved: DetailStory = {
 };
 
 /* ── History Timeline ── */
-const metaHistory = {
+const _metaHistory = {
   title: 'Cockpit/ApprovalHistoryTimeline',
   component: ApprovalHistoryTimeline,
   tags: ['autodocs'],
 } satisfies Meta<typeof ApprovalHistoryTimeline>;
-export { metaHistory };
 
-type HistoryStory = StoryObj<typeof metaHistory>;
+type HistoryStory = StoryObj<typeof _metaHistory>;
 
 export const HistoryTypical: HistoryStory = {
   render: () => <ApprovalHistoryTimeline />,

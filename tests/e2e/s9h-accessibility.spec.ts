@@ -4,8 +4,177 @@
  * Automated axe-core scans + keyboard navigation tests for all pages.
  * Ensures zero critical/serious violations per WCAG 2.1 AA.
  */
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+
+async function mockAuthenticatedOperator(page: Page) {
+  await page.route('**/api/auth/me', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        data: {
+          user: {
+            id: 42,
+            github_id: 4242,
+            login: 'a11y-operator',
+            display_name: 'A11y Operator',
+            avatar_url: 'https://example.test/avatar.png',
+            role: 'operator',
+          },
+        },
+      }),
+    });
+  });
+}
+
+async function mockWorkspaceFixtures(page: Page) {
+  const now = '2026-01-10T10:00:00.000Z';
+
+  await page.route('**/api/workspaces/ws-a11y', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        workspace: {
+          id: 'ws-a11y',
+          name: 'Accessibility Workspace',
+          owner: 'a11y-team',
+          repositories: [
+            {
+              id: 'repo-a11y-ui',
+              name: 'ui-shell',
+              provider: 'github',
+              url: 'https://github.com/example/ui-shell',
+              defaultBranch: 'main',
+            },
+          ],
+          created_at: now,
+          updated_at: now,
+        },
+        projects: [
+          {
+            id: 'proj-a11y',
+            workspaceId: 'ws-a11y',
+            name: 'Edge Keyboard Flows',
+            repositories: ['repo-a11y-ui'],
+            sessions: [],
+            status: 'active',
+            created_at: now,
+            updated_at: now,
+          },
+        ],
+      }),
+    });
+  });
+
+  await page.route('**/api/workspaces', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        count: 1,
+        workspaces: [
+          {
+            id: 'ws-a11y',
+            name: 'Accessibility Workspace',
+            owner: 'a11y-team',
+            repositories: [
+              {
+                id: 'repo-a11y-ui',
+                name: 'ui-shell',
+                provider: 'github',
+                url: 'https://github.com/example/ui-shell',
+                defaultBranch: 'main',
+              },
+            ],
+            created_at: now,
+            updated_at: now,
+          },
+        ],
+      }),
+    });
+  });
+}
+
+async function mockApprovalFixtures(page: Page) {
+  const requestedAt = '2026-01-10T09:00:00.000Z';
+
+  await page.route('**/api/v1/approvals/APP-100/detail', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        ok: true,
+        approval: {
+          id: 'APP-100',
+          entity_id: 'ENTITY-10',
+          gate_id: 'gate.critic-risk-2',
+          stage: 'PHASE_2',
+          requested_by: 'risk-agent',
+          requested_at: requestedAt,
+          required_role: 'Security Architect',
+          status: 'PENDING',
+          context: 'Security deviation requires review.',
+          risk_assessment: 'Medium risk with compensating controls.',
+          recommended_action: 'APPROVE_WITH_CONDITIONS',
+          related_artifacts: ['BusinessDocs/decisions.md'],
+        },
+      }),
+    });
+  });
+
+  await page.route('**/api/v1/approvals', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        approvals: [
+          {
+            id: 'APP-100',
+            entity_id: 'ENTITY-10',
+            gate_id: 'gate.critic-risk-2',
+            stage: 'PHASE_2',
+            requested_by: 'risk-agent',
+            requested_at: requestedAt,
+            required_role: 'Security Architect',
+            status: 'PENDING',
+          },
+        ],
+        count: 1,
+      }),
+    });
+  });
+}
+
+async function mockDecisionFixtures(page: Page) {
+  await page.route('**/api/decisions', async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        open: [
+          {
+            id: 'D-OPEN-900',
+            type: 'OPEN_QUESTION',
+            status: 'OPEN',
+            priority: 'HIGH',
+            scope: 'phase-2',
+            question: 'Should we enforce stricter policy checks in CI?',
+            answer: 'Pending product decision.',
+            date: '2026-01-09',
+          },
+        ],
+        decided: [],
+        deferred: [],
+        categories: [],
+      }),
+    });
+  });
+}
 
 const PAGES = [
   { path: '/', name: 'Dashboard' },
@@ -100,6 +269,67 @@ test.describe('Keyboard navigation', () => {
     await page.keyboard.press('Escape');
     // Page should still be functional
     await expect(page.locator('main')).toBeVisible();
+  });
+
+  test('workspaces modal supports keyboard open and escape close', async ({ page }) => {
+    await mockAuthenticatedOperator(page);
+    await mockWorkspaceFixtures(page);
+
+    await page.goto('/workspaces');
+    await page.waitForSelector('[data-testid="workspaces-page"]', { timeout: 10_000 });
+
+    const createWorkspaceButton = page.getByRole('button', { name: 'Workspace', exact: true });
+    await createWorkspaceButton.focus();
+    await page.keyboard.press('Enter');
+
+    const dialog = page.getByRole('dialog', { name: 'New Workspace' });
+    await expect(dialog).toBeVisible();
+
+    await dialog.getByRole('button', { name: 'Cancel' }).focus();
+    await page.keyboard.press('Enter');
+    await expect(dialog).toBeHidden();
+    await expect(createWorkspaceButton).toBeVisible();
+  });
+
+  test('approvals keyboard toggles detail context and closes panel', async ({ page }) => {
+    await mockAuthenticatedOperator(page);
+    await mockApprovalFixtures(page);
+
+    await page.goto('/approvals');
+    await page.waitForSelector('[data-testid="approval-row-APP-100"]', { timeout: 10_000 });
+
+    const approvalRow = page.getByTestId('approval-row-APP-100');
+    await approvalRow.focus();
+    await page.keyboard.press('Enter');
+
+    const contextPanel = page.getByTestId('approval-decision-panel');
+    await expect(contextPanel).toBeVisible();
+    await expect(contextPanel.getByRole('heading', { name: 'gate.critic-risk-2' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Close detail panel' }).focus();
+    await page.keyboard.press('Enter');
+
+    await expect(contextPanel).toBeHidden();
+    await expect(page.getByLabel('Approval decision context')).toHaveCount(0);
+  });
+
+  test('decisions table action opens and closes detail dialog via keyboard', async ({ page }) => {
+    await mockAuthenticatedOperator(page);
+    await mockDecisionFixtures(page);
+
+    await page.goto('/decisions');
+    await page.waitForSelector('table', { timeout: 10_000 });
+
+    const viewButton = page.getByRole('button', { name: 'View D-OPEN-900' });
+    await viewButton.focus();
+    await page.keyboard.press('Enter');
+
+    const detailDialog = page.getByRole('dialog', { name: 'Decision D-OPEN-900' });
+    await expect(detailDialog).toBeVisible();
+
+    await detailDialog.getByRole('button', { name: /close/i }).first().focus();
+    await page.keyboard.press('Enter');
+    await expect(detailDialog).toBeHidden();
   });
 });
 

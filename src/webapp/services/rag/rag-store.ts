@@ -15,6 +15,10 @@ import Database from 'better-sqlite3';
 import type { Database as DatabaseType } from 'better-sqlite3';
 import * as lancedb from '@lancedb/lancedb';
 import type { Connection } from '@lancedb/lancedb';
+import {
+  applySqliteConcurrencyPragmas,
+  resolveSqliteConcurrencyConfig,
+} from '../../../../platform/engine/sqlite-concurrency';
 
 import { RAG_MIGRATIONS, type RagCollection, type RagChunk, type QueryResult } from './types.js';
 import { RAG_INCREMENTAL_MIGRATION, type FileIndexEntry } from './types.js';
@@ -28,20 +32,31 @@ function distanceToScore(distance: number): number {
 
 /* ── RagStore ─────────────────────────────────────────────────── */
 
+export type VectorStoreStrategy = 'single-table' | 'writer-sharded';
+
+export interface RagStoreOptions {
+  vectorStrategy?: VectorStoreStrategy;
+  writerId?: string;
+}
+
 export class RagStore {
   private readonly db: DatabaseType;
   private readonly lanceUri: string;
+  private readonly vectorStrategy: VectorStoreStrategy;
+  private readonly writerId: string;
   private lance: Connection | null = null;
 
   /**
    * @param dbPath   Path to the SQLite database file (use `:memory:` for tests).
    * @param lanceUri Directory path where LanceDB stores its files.
    */
-  constructor(dbPath: string, lanceUri: string) {
+  constructor(dbPath: string, lanceUri: string, options: RagStoreOptions = {}) {
     this.db = new Database(dbPath);
-    this.db.pragma('journal_mode = WAL');
-    this.db.pragma('foreign_keys = ON');
+    applySqliteConcurrencyPragmas(this.db, resolveSqliteConcurrencyConfig());
     this.lanceUri = lanceUri;
+    this.vectorStrategy =
+      options.vectorStrategy === 'writer-sharded' ? 'writer-sharded' : 'single-table';
+    this.writerId = this._sanitizeIdentifier(options.writerId || 'default');
     this._runMigrations();
   }
 
@@ -60,9 +75,51 @@ export class RagStore {
     return this.lance;
   }
 
+  private _sanitizeIdentifier(value: string): string {
+    const normalized = value.replace(/[^a-z0-9]/gi, '_').replace(/^_+|_+$/g, '');
+    return normalized || 'default';
+  }
+
+  private _tablePrefix(collectionId: string): string {
+    return `rag_${this._sanitizeIdentifier(collectionId)}`;
+  }
+
   /** Sanitise a collection id to a safe LanceDB table name. */
   private _tableName(collectionId: string): string {
-    return `rag_${collectionId.replace(/[^a-z0-9]/gi, '_')}`;
+    const prefix = this._tablePrefix(collectionId);
+    if (this.vectorStrategy === 'single-table') {
+      return prefix;
+    }
+    return `${prefix}__${this.writerId}`;
+  }
+
+  private async _vectorTableNames(collectionId: string, lance: Connection): Promise<string[]> {
+    const existing = await lance.tableNames();
+    const prefix = this._tablePrefix(collectionId);
+
+    if (this.vectorStrategy === 'single-table') {
+      return existing.includes(prefix) ? [prefix] : [];
+    }
+
+    return existing.filter(
+      (tableName) => tableName === prefix || tableName.startsWith(`${prefix}__`)
+    );
+  }
+
+  private async _deleteHashesFromTables(
+    lance: Connection,
+    tableNames: string[],
+    sourceHashes: string[]
+  ): Promise<void> {
+    if (tableNames.length === 0 || sourceHashes.length === 0) return;
+
+    const hashList = sourceHashes.map((hash) => `'${hash.replace(/'/g, "''")}'`).join(',');
+    await Promise.all(
+      tableNames.map(async (tableName) => {
+        const table = await lance.openTable(tableName);
+        await table.delete(`chunk_hash IN (${hashList})`);
+      })
+    );
   }
 
   /* ── public API ───────────────────────────────────────────────── */
@@ -126,12 +183,16 @@ export class RagStore {
       vector: c.embedding as number[],
     }));
 
+    const vectorTables = await this._vectorTableNames(collectionId, lance);
+    await this._deleteHashesFromTables(
+      lance,
+      vectorTables,
+      rows.map((row) => row.chunk_hash)
+    );
+
     const existing = await lance.tableNames();
     if (existing.includes(tableName)) {
       const table = await lance.openTable(tableName);
-      /* Remove stale vectors before re-inserting (upsert semantics). */
-      const hashList = rows.map((r) => `'${r.chunk_hash.replace(/'/g, "''")}'`).join(',');
-      await table.delete(`chunk_hash IN (${hashList})`);
       await table.add(rows);
     } else {
       await lance.createTable(tableName, rows);
@@ -153,27 +214,44 @@ export class RagStore {
     threshold = 0
   ): Promise<QueryResult[]> {
     const lance = await this._db();
-    const tableName = this._tableName(collectionId);
-    const existing = await lance.tableNames();
-    if (!existing.includes(tableName)) return [];
+    const tableNames = await this._vectorTableNames(collectionId, lance);
+    if (tableNames.length === 0) return [];
 
-    const table = await lance.openTable(tableName);
-    const rawResults = await table.search(queryVector).limit(topK).toArray();
+    const rawResultBatches = await Promise.all(
+      tableNames.map(async (tableName) => {
+        const table = await lance.openTable(tableName);
+        return table.search(queryVector).limit(topK).toArray();
+      })
+    );
 
     const getChunk = this.db.prepare<[string, string], RagChunk>(
       'SELECT id, collection_id, source_path, chunk_text, start_line, chunk_hash FROM rag_chunks WHERE chunk_hash = ? AND collection_id = ?'
     );
 
+    const bestByHash = new Map<string, number>();
+    for (const rawResults of rawResultBatches) {
+      for (const result of rawResults) {
+        const chunkHash = String(result.chunk_hash || '');
+        if (!chunkHash) continue;
+
+        const score = distanceToScore(result._distance ?? 0);
+        if (score < threshold) continue;
+
+        const current = bestByHash.get(chunkHash);
+        if (current === undefined || score > current) {
+          bestByHash.set(chunkHash, score);
+        }
+      }
+    }
+
     const results: QueryResult[] = [];
-    for (const r of rawResults) {
-      const score = distanceToScore(r._distance ?? 0);
-      if (score < threshold) continue;
-      const chunkRow = getChunk.get(r.chunk_hash as string, collectionId);
+    for (const [chunkHash, score] of bestByHash.entries()) {
+      const chunkRow = getChunk.get(chunkHash, collectionId);
       if (!chunkRow) continue;
       results.push({ chunk: chunkRow, score });
     }
 
-    return results;
+    return results.sort((left, right) => right.score - left.score).slice(0, topK);
   }
 
   /**
@@ -189,13 +267,8 @@ export class RagStore {
 
     /* LanceDB vector cleanup */
     const lance = await this._db();
-    const tableName = this._tableName(collectionId);
-    const existing = await lance.tableNames();
-    if (!existing.includes(tableName)) return;
-
-    const table = await lance.openTable(tableName);
-    const hashList = sourceHashes.map((h) => `'${h.replace(/'/g, "''")}'`).join(',');
-    await table.delete(`chunk_hash IN (${hashList})`);
+    const tableNames = await this._vectorTableNames(collectionId, lance);
+    await this._deleteHashesFromTables(lance, tableNames, sourceHashes);
   }
 
   /** Return all registered collections ordered by creation time. */

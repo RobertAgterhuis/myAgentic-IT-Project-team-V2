@@ -1,6 +1,10 @@
 import crypto from 'node:crypto';
 import Database from 'better-sqlite3';
 import type { Database as DatabaseType } from 'better-sqlite3';
+import {
+  applySqliteConcurrencyPragmas,
+  resolveSqliteConcurrencyConfig,
+} from '../../../../platform/engine/sqlite-concurrency';
 
 export interface GitCredential {
   username?: string | null;
@@ -77,7 +81,10 @@ export class GitCredentialStore {
   constructor(dbPath: string, options: GitCredentialStoreOptions = {}) {
     this.masterKey = readMasterKey(options.env || process.env);
     this.db = new Database(dbPath);
-    this.db.pragma('journal_mode = WAL');
+    applySqliteConcurrencyPragmas(
+      this.db,
+      resolveSqliteConcurrencyConfig({}, options.env || process.env)
+    );
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS git_credentials (
         workspace_id TEXT NOT NULL,

@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { ModalDialog } from '@/components/ui/modal-dialog';
 import { InputField } from '@/components/ui/input-field';
+import { AsyncMutationFeedback } from '@/components/ui/async-mutation-feedback';
 import { useCreateProject } from '@/hooks';
 
 export function CreateProjectDialog({
@@ -61,6 +62,13 @@ export function CreateProjectDialog({
       }
     >
       <div className="space-y-4">
+        <AsyncMutationFeedback
+          mutation={createProject}
+          pendingMessage="Creating project..."
+          successMessage="Project created."
+          errorMessagePrefix="Project creation failed."
+          onRetry={handleSubmit}
+        />
         <InputField
           label="Project ID"
           value={projectId}

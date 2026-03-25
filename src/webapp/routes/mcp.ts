@@ -51,6 +51,12 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     return reply.send({ ok: true, count: policies.length, policies });
   });
 
+  app.get('/api/v1/mcp/capabilities', { schema: { tags: ['mcp'] } }, async (request, reply) => {
+    if (!ensureOperatorOrAdmin(request, reply, ctx)) return;
+    const manifest = await svc.getCapabilityManifest();
+    return reply.send({ ok: true, manifest });
+  });
+
   app.post('/api/v1/mcp/resolve/server', { schema: { tags: ['mcp'] } }, async (request, reply) => {
     if (!ensureOperatorOrAdmin(request, reply, ctx)) return;
     const body = (request.body || {}) as Record<string, unknown>;

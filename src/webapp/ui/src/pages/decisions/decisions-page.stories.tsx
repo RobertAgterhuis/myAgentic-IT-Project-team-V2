@@ -23,51 +23,52 @@ export const Populated: Story = {
       handlers: [
         http.get('/api/decisions', () =>
           HttpResponse.json({
-            all: [
-              {
-                id: 'DEC-001',
-                title: 'Cloud Provider Selection',
-                status: 'open',
-                priority: 'HIGH',
-                category: 'tech',
-                rationale: '',
-                created_at: '2025-01-15T10:00:00Z',
-              },
-              {
-                id: 'DEC-002',
-                title: 'Authentication Strategy',
-                status: 'decided',
-                priority: 'HIGH',
-                category: 'tech',
-                rationale: 'OAuth2 with PKCE',
-                created_at: '2025-01-14T09:00:00Z',
-              },
-              {
-                id: 'DEC-003',
-                title: 'Color Palette',
-                status: 'open',
-                priority: 'MEDIUM',
-                category: 'ux',
-                rationale: '',
-                created_at: '2025-01-13T08:00:00Z',
-              },
-            ],
             open: [
               {
                 id: 'DEC-001',
-                title: 'Cloud Provider Selection',
-                status: 'open',
+                type: 'OPEN_QUESTION',
+                status: 'OPEN',
                 priority: 'HIGH',
-                category: 'tech',
+                scope: 'Tech Architecture',
+                question: 'Which cloud provider should host the platform?',
+                answer: '',
+                date: '2025-01-15',
               },
               {
                 id: 'DEC-003',
-                title: 'Color Palette',
-                status: 'open',
+                type: 'OPEN_QUESTION',
+                status: 'OPEN',
                 priority: 'MEDIUM',
-                category: 'ux',
+                scope: 'UX',
+                question: 'What color palette direction should the redesign follow?',
+                answer: '',
+                date: '2025-01-13',
               },
             ],
+            decided: [
+              {
+                id: 'DEC-002',
+                type: 'DECIDED',
+                status: 'DECIDED',
+                priority: 'HIGH',
+                scope: 'Identity',
+                decision: 'Use OAuth2 with PKCE for operator authentication.',
+                notes: 'Matches enterprise SSO requirements and current platform direction.',
+                category: 'Security',
+                date: '2025-01-14',
+              },
+            ],
+            deferred: [
+              {
+                id: 'DEC-004',
+                status: 'DEFERRED',
+                scope: 'Operations',
+                subject: 'Regional failover topology',
+                reason: 'Need current usage and latency data before deciding.',
+                date: '2025-01-12',
+              },
+            ],
+            categories: [],
           })
         ),
       ],
@@ -78,7 +79,11 @@ export const Populated: Story = {
 export const Empty: Story = {
   parameters: {
     msw: {
-      handlers: [http.get('/api/decisions', () => HttpResponse.json({ all: [], open: [] }))],
+      handlers: [
+        http.get('/api/decisions', () =>
+          HttpResponse.json({ open: [], decided: [], deferred: [], categories: [] })
+        ),
+      ],
     },
   },
 };

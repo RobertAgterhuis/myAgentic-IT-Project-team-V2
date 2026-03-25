@@ -2,7 +2,9 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import type { EmbeddingProviderFacade, RagStoreFacade } from '../context';
+import { KnowledgeProvider } from '../../../platform/engine/knowledge-provider';
+import type { MemoryTier } from '../../../platform/engine/semantic-memory';
+import type { EmbeddingProviderFacade, RagStoreFacade, SemanticMemoryFacade } from '../context';
 
 export type ChatGroundingIntent = 'decision_lookup' | 'workspace_query' | 'artifact_query';
 export type StandardGroundingCollection =
@@ -12,6 +14,8 @@ export type StandardGroundingCollection =
   | 'sprint-artifacts'
   | 'retrospectives';
 
+export type GroundingCollection = StandardGroundingCollection | 'semantic-memory';
+
 export type WorkspaceScopedCollection = 'codebase' | 'decisions' | 'sprint-artifacts';
 export type GlobalScopedCollection = 'decisions' | 'patterns' | 'retrospectives';
 
@@ -19,13 +23,13 @@ export interface GroundingMatch {
   text: string;
   source_path: string;
   start_line: number | null;
-  collection: StandardGroundingCollection;
+  collection: GroundingCollection;
   score: number;
 }
 
 export interface GroundingBundle {
   query: string;
-  collections: StandardGroundingCollection[];
+  collections: GroundingCollection[];
   matches: GroundingMatch[];
 }
 
@@ -33,6 +37,7 @@ interface RagGroundingServiceOptions {
   projectRoot: string;
   ragStore?: RagStoreFacade;
   embeddingProvider?: EmbeddingProviderFacade;
+  semanticMemoryStore?: SemanticMemoryFacade;
 }
 
 interface QueryCollectionOptions {
@@ -49,6 +54,12 @@ interface BuildAgentGroundingOptions extends QueryCollectionOptions {
   questionnaireInput?: string | null;
   predecessorOutputs?: Record<string, string>;
   topKPerCollection?: number;
+}
+
+interface QueryKnowledgeOptions extends QueryCollectionOptions {
+  workspaceId?: string;
+  includeSemanticMemory?: boolean;
+  memoryTiers?: MemoryTier[];
 }
 
 export interface AgentRagProfile {
@@ -318,11 +329,17 @@ export class RagGroundingService {
   private readonly _projectRoot: string;
   private readonly _ragStore?: RagStoreFacade;
   private readonly _embeddingProvider?: EmbeddingProviderFacade;
+  private readonly _knowledgeProvider: KnowledgeProvider;
 
   constructor(options: RagGroundingServiceOptions) {
     this._projectRoot = options.projectRoot;
     this._ragStore = options.ragStore;
     this._embeddingProvider = options.embeddingProvider;
+    this._knowledgeProvider = new KnowledgeProvider({
+      semanticMemory: options.semanticMemoryStore,
+      ragStore: options.ragStore,
+      embeddingProvider: options.embeddingProvider,
+    });
   }
 
   hasServices(): boolean {
@@ -373,25 +390,13 @@ export class RagGroundingService {
       phase: options.phase,
       projectRoot: this._projectRoot,
     });
-    const collections = profile.collections;
-
-    const matchLists = await Promise.all(
-      collections.map(async (collection) => {
-        try {
-          return await this.queryCollection(collection, query, {
-            topK: options.topKPerCollection ?? profile.topKPerCollection,
-            threshold: options.threshold ?? profile.threshold,
-            workspaceId: options.workspaceId,
-          });
-        } catch {
-          return [];
-        }
-      })
-    );
-
-    const matches = dedupeMatches(matchLists.flat())
-      .sort((left, right) => right.score - left.score)
-      .slice(0, profile.maxMatches);
+    const matches = await this.queryKnowledge(query, profile.collections, {
+      topK: options.topKPerCollection ?? profile.topKPerCollection,
+      threshold: options.threshold ?? profile.threshold,
+      workspaceId: options.workspaceId,
+      includeSemanticMemory: true,
+      memoryTiers: ['run', 'project', 'org'],
+    });
 
     if (matches.length === 0) {
       return null;
@@ -400,7 +405,7 @@ export class RagGroundingService {
     return {
       query,
       collections: Array.from(new Set(matches.map((match) => match.collection))),
-      matches,
+      matches: matches.slice(0, profile.maxMatches),
     };
   }
 
@@ -409,8 +414,22 @@ export class RagGroundingService {
     query: string,
     options: QueryCollectionOptions & { workspaceId?: string } = {}
   ): Promise<GroundingMatch[]> {
+    return this.queryKnowledge(query, [collection], {
+      ...options,
+      workspaceId: options.workspaceId,
+      includeSemanticMemory: false,
+    });
+  }
+
+  private async queryKnowledge(
+    query: string,
+    collections: StandardGroundingCollection[],
+    options: QueryKnowledgeOptions
+  ): Promise<GroundingMatch[]> {
     if (!this._ragStore || !this._embeddingProvider) {
-      return [];
+      if (!options.includeSemanticMemory || !this._knowledgeProvider.hasSemanticMemory()) {
+        return [];
+      }
     }
 
     const normalizedQuery = compactWhitespace(query);
@@ -418,21 +437,39 @@ export class RagGroundingService {
       return [];
     }
 
-    const queryVector = await this._embeddingProvider.embedText(normalizedQuery);
-    const results = await this._ragStore.query(
-      resolveGroundingCollectionId(collection, options.workspaceId),
-      queryVector,
-      options.topK ?? 5,
-      options.threshold ?? 0
-    );
+    const results = await this._knowledgeProvider.query({
+      query: normalizedQuery,
+      memory: options.includeSemanticMemory
+        ? {
+            tiers: options.memoryTiers,
+            topK: options.topK ?? 5,
+            minScore: options.threshold ?? 0,
+          }
+        : undefined,
+      rag: this._knowledgeProvider.hasRag()
+        ? {
+            collections: collections.map((collection) => ({
+              id: resolveGroundingCollectionId(collection, options.workspaceId),
+              label: collection,
+            })),
+            topKPerCollection: options.topK ?? 5,
+            threshold: options.threshold ?? 0,
+          }
+        : undefined,
+      maxResults:
+        collections.length * (options.topK ?? 5) +
+        (options.includeSemanticMemory ? (options.topK ?? 5) : 0),
+    });
 
-    return results.map((result) => ({
-      text: result.chunk.chunk_text,
-      source_path: this.normalizeSourcePath(result.chunk.source_path),
-      start_line: Number.isFinite(result.chunk.start_line) ? result.chunk.start_line : null,
-      collection,
-      score: result.score,
-    }));
+    return dedupeMatches(
+      results.map((result) => ({
+        text: result.text,
+        source_path: this.normalizeSourcePath(result.source_path),
+        start_line: result.start_line,
+        collection: result.collection as GroundingCollection,
+        score: result.score,
+      }))
+    ).sort((left, right) => right.score - left.score);
   }
 
   private normalizeSourcePath(sourcePath: string): string {

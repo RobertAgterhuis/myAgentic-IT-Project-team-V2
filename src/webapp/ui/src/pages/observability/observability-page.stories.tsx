@@ -23,17 +23,50 @@ const baseHandlers = [
   http.get('/api/drift', () =>
     HttpResponse.json({
       drifts: [],
-      summary: { total_drifts: 0 },
+      summary: { total_drifts: 0, critical: 0, warning: 0, info: 0 },
       in_sync: { sprints: [], stories: 0 },
+      generated_at: new Date().toISOString(),
+    })
+  ),
+  http.get('/api/v1/drift', () =>
+    HttpResponse.json({
+      drifts: [],
+      summary: { total_drifts: 0, critical: 0, warning: 0, info: 0 },
+      in_sync: { sprints: [], stories: 0 },
+      generated_at: new Date().toISOString(),
     })
   ),
   http.get('/api/progress', () =>
-    HttpResponse.json({ phases: [], sprints: { total: 0, statuses: {} } })
+    HttpResponse.json({
+      active: false,
+      session: null,
+      phases: [],
+      sprints: { total: 0, statuses: {} },
+      command: null,
+    })
   ),
   http.get('/api/dashboard/metrics', () =>
-    HttpResponse.json({ ok: true, data: {}, timestamp: new Date().toISOString() })
+    HttpResponse.json({
+      ok: true,
+      data: {
+        http_requests: { label: 'HTTP Requests', value: 0, trend: 'neutral', period: '0%' },
+        error_rate: { label: 'Error Rate', value: '0%', trend: 'neutral', period: '0%' },
+        response_time: { label: 'Avg Response', value: '0ms', trend: 'neutral', period: '0%' },
+      },
+      timestamp: new Date().toISOString(),
+    })
   ),
-  http.get('/api/analytics/trends', () => HttpResponse.json({ velocity: [], dora: {} })),
+  http.get('/api/v1/analytics/trends', () =>
+    HttpResponse.json({
+      ok: true,
+      data: {
+        velocity: [],
+        dora: { lead_time: [], deployment_frequency: [], change_failure_rate: [], mttr: [] },
+        sprints: { planned_points: [], completed_points: [], defects_found: [] },
+      },
+      timestamp: new Date().toISOString(),
+    })
+  ),
   http.get('/api/v1/observability/rag-freshness', () =>
     HttpResponse.json({
       ok: true,
@@ -49,7 +82,9 @@ const baseHandlers = [
       collections: [],
     })
   ),
-  http.get('/api/analytics/agents', () => HttpResponse.json({ agents: [] })),
+  http.get('/api/v1/analytics/agents', () =>
+    HttpResponse.json({ ok: true, data: [], count: 0, timestamp: new Date().toISOString() })
+  ),
   http.get('/api/traceability', () =>
     HttpResponse.json({ entities: [], gaps: [], coverage: { overall: 0 } })
   ),

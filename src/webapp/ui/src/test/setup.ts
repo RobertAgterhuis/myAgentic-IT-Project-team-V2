@@ -3,6 +3,7 @@ import { act } from '@testing-library/react';
 import { notifyManager } from '@tanstack/react-query';
 import { server } from './msw-server';
 import { afterAll, afterEach, beforeAll, vi } from 'vitest';
+import './browser-globals';
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 

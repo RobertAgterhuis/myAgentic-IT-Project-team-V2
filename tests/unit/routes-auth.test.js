@@ -414,7 +414,9 @@ describe('routes/auth handlers', () => {
         await handler(req, res);
 
         expect(res.statusCode).toBe(302);
-        expect(res._headers['Location']).toBe('/login?error=auth_failed');
+        expect(res._headers['Location']).toBe(
+          '/login?error=auth_failed&error_detail=GitHub%20token%20exchange%20failed%3A%20500'
+        );
       } finally {
         globalThis.fetch = origFetch;
       }

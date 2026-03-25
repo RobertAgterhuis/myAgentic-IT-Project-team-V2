@@ -237,6 +237,32 @@ describe('Redis pub/sub SSE manager — module exports', () => {
     manager.destroy();
   });
 
+  it('broadcasts locally immediately, publishes with origin metadata, and ignores loopback redis messages', async () => {
+    const { createRedisPubSubSSEManager } = await import('../../src/webapp/sse-manager-redis');
+    const { publisher, subscriber } = createPubSubDouble();
+    const manager = createRedisPubSubSSEManager({ publisher, subscriber, heartbeatMs: 1_000 });
+    const client = createSseClient();
+
+    manager.addClient(client.req, client.res);
+    manager.broadcast('status', { ok: true });
+    await Promise.resolve();
+
+    expect(client.res.write).toHaveBeenCalledTimes(1);
+    expect(client.res.write).toHaveBeenCalledWith('event: status\ndata: {"ok":true}\n\n');
+    expect(publisher.publish).toHaveBeenCalledTimes(1);
+
+    const [, publishedMessage] = publisher.publish.mock.calls[0];
+    const parsed = JSON.parse(publishedMessage);
+    expect(parsed).toMatchObject({ event: 'status', data: { ok: true } });
+    expect(typeof parsed._origin).toBe('string');
+    expect(parsed._origin.length).toBeGreaterThan(0);
+
+    subscriber.emit('message', 'sse:broadcast', publishedMessage);
+    expect(client.res.write).toHaveBeenCalledTimes(1);
+
+    manager.destroy();
+  });
+
   it('falls back to local broadcast when redis publish fails and cleans up on destroy', async () => {
     const { createRedisPubSubSSEManager } = await import('../../src/webapp/sse-manager-redis');
     const { publisher, subscriber } = createPubSubDouble();
@@ -250,7 +276,7 @@ describe('Redis pub/sub SSE manager — module exports', () => {
 
     expect(publisher.publish).toHaveBeenCalledWith(
       'sse:broadcast',
-      JSON.stringify({ event: 'status', data: { ok: true } })
+      expect.stringContaining('"event":"status"')
     );
     expect(client.res.write).toHaveBeenCalledWith('event: status\ndata: {"ok":true}\n\n');
 

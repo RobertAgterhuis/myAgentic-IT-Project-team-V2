@@ -155,6 +155,7 @@ export function ExecutionTimeline({ events, className }: ExecutionTimelineProps)
           size="sm"
           onClick={stepBack}
           disabled={selectedIdx === 0 || selectedIdx === null}
+          aria-label="Previous timeline step"
         >
           <SkipBack className="size-3" />
         </Button>
@@ -172,6 +173,7 @@ export function ExecutionTimeline({ events, className }: ExecutionTimelineProps)
           size="sm"
           onClick={stepForward}
           disabled={selectedIdx === sorted.length - 1}
+          aria-label="Next timeline step"
         >
           <SkipForward className="size-3" />
         </Button>

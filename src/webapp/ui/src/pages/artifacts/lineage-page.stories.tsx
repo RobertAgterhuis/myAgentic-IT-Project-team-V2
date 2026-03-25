@@ -59,8 +59,24 @@ export const Populated: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get('/api/artifacts', () => HttpResponse.json(artifactsData)),
-        http.get('/api/artifacts/:id/lineage', () => HttpResponse.json(lineageData)),
+        http.get('/api/v1/artifacts', () =>
+          HttpResponse.json({
+            ok: true,
+            count: artifactsData.artifacts.length,
+            artifacts: artifactsData.artifacts.map((artifact, idx) => ({
+              id: artifact.id,
+              artifact_type: artifact.type,
+              stage: artifact.phase?.toUpperCase() || 'UNKNOWN',
+              status: 'VALID',
+              content_hash: `hash-${idx}`,
+              created_at: '2025-01-15T10:00:00Z',
+              updated_at: '2025-01-15T10:00:00Z',
+            })),
+          })
+        ),
+        http.get('/api/v1/artifacts/:id/lineage', () =>
+          HttpResponse.json({ ok: true, lineage: lineageData })
+        ),
       ],
     },
   },
@@ -69,7 +85,11 @@ export const Populated: Story = {
 export const Empty: Story = {
   parameters: {
     msw: {
-      handlers: [http.get('/api/artifacts', () => HttpResponse.json({ artifacts: [] }))],
+      handlers: [
+        http.get('/api/v1/artifacts', () =>
+          HttpResponse.json({ ok: true, count: 0, artifacts: [] })
+        ),
+      ],
     },
   },
 };
@@ -78,7 +98,7 @@ export const Loading: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get('/api/artifacts', async () => {
+        http.get('/api/v1/artifacts', async () => {
           await delay('infinite');
           return new HttpResponse(null);
         }),
@@ -91,7 +111,7 @@ export const Error: Story = {
   parameters: {
     msw: {
       handlers: [
-        http.get('/api/artifacts', () =>
+        http.get('/api/v1/artifacts', () =>
           HttpResponse.json({ error: 'Not Found' }, { status: 404 })
         ),
       ],

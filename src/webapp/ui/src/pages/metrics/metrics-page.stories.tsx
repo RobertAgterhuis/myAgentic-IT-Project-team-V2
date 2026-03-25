@@ -39,12 +39,36 @@ const driftData = {
 };
 
 const progressData = {
+  active: true,
+  session: null,
   phases: [
-    { id: 'PHASE-1', label: 'Requirements', total: 5, done: 5 },
-    { id: 'PHASE-2', label: 'Architecture', total: 5, done: 3 },
-    { id: 'PHASE-3', label: 'Experience', total: 5, done: 0 },
+    { key: 'PHASE-1', label: 'Requirements', status: 'done', agents: [], total: 5, done: 5 },
+    { key: 'PHASE-2', label: 'Architecture', status: 'active', agents: [], total: 5, done: 3 },
+    { key: 'PHASE-3', label: 'Experience', status: 'pending', agents: [], total: 5, done: 0 },
   ],
   sprints: { total: 2, statuses: { completed: 1, active: 1 } },
+  command: null,
+};
+
+const dashboardMetricsData = {
+  http_requests: { label: 'HTTP Requests', value: 18420, trend: 'up', period: '+6%' },
+  error_rate: { label: 'Error Rate', value: '0.6%', trend: 'down', period: '-0.2%' },
+  response_time: { label: 'Avg Response', value: '142ms', trend: 'down', period: '-8%' },
+};
+
+const analyticsTrendsData = {
+  velocity: [],
+  dora: {
+    lead_time: [],
+    deployment_frequency: [],
+    change_failure_rate: [],
+    mttr: [],
+  },
+  sprints: {
+    planned_points: [],
+    completed_points: [],
+    defects_found: [],
+  },
 };
 
 export const Populated: Story = {
@@ -56,15 +80,20 @@ export const Populated: Story = {
         http.get('/api/dashboard/metrics', () =>
           HttpResponse.json({
             ok: true,
-            data: {
-              response_time: { label: 'Avg Response', value: 142, trend: 'down', period: '-8%' },
-              throughput: { label: 'Throughput', value: 1250, trend: 'up', period: '+12%' },
-            },
+            data: dashboardMetricsData,
             timestamp: new Date().toISOString(),
           })
         ),
-        http.get('/api/analytics/trends', () => HttpResponse.json({ velocity: [] })),
-        http.get('/api/analytics/agents', () => HttpResponse.json({ agents: [] })),
+        http.get('/api/v1/analytics/trends', () =>
+          HttpResponse.json({
+            ok: true,
+            data: analyticsTrendsData,
+            timestamp: new Date().toISOString(),
+          })
+        ),
+        http.get('/api/v1/analytics/agents', () =>
+          HttpResponse.json({ ok: true, data: [], count: 0, timestamp: new Date().toISOString() })
+        ),
       ],
     },
   },
@@ -84,10 +113,22 @@ export const NoDrift: Story = {
         ),
         http.get('/api/progress', () => HttpResponse.json(progressData)),
         http.get('/api/dashboard/metrics', () =>
-          HttpResponse.json({ ok: true, data: {}, timestamp: new Date().toISOString() })
+          HttpResponse.json({
+            ok: true,
+            data: dashboardMetricsData,
+            timestamp: new Date().toISOString(),
+          })
         ),
-        http.get('/api/analytics/trends', () => HttpResponse.json({ velocity: [] })),
-        http.get('/api/analytics/agents', () => HttpResponse.json({ agents: [] })),
+        http.get('/api/v1/analytics/trends', () =>
+          HttpResponse.json({
+            ok: true,
+            data: analyticsTrendsData,
+            timestamp: new Date().toISOString(),
+          })
+        ),
+        http.get('/api/v1/analytics/agents', () =>
+          HttpResponse.json({ ok: true, data: [], count: 0, timestamp: new Date().toISOString() })
+        ),
       ],
     },
   },

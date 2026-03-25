@@ -46,6 +46,20 @@ describe('TopNavigation', () => {
     expect(screen.getByText('Offline')).toBeInTheDocument();
   });
 
+  it('shows reconnect countdown and attempt when recovery metadata is available', () => {
+    const now = Date.now();
+    renderNavigation({
+      connectionStatus: 'connecting',
+      connectionRecovery: {
+        attempt: 2,
+        nextRetryAt: now + 3000,
+        lastDelayMs: 3000,
+      },
+    });
+
+    expect(screen.getByText(/Reconnecting in/)).toBeInTheDocument();
+  });
+
   it('hamburger button calls onMenuToggle', async () => {
     const user = userEvent.setup();
     const onMenuToggle = vi.fn();

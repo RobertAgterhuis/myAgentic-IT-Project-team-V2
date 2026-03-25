@@ -139,6 +139,7 @@ export function AppLayout() {
   const openHelpForRoute = useUIStore((s) => s.openHelpForRoute);
   const toggleChat = useUIStore((s) => s.toggleChat);
   const connectionStatus = useUIStore((s) => s.connectionStatus);
+  const connectionRecovery = useUIStore((s) => s.connectionRecovery);
 
   const { data: orchestratorStatus } = useOrchestratorStatus();
 
@@ -192,6 +193,7 @@ export function AppLayout() {
           projectName="Agentic SDLC"
           orchestratorState={orchestratorStatus?.state}
           connectionStatus={connectionStatus}
+          connectionRecovery={connectionRecovery}
           onMenuToggle={toggleSidebar}
           onHelpClick={() => openHelpForRoute(resolveHelpRouteSlug(location.pathname))}
           onChatClick={toggleChat}

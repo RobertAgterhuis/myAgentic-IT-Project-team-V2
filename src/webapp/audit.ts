@@ -3,6 +3,10 @@
 import path from 'path';
 import fs from 'fs';
 import Database from 'better-sqlite3';
+import {
+  applySqliteConcurrencyPragmas,
+  resolveSqliteConcurrencyConfig,
+} from '../../platform/engine/sqlite-concurrency';
 
 /* ── Mutation Audit Trail (SP-R2-007-005 / GR-DATA-004) ───────── *
  * Append-only JSON Lines log of all data mutations.
@@ -74,6 +78,7 @@ export class AuditTrail {
       this._ensureDir();
       const db = new Database(this._sqlitePath);
       try {
+        applySqliteConcurrencyPragmas(db, resolveSqliteConcurrencyConfig());
         db.exec(`
           CREATE TABLE IF NOT EXISTS audit_events (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -117,6 +122,7 @@ export class AuditTrail {
     try {
       const db = new Database(this._sqlitePath);
       try {
+        applySqliteConcurrencyPragmas(db, resolveSqliteConcurrencyConfig());
         const previous = db
           .prepare('SELECT record_hash FROM audit_events ORDER BY id DESC LIMIT 1')
           .get() as { record_hash: string } | undefined;

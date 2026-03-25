@@ -36,16 +36,7 @@ const MIME_TYPES: Record<string, string> = {
 export function createStaticHandler(options: CreateStaticHandlerOptions) {
   const { webappDir, getStore, safePath, setSecurityHeaders, notFoundText } = options;
   const uiDist = path.join(webappDir, 'ui', 'dist');
-
-  let cachedSpaHtml: Buffer | null = null;
-  try {
-    const spaPath = path.join(uiDist, 'index.html');
-    if (getStore().exists(spaPath)) {
-      cachedSpaHtml = Buffer.from(getStore().readFile(spaPath));
-    }
-  } catch {
-    // React build not present — fallback handler returns 404 for non-API routes.
-  }
+  const spaPath = path.join(uiDist, 'index.html');
 
   function serveDistFile(pathname: string, reply: FastifyReply): boolean {
     try {
@@ -56,13 +47,18 @@ export function createStaticHandler(options: CreateStaticHandlerOptions) {
       const ext = path.extname(filePath).toLowerCase();
       const mime = MIME_TYPES[ext] || 'application/octet-stream';
       const isHashed = pathname.startsWith('/assets/');
+      const isHtml = ext === '.html';
 
       const raw = reply.raw;
       setSecurityHeaders(raw);
       raw.writeHead(200, {
         'Content-Type': mime,
         'Content-Length': Buffer.byteLength(content),
-        'Cache-Control': isHashed ? 'public, max-age=31536000, immutable' : 'public, max-age=3600',
+        'Cache-Control': isHtml
+          ? 'no-store'
+          : isHashed
+            ? 'public, max-age=31536000, immutable'
+            : 'public, max-age=3600',
       });
       raw.end(content);
       reply.hijack();
@@ -81,18 +77,21 @@ export function createStaticHandler(options: CreateStaticHandlerOptions) {
     // SPA fallback — serve index.html for client-side routing
     const raw = reply.raw;
     setSecurityHeaders(raw);
-    if (!cachedSpaHtml) {
+    if (!getStore().exists(spaPath)) {
       raw.writeHead(404, { 'Content-Type': 'text/plain' });
       raw.end(notFoundText);
       reply.hijack();
       return;
     }
 
+    const spaHtml = Buffer.from(getStore().readFile(spaPath));
+
     raw.writeHead(200, {
       'Content-Type': 'text/html; charset=utf-8',
-      'Content-Length': cachedSpaHtml.length,
+      'Content-Length': spaHtml.length,
+      'Cache-Control': 'no-store',
     });
-    raw.end(cachedSpaHtml);
+    raw.end(spaHtml);
     reply.hijack();
   };
 }

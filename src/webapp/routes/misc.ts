@@ -83,6 +83,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     _ragStore,
     getStorageProvider,
     STORAGE_PROVIDER: _storageProviderType,
+    _getSemanticMemorySweeperStatus,
   } = ctx;
 
   const svc = new SessionService(toServiceContext(ctx));
@@ -328,6 +329,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     sseConnections: () => sseManager.size,
     getStore,
     getStorageProvider,
+    getSemanticMemorySweeperStatus: _getSemanticMemorySweeperStatus,
   });
 
   registerStaticFallback({

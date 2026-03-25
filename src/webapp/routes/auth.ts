@@ -276,8 +276,13 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const redirectTo = safeRedirect(stateResult.redirectTo);
         return reply.redirect(redirectTo, 302);
       } catch (err) {
-        structuredLog('error', 'oauth_callback_failed', { error: (err as Error).message });
-        return reply.redirect('/login?error=auth_failed', 302);
+        const errorMessage = (err as Error).message;
+        structuredLog('error', 'oauth_callback_failed', { error: errorMessage });
+        const redirectUrl =
+          process.env.NODE_ENV === 'production'
+            ? '/login?error=auth_failed'
+            : appendQuery('/login?error=auth_failed', 'error_detail', errorMessage);
+        return reply.redirect(redirectUrl, 302);
       }
     }
   );
@@ -417,8 +422,13 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const redirectTo = safeRedirect(stateResult.redirectTo);
         return reply.redirect(redirectTo, 302);
       } catch (err) {
-        structuredLog('error', 'entra_callback_failed', { error: (err as Error).message });
-        return reply.redirect('/login?error=auth_failed', 302);
+        const errorMessage = (err as Error).message;
+        structuredLog('error', 'entra_callback_failed', { error: errorMessage });
+        const redirectUrl =
+          process.env.NODE_ENV === 'production'
+            ? '/login?error=auth_failed'
+            : appendQuery('/login?error=auth_failed', 'error_detail', errorMessage);
+        return reply.redirect(redirectUrl, 302);
       }
     }
   );

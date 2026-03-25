@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { ModalDialog } from '@/components/ui/modal-dialog';
 import { InputField } from '@/components/ui/input-field';
+import { AsyncMutationFeedback } from '@/components/ui/async-mutation-feedback';
 import { useCreateWorkspace } from '@/hooks';
 
 export function CreateWorkspaceDialog({
@@ -54,6 +55,13 @@ export function CreateWorkspaceDialog({
       }
     >
       <div className="space-y-4">
+        <AsyncMutationFeedback
+          mutation={createWorkspace}
+          pendingMessage="Creating workspace..."
+          successMessage="Workspace created."
+          errorMessagePrefix="Workspace creation failed."
+          onRetry={handleSubmit}
+        />
         <InputField
           label="Workspace ID"
           value={id}

@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { TopNavigation } from './top-navigation';
+import { withProviders } from '@/test/storybook-decorators';
 
 const meta = {
   title: 'UI/TopNavigation',
   component: TopNavigation,
   tags: ['autodocs'],
+  decorators: [withProviders],
   parameters: { layout: 'fullscreen' },
 } satisfies Meta<typeof TopNavigation>;
 

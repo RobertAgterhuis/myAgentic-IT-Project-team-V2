@@ -94,7 +94,7 @@ function createMemoryStore() {
   };
 }
 
-function createTestExecutor(adapters = []) {
+function createTestExecutor(adapters = [], options = {}) {
   const registry = new AdapterRegistry();
   for (const adapter of adapters) {
     registry.register(adapter);
@@ -105,6 +105,7 @@ function createTestExecutor(adapters = []) {
     store,
     cachePath: 'test-tool-cache.json',
     defaultTimeout: 5000,
+    ...options,
   });
 }
 
@@ -256,6 +257,84 @@ describe('ToolExecutor', () => {
 
       expect(result.success).toBe(false);
       expect(result.error).toContain('timed out');
+    });
+  });
+
+  describe('circuit breaker', () => {
+    it('opens circuit after consecutive failures and fast-fails during cooldown', async () => {
+      let callCount = 0;
+      const flaky = new MockAdapter('flaky', 'GIT');
+      flaky.addOp('status', async () => {
+        callCount += 1;
+        throw new Error('upstream failure');
+      });
+
+      const executor = createTestExecutor([flaky], {
+        circuitBreakerFailureThreshold: 2,
+        circuitBreakerCooldownMs: 500,
+      });
+
+      const first = await executor.execute({ target: 'flaky', operation: 'status', params: {} });
+      expect(first.success).toBe(false);
+
+      const second = await executor.execute({ target: 'flaky', operation: 'status', params: {} });
+      expect(second.success).toBe(false);
+
+      const third = await executor.execute({ target: 'flaky', operation: 'status', params: {} });
+      expect(third.success).toBe(false);
+      expect(third.error).toContain('CIRCUIT_OPEN');
+      expect(callCount).toBe(2);
+    });
+
+    it('closes circuit after cooldown and allows execution again', async () => {
+      let callCount = 0;
+      const flaky = new MockAdapter('flaky', 'GIT');
+      flaky.addOp('status', async () => {
+        callCount += 1;
+        throw new Error('still failing');
+      });
+
+      const executor = createTestExecutor([flaky], {
+        circuitBreakerFailureThreshold: 1,
+        circuitBreakerCooldownMs: 50,
+      });
+
+      const first = await executor.execute({ target: 'flaky', operation: 'status', params: {} });
+      expect(first.success).toBe(false);
+
+      const blocked = await executor.execute({ target: 'flaky', operation: 'status', params: {} });
+      expect(blocked.success).toBe(false);
+      expect(blocked.error).toContain('CIRCUIT_OPEN');
+
+      await new Promise((resolve) => setTimeout(resolve, 80));
+
+      const retried = await executor.execute({ target: 'flaky', operation: 'status', params: {} });
+      expect(retried.success).toBe(false);
+      expect(retried.error).not.toContain('CIRCUIT_OPEN');
+      expect(callCount).toBe(2);
+    });
+  });
+
+  describe('backpressure', () => {
+    it('rejects requests when max concurrent executions is exceeded', async () => {
+      const slow = new MockAdapter('slow', 'GIT');
+      slow.addOp(
+        'wait',
+        () => new Promise((resolve) => setTimeout(() => resolve({ ok: true }), 80))
+      );
+
+      const executor = createTestExecutor([slow], {
+        maxConcurrentExecutions: 1,
+      });
+
+      const firstPromise = executor.execute({ target: 'slow', operation: 'wait', params: {} });
+
+      const second = await executor.execute({ target: 'slow', operation: 'wait', params: {} });
+      expect(second.success).toBe(false);
+      expect(second.error).toContain('BACKPRESSURE_ACTIVE');
+
+      const first = await firstPromise;
+      expect(first.success).toBe(true);
     });
   });
 

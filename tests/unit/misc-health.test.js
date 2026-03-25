@@ -58,6 +58,7 @@ describe('registerHealthRoutes', () => {
       storageProviderType: 'sqlite',
       sseConnections: () => 4,
       getStore: () => ({ exists: () => true }),
+      getSemanticMemorySweeperStatus: () => ({ enabled: true, running: true, intervalMs: 300000 }),
       getStorageProvider: () => ({
         name: 'sqlite',
         health: async () => ({ status: 'healthy', provider: 'sqlite', latencyMs: 8 }),
@@ -72,6 +73,11 @@ describe('registerHealthRoutes', () => {
     expect(reply.payload.status).toBe('ok');
     expect(reply.payload.version).toBe('1.2.3');
     expect(reply.payload.sse_connections).toBe(4);
+    expect(reply.payload.semantic_memory_sweeper).toEqual({
+      enabled: true,
+      running: true,
+      intervalMs: 300000,
+    });
     expect(reply.payload.storage).toEqual({ status: 'healthy', provider: 'sqlite', latencyMs: 8 });
   });
 

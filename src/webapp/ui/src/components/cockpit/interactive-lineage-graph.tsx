@@ -173,8 +173,19 @@ export function InteractiveLineageGraph({
 
   const handleMouseUp = useCallback(() => setIsPanning(false), []);
 
+  const handleNodeActivate = useCallback(
+    (id: string) => {
+      onNodeClick?.(id);
+    },
+    [onNodeClick]
+  );
+
   return (
-    <div className={`overflow-hidden rounded-lg border bg-card ${className ?? ''}`}>
+    <div
+      className={`overflow-hidden rounded-lg border bg-card ${className ?? ''}`}
+      role="group"
+      aria-label="Artifact lineage graph"
+    >
       <svg
         ref={svgRef}
         width="100%"
@@ -186,9 +197,8 @@ export function InteractiveLineageGraph({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
         className="cursor-grab active:cursor-grabbing"
-        role="img"
-        aria-label="Artifact lineage graph"
       >
+        <title>Artifact lineage graph</title>
         <g transform={`translate(${transform.x},${transform.y}) scale(${transform.scale})`}>
           {/* Edges */}
           {edges.map((edge, i) => {
@@ -244,7 +254,13 @@ export function InteractiveLineageGraph({
               <g
                 key={node.id}
                 transform={`translate(${x},${y})`}
-                onClick={() => onNodeClick?.(node.id)}
+                onClick={() => handleNodeActivate(node.id)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    handleNodeActivate(node.id);
+                  }
+                }}
                 onMouseEnter={() => setHoveredNode(node.id)}
                 onMouseLeave={() => setHoveredNode(null)}
                 className="cursor-pointer"

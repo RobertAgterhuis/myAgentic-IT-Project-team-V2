@@ -11,6 +11,10 @@ import path from 'path';
 import fs from 'fs';
 import Database from 'better-sqlite3';
 import type { Database as DatabaseType } from 'better-sqlite3';
+import {
+  applySqliteConcurrencyPragmas,
+  resolveSqliteConcurrencyConfig,
+} from '../../platform/engine/sqlite-concurrency';
 import type { IncomingMessage, ServerResponse } from 'http';
 
 /* ── Types ────────────────────────────────────────────────────── */
@@ -144,8 +148,7 @@ export class AuthStore {
     const dir = path.dirname(dbPath);
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     this._db = new Database(dbPath);
-    this._db.pragma('journal_mode = WAL');
-    this._db.pragma('foreign_keys = ON');
+    applySqliteConcurrencyPragmas(this._db, resolveSqliteConcurrencyConfig());
     this._migrate();
   }
 
@@ -195,13 +198,63 @@ export class AuthStore {
         (column) => column.name
       )
     );
-    if (!userColumns.has('provider_account_id')) {
+    if (userColumns.has('github_id')) {
+      this._db.exec('PRAGMA foreign_keys = OFF');
+      try {
+        this._db.exec(`
+          CREATE TABLE IF NOT EXISTS users_migrated (
+            id TEXT PRIMARY KEY NOT NULL,
+            provider_account_id TEXT UNIQUE,
+            email TEXT NOT NULL DEFAULT '',
+            name TEXT NOT NULL DEFAULT '',
+            avatar_url TEXT NOT NULL DEFAULT '',
+            role TEXT NOT NULL DEFAULT 'viewer' CHECK(role IN ('admin','operator','viewer')),
+            primary_provider TEXT NOT NULL DEFAULT 'github',
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            last_login TEXT NOT NULL DEFAULT (datetime('now'))
+          );
+          INSERT INTO users_migrated (
+            id,
+            provider_account_id,
+            email,
+            name,
+            avatar_url,
+            role,
+            primary_provider,
+            created_at,
+            last_login
+          )
+          SELECT
+            id,
+            COALESCE(provider_account_id, CAST(github_id AS TEXT)),
+            COALESCE(email, ''),
+            COALESCE(name, ''),
+            COALESCE(avatar_url, ''),
+            COALESCE(role, 'viewer'),
+            COALESCE(primary_provider, 'github'),
+            COALESCE(created_at, datetime('now')),
+            COALESCE(last_login, datetime('now'))
+          FROM users;
+          DROP TABLE users;
+          ALTER TABLE users_migrated RENAME TO users;
+          CREATE UNIQUE INDEX IF NOT EXISTS idx_users_provider_account_id ON users(provider_account_id);
+        `);
+      } finally {
+        this._db.exec('PRAGMA foreign_keys = ON');
+      }
+    }
+    const migratedUserColumns = new Set(
+      (this._db.prepare('PRAGMA table_info(users)').all() as Array<{ name: string }>).map(
+        (column) => column.name
+      )
+    );
+    if (!migratedUserColumns.has('provider_account_id')) {
       this._db.exec('ALTER TABLE users ADD COLUMN provider_account_id TEXT');
     }
-    if (!userColumns.has('primary_provider')) {
+    if (!migratedUserColumns.has('primary_provider')) {
       this._db.exec("ALTER TABLE users ADD COLUMN primary_provider TEXT NOT NULL DEFAULT 'github'");
     }
-    if (userColumns.has('github_id')) {
+    if (migratedUserColumns.has('github_id')) {
       this._db.exec(
         "UPDATE users SET provider_account_id = COALESCE(provider_account_id, CAST(github_id AS TEXT)), primary_provider = COALESCE(primary_provider, 'github') WHERE github_id IS NOT NULL"
       );

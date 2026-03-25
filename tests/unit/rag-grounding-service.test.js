@@ -97,4 +97,51 @@ describe('RagGroundingService', () => {
     const collectionsQueried = ragStore.query.mock.calls.map((call) => call[0]);
     expect(collectionsQueried).toContain('sprint-artifacts--acme-client');
   });
+
+  test('includes semantic memory matches in agent grounding via the unified knowledge provider', async () => {
+    const ragStore = {
+      query: vi.fn().mockResolvedValue([]),
+    };
+
+    const embedder = {
+      embedText: vi.fn().mockResolvedValue([0.1, 0.2, 0.3]),
+    };
+
+    const semanticMemoryStore = {
+      list: vi.fn(async (tier) => {
+        if (tier === 'project') {
+          return [
+            {
+              key: 'brand-voice',
+              content: 'Prefer confident, plain language for launch messaging.',
+              writtenAt: Date.now(),
+              topic: 'brand',
+            },
+          ];
+        }
+        return [];
+      }),
+    };
+
+    const svc = new RagGroundingService({
+      projectRoot: '/tmp/project',
+      ragStore,
+      embeddingProvider: embedder,
+      semanticMemoryStore,
+    });
+
+    const bundle = await svc.buildAgentGrounding({
+      agentId: '14',
+      agentName: 'Brand Strategist',
+      phase: 'PHASE_4',
+      predecessorOutputs: {
+        '/tmp/project/BusinessDocs/Phase4/14-brand.md':
+          'Prior launch tone and style notes reference confident language.',
+      },
+    });
+
+    expect(bundle).toBeTruthy();
+    expect(bundle.collections).toContain('semantic-memory');
+    expect(bundle.matches.some((match) => match.collection === 'semantic-memory')).toBe(true);
+  });
 });

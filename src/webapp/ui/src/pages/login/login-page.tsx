@@ -36,6 +36,7 @@ interface AuthValidationResult {
 
 export default function LoginPage() {
   const loading = useAuthStore((s) => s.loading);
+  const setLoading = useAuthStore((s) => s.setLoading);
   const [authStatus, setAuthStatus] = useState<AuthStatus>({
     available: true,
     githubEnabled: true,
@@ -47,6 +48,8 @@ export default function LoginPage() {
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
 
   const search = new URLSearchParams(window.location.search);
+  const error = search.get('error');
+  const errorDetail = search.get('error_detail');
   const reason = search.get('reason');
   const reasonMessage =
     reason === 'session-expired'
@@ -54,10 +57,22 @@ export default function LoginPage() {
       : reason === 'auth-required'
         ? 'Sign in is required to access that page.'
         : null;
+  const errorMessage =
+    error === 'auth_failed'
+      ? 'Authentication failed during the provider callback.'
+      : error === 'invalid_state'
+        ? 'Authentication state validation failed. Start the sign-in flow again.'
+        : error === 'missing_params'
+          ? 'Authentication callback was missing required parameters.'
+          : null;
 
   const checkAuthAvailability = useCallback(async () => {
     try {
       const response = await fetch('/api/auth/me', { credentials: 'include' });
+      if (response.status === 200) {
+        window.location.replace('/');
+        return;
+      }
       if (response.status === 503) {
         setAuthStatus({
           available: false,
@@ -66,7 +81,7 @@ export default function LoginPage() {
           error: 'Authentication is not configured on this instance.',
         });
         return;
-      } else if (response.status === 200 || response.status === 401) {
+      } else if (response.status === 401) {
         // Auth is up — check which providers are configured
         try {
           const provRes = await fetch('/api/auth/providers', { credentials: 'include' });
@@ -98,8 +113,10 @@ export default function LoginPage() {
         entraEnabled: false,
         error: 'Unable to connect to authentication service.',
       });
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  }, [setLoading]);
 
   useEffect(() => {
     checkAuthAvailability();
@@ -107,11 +124,13 @@ export default function LoginPage() {
 
   function handleLogin() {
     if (!authStatus.available) return;
+    setLoading(true);
     window.location.href = '/api/auth/login';
   }
 
   function handleEntraLogin() {
     if (!authStatus.available) return;
+    setLoading(true);
     window.location.href = '/api/auth/entra/login';
   }
 
@@ -183,6 +202,20 @@ export default function LoginPage() {
                 <div className="space-y-1">
                   <Text className="font-medium">Re-authentication required</Text>
                   <Text className="text-sm">{reasonMessage}</Text>
+                </div>
+              </AlertBanner>
+            )}
+
+            {errorMessage && (
+              <AlertBanner variant="error" icon={<AlertTriangle className="size-4" />}>
+                <div className="space-y-1">
+                  <Text className="font-medium">Sign-in failed</Text>
+                  <Text className="text-sm">{errorMessage}</Text>
+                  {errorDetail && (
+                    <Text className="text-xs break-all text-muted-foreground">
+                      Detail: {errorDetail}
+                    </Text>
+                  )}
                 </div>
               </AlertBanner>
             )}

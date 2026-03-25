@@ -40,15 +40,7 @@ export interface StaticHandler {
 
 export function createStaticHandler(rootDir: string, options: StaticHandlerOptions): StaticHandler {
   const { safePath: safe, exists, readFile, setSecurityHeaders: setHeaders, baseUrl } = options;
-
-  // Cache index.html at startup for SPA fallback
-  let cachedSpaHtml: Buffer | null = null;
-  try {
-    const spaPath = path.join(rootDir, 'index.html');
-    if (exists(spaPath)) cachedSpaHtml = Buffer.from(readFile(spaPath));
-  } catch {
-    /* SPA build not present */
-  }
+  const spaPath = path.join(rootDir, 'index.html');
 
   function serveDistFile(pathname: string, res: http.ServerResponse): boolean {
     try {
@@ -58,11 +50,16 @@ export function createStaticHandler(rootDir: string, options: StaticHandlerOptio
       const ext = path.extname(filePath).toLowerCase();
       const mime = MIME_TYPES[ext] || 'application/octet-stream';
       const isHashed = pathname.startsWith('/assets/');
+      const isHtml = ext === '.html';
       setHeaders(res);
       res.writeHead(200, {
         'Content-Type': mime,
         'Content-Length': Buffer.byteLength(content),
-        'Cache-Control': isHashed ? 'public, max-age=31536000, immutable' : 'public, max-age=3600',
+        'Cache-Control': isHtml
+          ? 'no-store'
+          : isHashed
+            ? 'public, max-age=31536000, immutable'
+            : 'public, max-age=3600',
       });
       res.end(content);
       return true;
@@ -79,16 +76,18 @@ export function createStaticHandler(rootDir: string, options: StaticHandlerOptio
 
     // SPA fallback
     setHeaders(res);
-    if (!cachedSpaHtml) {
+    if (!exists(spaPath)) {
       res.writeHead(404, { 'Content-Type': 'text/plain' });
       res.end('Not found');
       return;
     }
+    const spaHtml = Buffer.from(readFile(spaPath));
     res.writeHead(200, {
       'Content-Type': 'text/html; charset=utf-8',
-      'Content-Length': cachedSpaHtml.length,
+      'Content-Length': spaHtml.length,
+      'Cache-Control': 'no-store',
     });
-    res.end(cachedSpaHtml);
+    res.end(spaHtml);
   }
 
   return { serve };

@@ -444,6 +444,7 @@ export class AgentExecutionService {
       projectRoot: this._svc.projectRoot,
       ragStore: this._svc.ragStore,
       embeddingProvider: this._svc.embeddingProvider,
+      semanticMemoryStore: this._svc.semanticMemoryStore,
     });
 
     return grounding.buildAgentGrounding({

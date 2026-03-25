@@ -11,6 +11,13 @@ import path from 'path';
 import fs from 'fs';
 import Database from 'better-sqlite3';
 import type { Database as DatabaseType } from 'better-sqlite3';
+import {
+  applySqliteConcurrencyPragmas,
+  resolveSqliteConcurrencyConfig,
+  type SqliteConcurrencyConfig,
+  type SqliteJournalMode,
+  type SqliteSynchronousMode,
+} from '../sqlite-concurrency';
 import type {
   StorageProvider,
   Document,
@@ -29,11 +36,15 @@ const COLLECTION_RE = /^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/;
 export interface SQLiteStorageProviderOptions {
   /** Path to the SQLite database file (default: .agentic/data.db). */
   dbPath?: string;
+  journalMode?: SqliteJournalMode;
+  synchronous?: SqliteSynchronousMode;
+  busyTimeoutMs?: number;
 }
 
 export class SQLiteStorageProvider implements StorageProvider {
   readonly name = 'sqlite';
   private _dbPath: string;
+  private _concurrency: SqliteConcurrencyConfig;
   private _db: DatabaseType | null = null;
   private _ensuredTables = new Set<string>();
   private _metrics: StorageMetrics = {
@@ -47,6 +58,11 @@ export class SQLiteStorageProvider implements StorageProvider {
 
   constructor(opts?: SQLiteStorageProviderOptions) {
     this._dbPath = opts?.dbPath || path.join(process.cwd(), '.agentic', 'data.db');
+    this._concurrency = resolveSqliteConcurrencyConfig({
+      journalMode: opts?.journalMode,
+      synchronous: opts?.synchronous,
+      busyTimeoutMs: opts?.busyTimeoutMs,
+    });
   }
 
   // ── Helpers ────────────────────────────────────────────────────
@@ -99,9 +115,7 @@ export class SQLiteStorageProvider implements StorageProvider {
       fs.mkdirSync(dir, { recursive: true });
     }
     this._db = new Database(this._dbPath);
-    this._db.pragma('journal_mode = WAL');
-    this._db.pragma('foreign_keys = ON');
-    this._db.pragma('busy_timeout = 5000');
+    applySqliteConcurrencyPragmas(this._db, this._concurrency);
   }
 
   async close(): Promise<void> {
@@ -231,7 +245,14 @@ export class SQLiteStorageProvider implements StorageProvider {
         status: 'healthy',
         provider: this.name,
         latencyMs: Date.now() - start,
-        details: { dbPath: this._dbPath, walMode: true },
+        details: {
+          dbPath: this._dbPath,
+          journalMode: this._concurrency.journalMode,
+          synchronous: this._concurrency.synchronous,
+          busyTimeoutMs: this._concurrency.busyTimeoutMs,
+          connectionModel: this._concurrency.connectionModel,
+          pooling: this._concurrency.pooling,
+        },
       };
     } catch {
       return {

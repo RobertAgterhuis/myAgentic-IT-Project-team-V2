@@ -16,6 +16,10 @@ const { execSync } = require('node:child_process');
 const ROOT = process.cwd();
 const ROOT_COVERAGE_FILE = path.join(ROOT, 'coverage', 'coverage-summary.json');
 const UI_COVERAGE_FILE = path.join(ROOT, 'src/webapp/ui/coverage/coverage-summary.json');
+const RAG_STORE_FILE_PATTERNS = [
+  '/src/webapp/services/rag/rag-store.ts',
+  '\\src\\webapp\\services\\rag\\rag-store.ts',
+];
 
 function fileExists(filePath) {
   return fs.existsSync(filePath);
@@ -65,6 +69,36 @@ function printCoverageTable(label, coverage, isFinal = false) {
   }
 
   return true;
+}
+
+function findRagStoreCoverage(coverage) {
+  if (!coverage || typeof coverage !== 'object') return null;
+
+  for (const [filePath, metrics] of Object.entries(coverage)) {
+    if (filePath === 'total') continue;
+    if (!RAG_STORE_FILE_PATTERNS.some((pattern) => filePath.includes(pattern))) continue;
+    if (!metrics || typeof metrics !== 'object') continue;
+    return { filePath, metrics };
+  }
+
+  return null;
+}
+
+function printRagStoreCoverage(coverage) {
+  console.log('\n🧠 RAG Store Coverage (Visibility)');
+  console.log('─'.repeat(60));
+  const ragStore = findRagStoreCoverage(coverage);
+  if (!ragStore) {
+    console.log('  File not found in coverage summary: src/webapp/services/rag/rag-store.ts');
+    return;
+  }
+
+  const { filePath, metrics } = ragStore;
+  console.log(`  File            : ${filePath}`);
+  console.log(`  Statements      : ${formatMetric(metrics?.statements?.pct)}`);
+  console.log(`  Branches        : ${formatMetric(metrics?.branches?.pct)}`);
+  console.log(`  Functions       : ${formatMetric(metrics?.functions?.pct)}`);
+  console.log(`  Lines           : ${formatMetric(metrics?.lines?.pct)}`);
 }
 
 function logFinal(allPass) {
@@ -120,6 +154,7 @@ console.log('═'.repeat(60));
 
 const rootPass = printCoverageTable('📦 Root (Backend)', rootCoverage);
 const uiPass = printCoverageTable('🎨 UI (Frontend)', uiCoverage, true);
+printRagStoreCoverage(rootCoverage);
 
 // 4. Exit with appropriate code
 const allPass = rootPass && uiPass;

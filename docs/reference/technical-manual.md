@@ -1054,17 +1054,19 @@ The server uses environment variables and sensible defaults. See [src/webapp/REA
 
 Key environment variables:
 
-| Variable           | Default       | Description                                                                    |
-| ------------------ | ------------- | ------------------------------------------------------------------------------ |
-| `PORT`             | `3000`        | HTTP server port (1–65535 validated at startup)                                |
-| `HOST`             | `127.0.0.1`   | Bind address; non-local requires auth or API_KEY                               |
-| `NODE_ENV`         | `development` | Controls startup strictness; `production` enforces storage provider success    |
-| `STORAGE_PROVIDER` | `file`        | Storage backend: `file` (JSON) or `sqlite` (database)                          |
-| `QUEUE_PROVIDER`   | `memory`      | Job queue: `memory` (in-process), `persistent` (disk), `bullmq` (Redis)        |
-| `SESSION_STORE`    | `sqlite`      | Session storage: `sqlite` (embedded) or `redis` (distributed)                  |
-| `REDIS_URL`        | _(unset)_     | Redis connection; if set, enables Redis features; startup fails if unreachable |
-| `TRUST_PROXY`      | `false`       | Trusted proxy configuration (explicit security-by-default)                     |
-| `API_KEY`          | _(unset)_     | API-only authentication for non-local access (minimum 24 characters if set)    |
+| Variable                              | Default                  | Description                                                                    |
+| ------------------------------------- | ------------------------ | ------------------------------------------------------------------------------ |
+| `PORT`                                | `3000`                   | HTTP server port (1–65535 validated at startup)                                |
+| `HOST`                                | `127.0.0.1`              | Bind address; non-local requires auth or API_KEY                               |
+| `NODE_ENV`                            | `development`            | Controls startup strictness; `production` enforces storage provider success    |
+| `STORAGE_PROVIDER`                    | `file`                   | Storage backend: `file` (JSON) or `sqlite` (database)                          |
+| `QUEUE_PROVIDER`                      | `memory`                 | Job queue: `memory` (in-process), `persistent` (disk), `bullmq` (Redis)        |
+| `SESSION_STORE`                       | `sqlite`                 | Session storage: `sqlite` (embedded) or `redis` (distributed)                  |
+| `REDIS_URL`                           | _(unset)_                | Redis connection; if set, enables Redis features; startup fails if unreachable |
+| `TRUST_PROXY`                         | `false`                  | Trusted proxy configuration (explicit security-by-default)                     |
+| `API_KEY`                             | _(unset)_                | API-only authentication for non-local access (minimum 24 characters if set)    |
+| `SEMANTIC_MEMORY_SWEEPER_ENABLED`     | `true` (`false` in test) | Enables background TTL sweeping for semantic memory (`project`/`org` tiers)    |
+| `SEMANTIC_MEMORY_SWEEPER_INTERVAL_MS` | `300000`                 | Background semantic-memory sweep interval in milliseconds                      |
 
 All file paths are computed relative to the repository root. The server expects
 to be launched from the repository root directory or with the correct working

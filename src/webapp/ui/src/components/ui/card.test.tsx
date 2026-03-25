@@ -43,7 +43,8 @@ describe('Card', () => {
       </Card>
     );
     const card = screen.getByRole('button');
-    expect(card).toHaveAttribute('tabindex', '0');
+    await user.tab();
+    expect(card).toHaveFocus();
     await user.click(card);
     expect(onClick).toHaveBeenCalledOnce();
   });

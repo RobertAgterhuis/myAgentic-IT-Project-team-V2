@@ -74,7 +74,7 @@ export const LoadingDestructive: Story = {
 export const IconOnly: Story = {
   args: { variant: 'outline', size: 'icon', children: undefined },
   render: () => (
-    <Button variant="outline" size="icon">
+    <Button variant="outline" size="icon" aria-label="Add item">
       <Plus />
     </Button>
   ),

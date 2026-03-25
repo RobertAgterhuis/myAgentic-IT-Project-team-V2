@@ -27,14 +27,13 @@ export const Low: BadgeStory = {
 };
 
 /* ── Card stories exported separately ── */
-const metaCard = {
+const _metaCard = {
   title: 'Cockpit/ConfidenceCard',
   component: ConfidenceCard,
   tags: ['autodocs'],
 } satisfies Meta<typeof ConfidenceCard>;
-export { metaCard };
 
-type CardStory = StoryObj<typeof metaCard>;
+type CardStory = StoryObj<typeof _metaCard>;
 
 const sampleScore: ConfidenceScore = {
   label: 'Architecture',
@@ -51,14 +50,13 @@ export const CardDefault: CardStory = {
 };
 
 /* ── Panel stories ── */
-const metaPanel = {
+const _metaPanel = {
   title: 'Cockpit/ConfidencePanel',
   component: ConfidencePanel,
   tags: ['autodocs'],
 } satisfies Meta<typeof ConfidencePanel>;
-export { metaPanel };
 
-type PanelStory = StoryObj<typeof metaPanel>;
+type PanelStory = StoryObj<typeof _metaPanel>;
 
 const sessionHealth: ConfidenceScore = {
   label: 'Session Health',

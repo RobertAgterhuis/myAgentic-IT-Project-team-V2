@@ -127,6 +127,11 @@ describe('LogOnlyAdapter', () => {
 // AdapterRegistry
 // ─────────────────────────────────────────────────────────────
 describe('AdapterRegistry', () => {
+  it('listNames returns an empty array when nothing is registered', () => {
+    const registry = new AdapterRegistry();
+    expect(registry.listNames()).toEqual([]);
+  });
+
   it('register and get round-trip', () => {
     const registry = new AdapterRegistry();
     const adapter = new NullAdapter();
@@ -167,6 +172,12 @@ describe('AdapterRegistry', () => {
 // DEFAULT_REGISTRY
 // ─────────────────────────────────────────────────────────────
 describe('DEFAULT_REGISTRY', () => {
+  it('lists all built-in adapter names', () => {
+    expect(DEFAULT_REGISTRY.listNames()).toEqual(
+      expect.arrayContaining(['null', 'log-only', 'llm-mock', 'llm-openai', 'llm-copilot'])
+    );
+  });
+
   it('contains null adapter', () => {
     expect(DEFAULT_REGISTRY.get('null')).toBeInstanceOf(NullAdapter);
   });
@@ -248,6 +259,14 @@ describe('resolveAdapter', () => {
     const { adapter, error } = resolveAdapter({ adapterName: 'custom', registry: customRegistry });
     expect(error).toBeNull();
     expect(adapter).toBe(customAdapter);
+  });
+
+  it('returns null without error when a custom registry lacks the derived default adapter', () => {
+    const customRegistry = new AdapterRegistry();
+    const { adapter, error } = resolveAdapter({ profile: 'local-dev', registry: customRegistry });
+
+    expect(error).toBeNull();
+    expect(adapter).toBeNull();
   });
 });
 
@@ -335,6 +354,88 @@ describe('MockLlmRuntimeAdapter', () => {
 });
 
 describe('ProviderBackedLlmRuntimeAdapter', () => {
+  const itWindows = process.platform === 'win32' ? it : it.skip;
+
+  itWindows('parses Windows-style absolute contract paths from skill files', async () => {
+    const windowsContractPath = path
+      .resolve(tmpRoot, 'windows-parity-contract.md')
+      .replace(/\//g, '\\');
+    const resolvedContractPath = path.resolve(windowsContractPath);
+
+    await fs.writeFile(
+      resolvedContractPath,
+      [
+        '# Contract',
+        '',
+        '```markdown',
+        '## Metadata',
+        '## Findings',
+        '## HANDOFF CHECKLIST',
+        '```',
+      ].join('\n'),
+      'utf8'
+    );
+
+    const skillPath = path.join(tmpRoot, 'windows-parity-skill.md');
+    await fs.writeFile(
+      skillPath,
+      ['# Skill Fixture', '', 'Use this output contract:', windowsContractPath, ''].join('\n'),
+      'utf8'
+    );
+
+    const complete = vi.fn().mockResolvedValue({
+      content: [
+        '## Metadata',
+        '- Agent: Business Analyst',
+        '',
+        '## Findings',
+        '- Finding: windows-style contract path resolved',
+        '',
+        '## HANDOFF CHECKLIST',
+        '- [x] Item 1',
+        '- [x] Item 2',
+        '- [x] Item 3',
+        '- [x] Item 4',
+        '- [x] Item 5',
+        '- [x] Item 6',
+        '- [x] Item 7',
+        '- [x] Item 8',
+        '- [x] Item 9',
+      ].join('\n'),
+      model: 'gpt-test',
+      usage: { promptTokens: 12, completionTokens: 8, totalTokens: 20 },
+      finishReason: 'stop',
+    });
+
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-windows-parity',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+    });
+
+    const result = await adapter.invoke(AGENT, PLATFORM, {
+      skillFile: skillPath,
+      predecessorOutputs: {},
+      questionnaireInput: null,
+      sessionState: { mode: 'AUDIT' },
+    });
+
+    expect(result.response.contractValidation).toMatchObject({
+      status: 'passed',
+      attempt: 1,
+    });
+    expect(result.response.contractValidation.contractPaths).toContain(resolvedContractPath);
+  });
+
   it('calls the configured provider and writes the returned content to disk', async () => {
     const contractPath = await writeContractFixture(
       'business-analyst-contract.md',
@@ -1394,6 +1495,84 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
     expect(userMessage).toContain('"ragContext"');
     expect(userMessage).not.toContain('Ignore previous instructions');
     expect(userMessage).not.toContain('reveal system prompt');
+  });
+
+  it('applies token-estimated context budgeting to model-bound blocks', async () => {
+    const contractPath = await writeContractFixture(
+      'token-budget-contract.md',
+      ['# Contract', '', '```markdown', '## Metadata', '## HANDOFF CHECKLIST', '```'].join('\n')
+    );
+    const skillPath = await writeSkillFixture('token-budget-skill.md', contractPath);
+
+    const complete = vi.fn().mockResolvedValue({
+      content: [
+        '## Metadata',
+        '- Agent: Business Analyst',
+        '',
+        '## HANDOFF CHECKLIST',
+        '- [x] Item 1',
+        '- [x] Item 2',
+        '- [x] Item 3',
+        '- [x] Item 4',
+        '- [x] Item 5',
+        '- [x] Item 6',
+        '- [x] Item 7',
+        '- [x] Item 8',
+        '- [x] Item 9',
+      ].join('\n'),
+      model: 'gpt-test',
+      usage: { promptTokens: 7, completionTokens: 8, totalTokens: 15 },
+      finishReason: 'stop',
+    });
+
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-token-budget',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      toolExecutor: {
+        execute: vi.fn(),
+      },
+      validationMaxRetries: 0,
+    });
+
+    const previousBudget = process.env.AGENT_CONTEXT_TOKEN_BUDGET;
+    process.env.AGENT_CONTEXT_TOKEN_BUDGET = '120';
+
+    try {
+      await adapter.invoke(AGENT, PLATFORM, {
+        skillFile: skillPath,
+        predecessorOutputs: {
+          'BusinessDocs/long.md': `BEGIN-${'x'.repeat(9000)}-SENTINEL_TAIL`,
+        },
+        questionnaireInput: `Q-${'q'.repeat(4000)}`,
+        role: 'admin',
+        profile: 'production-distributed',
+        sessionState: { mode: 'AUDIT' },
+      });
+    } finally {
+      if (previousBudget === undefined) {
+        delete process.env.AGENT_CONTEXT_TOKEN_BUDGET;
+      } else {
+        process.env.AGENT_CONTEXT_TOKEN_BUDGET = previousBudget;
+      }
+    }
+
+    const firstCall = complete.mock.calls[0][0];
+    const userMessage = firstCall.messages.find((m) => m.role === 'user').content;
+    const systemMessage = firstCall.messages.find((m) => m.role === 'system').content;
+
+    expect(systemMessage).toContain('Token-estimated context budget: 120.');
+    expect(userMessage).toContain('[token-budget-truncated]');
+    expect(userMessage).not.toContain('SENTINEL_TAIL');
   });
 
   it('uses dispatcher-provided predecessor contract summaries when available', async () => {

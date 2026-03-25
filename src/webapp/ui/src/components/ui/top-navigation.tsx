@@ -2,6 +2,7 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Input } from './input';
 import { Badge } from './badge';
+import { ConnectionRecoveryStatus } from './connection-recovery-status';
 import {
   CircleHelp,
   Menu,
@@ -11,13 +12,11 @@ import {
   ShieldCheck,
   Sun,
   Users,
-  Wifi,
-  WifiOff,
-  Loader2,
   MessageSquare,
 } from 'lucide-react';
 import { UserMenu } from './user-menu';
 import { useTheme } from './use-theme';
+import type { ConnectionRecoveryState } from '@/stores/ui-store';
 
 const THEME_CYCLE = ['light', 'dark', 'system'] as const;
 type ThemeCycle = (typeof THEME_CYCLE)[number];
@@ -54,28 +53,11 @@ function ThemeToggleButton() {
 
 type ConnectionStatus = 'connected' | 'disconnected' | 'connecting';
 
-const statusBadgeVariant: Record<ConnectionStatus, 'success' | 'error' | 'warning'> = {
-  connected: 'success',
-  disconnected: 'error',
-  connecting: 'warning',
-};
-
-const statusLabel: Record<ConnectionStatus, string> = {
-  connected: 'Live',
-  disconnected: 'Offline',
-  connecting: 'Connecting…',
-};
-
-const statusIcon: Record<ConnectionStatus, React.ReactNode> = {
-  connected: <Wifi className="size-3.5" />,
-  disconnected: <WifiOff className="size-3.5" />,
-  connecting: <Loader2 className="size-3.5 animate-spin" />,
-};
-
 interface TopNavigationProps extends React.ComponentProps<'header'> {
   projectName?: string;
   orchestratorState?: string;
   connectionStatus?: ConnectionStatus;
+  connectionRecovery?: ConnectionRecoveryState;
   onSearch?: (query: string) => void;
   onMenuToggle?: () => void;
   onHelpClick?: () => void;
@@ -86,6 +68,7 @@ function TopNavigation({
   projectName,
   orchestratorState,
   connectionStatus = 'connected',
+  connectionRecovery,
   onSearch,
   onMenuToggle,
   onHelpClick,
@@ -185,11 +168,10 @@ function TopNavigation({
           </Badge>
         )}
 
-        {/* Connection status */}
-        <Badge variant={statusBadgeVariant[connectionStatus]} className="gap-1" dot={false}>
-          {statusIcon[connectionStatus]}
-          <span className="hidden sm:inline">{statusLabel[connectionStatus]}</span>
-        </Badge>
+        <ConnectionRecoveryStatus
+          connectionStatus={connectionStatus}
+          recovery={connectionRecovery}
+        />
 
         <button
           type="button"

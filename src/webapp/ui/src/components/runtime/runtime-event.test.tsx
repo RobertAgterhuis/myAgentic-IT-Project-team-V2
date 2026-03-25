@@ -24,9 +24,9 @@ describe('RuntimeEvent', () => {
     expect(screen.getByText('[Phase 1]')).toBeInTheDocument();
   });
 
-  it('renders as listitem', () => {
+  it('renders as a plain event row', () => {
     render(<RuntimeEvent type="error" timestamp={ts} description="Error" />);
-    expect(screen.getByRole('listitem')).toBeInTheDocument();
+    expect(screen.getByText('Error')).toBeInTheDocument();
   });
 
   it('renders icon for each type', () => {

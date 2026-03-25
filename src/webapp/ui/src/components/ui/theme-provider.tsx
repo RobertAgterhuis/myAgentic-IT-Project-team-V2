@@ -7,7 +7,7 @@ function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     applyTheme(theme);
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && typeof window.localStorage?.setItem === 'function') {
       window.localStorage.setItem(STORAGE_KEY, theme);
     }
   }, [theme]);

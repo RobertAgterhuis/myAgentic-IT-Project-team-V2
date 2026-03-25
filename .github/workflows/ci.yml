@@ -71,13 +71,20 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: |
+            package-lock.json
+            src/webapp/ui/package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm ci --prefix src/webapp/ui
 
       - name: Run unit tests with coverage
         run: npm run test:coverage
+
+      - name: Run frontend unit tests with coverage
+        run: npm run test:coverage --prefix src/webapp/ui
 
       - name: Enforce coverage thresholds
         run: npm run test:coverage:gate
@@ -95,6 +102,18 @@ jobs:
           path: |
             coverage/coverage-final.json
             coverage/coverage-summary.json
+          retention-days: 30
+
+      - name: Upload frontend coverage artifact
+        uses: actions/upload-artifact@v5
+        if: always()
+        with:
+          name: frontend-coverage-report
+          path: |
+            src/webapp/ui/coverage/coverage-final.json
+            src/webapp/ui/coverage/coverage-summary.json
+            src/webapp/ui/coverage/index.html
+          if-no-files-found: warn
           retention-days: 30
 
   regression-gates:

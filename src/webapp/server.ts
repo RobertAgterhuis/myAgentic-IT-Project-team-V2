@@ -3,6 +3,7 @@
 // Agentic SDLC Platform — Fastify-based API server (M30-003, composition root)
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import { getStore } from './store';
 import { FileCache } from './cache';
 import { AuditTrail } from './audit';
@@ -45,6 +46,8 @@ import {
   SNAPSHOT_SYNC_INTERVAL_MS,
   RATE_LIMIT_WINDOW_MS,
   RATE_LIMIT_MAX,
+  SEMANTIC_MEMORY_SWEEPER_INTERVAL_MS,
+  SEMANTIC_MEMORY_SWEEPER_ENABLED,
   STORAGE_PROVIDER,
   STORAGE_PATH,
   REDIS_URL,
@@ -64,6 +67,11 @@ import { RagStore } from './services/rag/rag-store';
 import { RagIndexer } from './services/rag/rag-indexer';
 import { AdaptiveChunker } from './services/rag/text-chunker';
 import { createEmbeddingProvider } from './services/rag/embedding-provider';
+import {
+  SemanticMemoryStore,
+  type MemoryStorage,
+  type MemoryEntry,
+} from '../../platform/engine/semantic-memory';
 
 /* ── Native Fastify route plugins (M30-004) ───────────────────── */
 import { registerRoutes as registerQuestionnaireRoutes } from './routes/questionnaires';
@@ -115,10 +123,18 @@ const RAG_WATCH_ENABLED = String(process.env.RAG_WATCH_ENABLED || 'true').toLowe
 const RAG_BASE_DIR = process.env.RAG_BASE_DIR || path.join(PROJECT_ROOT, '.agentic', 'rag');
 const RAG_DB_PATH = process.env.RAG_DB_PATH || path.join(RAG_BASE_DIR, 'rag.sqlite');
 const RAG_LANCE_DIR = process.env.RAG_LANCE_DIR || path.join(RAG_BASE_DIR, 'vectors');
+const RAG_VECTOR_STORE_STRATEGY =
+  process.env.RAG_VECTOR_STORE_STRATEGY === 'writer-sharded' ? 'writer-sharded' : 'single-table';
+const RAG_VECTOR_WRITER_ID = (process.env.RAG_VECTOR_WRITER_ID || `${os.hostname()}-${process.pid}`)
+  .trim()
+  .replace(/[^a-z0-9_-]+/gi, '_');
 fs.mkdirSync(RAG_BASE_DIR, { recursive: true });
 fs.mkdirSync(RAG_LANCE_DIR, { recursive: true });
 const _embeddingProvider = createEmbeddingProvider();
-const _ragStore = new RagStore(RAG_DB_PATH, RAG_LANCE_DIR);
+const _ragStore = new RagStore(RAG_DB_PATH, RAG_LANCE_DIR, {
+  vectorStrategy: RAG_VECTOR_STORE_STRATEGY,
+  writerId: RAG_VECTOR_WRITER_ID,
+});
 const _ragIndexer = new RagIndexer(_ragStore, _embeddingProvider, new AdaptiveChunker());
 const rateLimiter = createRateLimiter({
   windowMs: RATE_LIMIT_WINDOW_MS,
@@ -148,6 +164,102 @@ let _storageProvider: StorageProvider | null = null;
 function getStorageProvider(): StorageProvider | null {
   return _storageProvider;
 }
+
+class ProviderBackedMemoryStorage implements MemoryStorage {
+  private _getProvider: () => StorageProvider | null;
+
+  constructor(getProvider: () => StorageProvider | null) {
+    this._getProvider = getProvider;
+  }
+
+  async set(collection: string, id: string, data: MemoryEntry): Promise<void> {
+    const provider = this._getProvider();
+    if (!provider) return;
+    await provider.write(collection, id, { id, ...data });
+  }
+
+  async get(collection: string, id: string): Promise<MemoryEntry | null> {
+    const provider = this._getProvider();
+    if (!provider) return null;
+    const doc = await provider.read(collection, id);
+    return toMemoryEntry(id, doc);
+  }
+
+  async list(collection: string): Promise<MemoryEntry[]> {
+    const provider = this._getProvider();
+    if (!provider) return [];
+    const docs = await provider.list(collection);
+    const entries: MemoryEntry[] = [];
+    for (const doc of docs) {
+      const id = typeof doc.id === 'string' && doc.id.trim() ? doc.id : '';
+      const entry = toMemoryEntry(id, doc);
+      if (entry) entries.push(entry);
+    }
+    return entries;
+  }
+
+  async delete(collection: string, id: string): Promise<void> {
+    const provider = this._getProvider();
+    if (!provider) return;
+    await provider.delete(collection, id);
+  }
+}
+
+function toMemoryEntry(id: string, doc: Record<string, unknown> | null): MemoryEntry | null {
+  if (!doc) return null;
+  const key = typeof doc.key === 'string' ? doc.key : id;
+  const content = typeof doc.content === 'string' ? doc.content : null;
+  const writtenAt = typeof doc.writtenAt === 'number' ? doc.writtenAt : null;
+  if (!key || content === null || writtenAt === null) return null;
+
+  return {
+    key,
+    content,
+    writtenAt,
+    ...(typeof doc.topic === 'string' && doc.topic ? { topic: doc.topic } : {}),
+  };
+}
+
+let _semanticMemoryStore: SemanticMemoryStore | null = null;
+
+function getSemanticMemoryStore(): SemanticMemoryStore {
+  if (_semanticMemoryStore) return _semanticMemoryStore;
+  _semanticMemoryStore = new SemanticMemoryStore(
+    new ProviderBackedMemoryStorage(getStorageProvider)
+  );
+  return _semanticMemoryStore;
+}
+
+function startSemanticMemorySweeper(): void {
+  if (!SEMANTIC_MEMORY_SWEEPER_ENABLED) return;
+  if (!getStorageProvider()) return;
+  const started = getSemanticMemoryStore().startSweeper(SEMANTIC_MEMORY_SWEEPER_INTERVAL_MS);
+  if (started) {
+    structuredLog('info', 'semantic_memory_sweeper_started', {
+      intervalMs: SEMANTIC_MEMORY_SWEEPER_INTERVAL_MS,
+    });
+  }
+}
+
+function stopSemanticMemorySweeper(): void {
+  if (!_semanticMemoryStore) return;
+  if (_semanticMemoryStore.stopSweeper()) {
+    structuredLog('info', 'semantic_memory_sweeper_stopped');
+  }
+}
+
+function getSemanticMemorySweeperStatus(): {
+  enabled: boolean;
+  running: boolean;
+  intervalMs: number;
+} {
+  return {
+    enabled: SEMANTIC_MEMORY_SWEEPER_ENABLED,
+    running: _semanticMemoryStore?.isSweeperRunning() ?? false,
+    intervalMs: SEMANTIC_MEMORY_SWEEPER_INTERVAL_MS,
+  };
+}
+
 async function initStorageProvider(): Promise<StorageProvider> {
   const basePath =
     STORAGE_PROVIDER === 'file'
@@ -411,6 +523,8 @@ const ctx: ServerContext = {
   _ragStore,
   _ragIndexer,
   _embeddingProvider,
+  _semanticMemoryStore: getSemanticMemoryStore(),
+  _getSemanticMemorySweeperStatus: getSemanticMemorySweeperStatus,
 };
 
 let _rebuildTimer: ReturnType<typeof setTimeout> | null = null;
@@ -765,6 +879,7 @@ const server = {
           }
         });
         await app.listen({ port, host: resolvedHost });
+        startSemanticMemorySweeper();
         getMcpHealthMonitor().start();
         resolvedCb?.();
         // Emit 'listening' for tests that use server.once('listening', ...)
@@ -779,6 +894,7 @@ const server = {
     return this;
   },
   close(cb?: () => void) {
+    stopSemanticMemorySweeper();
     _app?.close().then(cb).catch(cb);
   },
   get listening() {
@@ -801,8 +917,12 @@ const server = {
   },
 };
 
+const bootstrapAwareGlobal = globalThis as typeof globalThis & {
+  __WEBAPP_BOOTSTRAP_ENTRY?: boolean;
+};
+
 /* istanbul ignore next */
-if (require.main === module) {
+if (require.main === module || bootstrapAwareGlobal.__WEBAPP_BOOTSTRAP_ENTRY) {
   try {
     validateStartupRuntimeProfile();
     assertStartupSecurityModel();
@@ -847,6 +967,7 @@ if (require.main === module) {
     .then(() => initStorageProvider().then(() => createApp()))
     .then(async (app) => {
       await app!.listen({ port: PORT, host: HOST });
+      startSemanticMemorySweeper();
       getMcpHealthMonitor().start();
       structuredLog('info', 'server_started', {
         host: HOST,
@@ -938,6 +1059,7 @@ if (require.main === module) {
     if (_ragWatchDebounceTimer) clearTimeout(_ragWatchDebounceTimer);
     for (const watcher of _ragWatchers) watcher.close();
     _ragWatchers.length = 0;
+    stopSemanticMemorySweeper();
     metricsCollector.flush();
     const sp = getStorageProvider();
     if (sp) sp.close().catch(() => {});

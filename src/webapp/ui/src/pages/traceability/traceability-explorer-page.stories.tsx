@@ -17,6 +17,15 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const googleFontsHandler = http.get(
+  'https://fonts.googleapis.com/*',
+  () =>
+    new HttpResponse('body { --storybook-fonts-mocked: 1; }', {
+      status: 200,
+      headers: { 'content-type': 'text/css' },
+    })
+);
+
 const traceData = {
   entities: [
     {
@@ -44,7 +53,10 @@ const traceData = {
 export const Populated: Story = {
   parameters: {
     msw: {
-      handlers: [http.get('/api/traceability', () => HttpResponse.json(traceData))],
+      handlers: [
+        googleFontsHandler,
+        http.get('/api/traceability', () => HttpResponse.json(traceData)),
+      ],
     },
   },
 };
@@ -53,6 +65,7 @@ export const Empty: Story = {
   parameters: {
     msw: {
       handlers: [
+        googleFontsHandler,
         http.get('/api/traceability', () =>
           HttpResponse.json({
             entities: [],
@@ -69,6 +82,7 @@ export const Loading: Story = {
   parameters: {
     msw: {
       handlers: [
+        googleFontsHandler,
         http.get('/api/traceability', async () => {
           await delay('infinite');
           return new HttpResponse(null);
@@ -82,6 +96,7 @@ export const Error: Story = {
   parameters: {
     msw: {
       handlers: [
+        googleFontsHandler,
         http.get('/api/traceability', () =>
           HttpResponse.json({ error: 'Internal Server Error' }, { status: 500 })
         ),

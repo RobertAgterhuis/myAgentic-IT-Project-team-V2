@@ -8,6 +8,12 @@ import type { SSEEvent } from '@/hooks/use-sse-events';
 
 export type ConnectionStatus = 'connected' | 'disconnected' | 'connecting';
 
+export interface ConnectionRecoveryState {
+  attempt: number;
+  nextRetryAt: number | null;
+  lastDelayMs: number | null;
+}
+
 export interface UIState {
   /* Sidebar / navigation */
   sidebarOpen: boolean;
@@ -40,6 +46,9 @@ export interface UIState {
   /* Real-time connection status */
   connectionStatus: ConnectionStatus;
   setConnectionStatus: (status: ConnectionStatus) => void;
+  connectionRecovery: ConnectionRecoveryState;
+  setConnectionRecovery: (recovery: ConnectionRecoveryState) => void;
+  resetConnectionRecovery: () => void;
 
   /* Last SSE event (for live status widgets) */
   lastSSEEvent: SSEEvent | null;
@@ -84,6 +93,20 @@ export const useUIStore = create<UIState>((set) => ({
 
   connectionStatus: 'connecting',
   setConnectionStatus: (status) => set({ connectionStatus: status }),
+  connectionRecovery: {
+    attempt: 0,
+    nextRetryAt: null,
+    lastDelayMs: null,
+  },
+  setConnectionRecovery: (recovery) => set({ connectionRecovery: recovery }),
+  resetConnectionRecovery: () =>
+    set({
+      connectionRecovery: {
+        attempt: 0,
+        nextRetryAt: null,
+        lastDelayMs: null,
+      },
+    }),
 
   lastSSEEvent: null,
   setLastSSEEvent: (event) => set({ lastSSEEvent: event }),

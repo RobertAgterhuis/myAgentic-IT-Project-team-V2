@@ -70,6 +70,13 @@ export interface MemoryStorage {
   delete(collection: string, id: string): Promise<void> | void;
 }
 
+export interface SweepMetrics {
+  project: number;
+  org: number;
+  total: number;
+  sweptAt: number;
+}
+
 // ─── In-memory default implementation ────────────────────────
 
 /**
@@ -121,9 +128,13 @@ function collectionFor(tier: MemoryTier): string {
  */
 export class SemanticMemoryStore {
   private _storage: MemoryStorage;
+  private _sweeperTimer: ReturnType<typeof setInterval> | null;
+  private _sweeperIntervalMs: number;
 
   constructor(storage: MemoryStorage = new InMemoryStorage()) {
     this._storage = storage;
+    this._sweeperTimer = null;
+    this._sweeperIntervalMs = 5 * 60 * 1000;
   }
 
   // ── Write ────────────────────────────────────────────────────
@@ -267,6 +278,57 @@ export class SemanticMemoryStore {
     const ttl = TIER_RETENTION_MS[tier];
     if (ttl === 0) return false; // run tier is never auto-expired
     return now - entry.writtenAt > ttl;
+  }
+
+  /**
+   * Sweep all TTL-enabled tiers and evict expired entries.
+   * Run tier is intentionally excluded because it is caller-managed.
+   */
+  async sweepExpired(now: number = Date.now()): Promise<SweepMetrics> {
+    const project = await this.evict('project', now);
+    const org = await this.evict('org', now);
+    return {
+      project,
+      org,
+      total: project + org,
+      sweptAt: now,
+    };
+  }
+
+  /**
+   * Start a background TTL sweeper for project and org tiers.
+   * Returns false when already running.
+   */
+  startSweeper(intervalMs: number = this._sweeperIntervalMs): boolean {
+    if (this._sweeperTimer) return false;
+    const effectiveInterval = Number.isFinite(intervalMs) && intervalMs > 0 ? intervalMs : 60_000;
+    this._sweeperIntervalMs = effectiveInterval;
+
+    this._sweeperTimer = setInterval(() => {
+      void this.sweepExpired();
+    }, this._sweeperIntervalMs);
+
+    if (typeof this._sweeperTimer.unref === 'function') {
+      this._sweeperTimer.unref();
+    }
+
+    return true;
+  }
+
+  /**
+   * Stop the background TTL sweeper.
+   * Returns false when no sweeper is running.
+   */
+  stopSweeper(): boolean {
+    if (!this._sweeperTimer) return false;
+    clearInterval(this._sweeperTimer);
+    this._sweeperTimer = null;
+    return true;
+  }
+
+  /** True when the background sweeper is active. */
+  isSweeperRunning(): boolean {
+    return this._sweeperTimer !== null;
   }
 }
 

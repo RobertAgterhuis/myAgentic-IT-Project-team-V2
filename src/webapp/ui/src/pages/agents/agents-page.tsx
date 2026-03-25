@@ -220,13 +220,17 @@ export default function AgentsPage() {
                 return (
                   <Card
                     key={agent.id}
-                    clickable
-                    onClick={() => setSelectedAgent(isSelected ? null : agent)}
                     elevation="outlined"
                     className={isSelected ? 'border-primary' : ''}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 min-w-0">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedAgent(isSelected ? null : agent)}
+                        className="flex min-w-0 flex-1 items-center gap-3 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        aria-label={`${isSelected ? 'Hide' : 'Show'} details for ${agent.name}`}
+                        aria-pressed={isSelected}
+                      >
                         <Badge variant={config.variant} className="gap-1 shrink-0">
                           {config.icon}
                           {agent.status}
@@ -237,7 +241,7 @@ export default function AgentsPage() {
                             {agent.task_description}
                           </p>
                         </div>
-                      </div>
+                      </button>
                       <div className="flex items-center gap-3 shrink-0 text-xs text-muted-foreground">
                         <span>{agent.phase}</span>
                         {agent.duration_ms > 0 && (

@@ -36,6 +36,21 @@ QUEUE_PROVIDER=persistent      # Persistent job queue
 
 Startup will **fail** (exit code 1) if `STORAGE_PROVIDER` initialization fails. Fallback to degraded mode is not allowed in production.
 
+SQLite concurrency model:
+
+- one `better-sqlite3` connection per process for the main storage provider
+- no connection pooling; pooled SQLite connections are not used in this runtime
+- `WAL` journal mode by default for read concurrency
+- bounded lock wait via `SQLITE_BUSY_TIMEOUT_MS`
+
+Recommended production defaults:
+
+```bash
+SQLITE_JOURNAL_MODE=WAL
+SQLITE_SYNCHRONOUS=NORMAL
+SQLITE_BUSY_TIMEOUT_MS=5000
+```
+
 ### Production Setup (Distributed)
 
 For Redis-backed high-availability:
@@ -52,26 +67,35 @@ REDIS_URL=redis://redis-primary:6379
 The system will use Redis pub/sub for SSE, BullMQ for async work, and Redis-backed sessions.
 All services must be reachable; startup fails if REDIS_URL is set but unreachable.
 
+For multi-node RAG indexing, set:
+
+```bash
+RAG_VECTOR_STORE_STRATEGY=writer-sharded
+RAG_VECTOR_WRITER_ID=node-a
+```
+
+This keeps each writer on its own LanceDB table shard while queries merge results across shards.
+
 ## API Endpoints (selected)
 
-| Method | Path                     | Description                                                                                                    |
-| ------ | ------------------------ | -------------------------------------------------------------------------------------------------------------- |
-| GET    | `/api/questionnaires`    | List all questionnaires with parsed questions                                                                  |
-| GET    | `/api/session`           | Current session state (if exists)                                                                              |
-| POST   | `/api/save`              | Save answer(s) for a questionnaire file (max 200 updates per request)                                          |
-| POST   | `/api/reevaluate`        | Write reevaluation trigger file                                                                                |
-| GET    | `/api/decisions`         | Parse and return all decisions from `decisions.md`                                                             |
-| POST   | `/api/decisions`         | Create, answer, defer, or delete a decision (`action`: `create` / `answer` / `defer` / `delete`)               |
-| POST   | `/api/command`           | Queue an agentic command (e.g. `CREATE`, `REEVALUATE`) and get clipboard text to paste in Copilot Chat         |
-| GET    | `/api/command`           | Retrieve the currently queued command (or `null`)                                                              |
-| GET    | `/api/progress`          | Live phase/agent progress derived from `session-state.json`                                                    |
-| GET    | `/api/export`            | Export all questionnaire data as JSON                                                                          |
-| GET    | `/api/help?topic=<slug>` | Without `topic`: returns help table-of-contents. With `topic`: returns the markdown content for that help file |
-| GET    | `/api/health`            | Readiness probe (uptime, version, SSE connections, timestamp) — used by Docker HEALTHCHECK                     |
-| GET    | `/api/dashboard/*`       | Dashboard aggregation endpoints (stats, activity, burndown)                                                    |
-| GET    | `/api/metrics-dashboard` | Runtime metrics and per-endpoint timing data                                                                   |
-| GET    | `/health`                | Liveness probe (status, version, uptime, store status)                                                         |
-| GET    | `/events`                | SSE stream for real-time UI updates                                                                            |
+| Method | Path                     | Description                                                                                                                |
+| ------ | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| GET    | `/api/questionnaires`    | List all questionnaires with parsed questions                                                                              |
+| GET    | `/api/session`           | Current session state (if exists)                                                                                          |
+| POST   | `/api/save`              | Save answer(s) for a questionnaire file (max 200 updates per request)                                                      |
+| POST   | `/api/reevaluate`        | Write reevaluation trigger file                                                                                            |
+| GET    | `/api/decisions`         | Parse and return all decisions from `decisions.md`                                                                         |
+| POST   | `/api/decisions`         | Create, answer, defer, or delete a decision (`action`: `create` / `answer` / `defer` / `delete`)                           |
+| POST   | `/api/command`           | Queue an agentic command (e.g. `CREATE`, `REEVALUATE`) and get clipboard text to paste in Copilot Chat                     |
+| GET    | `/api/command`           | Retrieve the currently queued command (or `null`)                                                                          |
+| GET    | `/api/progress`          | Live phase/agent progress derived from `session-state.json`                                                                |
+| GET    | `/api/export`            | Export all questionnaire data as JSON                                                                                      |
+| GET    | `/api/help?topic=<slug>` | Without `topic`: returns help table-of-contents. With `topic`: returns the markdown content for that help file             |
+| GET    | `/api/health`            | Readiness probe (uptime, version, SSE connections, timestamp, semantic memory sweeper status) — used by Docker HEALTHCHECK |
+| GET    | `/api/dashboard/*`       | Dashboard aggregation endpoints (stats, activity, burndown)                                                                |
+| GET    | `/api/metrics-dashboard` | Runtime metrics and per-endpoint timing data                                                                               |
+| GET    | `/health`                | Liveness probe (status, version, uptime, store status)                                                                     |
+| GET    | `/events`                | SSE stream for real-time UI updates                                                                                        |
 
 ## Reevaluation Flow
 
@@ -100,12 +124,19 @@ All configuration is environment-based. See `src/webapp/config.ts` for parsed de
 | `QUEUE_PROVIDER`                          | `memory`                                              | `persistent`/`bullmq` | Async job queue: `memory` = in-process, `persistent` = on-disk, `bullmq` = Redis-backed                                    |
 | `SESSION_STORE`                           | `sqlite`                                              | `redis`               | Session state: `sqlite` = local database, `redis` = distributed                                                            |
 | `REDIS_URL`                               | _(none)_                                              | varies                | Enable Redis features (sessions, pub/sub, BullMQ) — fails startup if set but unreachable                                   |
+| `RAG_VECTOR_STORE_STRATEGY`               | `single-table`                                        | `writer-sharded`      | Vector persistence strategy: `single-table` for local/single-node, `writer-sharded` to isolate multi-node LanceDB writes   |
+| `RAG_VECTOR_WRITER_ID`                    | `{hostname}-{pid}`                                    | stable node ID        | Writer shard identifier used when `RAG_VECTOR_STORE_STRATEGY=writer-sharded`                                               |
 | `API_KEY`                                 | _(none)_                                              | {24+ chars}           | Enable API-only (non-OAuth) access for non-local bindings (minimum 24 characters)                                          |
 | `GITHUB_CLIENT_ID`                        | _(none)_                                              | {GitHub App ID}       | GitHub OAuth client ID for login                                                                                           |
 | `GITHUB_CLIENT_SECRET`                    | _(none)_                                              | {GitHub App Secret}   | GitHub OAuth client secret                                                                                                 |
 | `TRUST_PROXY`                             | `false`                                               | varies                | Trusted proxy configuration (false/true/hop-count/CIDR/list); defaults to reject all forwarded IPs                         |
 | `RATE_LIMIT_MAX`                          | `30`                                                  | `60` (recommended)    | Max requests per IP within the configured window for API rate limiting                                                     |
 | `RATE_LIMIT_WINDOW_MS`                    | `60000`                                               | `60000`               | Rate-limit window length in milliseconds                                                                                   |
+| `SQLITE_JOURNAL_MODE`                     | `WAL`                                                 | `WAL`                 | SQLite concurrency journal strategy. `WAL` is the intended default; `DELETE` is compatibility fallback only                |
+| `SQLITE_SYNCHRONOUS`                      | `NORMAL`                                              | `NORMAL`/`FULL`       | SQLite durability/concurrency tradeoff. `NORMAL` is the default; `FULL` increases fsync cost                               |
+| `SQLITE_BUSY_TIMEOUT_MS`                  | `5000`                                                | `5000+`               | SQLite lock wait window in milliseconds before busy errors are surfaced                                                    |
+| `SEMANTIC_MEMORY_SWEEPER_ENABLED`         | `true` (`false` in test)                              | `true`                | Enables background TTL sweeping for semantic memory (`project` and `org` tiers)                                            |
+| `SEMANTIC_MEMORY_SWEEPER_INTERVAL_MS`     | `300000`                                              | `300000`              | Interval for background semantic memory TTL sweep (milliseconds)                                                           |
 | `ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY` | auto-by-profile (`false` local/CI, `true` production) | `true` or scoped JSON | Dispatcher continuity policy override. Accepts booleans (`true`/`false`) or JSON: `{"states":["PHASE_2"],"agents":["05"]}` |
 
 ### Startup Behavior

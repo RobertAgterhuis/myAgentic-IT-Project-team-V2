@@ -27,12 +27,23 @@ async function fetchCurrentUser(): Promise<AuthUser | null> {
   if (res.status === 401) return null;
   if (!res.ok) throw new Error(`Auth check failed: ${res.status}`);
   const body = await res.json();
-  return body.data?.user ?? null;
+
+  // Support both response shapes:
+  // 1) flat user payload: { id, role, ... }
+  // 2) nested payload: { data: { user: { ... } } }
+  if (body && typeof body === 'object' && 'id' in body && 'role' in body) {
+    return body as AuthUser;
+  }
+
+  return body?.data?.user ?? null;
 }
 
 async function postLogout(): Promise<void> {
-  // Read CSRF token from cookie
-  const csrfCookie = document.cookie.split('; ').find((c) => c.startsWith('csrf_token='));
+  // Read CSRF token from cookie. Support both the current cookie name (`csrf`)
+  // and the legacy name (`csrf_token`) for local compatibility.
+  const csrfCookie = document.cookie
+    .split('; ')
+    .find((c) => c.startsWith('csrf=') || c.startsWith('csrf_token='));
   const csrfToken = csrfCookie?.split('=')[1] ?? '';
 
   const res = await fetch('/api/auth/logout', {

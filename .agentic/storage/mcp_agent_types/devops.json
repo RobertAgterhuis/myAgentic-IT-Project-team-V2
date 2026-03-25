@@ -1,8 +1,0 @@
-{
-  "id": "devops",
-  "category": "operations",
-  "controlPosture": "strict",
-  "requiresWorkloadIdentity": true,
-  "appRegistrationRef": "entra://agents/devops",
-  "templateCategory": "runtime"
-}

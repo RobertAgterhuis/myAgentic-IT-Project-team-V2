@@ -1,8 +1,0 @@
-{
-  "id": "security",
-  "category": "security",
-  "controlPosture": "strict",
-  "requiresWorkloadIdentity": true,
-  "appRegistrationRef": "entra://agents/security",
-  "templateCategory": "cross-functional"
-}

@@ -1,6 +1,0 @@
-{
-  "agentId": "orchestrator",
-  "serverId": "governance-approval",
-  "permission": "P",
-  "id": "orchestrator%3Agovernance-approval%3A%2A"
-}

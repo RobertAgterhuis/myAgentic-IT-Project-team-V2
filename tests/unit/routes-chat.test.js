@@ -85,6 +85,7 @@ function seedSessionState(overrides = {}) {
 
 describe('routes/chat', () => {
   beforeAll(() => {
+    fs.mkdirSync(path.dirname(RUN_HISTORY_FILE), { recursive: true });
     try {
       originalRunHistory = fs.readFileSync(RUN_HISTORY_FILE, 'utf8');
     } catch {
@@ -101,6 +102,7 @@ describe('routes/chat', () => {
   });
 
   afterEach(() => {
+    fs.mkdirSync(path.dirname(RUN_HISTORY_FILE), { recursive: true });
     fs.writeFileSync(RUN_HISTORY_FILE, originalRunHistory, 'utf8');
   });
 

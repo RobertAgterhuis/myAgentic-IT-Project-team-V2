@@ -24,8 +24,8 @@ const EXEMPT_API_PATHS = new Set(['/api/health', '/api/events']);
 export interface RateLimitPluginOptions {
   /** Maximum requests per window (default: 30). */
   max?: number;
-  /** Time window string (default: '1 minute'). */
-  timeWindow?: string;
+  /** Time window in ms or duration string (default: '1 minute'). */
+  timeWindow?: number | string;
   /** Disable the plugin entirely (useful in tests). */
   disabled?: boolean;
 }

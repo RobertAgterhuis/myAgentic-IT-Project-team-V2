@@ -97,10 +97,21 @@ import { McpGovernanceService, McpHealthMonitor } from './plugins/mcp-governance
 
 const _cache = new FileCache();
 const _audit = new AuditTrail({ logDir: path.join(BUSINESS_DOCS, 'audit') });
-const RAG_FRESHNESS_HEALTH_INTERVAL_MS = Number(
-  process.env.RAG_FRESHNESS_HEALTH_INTERVAL_MS || 5 * 60 * 1000
+function parsePositiveIntEnv(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw || !raw.trim()) return fallback;
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return parsed;
+}
+
+const RAG_FRESHNESS_HEALTH_INTERVAL_MS = parsePositiveIntEnv(
+  'RAG_FRESHNESS_HEALTH_INTERVAL_MS',
+  5 * 60 * 1000
 );
-const RAG_FRESHNESS_STALE_SEC = Number(process.env.RAG_FRESHNESS_STALE_SEC || 3600);
+const RAG_FRESHNESS_STALE_SEC = parsePositiveIntEnv('RAG_FRESHNESS_STALE_SEC', 3600);
+const RAG_WATCH_DEBOUNCE_MS = parsePositiveIntEnv('RAG_WATCH_DEBOUNCE_MS', 5000);
+const RAG_WATCH_ENABLED = String(process.env.RAG_WATCH_ENABLED || 'true').toLowerCase() !== 'false';
 const RAG_BASE_DIR = process.env.RAG_BASE_DIR || path.join(PROJECT_ROOT, '.agentic', 'rag');
 const RAG_DB_PATH = process.env.RAG_DB_PATH || path.join(RAG_BASE_DIR, 'rag.sqlite');
 const RAG_LANCE_DIR = process.env.RAG_LANCE_DIR || path.join(RAG_BASE_DIR, 'vectors');
@@ -427,78 +438,228 @@ function newestMtimeIso(paths: string[]): string | null {
   return newest > 0 ? new Date(newest).toISOString() : null;
 }
 
+const RAG_MONITORED_TARGETS: Array<{ collectionId: string; sourcePaths: string[] }> = [
+  {
+    collectionId: 'decisions',
+    sourcePaths: [path.join(BUSINESS_DOCS, 'decisions.md'), path.join(BUSINESS_DOCS, 'decisions')],
+  },
+  {
+    collectionId: 'codebase',
+    sourcePaths: [path.join(PROJECT_ROOT, 'src')],
+  },
+  {
+    collectionId: 'phase-outputs',
+    sourcePaths: [
+      path.join(BUSINESS_DOCS, 'Phase1-Business'),
+      path.join(BUSINESS_DOCS, 'Phase2-Tech'),
+      path.join(BUSINESS_DOCS, 'Phase3-UX'),
+      path.join(BUSINESS_DOCS, 'session'),
+      path.join(BUSINESS_DOCS, 'synthesis'),
+    ],
+  },
+  {
+    collectionId: 'sprint-artifacts--default',
+    sourcePaths: [path.join(BUSINESS_DOCS, 'session'), path.join(BUSINESS_DOCS, 'metrics')],
+  },
+];
+
 let _ragFreshnessPassRunning = false;
+let _ragFreshnessQueued = false;
+let _ragWatchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+const _ragWatchers: fs.FSWatcher[] = [];
+let _ragFreshnessPassTrigger: () => Promise<void> = () => runRagFreshnessHealthPass();
+let _ragFreshnessPassExecutor: () => Promise<void> = async () => {
+  for (const target of RAG_MONITORED_TARGETS) {
+    _ragStore.ensureCollection({
+      id: target.collectionId,
+      name: target.collectionId,
+      description: 'Auto-managed collection for RAG freshness self-healing.',
+      created_at: new Date().toISOString(),
+    });
+
+    const sourceNewest = newestMtimeIso(target.sourcePaths);
+    const freshness = _ragStore.getCollectionFreshnessStats(target.collectionId);
+    const hasIndex = freshness.indexedFiles > 0;
+
+    const lagSec =
+      sourceNewest && freshness.lastIndexedAt
+        ? Math.max(
+            0,
+            Math.round((Date.parse(sourceNewest) - Date.parse(freshness.lastIndexedAt)) / 1000)
+          )
+        : null;
+
+    const shouldHeal = !hasIndex || (lagSec !== null && lagSec > RAG_FRESHNESS_STALE_SEC);
+    if (!shouldHeal) continue;
+
+    for (const sourcePath of target.sourcePaths) {
+      if (!fs.existsSync(sourcePath)) continue;
+      try {
+        const stats = await _ragIndexer.syncDirectory(target.collectionId, sourcePath, {
+          incremental: true,
+        });
+        recordMetric('RAG', '/freshness/self-heal', stats.filesProcessed, 200);
+      } catch (err) {
+        structuredLog('warn', 'rag_freshness_self_heal_failed', {
+          collection_id: target.collectionId,
+          source_path: sourcePath,
+          error: (err as Error).message,
+        });
+        recordMetric('RAG', '/freshness/self-heal', 1, 500);
+      }
+    }
+  }
+};
+
+function queueRagFreshnessPass(reason: string): void {
+  if (_ragWatchDebounceTimer) clearTimeout(_ragWatchDebounceTimer);
+
+  _ragWatchDebounceTimer = setTimeout(() => {
+    _ragWatchDebounceTimer = null;
+    structuredLog('debug', 'rag_freshness_watch_triggered', { reason });
+    void _ragFreshnessPassTrigger();
+  }, RAG_WATCH_DEBOUNCE_MS);
+  _ragWatchDebounceTimer.unref();
+}
+
+function setupRagFreshnessWatchers(): void {
+  if (!RAG_WATCH_ENABLED) {
+    structuredLog('info', 'rag_freshness_watch_disabled');
+    return;
+  }
+
+  const watchedPaths = new Set<string>();
+
+  for (const target of RAG_MONITORED_TARGETS) {
+    for (const sourcePath of target.sourcePaths) {
+      if (watchedPaths.has(sourcePath)) continue;
+      watchedPaths.add(sourcePath);
+
+      try {
+        if (!fs.existsSync(sourcePath)) continue;
+
+        const stat = fs.statSync(sourcePath);
+        const watcher = stat.isDirectory()
+          ? fs.watch(sourcePath, { recursive: true }, () => {
+              queueRagFreshnessPass(`fs:${sourcePath}`);
+            })
+          : fs.watch(sourcePath, () => {
+              queueRagFreshnessPass(`fs:${sourcePath}`);
+            });
+
+        watcher.on('error', (err) => {
+          structuredLog('warn', 'rag_freshness_watch_error', {
+            path: sourcePath,
+            error: (err as Error).message,
+          });
+        });
+
+        _ragWatchers.push(watcher);
+      } catch (err) {
+        structuredLog('warn', 'rag_freshness_watch_unavailable', {
+          path: sourcePath,
+          error: (err as Error).message,
+        });
+      }
+    }
+  }
+
+  structuredLog('info', 'rag_freshness_watch_started', {
+    watchers: _ragWatchers.length,
+    debounceMs: RAG_WATCH_DEBOUNCE_MS,
+  });
+}
+
 async function runRagFreshnessHealthPass(): Promise<void> {
-  if (_ragFreshnessPassRunning) return;
+  if (_ragFreshnessPassRunning) {
+    _ragFreshnessQueued = true;
+    return;
+  }
   if (!_ragIndexer) return;
 
   _ragFreshnessPassRunning = true;
   try {
-    const monitored: Array<{ collectionId: string; sourcePaths: string[] }> = [
-      {
-        collectionId: 'decisions',
-        sourcePaths: [
-          path.join(BUSINESS_DOCS, 'decisions.md'),
-          path.join(BUSINESS_DOCS, 'decisions'),
-        ],
-      },
-      {
-        collectionId: 'codebase',
-        sourcePaths: [path.join(PROJECT_ROOT, 'src')],
-      },
-      {
-        collectionId: 'phase-outputs',
-        sourcePaths: [
-          path.join(BUSINESS_DOCS, 'Phase1-Business'),
-          path.join(BUSINESS_DOCS, 'Phase2-Tech'),
-          path.join(BUSINESS_DOCS, 'Phase3-UX'),
-          path.join(BUSINESS_DOCS, 'session'),
-          path.join(BUSINESS_DOCS, 'synthesis'),
-        ],
-      },
-      {
-        collectionId: 'sprint-artifacts--default',
-        sourcePaths: [path.join(BUSINESS_DOCS, 'session'), path.join(BUSINESS_DOCS, 'metrics')],
-      },
-    ];
-
-    for (const target of monitored) {
-      const sourceNewest = newestMtimeIso(target.sourcePaths);
-      const freshness = _ragStore.getCollectionFreshnessStats(target.collectionId);
-      const hasIndex = freshness.indexedFiles > 0;
-
-      const lagSec =
-        sourceNewest && freshness.lastIndexedAt
-          ? Math.max(
-              0,
-              Math.round((Date.parse(sourceNewest) - Date.parse(freshness.lastIndexedAt)) / 1000)
-            )
-          : null;
-
-      const shouldHeal = !hasIndex || (lagSec !== null && lagSec > RAG_FRESHNESS_STALE_SEC);
-      if (!shouldHeal) continue;
-
-      for (const sourcePath of target.sourcePaths) {
-        if (!fs.existsSync(sourcePath)) continue;
-        try {
-          const stats = await _ragIndexer.syncDirectory(target.collectionId, sourcePath, {
-            incremental: true,
-          });
-          recordMetric('RAG', '/freshness/self-heal', stats.filesProcessed, 200);
-        } catch (err) {
-          structuredLog('warn', 'rag_freshness_self_heal_failed', {
-            collection_id: target.collectionId,
-            source_path: sourcePath,
-            error: (err as Error).message,
-          });
-          recordMetric('RAG', '/freshness/self-heal', 1, 500);
-        }
-      }
-    }
+    await _ragFreshnessPassExecutor();
   } finally {
     _ragFreshnessPassRunning = false;
+    if (_ragFreshnessQueued) {
+      _ragFreshnessQueued = false;
+      void _ragFreshnessPassTrigger();
+    }
   }
 }
+
+const __testing = {
+  parsePositiveIntEnv,
+  queueRagFreshnessPass,
+  setupRagFreshnessWatchers,
+  runRagFreshnessHealthPass,
+  getRagFreshnessConfig: () => ({
+    intervalMs: RAG_FRESHNESS_HEALTH_INTERVAL_MS,
+    staleSec: RAG_FRESHNESS_STALE_SEC,
+    debounceMs: RAG_WATCH_DEBOUNCE_MS,
+    watchEnabled: RAG_WATCH_ENABLED,
+  }),
+  getRagWatcherCount: () => _ragWatchers.length,
+  setRagFreshnessPassTrigger: (trigger: () => Promise<void>) => {
+    _ragFreshnessPassTrigger = trigger;
+  },
+  setRagFreshnessPassExecutor: (executor: () => Promise<void>) => {
+    _ragFreshnessPassExecutor = executor;
+  },
+  resetRagFreshnessState: () => {
+    if (_ragWatchDebounceTimer) {
+      clearTimeout(_ragWatchDebounceTimer);
+      _ragWatchDebounceTimer = null;
+    }
+    _ragFreshnessPassRunning = false;
+    _ragFreshnessQueued = false;
+    _ragFreshnessPassTrigger = () => runRagFreshnessHealthPass();
+    _ragFreshnessPassExecutor = async () => {
+      for (const target of RAG_MONITORED_TARGETS) {
+        _ragStore.ensureCollection({
+          id: target.collectionId,
+          name: target.collectionId,
+          description: 'Auto-managed collection for RAG freshness self-healing.',
+          created_at: new Date().toISOString(),
+        });
+
+        const sourceNewest = newestMtimeIso(target.sourcePaths);
+        const freshness = _ragStore.getCollectionFreshnessStats(target.collectionId);
+        const hasIndex = freshness.indexedFiles > 0;
+
+        const lagSec =
+          sourceNewest && freshness.lastIndexedAt
+            ? Math.max(
+                0,
+                Math.round((Date.parse(sourceNewest) - Date.parse(freshness.lastIndexedAt)) / 1000)
+              )
+            : null;
+
+        const shouldHeal = !hasIndex || (lagSec !== null && lagSec > RAG_FRESHNESS_STALE_SEC);
+        if (!shouldHeal) continue;
+
+        for (const sourcePath of target.sourcePaths) {
+          if (!fs.existsSync(sourcePath)) continue;
+          try {
+            const stats = await _ragIndexer.syncDirectory(target.collectionId, sourcePath, {
+              incremental: true,
+            });
+            recordMetric('RAG', '/freshness/self-heal', stats.filesProcessed, 200);
+          } catch (err) {
+            structuredLog('warn', 'rag_freshness_self_heal_failed', {
+              collection_id: target.collectionId,
+              source_path: sourcePath,
+              error: (err as Error).message,
+            });
+            recordMetric('RAG', '/freshness/self-heal', 1, 500);
+          }
+        }
+      }
+    };
+    for (const watcher of _ragWatchers.splice(0)) watcher.close();
+  },
+};
 
 /* (Cross-route wiring for _getLatestCommand, _readCommandQueue, _getEngine
    is now handled inside registerRoutes() of commands.ts and orchestrator.ts) */
@@ -761,11 +922,11 @@ if (require.main === module) {
   const snapTimer = setInterval(syncSnapshot, SNAPSHOT_SYNC_INTERVAL_MS);
   snapTimer.unref();
   setTimeout(syncSnapshot, 5000).unref();
-  const ragFreshnessTimer = setInterval(
-    runRagFreshnessHealthPass,
-    RAG_FRESHNESS_HEALTH_INTERVAL_MS
-  );
+  const ragFreshnessTimer = setInterval(() => {
+    void runRagFreshnessHealthPass();
+  }, RAG_FRESHNESS_HEALTH_INTERVAL_MS);
   ragFreshnessTimer.unref();
+  setupRagFreshnessWatchers();
   setTimeout(() => {
     void runRagFreshnessHealthPass();
   }, 15_000).unref();
@@ -774,6 +935,9 @@ if (require.main === module) {
     clearInterval(flushTimer);
     clearInterval(snapTimer);
     clearInterval(ragFreshnessTimer);
+    if (_ragWatchDebounceTimer) clearTimeout(_ragWatchDebounceTimer);
+    for (const watcher of _ragWatchers) watcher.close();
+    _ragWatchers.length = 0;
     metricsCollector.flush();
     const sp = getStorageProvider();
     if (sp) sp.close().catch(() => {});
@@ -829,4 +993,5 @@ export {
   ctx,
   validateStartupRuntimeProfile,
   safeWriteAsync,
+  __testing,
 };

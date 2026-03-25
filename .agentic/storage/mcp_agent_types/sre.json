@@ -1,8 +1,0 @@
-{
-  "id": "sre",
-  "category": "reliability",
-  "controlPosture": "strict",
-  "requiresWorkloadIdentity": true,
-  "appRegistrationRef": "entra://agents/sre",
-  "templateCategory": "runtime"
-}

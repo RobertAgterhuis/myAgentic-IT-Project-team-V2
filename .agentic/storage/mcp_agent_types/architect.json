@@ -1,8 +1,0 @@
-{
-  "id": "architect",
-  "category": "architecture",
-  "controlPosture": "strict",
-  "requiresWorkloadIdentity": true,
-  "appRegistrationRef": "entra://agents/architect",
-  "templateCategory": "phase"
-}

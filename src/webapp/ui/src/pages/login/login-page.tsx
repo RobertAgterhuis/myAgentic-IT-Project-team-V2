@@ -266,7 +266,7 @@ export default function LoginPage() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-amber-600 dark:text-amber-400">OAUTH_CALLBACK_URL</span>
+                  <span className="text-amber-600 dark:text-amber-400">AUTH_CALLBACK_URL</span>
                   <span className="text-slate-600 dark:text-slate-400">
                     =https://your-domain/api/auth/callback
                   </span>

@@ -2,7 +2,8 @@
  * Questionnaires page — sidebar nav by phase, answer forms, save/draft.
  * Issue #242 (S9G-35)
  */
-import { useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Heading, Text } from '@/components/ui/typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,7 @@ import { SidePanel, type NavSection } from '@/components/ui/side-panel';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
+import { ValidationSummary } from '@/components/ui/validation-summary';
 import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { useQuestionnaires, useQuestionnaire, useSaveQuestionnaire } from '@/hooks';
@@ -72,11 +74,40 @@ function QuestionRow({
 
 /* ── Main Page ── */
 export default function QuestionnairesPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data, isLoading, error, refetch } = useQuestionnaires();
   const save = useSaveQuestionnaire();
-  const [selectedFile, setSelectedFile] = useState<string | undefined>();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedFile, setSelectedFile] = useState<string | undefined>(() => {
+    const raw = searchParams.get('file');
+    return raw || undefined;
+  });
+  const [searchTerm, setSearchTerm] = useState(() => searchParams.get('q') ?? '');
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [saveErrors, setSaveErrors] = useState<string[]>([]);
+
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (selectedFile) next.set('file', selectedFile);
+    if (searchTerm.trim()) next.set('q', searchTerm.trim());
+    setSearchParams(next, { replace: true });
+  }, [selectedFile, searchTerm, setSearchParams]);
+
+  const draftHistoryKey = selectedFile ? `questionnaire-draft-history:${selectedFile}` : null;
+
+  useEffect(() => {
+    if (!draftHistoryKey) return;
+    const raw = localStorage.getItem(draftHistoryKey);
+    if (!raw) return;
+    try {
+      const entries = JSON.parse(raw) as Array<{ drafts: Record<string, string> }>;
+      const latest = entries[entries.length - 1];
+      if (latest?.drafts && Object.keys(latest.drafts).length > 0) {
+        setDrafts(latest.drafts);
+      }
+    } catch {
+      // Ignore malformed local draft history.
+    }
+  }, [draftHistoryKey]);
 
   const questionnaires = useMemo(() => data?.questionnaires ?? [], [data]);
 
@@ -124,13 +155,60 @@ export default function QuestionnairesPage() {
   }, [selected, searchTerm]);
 
   // Draft handling
-  const handleDraftChange = useCallback((id: string, value: string) => {
-    setDrafts((prev) => ({ ...prev, [id]: value }));
-  }, []);
+  const handleDraftChange = useCallback(
+    (id: string, value: string) => {
+      setDrafts((prev) => {
+        const next = { ...prev, [id]: value };
+        if (draftHistoryKey) {
+          try {
+            const historyRaw = localStorage.getItem(draftHistoryKey);
+            const history = historyRaw
+              ? (JSON.parse(historyRaw) as Array<{ at: string; drafts: Record<string, string> }>)
+              : [];
+            history.push({ at: new Date().toISOString(), drafts: next });
+            const bounded = history.slice(-10);
+            localStorage.setItem(draftHistoryKey, JSON.stringify(bounded));
+          } catch {
+            // Ignore malformed local draft history.
+          }
+        }
+        return next;
+      });
+    },
+    [draftHistoryKey]
+  );
+
+  const restoreLatestDraft = useCallback(() => {
+    if (!draftHistoryKey) return;
+    const raw = localStorage.getItem(draftHistoryKey);
+    if (!raw) return;
+    try {
+      const entries = JSON.parse(raw) as Array<{ drafts: Record<string, string> }>;
+      const latest = entries[entries.length - 1];
+      if (latest?.drafts) {
+        setDrafts(latest.drafts);
+      }
+    } catch {
+      // Ignore malformed draft history.
+    }
+  }, [draftHistoryKey]);
 
   // Save handler
   function handleSave() {
     if (!selectedFile || !selected) return;
+
+    const errors: string[] = [];
+    const requiredMissing = selected.questions.filter((question) => {
+      if (question.classification !== 'REQUIRED') return false;
+      const effectiveAnswer = drafts[question.id] ?? question.answer;
+      return !effectiveAnswer.trim();
+    });
+
+    if (requiredMissing.length > 0) {
+      errors.push(
+        `${requiredMissing.length} required question${requiredMissing.length === 1 ? '' : 's'} still missing an answer.`
+      );
+    }
 
     const updates: QuestionUpdate[] = Object.entries(drafts)
       .filter(([id]) => selected.questions.some((q) => q.id === id))
@@ -140,12 +218,24 @@ export default function QuestionnairesPage() {
         status: answer.trim() ? ('ANSWERED' as const) : ('OPEN' as const),
       }));
 
-    if (updates.length === 0) return;
+    if (updates.length === 0) {
+      errors.push('No draft changes available to save.');
+    }
+
+    if (errors.length > 0) {
+      setSaveErrors(errors);
+      return;
+    }
+
+    setSaveErrors([]);
 
     save.mutate(
       { file: selectedFile, updates },
       {
-        onSuccess: () => setDrafts({}),
+        onSuccess: () => {
+          setDrafts({});
+          setSaveErrors([]);
+        },
       }
     );
   }
@@ -264,6 +354,16 @@ export default function QuestionnairesPage() {
             ) : undefined
           }
         />
+
+        {selectedFile && (
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={restoreLatestDraft}>
+              Restore latest draft
+            </Button>
+          </div>
+        )}
+
+        <ValidationSummary errors={saveErrors} />
 
         <ContextStrip items={contextItems} />
 

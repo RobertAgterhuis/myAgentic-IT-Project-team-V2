@@ -2,7 +2,8 @@
  * Decisions page — filter bar, lifecycle flow, detail views.
  * Issue #243 (S9G-36)
  */
-import { useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Text } from '@/components/ui/typography';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -11,6 +12,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
+import { ValidationSummary } from '@/components/ui/validation-summary';
 import { ModalDialog } from '@/components/ui/modal-dialog';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
@@ -41,14 +43,88 @@ function EditDecisionDialog({
   const [scope, setScope] = useState('');
   const [priority, setPriority] = useState<'HIGH' | 'MEDIUM' | 'LOW'>('MEDIUM');
   const [notes, setNotes] = useState('');
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
-  useMemo(() => {
+  const draftHistoryKey = decision ? `decision-edit-draft-history:${decision.id}` : null;
+
+  useEffect(() => {
     if (!decision) return;
     setText(decision.decision);
     setScope(decision.scope);
     setPriority(decision.priority);
     setNotes(decision.notes ?? '');
-  }, [decision]);
+    setSubmitAttempted(false);
+
+    if (!draftHistoryKey) return;
+    try {
+      const raw = localStorage.getItem(draftHistoryKey);
+      if (!raw) return;
+      const entries = JSON.parse(raw) as Array<{
+        text: string;
+        scope: string;
+        priority: 'HIGH' | 'MEDIUM' | 'LOW';
+        notes: string;
+      }>;
+      const latest = entries[entries.length - 1];
+      if (!latest) return;
+      setText(latest.text || decision.decision);
+      setScope(latest.scope || decision.scope);
+      setPriority(latest.priority || decision.priority);
+      setNotes(latest.notes ?? decision.notes ?? '');
+    } catch {
+      // Ignore malformed local draft history.
+    }
+  }, [decision, draftHistoryKey]);
+
+  const persistDraft = useCallback(
+    (next: { text: string; scope: string; priority: 'HIGH' | 'MEDIUM' | 'LOW'; notes: string }) => {
+      if (!draftHistoryKey) return;
+      try {
+        const raw = localStorage.getItem(draftHistoryKey);
+        const entries = raw
+          ? (JSON.parse(raw) as Array<{
+              at: string;
+              text: string;
+              scope: string;
+              priority: 'HIGH' | 'MEDIUM' | 'LOW';
+              notes: string;
+            }>)
+          : [];
+        entries.push({ at: new Date().toISOString(), ...next });
+        localStorage.setItem(draftHistoryKey, JSON.stringify(entries.slice(-10)));
+      } catch {
+        // Ignore malformed local draft history.
+      }
+    },
+    [draftHistoryKey]
+  );
+
+  const restoreLatestDraft = useCallback(() => {
+    if (!draftHistoryKey || !decision) return;
+    try {
+      const raw = localStorage.getItem(draftHistoryKey);
+      if (!raw) return;
+      const entries = JSON.parse(raw) as Array<{
+        text: string;
+        scope: string;
+        priority: 'HIGH' | 'MEDIUM' | 'LOW';
+        notes: string;
+      }>;
+      const latest = entries[entries.length - 1];
+      if (!latest) return;
+      setText(latest.text || decision.decision);
+      setScope(latest.scope || decision.scope);
+      setPriority(latest.priority || decision.priority);
+      setNotes(latest.notes ?? decision.notes ?? '');
+    } catch {
+      // Ignore malformed local draft history.
+    }
+  }, [decision, draftHistoryKey]);
+
+  const validationErrors = [
+    !text.trim() ? 'Decision text is required.' : null,
+    !scope.trim() ? 'Scope is required.' : null,
+  ].filter((error): error is string => Boolean(error));
 
   if (!decision) return null;
 
@@ -68,7 +144,8 @@ function EditDecisionDialog({
           </Button>
           <Button
             onClick={() => {
-              if (!text.trim()) return;
+              setSubmitAttempted(true);
+              if (validationErrors.length > 0) return;
               updateDecision.mutate(
                 {
                   action: 'edit',
@@ -81,7 +158,7 @@ function EditDecisionDialog({
                 { onSuccess: () => onClose() }
               );
             }}
-            disabled={!text.trim() || updateDecision.isPending}
+            disabled={updateDecision.isPending}
             loading={updateDecision.isPending}
           >
             Save changes
@@ -90,6 +167,16 @@ function EditDecisionDialog({
       }
     >
       <div className="space-y-4">
+        {submitAttempted && validationErrors.length > 0 && (
+          <ValidationSummary errors={validationErrors} />
+        )}
+
+        <div className="flex items-center justify-end">
+          <Button variant="outline" size="sm" onClick={restoreLatestDraft}>
+            Restore latest draft
+          </Button>
+        </div>
+
         <div className="grid gap-1.5">
           <label className="text-sm font-medium" htmlFor="decision-text">
             Decision
@@ -98,7 +185,11 @@ function EditDecisionDialog({
             id="decision-text"
             className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             value={text}
-            onChange={(event) => setText(event.target.value)}
+            onChange={(event) => {
+              const nextText = event.target.value;
+              setText(nextText);
+              persistDraft({ text: nextText, scope, priority, notes });
+            }}
             placeholder="Describe the actual decision"
           />
         </div>
@@ -112,7 +203,11 @@ function EditDecisionDialog({
               id="decision-scope"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={scope}
-              onChange={(event) => setScope(event.target.value)}
+              onChange={(event) => {
+                const nextScope = event.target.value;
+                setScope(nextScope);
+                persistDraft({ text, scope: nextScope, priority, notes });
+              }}
               placeholder="e.g. business, architecture"
             />
           </div>
@@ -125,7 +220,11 @@ function EditDecisionDialog({
               id="decision-priority"
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
               value={priority}
-              onChange={(event) => setPriority(event.target.value as 'HIGH' | 'MEDIUM' | 'LOW')}
+              onChange={(event) => {
+                const nextPriority = event.target.value as 'HIGH' | 'MEDIUM' | 'LOW';
+                setPriority(nextPriority);
+                persistDraft({ text, scope, priority: nextPriority, notes });
+              }}
             >
               <option value="HIGH">High</option>
               <option value="MEDIUM">Medium</option>
@@ -142,7 +241,11 @@ function EditDecisionDialog({
             id="decision-notes"
             className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             value={notes}
-            onChange={(event) => setNotes(event.target.value)}
+            onChange={(event) => {
+              const nextNotes = event.target.value;
+              setNotes(nextNotes);
+              persistDraft({ text, scope, priority, notes: nextNotes });
+            }}
             placeholder="Optional rationale or implementation notes"
           />
         </div>
@@ -266,13 +369,19 @@ function DecisionDetailDialog({
 
 /* ── Main Page ── */
 export default function DecisionsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const { data, isLoading, error, refetch } = useDecisions();
   const updateDecision = useUpdateDecision();
   const deleteDecision = useDeleteDecision();
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(() => {
+    const raw = searchParams.get('status');
+    return raw === 'open' || raw === 'decided' || raw === 'deferred' ? raw : 'all';
+  });
+  const [categoryFilter, setCategoryFilter] = useState<string>(
+    () => searchParams.get('scope') ?? 'all'
+  );
+  const [dateFrom, setDateFrom] = useState(() => searchParams.get('from') ?? '');
+  const [dateTo, setDateTo] = useState(() => searchParams.get('to') ?? '');
   const [showCreate, setShowCreate] = useState(false);
   const [selectedDecision, setSelectedDecision] = useState<DecisionItem | null>(null);
   const [editingDecision, setEditingDecision] = useState<EditableDecision | null>(null);
@@ -312,6 +421,15 @@ export default function DecisionsPage() {
   }, [allDecisions, statusFilter, categoryFilter, dateFrom, dateTo]);
 
   const hasActiveFilters = statusFilter !== 'all' || categoryFilter !== 'all' || dateFrom || dateTo;
+
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (statusFilter !== 'all') next.set('status', statusFilter);
+    if (categoryFilter !== 'all') next.set('scope', categoryFilter);
+    if (dateFrom) next.set('from', dateFrom);
+    if (dateTo) next.set('to', dateTo);
+    setSearchParams(next, { replace: true });
+  }, [statusFilter, categoryFilter, dateFrom, dateTo, setSearchParams]);
 
   const clearFilters = useCallback(() => {
     setStatusFilter('all');

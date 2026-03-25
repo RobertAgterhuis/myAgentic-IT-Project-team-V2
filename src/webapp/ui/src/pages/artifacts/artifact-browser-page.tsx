@@ -2,7 +2,8 @@
  * Artifact browser page — lists all registered artifacts with filtering.
  * M10 / Issue #392
  */
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
@@ -11,15 +12,16 @@ import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { MetricCard } from '@/components/ui/metric-card';
 import { EmptyState } from '@/components/ui/empty-state';
+import { AlertBanner } from '@/components/ui/alert-banner';
 import { PageShell } from '@/components/ui/page-shell';
 import { QueueTriageList, type QueueTriageItem } from '@/components/ui/queue-triage-list';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
-import { useArtifacts, useAuditEvidenceAggregation } from '@/hooks';
+import { useArtifactContent, useArtifacts, useAuditEvidenceAggregation } from '@/hooks';
 import type { Artifact } from '@/lib/api-types';
 import type { ColumnDef } from '@tanstack/react-table';
-import { Package, Hash, Layers, Filter, RefreshCw } from 'lucide-react';
+import { Package, Hash, Layers, Filter, RefreshCw, Copy, Download, Share2 } from 'lucide-react';
 
 /* ── Status badge mapping ── */
 const statusVariant: Record<string, 'success' | 'warning' | 'info' | 'secondary'> = {
@@ -28,6 +30,55 @@ const statusVariant: Record<string, 'success' | 'warning' | 'info' | 'secondary'
   SUPERSEDED: 'warning',
   INVALID: 'warning',
 };
+
+function buildContentChunks(content: string): Array<{ id: string; title: string; body: string }> {
+  const headingChunks = content
+    .split(/\n(?=##\s+)/)
+    .map((chunk) => chunk.trim())
+    .filter(Boolean);
+
+  if (headingChunks.length > 1) {
+    return headingChunks.map((chunk, index) => {
+      const firstLine = chunk.split('\n')[0] || `Section ${index + 1}`;
+      const title = firstLine.replace(/^##\s+/, '').trim() || `Section ${index + 1}`;
+      return { id: `heading-${index}`, title, body: chunk };
+    });
+  }
+
+  const lines = content.split(/\r?\n/);
+  const chunkSize = 60;
+  const chunks: Array<{ id: string; title: string; body: string }> = [];
+  for (let i = 0; i < lines.length; i += chunkSize) {
+    const start = i + 1;
+    const end = Math.min(i + chunkSize, lines.length);
+    chunks.push({
+      id: `lines-${start}`,
+      title: `Lines ${start}-${end}`,
+      body: lines.slice(i, end).join('\n'),
+    });
+  }
+  return chunks;
+}
+
+function buildDiffPreview(left: string, right: string): string[] {
+  const leftLines = left.split(/\r?\n/);
+  const rightLines = right.split(/\r?\n/);
+  const max = Math.max(leftLines.length, rightLines.length);
+  const diff: string[] = [];
+
+  for (let i = 0; i < max; i++) {
+    const before = leftLines[i] ?? '';
+    const after = rightLines[i] ?? '';
+    if (before === after) {
+      diff.push(`  ${after}`);
+      continue;
+    }
+    if (before) diff.push(`- ${before}`);
+    if (after) diff.push(`+ ${after}`);
+  }
+
+  return diff;
+}
 
 /* ── Table columns ── */
 const artifactColumns: ColumnDef<Artifact, unknown>[] = [
@@ -77,9 +128,14 @@ const artifactColumns: ColumnDef<Artifact, unknown>[] = [
 
 /* ── Main Page ── */
 export default function ArtifactBrowserPage() {
-  const [filterPhase, setFilterPhase] = useState('');
-  const [filterType, setFilterType] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filterPhase, setFilterPhase] = useState(() => searchParams.get('stage') ?? '');
+  const [filterType, setFilterType] = useState(() => searchParams.get('type') ?? '');
+  const [filterStatus, setFilterStatus] = useState(() => searchParams.get('status') ?? '');
+  const [selectedArtifactId, setSelectedArtifactId] = useState(
+    () => searchParams.get('artifact') ?? ''
+  );
+  const [diffArtifactId, setDiffArtifactId] = useState(() => searchParams.get('diff') ?? '');
 
   const filters = useMemo(() => {
     const f: { stage?: string; type?: string; status?: string } = {};
@@ -90,6 +146,8 @@ export default function ArtifactBrowserPage() {
   }, [filterPhase, filterType, filterStatus]);
 
   const { data, isLoading, error, refetch } = useArtifacts(filters);
+  const selectedArtifactContent = useArtifactContent(selectedArtifactId);
+  const diffArtifactContent = useArtifactContent(diffArtifactId);
   const auditAggregation = useAuditEvidenceAggregation();
 
   const artifacts = useMemo(() => data?.artifacts ?? [], [data]);
@@ -105,6 +163,67 @@ export default function ArtifactBrowserPage() {
     [artifacts]
   );
   const statuses = useMemo(() => [...new Set(artifacts.map((a) => a.status))].sort(), [artifacts]);
+
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (filterPhase) next.set('stage', filterPhase);
+    if (filterType) next.set('type', filterType);
+    if (filterStatus) next.set('status', filterStatus);
+    if (selectedArtifactId) next.set('artifact', selectedArtifactId);
+    if (diffArtifactId) next.set('diff', diffArtifactId);
+    setSearchParams(next, { replace: true });
+  }, [filterPhase, filterType, filterStatus, selectedArtifactId, diffArtifactId, setSearchParams]);
+
+  const chunkedArtifactContent = useMemo(() => {
+    const content = selectedArtifactContent.data?.content ?? '';
+    if (!content.trim()) return [];
+    return buildContentChunks(content);
+  }, [selectedArtifactContent.data?.content]);
+
+  const diffPreview = useMemo(() => {
+    const left = selectedArtifactContent.data?.content ?? '';
+    const right = diffArtifactContent.data?.content ?? '';
+    if (!left || !right) return [];
+    return buildDiffPreview(left, right);
+  }, [selectedArtifactContent.data?.content, diffArtifactContent.data?.content]);
+
+  const artifactShareUrl = useMemo(() => {
+    if (!selectedArtifactId || typeof window === 'undefined') return '';
+    const url = new URL(window.location.href);
+    url.searchParams.set('artifact', selectedArtifactId);
+    if (diffArtifactId) {
+      url.searchParams.set('diff', diffArtifactId);
+    } else {
+      url.searchParams.delete('diff');
+    }
+    return url.toString();
+  }, [selectedArtifactId, diffArtifactId]);
+
+  function handleCopyArtifactContent(): void {
+    const content = selectedArtifactContent.data?.content;
+    if (!content || !navigator.clipboard) return;
+    void navigator.clipboard.writeText(content);
+  }
+
+  function handleShareArtifactLink(): void {
+    if (!artifactShareUrl || !navigator.clipboard) return;
+    void navigator.clipboard.writeText(artifactShareUrl);
+  }
+
+  function handleDownloadArtifactContent(): void {
+    const content = selectedArtifactContent.data?.content;
+    if (!content) return;
+    const id = selectedArtifactId || 'artifact';
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${id}.txt`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  }
 
   const contextItems = useMemo<ContextStripItem[]>(
     () => [
@@ -338,6 +457,112 @@ export default function ArtifactBrowserPage() {
             )}
           </div>
         </Card>
+
+        <Card elevation="flat" className="p-4 bg-card/78 space-y-3">
+          <div className="grid gap-3 md:grid-cols-2">
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">Artifact viewer</label>
+              <select
+                className="h-9 w-full rounded-xl border border-border/70 bg-background/80 px-3 text-sm shadow-sm"
+                value={selectedArtifactId}
+                onChange={(e) => setSelectedArtifactId(e.target.value)}
+                aria-label="Select artifact for viewer"
+              >
+                <option value="">Select artifact</option>
+                {artifacts.map((artifact) => (
+                  <option key={artifact.id} value={artifact.id}>
+                    {artifact.id} ({artifact.artifact_type})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                Diff compare (optional)
+              </label>
+              <select
+                className="h-9 w-full rounded-xl border border-border/70 bg-background/80 px-3 text-sm shadow-sm"
+                value={diffArtifactId}
+                onChange={(e) => setDiffArtifactId(e.target.value)}
+                aria-label="Select artifact for diff"
+              >
+                <option value="">No diff target</option>
+                {artifacts
+                  .filter((artifact) => artifact.id !== selectedArtifactId)
+                  .map((artifact) => (
+                    <option key={artifact.id} value={artifact.id}>
+                      {artifact.id} ({artifact.artifact_type})
+                    </option>
+                  ))}
+              </select>
+            </div>
+          </div>
+
+          {selectedArtifactId && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button size="sm" variant="outline" onClick={handleCopyArtifactContent}>
+                <Copy className="size-4 mr-1.5" /> Copy
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleDownloadArtifactContent}>
+                <Download className="size-4 mr-1.5" /> Download
+              </Button>
+              <Button size="sm" variant="outline" onClick={handleShareArtifactLink}>
+                <Share2 className="size-4 mr-1.5" /> Share link
+              </Button>
+            </div>
+          )}
+        </Card>
+
+        {selectedArtifactId && (
+          <Card elevation="flat" className="p-4 bg-card/78 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold">Integrated artifact viewer</h3>
+                <p className="text-xs text-muted-foreground">
+                  Long artifacts are chunked into foldable sections for review efficiency.
+                </p>
+              </div>
+              {selectedArtifactContent.isLoading && <Badge variant="info">Loading content…</Badge>}
+            </div>
+
+            {selectedArtifactContent.error ? (
+              <AlertBanner variant="warning">
+                Unable to load artifact content for the selected artifact.
+              </AlertBanner>
+            ) : chunkedArtifactContent.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No readable artifact content available.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {chunkedArtifactContent.map((chunk, index) => (
+                  <details
+                    key={chunk.id}
+                    open={index === 0}
+                    className="rounded-lg border border-border/70 bg-background/70"
+                  >
+                    <summary className="cursor-pointer px-3 py-2 text-sm font-medium">
+                      {chunk.title}
+                    </summary>
+                    <pre className="max-h-72 overflow-auto border-t border-border/70 p-3 text-xs leading-relaxed whitespace-pre-wrap">
+                      {chunk.body}
+                    </pre>
+                  </details>
+                ))}
+              </div>
+            )}
+
+            {diffArtifactId && diffPreview.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold">Diff mode preview</h4>
+                <pre className="max-h-80 overflow-auto rounded-lg border border-border/70 bg-background/70 p-3 text-xs leading-relaxed whitespace-pre-wrap">
+                  {diffPreview.join('\n')}
+                </pre>
+              </div>
+            )}
+          </Card>
+        )}
 
         {/* Artifact table */}
         <section aria-label="Artifact list">

@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ModalDialog } from '@/components/ui/modal-dialog';
 import { InputField } from '@/components/ui/input-field';
 import { FormRow } from '@/components/ui/form-row';
+import { ValidationSummary } from '@/components/ui/validation-summary';
 import { useCreateDecision } from '@/hooks';
 import type { DecisionPriority } from '@/lib/api-types';
 import { RelatedDecisionsPanel } from './related-decisions-panel';
@@ -20,9 +21,16 @@ export function CreateDecisionDialog({
   const [scope, setScope] = useState('');
   const [text, setText] = useState('');
   const [priority, setPriority] = useState<DecisionPriority>('MEDIUM');
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const validationErrors = [
+    !text.trim() ? 'Question or decision text is required.' : null,
+    !scope.trim() ? 'Scope is required.' : null,
+  ].filter((error): error is string => Boolean(error));
 
   const handleSubmit = useCallback(() => {
-    if (!text.trim()) return;
+    setSubmitAttempted(true);
+    if (validationErrors.length > 0) return;
     create.mutate(
       { action: 'create', type: 'OPEN_QUESTION', priority, scope: scope.trim(), text: text.trim() },
       {
@@ -30,10 +38,11 @@ export function CreateDecisionDialog({
           onOpenChange(false);
           setScope('');
           setText('');
+          setSubmitAttempted(false);
         },
       }
     );
-  }, [create, text, scope, priority, onOpenChange]);
+  }, [create, text, scope, priority, onOpenChange, validationErrors.length]);
 
   return (
     <ModalDialog
@@ -56,6 +65,10 @@ export function CreateDecisionDialog({
       }
     >
       <div className="space-y-4">
+        {submitAttempted && validationErrors.length > 0 && (
+          <ValidationSummary errors={validationErrors} />
+        )}
+
         <InputField
           label="Question / Decision"
           value={text}

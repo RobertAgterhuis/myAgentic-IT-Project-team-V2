@@ -127,10 +127,11 @@ function validateManifest(manifest: Record<string, unknown>) {
   }
 
   // Validate phaseAgents structure (optional; defaults from canonical schema)
-  if (manifest.phaseAgents !== undefined && typeof manifest.phaseAgents !== 'object') {
+  const phaseAgents = manifest.phaseAgents;
+  if (phaseAgents !== undefined && typeof phaseAgents !== 'object') {
     errors.push('phaseAgents must be an object when provided');
-  } else if (manifest.phaseAgents && typeof manifest.phaseAgents === 'object') {
-    for (const [state, agents] of Object.entries(manifest.phaseAgents)) {
+  } else if (phaseAgents && typeof phaseAgents === 'object') {
+    for (const [state, agents] of Object.entries(phaseAgents)) {
       if (!Array.isArray(agents)) {
         errors.push(`phaseAgents['${state}'] must be an array`);
         continue;
@@ -153,7 +154,8 @@ function validateManifest(manifest: Record<string, unknown>) {
       if (!config.label) {
         errors.push(`modes['${mode}'] must have a 'label'`);
       }
-      if (!Array.isArray(config.phases)) {
+      const hasArrayPhases = Array.isArray(config.phases);
+      if (!hasArrayPhases) {
         errors.push(`modes['${mode}'].phases must be an array`);
       }
     }
@@ -282,6 +284,22 @@ function validateManifest(manifest: Record<string, unknown>) {
  */
 function resolveTemplatePaths(manifest: Record<string, unknown>, templateRoot: string) {
   const computedPhaseAgents = compileAgentPhaseMap();
+  const decisionCategories =
+    manifest.decisionCategories !== undefined && manifest.decisionCategories !== null
+      ? manifest.decisionCategories
+      : [];
+  const phaseArtifacts =
+    manifest.phaseArtifacts !== undefined && manifest.phaseArtifacts !== null
+      ? manifest.phaseArtifacts
+      : {};
+  const phaseLineage =
+    manifest.phaseLineage !== undefined && manifest.phaseLineage !== null
+      ? manifest.phaseLineage
+      : {};
+  const outputTemplates =
+    manifest.outputTemplates !== undefined && manifest.outputTemplates !== null
+      ? manifest.outputTemplates
+      : [];
 
   return {
     name: manifest.name,
@@ -307,10 +325,10 @@ function resolveTemplatePaths(manifest: Record<string, unknown>, templateRoot: s
     phaseGuardrails: manifest.phaseGuardrails,
     criticToPhase: manifest.criticToPhase,
     modes: manifest.modes,
-    decisionCategories: manifest.decisionCategories || [],
-    phaseArtifacts: manifest.phaseArtifacts || {},
-    phaseLineage: manifest.phaseLineage || {},
-    outputTemplates: manifest.outputTemplates || [],
+    decisionCategories,
+    phaseArtifacts,
+    phaseLineage,
+    outputTemplates,
     governance: manifest.governance
       ? {
           ...(manifest.governance as Record<string, unknown>),

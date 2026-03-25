@@ -1,8 +1,0 @@
-{
-  "id": "data",
-  "category": "data",
-  "controlPosture": "balanced",
-  "requiresWorkloadIdentity": true,
-  "appRegistrationRef": "entra://agents/data",
-  "templateCategory": "cross-functional"
-}

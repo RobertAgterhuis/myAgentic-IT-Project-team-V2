@@ -1,8 +1,0 @@
-{
-  "agentId": "documentation",
-  "serverId": "workspace-management",
-  "toolId": "workspace-management.delete_workspace",
-  "overrideMode": "deny",
-  "blocked": true,
-  "id": "documentation%3Aworkspace-management%3Aworkspace-management.delete_workspace%3A%2A"
-}

@@ -1,8 +1,0 @@
-{
-  "id": "ui",
-  "category": "engineering",
-  "controlPosture": "balanced",
-  "requiresWorkloadIdentity": true,
-  "appRegistrationRef": "entra://agents/ui",
-  "templateCategory": "phase"
-}

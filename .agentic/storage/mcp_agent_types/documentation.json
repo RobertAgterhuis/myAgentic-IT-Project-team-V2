@@ -1,8 +1,0 @@
-{
-  "id": "documentation",
-  "category": "documentation",
-  "controlPosture": "permissive",
-  "requiresWorkloadIdentity": false,
-  "appRegistrationRef": null,
-  "templateCategory": "cross-functional"
-}

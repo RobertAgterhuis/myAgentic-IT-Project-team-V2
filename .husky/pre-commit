@@ -10,6 +10,20 @@ if [ "$branch" = "main" ]; then
   exit 1
 fi
 
+# Guardrail: all decision-register changes must be included in commits.
+UNSTAGED_DECISIONS=$(git diff --name-only -- BusinessDocs/decisions)
+if [ -n "$UNSTAGED_DECISIONS" ]; then
+  echo ""
+  echo "  ERROR: Unstaged changes detected in BusinessDocs/decisions."
+  echo "  Policy: everything under BusinessDocs/decisions must be committed together."
+  echo ""
+  echo "$UNSTAGED_DECISIONS"
+  echo ""
+  echo "  Stage them first: git add BusinessDocs/decisions"
+  echo ""
+  exit 1
+fi
+
 # Run lint-staged (ESLint + Prettier on staged files)
 npx lint-staged
 

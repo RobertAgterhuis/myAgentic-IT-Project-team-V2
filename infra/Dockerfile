@@ -52,4 +52,4 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD ["node", "-e", "require('http').get('http://127.0.0.1:3000/api/health',res=>process.exit(res.statusCode===200?0:1)).on('error',()=>process.exit(1));"]
 
-CMD ["node", "node_modules/tsx/dist/cli.js", "src/webapp/server.ts"]
+CMD ["node", "node_modules/tsx/dist/cli.js", "src/webapp/bootstrap.ts", "src/webapp/server.ts"]

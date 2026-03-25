@@ -1,8 +1,0 @@
-{
-  "id": "infra",
-  "category": "operations",
-  "controlPosture": "strict",
-  "requiresWorkloadIdentity": true,
-  "appRegistrationRef": "entra://agents/infra",
-  "templateCategory": "runtime"
-}

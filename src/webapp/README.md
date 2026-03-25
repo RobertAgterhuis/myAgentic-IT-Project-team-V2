@@ -104,6 +104,8 @@ All configuration is environment-based. See `src/webapp/config.ts` for parsed de
 | `GITHUB_CLIENT_ID`                        | _(none)_                                              | {GitHub App ID}       | GitHub OAuth client ID for login                                                                                           |
 | `GITHUB_CLIENT_SECRET`                    | _(none)_                                              | {GitHub App Secret}   | GitHub OAuth client secret                                                                                                 |
 | `TRUST_PROXY`                             | `false`                                               | varies                | Trusted proxy configuration (false/true/hop-count/CIDR/list); defaults to reject all forwarded IPs                         |
+| `RATE_LIMIT_MAX`                          | `30`                                                  | `60` (recommended)    | Max requests per IP within the configured window for API rate limiting                                                     |
+| `RATE_LIMIT_WINDOW_MS`                    | `60000`                                               | `60000`               | Rate-limit window length in milliseconds                                                                                   |
 | `ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY` | auto-by-profile (`false` local/CI, `true` production) | `true` or scoped JSON | Dispatcher continuity policy override. Accepts booleans (`true`/`false`) or JSON: `{"states":["PHASE_2"],"agents":["05"]}` |
 
 ### Startup Behavior

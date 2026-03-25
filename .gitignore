@@ -34,7 +34,21 @@ npm-debug.log*
 BusinessDocs/audit/
 BusinessDocs/analytics-events.json
 BusinessDocs/session/command-queue.json
+BusinessDocs/session/chat-history/
+BusinessDocs/session/governance-state.json
+BusinessDocs/session/run-history.json
+BusinessDocs/session/session-state.json
+BusinessDocs/session/session-state-audit.json
+BusinessDocs/session/reevaluate-trigger.json
+BusinessDocs/metrics/runtime-metrics.json
+BusinessDocs/retrospectives/velocity-log.json
 .generated/
+.agentic/rag/
+.agentic/storage/
+
+# Decisions are canonical project artifacts and must stay tracked.
+!BusinessDocs/decisions/
+!BusinessDocs/decisions/*.md
 
 # Generated platform instruction files (regenerated via npm run generate:platform)
 .github/copilot-instructions.md

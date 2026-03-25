@@ -59,6 +59,15 @@ export function parseTrustedProxySetting(raw: string | undefined): TrustedProxyC
   return value;
 }
 
+function parsePositiveIntFromEnv(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw || !raw.trim()) return fallback;
+
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return parsed;
+}
+
 function normalizeStringList(input: unknown): string[] | undefined {
   if (!Array.isArray(input)) return undefined;
 
@@ -152,8 +161,8 @@ export const SSE_HEARTBEAT_MS = 30000;
 export const ANALYTICS_MAX_EVENTS = 5000;
 export const METRICS_FLUSH_INTERVAL_MS = 60000;
 export const SNAPSHOT_SYNC_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
-export const RATE_LIMIT_WINDOW_MS = 60_000;
-export const RATE_LIMIT_MAX = 30;
+export const RATE_LIMIT_WINDOW_MS = parsePositiveIntFromEnv('RATE_LIMIT_WINDOW_MS', 60_000);
+export const RATE_LIMIT_MAX = parsePositiveIntFromEnv('RATE_LIMIT_MAX', 30);
 
 /* ── Persistence layer (M23-005) ──────────────────────────────── */
 export type StorageProviderType = 'file' | 'sqlite';

@@ -23,12 +23,21 @@ export default defineConfig(async () => ({
     // Prevent duplicate React instances when deps are hoisted by npm workspaces,
     // which can cause Vite to re-optimize mid-run and produce "Failed to fetch
     // dynamically imported module" errors in Storybook browser tests.
-    dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
+    dedupe: ['react', 'react-dom', 'react/jsx-runtime', '@tanstack/react-query'],
   },
   optimizeDeps: {
     // Eagerly pre-bundle React so the browser Vite server never re-optimizes
     // these deps during a Storybook test run (race condition with workspace hoisting).
-    include: ['react', 'react-dom', 'react/jsx-runtime', 'react-dom/client', 'lucide-react'],
+    include: [
+      'react',
+      'react-dom',
+      'react/jsx-runtime',
+      'react-dom/client',
+      'lucide-react',
+      '@tanstack/react-query',
+      'msw-storybook-addon',
+      'msw',
+    ],
   },
   test: {
     globals: true,

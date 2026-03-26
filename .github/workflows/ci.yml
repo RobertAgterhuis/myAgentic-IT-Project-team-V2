@@ -98,7 +98,7 @@ jobs:
           npx vitest run --project storybook
         working-directory: src/webapp/ui
         env:
-          CACHE_DIR: ${{ runner.temp }}/sb-vitest-${{ github.run_id }}-${{ github.run_attempt }}
+          CACHE_DIR: ${{ github.workspace }}/src/webapp/ui/.cache-ci/sb-vitest-${{ github.run_id }}-${{ github.run_attempt }}
           VITEST_ONLY_PROJECT: storybook
 
       - name: Enforce coverage thresholds

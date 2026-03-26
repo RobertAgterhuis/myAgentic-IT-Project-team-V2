@@ -64,7 +64,6 @@ export default defineConfig(async () => ({
           fileParallelism: false,
           maxWorkers: 1,
           minWorkers: 1,
-          pool: 'forks',
           browser: {
             enabled: true,
             headless: true,

@@ -7,6 +7,9 @@ const config: StorybookConfig = {
   previewAnnotations: (entries = []) => {
     const seen = new Set<string>();
     return entries.filter((entry) => {
+      if (typeof entry !== 'string') {
+        return true;
+      }
       const normalized = entry.replace(/\\/g, '/').toLowerCase();
       if (seen.has(normalized)) {
         return false;

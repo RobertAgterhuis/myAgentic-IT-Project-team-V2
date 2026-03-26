@@ -32,7 +32,9 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci
+          npm ci --workspace @agentic-sdlc/ui
         working-directory: .
 
       - name: Build design tokens

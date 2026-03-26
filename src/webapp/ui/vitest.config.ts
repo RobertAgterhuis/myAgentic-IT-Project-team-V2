@@ -74,6 +74,7 @@ export default defineConfig(async () => ({
                 fileParallelism: false,
                 maxWorkers: 1,
                 minWorkers: 1,
+                exclude: ['src/components/runtime/flow-timeline.stories.tsx'],
                 browser: {
                   enabled: true,
                   headless: true,

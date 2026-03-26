@@ -45,7 +45,6 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm ci --prefix src/webapp/ui
 
       - name: Run ESLint
         run: npm run lint
@@ -73,12 +72,10 @@ jobs:
           cache: "npm"
           cache-dependency-path: |
             package-lock.json
-            src/webapp/ui/package-lock.json
 
       - name: Install dependencies
         run: |
           npm ci
-          npm ci --prefix src/webapp/ui
 
       - name: Run unit tests with coverage
         run: npm run test:coverage
@@ -88,7 +85,7 @@ jobs:
         working-directory: src/webapp/ui
 
       - name: Run frontend unit tests with coverage
-        run: npm run test:coverage --prefix src/webapp/ui -- --project unit
+        run: npm run test:coverage --workspace @agentic-sdlc/ui -- --project unit
         env:
           VITEST_ONLY_PROJECT: unit
 
@@ -306,7 +303,6 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm ci --prefix src/webapp/ui
 
       - name: Build web app for Playwright
         run: npm run build
@@ -421,7 +417,6 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
-          npm ci --prefix src/webapp/ui
 
       - name: Build application
         run: npm run build

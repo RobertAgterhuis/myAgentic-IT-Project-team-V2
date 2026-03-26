@@ -83,6 +83,10 @@ jobs:
       - name: Run unit tests with coverage
         run: npm run test:coverage
 
+      - name: Install Playwright browser for frontend coverage
+        run: npx playwright install chromium
+        working-directory: src/webapp/ui
+
       - name: Run frontend unit tests with coverage
         run: npm run test:coverage --prefix src/webapp/ui
 

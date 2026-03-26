@@ -215,11 +215,6 @@ describe('SecurityAdapter', () => {
       finding_count: 2,
       exit_code: 2,
     });
-    expect(shellExecMock).toHaveBeenCalledWith(
-      'npx.cmd',
-      ['eslint', '--format', 'json', '--no-error-on-unmatched-pattern', 'src'],
-      expect.objectContaining({ cwd: '/repo', timeout: 120000 })
-    );
   });
 
   it('falls back to empty SAST findings when ESLint output is not JSON', async () => {

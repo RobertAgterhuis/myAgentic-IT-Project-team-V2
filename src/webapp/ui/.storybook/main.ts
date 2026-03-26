@@ -22,6 +22,33 @@ const config: StorybookConfig = {
       return true;
     });
   },
+  // Ensure the Storybook Vite preview server collapses all React resolution
+  // paths to a single instance. npm workspace hoisting exposes React via both
+  // the real path and the @agentic-sdlc/ui symlink, which makes Vite treat
+  // them as two separate modules. When that happens react-dom sets its
+  // dispatcher on one copy while preview.ts calls useState on the other,
+  // producing "Cannot read properties of null (reading 'useState')".
+  // resolve.dedupe collapses both paths; optimizeDeps.include pre-bundles
+  // React eagerly so the server never re-optimizes mid-run.
+  async viteFinal(config) {
+    return {
+      ...config,
+      resolve: {
+        ...config.resolve,
+        dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
+      },
+      optimizeDeps: {
+        ...config.optimizeDeps,
+        include: [
+          ...(config.optimizeDeps?.include ?? []),
+          'react',
+          'react-dom',
+          'react/jsx-runtime',
+          'react-dom/client',
+        ],
+      },
+    };
+  },
   staticDirs: ['./public'],
 };
 export default config;

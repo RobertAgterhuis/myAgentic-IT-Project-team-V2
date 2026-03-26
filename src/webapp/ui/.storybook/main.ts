@@ -35,7 +35,7 @@ const config: StorybookConfig = {
       ...config,
       resolve: {
         ...config.resolve,
-        dedupe: ['react', 'react-dom', 'react/jsx-runtime'],
+        dedupe: ['react', 'react-dom', 'react/jsx-runtime', '@tanstack/react-query'],
       },
       optimizeDeps: {
         ...config.optimizeDeps,
@@ -46,6 +46,9 @@ const config: StorybookConfig = {
           'react/jsx-runtime',
           'react-dom/client',
           'lucide-react',
+          '@tanstack/react-query',
+          'msw-storybook-addon',
+          'msw',
         ],
       },
     };

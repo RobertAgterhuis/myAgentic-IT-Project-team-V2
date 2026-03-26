@@ -93,9 +93,12 @@ jobs:
           VITEST_ONLY_PROJECT: unit
 
       - name: Run frontend Storybook component tests
-        run: npx vitest run --project storybook
+        run: |
+          rm -rf "$CACHE_DIR/storybook"
+          npx vitest run --project storybook
         working-directory: src/webapp/ui
         env:
+          CACHE_DIR: ${{ runner.temp }}/sb-vitest-${{ github.run_id }}-${{ github.run_attempt }}
           VITEST_ONLY_PROJECT: storybook
 
       - name: Enforce coverage thresholds

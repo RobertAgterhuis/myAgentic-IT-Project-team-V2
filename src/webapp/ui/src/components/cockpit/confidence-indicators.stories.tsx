@@ -47,6 +47,7 @@ const sampleScore: ConfidenceScore = {
 
 export const CardDefault: CardStory = {
   args: { score: sampleScore },
+  render: (args) => <ConfidenceCard {...args} />,
 };
 
 /* ── Panel stories ── */
@@ -88,6 +89,7 @@ const agentConfidence: ConfidenceScore = {
 
 export const PanelTypical: PanelStory = {
   args: { sessionHealth, sprintReadiness, agentConfidence },
+  render: (args) => <ConfidencePanel {...args} />,
 };
 
 export const PanelEmpty: PanelStory = {
@@ -96,4 +98,5 @@ export const PanelEmpty: PanelStory = {
     sprintReadiness: { label: 'Sprint Readiness', score: 0, factors: [] },
     agentConfidence: { label: 'Agent Confidence', score: 0, factors: [] },
   },
+  render: (args) => <ConfidencePanel {...args} />,
 };

@@ -18,20 +18,6 @@ const RAG_STORE_FILE_PATTERNS = [
   '\\src\\webapp\\services\\rag\\rag-store.ts',
 ];
 
-function readSummary(filePath) {
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Coverage summary not found at ${filePath}. Run test coverage first.`);
-  }
-
-  const raw = fs.readFileSync(filePath, 'utf8');
-  const parsed = JSON.parse(raw);
-  if (!parsed?.total) {
-    throw new Error(`Invalid coverage summary format in ${filePath}.`);
-  }
-
-  return parsed.total;
-}
-
 function metricValue(total, metric) {
   const value = total?.[metric]?.pct;
   if (typeof value !== 'number' || Number.isNaN(value)) {
@@ -58,6 +44,10 @@ function findRagStoreCoverage(summary) {
 }
 
 try {
+  if (!fs.existsSync(SUMMARY_PATH)) {
+    throw new Error(`Coverage summary not found at ${SUMMARY_PATH}. Run test coverage first.`);
+  }
+
   const raw = JSON.parse(fs.readFileSync(SUMMARY_PATH, 'utf8'));
   const total = raw?.total;
   if (!total) {

@@ -45,6 +45,7 @@ const config: StorybookConfig = {
           'react-dom',
           'react/jsx-runtime',
           'react-dom/client',
+          'lucide-react',
         ],
       },
     };

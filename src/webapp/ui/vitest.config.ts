@@ -28,7 +28,7 @@ export default defineConfig(async () => ({
   optimizeDeps: {
     // Eagerly pre-bundle React so the browser Vite server never re-optimizes
     // these deps during a Storybook test run (race condition with workspace hoisting).
-    include: ['react', 'react-dom', 'react/jsx-runtime', 'react-dom/client'],
+    include: ['react', 'react-dom', 'react/jsx-runtime', 'react-dom/client', 'lucide-react'],
   },
   test: {
     globals: true,

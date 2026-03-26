@@ -3,6 +3,9 @@
   "version": "0.4.0-rc.1",
   "description": "Agentic SDLC Platform - Multi-agent software development system",
   "main": "src/webapp/server.ts",
+  "workspaces": [
+    "src/webapp/ui"
+  ],
   "scripts": {
     "prepare": "husky",
     "start": "npm run plugin -- identity bootstrap && npm run plugin -- bootstrap --apply && tsx src/webapp/bootstrap.ts src/webapp/server.ts",
@@ -24,13 +27,13 @@
     "tms:validate": "node scripts/weblate-sync.js validate",
     "tms:pull": "node scripts/weblate-sync.js pull",
     "tms:push": "node scripts/weblate-sync.js push",
-    "lint": "eslint . --max-warnings=0 && npm run lint --prefix src/webapp/ui && npm run lint:ui:tokens",
+    "lint": "eslint . --max-warnings=0 && npm run lint --workspace @agentic-sdlc/ui && npm run lint:ui:tokens",
     "lint:ui:tokens": "node scripts/check-ui-token-typography.mjs",
-    "lint:fix": "eslint . --fix && npm run lint --prefix src/webapp/ui -- --fix",
+    "lint:fix": "eslint . --fix && npm run lint --workspace @agentic-sdlc/ui -- --fix",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
-    "build": "npm run tokens:build && npm run build --prefix src/webapp/ui",
+    "build": "npm run tokens:build && npm run build --workspace @agentic-sdlc/ui",
     "tokens:build": "node scripts/build-tokens.mjs",
     "plugin": "tsx src/webapp/plugins/mcp-governance/cli.ts",
     "test:e2e": "npx playwright test",

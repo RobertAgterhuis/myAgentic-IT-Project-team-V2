@@ -12,12 +12,29 @@ import { showToast } from '@/components/ui/toast-system';
 
 const SSE_URL = '/api/events';
 const MAX_RECONNECT_DELAY = 30_000;
+const EVENT_DEDUP_WINDOW_MS = 5_000;
 
 export type SSEEvent = {
   type: string;
   timestamp?: string;
   [key: string]: unknown;
 };
+
+function createEventFingerprint(event: SSEEvent): string {
+  return JSON.stringify(
+    Object.entries(event)
+      .sort(([left], [right]) => left.localeCompare(right))
+      .map(([key, value]) => [key, value ?? null])
+  );
+}
+
+function pruneProcessedEvents(cache: Map<string, number>, now: number) {
+  for (const [fingerprint, seenAt] of cache.entries()) {
+    if (now - seenAt > EVENT_DEDUP_WINDOW_MS) {
+      cache.delete(fingerprint);
+    }
+  }
+}
 
 /** Map SSE event types to the query keys that should be invalidated. */
 function getInvalidationKeys(eventType: string): readonly (readonly string[])[] {
@@ -110,10 +127,14 @@ export function useSSEEvents() {
   const esRef = useRef<EventSource | null>(null);
   const reconnectAttemptRef = useRef(0);
   const reconnectTimerRef = useRef<ReturnType<typeof setTimeout>>();
+  const processedEventsRef = useRef<Map<string, number>>(new Map());
 
   const connect = useCallback(() => {
     // SSR / jsdom guard — EventSource is browser-only
-    if (typeof EventSource === 'undefined') return;
+    if (typeof EventSource === 'undefined') {
+      useUIStore.getState().setConnectionStatus('disconnected');
+      return;
+    }
 
     // Clean up any existing connection
     esRef.current?.close();
@@ -126,6 +147,7 @@ export function useSSEEvents() {
     es.onopen = () => {
       reconnectAttemptRef.current = 0;
       useUIStore.getState().setConnectionStatus('connected');
+      useUIStore.getState().resetConnectionRecovery();
     };
 
     es.onmessage = (event: MessageEvent) => {
@@ -135,6 +157,15 @@ export function useSSEEvents() {
       } catch {
         return;
       }
+
+      const now = Date.now();
+      pruneProcessedEvents(processedEventsRef.current, now);
+      const fingerprint = createEventFingerprint(parsed);
+      const previousSeenAt = processedEventsRef.current.get(fingerprint);
+      if (previousSeenAt && now - previousSeenAt <= EVENT_DEDUP_WINDOW_MS) {
+        return;
+      }
+      processedEventsRef.current.set(fingerprint, now);
 
       // Update last event for live status widgets
       useUIStore.getState().setLastSSEEvent(parsed);
@@ -156,6 +187,12 @@ export function useSSEEvents() {
 
       // Exponential backoff reconnect
       const delay = Math.min(1000 * 2 ** reconnectAttemptRef.current, MAX_RECONNECT_DELAY);
+      const nextAttempt = reconnectAttemptRef.current + 1;
+      useUIStore.getState().setConnectionRecovery({
+        attempt: nextAttempt,
+        nextRetryAt: Date.now() + delay,
+        lastDelayMs: delay,
+      });
       reconnectAttemptRef.current += 1;
 
       reconnectTimerRef.current = setTimeout(connect, delay);
@@ -164,12 +201,15 @@ export function useSSEEvents() {
 
   useEffect(() => {
     connect();
+    const processedEvents = processedEventsRef.current;
 
     return () => {
       clearTimeout(reconnectTimerRef.current);
       esRef.current?.close();
       esRef.current = null;
+      processedEvents.clear();
       useUIStore.getState().setConnectionStatus('disconnected');
+      useUIStore.getState().resetConnectionRecovery();
     };
   }, [connect]);
 }

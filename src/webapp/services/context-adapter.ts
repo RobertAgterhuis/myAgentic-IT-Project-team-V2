@@ -45,5 +45,6 @@ export function toServiceContext(ctx: ServerContext | Record<string, unknown>): 
     helpDir: (ctx.HELP_DIR || '') as string,
     ragStore: ctx._ragStore as ServiceContext['ragStore'],
     embeddingProvider: ctx._embeddingProvider as ServiceContext['embeddingProvider'],
+    semanticMemoryStore: ctx._semanticMemoryStore as ServiceContext['semanticMemoryStore'],
   };
 }

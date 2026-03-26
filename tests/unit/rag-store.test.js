@@ -30,6 +30,10 @@ function cleanup(base) {
   }
 }
 
+function makeDbPath(base) {
+  return path.join(base, 'rag.sqlite');
+}
+
 const COLLECTION = {
   id: 'col-1',
   name: 'test-collection',
@@ -239,5 +243,70 @@ describe('RagStore.delete', () => {
 
   test('handles delete on non-existent collection without error', async () => {
     await expect(store.delete('no-such-col', ['dh-1'])).resolves.toBeUndefined();
+  });
+});
+
+describe('RagStore writer-sharded strategy', () => {
+  let dirs;
+  let dbPath;
+  let storeA;
+  let storeB;
+  let reader;
+
+  beforeEach(() => {
+    dirs = tmpDirs();
+    dbPath = makeDbPath(dirs.base);
+    storeA = new RagStore(dbPath, dirs.lanceDir, {
+      vectorStrategy: 'writer-sharded',
+      writerId: 'node-a',
+    });
+    storeB = new RagStore(dbPath, dirs.lanceDir, {
+      vectorStrategy: 'writer-sharded',
+      writerId: 'node-b',
+    });
+    reader = new RagStore(dbPath, dirs.lanceDir, {
+      vectorStrategy: 'writer-sharded',
+      writerId: 'reader',
+    });
+    storeA.ensureCollection(COLLECTION);
+  });
+
+  afterEach(() => {
+    storeA.close();
+    storeB.close();
+    reader.close();
+    cleanup(dirs.base);
+  });
+
+  test('queries merge results across writer shards', async () => {
+    await storeA.upsert('col-1', [makeChunk('a1', 'shared-a', 'alpha shard', [1.0, 0.0, 0.0])]);
+    await storeB.upsert('col-1', [makeChunk('b1', 'shared-b', 'beta shard', [0.0, 1.0, 0.0])]);
+
+    const alpha = await reader.query('col-1', [1.0, 0.0, 0.0], 5);
+    const beta = await reader.query('col-1', [0.0, 1.0, 0.0], 5);
+
+    expect(alpha.some((result) => result.chunk.chunk_text === 'alpha shard')).toBe(true);
+    expect(beta.some((result) => result.chunk.chunk_text === 'beta shard')).toBe(true);
+  });
+
+  test('re-upsert removes stale copies from other writer shards', async () => {
+    await storeA.upsert('col-1', [makeChunk('a1', 'shared-hash', 'first owner', [1.0, 0.0, 0.0])]);
+    await storeB.upsert('col-1', [makeChunk('b1', 'shared-hash', 'second owner', [1.0, 0.0, 0.0])]);
+
+    const results = await reader.query('col-1', [1.0, 0.0, 0.0], 10);
+    const matching = results.filter((result) => result.chunk.chunk_hash === 'shared-hash');
+
+    expect(matching).toHaveLength(1);
+    expect(matching[0].chunk.chunk_text).toBe('second owner');
+  });
+
+  test('delete removes vectors from every writer shard', async () => {
+    await storeA.upsert('col-1', [makeChunk('a1', 'hash-a', 'alpha shard', [1.0, 0.0, 0.0])]);
+    await storeB.upsert('col-1', [makeChunk('b1', 'hash-b', 'beta shard', [0.0, 1.0, 0.0])]);
+
+    await reader.delete('col-1', ['hash-a', 'hash-b']);
+
+    await expect(reader.query('col-1', [1.0, 0.0, 0.0], 5)).resolves.toEqual([]);
+    await expect(reader.query('col-1', [0.0, 1.0, 0.0], 5)).resolves.toEqual([]);
   });
 });

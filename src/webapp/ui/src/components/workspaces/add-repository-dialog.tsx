@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ModalDialog } from '@/components/ui/modal-dialog';
 import { InputField } from '@/components/ui/input-field';
 import { FormRow } from '@/components/ui/form-row';
+import { AsyncMutationFeedback } from '@/components/ui/async-mutation-feedback';
 import { useAddRepository } from '@/hooks';
 
 export function AddRepositoryDialog({
@@ -79,6 +80,13 @@ export function AddRepositoryDialog({
       }
     >
       <div className="space-y-4">
+        <AsyncMutationFeedback
+          mutation={addRepository}
+          pendingMessage="Adding repository..."
+          successMessage="Repository added."
+          errorMessagePrefix="Adding repository failed."
+          onRetry={handleSubmit}
+        />
         <InputField
           label="Repository ID"
           value={repoId}

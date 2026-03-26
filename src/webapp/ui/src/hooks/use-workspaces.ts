@@ -19,6 +19,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { apiGet, apiPost, apiPut, apiDelete } from '@/lib/api-client';
 import { queryKeys } from '@/lib/query-keys';
+import { applyOptimisticPatches, rollbackOptimisticPatches } from '@/lib/optimistic-updates';
 import { showToast } from '@/components/ui/toast-system';
 import type {
   WorkspacesListResponse,
@@ -56,8 +57,44 @@ export function useCreateWorkspace() {
     mutationFn: (payload: { id: string; name: string; owner: string }) =>
       apiPost<OkResponse & { workspace: WorkspaceSummary }>('/workspaces', payload),
 
+    onMutate: async (payload) => {
+      const now = new Date().toISOString();
+      const optimisticWorkspace: WorkspaceSummary = {
+        id: payload.id,
+        name: payload.name,
+        owner: payload.owner,
+        repositories: [],
+        created_at: now,
+        updated_at: now,
+      };
+
+      const snapshots = await applyOptimisticPatches(qc, [
+        {
+          queryKey: queryKeys.workspaces.all,
+          updater: (current) => {
+            const previous = current as WorkspacesListResponse | undefined;
+            if (!previous) return previous;
+            return {
+              ...previous,
+              count: previous.count + 1,
+              workspaces: [...previous.workspaces, optimisticWorkspace],
+            } satisfies WorkspacesListResponse;
+          },
+        },
+      ]);
+
+      return { snapshots };
+    },
+
+    onError: (_err, _variables, context) => {
+      rollbackOptimisticPatches(qc, context?.snapshots);
+    },
+
     onSuccess: (data) => {
       showToast.success(`Workspace "${data.workspace.name}" created`);
+    },
+
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: queryKeys.workspaces.all });
     },
   });
@@ -74,11 +111,54 @@ export function useUpdateWorkspace() {
         payload.updates
       ),
 
-    onSuccess: (data) => {
+    onMutate: async (payload) => {
+      const snapshots = await applyOptimisticPatches(qc, [
+        {
+          queryKey: queryKeys.workspaces.all,
+          updater: (current) => {
+            const previous = current as WorkspacesListResponse | undefined;
+            if (!previous) return previous;
+            return {
+              ...previous,
+              workspaces: previous.workspaces.map((workspace) =>
+                workspace.id === payload.workspaceId
+                  ? { ...workspace, ...payload.updates }
+                  : workspace
+              ),
+            } satisfies WorkspacesListResponse;
+          },
+        },
+        {
+          queryKey: queryKeys.workspaces.detail(payload.workspaceId),
+          updater: (current) => {
+            const previous = current as WorkspaceDetailResponse | undefined;
+            if (!previous) return previous;
+            return {
+              ...previous,
+              workspace: {
+                ...previous.workspace,
+                ...payload.updates,
+              },
+            } satisfies WorkspaceDetailResponse;
+          },
+        },
+      ]);
+
+      return { snapshots };
+    },
+
+    onError: (_err, _variables, context) => {
+      rollbackOptimisticPatches(qc, context?.snapshots);
+    },
+
+    onSuccess: () => {
       showToast.success('Workspace updated');
+    },
+
+    onSettled: (_data, _error, variables) => {
       qc.invalidateQueries({ queryKey: queryKeys.workspaces.all });
       qc.invalidateQueries({
-        queryKey: queryKeys.workspaces.detail(data.workspace.id),
+        queryKey: queryKeys.workspaces.detail(variables.workspaceId),
       });
     },
   });
@@ -92,8 +172,38 @@ export function useDeleteWorkspace() {
     mutationFn: (workspaceId: string) =>
       apiDelete<OkResponse>(`/workspaces/${encodeURIComponent(workspaceId)}`),
 
+    onMutate: async (workspaceId) => {
+      const snapshots = await applyOptimisticPatches(qc, [
+        {
+          queryKey: queryKeys.workspaces.all,
+          updater: (current) => {
+            const previous = current as WorkspacesListResponse | undefined;
+            if (!previous) return previous;
+
+            const nextWorkspaces = previous.workspaces.filter(
+              (workspace) => workspace.id !== workspaceId
+            );
+            return {
+              ...previous,
+              count: nextWorkspaces.length,
+              workspaces: nextWorkspaces,
+            } satisfies WorkspacesListResponse;
+          },
+        },
+      ]);
+
+      return { snapshots };
+    },
+
+    onError: (_err, _variables, context) => {
+      rollbackOptimisticPatches(qc, context?.snapshots);
+    },
+
     onSuccess: () => {
       showToast.success('Workspace deleted');
+    },
+
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: queryKeys.workspaces.all });
     },
   });
@@ -120,8 +230,56 @@ export function useAddRepository() {
         payload.repository
       ),
 
-    onSuccess: (_data, variables) => {
+    onMutate: async (payload) => {
+      const snapshots = await applyOptimisticPatches(qc, [
+        {
+          queryKey: queryKeys.workspaces.detail(payload.workspaceId),
+          updater: (current) => {
+            const previous = current as WorkspaceDetailResponse | undefined;
+            if (!previous) return previous;
+
+            return {
+              ...previous,
+              workspace: {
+                ...previous.workspace,
+                repositories: [...previous.workspace.repositories, payload.repository],
+              },
+            } satisfies WorkspaceDetailResponse;
+          },
+        },
+        {
+          queryKey: queryKeys.workspaces.all,
+          updater: (current) => {
+            const previous = current as WorkspacesListResponse | undefined;
+            if (!previous) return previous;
+
+            return {
+              ...previous,
+              workspaces: previous.workspaces.map((workspace) =>
+                workspace.id === payload.workspaceId
+                  ? {
+                      ...workspace,
+                      repositories: [...workspace.repositories, payload.repository],
+                    }
+                  : workspace
+              ),
+            } satisfies WorkspacesListResponse;
+          },
+        },
+      ]);
+
+      return { snapshots };
+    },
+
+    onError: (_err, _variables, context) => {
+      rollbackOptimisticPatches(qc, context?.snapshots);
+    },
+
+    onSuccess: () => {
       showToast.success('Repository added');
+    },
+
+    onSettled: (_data, _error, variables) => {
       qc.invalidateQueries({
         queryKey: queryKeys.workspaces.detail(variables.workspaceId),
       });
@@ -140,8 +298,60 @@ export function useRemoveRepository() {
         `/workspaces/${encodeURIComponent(payload.workspaceId)}/repositories/${encodeURIComponent(payload.repositoryId)}`
       ),
 
-    onSuccess: (_data, variables) => {
+    onMutate: async (payload) => {
+      const snapshots = await applyOptimisticPatches(qc, [
+        {
+          queryKey: queryKeys.workspaces.detail(payload.workspaceId),
+          updater: (current) => {
+            const previous = current as WorkspaceDetailResponse | undefined;
+            if (!previous) return previous;
+
+            return {
+              ...previous,
+              workspace: {
+                ...previous.workspace,
+                repositories: previous.workspace.repositories.filter(
+                  (repository) => repository.id !== payload.repositoryId
+                ),
+              },
+            } satisfies WorkspaceDetailResponse;
+          },
+        },
+        {
+          queryKey: queryKeys.workspaces.all,
+          updater: (current) => {
+            const previous = current as WorkspacesListResponse | undefined;
+            if (!previous) return previous;
+
+            return {
+              ...previous,
+              workspaces: previous.workspaces.map((workspace) =>
+                workspace.id === payload.workspaceId
+                  ? {
+                      ...workspace,
+                      repositories: workspace.repositories.filter(
+                        (repository) => repository.id !== payload.repositoryId
+                      ),
+                    }
+                  : workspace
+              ),
+            } satisfies WorkspacesListResponse;
+          },
+        },
+      ]);
+
+      return { snapshots };
+    },
+
+    onError: (_err, _variables, context) => {
+      rollbackOptimisticPatches(qc, context?.snapshots);
+    },
+
+    onSuccess: () => {
       showToast.success('Repository removed');
+    },
+
+    onSettled: (_data, _error, variables) => {
       qc.invalidateQueries({
         queryKey: queryKeys.workspaces.detail(variables.workspaceId),
       });
@@ -164,8 +374,45 @@ export function useCreateProject() {
         payload.project
       ),
 
-    onSuccess: (_data, variables) => {
+    onMutate: async (payload) => {
+      const now = new Date().toISOString();
+      const optimisticProject: WorkspaceProject = {
+        id: payload.project.id,
+        workspaceId: payload.workspaceId,
+        name: payload.project.name,
+        repositories: payload.project.repositories ?? [],
+        sessions: [],
+        status: 'draft',
+        created_at: now,
+        updated_at: now,
+      };
+
+      const snapshots = await applyOptimisticPatches(qc, [
+        {
+          queryKey: queryKeys.workspaces.detail(payload.workspaceId),
+          updater: (current) => {
+            const previous = current as WorkspaceDetailResponse | undefined;
+            if (!previous) return previous;
+            return {
+              ...previous,
+              projects: [...previous.projects, optimisticProject],
+            } satisfies WorkspaceDetailResponse;
+          },
+        },
+      ]);
+
+      return { snapshots };
+    },
+
+    onError: (_err, _variables, context) => {
+      rollbackOptimisticPatches(qc, context?.snapshots);
+    },
+
+    onSuccess: () => {
       showToast.success('Project created');
+    },
+
+    onSettled: (_data, _error, variables) => {
       qc.invalidateQueries({
         queryKey: queryKeys.workspaces.detail(variables.workspaceId),
       });
@@ -188,8 +435,35 @@ export function useUpdateProject() {
         payload.updates
       ),
 
-    onSuccess: (_data, variables) => {
+    onMutate: async (payload) => {
+      const snapshots = await applyOptimisticPatches(qc, [
+        {
+          queryKey: queryKeys.workspaces.detail(payload.workspaceId),
+          updater: (current) => {
+            const previous = current as WorkspaceDetailResponse | undefined;
+            if (!previous) return previous;
+            return {
+              ...previous,
+              projects: previous.projects.map((project) =>
+                project.id === payload.projectId ? { ...project, ...payload.updates } : project
+              ),
+            } satisfies WorkspaceDetailResponse;
+          },
+        },
+      ]);
+
+      return { snapshots };
+    },
+
+    onError: (_err, _variables, context) => {
+      rollbackOptimisticPatches(qc, context?.snapshots);
+    },
+
+    onSuccess: () => {
       showToast.success('Project updated');
+    },
+
+    onSettled: (_data, _error, variables) => {
       qc.invalidateQueries({
         queryKey: queryKeys.workspaces.detail(variables.workspaceId),
       });
@@ -205,8 +479,33 @@ export function useDeleteProject() {
     mutationFn: (payload: { projectId: string; workspaceId: string }) =>
       apiDelete<OkResponse>(`/projects/${encodeURIComponent(payload.projectId)}`),
 
-    onSuccess: (_data, variables) => {
+    onMutate: async (payload) => {
+      const snapshots = await applyOptimisticPatches(qc, [
+        {
+          queryKey: queryKeys.workspaces.detail(payload.workspaceId),
+          updater: (current) => {
+            const previous = current as WorkspaceDetailResponse | undefined;
+            if (!previous) return previous;
+            return {
+              ...previous,
+              projects: previous.projects.filter((project) => project.id !== payload.projectId),
+            } satisfies WorkspaceDetailResponse;
+          },
+        },
+      ]);
+
+      return { snapshots };
+    },
+
+    onError: (_err, _variables, context) => {
+      rollbackOptimisticPatches(qc, context?.snapshots);
+    },
+
+    onSuccess: () => {
       showToast.success('Project deleted');
+    },
+
+    onSettled: (_data, _error, variables) => {
       qc.invalidateQueries({
         queryKey: queryKeys.workspaces.detail(variables.workspaceId),
       });

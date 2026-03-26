@@ -8,7 +8,7 @@
 import type { FileStore, InMemoryStore } from '../store';
 import type { FileCache } from '../cache';
 import type { AuditTrail } from '../audit';
-import type { EmbeddingProviderFacade, RagStoreFacade } from '../context';
+import type { EmbeddingProviderFacade, RagStoreFacade, SemanticMemoryFacade } from '../context';
 
 /* ── Store abstraction ────────────────────────────────────────── */
 
@@ -29,6 +29,7 @@ export interface ServiceContext {
   helpDir: string;
   ragStore?: RagStoreFacade;
   embeddingProvider?: EmbeddingProviderFacade;
+  semanticMemoryStore?: SemanticMemoryFacade;
   /** Atomic-write helper: write + cache invalidate + audit log + SSE */
   safeWrite(
     filePath: string,

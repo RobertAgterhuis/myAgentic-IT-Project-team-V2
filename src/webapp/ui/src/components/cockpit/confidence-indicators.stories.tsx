@@ -27,14 +27,13 @@ export const Low: BadgeStory = {
 };
 
 /* ── Card stories exported separately ── */
-const metaCard = {
+const _metaCard = {
   title: 'Cockpit/ConfidenceCard',
   component: ConfidenceCard,
   tags: ['autodocs'],
 } satisfies Meta<typeof ConfidenceCard>;
-export { metaCard };
 
-type CardStory = StoryObj<typeof metaCard>;
+type CardStory = StoryObj<typeof _metaCard>;
 
 const sampleScore: ConfidenceScore = {
   label: 'Architecture',
@@ -48,17 +47,17 @@ const sampleScore: ConfidenceScore = {
 
 export const CardDefault: CardStory = {
   args: { score: sampleScore },
+  render: (args) => <ConfidenceCard {...args} />,
 };
 
 /* ── Panel stories ── */
-const metaPanel = {
+const _metaPanel = {
   title: 'Cockpit/ConfidencePanel',
   component: ConfidencePanel,
   tags: ['autodocs'],
 } satisfies Meta<typeof ConfidencePanel>;
-export { metaPanel };
 
-type PanelStory = StoryObj<typeof metaPanel>;
+type PanelStory = StoryObj<typeof _metaPanel>;
 
 const sessionHealth: ConfidenceScore = {
   label: 'Session Health',
@@ -90,6 +89,7 @@ const agentConfidence: ConfidenceScore = {
 
 export const PanelTypical: PanelStory = {
   args: { sessionHealth, sprintReadiness, agentConfidence },
+  render: (args) => <ConfidencePanel {...args} />,
 };
 
 export const PanelEmpty: PanelStory = {
@@ -98,4 +98,5 @@ export const PanelEmpty: PanelStory = {
     sprintReadiness: { label: 'Sprint Readiness', score: 0, factors: [] },
     agentConfidence: { label: 'Agent Confidence', score: 0, factors: [] },
   },
+  render: (args) => <ConfidencePanel {...args} />,
 };

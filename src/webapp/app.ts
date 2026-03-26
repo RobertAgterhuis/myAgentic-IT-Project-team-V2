@@ -31,7 +31,14 @@ import type { AuthenticatedRequest } from './auth';
 import { structuredLog } from './middleware';
 import { errorResponse } from './utils/errors';
 import { securityHeadersPlugin, rateLimitPlugin, bodyParserPlugin } from './plugins';
-import { TRUST_PROXY, RATE_LIMIT_MAX, RATE_LIMIT_WINDOW_MS } from './config';
+import {
+  TRUST_PROXY,
+  RATE_LIMIT_MAX,
+  RATE_LIMIT_WINDOW_MS,
+  RATE_LIMIT_AUTH_MAX,
+  RATE_LIMIT_ADMIN_MAX,
+  RATE_LIMIT_MUTATION_MAX,
+} from './config';
 
 /* ── Fastify type augmentation ────────────────────────────────── */
 
@@ -86,6 +93,9 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
     disabled: options.disableRateLimit,
     max: RATE_LIMIT_MAX,
     timeWindow: RATE_LIMIT_WINDOW_MS,
+    authMax: RATE_LIMIT_AUTH_MAX,
+    adminMax: RATE_LIMIT_ADMIN_MAX,
+    mutationMax: RATE_LIMIT_MUTATION_MAX,
   });
 
   /* ── OpenAPI / Swagger ────────────────────────────────────── */

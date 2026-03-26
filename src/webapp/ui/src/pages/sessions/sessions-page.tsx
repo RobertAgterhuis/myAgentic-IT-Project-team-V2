@@ -358,6 +358,7 @@ export default function SessionsPage() {
           emptyTitle="No runs queued"
           emptyDescription="Queue a command to start the first run."
           onItemAction={(sessionId) => navigate(`/sessions/${encodeURIComponent(sessionId)}`)}
+          headingLevel={2}
         />
 
         {/* Session list */}

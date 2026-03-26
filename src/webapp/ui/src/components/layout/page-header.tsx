@@ -7,7 +7,7 @@ interface HeaderChip {
   tone?: 'default' | 'info' | 'success' | 'warning' | 'critical';
 }
 
-interface PageHeaderProps extends React.ComponentProps<'header'> {
+interface PageHeaderProps extends React.ComponentProps<'div'> {
   title: string;
   subtitle?: string;
   chips?: HeaderChip[];
@@ -34,7 +34,7 @@ export function PageHeader({
   ...props
 }: PageHeaderProps) {
   return (
-    <header
+    <div
       className={cn(
         'surface-elevated motion-fade-in rounded-md border border-border/70 p-5',
         className
@@ -65,6 +65,6 @@ export function PageHeader({
         </div>
         {actions && <div className="flex shrink-0 items-center gap-2">{actions}</div>}
       </div>
-    </header>
+    </div>
   );
 }

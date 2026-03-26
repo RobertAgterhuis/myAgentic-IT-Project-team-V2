@@ -1,8 +1,18 @@
+import { createElement, useState } from 'react';
 import type { Preview } from '@storybook/react-vite';
 import { initialize, mswLoader } from 'msw-storybook-addon';
+import { http, HttpResponse } from 'msw';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from '../src/components/ui/theme-provider';
+import { createStoryQueryClient } from '../src/test/storybook-decorators';
 import '../src/index.css';
 
 initialize();
+
+function StoryQueryProvider({ children }: { children: ReturnType<typeof createElement> }) {
+  const [queryClient] = useState(() => createStoryQueryClient());
+  return createElement(QueryClientProvider, { client: queryClient }, children);
+}
 
 const preview: Preview = {
   parameters: {
@@ -20,6 +30,18 @@ const preview: Preview = {
     },
     docs: {
       source: { type: 'dynamic' },
+    },
+    msw: {
+      handlers: [
+        http.get(
+          'https://fonts.googleapis.com/*',
+          () =>
+            new HttpResponse('body { --storybook-fonts-mocked: 1; }', {
+              status: 200,
+              headers: { 'content-type': 'text/css' },
+            })
+        ),
+      ],
     },
 
     a11y: {
@@ -49,6 +71,14 @@ const preview: Preview = {
       },
     },
   },
+  decorators: [
+    (Story) =>
+      createElement(
+        StoryQueryProvider,
+        null,
+        createElement(ThemeProvider, null, createElement(Story))
+      ),
+  ],
   loaders: [mswLoader],
 };
 

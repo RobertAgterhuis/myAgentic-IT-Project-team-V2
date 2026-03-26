@@ -64,6 +64,7 @@ describe('routes/mcp', () => {
     expect(routes).toHaveProperty('GET /api/v1/mcp/agents');
     expect(routes).toHaveProperty('GET /api/v1/mcp/servers');
     expect(routes).toHaveProperty('GET /api/v1/mcp/policies');
+    expect(routes).toHaveProperty('GET /api/v1/mcp/capabilities');
     expect(routes).toHaveProperty('POST /api/v1/mcp/resolve/server');
     expect(routes).toHaveProperty('POST /api/v1/mcp/resolve/tool');
   });
@@ -91,6 +92,24 @@ describe('routes/mcp', () => {
     await routes['GET /api/v1/mcp/policies'](createReq('/api/v1/mcp/policies'), policiesRes);
     expect(policiesRes.statusCode).toBe(200);
     expect(parsed(policiesRes).count).toBe(0);
+
+    vi.spyOn(McpGovernanceService.prototype, 'getCapabilityManifest').mockResolvedValue({
+      schemaVersion: '1.0.0',
+      generatedAt: new Date().toISOString(),
+      environment: 'dev',
+      serverCount: 0,
+      agentCount: 0,
+      agents: [],
+    });
+
+    const capabilitiesRes = createRes();
+    await routes['GET /api/v1/mcp/capabilities'](
+      createReq('/api/v1/mcp/capabilities'),
+      capabilitiesRes
+    );
+    expect(capabilitiesRes.statusCode).toBe(200);
+    expect(parsed(capabilitiesRes).ok).toBe(true);
+    expect(parsed(capabilitiesRes).manifest.schemaVersion).toBe('1.0.0');
   });
 
   it('returns 400 when env_scope is missing and resolves when valid', async () => {

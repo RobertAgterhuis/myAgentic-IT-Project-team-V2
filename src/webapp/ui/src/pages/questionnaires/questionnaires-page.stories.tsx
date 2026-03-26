@@ -17,37 +17,109 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+function buildQuestionnaire(args: {
+  file: string;
+  agent: string;
+  phase: string;
+  section: string;
+  questions: Array<{
+    id: string;
+    question: string;
+    classification: 'REQUIRED' | 'OPTIONAL';
+    answer: string;
+    status: 'OPEN' | 'ANSWERED' | 'DEFERRED';
+  }>;
+}) {
+  return {
+    file: args.file,
+    agent: args.agent,
+    phase: args.phase,
+    generated: '2025-01-15T10:00:00Z',
+    version: '1.0.0',
+    sections: [
+      {
+        title: args.section,
+        questions: args.questions.map((question) => ({
+          ...question,
+          whyNeeded: 'Required for planning and execution alignment.',
+          expectedFormat: 'Short paragraph',
+          example: 'Example response',
+          section: args.section,
+          lastUpdated: '2025-01-15T10:00:00Z',
+        })),
+      },
+    ],
+    questions: args.questions.map((question) => ({
+      ...question,
+      whyNeeded: 'Required for planning and execution alignment.',
+      expectedFormat: 'Short paragraph',
+      example: 'Example response',
+      section: args.section,
+      lastUpdated: '2025-01-15T10:00:00Z',
+    })),
+  };
+}
+
 export const Populated: Story = {
   parameters: {
+    routerInitialEntries: ['/questionnaires?file=BusinessDocs/Phase1-Business/business-model.md'],
     msw: {
       handlers: [
         http.get('/api/questionnaires', () =>
           HttpResponse.json({
             questionnaires: [
-              {
-                id: 'q-001',
-                title: 'Business Model',
-                status: 'pending',
+              buildQuestionnaire({
+                file: 'BusinessDocs/Phase1-Business/business-model.md',
+                agent: 'Business Analyst',
                 phase: 'Phase1-Business',
-                questions: 5,
-                answered: 2,
-              },
-              {
-                id: 'q-002',
-                title: 'Technical Stack',
-                status: 'completed',
+                section: 'Business Model',
+                questions: [
+                  {
+                    id: 'q-001',
+                    question: 'What customer problem is the product solving?',
+                    classification: 'REQUIRED',
+                    answer: 'The platform reduces delivery ambiguity across SDLC phases.',
+                    status: 'ANSWERED',
+                  },
+                  {
+                    id: 'q-002',
+                    question: 'What monetization path is planned?',
+                    classification: 'OPTIONAL',
+                    answer: '',
+                    status: 'OPEN',
+                  },
+                ],
+              }),
+              buildQuestionnaire({
+                file: 'BusinessDocs/Phase2-Tech/technical-stack.md',
+                agent: 'Senior Developer',
                 phase: 'Phase2-Tech',
-                questions: 8,
-                answered: 8,
-              },
-              {
-                id: 'q-003',
-                title: 'UX Requirements',
-                status: 'pending',
+                section: 'Technical Stack',
+                questions: [
+                  {
+                    id: 'q-003',
+                    question: 'Which frontend stack is approved?',
+                    classification: 'REQUIRED',
+                    answer: 'React 18 with TypeScript and Vite.',
+                    status: 'ANSWERED',
+                  },
+                ],
+              }),
+              buildQuestionnaire({
+                file: 'BusinessDocs/Phase3-UX/ux-requirements.md',
+                agent: 'UX Researcher',
                 phase: 'Phase3-UX',
-                questions: 6,
-                answered: 0,
-              },
+                section: 'UX Requirements',
+                questions: [
+                  {
+                    id: 'q-004',
+                    question: 'What accessibility baseline applies?',
+                    classification: 'REQUIRED',
+                    answer: '',
+                    status: 'OPEN',
+                  },
+                ],
+              }),
             ],
           })
         ),

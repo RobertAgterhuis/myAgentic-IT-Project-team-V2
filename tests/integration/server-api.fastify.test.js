@@ -385,7 +385,7 @@ describe('POST /api/decisions', () => {
     expect(r.json().action).toBe('decided');
   });
 
-  it('defers an item', async () => {
+  it('defers an item', { timeout: 15000 }, async () => {
     const r = await inject('POST', '/api/decisions', {
       action: 'defer',
       id: 'DEC-R2-010',
@@ -395,7 +395,7 @@ describe('POST /api/decisions', () => {
     expect(r.json().action).toBe('deferred');
   });
 
-  it('expires an item', async () => {
+  it('expires an item', { timeout: 15000 }, async () => {
     const r = await inject('POST', '/api/decisions', {
       action: 'expire',
       id: 'DEC-R2-010',

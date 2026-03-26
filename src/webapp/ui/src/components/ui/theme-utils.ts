@@ -4,6 +4,8 @@ const STORAGE_KEY = 'agentic-ui-theme';
 
 function getStoredTheme(): ThemePreference {
   if (typeof window === 'undefined') return 'system';
+  if (typeof window.localStorage?.getItem !== 'function') return 'system';
+
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored === 'light' || stored === 'dark' || stored === 'system') {
     return stored;

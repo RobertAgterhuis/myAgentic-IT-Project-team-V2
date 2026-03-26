@@ -8,6 +8,7 @@
 
 import http from 'http';
 import type Redis from 'ioredis';
+import { randomUUID } from 'crypto';
 import type { SSEManager, SSEManagerOptions } from './sse-manager';
 
 const CHANNEL = 'sse:broadcast';
@@ -27,6 +28,7 @@ export function createRedisPubSubSSEManager(options: RedisPubSubSSEManagerOption
   const heartbeatMs = options.heartbeatMs ?? 30_000;
   const maxClients = options.maxClients ?? 50;
   const { publisher, subscriber } = options;
+  const origin = randomUUID();
 
   const clients = new Set<http.ServerResponse>();
   const heartbeats = new Map<http.ServerResponse, ReturnType<typeof setInterval>>();
@@ -36,16 +38,21 @@ export function createRedisPubSubSSEManager(options: RedisPubSubSSEManagerOption
     // Silently ignore subscribe errors — local broadcast still works
   });
 
-  subscriber.on('message', (channel: string, message: string) => {
+  const onMessage = (channel: string, message: string) => {
     if (channel !== CHANNEL) return;
     try {
       const { event, data, _origin } = JSON.parse(message);
+      if (_origin === origin) return;
+      if (typeof event !== 'string' || !event) return;
+      if (!data || typeof data !== 'object' || Array.isArray(data)) return;
       // Forward to local SSE clients
       localBroadcast(event, data);
     } catch {
       // Ignore malformed messages
     }
-  });
+  };
+
+  subscriber.on('message', onMessage);
 
   function addClient(req: http.IncomingMessage, res: http.ServerResponse): boolean {
     if (clients.size >= maxClients) return false;
@@ -86,15 +93,19 @@ export function createRedisPubSubSSEManager(options: RedisPubSubSSEManagerOption
 
   /** Broadcast via Redis pub/sub (all instances receive it). */
   function broadcast(event: string, data: Record<string, unknown>): void {
-    // Publish to Redis — all instances (including this one) receive it
-    const message = JSON.stringify({ event, data });
+    // Always deliver locally first so this instance does not depend on its
+    // own subscriber health for user-visible SSE updates.
+    localBroadcast(event, data);
+
+    // Publish to Redis so peer instances receive the same event.
+    const message = JSON.stringify({ event, data, _origin: origin });
     publisher.publish(CHANNEL, message).catch(() => {
-      // Redis unavailable — fall back to local-only broadcast
-      localBroadcast(event, data);
+      // Redis unavailable — peers miss the event, but the local node already delivered it.
     });
   }
 
   function destroy(): void {
+    subscriber.removeListener('message', onMessage);
     subscriber.unsubscribe(CHANNEL).catch(() => {});
     for (const timer of heartbeats.values()) clearInterval(timer);
     heartbeats.clear();

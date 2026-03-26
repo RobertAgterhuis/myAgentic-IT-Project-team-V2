@@ -13,19 +13,10 @@ const THRESHOLDS = {
   lines: Number(process.env.COVERAGE_MIN_LINES || 70),
 };
 
-function readSummary(filePath) {
-  if (!fs.existsSync(filePath)) {
-    throw new Error(`Coverage summary not found at ${filePath}. Run test coverage first.`);
-  }
-
-  const raw = fs.readFileSync(filePath, 'utf8');
-  const parsed = JSON.parse(raw);
-  if (!parsed?.total) {
-    throw new Error(`Invalid coverage summary format in ${filePath}.`);
-  }
-
-  return parsed.total;
-}
+const RAG_STORE_FILE_PATTERNS = [
+  '/src/webapp/services/rag/rag-store.ts',
+  '\\src\\webapp\\services\\rag\\rag-store.ts',
+];
 
 function metricValue(total, metric) {
   const value = total?.[metric]?.pct;
@@ -39,8 +30,29 @@ function formatPct(value) {
   return `${value.toFixed(2)}%`;
 }
 
+function findRagStoreCoverage(summary) {
+  if (!summary || typeof summary !== 'object') return null;
+
+  for (const [filePath, metrics] of Object.entries(summary)) {
+    if (filePath === 'total') continue;
+    if (!RAG_STORE_FILE_PATTERNS.some((pattern) => filePath.includes(pattern))) continue;
+    if (!metrics || typeof metrics !== 'object') continue;
+    return { filePath, metrics };
+  }
+
+  return null;
+}
+
 try {
-  const total = readSummary(SUMMARY_PATH);
+  if (!fs.existsSync(SUMMARY_PATH)) {
+    throw new Error(`Coverage summary not found at ${SUMMARY_PATH}. Run test coverage first.`);
+  }
+
+  const raw = JSON.parse(fs.readFileSync(SUMMARY_PATH, 'utf8'));
+  const total = raw?.total;
+  if (!total) {
+    throw new Error(`Invalid coverage summary format in ${SUMMARY_PATH}.`);
+  }
   const failures = [];
 
   console.log('Coverage Threshold Gate');
@@ -58,6 +70,23 @@ try {
     if (!passed) {
       failures.push({ metric, actual, required });
     }
+  }
+
+  const ragStoreCoverage = findRagStoreCoverage(raw);
+  console.log('\nRAG Store Coverage Visibility');
+  if (!ragStoreCoverage) {
+    console.log('- file: src/webapp/services/rag/rag-store.ts (not found in coverage summary)');
+  } else {
+    const { filePath, metrics } = ragStoreCoverage;
+    const statements = metrics?.statements?.pct;
+    const branches = metrics?.branches?.pct;
+    const functions = metrics?.functions?.pct;
+    const lines = metrics?.lines?.pct;
+    console.log(`- file: ${filePath}`);
+    console.log(`- statements: ${typeof statements === 'number' ? formatPct(statements) : 'N/A'}`);
+    console.log(`- branches:   ${typeof branches === 'number' ? formatPct(branches) : 'N/A'}`);
+    console.log(`- functions:  ${typeof functions === 'number' ? formatPct(functions) : 'N/A'}`);
+    console.log(`- lines:      ${typeof lines === 'number' ? formatPct(lines) : 'N/A'}`);
   }
 
   if (failures.length > 0) {

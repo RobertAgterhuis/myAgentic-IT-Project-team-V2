@@ -32,6 +32,7 @@ export interface AuthMiddleware {
 }
 import type { StorageProvider } from '../../platform/engine/persistence';
 import type { LLMProvider } from '../../platform/sdlc/adapters/contracts/llm-provider';
+import type { MemoryEntry, MemoryTier } from '../../platform/engine/semantic-memory';
 import type { StorageProviderType } from './config';
 
 /* ── Audit interface (subset exposed to routes) ───────────────── */
@@ -95,6 +96,10 @@ export interface RagIndexerFacade {
 
 export interface EmbeddingProviderFacade {
   embedText(text: string): Promise<number[]>;
+}
+
+export interface SemanticMemoryFacade {
+  list(tier: MemoryTier, now?: number): Promise<MemoryEntry[]>;
 }
 
 /* ── Typed Server Context ─────────────────────────────────────── */
@@ -175,6 +180,7 @@ export interface ServerContext {
   readonly _ragStore?: RagStoreFacade;
   readonly _ragIndexer?: RagIndexerFacade;
   readonly _embeddingProvider?: EmbeddingProviderFacade;
+  readonly _semanticMemoryStore?: SemanticMemoryFacade;
   readonly _chatLlmProvider?: LLMProvider;
 
   /* ── Cross-route wiring (set after route registration) ─────── */
@@ -182,6 +188,11 @@ export interface ServerContext {
   _readCommandQueue?: () => unknown[];
   _getLatestCommand?: () => unknown;
   _getEngine?: () => unknown;
+  _getSemanticMemorySweeperStatus?: () => {
+    enabled: boolean;
+    running: boolean;
+    intervalMs: number;
+  };
   _getHumanOverrideEvents?: () => Array<{
     type: string;
     rationale: string;

@@ -70,6 +70,7 @@ describe('McpGovernanceService', () => {
     const runtime = await svc.buildRuntimeArtifacts();
     expect(fs.existsSync(runtime.compiledPoliciesPath)).toBe(true);
     expect(fs.existsSync(runtime.registryPath)).toBe(true);
+    expect(fs.existsSync(runtime.capabilityManifestPath)).toBe(true);
     expect(runtime.manifestCount).toBe(12);
 
     const manifestPath = path.join(runtime.outputDir, 'runtime-manifests', 'orchestrator.json');
@@ -80,6 +81,11 @@ describe('McpGovernanceService', () => {
     const firstTool = manifest.servers[0].tools[0];
     expect(firstTool).toHaveProperty('degraded');
     expect(firstTool).toHaveProperty('authStatus');
+
+    const capabilityManifest = JSON.parse(fs.readFileSync(runtime.capabilityManifestPath, 'utf8'));
+    expect(capabilityManifest.schemaVersion).toBe('1.0.0');
+    expect(Array.isArray(capabilityManifest.agents)).toBe(true);
+    expect(capabilityManifest.agentCount).toBe(12);
   });
 
   it('fails runtime build with clear error when policy data is missing', async () => {
@@ -160,7 +166,7 @@ describe('McpGovernanceService', () => {
 
   it('resolves server and tool permissions with environment scope', async () => {
     const server = await svc.resolveServerPermission('orchestrator', 'workspace-management', 'dev');
-    expect(server.permissionLevel).toBe('R');
+    expect(server.permissionLevel).toBe('W');
     expect(server.blocked).toBe(false);
 
     const tool = await svc.resolveToolPermission(

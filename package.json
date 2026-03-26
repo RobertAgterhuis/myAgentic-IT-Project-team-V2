@@ -5,7 +5,7 @@
   "main": "src/webapp/server.ts",
   "scripts": {
     "prepare": "husky",
-    "start": "tsx src/webapp/bootstrap.ts src/webapp/server.ts",
+    "start": "npm run plugin -- identity bootstrap && npm run plugin -- bootstrap --apply && tsx src/webapp/bootstrap.ts src/webapp/server.ts",
     "start:mcp": "tsx src/webapp/bootstrap.ts src/webapp/mcp-server.ts",
     "test": "vitest run",
     "test:watch": "vitest",

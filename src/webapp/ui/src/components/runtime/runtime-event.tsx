@@ -65,7 +65,6 @@ export function RuntimeEvent({
 }: RuntimeEventProps) {
   return (
     <div
-      role="listitem"
       className={cn(
         'flex items-start gap-3 py-1.5 text-sm',
         (type === 'error' || type === 'gate_failed') && 'text-red-600',

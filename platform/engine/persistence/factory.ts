@@ -17,6 +17,9 @@ export interface StorageProviderConfig {
   basePath?: string;
   /** Database file path for SQLiteStorageProvider. */
   dbPath?: string;
+  journalMode?: 'WAL' | 'DELETE';
+  synchronous?: 'NORMAL' | 'FULL';
+  busyTimeoutMs?: number;
 }
 
 /**
@@ -33,7 +36,12 @@ export async function createStorageProvider(
 
   switch (type) {
     case 'sqlite':
-      provider = new SQLiteStorageProvider({ dbPath: config?.dbPath });
+      provider = new SQLiteStorageProvider({
+        dbPath: config?.dbPath,
+        journalMode: config?.journalMode,
+        synchronous: config?.synchronous,
+        busyTimeoutMs: config?.busyTimeoutMs,
+      });
       break;
     case 'file':
     default:

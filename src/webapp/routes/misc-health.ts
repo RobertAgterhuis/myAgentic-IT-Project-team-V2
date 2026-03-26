@@ -23,6 +23,11 @@ export interface RegisterHealthRoutesOptions {
   sseConnections: () => number;
   getStore: () => StoreFactory;
   getStorageProvider?: () => StorageProviderLike | null;
+  getSemanticMemorySweeperStatus?: () => {
+    enabled: boolean;
+    running: boolean;
+    intervalMs: number;
+  };
 }
 
 export function registerHealthRoutes(options: RegisterHealthRoutesOptions): void {
@@ -34,6 +39,7 @@ export function registerHealthRoutes(options: RegisterHealthRoutesOptions): void
     sseConnections,
     getStore,
     getStorageProvider,
+    getSemanticMemorySweeperStatus,
   } = options;
 
   /** Readiness probe — used by Docker HEALTHCHECK and Playwright webServer. */
@@ -68,6 +74,9 @@ export function registerHealthRoutes(options: RegisterHealthRoutesOptions): void
       store_status,
       sse_connections: sseConnections(),
       timestamp: new Date().toISOString(),
+      ...(typeof getSemanticMemorySweeperStatus === 'function'
+        ? { semantic_memory_sweeper: getSemanticMemorySweeperStatus() }
+        : {}),
       ...(storage_health ? { storage: storage_health } : {}),
     });
   });

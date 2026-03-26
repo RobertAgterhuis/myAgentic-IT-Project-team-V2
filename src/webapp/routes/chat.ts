@@ -964,6 +964,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     projectRoot: ctx.PROJECT_ROOT,
     ragStore: ctx._ragStore,
     embeddingProvider: ctx._embeddingProvider,
+    semanticMemoryStore: ctx._semanticMemoryStore,
   });
   const intentClassifier = new IntentClassifier();
 

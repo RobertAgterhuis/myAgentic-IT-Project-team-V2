@@ -178,6 +178,62 @@ describe('SemanticMemoryStore — evict', () => {
   });
 });
 
+// ─── SemanticMemoryStore — background sweeper ───────────────
+
+describe('SemanticMemoryStore — background sweeper', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('sweepExpired evicts expired project/org and ignores run tier', async () => {
+    const store = createStore();
+    const now = Date.now();
+
+    await store.write('run', 'run-stale', 'value');
+    await store.write('project', 'project-stale', 'value');
+    await store.write('org', 'org-stale', 'value');
+
+    const sweepAt = now + 91 * 24 * 60 * 60 * 1000;
+    const result = await store.sweepExpired(sweepAt);
+
+    expect(result.project).toBe(1);
+    expect(result.org).toBe(1);
+    expect(result.total).toBe(2);
+    expect(result.sweptAt).toBe(sweepAt);
+
+    expect(await store.read('run', 'run-stale', sweepAt)).not.toBeNull();
+    expect(await store.read('project', 'project-stale', sweepAt)).toBeNull();
+    expect(await store.read('org', 'org-stale', sweepAt)).toBeNull();
+  });
+
+  it('startSweeper runs periodically and stopSweeper stops it', async () => {
+    vi.useFakeTimers();
+    const store = createStore();
+
+    const sweepSpy = vi.spyOn(store, 'sweepExpired').mockResolvedValue({
+      project: 0,
+      org: 0,
+      total: 0,
+      sweptAt: Date.now(),
+    });
+
+    expect(store.isSweeperRunning()).toBe(false);
+    expect(store.startSweeper(100)).toBe(true);
+    expect(store.isSweeperRunning()).toBe(true);
+    expect(store.startSweeper(100)).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(350);
+    expect(sweepSpy).toHaveBeenCalledTimes(3);
+
+    expect(store.stopSweeper()).toBe(true);
+    expect(store.isSweeperRunning()).toBe(false);
+    expect(store.stopSweeper()).toBe(false);
+
+    await vi.advanceTimersByTimeAsync(300);
+    expect(sweepSpy).toHaveBeenCalledTimes(3);
+  });
+});
+
 // ─── SemanticMemoryStore — clear ──────────────────────────────
 
 describe('SemanticMemoryStore — clear', () => {

@@ -49,7 +49,23 @@ export interface RuntimeBuildResult {
   outputDir: string;
   compiledPoliciesPath: string;
   registryPath: string;
+  capabilityManifestPath: string;
   manifestCount: number;
+}
+
+export interface McpCapabilityManifest {
+  schemaVersion: string;
+  generatedAt: string;
+  environment: EnvironmentScope;
+  serverCount: number;
+  agentCount: number;
+  agents: Array<{
+    agentId: string;
+    category: string;
+    controlPosture: string;
+    requiresWorkloadIdentity: boolean;
+    servers: RuntimeManifest['servers'];
+  }>;
 }
 
 export interface InitResult {
@@ -891,6 +907,7 @@ export class McpGovernanceService {
     const runtimeDir = path.join(this.generatedDir, 'runtime-manifests');
     const compiledPoliciesPath = path.join(this.generatedDir, 'compiled-policies.json');
     const registryPath = path.join(this.generatedDir, 'mcp-registry.json');
+    const capabilityManifestPath = path.join(this.generatedDir, 'mcp-capability-manifest.json');
 
     await fsp.mkdir(runtimeDir, { recursive: true });
     await this._writeJsonFile(compiledPoliciesPath, {
@@ -908,11 +925,13 @@ export class McpGovernanceService {
     const identityMap = new Map(workloadIdentities.map((identity) => [identity.agentId, identity]));
 
     let manifestCount = 0;
+    const capabilityAgents: McpCapabilityManifest['agents'] = [];
+    const environment: EnvironmentScope =
+      process.env.ENV_SCOPE === 'prod' || process.env.ENV_SCOPE === 'test'
+        ? (process.env.ENV_SCOPE as EnvironmentScope)
+        : 'dev';
+
     for (const agent of agents) {
-      const environment: EnvironmentScope =
-        process.env.ENV_SCOPE === 'prod' || process.env.ENV_SCOPE === 'test'
-          ? (process.env.ENV_SCOPE as EnvironmentScope)
-          : 'dev';
       const agentIdentity = agent.requiresWorkloadIdentity ? identityMap.get(agent.id) : undefined;
       const manifest: RuntimeManifest = {
         agentId: agent.id,
@@ -969,15 +988,123 @@ export class McpGovernanceService {
       };
       const outPath = path.join(runtimeDir, `${agent.id}.json`);
       await this._writeJsonFile(outPath, manifest);
+      capabilityAgents.push({
+        agentId: agent.id,
+        category: agent.category,
+        controlPosture: agent.controlPosture,
+        requiresWorkloadIdentity: agent.requiresWorkloadIdentity,
+        servers: manifest.servers,
+      });
       manifestCount += 1;
     }
+
+    const capabilityManifest: McpCapabilityManifest = {
+      schemaVersion: '1.0.0',
+      generatedAt: new Date().toISOString(),
+      environment,
+      serverCount: servers.length,
+      agentCount: agents.length,
+      agents: capabilityAgents,
+    };
+    await this._writeJsonFile(capabilityManifestPath, capabilityManifest);
 
     return {
       outputDir: this.generatedDir,
       compiledPoliciesPath,
       registryPath,
+      capabilityManifestPath,
       manifestCount,
     };
+  }
+
+  async getCapabilityManifest(): Promise<McpCapabilityManifest> {
+    const capabilityManifestPath = path.join(this.generatedDir, 'mcp-capability-manifest.json');
+    if (fs.existsSync(capabilityManifestPath)) {
+      return this._readJsonFile<McpCapabilityManifest>(capabilityManifestPath, {
+        schemaVersion: '1.0.0',
+        generatedAt: new Date(0).toISOString(),
+        environment: 'dev',
+        serverCount: 0,
+        agentCount: 0,
+        agents: [],
+      });
+    }
+
+    const [agents, servers, serverPolicies, toolPolicies, envPolicies] = await Promise.all([
+      this.listAgents(),
+      this.listServers(),
+      this.listServerPolicies(),
+      this.listToolPolicies(),
+      this.getDefinedEnvironmentPolicies(),
+    ]);
+
+    const environment: EnvironmentScope =
+      process.env.ENV_SCOPE === 'prod' || process.env.ENV_SCOPE === 'test'
+        ? (process.env.ENV_SCOPE as EnvironmentScope)
+        : 'dev';
+
+    const identityByRole = this._loadWorkloadIdentityByRole();
+
+    const manifest: McpCapabilityManifest = {
+      schemaVersion: '1.0.0',
+      generatedAt: new Date().toISOString(),
+      environment,
+      serverCount: servers.length,
+      agentCount: agents.length,
+      agents: agents.map((agent) => ({
+        agentId: agent.id,
+        category: agent.category,
+        controlPosture: agent.controlPosture,
+        requiresWorkloadIdentity: agent.requiresWorkloadIdentity,
+        servers: servers.map((server) => {
+          const scopedToolPolicies = toolPolicies.filter(
+            (p) =>
+              p.agentId === agent.id &&
+              p.serverId === server.id &&
+              (p.envScope === environment || !p.envScope)
+          );
+          const toolIds = new Set<string>(['default', ...scopedToolPolicies.map((p) => p.toolId)]);
+          const degraded = server.healthStatus !== 'healthy';
+          const authStatus = this._resolveRuntimeAuthStatus(
+            agent,
+            server,
+            identityByRole.get(agent.id as AgentRoleId) || null
+          );
+
+          return {
+            serverId: server.id,
+            endpoint: server.endpoint,
+            healthStatus: server.healthStatus,
+            authType: server.authType,
+            tools: [...toolIds]
+              .sort((a, b) => a.localeCompare(b))
+              .map((toolId) => {
+                const resolved = this._resolveToolPermissionInternal(
+                  agent.id,
+                  server.id,
+                  toolId,
+                  environment,
+                  serverPolicies,
+                  envPolicies,
+                  toolPolicies
+                );
+
+                return {
+                  toolId,
+                  permissionLevel: resolved.permissionLevel,
+                  approvalRequired: resolved.approvalRequired,
+                  approvalMode: resolved.requiredApprovalMode,
+                  blocked: resolved.blocked,
+                  degraded,
+                  authStatus,
+                };
+              }),
+          };
+        }),
+      })),
+    };
+
+    return manifest;
   }
 
   async doctor(): Promise<

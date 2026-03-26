@@ -23,6 +23,7 @@ interface QueueTriageListProps {
   emptyTitle?: string;
   emptyDescription?: string;
   onItemAction?: (id: string) => void;
+  headingLevel?: 2 | 3 | 4;
 }
 
 function priorityToTone(priority: QueueTriageItem['priority']) {
@@ -39,11 +40,14 @@ export function QueueTriageList({
   emptyTitle = 'No queued items',
   emptyDescription = 'This queue is currently empty.',
   onItemAction,
+  headingLevel = 3,
 }: QueueTriageListProps) {
+  const HeadingTag = `h${headingLevel}` as const;
+
   return (
     <section aria-label={title} className="space-y-3">
       <div>
-        <h3 className="text-sm font-semibold">{title}</h3>
+        <HeadingTag className="text-sm font-semibold">{title}</HeadingTag>
         {description && <p className="mt-1 text-xs text-muted-foreground">{description}</p>}
       </div>
 

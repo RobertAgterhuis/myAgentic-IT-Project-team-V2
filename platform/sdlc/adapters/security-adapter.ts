@@ -44,6 +44,34 @@ export interface AuditVulnerability {
   range?: string;
 }
 
+export interface AuditSummary {
+  total: number;
+  critical: number;
+  high: number;
+  moderate: number;
+  low: number;
+}
+
+export interface SecretScanFinding {
+  pattern_name: string;
+  file: string;
+  line: number;
+  match: string;
+}
+
+interface ShellExecLike {
+  (
+    bin: string,
+    args: string[],
+    options?: { cwd?: string; timeout?: number }
+  ): Promise<{
+    exitCode: number;
+    stdout: string;
+    stderr?: string;
+    duration_ms?: number;
+  }>;
+}
+
 // ─── Secret patterns ─────────────────────────────────────────
 
 const SECRET_PATTERNS: Array<{ name: string; pattern: RegExp }> = [
@@ -57,6 +85,226 @@ const SECRET_PATTERNS: Array<{ name: string; pattern: RegExp }> = [
   { name: 'Connection String', pattern: /(?:Server|Data Source|mongodb\+srv:\/\/)[^;\s]{10,}/i },
 ];
 
+const EMPTY_AUDIT_SUMMARY: AuditSummary = {
+  total: 0,
+  critical: 0,
+  high: 0,
+  moderate: 0,
+  low: 0,
+};
+
+const DISALLOWED_LICENSES = ['GPL-3.0', 'AGPL-3.0', 'SSPL-1.0'];
+
+export function parseEslintFindings(stdout: string): SecurityFinding[] {
+  const findings: SecurityFinding[] = [];
+
+  try {
+    const eslintOutput = JSON.parse(stdout) as Array<{
+      filePath: string;
+      messages: Array<{ ruleId: string; severity: number; message: string; line: number }>;
+    }>;
+
+    for (const file of eslintOutput) {
+      for (const msg of file.messages) {
+        if (!msg.ruleId) continue;
+        findings.push({
+          rule: msg.ruleId,
+          severity: msg.severity === 2 ? 'high' : 'medium',
+          message: msg.message,
+          file: file.filePath,
+          line: msg.line,
+        });
+      }
+    }
+  } catch {
+    return [];
+  }
+
+  return findings;
+}
+
+export function parseAuditOutput(stdout: string): {
+  vulnerabilities: AuditVulnerability[];
+  summary: AuditSummary;
+} {
+  const vulnerabilities: AuditVulnerability[] = [];
+  let summary: AuditSummary = { ...EMPTY_AUDIT_SUMMARY };
+
+  try {
+    const auditData = JSON.parse(stdout) as {
+      vulnerabilities?: Record<
+        string,
+        { severity: string; name: string; title?: string; url?: string; range?: string }
+      >;
+      metadata?: { vulnerabilities?: Record<string, number> };
+    };
+
+    if (auditData.vulnerabilities) {
+      for (const [name, vuln] of Object.entries(auditData.vulnerabilities)) {
+        vulnerabilities.push({
+          name,
+          severity: vuln.severity,
+          title: vuln.title || name,
+          url: vuln.url,
+          range: vuln.range,
+        });
+      }
+    }
+
+    if (auditData.metadata?.vulnerabilities) {
+      const v = auditData.metadata.vulnerabilities;
+      summary = {
+        total: (v.total as number) || vulnerabilities.length,
+        critical: (v.critical as number) || 0,
+        high: (v.high as number) || 0,
+        moderate: (v.moderate as number) || 0,
+        low: (v.low as number) || 0,
+      };
+    }
+  } catch {
+    return { vulnerabilities: [], summary: { ...EMPTY_AUDIT_SUMMARY } };
+  }
+
+  return { vulnerabilities, summary };
+}
+
+export function parseSecretScanOutput(patternName: string, stdout: string): SecretScanFinding[] {
+  if (!stdout.trim()) {
+    return [];
+  }
+
+  const findings: SecretScanFinding[] = [];
+  const lines = stdout.trim().split('\n');
+  for (const line of lines.slice(0, 50)) {
+    const colonIdx = line.indexOf(':');
+    if (colonIdx <= 0) {
+      continue;
+    }
+
+    const file = line.substring(0, colonIdx);
+    const rest = line.substring(colonIdx + 1);
+    const lineNum = parseInt(rest, 10) || 0;
+    findings.push({
+      pattern_name: patternName,
+      file,
+      line: lineNum,
+      match: '[REDACTED]',
+    });
+  }
+
+  return findings;
+}
+
+export function parseLicenseCheckerOutput(stdout: string): {
+  packages: Array<{ name: string; license: string }>;
+  violations: string[];
+} {
+  try {
+    const data = JSON.parse(stdout) as Record<string, { licenses: string }>;
+    const packages = Object.entries(data).map(([name, info]) => ({
+      name,
+      license: info.licenses || 'UNKNOWN',
+    }));
+    const violations = packages
+      .filter((pkg) => DISALLOWED_LICENSES.some((disallowed) => pkg.license.includes(disallowed)))
+      .map((pkg) => `${pkg.name}: ${pkg.license}`);
+
+    return { packages, violations };
+  } catch {
+    return { packages: [], violations: [] };
+  }
+}
+
+export async function runSastScan(
+  params: Record<string, unknown>,
+  exec: ShellExecLike = shellExec,
+  platform = process.platform
+): Promise<{
+  path: string;
+  findings: SecurityFinding[];
+  finding_count: number;
+  exit_code: number;
+}> {
+  const targetPath = (params.path as string) || '.';
+  const eslintBin = platform === 'win32' ? 'npx.cmd' : 'npx';
+
+  const result = await exec(
+    eslintBin,
+    ['eslint', '--format', 'json', '--no-error-on-unmatched-pattern', targetPath],
+    { timeout: 120_000, cwd: params.cwd as string }
+  );
+
+  const findings = parseEslintFindings(result.stdout);
+  return {
+    path: targetPath,
+    findings,
+    finding_count: findings.length,
+    exit_code: result.exitCode,
+  };
+}
+
+export async function runDependencyAudit(
+  params: Record<string, unknown>,
+  exec: ShellExecLike = shellExec,
+  platform = process.platform
+): Promise<{ vulnerabilities: AuditVulnerability[]; summary: AuditSummary; exit_code: number }> {
+  const npmBin = platform === 'win32' ? 'npm.cmd' : 'npm';
+  const result = await exec(npmBin, ['audit', '--json'], {
+    timeout: 60_000,
+    cwd: params.cwd as string,
+  });
+
+  const { vulnerabilities, summary } = parseAuditOutput(result.stdout);
+  return { vulnerabilities, summary, exit_code: result.exitCode };
+}
+
+export async function runSecretScan(
+  params: Record<string, unknown>,
+  exec: ShellExecLike = shellExec,
+  platform = process.platform
+): Promise<{ path: string; secrets_found: number; findings: SecretScanFinding[] }> {
+  const targetPath = (params.path as string) || '.';
+  const grepBin = platform === 'win32' ? 'findstr' : 'grep';
+  const allFindings: SecretScanFinding[] = [];
+
+  for (const sp of SECRET_PATTERNS) {
+    const args =
+      platform === 'win32'
+        ? ['/S', '/N', '/R', sp.pattern.source.slice(0, 50), targetPath]
+        : ['-rn', '-E', sp.pattern.source, targetPath, '--include=*.{ts,js,json,yaml,yml,env,md}'];
+
+    const result = await exec(grepBin, args, { timeout: 30_000 });
+    if (result.exitCode === 0 && result.stdout.trim()) {
+      allFindings.push(...parseSecretScanOutput(sp.name, result.stdout));
+    }
+  }
+
+  return {
+    path: targetPath,
+    secrets_found: allFindings.length,
+    findings: allFindings,
+  };
+}
+
+export async function runLicenseCheck(
+  params: Record<string, unknown>,
+  exec: ShellExecLike = shellExec,
+  platform = process.platform
+): Promise<{
+  packages: Array<{ name: string; license: string }>;
+  violations: string[];
+  exit_code: number;
+}> {
+  const npmBin = platform === 'win32' ? 'npx.cmd' : 'npx';
+  const result = await exec(npmBin, ['license-checker', '--json', '--production'], {
+    timeout: 60_000,
+    cwd: params.cwd as string,
+  });
+
+  const { packages, violations } = parseLicenseCheckerOutput(result.stdout);
+  return { packages: packages.slice(0, 200), violations, exit_code: result.exitCode };
+}
+
 // ─── SecurityAdapter ─────────────────────────────────────────
 
 export class SecurityAdapter extends BaseAdapter {
@@ -69,190 +317,16 @@ export class SecurityAdapter extends BaseAdapter {
     this._config = config as Record<string, unknown>;
 
     // ── sast-scan (ESLint security rules) ────────────────
-    this._operations.set('sast-scan', async (params) => {
-      const targetPath = (params.path as string) || '.';
-      const eslintBin = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-
-      const result = await shellExec(
-        eslintBin,
-        ['eslint', '--format', 'json', '--no-error-on-unmatched-pattern', targetPath],
-        { timeout: 120_000, cwd: params.cwd as string }
-      );
-
-      const findings: SecurityFinding[] = [];
-      try {
-        const eslintOutput = JSON.parse(result.stdout) as Array<{
-          filePath: string;
-          messages: Array<{ ruleId: string; severity: number; message: string; line: number }>;
-        }>;
-
-        for (const file of eslintOutput) {
-          for (const msg of file.messages) {
-            if (!msg.ruleId) continue;
-            findings.push({
-              rule: msg.ruleId,
-              severity: msg.severity === 2 ? 'high' : 'medium',
-              message: msg.message,
-              file: file.filePath,
-              line: msg.line,
-            });
-          }
-        }
-      } catch {
-        // Non-JSON output — ESLint not configured or no files matched
-      }
-
-      return {
-        path: targetPath,
-        findings,
-        finding_count: findings.length,
-        exit_code: result.exitCode,
-      };
-    });
+    this._operations.set('sast-scan', (params) => runSastScan(params));
 
     // ── dependency-audit (npm audit) ─────────────────────
-    this._operations.set('dependency-audit', async (params) => {
-      const npmBin = process.platform === 'win32' ? 'npm.cmd' : 'npm';
-
-      const result = await shellExec(npmBin, ['audit', '--json'], {
-        timeout: 60_000,
-        cwd: params.cwd as string,
-      });
-
-      const vulnerabilities: AuditVulnerability[] = [];
-      let summary = { total: 0, critical: 0, high: 0, moderate: 0, low: 0 };
-
-      try {
-        const auditData = JSON.parse(result.stdout) as {
-          vulnerabilities?: Record<
-            string,
-            { severity: string; name: string; title?: string; url?: string; range?: string }
-          >;
-          metadata?: { vulnerabilities?: Record<string, number> };
-        };
-
-        if (auditData.vulnerabilities) {
-          for (const [name, vuln] of Object.entries(auditData.vulnerabilities)) {
-            vulnerabilities.push({
-              name,
-              severity: vuln.severity,
-              title: vuln.title || name,
-              url: vuln.url,
-              range: vuln.range,
-            });
-          }
-        }
-
-        if (auditData.metadata?.vulnerabilities) {
-          const v = auditData.metadata.vulnerabilities;
-          summary = {
-            total: (v.total as number) || vulnerabilities.length,
-            critical: (v.critical as number) || 0,
-            high: (v.high as number) || 0,
-            moderate: (v.moderate as number) || 0,
-            low: (v.low as number) || 0,
-          };
-        }
-      } catch {
-        // Non-JSON output — npm audit failed to parse
-      }
-
-      return { vulnerabilities, summary, exit_code: result.exitCode };
-    });
+    this._operations.set('dependency-audit', (params) => runDependencyAudit(params));
 
     // ── secret-scan ──────────────────────────────────────
-    this._operations.set('secret-scan', async (params) => {
-      const targetPath = (params.path as string) || '.';
-      // Use grep to search for secret patterns in files
-      const grepBin = process.platform === 'win32' ? 'findstr' : 'grep';
-
-      const allFindings: Array<{
-        pattern_name: string;
-        file: string;
-        line: number;
-        match: string;
-      }> = [];
-
-      for (const sp of SECRET_PATTERNS) {
-        let result;
-        if (process.platform === 'win32') {
-          // findstr doesn't support full regex; use a simplified search
-          result = await shellExec(
-            grepBin,
-            ['/S', '/N', '/R', sp.pattern.source.slice(0, 50), targetPath],
-            { timeout: 30_000 }
-          );
-        } else {
-          result = await shellExec(
-            grepBin,
-            [
-              '-rn',
-              '-E',
-              sp.pattern.source,
-              targetPath,
-              '--include=*.{ts,js,json,yaml,yml,env,md}',
-            ],
-            { timeout: 30_000 }
-          );
-        }
-
-        if (result.exitCode === 0 && result.stdout.trim()) {
-          const lines = result.stdout.trim().split('\n');
-          for (const line of lines.slice(0, 50)) {
-            // cap at 50 matches per pattern
-            const colonIdx = line.indexOf(':');
-            if (colonIdx > 0) {
-              const file = line.substring(0, colonIdx);
-              const rest = line.substring(colonIdx + 1);
-              const lineNum = parseInt(rest, 10) || 0;
-              allFindings.push({
-                pattern_name: sp.name,
-                file,
-                line: lineNum,
-                match: '[REDACTED]',
-              });
-            }
-          }
-        }
-      }
-
-      return {
-        path: targetPath,
-        secrets_found: allFindings.length,
-        findings: allFindings,
-      };
-    });
+    this._operations.set('secret-scan', (params) => runSecretScan(params));
 
     // ── license-check ────────────────────────────────────
-    this._operations.set('license-check', async (params) => {
-      const npmBin = process.platform === 'win32' ? 'npx.cmd' : 'npx';
-
-      const result = await shellExec(npmBin, ['license-checker', '--json', '--production'], {
-        timeout: 60_000,
-        cwd: params.cwd as string,
-      });
-
-      let packages: Array<{ name: string; license: string }> = [];
-      const violations: string[] = [];
-      const disallowed = ['GPL-3.0', 'AGPL-3.0', 'SSPL-1.0'];
-
-      try {
-        const data = JSON.parse(result.stdout) as Record<string, { licenses: string }>;
-        packages = Object.entries(data).map(([name, info]) => ({
-          name,
-          license: info.licenses || 'UNKNOWN',
-        }));
-        for (const pkg of packages) {
-          if (disallowed.some((d) => pkg.license.includes(d))) {
-            violations.push(`${pkg.name}: ${pkg.license}`);
-          }
-        }
-      } catch {
-        // license-checker not installed or failed
-      }
-
-      return { packages: packages.slice(0, 200), violations, exit_code: result.exitCode };
-    });
+    this._operations.set('license-check', (params) => runLicenseCheck(params));
   }
 
   async healthCheck(): Promise<HealthCheck> {

@@ -736,6 +736,104 @@ export const handlers = [
     HttpResponse.json({ ok: true, message: 'cancelled' })
   ),
 
+  /* Artifacts (M10) */
+  http.get('/api/v1/artifacts', () =>
+    HttpResponse.json({
+      ok: true,
+      count: 2,
+      artifacts: [
+        {
+          id: 'art-001',
+          artifact_type: 'decision-log',
+          stage: 'PHASE-1',
+          status: 'VALID',
+          content_hash: 'abc123def4567890',
+          created_at: '2026-03-01T10:00:00Z',
+          updated_at: '2026-03-01T10:30:00Z',
+        },
+        {
+          id: 'art-002',
+          artifact_type: 'architecture-notes',
+          stage: 'PHASE-2',
+          status: 'DRAFT',
+          content_hash: 'fed987cba6543210',
+          created_at: '2026-03-01T11:00:00Z',
+          updated_at: '2026-03-01T11:20:00Z',
+        },
+      ],
+    })
+  ),
+  http.get('/api/v1/artifacts/:id/content', ({ params }) =>
+    HttpResponse.json({
+      ok: true,
+      artifact_id: String(params.id),
+      path: `BusinessDocs/${String(params.id)}.md`,
+      mime_type: 'text/markdown',
+      size_bytes: 128,
+      content: '# Artifact\n\nMock content for test rendering.',
+    })
+  ),
+
+  /* Approvals (M27) */
+  http.get('/api/v1/approvals/history', () =>
+    HttpResponse.json({
+      ok: true,
+      history: [
+        {
+          id: 'hist-001',
+          approval_id: 'appr-001',
+          action: 'APPROVED',
+          user: 'product-owner',
+          reason: 'Criteria met',
+          decided_at: new Date().toISOString(),
+        },
+      ],
+    })
+  ),
+  http.get('/api/v1/approvals/:id/detail', ({ params }) =>
+    HttpResponse.json({
+      ok: true,
+      approval: {
+        id: String(params.id),
+        entity_id: 'entity-arch-01',
+        gate_id: 'phase2-gate',
+        stage: 'PHASE-2',
+        requested_by: 'Software Architect',
+        requested_at: new Date(Date.now() - 3600000).toISOString(),
+        required_role: 'lead',
+        status: 'PENDING',
+        context: 'Architecture decision requires review before proceeding.',
+        risk_assessment: 'Medium risk due to dependency impact.',
+        recommended_action: 'Approve with monitoring note.',
+        related_artifacts: ['art-001'],
+      },
+    })
+  ),
+  http.post('/api/v1/approvals/:id/approve', ({ params }) =>
+    HttpResponse.json({
+      ok: true,
+      approval: {
+        id: String(params.id),
+        status: 'APPROVED',
+        decided_by: 'web-user',
+        decided_at: new Date().toISOString(),
+        reason: 'Approved in test',
+      },
+    })
+  ),
+  http.post('/api/v1/approvals/:id/reject', ({ params }) =>
+    HttpResponse.json({
+      ok: true,
+      approval: {
+        id: String(params.id),
+        status: 'REJECTED',
+        decided_by: 'web-user',
+        decided_at: new Date().toISOString(),
+        reason: 'Rejected in test',
+      },
+    })
+  ),
+
   /* Help */
   http.get('/api/v1/help/page/:routeSlug', ({ params }) => {
     const routeSlug = String(params.routeSlug ?? '').toLowerCase();

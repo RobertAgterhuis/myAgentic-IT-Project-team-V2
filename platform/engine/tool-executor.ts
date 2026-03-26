@@ -75,11 +75,20 @@ export interface ToolExecutorOptions {
   defaultTimeout?: number;
   /** Operations that are read-only (always cacheable, no side effects) */
   readOnlyOperations?: string[];
+  /** Consecutive failures before circuit opens for an adapter+operation pair. */
+  circuitBreakerFailureThreshold?: number;
+  /** Cooldown in ms after opening a circuit. */
+  circuitBreakerCooldownMs?: number;
+  /** Max concurrent in-flight tool executions before backpressure rejects requests. */
+  maxConcurrentExecutions?: number;
 }
 
 // ─── Constants ──────────────────────────────────────────────
 
 const DEFAULT_TIMEOUT = 60_000;
+const DEFAULT_CIRCUIT_BREAKER_FAILURE_THRESHOLD = 3;
+const DEFAULT_CIRCUIT_BREAKER_COOLDOWN_MS = 30_000;
+const DEFAULT_MAX_CONCURRENT_EXECUTIONS = 32;
 
 /** Operations known to be read-only across all adapters */
 const DEFAULT_READ_ONLY = new Set([
@@ -97,6 +106,12 @@ export class ToolExecutor {
   private _cache: AdapterResultCache;
   private _defaultTimeout: number;
   private _readOnly: Set<string>;
+  private _circuitFailures: Map<string, number>;
+  private _circuitOpenUntil: Map<string, number>;
+  private _circuitBreakerFailureThreshold: number;
+  private _circuitBreakerCooldownMs: number;
+  private _maxConcurrentExecutions: number;
+  private _inFlight: number;
 
   constructor(options: ToolExecutorOptions) {
     this._registry = options.registry;
@@ -107,6 +122,15 @@ export class ToolExecutor {
     });
     this._defaultTimeout = options.defaultTimeout ?? DEFAULT_TIMEOUT;
     this._readOnly = new Set([...DEFAULT_READ_ONLY, ...(options.readOnlyOperations || [])]);
+    this._circuitFailures = new Map();
+    this._circuitOpenUntil = new Map();
+    this._circuitBreakerFailureThreshold =
+      options.circuitBreakerFailureThreshold ?? DEFAULT_CIRCUIT_BREAKER_FAILURE_THRESHOLD;
+    this._circuitBreakerCooldownMs =
+      options.circuitBreakerCooldownMs ?? DEFAULT_CIRCUIT_BREAKER_COOLDOWN_MS;
+    this._maxConcurrentExecutions =
+      options.maxConcurrentExecutions ?? DEFAULT_MAX_CONCURRENT_EXECUTIONS;
+    this._inFlight = 0;
   }
 
   /**
@@ -164,12 +188,41 @@ export class ToolExecutor {
       }
     }
 
+    const circuitKey = this._circuitKey(adapter.name, operation);
+    if (this._isCircuitOpen(circuitKey)) {
+      return {
+        success: false,
+        data: null,
+        error: `CIRCUIT_OPEN: Operation '${operation}' on adapter '${adapter.name}' is temporarily blocked`,
+        duration_ms: Date.now() - start,
+        adapter: adapter.name,
+        operation,
+        fromCache: false,
+        timestamp: new Date().toISOString(),
+      };
+    }
+
+    if (this._inFlight >= this._maxConcurrentExecutions) {
+      return {
+        success: false,
+        data: null,
+        error: `BACKPRESSURE_ACTIVE: In-flight executions (${this._inFlight}) reached limit (${this._maxConcurrentExecutions})`,
+        duration_ms: Date.now() - start,
+        adapter: adapter.name,
+        operation,
+        fromCache: false,
+        timestamp: new Date().toISOString(),
+      };
+    }
+
     // 4. Execute with timeout
     const timeout = request.timeout ?? this._defaultTimeout;
     let result: AdapterResult<T>;
+    this._inFlight += 1;
     try {
       result = await this._executeWithTimeout(adapter, operation, params, timeout);
     } catch (err) {
+      this._recordFailure(circuitKey);
       return {
         success: false,
         data: null,
@@ -180,6 +233,14 @@ export class ToolExecutor {
         fromCache: false,
         timestamp: new Date().toISOString(),
       };
+    } finally {
+      this._inFlight = Math.max(0, this._inFlight - 1);
+    }
+
+    if (result.success) {
+      this._recordSuccess(circuitKey);
+    } else {
+      this._recordFailure(circuitKey);
     }
 
     // 5. Cache successful side-effect results
@@ -275,5 +336,33 @@ export class ToolExecutor {
         }
       );
     });
+  }
+
+  private _circuitKey(adapter: string, operation: string): string {
+    return `${adapter}:${operation}`;
+  }
+
+  private _isCircuitOpen(key: string): boolean {
+    const openUntil = this._circuitOpenUntil.get(key);
+    if (!openUntil) return false;
+    if (Date.now() >= openUntil) {
+      this._circuitOpenUntil.delete(key);
+      return false;
+    }
+    return true;
+  }
+
+  private _recordSuccess(key: string): void {
+    this._circuitFailures.delete(key);
+    this._circuitOpenUntil.delete(key);
+  }
+
+  private _recordFailure(key: string): void {
+    const next = (this._circuitFailures.get(key) || 0) + 1;
+    this._circuitFailures.set(key, next);
+    if (next >= this._circuitBreakerFailureThreshold) {
+      this._circuitOpenUntil.set(key, Date.now() + this._circuitBreakerCooldownMs);
+      this._circuitFailures.set(key, 0);
+    }
   }
 }

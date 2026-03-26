@@ -42,7 +42,7 @@ export function RuntimeLog({
   className,
   ...props
 }: RuntimeLogProps) {
-  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const scrollRef = React.useRef<HTMLUListElement>(null);
   const [activeFilter, setActiveFilter] = React.useState<TimelineEventType[] | undefined>(filter);
 
   const filtered = activeFilter?.length
@@ -96,28 +96,30 @@ export function RuntimeLog({
       </div>
 
       {/* Event list */}
-      <div
+      <ul
         ref={scrollRef}
         role="list"
         aria-label="Runtime events"
+        tabIndex={0}
         className="overflow-y-auto max-h-80 rounded-md border bg-muted/30 p-2"
       >
         {visible.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-4 text-center">No events</p>
+          <li className="list-none text-sm text-muted-foreground py-4 text-center">No events</li>
         ) : (
           visible.map((event) => (
-            <RuntimeEvent
-              key={event.id}
-              type={event.type}
-              timestamp={event.timestamp}
-              description={event.description}
-              agent={event.agent}
-              phase={event.phase}
-              artifactId={event.artifactId}
-            />
+            <li key={event.id} className="list-none">
+              <RuntimeEvent
+                type={event.type}
+                timestamp={event.timestamp}
+                description={event.description}
+                agent={event.agent}
+                phase={event.phase}
+                artifactId={event.artifactId}
+              />
+            </li>
           ))
         )}
-      </div>
+      </ul>
     </section>
   );
 }

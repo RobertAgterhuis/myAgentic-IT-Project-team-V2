@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { ModalDialog } from '@/components/ui/modal-dialog';
 import { InputField } from '@/components/ui/input-field';
+import { AsyncMutationFeedback } from '@/components/ui/async-mutation-feedback';
 import { useUpdateWorkspace } from '@/hooks';
 import type { WorkspaceSummary } from '@/lib/api-types';
 
@@ -65,6 +66,13 @@ export function EditWorkspaceDialog({
       }
     >
       <div className="space-y-4">
+        <AsyncMutationFeedback
+          mutation={updateWorkspace}
+          pendingMessage="Saving workspace changes..."
+          successMessage="Workspace updated."
+          errorMessagePrefix="Workspace update failed."
+          onRetry={handleSubmit}
+        />
         <InputField
           label="Workspace Name"
           value={name}

@@ -367,6 +367,7 @@ export default function ArtifactBrowserPage() {
           items={auditQueueItems}
           emptyTitle="No audit activity"
           emptyDescription="Audit timeline entries will appear once evidence and approvals are generated."
+          headingLevel={2}
         />
 
         {/* Stats */}

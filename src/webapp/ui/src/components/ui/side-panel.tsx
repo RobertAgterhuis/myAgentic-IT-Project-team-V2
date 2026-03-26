@@ -41,6 +41,7 @@ function SectionGroup({
   collapsed: boolean;
 }) {
   const [open, setOpen] = React.useState(true);
+  const sectionToggleLabel = `${open ? 'Collapse' : 'Expand'} ${section.title}`;
   const progressWidthClasses = [
     'w-0',
     'w-1/12',
@@ -65,6 +66,8 @@ function SectionGroup({
           onClick={() => setOpen((o) => !o)}
           className="motion-transition-base flex w-full items-center gap-(--space-sm) px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground"
           aria-expanded="true"
+          aria-label={sectionToggleLabel}
+          title={collapsed ? section.title : undefined}
         >
           <span
             className="size-1.5 rounded-full bg-secondary/80 shadow-[0_0_10px_currentColor]"
@@ -82,6 +85,8 @@ function SectionGroup({
           onClick={() => setOpen((o) => !o)}
           className="motion-transition-base flex w-full items-center gap-(--space-sm) px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground hover:text-foreground"
           aria-expanded="false"
+          aria-label={sectionToggleLabel}
+          title={collapsed ? section.title : undefined}
         >
           <span
             className="size-1.5 rounded-full bg-secondary/80 shadow-[0_0_10px_currentColor]"
@@ -138,7 +143,9 @@ function SectionGroup({
                       : 'border border-transparent text-foreground/88'
                 )}
                 aria-current={activeItemId === (item.href ?? item.id) ? 'page' : undefined}
+                aria-label={item.label}
                 disabled={item.disabled}
+                title={collapsed ? item.label : undefined}
               >
                 {item.icon && (
                   <span

@@ -11,8 +11,14 @@ import { onCLS, onINP, onLCP, type Metric } from 'web-vitals';
 
 const ENDPOINT = '/api/v1/metrics/vitals';
 
+function readCsrfToken(): string {
+  const cookie = document.cookie
+    .split('; ')
+    .find((entry) => entry.startsWith('csrf=') || entry.startsWith('csrf_token='));
+  return cookie?.split('=')[1] ?? '';
+}
+
 function sendMetric(metric: Metric): void {
-  // Use sendBeacon when available (non-blocking, survives page unload).
   const body = JSON.stringify({
     name: metric.name,
     value: metric.value,
@@ -21,19 +27,21 @@ function sendMetric(metric: Metric): void {
     navigationType: metric.navigationType,
   });
 
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon(ENDPOINT, new Blob([body], { type: 'application/json' }));
-  } else {
-    // Fallback: fire-and-forget fetch (ignored if it fails).
-    fetch(ENDPOINT, {
-      method: 'POST',
-      body,
-      headers: { 'Content-Type': 'application/json' },
-      keepalive: true,
-    }).catch(() => {
-      // Intentionally silent — metrics loss is acceptable.
-    });
-  }
+  // Best-effort fetch with credentials and CSRF support. We avoid sendBeacon
+  // here because it cannot attach the required CSRF header for authenticated
+  // sessions.
+  fetch(ENDPOINT, {
+    method: 'POST',
+    body,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-csrf-token': readCsrfToken(),
+    },
+    keepalive: true,
+  }).catch(() => {
+    // Intentionally silent — metrics loss is acceptable.
+  });
 }
 
 export function initWebVitals(): void {

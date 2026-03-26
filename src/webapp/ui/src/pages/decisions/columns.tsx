@@ -60,7 +60,7 @@ export function getColumns(
     },
     {
       id: 'actions',
-      header: '',
+      header: 'Actions',
       cell: ({ row }) => (
         <div className="flex gap-1">
           <Button

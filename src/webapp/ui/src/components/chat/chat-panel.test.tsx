@@ -52,7 +52,7 @@ describe('ChatPanel', () => {
     useUIStore.setState({ chatOpen: true, lastSSEEvent: null });
   });
 
-  // TODO(#1095): Re-enable and stabilize this test after resolving flaky/local test-runner behavior.
+  // TODO(#1095): Re-enable and stabilize this test after resolving flaky local test-runner behavior.
   it.skip('renders SSE token stream incrementally and clears transient stream after completion', async () => {
     renderPanel();
 

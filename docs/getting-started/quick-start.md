@@ -33,14 +33,8 @@ cd myAgentic-IT-Project-team-V2
 npm install
 ```
 
-This installs root dependencies. The UI has its own `package.json` under
-`src/webapp/ui/` — install those separately:
-
-```bash
-cd src/webapp/ui
-npm install
-cd ../../..
-```
+This installs both the root dependencies and the UI workspace dependencies under
+`src/webapp/ui/` via npm workspaces.
 
 ## Step 2: Build the UI
 

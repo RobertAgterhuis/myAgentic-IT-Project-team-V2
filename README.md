@@ -22,10 +22,12 @@ implementation (human-in-the-loop, CONTINUE-to-proceed).
 
 ```bash
 npm install
-cd src/webapp/ui && npm install && cd ../../..
 npm run build
 npm start
 ```
+
+`npm install` from the repository root now installs both the root dependencies and
+the UI workspace dependencies under `src/webapp/ui` via npm workspaces.
 
 Open [http://127.0.0.1:3000](http://127.0.0.1:3000) — select **CREATE** or
 **AUDIT**, paste the command into Copilot Chat, and type **CONTINUE** after each

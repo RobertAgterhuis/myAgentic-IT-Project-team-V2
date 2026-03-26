@@ -19,9 +19,6 @@ permissions:
 jobs:
   build-storybook:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: src/webapp/ui
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -32,17 +29,14 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: Install dependencies
-        run: |
-          npm ci
-          npm ci --workspace @agentic-sdlc/ui
-        working-directory: .
+        run: npm ci
 
       - name: Build design tokens
         run: node scripts/build-tokens.mjs
         working-directory: .
 
       - name: Build Storybook
-        run: npx storybook build -o storybook-static
+        run: npm run build-storybook --workspace @agentic-sdlc/ui
 
       - name: Upload Storybook artifact
         if: github.ref == 'refs/heads/main'

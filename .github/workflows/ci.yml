@@ -89,10 +89,14 @@ jobs:
 
       - name: Run frontend unit tests with coverage
         run: npm run test:coverage --prefix src/webapp/ui -- --project unit
+        env:
+          VITEST_ONLY_PROJECT: unit
 
       - name: Run frontend Storybook component tests
         run: npx vitest run --project storybook
         working-directory: src/webapp/ui
+        env:
+          VITEST_ONLY_PROJECT: storybook
 
       - name: Enforce coverage thresholds
         run: npm run test:coverage:gate

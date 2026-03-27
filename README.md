@@ -1,152 +1,133 @@
-# myAgentic-IT-Project-team – End-to-End Software Solution Creation & Audit
+# myAgentic-IT-Project-team-v2
 
 [![CI](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/ci.yml/badge.svg)](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/ci.yml)
-[![Storybook CI](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/storybook.yml/badge.svg)](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/actions/workflows/storybook.yml)
-[![Coverage: 75%+ enforced](https://img.shields.io/badge/Coverage-75%25%2B%20enforced-brightgreen.svg)](#testing)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Node.js 22](https://img.shields.io/badge/Node.js-22-green.svg)](https://nodejs.org/)
-[![ESLint: 0 errors](https://img.shields.io/badge/ESLint-0%20errors-brightgreen.svg)](#code-quality)
 
-A **multi-agent system** of 38+ specialized AI agents that creates complete,
-production-ready software solutions — or audits existing ones — through a
-structured four-phase analysis followed by supervised sprint-by-sprint
-implementation (human-in-the-loop, CONTINUE-to-proceed).
+An agentic SDLC platform focused on orchestration, governance, and traceable delivery.
 
-> **Quick result:** A full Phase 1–4 cycle that takes 7–10 weeks manually
-> completes in **5–10 working days** with this agentic team, requiring only
-> **7–12 hours of active attention** from you.
+## Positioning (Candid)
 
----
+This project is strongest as a control plane for software delivery.
+
+- Trust now: orchestration, gated phases, handoffs, auditability, policy guardrails, and documentation flow.
+- Not fully trusted yet: unattended end-to-end autonomous implementation lane with no human supervision.
+
+In short: this is a reliable system for coordinating and governing work across many specialized agents. It is not presented as a fully self-sufficient software engineering agent.
+
+## What This Platform Does Well
+
+- Runs structured SDLC modes (CREATE, AUDIT, FEATURE, REEVALUATE, etc.).
+- Enforces phase gates and critic/risk checkpoints before progression.
+- Produces machine-readable artifacts and persistent project memory.
+- Standardizes agent behavior through global guardrails and contracts.
+- Supports implementation with human-in-the-loop control (CONTINUE model).
+
+## What Is Still Maturing
+
+- Autonomous execution quality under broad, real-world engineering variance.
+- Stability and confidence of fully unattended PR-to-merge workflows.
+- Cross-environment reproducibility of "single-command autonomous delivery".
+
+The roadmap emphasis is improving the autonomous software delivery lane while preserving the current governance strengths.
 
 ## Quick Start
 
 ```bash
-npm install
-cd src/webapp/ui && npm install && cd ../../..
-npm run build
+npm ci
+npm ci --prefix src/webapp/ui
 npm start
 ```
 
-Open [http://127.0.0.1:3000](http://127.0.0.1:3000) — select **CREATE** or
-**AUDIT**, paste the command into Copilot Chat, and type **CONTINUE** after each
-agent completes.
+Then open http://127.0.0.1:3000
 
-Platform-specific AI instruction files are generated during `npm install`.
-For GitHub Copilot, this project intentionally keeps both `.github/instructions/*.instructions.md`
-for modern VS Code clients and `.github/copilot-instructions.md` for GitHub-hosted
-Copilot and older clients.
+Health check (optional):
 
----
+```bash
+curl http://127.0.0.1:3000/api/health
+```
 
-## Technology Stack
+Notes:
 
-| Layer      | Technology                                                                                                                    |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Runtime    | Node.js 22                                                                                                                    |
-| Server     | [Fastify 5](https://fastify.dev/) with plugin architecture (cors, rate-limit, static, swagger)                                |
-| Auth       | GitHub OAuth + session cookies + RBAC (role-based access control)                                                             |
-| Queue      | [BullMQ](https://docs.bullmq.io/) (optional Redis-backed job queue, graceful degradation to sync)                             |
-| Data       | File-based JSON/Markdown + [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) + optional [Redis](https://redis.io/) |
-| MCP Server | [Model Context Protocol](https://modelcontextprotocol.io/) via stdio transport                                                |
-| Logging    | [pino](https://getpino.io/) structured JSON logging                                                                           |
-| Testing    | [Vitest](https://vitest.dev/) (3,000+ tests across 100+ files), coverage 75%+ enforced                                        |
-| Linting    | [ESLint](https://eslint.org/) (flat config, `eslint.config.mjs`)                                                              |
-| AI Agents  | [GitHub Copilot](https://github.com/features/copilot) agents in VS Code, Visual Studio, JetBrains                             |
+- `npm start` runs the server in the foreground (it should keep running).
+- If port 3000 is already in use, stop the conflicting process and run `npm start` again.
 
----
+## Core Commands
 
-## Runtime Profiles
+```bash
+# Run server
+npm start
 
-The system supports explicit runtime profiles for different deployment contexts:
+# Build
+npm run build
 
-### Local Development (Default)
+# Lint and type-check
+npm run lint
+npm run typecheck
 
-**Usage:** `npm start` (no environment variables needed)
+# Tests
+npm test
+npm run test:coverage
+npm run test:coverage:gate
 
-- **Storage:** File-based JSON in `BusinessDocs/` folder
-- **Queue:** In-memory (does not survive restart)
-- **Sessions:** SQLite in `.agentic/sessions.db`
-- **Redis:** Not required
-- **Startup behavior:** Tolerates missing services; continues with fallback modes
-- **Auth:** GitHub OAuth optional for localhost development; non-local binding requires OAuth or API_KEY
-- **Characteristics:** Zero-config, ideal for single-operator development
+# MCP server mode
+npm run start:mcp
+```
 
-### CI/Test
+## Runtime Notes
 
-**Usage:** `NODE_ENV=test npm test`
+- Engine baseline: Node.js 22+ (see package.json engines).
+- Local mode supports file/SQLite-backed workflows and optional Redis.
+- Production mode is designed to fail closed when required providers are unavailable.
 
-- Same as Local Development
-- Rate limiting disabled in test environments
-- All providers use in-memory or local file storage
-- No external services required
+## Architecture Snapshot
 
-### Production (Single Node)
+- Server: Fastify-based web application in src/webapp.
+- UI: React/Vite app in src/webapp/ui.
+- SDLC templates/contracts/guardrails: templates/sdlc.
+- Platform schema and generation: platform/schema and scripts/generate-platform.js.
+- Business and synthesis artifacts: BusinessDocs.
 
-**Usage:** `NODE_ENV=production STORAGE_PROVIDER=sqlite STORAGE_PATH=/data/agentic.db npm start`
+## Repository Layout
 
-- **Storage:** SQLite (persistent database)
-- **Queue:** Persistent (on-disk state)
-- **Sessions:** SQLite
-- **Redis:** Optional for pub/sub and metrics
-- **Startup behavior:** **Fails (exit 1) if storage provider cannot initialize** — no fallback allowed
-- **Auth:** Requires GitHub OAuth OR API_KEY (minimum 24 characters)
-- **Network:** Runtime profile contract is validated at startup; non-localhost requires explicit `TRUST_PROXY` and auth
-- **Characteristics:** Single-instance deployment with durable state
+- src: webapp backend and frontend
+- templates: SDLC agent skills, contracts, and guardrails
+- platform: canonical schema and engine metadata
+- docs: user and technical documentation
+- tests: unit, integration, e2e, security, and load checks
+- BusinessDocs: generated/curated project artifacts and decisions
 
-### Production (Distributed)
+## Trust Model for Teams
 
-**Usage:** Set `QUEUE_PROVIDER=bullmq`, `SESSION_STORE=redis`, `REDIS_URL=redis://...`
+Use this platform as:
 
-- **Storage:** SQLite (shared database)
-- **Queue:** BullMQ (Redis-backed, survives restart, enables concurrency)
-- **Sessions:** Redis (distributed, shared across instances)
-- **Redis:** Required; startup fails if `REDIS_URL` is set but unreachable
-- **Startup behavior:** Strict fail-closed semantics; all services must be available
-- **Auth:** Requires GitHub OAuth OR API_KEY
-- **Network:** Load balancer in front; `TRUST_PROXY` must be configured
-- **Characteristics:** Multi-instance high-availability, shared state, horizontal scale
+- A governed orchestration layer for multi-agent SDLC work.
+- A decision and evidence trail for audits and release reviews.
+- A supervised implementation assistant, not a blind autopilot.
 
----
+Recommended operating model:
+
+1. Let agents generate analysis/design/implementation proposals.
+2. Keep human approval at gate transitions and release-critical steps.
+3. Use CI gates as hard quality boundaries before merge/deploy.
 
 ## Documentation
 
-| Document                                                  | Description                                          |
-| --------------------------------------------------------- | ---------------------------------------------------- |
-| [User Manual](docs/getting-started/user-manual.md)        | Getting started, commands, questionnaires, decisions |
-| [Technical Manual](docs/reference/technical-manual.md)    | Architecture, API reference, configuration, security |
-| [Architecture](docs/architecture/overview.md)             | Layer diagram, data flow, module inventory           |
-| [Contributing](docs/contributing.md)                      | Development setup, coding standards, PR process      |
-| [Data Dictionary](docs/reference/data-dictionary.md)      | Entity catalog, field schemas, validation rules      |
-| [MCP Setup](docs/getting-started/mcp-setup.md)            | Cross-IDE MCP server configuration                   |
-| [Release Checklist](docs/operations/release-checklist.md) | Pre-release verification steps                       |
-
----
-
-## Testing
-
-```bash
-npm test              # Run all tests (Vitest)
-npm run test:coverage # Coverage report
-npm run test:watch    # Watch mode
-npm run lint          # ESLint (0 errors, 0 warnings)
-```
-
----
+- [Project docs index](docs/README.md)
+- [Contributing guide](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Code of conduct](CODE_OF_CONDUCT.md)
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for quick setup, or
-[docs/contributing.md](docs/contributing.md) for the full guide.
+Contributions are welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md), then run:
 
----
-
-## Community
-
-- **[Discussions](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/discussions)** — Questions, ideas, show & tell
-- **[Issues](https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2/issues)** — Bug reports and feature requests
-
----
+```bash
+npm run format
+npm run lint
+npm run test:coverage
+```
 
 ## License
 
-[MIT](LICENSE) — Copyright (c) 2026 Robert Agterhuis
+[MIT](LICENSE)

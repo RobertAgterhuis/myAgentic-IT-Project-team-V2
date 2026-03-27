@@ -1,0 +1,204 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Lessons Registry Schema",
+  "description": "Canonical schema for normalized lessons extracted from reevaluate and retrospective artifacts.",
+  "version": "1.0.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "registry_id": {
+      "type": "string",
+      "pattern": "^LESSONS-[A-Z0-9]+-\\d{10}$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "source_artifacts": {
+      "type": "object",
+      "properties": {
+        "reevaluate_runs": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "ID of reevaluate run analyzed"
+          }
+        },
+        "retrospectives": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "ID of retrospective analyzed"
+          }
+        }
+      }
+    },
+    "lessons": {
+      "type": "array",
+      "description": "Extracted and normalized lessons",
+      "items": {
+        "type": "object",
+        "required": ["id", "category", "narrative", "evidence", "confidence"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^LESSON-[A-Z0-9]+-\\d+$"
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "routing",
+              "prompting",
+              "validation",
+              "retrieval",
+              "tool-use",
+              "collaboration",
+              "approval",
+              "escalation",
+              "performance",
+              "errorhandling"
+            ],
+            "description": "Domain where this lesson applies"
+          },
+          "narrative": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 1000,
+            "description": "Natural language summary of the lesson"
+          },
+          "evidence": {
+            "type": "array",
+            "description": "Supporting data or observations",
+            "items": {
+              "type": "object",
+              "properties": {
+                "source": {
+                  "type": "string",
+                  "enum": [
+                    "metric",
+                    "observation",
+                    "failure-analysis",
+                    "benchmark-result",
+                    "user-feedback",
+                    "code-review"
+                  ]
+                },
+                "data": {
+                  "type": "string"
+                },
+                "weight": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                }
+              }
+            }
+          },
+          "confidence": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Confidence level in this lesson (0.0-1.0)"
+          },
+          "observation_frequency": {
+            "type": "object",
+            "properties": {
+              "times_observed": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "observation_time_span_days": {
+                "type": "integer"
+              }
+            }
+          },
+          "applicability": {
+            "type": "object",
+            "properties": {
+              "phases": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Which phases this lesson applies to"
+              },
+              "agents": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Which agents this lesson applies to"
+              },
+              "scope": {
+                "type": "string",
+                "enum": [
+                  "universal",
+                  "typed-work",
+                  "high-risk",
+                  "specific-agent",
+                  "specific-phase"
+                ],
+                "description": "Scope of applicability"
+              }
+            }
+          },
+          "recommended_policy_change": {
+            "type": "object",
+            "properties": {
+              "policy_domain": {
+                "type": "string",
+                "enum": [
+                  "routing",
+                  "prompt-profile",
+                  "validation-strictness",
+                  "retrieval-profile",
+                  "concurrency",
+                  "approval-threshold",
+                  "escalation-behavior"
+                ]
+              },
+              "change_description": {
+                "type": "string"
+              },
+              "expected_benefit": {
+                "type": "string",
+                "description": "How system will improve if policy is updated"
+              }
+            }
+          },
+          "related_failures": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^FAIL-[A-Z]+-\\d+$"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": ["new", "reviewed", "policy-proposed", "policy-applied", "invalidated"],
+            "description": "Current status of this lesson in the pipeline"
+          },
+          "last_evaluated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "categories_summary": {
+      "type": "object",
+      "description": "Count of lessons per category",
+      "additionalProperties": {
+        "type": "integer"
+      }
+    },
+    "policy_recommendations_count": {
+      "type": "integer",
+      "description": "Number of lessons with policy recommendations"
+    }
+  },
+  "required": ["version", "registry_id", "generated_at", "lessons"]
+}

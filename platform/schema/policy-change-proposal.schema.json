@@ -1,0 +1,191 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Policy Change Proposal Schema",
+  "description": "Canonical schema for policy recommendations derived from lessons and benchmarks.",
+  "version": "1.0.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "proposal_id": {
+      "type": "string",
+      "pattern": "^POLICYCHANGE-[A-Z0-9]+-\\d+$"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "derived_from": {
+      "type": "object",
+      "description": "Source of this policy recommendation",
+      "properties": {
+        "lesson_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^LESSON-[A-Z0-9]+-\\d+$"
+          }
+        },
+        "benchmark_run_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "retrospective_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "recommended_changes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "policy_domain",
+          "change_type",
+          "current_value",
+          "proposed_value",
+          "rationale"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^POLICYCHANGE-[A-Z]+-\\d+$"
+          },
+          "policy_domain": {
+            "type": "string",
+            "enum": [
+              "routing",
+              "prompt-profile",
+              "validation-strictness",
+              "retrieval-profile",
+              "concurrency",
+              "approval-threshold",
+              "escalation-behavior",
+              "cache-policy"
+            ]
+          },
+          "change_type": {
+            "type": "string",
+            "enum": [
+              "increase",
+              "decrease",
+              "toggle",
+              "add-rule",
+              "remove-rule",
+              "modify-threshold"
+            ]
+          },
+          "current_value": {
+            "type": ["string", "number", "boolean", "object"]
+          },
+          "proposed_value": {
+            "type": ["string", "number", "boolean", "object"]
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 20,
+            "maxLength": 1000,
+            "description": "Why this change is recommended"
+          },
+          "expected_impact": {
+            "type": "object",
+            "properties": {
+              "metric": {
+                "type": "string",
+                "enum": [
+                  "latency",
+                  "accuracy",
+                  "throughput",
+                  "cost",
+                  "user-satisfaction",
+                  "failure-rate",
+                  "approval-time"
+                ]
+              },
+              "direction": {
+                "type": "string",
+                "enum": ["improvement", "degradation", "neutral"]
+              },
+              "estimated_magnitude": {
+                "type": "string",
+                "enum": ["small", "medium", "large"]
+              }
+            }
+          },
+          "risk_level": {
+            "type": "string",
+            "enum": ["low", "medium", "high"],
+            "description": "Risk of applying this change"
+          },
+          "affected_agents": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "affected_phases": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "rollback_procedure": {
+            "type": "string",
+            "description": "How to revert this change if needed"
+          },
+          "approval_required": {
+            "type": "boolean",
+            "description": "Whether explicit approval is needed before applying"
+          },
+          "approval_authority": {
+            "type": "string",
+            "enum": ["orchestrator", "human", "automated"],
+            "description": "Who must approve this change"
+          }
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "properties": {
+        "total_changes_proposed": {
+          "type": "integer"
+        },
+        "high_risk_changes": {
+          "type": "integer"
+        },
+        "requires_approval": {
+          "type": "integer"
+        },
+        "confidence_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Overall confidence in recommendations (0.0-1.0)"
+        }
+      }
+    },
+    "recommendation_status": {
+      "type": "string",
+      "enum": ["pending-review", "approved", "rejected", "applied", "reverted"],
+      "description": "Current status of this proposal"
+    },
+    "review_notes": {
+      "type": "string",
+      "description": "Human or automated review notes"
+    },
+    "applied_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": ["version", "proposal_id", "generated_at", "recommended_changes"]
+}

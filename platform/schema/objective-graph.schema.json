@@ -1,0 +1,206 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Objective Graph Schema",
+  "description": "Canonical schema for machine-readable strategic goals, KPIs, epics, sprint items, responsible agents, and gate linkages.",
+  "version": "1.0.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "description": "Schema version"
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp when the graph was generated"
+    },
+    "objectives": {
+      "type": "array",
+      "description": "Top-level strategic objectives",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description", "owner_agent", "kpis", "status"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^OBJ-[A-Z0-9]+-\\d+$",
+            "description": "Unique objective identifier"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          },
+          "owner_agent": {
+            "type": "string",
+            "description": "Primary agent responsible for achieving this objective",
+            "enum": [
+              "orchestrator",
+              "business-analyst",
+              "product-manager",
+              "software-architect",
+              "synthesis-agent"
+            ]
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "governance",
+              "quality",
+              "performance",
+              "capability",
+              "risk-reduction",
+              "observability"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["not-started", "in-progress", "at-risk", "healthy", "completed", "paused"],
+            "description": "Current health status of the objective"
+          },
+          "kpis": {
+            "type": "array",
+            "description": "Key performance indicators for this objective",
+            "items": {
+              "type": "object",
+              "required": ["id", "name", "metric_type", "target_value"],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^KPI-[A-Z0-9]+-\\d+$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "metric_type": {
+                  "type": "string",
+                  "enum": ["count", "percentage", "score", "duration", "ratio", "custom"]
+                },
+                "target_value": {
+                  "type": ["number", "string"]
+                },
+                "current_value": {
+                  "type": ["number", "string", "null"]
+                },
+                "unit": {
+                  "type": "string"
+                },
+                "drift_status": {
+                  "type": "string",
+                  "enum": ["on-track", "warning", "at-risk", "critical"],
+                  "description": "Status of KPI against target"
+                },
+                "last_updated": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "linked_epics": {
+            "type": "array",
+            "description": "Epics contributing to this objective",
+            "items": {
+              "type": "string",
+              "pattern": "^EPIC-[A-Z0-9]+-[A-Z0-9]+-\\d+$"
+            }
+          },
+          "linked_sprint_items": {
+            "type": "array",
+            "description": "Current sprint items supporting this objective",
+            "items": {
+              "type": "string"
+            }
+          },
+          "linked_gates": {
+            "type": "array",
+            "description": "Gate IDs that verify progress on this objective",
+            "items": {
+              "type": "string"
+            }
+          },
+          "blocking_decisions": {
+            "type": "array",
+            "description": "Open decisions that block progress",
+            "items": {
+              "type": "string",
+              "pattern": "^DEC-[A-Z0-9]+-\\d+$"
+            }
+          },
+          "blocker_count": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "health_score": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10,
+            "description": "Computed health score (0-10)"
+          },
+          "recommended_actions": {
+            "type": "array",
+            "description": "Suggested next steps if at-risk",
+            "items": {
+              "type": "string"
+            }
+          },
+          "last_health_assessment": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "epics": {
+      "type": "array",
+      "description": "Feature epics supporting objectives",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "objective_id"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^EPIC-[A-Z0-9]+-[A-Z0-9]+-\\d+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "objective_id": {
+            "type": "string",
+            "pattern": "^OBJ-[A-Z0-9]+-\\d+$"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["planned", "in-progress", "at-risk", "completed"]
+          }
+        }
+      }
+    },
+    "health_summary": {
+      "type": "object",
+      "properties": {
+        "total_objectives": {
+          "type": "integer"
+        },
+        "healthy": {
+          "type": "integer"
+        },
+        "at_risk": {
+          "type": "integer"
+        },
+        "average_health_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10
+        }
+      }
+    }
+  },
+  "required": ["version", "generated_at", "objectives"]
+}

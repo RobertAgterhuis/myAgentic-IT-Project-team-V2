@@ -1,0 +1,211 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Failure Taxonomy Schema",
+  "description": "Canonical schema for classifying agent failures and tracking remediation effectiveness.",
+  "version": "1.0.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "last_updated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "failure_classes": {
+      "type": "array",
+      "description": "Structured failure categories",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "description", "indicators"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^FAIL-[A-Z]+-\\d+$",
+            "description": "Failure class identifier"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 100
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 500
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "tool-loop",
+              "provider-fallback",
+              "missing-evidence",
+              "contract-violation",
+              "approval-bottleneck",
+              "data-error",
+              "config-error",
+              "runtime-error",
+              "external-dependency",
+              "agent-logic"
+            ]
+          },
+          "severity_levels": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["critical", "high", "medium", "low", "info"]
+            }
+          },
+          "indicators": {
+            "type": "array",
+            "description": "Patterns or keywords that indicate this failure class",
+            "items": {
+              "type": "string"
+            }
+          },
+          "documented_remediations": {
+            "type": "array",
+            "description": "Known fixes for this failure class",
+            "items": {
+              "type": "object",
+              "required": ["id", "name", "description"],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^REM-[A-Z]+-\\d+$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "execution_time_minutes": {
+                  "type": "number",
+                  "minimum": 0
+                },
+                "success_rate": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1,
+                  "description": "Proportion of times this remediation succeeded (0.0-1.0)"
+                },
+                "times_applied": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "last_applied": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "confidence": {
+                  "type": "string",
+                  "enum": ["proven", "likely", "experimental", "unproven"],
+                  "description": "Confidence level in this remediation"
+                }
+              }
+            }
+          },
+          "metrics": {
+            "type": "object",
+            "properties": {
+              "total_occurrences": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "last_7_days": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "last_30_days": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "remediation_success_rate": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1,
+                "description": "Overall success rate of remediations for this class"
+              },
+              "trend": {
+                "type": "string",
+                "enum": ["improving", "stable", "degrading", "insufficient-data"]
+              }
+            }
+          },
+          "last_occurrence": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "recent_failures": {
+      "type": "array",
+      "description": "Recent failure instances",
+      "items": {
+        "type": "object",
+        "required": ["id", "class_id", "timestamp", "affected_agent"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^FAILINSTANCE-[A-Z0-9]+-\\d+$"
+          },
+          "class_id": {
+            "type": "string",
+            "pattern": "^FAIL-[A-Z]+-\\d+$"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "affected_agent": {
+            "type": "string"
+          },
+          "phase": {
+            "type": "string"
+          },
+          "error_message": {
+            "type": "string"
+          },
+          "remediation_applied": {
+            "type": "string",
+            "pattern": "^REM-[A-Z]+-\\d+$"
+          },
+          "remediation_success": {
+            "type": "boolean"
+          },
+          "context": {
+            "type": "object",
+            "description": "Execution context when failure occurred"
+          }
+        }
+      }
+    },
+    "taxonomy_stats": {
+      "type": "object",
+      "properties": {
+        "total_classes": {
+          "type": "integer"
+        },
+        "total_remediations": {
+          "type": "integer"
+        },
+        "total_failure_instances_tracked": {
+          "type": "integer"
+        },
+        "overall_remediation_success_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "most_common_failure_class": {
+          "type": "string",
+          "pattern": "^FAIL-[A-Z]+-\\d+$"
+        }
+      }
+    }
+  },
+  "required": ["version", "failure_classes"]
+}

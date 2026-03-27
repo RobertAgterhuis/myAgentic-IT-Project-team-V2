@@ -56,7 +56,7 @@ export default defineConfig({
       inline: [/./],
     },
     setupFiles: ['tests/setup-require-hook.js'],
-    include: ['tests/**/*.test.js'],
+    include: ['tests/**/*.test.{js,ts}'],
     exclude: [
       '**/node_modules/**',
       'tests/integration/git-adapter.integration.test.js',

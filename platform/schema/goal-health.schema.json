@@ -1,0 +1,249 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Goal Health Assessment Schema",
+  "description": "Canonical schema for computing and tracking goal health status.",
+  "version": "1.0.0",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "assessment_id": {
+      "type": "string",
+      "pattern": "^HEALTH-[A-Z0-9]+-\\d{10}$"
+    },
+    "assessed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "objective_id": {
+      "type": "string",
+      "pattern": "^OBJ-[A-Z0-9]+-\\d+$"
+    },
+    "health_factors": {
+      "type": "object",
+      "description": "Component scores that contribute to overall health",
+      "properties": {
+        "kpi_drift": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "status": {
+              "type": "string",
+              "enum": ["on-track", "warning", "at-risk", "critical"]
+            },
+            "kpis_analyzed": {
+              "type": "integer"
+            },
+            "kpis_at_risk": {
+              "type": "integer"
+            },
+            "details": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "kpi_id": {
+                    "type": "string"
+                  },
+                  "current_value": {
+                    "type": ["number", "string"]
+                  },
+                  "target_value": {
+                    "type": ["number", "string"]
+                  },
+                  "variance_percentage": {
+                    "type": "number"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "blocker_count": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "total_blockers": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "critical_blockers": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "blocker_details": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "blocker_id": {
+                    "type": "string"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": ["critical", "high", "medium", "low"]
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": ["decision", "approval", "dependency", "resource", "knowledge"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "decision_currency": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "total_decisions": {
+              "type": "integer"
+            },
+            "open_decisions": {
+              "type": "integer"
+            },
+            "overdue_decisions": {
+              "type": "integer"
+            }
+          }
+        },
+        "benchmark_regression": {
+          "type": "object",
+          "properties": {
+            "score": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 10
+            },
+            "weight": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "baseline_run_id": {
+              "type": "string"
+            },
+            "current_run_id": {
+              "type": "string"
+            },
+            "regressions_detected": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "metric": {
+                    "type": "string"
+                  },
+                  "previous_value": {
+                    "type": ["number", "string"]
+                  },
+                  "current_value": {
+                    "type": ["number", "string"]
+                  },
+                  "change_percentage": {
+                    "type": "number"
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": ["critical", "high", "medium", "low"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "overall_health": {
+      "type": "object",
+      "properties": {
+        "score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 10,
+          "description": "Weighted composite health score"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["healthy", "at-risk", "critical"],
+          "description": "Categorical health status"
+        },
+        "trend": {
+          "type": "string",
+          "enum": ["improving", "stable", "degrading"],
+          "description": "Direction of health change"
+        }
+      }
+    },
+    "recommended_actions": {
+      "type": "array",
+      "description": "Suggested mitigation steps if health is not good",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action_id": {
+            "type": "string"
+          },
+          "action_type": {
+            "type": "string",
+            "enum": ["escalate", "remediate", "defer", "reassess", "notify", "reevaluate"]
+          },
+          "description": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "target_health_improvement": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10,
+            "description": "Expected health score improvement if implemented"
+          }
+        }
+      }
+    },
+    "assessment_method": {
+      "type": "string",
+      "enum": ["automated", "manual", "hybrid"],
+      "description": "How this assessment was computed"
+    },
+    "assessment_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence level in this assessment (0.0-1.0)"
+    }
+  },
+  "required": ["version", "assessment_id", "assessed_at", "objective_id", "overall_health"]
+}

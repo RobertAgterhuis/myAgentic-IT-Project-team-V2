@@ -95,6 +95,7 @@ const TRACKED_TAGS = [
   'GUARDRAIL_VIOLATION:',
   'SECURITY_FLAG:',
   'OUT_OF_SCOPE:',
+  'SOURCE_CLASSIFICATION:',
 ];
 
 /** Minimum number of canonical handoff checklist items (G-GLOB-20) */
@@ -354,6 +355,51 @@ function validateDocument(content: string, options: { requiredSections?: string[
   > = {};
   for (const tag of TRACKED_TAGS) {
     tags[tag] = extractTaggedItems(content, tag);
+  }
+
+  // B2.1/B2.2: Enforce retrieval policy against deterministic decision manipulation.
+  const lines = content.split('\n');
+  const headingByLine: Record<number, string> = {};
+  let activeHeading = 'Document Root';
+  for (let i = 0; i < lines.length; i++) {
+    const headingMatch = lines[i].match(/^(#{1,6})\s+(.+)$/);
+    if (headingMatch) {
+      activeHeading = headingMatch[2].trim();
+    }
+    headingByLine[i + 1] = activeHeading;
+  }
+
+  const deterministicDecisionPatterns = [
+    /\bgate\s+decision\b/i,
+    /\bstate\s+transition\b/i,
+    /\bverdict\s*:\s*(APPROVED|FAILED|PENDING_APPROVAL)\b/i,
+    /\bpolicy\s+override\b/i,
+    /\bapproval\s+granted\b/i,
+  ];
+
+  for (const sourceTag of tags['SOURCE_CLASSIFICATION:'] || []) {
+    const classification = sourceTag.text.toLowerCase();
+    if (classification !== 'untrusted' && classification !== 'mixed') {
+      continue;
+    }
+
+    const windowLines = lines.slice(sourceTag.line - 1, Math.min(lines.length, sourceTag.line + 3));
+    const deterministicLine = windowLines.find((line) =>
+      deterministicDecisionPatterns.some((pattern) => pattern.test(line))
+    );
+    if (!deterministicLine) continue;
+
+    const section = headingByLine[sourceTag.line] || 'Document Root';
+    violations.push({
+      severity: 'CRITICAL',
+      rule: 'RETRIEVAL_POLICY_VIOLATION',
+      description:
+        `Deterministic gate or policy decision content is linked to ${classification} retrieval context in section "${section}" at line ${sourceTag.line}. ` +
+        `Offending evidence: "${deterministicLine.trim()}"`,
+      line: sourceTag.line,
+      section,
+      sourceClassification: classification,
+    });
   }
 
   // Explicit GUARDRAIL_VIOLATION tags in the deliverable are findings

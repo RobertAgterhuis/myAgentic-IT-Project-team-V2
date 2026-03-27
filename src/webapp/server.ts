@@ -79,33 +79,7 @@ import {
 } from '../../platform/engine/semantic-memory';
 
 /* ── Native Fastify route plugins (M30-004) ───────────────────── */
-import { registerRoutes as registerQuestionnaireRoutes } from './routes/questionnaires';
-import { registerRoutes as registerDecisionRoutes } from './routes/decisions';
-import { registerRoutes as registerCommandRoutes } from './routes/commands';
-import { registerRoutes as registerProgressRoutes } from './routes/progress';
-import { registerRoutes as registerDriftRoutes } from './routes/drift';
-import { registerRoutes as registerMetricsDashboardRoutes } from './routes/metrics-dashboard';
-import { registerRoutes as registerDashboardRoutes } from './routes/dashboard';
-import { registerRoutes as registerMilestonesRoutes } from './routes/milestones';
-import { registerRoutes as registerSubscribeRoutes } from './routes/subscribe';
-import { registerRoutes as registerOrchestratorRoutes } from './routes/orchestrator';
-import { registerRoutes as registerApprovalRoutes } from './routes/approvals';
-import { registerRoutes as registerPolicyRoutes } from './routes/policies';
-import { registerRoutes as registerArtifactRoutes } from './routes/artifacts';
-import { registerRoutes as registerAnalyticsRoutes } from './routes/analytics';
-import { registerRoutes as registerSessionRoutes } from './routes/sessions';
-import { registerRoutes as registerAgentRoutes } from './routes/agents';
-import { registerRoutes as registerWorkspaceRoutes } from './routes/workspaces';
-import { registerRoutes as registerCockpitRoutes } from './routes/cockpit';
-import { registerRoutes as registerAuthRoutes } from './routes/auth';
-import { registerRoutes as registerMcpRoutes } from './routes/mcp';
-import { registerRoutes as registerMcpExperienceRoutes } from './routes/mcp-experience';
-import { registerRoutes as registerIdentityRoutes } from './routes/identity';
-import { registerRoutes as registerHelpRoutes } from './routes/help';
-import { registerRoutes as registerRagRoutes } from './routes/rag';
-import { registerRoutes as registerChatRoutes } from './routes/chat';
-import { registerRoutes as registerGitRoutes } from './routes/git';
-import { registerRoutes as registerMiscRoutes } from './routes/misc';
+import { registerRoutesFromManifest } from './routes/manifest';
 import { McpGovernanceService, McpHealthMonitor } from './plugins/mcp-governance';
 
 const _cache = new FileCache();
@@ -814,37 +788,8 @@ function getMcpHealthMonitor(): McpHealthMonitor {
 async function createApp() {
   const app = await buildApp({ ctx, disableRequestLogging: false });
 
-  // Register native Fastify route plugins (M30-004)
-  // Commands must register before orchestrator (cross-route wiring order)
-  await registerCommandRoutes(app, ctx);
-  await registerOrchestratorRoutes(app, ctx);
-
-  await registerQuestionnaireRoutes(app, ctx);
-  await registerDecisionRoutes(app, ctx);
-  await registerProgressRoutes(app, ctx);
-  await registerDriftRoutes(app, ctx);
-  await registerMetricsDashboardRoutes(app, ctx);
-  await registerDashboardRoutes(app, ctx);
-  await registerMilestonesRoutes(app, ctx);
-  await registerSubscribeRoutes(app, ctx);
-  await registerApprovalRoutes(app, ctx);
-  await registerPolicyRoutes(app, ctx);
-  await registerArtifactRoutes(app, ctx);
-  await registerAnalyticsRoutes(app, ctx);
-  await registerSessionRoutes(app, ctx);
-  await registerAgentRoutes(app, ctx);
-  await registerWorkspaceRoutes(app, ctx);
-  await registerCockpitRoutes(app, ctx);
-  await registerAuthRoutes(app, ctx);
-  await registerMcpRoutes(app, ctx);
-  await registerMcpExperienceRoutes(app, ctx);
-  await registerIdentityRoutes(app, ctx);
-  await registerHelpRoutes(app, ctx);
-  await registerRagRoutes(app, ctx);
-  await registerChatRoutes(app, ctx);
-  await registerGitRoutes(app, ctx);
-  // misc registers last — includes catch-all SPA static handler
-  await registerMiscRoutes(app, ctx);
+  // Register native Fastify route plugins from declarative manifest (C3.1)
+  await registerRoutesFromManifest(app, ctx);
 
   _app = app;
   return app;

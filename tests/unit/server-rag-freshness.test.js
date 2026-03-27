@@ -102,6 +102,28 @@ describe('server RAG freshness configuration', () => {
     });
   });
 
+  it('parsePositiveIntEnv handles missing, blank, invalid, and valid values', () => {
+    const { __testing } = loadServerModule();
+    const key = 'RAG_TEST_PARSE_POSITIVE_INT';
+
+    delete process.env[key];
+    expect(__testing.parsePositiveIntEnv(key, 123)).toBe(123);
+
+    process.env[key] = '   ';
+    expect(__testing.parsePositiveIntEnv(key, 123)).toBe(123);
+
+    process.env[key] = 'NaN';
+    expect(__testing.parsePositiveIntEnv(key, 123)).toBe(123);
+
+    process.env[key] = '-50';
+    expect(__testing.parsePositiveIntEnv(key, 123)).toBe(123);
+
+    process.env[key] = '42';
+    expect(__testing.parsePositiveIntEnv(key, 123)).toBe(42);
+
+    delete process.env[key];
+  });
+
   it('does not register filesystem watchers when disabled via env', () => {
     setEnv({ RAG_WATCH_ENABLED: 'false' });
 

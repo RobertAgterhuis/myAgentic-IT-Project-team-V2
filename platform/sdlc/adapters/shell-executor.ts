@@ -74,9 +74,9 @@ function isPathWithin(childPath: string, parentPath: string): boolean {
 
 function applyMemoryGuardrail(
   bin: string,
-  env: Record<string, string>,
+  env: NodeJS.ProcessEnv,
   guardrails?: ToolShellGuardrails
-): Record<string, string> {
+): NodeJS.ProcessEnv {
   const limitMb = guardrails?.maxMemoryMb;
   if (!limitMb || limitMb <= 0) return env;
 

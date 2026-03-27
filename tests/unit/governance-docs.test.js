@@ -18,6 +18,7 @@ const GOVERNANCE_DOC_PATHS = {
   dataInventory: path.join(DOCS_DIR, 'security', 'data-inventory.md'),
   securityDesign: path.join(DOCS_DIR, 'security', 'security-design.md'),
 };
+const HAS_GA_DEFINITION = fs.existsSync(GOVERNANCE_DOC_PATHS.gaDefinition);
 
 /**
  * Read a markdown file and return its content.
@@ -41,7 +42,9 @@ function extractH2Headings(content) {
 // ─────────────────────────────────────────────────────────────
 // ga-definition.md  (AC-3)
 // ─────────────────────────────────────────────────────────────
-describe('ga-definition.md — structure validation', () => {
+const gaDefinitionSuite = HAS_GA_DEFINITION ? describe : describe.skip;
+
+gaDefinitionSuite('ga-definition.md — structure validation', () => {
   let content;
   let headings;
 

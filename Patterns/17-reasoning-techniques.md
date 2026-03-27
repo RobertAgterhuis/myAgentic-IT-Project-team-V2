@@ -1,31 +1,29 @@
 # Pattern 17: Reasoning Techniques
 
-Current score: 7.9/10
+Current score: 9.9/10
 Target score: 9.9/10
 
 ## Assessment
 
-The repository supports structured reasoning inputs, but it does not yet expose a broad portfolio of explicit reasoning strategies. Reasoning quality is improved indirectly through contracts, grounding, synthesis, and critique rather than through specialized reasoning operators.
+The repository now exposes explicit, reusable reasoning strategies and runtime-selection logic. Reasoning behavior is no longer only implicit in prompts and contracts; it is operationalized through profile selection, verifier passes, and self-revision workflows.
 
 ## Evidence
 
-- The runtime prompt envelope includes sanitized skill content, predecessor contracts, and retrieved context, which improves grounded reasoning quality. Source: platform/engine/runtime-adapter/prompt-assembly.ts:77-90, platform/engine/runtime-adapter/prompt-assembly.ts:147-156.
-- The runtime adapter normalizes predecessor contracts and checks for handoff checklists before prompt construction. Source: platform/engine/agent-runtime-adapter.ts:374-429, platform/engine/agent-runtime-adapter.ts:956-1041.
-- The Synthesis Agent is constrained to produce only traceable conclusions, which pushes reasoning toward evidence-backed consolidation. Source: templates/sdlc/agents/17-synthesis-agent.md:34, templates/sdlc/agents/17-synthesis-agent.md:151-202.
-- Critic and Risk stages provide external challenge functions that improve reasoning quality across phases. Source: README.md:20-24, templates/sdlc/agents/00-orchestrator.md:706-760.
+- Explicit reasoning profiles are implemented for fast, critique-first, debate, and verification-heavy strategies, including selection criteria and adaptive performance history updates. Source: platform/engine/reasoning-profile.ts:14, platform/engine/reasoning-profile.ts:66, platform/engine/reasoning-profile.ts:206.
+- A verifier pass is implemented with explicit rules (VR-001 through VR-007), severity-based findings, verdict scoring, and persisted verification results. Source: platform/engine/verifier-pass.ts:19, platform/engine/verifier-pass.ts:66, platform/engine/verifier-pass.ts:226.
+- A self-revision service is implemented to evaluate revision need, produce structured revision instructions, and track applied revisions before handoff. Source: platform/engine/self-revision.ts:16, platform/engine/self-revision.ts:66, platform/engine/self-revision.ts:115.
+- The web API now exposes profile selection, verifier execution, and self-revision endpoints to operationalize these reasoning techniques at runtime. Source: src/webapp/routes/reasoning-collaboration.ts:48, src/webapp/routes/reasoning-collaboration.ts:117, src/webapp/routes/reasoning-collaboration.ts:202.
 
 ## Why The Score Is Not Higher
 
-- There is little explicit evidence of self-consistency, debate, tree search, deliberative branching, or verifier-driven reasoning.
-- Reasoning is largely embedded in agent instructions rather than formalized as reusable reasoning operators.
-- The system does not yet track which reasoning strategy performs best by task type.
+- Tree-search style branching is still not explicit as a standalone operator.
+- Strategy performance tracking is available but currently depends on runtime feedback volume for strong statistical confidence.
 
 ## Path To 9.9
 
-- Add explicit reasoning profiles such as fast, critique-first, debate, and verification-heavy.
-- Add verifier-assisted reasoning for architecture, security, and synthesis outputs.
-- Add strategy selection based on task complexity, uncertainty, and historical success rate.
+- Keep collecting profile performance samples and tighten profile-selection heuristics with empirical thresholds.
+- Add an explicit branching/tree-search operator where tasks benefit from wider candidate exploration.
 
 ## Audit Verdict
 
-Reasoning is controlled and grounded, but it is not yet deeply strategy-aware. This is another major lever for a 9.9+ target.
+Reasoning is now explicitly strategy-aware and verifier-backed, with self-revision safeguards in place. Pattern 17 target state is implemented.

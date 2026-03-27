@@ -198,6 +198,10 @@ describe('approveRequest', () => {
     expect(data.ok).toBe(true);
     expect(data.approval.status).toBe('APPROVED');
     expect(data.approval.decided_by).toBe('reviewer');
+    expect(data.decision.schema).toBe('approval-policy-decision');
+    expect(data.decision.version).toBe('1.0');
+    expect(data.decision.decision).toBe('APPROVED');
+    expect(data.decision.approval_id).toBe('APR-001');
     expect(ctx._notified).toHaveLength(1);
     expect(ctx._notified[0].action).toBe('approved');
   });
@@ -306,6 +310,10 @@ describe('rejectRequest', () => {
     expect(data.ok).toBe(true);
     expect(data.approval.status).toBe('REJECTED');
     expect(data.approval.decided_by).toBe('architect');
+    expect(data.decision.schema).toBe('approval-policy-decision');
+    expect(data.decision.version).toBe('1.0');
+    expect(data.decision.decision).toBe('REJECTED');
+    expect(data.decision.approval_id).toBe('APR-001');
     expect(ctx._notified).toHaveLength(1);
     expect(ctx._notified[0].action).toBe('rejected');
   });

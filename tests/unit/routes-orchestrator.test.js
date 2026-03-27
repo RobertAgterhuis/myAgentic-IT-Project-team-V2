@@ -8,6 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { registerRoutes } from '../../src/webapp/routes/orchestrator.js';
 import { sessionTracker } from '../../src/webapp/session-tracker.js';
+import { GovernanceService, toServiceContext } from '../../src/webapp/services/index.js';
 import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
 
 const createOrchestratorRoutes = (ctx) => createTestableRoutes(registerRoutes, ctx);
@@ -28,6 +29,14 @@ const HUMAN_OVERRIDE_FILE = path.resolve(
   'BusinessDocs',
   'session',
   'human-override-events.json'
+);
+const GOVERNANCE_STATE_FILE = path.resolve(
+  __dirname,
+  '..',
+  '..',
+  'BusinessDocs',
+  'session',
+  'governance-state.json'
 );
 const IDLE_STATE = JSON.stringify({ status: 'IDLE', mode: 'CREATE', state_history: [] });
 
@@ -76,11 +85,16 @@ describe('orchestrator routes (integration)', () => {
   let sseNotify;
   let originalSession;
   let originalHumanOverride;
+  let originalGovernanceState;
+  let routeCtx;
 
   beforeAll(() => {
     originalSession = fs.existsSync(SESSION_FILE) ? fs.readFileSync(SESSION_FILE, 'utf8') : null;
     originalHumanOverride = fs.existsSync(HUMAN_OVERRIDE_FILE)
       ? fs.readFileSync(HUMAN_OVERRIDE_FILE, 'utf8')
+      : null;
+    originalGovernanceState = fs.existsSync(GOVERNANCE_STATE_FILE)
+      ? fs.readFileSync(GOVERNANCE_STATE_FILE, 'utf8')
       : null;
   });
 
@@ -93,6 +107,11 @@ describe('orchestrator routes (integration)', () => {
     } else {
       fs.rmSync(HUMAN_OVERRIDE_FILE, { force: true });
     }
+    if (originalGovernanceState !== null) {
+      fs.writeFileSync(GOVERNANCE_STATE_FILE, originalGovernanceState);
+    } else {
+      fs.rmSync(GOVERNANCE_STATE_FILE, { force: true });
+    }
   });
 
   beforeEach(() => {
@@ -102,8 +121,14 @@ describe('orchestrator routes (integration)', () => {
     // Write clean IDLE state so each test starts fresh
     fs.writeFileSync(SESSION_FILE, IDLE_STATE);
     fs.rmSync(HUMAN_OVERRIDE_FILE, { force: true });
+    fs.rmSync(GOVERNANCE_STATE_FILE, { force: true });
     sseNotify = vi.fn();
-    routes = createTestableRoutes(registerRoutes, { sseNotify });
+    routeCtx = {
+      sseNotify,
+      PROJECT_ROOT: path.resolve(__dirname, '..', '..'),
+      SESSION_DIR: path.dirname(SESSION_FILE),
+    };
+    routes = createTestableRoutes(registerRoutes, routeCtx);
   });
 
   it('exports all 10 route handlers', () => {
@@ -264,6 +289,38 @@ describe('orchestrator routes (integration)', () => {
       expect(res.body.ok).toBe(true);
       expect(res.body.transition.from).toBe('IDLE');
       expect(res.body.transition.to).toBe('ONBOARDING');
+    });
+
+    it('blocks advance in production profile when approvals are pending', async () => {
+      const originalNodeEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = 'production';
+
+      try {
+        const governanceService = new GovernanceService(toServiceContext(routeCtx));
+        governanceService.requestToolExecutionApproval({
+          entityId: 'orchestrator:advance:test',
+          requestedBy: 'qa-user',
+        });
+
+        const res = fakeRes();
+        await routes['POST /api/orchestrator/advance'](fakeReq({}), res);
+
+        expect(res.status).toBe(409);
+        expect(res.body.code).toBe('REVIEW_GATE_BLOCKED');
+        expect(res.body.pending_approvals).toBeGreaterThan(0);
+
+        const blockedEvent = sseNotify.mock.calls.find(
+          ([type, payload]) =>
+            type === 'orchestrator_transition_blocked' && payload.reason === 'pending_approvals'
+        );
+        expect(blockedEvent).toBeDefined();
+      } finally {
+        if (originalNodeEnv === undefined) {
+          delete process.env.NODE_ENV;
+        } else {
+          process.env.NODE_ENV = originalNodeEnv;
+        }
+      }
     });
 
     it('advances with gateResult body field', async () => {

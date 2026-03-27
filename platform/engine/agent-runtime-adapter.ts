@@ -1476,6 +1476,11 @@ export function resolveAdapter(config: {
   registry?: AdapterRegistry;
 }): AdapterResolutionResult {
   const registry = config.registry ?? DEFAULT_REGISTRY;
+  const profile = config.profile;
+  const isProductionProfile = Boolean(profile && profile.startsWith('production-'));
+
+  const isDisallowedProductionAdapter = (adapterName: string): boolean =>
+    adapterName === 'null' || adapterName === 'log-only';
 
   if (config.adapterName) {
     const adapter = registry.get(config.adapterName);
@@ -1487,11 +1492,30 @@ export function resolveAdapter(config: {
           `Available adapters: ${registry.listNames().join(', ')}.`,
       };
     }
+
+    if (isProductionProfile && isDisallowedProductionAdapter(config.adapterName)) {
+      return {
+        adapter: null,
+        error:
+          `Runtime profile '${profile}' forbids AGENT_RUNTIME_ADAPTER='${config.adapterName}'. ` +
+          `Configure a provider-backed adapter (for example: llm-openai, llm-copilot).`,
+      };
+    }
+
     return { adapter, error: null };
   }
 
+  if (isProductionProfile) {
+    return {
+      adapter: null,
+      error:
+        `Runtime profile '${profile}' requires AGENT_RUNTIME_ADAPTER to be explicitly configured. ` +
+        `Refusing default fail-open adapter selection.`,
+    };
+  }
+
   // Profile-based default: ci-test uses the no-op null adapter for determinism.
-  const defaultName = config.profile === 'ci-test' ? 'null' : 'log-only';
+  const defaultName = profile === 'ci-test' ? 'null' : 'log-only';
   const adapter = registry.get(defaultName) ?? null;
   return { adapter, error: null };
 }

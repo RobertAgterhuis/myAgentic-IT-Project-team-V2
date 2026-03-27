@@ -151,6 +151,19 @@ export interface ApprovalItem {
   status: string;
 }
 
+export interface CanonicalApprovalDecision {
+  schema: 'approval-policy-decision';
+  version: '1.0';
+  decision: 'APPROVED' | 'REJECTED';
+  approval_id: string;
+  entity_id: string;
+  gate_id: string;
+  stage: string;
+  decided_by: string;
+  decided_at: string;
+  reason: string;
+}
+
 export interface ApprovalDecisionResult {
   ok: boolean;
   approval: {
@@ -160,6 +173,7 @@ export interface ApprovalDecisionResult {
     decided_at: string;
     reason: string;
   };
+  decision: CanonicalApprovalDecision;
 }
 
 /* ── Session / progress types ─────────────────────────────────── */

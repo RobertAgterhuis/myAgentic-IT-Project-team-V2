@@ -27,6 +27,7 @@ import { listTemplates, seedDecisions } from '../../../platform/engine/template-
 import { errorResponse } from '../utils/errors';
 import { structuredLog } from '../middleware';
 import { sessionTracker } from '../session-tracker';
+import { GovernanceService, ServiceNotAvailableError, toServiceContext } from '../services';
 import * as RS from '../route-schemas';
 import {
   HOST,
@@ -65,6 +66,10 @@ function getErrorMessage(err: unknown): string {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+function shouldEnforceReviewGate(profile: string): boolean {
+  return profile.startsWith('production-');
 }
 
 function toSessionPhase(state: string): string | null {
@@ -263,6 +268,9 @@ function readHumanOverrideEvents(filePath: string): HumanOverrideEvent[] {
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const { sseNotify } = ctx;
   const legacyCtx = ctx as unknown as Record<string, unknown>;
+  const governanceService = new GovernanceService(
+    toServiceContext(ctx as unknown as Record<string, unknown>)
+  );
   const humanOverridePath = path.join(
     getRepoRoot(legacyCtx),
     'BusinessDocs',
@@ -421,6 +429,55 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
             .code(409)
             .send(errorResponse('ORCHESTRATOR_PAUSED', 'Orchestrator is paused. Resume first.'));
         }
+
+        const profile = validateProfile({
+          nodeEnv: process.env.NODE_ENV,
+          host: HOST,
+          storageProvider: STORAGE_PROVIDER,
+          queueProvider: QUEUE_PROVIDER,
+          sessionStore: SESSION_STORE,
+          redisUrl: REDIS_URL,
+          hasAuth: hasAuthConfigured({
+            githubClientId: process.env.GITHUB_CLIENT_ID,
+            apiKey: process.env.API_KEY,
+          }),
+          trustProxy: TRUST_PROXY,
+        }).profile;
+
+        let pendingApprovals = 0;
+        try {
+          pendingApprovals = governanceService.listApprovals().count;
+        } catch (err) {
+          if (!(err instanceof ServiceNotAvailableError)) {
+            structuredLog('warn', 'orchestrator_review_gate_check_failed', {
+              error: getErrorMessage(err),
+            });
+          }
+        }
+
+        if (shouldEnforceReviewGate(profile) && pendingApprovals > 0) {
+          const timestamp = new Date().toISOString();
+          structuredLog('warn', 'orchestrator_transition_blocked_review_gate', {
+            profile,
+            pendingApprovals,
+          });
+          sseNotify('orchestrator_transition_blocked', {
+            type: 'orchestrator_transition_blocked',
+            reason: 'pending_approvals',
+            profile,
+            pending_approvals: pendingApprovals,
+            timestamp,
+          });
+          return reply.code(409).send({
+            ...errorResponse(
+              'REVIEW_GATE_BLOCKED',
+              `Transition blocked: ${pendingApprovals} pending approval(s) require human decision.`
+            ),
+            profile,
+            pending_approvals: pendingApprovals,
+          });
+        }
+
         const engine = getEngine();
         const prevStatus = engine.status();
         const prevState = prevStatus.state;

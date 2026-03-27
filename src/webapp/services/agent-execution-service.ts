@@ -152,6 +152,24 @@ function resolvePredecessorContinuityMode():
       states?: string[];
       agents?: string[];
     } {
+  const runtimeProfile = validateProfile({
+    nodeEnv: process.env.NODE_ENV,
+    host: HOST,
+    storageProvider: STORAGE_PROVIDER,
+    queueProvider: QUEUE_PROVIDER,
+    sessionStore: SESSION_STORE,
+    redisUrl: REDIS_URL,
+    hasAuth: hasAuthConfigured({
+      githubClientId: process.env.GITHUB_CLIENT_ID,
+      apiKey: process.env.API_KEY,
+    }),
+    trustProxy: TRUST_PROXY,
+  }).profile;
+
+  return resolvePredecessorContractContinuityMode(runtimeProfile).mode;
+}
+
+function resolveRuntimeProfile() {
   const validation = validateProfile({
     nodeEnv: process.env.NODE_ENV,
     host: HOST,
@@ -166,7 +184,7 @@ function resolvePredecessorContinuityMode():
     trustProxy: TRUST_PROXY,
   });
 
-  return resolvePredecessorContractContinuityMode(validation.profile).mode;
+  return validation.profile;
 }
 
 export class AgentExecutionService {
@@ -215,7 +233,15 @@ export class AgentExecutionService {
     );
 
     // I-A1-003: resolve adapter from registry; Dispatcher uses it instead of bare throw.
-    const { adapter } = resolveAdapter({ adapterName: AGENT_RUNTIME_ADAPTER });
+    const runtimeProfile = resolveRuntimeProfile();
+    const { adapter, error: adapterResolutionError } = resolveAdapter({
+      adapterName: AGENT_RUNTIME_ADAPTER,
+      profile: runtimeProfile,
+    });
+    if (adapterResolutionError) {
+      throw new Error(adapterResolutionError);
+    }
+
     const dispatcher = new Dispatcher({
       store: getStore(),
       adapter: adapter ?? undefined,

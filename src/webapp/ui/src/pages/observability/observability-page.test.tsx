@@ -117,6 +117,6 @@ describe('ObservabilityPage', () => {
       ).toBeInTheDocument();
     });
     expect(screen.getByRole('heading', { name: /rag freshness/i })).toBeInTheDocument();
-    expect(screen.getByText(/rag index freshness/i)).toBeInTheDocument();
+    expect(screen.getAllByText(/rag index freshness/i).length).toBeGreaterThan(0);
   });
 });

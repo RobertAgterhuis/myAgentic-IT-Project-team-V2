@@ -173,4 +173,297 @@ describe('routes/reasoning-collaboration', () => {
     expect(summaryRes.statusCode).toBe(200);
     expect(summaryRes.json().summary.totalMessages).toBeGreaterThan(0);
   });
+
+  it('gets profile by id and records profile performance updates', async () => {
+    const listRes = await app.inject({
+      method: 'GET',
+      url: '/api/reasoning-collaboration/reasoning-profiles',
+    });
+    const profileId = listRes.json().profiles[0].id as string;
+
+    const getRes = await app.inject({
+      method: 'GET',
+      url: `/api/reasoning-collaboration/reasoning-profiles/${profileId}`,
+    });
+
+    expect(getRes.statusCode).toBe(200);
+    expect(getRes.json().profile.id).toBe(profileId);
+
+    const perfRes = await app.inject({
+      method: 'POST',
+      url: '/api/reasoning-collaboration/reasoning-profiles/performance',
+      payload: {
+        profileId,
+        qualityScore: 0.9,
+        success: true,
+      },
+    });
+
+    expect(perfRes.statusCode).toBe(200);
+    expect(perfRes.json().ok).toBe(true);
+  });
+
+  it('returns 404 for unknown profile and verifier result IDs', async () => {
+    const profileRes = await app.inject({
+      method: 'GET',
+      url: '/api/reasoning-collaboration/reasoning-profiles/unknown-profile',
+    });
+    expect(profileRes.statusCode).toBe(404);
+
+    const verifierRes = await app.inject({
+      method: 'GET',
+      url: '/api/reasoning-collaboration/verifier/results/unknown-result',
+    });
+    expect(verifierRes.statusCode).toBe(404);
+  });
+
+  it('gets verifier result by id and records self-revision against it', async () => {
+    const runRes = await app.inject({
+      method: 'POST',
+      url: '/api/reasoning-collaboration/verifier/run',
+      payload: {
+        deliverableSource: 'BusinessDocs/verifier-self-revision.md',
+        content: '# Draft\n\nUNCERTAIN: needs source',
+        agentId: '08',
+        riskCategory: 'security',
+      },
+    });
+
+    const verifierId = runRes.json().result.id as string;
+
+    const getRes = await app.inject({
+      method: 'GET',
+      url: `/api/reasoning-collaboration/verifier/results/${verifierId}`,
+    });
+    expect(getRes.statusCode).toBe(200);
+
+    const revisionRes = await app.inject({
+      method: 'POST',
+      url: `/api/reasoning-collaboration/verifier/results/${verifierId}/self-revision`,
+      payload: {
+        summary: 'Resolved uncertainty with source references.',
+        revisionsApplied: 1,
+      },
+    });
+
+    expect(revisionRes.statusCode).toBe(200);
+    expect(revisionRes.json().result.selfRevisionApplied).toBe(true);
+  });
+
+  it('evaluates self-revision events and marks them as applied', async () => {
+    const evaluateRes = await app.inject({
+      method: 'POST',
+      url: '/api/reasoning-collaboration/self-revision/evaluate',
+      payload: {
+        agentId: '05',
+        deliverableSource: 'BusinessDocs/arch.md',
+        originalContent: '# Architecture\n\nDraft',
+        trigger: 'quality-below-threshold',
+        qualityScore: 0.2,
+        qualityThreshold: 0.75,
+      },
+    });
+
+    expect(evaluateRes.statusCode).toBe(200);
+    expect(evaluateRes.json().revisionNeeded).toBe(true);
+    const eventId = evaluateRes.json().event.id as string;
+
+    const listRes = await app.inject({
+      method: 'GET',
+      url: '/api/reasoning-collaboration/self-revision/events?applied=false',
+    });
+    expect(listRes.statusCode).toBe(200);
+    expect(listRes.json().total).toBeGreaterThan(0);
+
+    const applyRes = await app.inject({
+      method: 'POST',
+      url: `/api/reasoning-collaboration/self-revision/events/${eventId}/applied`,
+      payload: {
+        summary: 'Updated sections and checklist.',
+      },
+    });
+
+    expect(applyRes.statusCode).toBe(200);
+    expect(applyRes.json().event.applied).toBe(true);
+  });
+
+  it('returns 404 for unknown self-revision event', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/reasoning-collaboration/self-revision/events/unknown/applied',
+      payload: { summary: 'noop' },
+    });
+    expect(res.statusCode).toBe(404);
+  });
+
+  it('supports message retrieval and delivery status update endpoints', async () => {
+    const sendRes = await app.inject({
+      method: 'POST',
+      url: '/api/reasoning-collaboration/a2a/messages',
+      payload: {
+        type: 'request',
+        fromAgentId: '06',
+        toAgentId: '21',
+        payload: { summary: 'Please validate route tests' },
+      },
+    });
+
+    const id = sendRes.json().message.id as string;
+
+    const getRes = await app.inject({
+      method: 'GET',
+      url: `/api/reasoning-collaboration/a2a/messages/${id}`,
+    });
+    expect(getRes.statusCode).toBe(200);
+
+    const deliveredRes = await app.inject({
+      method: 'POST',
+      url: `/api/reasoning-collaboration/a2a/messages/${id}/delivered`,
+    });
+    expect(deliveredRes.statusCode).toBe(200);
+    expect(deliveredRes.json().message.status).toBe('delivered');
+
+    const listRes = await app.inject({
+      method: 'GET',
+      url: '/api/reasoning-collaboration/a2a/messages?toAgentId=21',
+    });
+    expect(listRes.statusCode).toBe(200);
+    expect(listRes.json().total).toBeGreaterThan(0);
+  });
+
+  it('returns 404 for unknown message and unknown conversation', async () => {
+    const msgRes = await app.inject({
+      method: 'GET',
+      url: '/api/reasoning-collaboration/a2a/messages/unknown-message',
+    });
+    expect(msgRes.statusCode).toBe(404);
+
+    const convoRes = await app.inject({
+      method: 'GET',
+      url: '/api/reasoning-collaboration/a2a/conversations/unknown-correlation',
+    });
+    expect(convoRes.statusCode).toBe(404);
+  });
+
+  it('exposes canonical peer pairs and supports workflow get/list/escalate', async () => {
+    const pairsRes = await app.inject({
+      method: 'GET',
+      url: '/api/reasoning-collaboration/peer-clarification/canonical-pairs',
+    });
+    expect(pairsRes.statusCode).toBe(200);
+    expect(Object.keys(pairsRes.json().pairs).length).toBeGreaterThan(0);
+
+    const openRes = await app.inject({
+      method: 'POST',
+      url: '/api/reasoning-collaboration/peer-clarification/workflows',
+      payload: {
+        initiatorAgentId: '05',
+        responderAgentId: '08',
+        topic: 'Threat model alignment',
+        questions: ['Is control segregation sufficient?'],
+      },
+    });
+
+    const workflowId = openRes.json().workflow.id as string;
+
+    const listRes = await app.inject({
+      method: 'GET',
+      url: '/api/reasoning-collaboration/peer-clarification/workflows?status=awaiting-response',
+    });
+    expect(listRes.statusCode).toBe(200);
+    expect(listRes.json().total).toBeGreaterThan(0);
+
+    const getRes = await app.inject({
+      method: 'GET',
+      url: `/api/reasoning-collaboration/peer-clarification/workflows/${workflowId}`,
+    });
+    expect(getRes.statusCode).toBe(200);
+
+    const escalateRes = await app.inject({
+      method: 'POST',
+      url: `/api/reasoning-collaboration/peer-clarification/workflows/${workflowId}/escalate`,
+      payload: { reason: 'Waiting beyond SLA' },
+    });
+    expect(escalateRes.statusCode).toBe(200);
+    expect(escalateRes.json().workflow.status).toBe('escalated');
+  });
+
+  it('returns 404 for unknown peer clarification workflow operations', async () => {
+    const getRes = await app.inject({
+      method: 'GET',
+      url: '/api/reasoning-collaboration/peer-clarification/workflows/unknown',
+    });
+    expect(getRes.statusCode).toBe(404);
+
+    const respondRes = await app.inject({
+      method: 'POST',
+      url: '/api/reasoning-collaboration/peer-clarification/workflows/unknown/respond',
+      payload: {
+        respondingAgentId: '08',
+        answers: [{ questionId: 'Q-1', answer: 'N/A' }],
+      },
+    });
+    expect(respondRes.statusCode).toBe(404);
+
+    const escalateRes = await app.inject({
+      method: 'POST',
+      url: '/api/reasoning-collaboration/peer-clarification/workflows/unknown/escalate',
+      payload: { reason: 'N/A' },
+    });
+    expect(escalateRes.statusCode).toBe(404);
+  });
+
+  it('supports collaboration trace list/get/outcome flows and 404 branches', async () => {
+    const createRes = await app.inject({
+      method: 'POST',
+      url: '/api/reasoning-collaboration/collaboration/traces',
+      payload: {
+        messageId: 'A2A-300',
+        correlationId: 'COR-300',
+        messageType: 'peer-review-request',
+        fromAgentId: '05',
+        toAgentId: '08',
+        payloadSummary: 'Review architecture control model',
+      },
+    });
+
+    const traceId = createRes.json().trace.id as string;
+
+    const listRes = await app.inject({
+      method: 'GET',
+      url: '/api/reasoning-collaboration/collaboration/traces?fromAgentId=05',
+    });
+    expect(listRes.statusCode).toBe(200);
+    expect(listRes.json().total).toBeGreaterThan(0);
+
+    const getRes = await app.inject({
+      method: 'GET',
+      url: `/api/reasoning-collaboration/collaboration/traces/${traceId}`,
+    });
+    expect(getRes.statusCode).toBe(200);
+
+    const outcomeRes = await app.inject({
+      method: 'POST',
+      url: `/api/reasoning-collaboration/collaboration/traces/${traceId}/outcome`,
+      payload: {
+        outcome: 'acknowledged',
+        latencyMs: 20,
+      },
+    });
+    expect(outcomeRes.statusCode).toBe(200);
+    expect(outcomeRes.json().trace.outcome).toBe('acknowledged');
+
+    const getMissingRes = await app.inject({
+      method: 'GET',
+      url: '/api/reasoning-collaboration/collaboration/traces/unknown',
+    });
+    expect(getMissingRes.statusCode).toBe(404);
+
+    const outcomeMissingRes = await app.inject({
+      method: 'POST',
+      url: '/api/reasoning-collaboration/collaboration/traces/unknown/outcome',
+      payload: { outcome: 'expired' },
+    });
+    expect(outcomeMissingRes.statusCode).toBe(404);
+  });
 });

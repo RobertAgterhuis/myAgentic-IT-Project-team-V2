@@ -176,4 +176,213 @@ describe('reasoning-collaboration services', () => {
     expect(summary.byOutcome['acted-upon']).toBe(1);
     expect(summary.avgLatencyMs).toBe(120);
   });
+
+  it('supports reasoning profile override, fallback, and performance update retrieval', async () => {
+    const svc = createReasoningProfileService(ctx);
+
+    const overridden = await svc.selectProfile({
+      agentId: '05',
+      overrideProfileId: 'debate',
+    });
+    expect(overridden.profileId).toBe('debate');
+
+    const fallback = await svc.selectProfile({
+      agentId: 'unknown-agent',
+      taskComplexity: 0,
+      uncertainty: 0,
+      isHighRiskDeliverable: false,
+    });
+    expect(fallback.profileId).toBe('fast');
+
+    await svc.updatePerformanceHistory({
+      profileId: 'fast',
+      qualityScore: 0.8,
+      success: true,
+    });
+
+    const fast = await svc.getProfile('fast');
+    expect(fast?.performanceHistory.sampleCount).toBeGreaterThan(0);
+  });
+
+  it('covers verifier pass success and not-found recordSelfRevision paths', async () => {
+    const svc = createVerifierPassService(ctx);
+
+    const passResult = await svc.runVerifierPass({
+      deliverableSource: 'BusinessDocs/clean.md',
+      agentId: '05',
+      riskCategory: 'architecture',
+      content:
+        '## HANDOFF CHECKLIST\n- [x] complete\n\nSource: src/webapp/routes/manifest.ts:1\n\nArchitecture decision references diagram and ADR.',
+    });
+
+    expect(passResult.verdict).toBe('pass');
+
+    const listed = await svc.listResults({ verdict: 'pass' });
+    expect(listed.length).toBeGreaterThan(0);
+
+    const byId = await svc.getResult(passResult.id);
+    expect(byId?.id).toBe(passResult.id);
+
+    const missing = await svc.recordSelfRevision('unknown', 'noop', 0);
+    expect(missing).toBeUndefined();
+  });
+
+  it('covers self-revision no-op path and filter/get branches', async () => {
+    const svc = createSelfRevisionService(ctx);
+
+    const noEvent = await svc.evaluateRevisionNeed({
+      agentId: '11',
+      deliverableSource: 'BusinessDocs/ux.md',
+      originalContent: 'clean content',
+      trigger: 'quality-below-threshold',
+      verifierFindings: [],
+      qualityScore: 0.95,
+      qualityThreshold: 0.75,
+    });
+
+    expect(noEvent).toBeNull();
+
+    const manualEvent = await svc.evaluateRevisionNeed({
+      agentId: '11',
+      deliverableSource: 'BusinessDocs/ux.md',
+      originalContent: 'draft',
+      trigger: 'manual',
+      verifierFindings: [],
+      qualityScore: 1,
+      qualityThreshold: 0.75,
+    });
+
+    expect(manualEvent).not.toBeNull();
+
+    const filtered = await svc.listEvents({ applied: false, agentId: '11' });
+    expect(filtered.length).toBeGreaterThan(0);
+
+    const getEvent = await svc.getEvent(manualEvent!.id);
+    expect(getEvent?.id).toBe(manualEvent?.id);
+
+    const missingApplied = await svc.markApplied('unknown-event', 'noop');
+    expect(missingApplied).toBeUndefined();
+  });
+
+  it('covers A2A messaging reply, expiry, filters, and not-found branches', async () => {
+    const svc = createA2AMessagingService(ctx);
+
+    const sent = await svc.sendMessage({
+      type: 'request',
+      fromAgentId: '05',
+      toAgentId: '06',
+      payload: { summary: 'Need implementation review' },
+      ttlSeconds: 0,
+    });
+
+    const delivered = await svc.markDelivered(sent.id);
+    expect(delivered?.status).toBe('delivered');
+
+    const read = await svc.markRead(sent.id);
+    expect(read?.status).toBe('read');
+
+    const replied = await svc.markReplied(sent.id);
+    expect(replied?.status).toBe('replied');
+
+    const filtered = await svc.listMessages({ toAgentId: '06', status: 'replied' });
+    expect(filtered.length).toBeGreaterThan(0);
+
+    const byId = await svc.getMessage(sent.id);
+    expect(byId?.id).toBe(sent.id);
+
+    const expired = await svc.pruneExpired();
+    expect(expired).toBeGreaterThanOrEqual(0);
+
+    const missing = await svc.markDelivered('missing-id');
+    expect(missing).toBeUndefined();
+
+    const noConvo = await svc.getConversation('missing-correlation');
+    expect(noConvo).toBeUndefined();
+  });
+
+  it('covers peer clarification escalation and unresolved round branches', async () => {
+    const svc = createPeerClarificationService(ctx);
+
+    const workflow = await svc.openClarification({
+      initiatorAgentId: '05',
+      responderAgentId: '08',
+      topic: 'Threat model review',
+      questions: ['Missing STRIDE mapping?'],
+      maxRounds: 1,
+    });
+
+    const partial = await svc.respondToClarification({
+      workflowId: workflow.id,
+      respondingAgentId: '08',
+      answers: [{ questionId: 'Q-1', answer: 'Partially, follow-up needed', followUpNeeded: true }],
+      additionalQuestions: ['Can you include mitigations table?'],
+    });
+
+    expect(partial).toBeDefined();
+    expect(partial?.status === 'escalated' || partial?.status === 'partially-answered').toBe(true);
+
+    const escalated = await svc.escalateWorkflow(workflow.id, 'Manual escalation');
+    expect(escalated?.status).toBe('escalated');
+
+    const listed = await svc.listWorkflows({ responderAgentId: '08' });
+    expect(listed.length).toBeGreaterThan(0);
+
+    const byId = await svc.getWorkflow(workflow.id);
+    expect(byId?.id).toBe(workflow.id);
+
+    const missingRespond = await svc.respondToClarification({
+      workflowId: 'missing',
+      respondingAgentId: '08',
+      answers: [{ questionId: 'Q-1', answer: 'n/a' }],
+    });
+    expect(missingRespond).toBeUndefined();
+
+    const missingEscalate = await svc.escalateWorkflow('missing', 'n/a');
+    expect(missingEscalate).toBeUndefined();
+
+    expect(Object.keys(svc.listCanonicalPairs()).length).toBeGreaterThan(0);
+  });
+
+  it('covers collaboration tracer empty summary, filters, and not-found branches', async () => {
+    const svc = createA2ACollaborationTracer(ctx);
+
+    const empty = await svc.computeSummary();
+    expect(empty.totalMessages).toBe(0);
+
+    const trace = await svc.recordTrace({
+      messageId: 'A2A-22',
+      correlationId: 'COR-22',
+      messageType: 'clarification',
+      fromAgentId: '11',
+      toAgentId: '32',
+      payloadSummary: 'Copy review request',
+      phase: 'PHASE_3',
+      tags: ['ux'],
+    });
+
+    const listed = await svc.listTraces({ fromAgentId: '11', phase: 'PHASE_3' });
+    expect(listed.length).toBeGreaterThan(0);
+
+    const found = await svc.getTrace(trace.id);
+    expect(found?.id).toBe(trace.id);
+
+    const updated = await svc.updateOutcome({
+      traceId: trace.id,
+      outcome: 'acknowledged',
+      latencyMs: 42,
+    });
+    expect(updated?.outcome).toBe('acknowledged');
+
+    const missing = await svc.updateOutcome({
+      traceId: 'missing-trace',
+      outcome: 'expired',
+    });
+    expect(missing).toBeUndefined();
+
+    const bounded = await svc.computeSummary(
+      new Date(Date.now() - 60_000).toISOString(),
+      new Date(Date.now() + 60_000).toISOString()
+    );
+    expect(bounded.totalMessages).toBeGreaterThan(0);
+  });
 });

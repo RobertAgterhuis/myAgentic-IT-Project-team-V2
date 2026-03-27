@@ -1,0 +1,119 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "a2a-message.schema.json",
+  "title": "A2AMessage",
+  "description": "Typed Agent-to-Agent message contract for peer requests, clarifications, rebuttals, and evidence handoff. Implements PATTERNS E4.1.",
+  "type": "object",
+  "required": ["id", "type", "fromAgentId", "toAgentId", "correlationId", "payload", "sentAt"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique message ID."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "request",
+        "clarification",
+        "rebuttal",
+        "evidence-handoff",
+        "acknowledgement",
+        "peer-review-request",
+        "peer-review-response"
+      ],
+      "description": "Message type governs routing and handling logic."
+    },
+    "fromAgentId": {
+      "type": "string",
+      "description": "Agent ID originating the message."
+    },
+    "toAgentId": {
+      "type": "string",
+      "description": "Target agent ID or broadcast token '_all'."
+    },
+    "correlationId": {
+      "type": "string",
+      "description": "Groups messages in the same conversation or workflow thread."
+    },
+    "replyToId": {
+      "type": "string",
+      "description": "ID of the message being replied to, if any."
+    },
+    "sentAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "receivedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "delivered", "read", "replied", "expired"],
+      "default": "pending"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["critical", "high", "normal", "low"],
+      "default": "normal"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Message body. Contents vary by type.",
+      "required": ["summary"],
+      "additionalProperties": true,
+      "properties": {
+        "summary": {
+          "type": "string",
+          "description": "Human-readable one-line summary of the message intent."
+        },
+        "body": {
+          "type": "string",
+          "description": "Full markdown body (optional but recommended for non-trivial messages)."
+        },
+        "evidencePaths": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "File paths included as evidence or handoff artifacts."
+        },
+        "clarificationQuestions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ordered list of clarification questions for type=clarification."
+        },
+        "rebuttalPoints": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Counter-arguments for type=rebuttal."
+        },
+        "requestedAction": {
+          "type": "string",
+          "description": "Specific action requested of the target agent."
+        },
+        "deadline": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Optional deadline for the requested action."
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "description": "Traceability metadata for every inter-agent message.",
+      "additionalProperties": false,
+      "properties": {
+        "sessionId": { "type": "string" },
+        "workspaceId": { "type": "string" },
+        "phase": { "type": "string" },
+        "triggeredByEvent": { "type": "string" },
+        "parentMessageId": { "type": "string" }
+      }
+    },
+    "ttlSeconds": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Message time-to-live in seconds. 0 = no expiry."
+    }
+  }
+}

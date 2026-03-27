@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "reasoning-profile.schema.json",
+  "title": "ReasoningProfile",
+  "description": "Explicit reasoning profile controlling which reasoning strategy the runtime adapter applies to an agent invocation. Implements PATTERNS E3.1.",
+  "type": "object",
+  "required": ["id", "strategy", "description"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Stable profile identifier used by the adapter registry."
+    },
+    "strategy": {
+      "type": "string",
+      "enum": ["fast", "critique-first", "debate", "verification-heavy"],
+      "description": "Core reasoning strategy to apply."
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable description of when to use this profile."
+    },
+    "selectionCriteria": {
+      "type": "object",
+      "description": "Heuristics that trigger automatic profile selection.",
+      "additionalProperties": false,
+      "properties": {
+        "taskComplexityMin": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Minimum task complexity score (0-1) to use this profile."
+        },
+        "uncertaintyThreshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Minimum uncertainty score that triggers this profile."
+        },
+        "applicablePhases": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Phases where this profile applies."
+        },
+        "applicableAgentIds": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Agent IDs that default to this profile."
+        },
+        "highRiskDeliverable": {
+          "type": "boolean",
+          "description": "Whether this profile applies to high-risk deliverables."
+        }
+      }
+    },
+    "promptDirectives": {
+      "type": "object",
+      "description": "Prompt modifiers injected into the system envelope for this strategy.",
+      "additionalProperties": false,
+      "properties": {
+        "systemPrefix": {
+          "type": "string",
+          "description": "Text prepended to the system prompt."
+        },
+        "chainOfThoughtDepth": {
+          "type": "string",
+          "enum": ["minimal", "standard", "deep"],
+          "description": "How deeply to elaborate reasoning steps."
+        },
+        "selfCritiqueEnabled": {
+          "type": "boolean",
+          "description": "Whether an internal critique pass is injected."
+        },
+        "debateRounds": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5,
+          "description": "Number of pro/con debate rounds for the debate strategy."
+        },
+        "verifierEnabled": {
+          "type": "boolean",
+          "description": "Whether a verifier pass runs after the primary response."
+        }
+      }
+    },
+    "performanceHistory": {
+      "type": "object",
+      "description": "Tracked success rate by task type for adaptive selection.",
+      "additionalProperties": false,
+      "properties": {
+        "sampleCount": { "type": "integer", "minimum": 0 },
+        "successRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "avgQualityScore": { "type": "number", "minimum": 0, "maximum": 1 },
+        "lastUpdated": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

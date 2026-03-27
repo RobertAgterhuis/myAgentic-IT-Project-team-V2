@@ -20,6 +20,7 @@ import {
 } from '../../../platform/engine/objective-graph';
 import { createGoalHealthScoringService } from '../../../platform/engine/goal-health';
 import { createBenchmarkTuningService } from '../../../platform/engine/benchmark-tuning';
+import { createProactiveDiscoveryOptimizationService } from '../../../platform/engine/proactive-discovery-optimization';
 
 export async function registerIntelligenceLoopRoutes(app: FastifyInstance, ctx: ServiceContext) {
   const objectiveGraphService = await createObjectiveGraphService(ctx);
@@ -27,6 +28,7 @@ export async function registerIntelligenceLoopRoutes(app: FastifyInstance, ctx: 
   const lessonsPolicyService = await createLessonsToPolicyService(ctx);
   const failureTaxonomyService = await createFailureTaxonomyService(ctx);
   const benchmarkTuningService = await createBenchmarkTuningService(ctx);
+  const proactiveOptimizationService = createProactiveDiscoveryOptimizationService(ctx);
 
   // ──── Objective Graph Endpoints ────
 
@@ -354,6 +356,174 @@ export async function registerIntelligenceLoopRoutes(app: FastifyInstance, ctx: 
       } catch (error) {
         app.log.error({ error }, '');
         return reply.status(400).send({ ok: false, error: (error as Error).message });
+      }
+    }
+  );
+
+  // ──── M3 Proactive Discovery & Optimization (E5 + E6) ────
+
+  /**
+   * POST /api/intelligence-loop/m3/discovery/stale-scan
+   */
+  app.post<{
+    Body: {
+      entities: Array<{
+        id: string;
+        type: 'decision' | 'rag-collection' | 'artifact';
+        lastUpdatedAt: string;
+        supersededById?: string;
+        workflows?: string[];
+      }>;
+      staleThresholdSeconds?: number;
+      reevaluateThresholdCount?: number;
+    };
+  }>('/api/intelligence-loop/m3/discovery/stale-scan', async (request, reply) => {
+    try {
+      const result = await proactiveOptimizationService.scanKnowledgeStaleness(request.body);
+      return reply.send({ ok: true, result });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
+  /**
+   * POST /api/intelligence-loop/m3/discovery/contradictions
+   */
+  app.post<{
+    Body: {
+      artifacts: Array<{ artifactId: string; phase?: string; content: string }>;
+    };
+  }>('/api/intelligence-loop/m3/discovery/contradictions', async (request, reply) => {
+    try {
+      const result = await proactiveOptimizationService.detectContradictionsAndMissingCitations(
+        request.body
+      );
+      const statusCode = result.blockSynthesisPublication ? 422 : 200;
+      return reply.status(statusCode).send({
+        ok: !result.blockSynthesisPublication,
+        blockSynthesisPublication: result.blockSynthesisPublication,
+        result,
+      });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
+  /**
+   * POST /api/intelligence-loop/m3/discovery/exploratory-branches
+   */
+  app.post<{
+    Body: {
+      taskId: string;
+      objective: string;
+      basePlanSteps: string[];
+      uncertainty: number;
+      includeExploration?: boolean;
+      maxAlternatives?: number;
+      surfaceAt?: 'sprint-gate' | 'approval';
+    };
+  }>('/api/intelligence-loop/m3/discovery/exploratory-branches', async (request, reply) => {
+    try {
+      const result = await proactiveOptimizationService.generateExploratoryBranches(request.body);
+      if (!result) {
+        return reply.send({
+          ok: true,
+          generated: false,
+          reason: 'Exploration disabled or uncertainty below threshold',
+        });
+      }
+      return reply.status(201).send({ ok: true, generated: true, result });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
+  /**
+   * POST /api/intelligence-loop/m3/optimization/concurrency-policy
+   */
+  app.post<{
+    Body: {
+      currentMaxConcurrency: number;
+      queueWaitMs: number;
+      failureRate: number;
+      throughputRps: number;
+      previousPolicy?: {
+        maxConcurrency: number;
+        baselineFailureRate: number;
+        baselineThroughputRps: number;
+        rollbackValue: number;
+      };
+    };
+  }>('/api/intelligence-loop/m3/optimization/concurrency-policy', async (request, reply) => {
+    try {
+      const decision = await proactiveOptimizationService.decideConcurrencyPolicy(request.body);
+      return reply.send({ ok: true, decision });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
+  /**
+   * POST /api/intelligence-loop/m3/optimization/retrieval-policy
+   */
+  app.post<{
+    Body: {
+      riskLevel: 'low' | 'high';
+      citationUsefulness: number;
+      noMatchRate: number;
+      retrievalLatencyP95Ms: number;
+      latencyBudgetMs: number;
+      currentTopK?: number;
+      currentThreshold?: number;
+    };
+  }>('/api/intelligence-loop/m3/optimization/retrieval-policy', async (request, reply) => {
+    try {
+      const decision = await proactiveOptimizationService.decideRetrievalPolicy(request.body);
+      return reply.send({ ok: true, decision });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
+  /**
+   * POST /api/intelligence-loop/m3/optimization/route-escalation
+   */
+  app.post<{
+    Body: {
+      confidence: number;
+      riskLevel: 'low' | 'medium' | 'high';
+      requiresHumanApproval?: boolean;
+      verifierFindingsCritical?: boolean;
+    };
+  }>('/api/intelligence-loop/m3/optimization/route-escalation', async (request, reply) => {
+    try {
+      const decision = await proactiveOptimizationService.decideRouteEscalation(request.body);
+      return reply.send({ ok: true, decision });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
+  /**
+   * GET /api/intelligence-loop/m3/optimization/route-escalation/recent
+   */
+  app.get<{ Querystring: { limit?: string } }>(
+    '/api/intelligence-loop/m3/optimization/route-escalation/recent',
+    async (request, reply) => {
+      try {
+        const parsedLimit = Number(request.query.limit || 20);
+        const limit = Number.isFinite(parsedLimit) ? Math.max(1, Math.floor(parsedLimit)) : 20;
+        const decisions = await proactiveOptimizationService.listRecentRouteEscalations(limit);
+        return reply.send({ ok: true, decisions, total: decisions.length });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(500).send({ ok: false, error: 'Failed to list route escalations' });
       }
     }
   );

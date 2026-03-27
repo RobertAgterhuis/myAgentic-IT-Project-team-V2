@@ -8,6 +8,9 @@
  * Supported command modes: CREATE, AUDIT, FEATURE, SCOPE_CHANGE, HOTFIX
  */
 
+import fs from 'node:fs';
+import { FLOWS_PATH, validateCanonicalFlows } from './flow-schema';
+
 // ─── State Definitions ──────────────────────────────────────
 const STATES = Object.freeze({
   IDLE: 'IDLE',
@@ -26,6 +29,17 @@ const STATES = Object.freeze({
   COMPLETED: 'COMPLETED',
   ERROR: 'ERROR',
 });
+
+type ModeConfig = { phases: string[]; label: string };
+
+interface OrchestrationFlowDefinition {
+  source: 'legacy' | 'schema';
+  version: string;
+  states: string[];
+  fullFlow: string[];
+  structuralStates: string[];
+  modes: Record<string, ModeConfig>;
+}
 
 // ─── Transition Table ────────────────────────────────────────
 // Full CREATE cycle: IDLE → ONBOARDING → PHASE_1 → CRITIC_1 → … → COMPLETED
@@ -61,17 +75,206 @@ const STRUCTURAL_STATES: Set<string> = new Set([
   STATES.COMPLETED,
 ]);
 
+const LEGACY_FLOW_VERSION = 'legacy-v1';
+const FLOW_SOURCE_ENV = 'ORCHESTRATOR_FLOW_SOURCE';
+const FLOW_SOURCE_VALUES = ['legacy', 'schema'];
+
+const LEGACY_FLOW_DEFINITION: OrchestrationFlowDefinition = {
+  source: 'legacy',
+  version: LEGACY_FLOW_VERSION,
+  states: [...Object.values(STATES)],
+  fullFlow: [...FULL_FLOW],
+  structuralStates: [...STRUCTURAL_STATES],
+  modes: {},
+};
+
+let cachedSchemaFlowDefinition: OrchestrationFlowDefinition | null = null;
+
 function isPhaseOrMatchingCritic(state: string, phaseSet: Set<string>) {
   if (phaseSet.has(state)) return true;
   const criticMatch = state.match(/^CRITIC_(\d)$/);
   return criticMatch ? phaseSet.has(`PHASE_${criticMatch[1]}`) : false;
 }
 
-function buildTransitionMap(phases: string[]) {
+function validateFlowDefinition(definition: OrchestrationFlowDefinition) {
+  const stateSet = new Set(definition.states);
+
+  if (!definition.fullFlow.length) {
+    throw new Error('Flow definition is invalid: fullFlow must include at least one state.');
+  }
+
+  if (definition.fullFlow[0] !== STATES.IDLE) {
+    throw new Error(
+      `Flow definition is invalid: fullFlow must start with ${STATES.IDLE}, received ${definition.fullFlow[0]}.`
+    );
+  }
+
+  if (definition.fullFlow[definition.fullFlow.length - 1] !== STATES.COMPLETED) {
+    throw new Error(
+      `Flow definition is invalid: fullFlow must end with ${STATES.COMPLETED}, received ${definition.fullFlow[definition.fullFlow.length - 1]}.`
+    );
+  }
+
+  for (const state of definition.fullFlow) {
+    if (!stateSet.has(state)) {
+      throw new Error(`Flow definition is invalid: fullFlow references unknown state "${state}".`);
+    }
+  }
+
+  for (const state of definition.structuralStates) {
+    if (!stateSet.has(state)) {
+      throw new Error(
+        `Flow definition is invalid: structuralStates references unknown state "${state}".`
+      );
+    }
+  }
+}
+
+function assertSchemaParity(definition: OrchestrationFlowDefinition) {
+  const fullFlowMatches = JSON.stringify(definition.fullFlow) === JSON.stringify(FULL_FLOW);
+  if (!fullFlowMatches) {
+    throw new Error(
+      'Schema flow parity check failed: fullFlow does not match legacy FULL_FLOW constants.'
+    );
+  }
+
+  const legacyModes = MODE_CONFIGS as Record<string, ModeConfig>;
+  const schemaModes = definition.modes;
+  const legacyModeNames = Object.keys(legacyModes);
+
+  for (const modeName of legacyModeNames) {
+    const legacy = legacyModes[modeName];
+    const schema = schemaModes[modeName];
+    if (!schema) {
+      throw new Error(`Schema flow parity check failed: mode "${modeName}" is missing.`);
+    }
+    const phasesMatch = JSON.stringify(schema.phases || []) === JSON.stringify(legacy.phases || []);
+    if (!phasesMatch) {
+      throw new Error(
+        `Schema flow parity check failed: mode "${modeName}" phases differ from legacy MODE_CONFIGS.`
+      );
+    }
+  }
+}
+
+function loadSchemaFlowDefinition(): OrchestrationFlowDefinition {
+  if (cachedSchemaFlowDefinition) {
+    return cachedSchemaFlowDefinition;
+  }
+
+  const validation = validateCanonicalFlows();
+  if (!validation.valid) {
+    const first = validation.errors[0];
+    const detail =
+      first && typeof first === 'object' && 'message' in first
+        ? String((first as Record<string, unknown>).message)
+        : 'unknown validation error';
+    throw new Error(`Schema flow validation failed at startup: ${detail}`);
+  }
+
+  const raw = JSON.parse(fs.readFileSync(FLOWS_PATH, 'utf8')) as {
+    schemaVersion?: string;
+    states?: string[];
+    fullFlow?: string[];
+    structuralStates?: string[];
+    modes?: Record<string, { phases?: string[]; label?: string }>;
+  };
+
+  const modes: Record<string, ModeConfig> = {};
+  for (const [modeName, modeConfig] of Object.entries(raw.modes || {})) {
+    modes[modeName] = {
+      phases: Array.isArray(modeConfig.phases) ? modeConfig.phases : [],
+      label: typeof modeConfig.label === 'string' ? modeConfig.label : modeName,
+    };
+  }
+
+  const schemaDefinition: OrchestrationFlowDefinition = {
+    source: 'schema',
+    version: typeof raw.schemaVersion === 'string' ? raw.schemaVersion : 'schema-unknown',
+    states: Array.isArray(raw.states) ? raw.states : [],
+    fullFlow: Array.isArray(raw.fullFlow) ? raw.fullFlow : [],
+    structuralStates: Array.isArray(raw.structuralStates) ? raw.structuralStates : [],
+    modes,
+  };
+
+  validateFlowDefinition(schemaDefinition);
+  assertSchemaParity(schemaDefinition);
+  cachedSchemaFlowDefinition = schemaDefinition;
+  return schemaDefinition;
+}
+
+function resolveFlowSource(requestedSource?: unknown): 'legacy' | 'schema' {
+  if (requestedSource !== undefined && requestedSource !== null) {
+    const normalized = String(requestedSource).trim().toLowerCase();
+    if (normalized === '') return 'legacy';
+    if (!FLOW_SOURCE_VALUES.includes(normalized)) {
+      throw new Error(
+        `Invalid flow source "${String(requestedSource)}". Valid values: ${FLOW_SOURCE_VALUES.join(', ')}.`
+      );
+    }
+    return normalized as 'legacy' | 'schema';
+  }
+
+  const envValue = process.env[FLOW_SOURCE_ENV];
+  if (!envValue) {
+    return 'legacy';
+  }
+
+  const normalized = envValue.trim().toLowerCase();
+  if (!FLOW_SOURCE_VALUES.includes(normalized)) {
+    throw new Error(
+      `Invalid ${FLOW_SOURCE_ENV} value "${envValue}". Valid values: ${FLOW_SOURCE_VALUES.join(', ')}.`
+    );
+  }
+
+  return normalized as 'legacy' | 'schema';
+}
+
+function getOrchestrationFlowDefinition(
+  options: {
+    flowSource?: unknown;
+    flowVersion?: unknown;
+  } = {}
+): OrchestrationFlowDefinition {
+  const requestedVersion =
+    typeof options.flowVersion === 'string' && options.flowVersion.trim() !== ''
+      ? options.flowVersion.trim()
+      : null;
+  if (requestedVersion) {
+    if (requestedVersion === LEGACY_FLOW_DEFINITION.version) {
+      return LEGACY_FLOW_DEFINITION;
+    }
+
+    const schemaDefinition = loadSchemaFlowDefinition();
+    if (requestedVersion === schemaDefinition.version) {
+      return schemaDefinition;
+    }
+
+    throw new Error(
+      `Unknown flow version "${requestedVersion}" in persisted state. Known versions: ${LEGACY_FLOW_DEFINITION.version}, ${schemaDefinition.version}.`
+    );
+  }
+
+  const source = resolveFlowSource(options.flowSource);
+  if (source === 'schema') {
+    return loadSchemaFlowDefinition();
+  }
+  return LEGACY_FLOW_DEFINITION;
+}
+
+function buildTransitionMap(phases: string[], flowDefinition = LEGACY_FLOW_DEFINITION) {
+  validateFlowDefinition(flowDefinition);
   const phaseSet = new Set(phases);
-  const flow = FULL_FLOW.filter(
-    (s) => STRUCTURAL_STATES.has(s) || isPhaseOrMatchingCritic(s, phaseSet)
+  const structuralStateSet = new Set(flowDefinition.structuralStates);
+  const flow = flowDefinition.fullFlow.filter(
+    (s) => structuralStateSet.has(s) || isPhaseOrMatchingCritic(s, phaseSet)
   );
+
+  if (flow.length < 2) {
+    throw new Error(
+      `Flow definition produced an invalid transition chain for phases [${phases.join(', ')}].`
+    );
+  }
 
   const map = new Map();
   for (let i = 0; i < flow.length - 1; i++) {
@@ -122,6 +325,8 @@ const MODE_CONFIGS = Object.freeze({
   },
 });
 
+LEGACY_FLOW_DEFINITION.modes = Object.freeze({ ...MODE_CONFIGS }) as Record<string, ModeConfig>;
+
 // ─── Events ──────────────────────────────────────────────────
 const EVENTS = Object.freeze({
   TRANSITION: 'transition',
@@ -139,6 +344,9 @@ const VALID_STATES = new Set(Object.values(STATES));
 class StateMachine {
   _mode: string;
   _modeConfigs: Record<string, { phases: string[]; label: string }>;
+  _flowDefinition: OrchestrationFlowDefinition;
+  _flowVersion: string;
+  _flowSource: 'legacy' | 'schema';
   _onTransition: (...args: unknown[]) => void;
   _onError: (...args: unknown[]) => void;
   _history: Array<{ from: string; to: string; timestamp: string; reason?: string }>;
@@ -160,6 +368,8 @@ class StateMachine {
     const {
       mode = 'CREATE',
       phases,
+      flowSource,
+      flowVersion,
       modeConfigs,
       sessionState,
       onTransition,
@@ -167,6 +377,8 @@ class StateMachine {
     } = options as {
       mode?: string;
       phases?: string[];
+      flowSource?: string;
+      flowVersion?: string;
       modeConfigs?: Record<string, { phases: string[]; label: string }>;
       sessionState?: Record<string, unknown>;
       onTransition?: (...args: unknown[]) => void;
@@ -174,7 +386,10 @@ class StateMachine {
     };
 
     this._mode = mode as string;
-    this._modeConfigs = modeConfigs || MODE_CONFIGS;
+    this._flowDefinition = getOrchestrationFlowDefinition({ flowSource, flowVersion });
+    this._flowVersion = this._flowDefinition.version;
+    this._flowSource = this._flowDefinition.source;
+    this._modeConfigs = modeConfigs || this._flowDefinition.modes;
     this._onTransition = onTransition || (() => {});
     this._onError = onError || (() => {});
     this._history = [];
@@ -182,14 +397,20 @@ class StateMachine {
     this._transitioning = false;
     this._startedAt = new Date().toISOString();
 
-    this._transitionMap = StateMachine._buildTransitions(mode as string, phases, this._modeConfigs);
+    this._transitionMap = StateMachine._buildTransitions(
+      mode as string,
+      phases,
+      this._modeConfigs,
+      this._flowDefinition
+    );
     this._state = this._recoverOrInit(sessionState as Record<string, unknown>);
   }
 
   static _buildTransitions(
     mode: string,
     phases: string[] | undefined,
-    modeConfigs: Record<string, { phases: string[]; label: string }>
+    modeConfigs: Record<string, { phases: string[]; label: string }>,
+    flowDefinition: OrchestrationFlowDefinition
   ) {
     const configs = modeConfigs || MODE_CONFIGS;
     const config = configs[mode];
@@ -197,14 +418,15 @@ class StateMachine {
       const valid = Object.keys(configs).join(', ');
       throw new Error(`Unknown mode: ${mode}. Valid modes: ${valid}`);
     }
-    return buildTransitionMap(phases || config.phases);
+    return buildTransitionMap(phases || config.phases, flowDefinition);
   }
 
   /** @private Restore from session or start at IDLE */
   _recoverOrInit(sessionState: Record<string, unknown>) {
     if (sessionState && sessionState.status && sessionState.status !== STATES.IDLE) {
       // Validate the persisted state is a known state
-      if (!(VALID_STATES as Set<string>).has(sessionState.status as string)) {
+      const validStatesForFlow = new Set(this._flowDefinition.states);
+      if (!validStatesForFlow.has(sessionState.status as string)) {
         this._emit(EVENTS.ERROR, {
           from: 'UNKNOWN',
           reason: `Corrupt session state: unknown status "${sessionState.status}"`,
@@ -232,6 +454,16 @@ class StateMachine {
   /** @returns {string} Command mode */
   get mode() {
     return this._mode;
+  }
+
+  /** @returns {string} Flow version used by this machine instance */
+  get flowVersion() {
+    return this._flowVersion;
+  }
+
+  /** @returns {'legacy' | 'schema'} Flow source used by this machine instance */
+  get flowSource() {
+    return this._flowSource;
   }
 
   /** @returns {Array<{from: string, to: string, timestamp: string}>} Transition history */
@@ -415,6 +647,8 @@ class StateMachine {
     return {
       status: this._state,
       mode: this._mode,
+      flow_version: this._flowVersion,
+      flow_source: this._flowSource,
       state_history: this._history,
       gate_results: Object.fromEntries(this._gateResults),
       started_at: this._startedAt,
@@ -459,6 +693,12 @@ function createStateMachine(
   return new StateMachine({
     mode,
     sessionState,
+    flowSource: callbacks.flowSource as string,
+    flowVersion:
+      (callbacks.flowVersion as string) ||
+      (sessionState && typeof sessionState.flow_version === 'string'
+        ? (sessionState.flow_version as string)
+        : undefined),
     modeConfigs: callbacks.modeConfigs as Record<string, { phases: string[]; label: string }>,
     onTransition: callbacks.onTransition as (...args: unknown[]) => void,
     onError: callbacks.onError as (...args: unknown[]) => void,
@@ -493,6 +733,12 @@ function createCombinationMachine(
     mode: 'CREATE',
     phases,
     sessionState,
+    flowSource: callbacks.flowSource as string,
+    flowVersion:
+      (callbacks.flowVersion as string) ||
+      (sessionState && typeof sessionState.flow_version === 'string'
+        ? (sessionState.flow_version as string)
+        : undefined),
     onTransition: callbacks.onTransition as (...args: unknown[]) => void,
     onError: callbacks.onError as (...args: unknown[]) => void,
   });
@@ -512,6 +758,12 @@ function createHotfixMachine(
     mode: 'HOTFIX',
     phases: [],
     sessionState,
+    flowSource: callbacks.flowSource as string,
+    flowVersion:
+      (callbacks.flowVersion as string) ||
+      (sessionState && typeof sessionState.flow_version === 'string'
+        ? (sessionState.flow_version as string)
+        : undefined),
     onTransition: callbacks.onTransition as (...args: unknown[]) => void,
     onError: callbacks.onError as (...args: unknown[]) => void,
   });
@@ -528,4 +780,7 @@ export {
   createStateMachine,
   createCombinationMachine,
   createHotfixMachine,
+  getOrchestrationFlowDefinition,
+  LEGACY_FLOW_VERSION,
+  FLOW_SOURCE_ENV,
 };

@@ -274,6 +274,10 @@ function createEngine(options: Record<string, unknown>) {
 
   // Determine mode from persisted state or default to CREATE
   const mode = typeof sessionState.mode === 'string' ? sessionState.mode : 'CREATE';
+  const persistedFlowVersion =
+    typeof sessionState.flow_version === 'string' && sessionState.flow_version.trim() !== ''
+      ? sessionState.flow_version.trim()
+      : undefined;
 
   // Variable to hold the machine reference for autopersist closure
   let machine: StateMachine | null = null;
@@ -419,6 +423,7 @@ function createEngine(options: Record<string, unknown>) {
   const smOptions: Record<string, unknown> = {
     onTransition: combinedOnTransition,
     onError: combinedOnError,
+    flowVersion: persistedFlowVersion,
   };
   if (template && template.modes) {
     smOptions.modeConfigs = template.modes;
@@ -592,6 +597,8 @@ function createEngine(options: Record<string, unknown>) {
     return {
       state: machine.state,
       mode: machine.mode,
+      flowVersion: machine.flowVersion,
+      flowSource: machine.flowSource,
       nextState: machine.nextState,
       history: machine.history,
       elapsedMs: machine.elapsedMs,
@@ -665,6 +672,10 @@ function createEngine(options: Record<string, unknown>) {
       store,
       {
         mode: serialized.mode,
+        flow_version:
+          typeof serialized.flow_version === 'string' ? serialized.flow_version : undefined,
+        flow_source:
+          typeof serialized.flow_source === 'string' ? serialized.flow_source : undefined,
         status: endStatus,
         started_at: serialized.started_at || serialized.last_updated,
         ended_at: new Date().toISOString(),

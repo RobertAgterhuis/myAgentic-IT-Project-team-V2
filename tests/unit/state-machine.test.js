@@ -18,6 +18,8 @@ const {
   STATES,
   EVENTS,
   MODE_CONFIGS,
+  FLOW_SOURCE_ENV,
+  LEGACY_FLOW_VERSION,
   VALID_STATES,
   StateMachine,
   buildTransitionMap,
@@ -413,6 +415,52 @@ describe('StateMachine — serialize()', () => {
     const data = sm.serialize();
     expect(data.gate_results).toHaveProperty('CRITIC_1');
     expect(data.gate_results.CRITIC_1.verdict).toBe('APPROVED');
+  });
+
+  it('includes flow version metadata for replay determinism', () => {
+    const sm = createStateMachine('CREATE');
+    const data = sm.serialize();
+    expect(typeof data.flow_version).toBe('string');
+    expect(typeof data.flow_source).toBe('string');
+  });
+});
+
+describe('StateMachine — flow source compatibility', () => {
+  const originalFlowSource = process.env[FLOW_SOURCE_ENV];
+
+  afterEach(() => {
+    if (typeof originalFlowSource === 'undefined') {
+      delete process.env[FLOW_SOURCE_ENV];
+    } else {
+      process.env[FLOW_SOURCE_ENV] = originalFlowSource;
+    }
+  });
+
+  it('defaults to legacy flow source when no feature flag is set', () => {
+    delete process.env[FLOW_SOURCE_ENV];
+    const sm = createStateMachine('CREATE');
+    expect(sm.flowVersion).toBe(LEGACY_FLOW_VERSION);
+    expect(sm.flowSource).toBe('legacy');
+  });
+
+  it('supports schema flow source via feature flag', () => {
+    process.env[FLOW_SOURCE_ENV] = 'schema';
+    const sm = createStateMachine('CREATE');
+    expect(sm.flowSource).toBe('schema');
+    expect(sm.flowVersion).toMatch(/^\d+\.\d+\.\d+$/);
+  });
+
+  it('uses persisted flow version over current feature-flag source', () => {
+    process.env[FLOW_SOURCE_ENV] = 'schema';
+    const sm = createStateMachine('CREATE', { flow_version: LEGACY_FLOW_VERSION });
+    expect(sm.flowSource).toBe('legacy');
+    expect(sm.flowVersion).toBe(LEGACY_FLOW_VERSION);
+  });
+
+  it('throws actionable startup error for unknown persisted flow version', () => {
+    expect(() => createStateMachine('CREATE', { flow_version: 'does-not-exist' })).toThrow(
+      /Unknown flow version/
+    );
   });
 });
 

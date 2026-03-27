@@ -253,6 +253,38 @@ describe('M5 Epic #665 orchestrator workflow automation', () => {
     expect(reset.json().status.mode).toBe('AUDIT');
   });
 
+  it('exposes orchestrator dependency health with SLO and alert fields', async () => {
+    const res = await inject('GET', '/api/orchestrator/dependencies/health');
+
+    expect([200, 503]).toContain(res.statusCode);
+    const body = res.json();
+    expect(body.ok).toBe(true);
+    expect(['healthy', 'degraded', 'unavailable']).toContain(body.overall_status);
+
+    expect(body.dependencies).toBeDefined();
+    expect(body.dependencies.state_machine).toBeDefined();
+    expect(body.dependencies.dispatcher).toBeDefined();
+    expect(body.dependencies.policy_service).toBeDefined();
+    expect(['healthy', 'degraded', 'unavailable']).toContain(
+      body.dependencies.state_machine.status
+    );
+    expect(['healthy', 'degraded', 'unavailable']).toContain(body.dependencies.dispatcher.status);
+    expect(['healthy', 'degraded', 'unavailable']).toContain(
+      body.dependencies.policy_service.status
+    );
+
+    expect(body.slos).toBeDefined();
+    expect(body.slos.targets).toBeDefined();
+    expect(body.slos.observed).toBeDefined();
+    expect(Array.isArray(body.slos.alerts)).toBe(true);
+    expect(body.slos.targets.unavailable_dependencies_max).toBe(0);
+    expect(body.slos.targets.degraded_dependencies_max).toBe(0);
+    expect(body.slos.targets.dependency_probe_latency_ms_max).toBe(500);
+    expect(typeof body.slos.observed.unavailable_dependencies).toBe('number');
+    expect(typeof body.slos.observed.degraded_dependencies).toBe('number');
+    expect(typeof body.slos.observed.dependency_probe_latency_ms).toBe('number');
+  });
+
   it('exposes stop + run-history paths for automation observability', async () => {
     await inject('POST', '/api/orchestrator/command', {
       command: 'CREATE',

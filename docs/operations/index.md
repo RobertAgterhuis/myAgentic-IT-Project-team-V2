@@ -18,6 +18,7 @@ compliance posture, CI review, privacy posture, and operator runbooks.
 | Review quarterly benchmarks        | [Quarterly Benchmark Report (Q1 2026)](quarterly-benchmark-report-q1-2026) |
 | Review user-facing privacy posture | [Privacy Policy](privacy-policy)                                           |
 | Understand environment topology    | [Release Topology and Environment Contracts](release-topology)             |
+| Review control-plane SLOs          | [Control Plane SLOs](control-plane-slos)                                   |
 | Respond to an incident             | [Incident Runbooks](runbooks)                                              |
 | Verify a deployment or roll back   | [Post-Deploy Health Gates](post-deploy-health-gates)                       |
 
@@ -30,6 +31,7 @@ compliance posture, CI review, privacy posture, and operator runbooks.
 - [Quarterly Benchmark Report (Q1 2026)](quarterly-benchmark-report-q1-2026)
 - [Privacy Policy](privacy-policy)
 - [Release Topology and Environment Contracts](release-topology)
+- [Control Plane SLOs](control-plane-slos)
 - [Incident Runbooks](runbooks)
 - [Post-Deploy Health Gates and Rollback Hooks](post-deploy-health-gates)
 

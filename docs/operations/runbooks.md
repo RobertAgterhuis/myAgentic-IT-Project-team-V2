@@ -46,6 +46,60 @@ Alert codes and their runbook anchors:
 
 ---
 
+## Orchestrator Control-Plane Incident Commands {#orchestrator-control-plane-incident-commands}
+
+Use this command set when `GET /api/orchestrator/dependencies/health` reports
+`overall_status = degraded` or `overall_status = unavailable`.
+
+### Command Quick Reference
+
+1. Pause orchestrator transitions (stabilize before triage):
+
+   ```bash
+   curl -X POST http://127.0.0.1:3000/api/orchestrator/pause \
+     -H "Content-Type: application/json" \
+     -d '{"rationale":"Control-plane SLO breach","requested_by":"oncall"}'
+   ```
+
+2. Verify dependency health and capture the alert payload:
+
+   ```bash
+   curl -s http://127.0.0.1:3000/api/orchestrator/dependencies/health | jq .
+   ```
+
+3. Resume orchestrator after mitigation:
+
+   ```bash
+   curl -X POST http://127.0.0.1:3000/api/orchestrator/resume \
+     -H "Content-Type: application/json" \
+     -d '{"rationale":"Dependencies restored","requested_by":"oncall"}'
+   ```
+
+4. Roll back to a known-safe command mode if degradation persists:
+
+   ```bash
+   curl -X POST http://127.0.0.1:3000/api/orchestrator/reset \
+     -H "Content-Type: application/json" \
+     -d '{"mode":"AUDIT"}'
+   ```
+
+### Escalation Matrix
+
+| Condition                                                       | Escalate to                              | SLA        |
+| --------------------------------------------------------------- | ---------------------------------------- | ---------- |
+| `CP_PROBE_LATENCY_BREACH` warning persists > 15 minutes         | Platform engineer on-call                | 15 minutes |
+| `CP_DEGRADED_DEPENDENCIES_BREACH` warning persists > 10 minutes | Platform engineer + release manager      | 10 minutes |
+| `CP_UNAVAILABLE_DEPENDENCIES_BREACH` critical                   | Incident commander + engineering manager | Immediate  |
+
+When escalating, include:
+
+- `overall_status`
+- `dependencies` block from the health payload
+- `slos.alerts` array
+- Current orchestrator mode/state from `GET /api/orchestrator/status`
+
+---
+
 ## Runbook RB-001 — Redis Outage {#runbook-rb-001-redis-outage}
 
 **Alert code:** `REDIS_UNREACHABLE`  

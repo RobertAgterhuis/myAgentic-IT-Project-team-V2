@@ -85,6 +85,12 @@ function saveSessionState(store, serializedState, filePath) {
     ...existing,
     status: serializedState.status,
     mode: serializedState.mode,
+    flow_version:
+      serializedState.flow_version ||
+      (typeof existing.flow_version === 'string' ? existing.flow_version : undefined),
+    flow_source:
+      serializedState.flow_source ||
+      (typeof existing.flow_source === 'string' ? existing.flow_source : undefined),
     state_history: serializedState.state_history,
     gate_results: serializedState.gate_results,
     last_updated: serializedState.last_updated,

@@ -13,6 +13,7 @@
 const path = require('path');
 const fs = require('fs');
 const { createEngine } = require('../../platform/engine/engine');
+const { FLOW_SOURCE_ENV, LEGACY_FLOW_VERSION } = require('../../platform/engine/state-machine');
 
 // ─── Test Helpers ────────────────────────────────────────────
 
@@ -63,12 +64,30 @@ describe('createEngine — initialization', () => {
     expect(engine.flows.states).toHaveLength(15);
     expect(engine.flows.modes).toHaveProperty('CREATE');
   });
+
+  it('exposes flow version/source in status', () => {
+    const store = storeWithFlows();
+    const engine = createEngine({ store, flowsPath: FLOWS_PATH });
+
+    expect(typeof engine.status().flowVersion).toBe('string');
+    expect(typeof engine.status().flowSource).toBe('string');
+  });
 });
 
 // ─────────────────────────────────────────────────────────────
 // Crash recovery (AC-7)
 // ─────────────────────────────────────────────────────────────
 describe('createEngine — crash recovery', () => {
+  const originalFlowSource = process.env[FLOW_SOURCE_ENV];
+
+  afterEach(() => {
+    if (typeof originalFlowSource === 'undefined') {
+      delete process.env[FLOW_SOURCE_ENV];
+    } else {
+      process.env[FLOW_SOURCE_ENV] = originalFlowSource;
+    }
+  });
+
   it('resumes from persisted session state', () => {
     const sessionPath = '/test/session.json';
     const sessionState = {
@@ -88,6 +107,29 @@ describe('createEngine — crash recovery', () => {
     const engine = createEngine({ store, flowsPath: FLOWS_PATH, sessionPath });
     expect(engine.status().state).toBe('PHASE_2');
     expect(engine.status().mode).toBe('CREATE');
+  });
+
+  it('recovery keeps persisted flow version for deterministic replay', () => {
+    process.env[FLOW_SOURCE_ENV] = 'schema';
+    const sessionPath = '/test/session.json';
+    const sessionState = {
+      status: 'PHASE_2',
+      mode: 'CREATE',
+      flow_version: LEGACY_FLOW_VERSION,
+      state_history: [
+        { from: 'IDLE', to: 'ONBOARDING', timestamp: '2026-01-01T00:00:00Z' },
+        { from: 'ONBOARDING', to: 'PHASE_1', timestamp: '2026-01-01T00:01:00Z' },
+        { from: 'PHASE_1', to: 'CRITIC_1', timestamp: '2026-01-01T00:02:00Z' },
+        { from: 'CRITIC_1', to: 'PHASE_2', timestamp: '2026-01-01T00:03:00Z' },
+      ],
+    };
+    const store = storeWithFlows({
+      [sessionPath]: JSON.stringify(sessionState),
+    });
+
+    const engine = createEngine({ store, flowsPath: FLOWS_PATH, sessionPath });
+    expect(engine.status().flowVersion).toBe(LEGACY_FLOW_VERSION);
+    expect(engine.status().flowSource).toBe('legacy');
   });
 
   it('starts at IDLE when session file is missing', () => {
@@ -236,6 +278,7 @@ describe('createEngine — auto-persistence', () => {
     const persisted = JSON.parse(store._files[sessionPath]);
     expect(persisted.status).toBe('ONBOARDING');
     expect(persisted.mode).toBe('CREATE');
+    expect(typeof persisted.flow_version).toBe('string');
   });
 
   it('persists state on error', () => {

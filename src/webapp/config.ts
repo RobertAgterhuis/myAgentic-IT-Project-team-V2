@@ -33,6 +33,8 @@ export type RuntimeProfileName =
   | 'production-single-node'
   | 'production-distributed';
 
+export type ToolIsolationLevel = 'none' | 'process' | 'restricted';
+
 export interface PredecessorContractContinuityResolution {
   mode: PredecessorContractContinuityConfig;
   source: 'env' | 'profile-default';
@@ -66,6 +68,21 @@ function parsePositiveIntFromEnv(name: string, fallback: number): number {
   const parsed = Number.parseInt(raw, 10);
   if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
   return parsed;
+}
+
+function parseBooleanFromEnv(name: string, fallback: boolean): boolean {
+  const raw = process.env[name];
+  if (!raw || !raw.trim()) return fallback;
+
+  const normalized = raw.trim().toLowerCase();
+  if (['1', 'true', 'yes', 'on'].includes(normalized)) return true;
+  if (['0', 'false', 'no', 'off'].includes(normalized)) return false;
+  return fallback;
+}
+
+function parseToolIsolationLevel(raw: string | undefined): ToolIsolationLevel {
+  if (raw === 'none' || raw === 'restricted') return raw;
+  return 'process';
 }
 
 function normalizeStringList(input: unknown): string[] | undefined {
@@ -208,6 +225,23 @@ export const SESSION_STORE: SessionStoreType = (() => {
 /** Name of the AgentRuntimeAdapter to use. Resolved via AdapterRegistry at startup. */
 export const AGENT_RUNTIME_ADAPTER: string | undefined =
   process.env.AGENT_RUNTIME_ADAPTER || undefined;
+
+export const AGENT_TOOL_ISOLATION_LEVEL: ToolIsolationLevel = parseToolIsolationLevel(
+  process.env.AGENT_TOOL_ISOLATION_LEVEL
+);
+export const TOOL_EXEC_MAX_TIMEOUT_MS = parsePositiveIntFromEnv(
+  'TOOL_EXEC_MAX_TIMEOUT_MS',
+  120_000
+);
+export const TOOL_EXEC_MAX_OUTPUT_BYTES = parsePositiveIntFromEnv(
+  'TOOL_EXEC_MAX_OUTPUT_BYTES',
+  2 * 1024 * 1024
+);
+export const TOOL_EXEC_MAX_MEMORY_MB = parsePositiveIntFromEnv('TOOL_EXEC_MAX_MEMORY_MB', 768);
+export const TOOL_EXEC_REQUIRE_WORKSPACE_CWD = parseBooleanFromEnv(
+  'TOOL_EXEC_REQUIRE_WORKSPACE_CWD',
+  true
+);
 
 export const ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY:
   | PredecessorContractContinuityConfig

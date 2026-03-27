@@ -84,6 +84,11 @@ describe('Runtime Profiles', () => {
           sessionStore: 'sqlite',
           hasAuth: false,
           trustProxy: false,
+          toolIsolationLevel: 'process',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
         });
         expect(result.valid).toBe(true);
         expect(result.errors).toHaveLength(0);
@@ -100,6 +105,11 @@ describe('Runtime Profiles', () => {
           redisUrl: 'redis://localhost:6379',
           hasAuth: true,
           trustProxy: false,
+          toolIsolationLevel: 'process',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
         });
         expect(result.valid).toBe(true);
         expect(result.profile).toBe('local-dev');
@@ -116,6 +126,11 @@ describe('Runtime Profiles', () => {
           sessionStore: 'sqlite',
           hasAuth: false,
           trustProxy: false,
+          toolIsolationLevel: 'process',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
         });
         expect(result.valid).toBe(true);
         expect(result.errors).toHaveLength(0);
@@ -133,6 +148,11 @@ describe('Runtime Profiles', () => {
           sessionStore: 'sqlite',
           hasAuth: true,
           trustProxy: 1,
+          toolIsolationLevel: 'restricted',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
         });
         expect(result.valid).toBe(true);
         expect(result.errors).toHaveLength(0);
@@ -148,6 +168,11 @@ describe('Runtime Profiles', () => {
           sessionStore: 'sqlite',
           hasAuth: true,
           trustProxy: 1,
+          toolIsolationLevel: 'restricted',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
         });
         expect(result.valid).toBe(false);
         expect(result.errors.some((e) => e.includes('STORAGE_PROVIDER'))).toBe(true);
@@ -162,6 +187,11 @@ describe('Runtime Profiles', () => {
           sessionStore: 'sqlite',
           hasAuth: false,
           trustProxy: 1,
+          toolIsolationLevel: 'restricted',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
         });
         expect(result.valid).toBe(false);
         expect(result.errors.some((e) => e.includes('authentication'))).toBe(true);
@@ -176,6 +206,11 @@ describe('Runtime Profiles', () => {
           sessionStore: 'sqlite',
           hasAuth: true,
           trustProxy: true,
+          toolIsolationLevel: 'restricted',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
         });
         expect(result.valid).toBe(false);
         expect(result.errors.some((e) => e.includes('explicit TRUST_PROXY'))).toBe(true);
@@ -190,6 +225,11 @@ describe('Runtime Profiles', () => {
           sessionStore: 'sqlite',
           hasAuth: true,
           trustProxy: 2,
+          toolIsolationLevel: 'restricted',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
         });
         expect(result.valid).toBe(true);
       });
@@ -203,8 +243,32 @@ describe('Runtime Profiles', () => {
           sessionStore: 'sqlite',
           hasAuth: true,
           trustProxy: ['10.0.0.1', '10.0.0.2'],
+          toolIsolationLevel: 'restricted',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
         });
         expect(result.valid).toBe(true);
+      });
+
+      it('rejects unsafe tool isolation level in production', () => {
+        const result = validateProfile({
+          nodeEnv: 'production',
+          host: '0.0.0.0',
+          storageProvider: 'sqlite',
+          queueProvider: 'persistent',
+          sessionStore: 'sqlite',
+          hasAuth: true,
+          trustProxy: 1,
+          toolIsolationLevel: 'process',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
+        });
+        expect(result.valid).toBe(false);
+        expect(result.errors.some((e) => e.includes('AGENT_TOOL_ISOLATION_LEVEL'))).toBe(true);
       });
     });
 
@@ -219,6 +283,11 @@ describe('Runtime Profiles', () => {
           redisUrl: 'redis://redis-cluster:6379',
           hasAuth: true,
           trustProxy: 1,
+          toolIsolationLevel: 'restricted',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
         });
         expect(result.valid).toBe(true);
         expect(result.errors).toHaveLength(0);
@@ -235,6 +304,11 @@ describe('Runtime Profiles', () => {
           redisUrl: 'redis://localhost:6379',
           hasAuth: true,
           trustProxy: 1,
+          toolIsolationLevel: 'restricted',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
         });
         expect(result.valid).toBe(false);
         expect(result.errors.some((e) => e.includes('QUEUE_PROVIDER'))).toBe(true);
@@ -250,6 +324,11 @@ describe('Runtime Profiles', () => {
           redisUrl: 'redis://localhost:6379',
           hasAuth: true,
           trustProxy: 1,
+          toolIsolationLevel: 'restricted',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
         });
         expect(result.valid).toBe(false);
         expect(result.errors.some((e) => e.includes('SESSION_STORE'))).toBe(true);
@@ -265,6 +344,11 @@ describe('Runtime Profiles', () => {
           redisUrl: undefined,
           hasAuth: true,
           trustProxy: 1,
+          toolIsolationLevel: 'restricted',
+          toolExecMaxTimeoutMs: 120000,
+          toolExecMaxOutputBytes: 1024,
+          toolExecMaxMemoryMb: 512,
+          toolExecRequireWorkspaceCwd: true,
         });
         expect(result.valid).toBe(false);
         expect(result.errors.some((e) => e.includes('REDIS_URL'))).toBe(true);

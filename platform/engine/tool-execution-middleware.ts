@@ -47,6 +47,16 @@ export interface ToolExecutionAuditEvent {
   decisionRefs?: string[];
   fromCache?: boolean;
   durationMs?: number;
+  isolationLevel?: string;
+}
+
+interface ToolExecutionGuardrails {
+  isolationLevel: 'none' | 'process' | 'restricted';
+  maxTimeoutMs: number;
+  maxOutputBytes: number;
+  maxMemoryMb: number;
+  workspaceRoot: string;
+  requireWorkspaceCwd: boolean;
 }
 
 export interface ToolExecutionAuditSink {
@@ -264,6 +274,40 @@ function requiresExplicitPolicyApproval(toolId: string): boolean {
 
 function isProductionProfile(profile: string): boolean {
   return profile.startsWith('production-');
+}
+
+function parsePositiveIntEnv(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw || !raw.trim()) return fallback;
+  const parsed = Number.parseInt(raw, 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function resolveToolIsolationLevel(): ToolExecutionGuardrails['isolationLevel'] {
+  const raw = process.env.AGENT_TOOL_ISOLATION_LEVEL;
+  if (raw === 'none' || raw === 'restricted') return raw;
+  return 'process';
+}
+
+function resolveToolExecutionGuardrails(profile: string): ToolExecutionGuardrails {
+  return {
+    isolationLevel: resolveToolIsolationLevel(),
+    maxTimeoutMs: parsePositiveIntEnv(
+      'TOOL_EXEC_MAX_TIMEOUT_MS',
+      isProductionProfile(profile) ? 120_000 : 300_000
+    ),
+    maxOutputBytes: parsePositiveIntEnv(
+      'TOOL_EXEC_MAX_OUTPUT_BYTES',
+      isProductionProfile(profile) ? 2 * 1024 * 1024 : 10 * 1024 * 1024
+    ),
+    maxMemoryMb: parsePositiveIntEnv(
+      'TOOL_EXEC_MAX_MEMORY_MB',
+      isProductionProfile(profile) ? 768 : 1536
+    ),
+    workspaceRoot: process.cwd(),
+    requireWorkspaceCwd:
+      String(process.env.TOOL_EXEC_REQUIRE_WORKSPACE_CWD || 'true').toLowerCase() !== 'false',
+  };
 }
 
 function deriveRequiredRole(tool: CanonicalTool, profile: string): ToolExecutionRole {
@@ -648,6 +692,7 @@ export class ToolExecutionMiddleware {
     const profile = normalizeProfile(policy.profile);
     const toolId = call.name;
     const paramsHash = hashValue(call.arguments || {});
+    const guardrails = resolveToolExecutionGuardrails(profile);
 
     const tool = this._byId.get(toolId);
     if (!tool) {
@@ -768,12 +813,54 @@ export class ToolExecutionMiddleware {
       );
     }
 
-    const requestParams =
-      target === 'git' &&
+    if (isProductionProfile(profile) && guardrails.isolationLevel !== 'restricted') {
+      const event: ToolExecutionAuditEvent = {
+        timestamp: new Date().toISOString(),
+        traceId,
+        toolCallId: call.id,
+        toolId,
+        role,
+        profile,
+        paramsHash,
+        success: false,
+        errorCode: 'TOOL_ISOLATION_UNSAFE',
+        error: `TOOL_ISOLATION_UNSAFE: Tool '${toolId}' blocked because AGENT_TOOL_ISOLATION_LEVEL='${guardrails.isolationLevel}' is not allowed in profile '${profile}'.`,
+        isolationLevel: guardrails.isolationLevel,
+      };
+      this._audit?.logToolExecution(event);
+      throw new ToolAuthorizationError(event.error || 'Unsafe tool isolation level');
+    }
+
+    if (
+      typeof call.arguments?.timeout === 'number' &&
+      (call.arguments.timeout as number) > guardrails.maxTimeoutMs
+    ) {
+      const event: ToolExecutionAuditEvent = {
+        timestamp: new Date().toISOString(),
+        traceId,
+        toolCallId: call.id,
+        toolId,
+        role,
+        profile,
+        paramsHash,
+        success: false,
+        errorCode: 'TOOL_GUARDRAIL_TIMEOUT',
+        error: `TOOL_GUARDRAIL_TIMEOUT: Tool '${toolId}' requested timeout ${call.arguments.timeout as number}ms above guardrail ${guardrails.maxTimeoutMs}ms.`,
+        isolationLevel: guardrails.isolationLevel,
+      };
+      this._audit?.logToolExecution(event);
+      throw new ToolAuthorizationError(event.error || 'Tool timeout guardrail exceeded');
+    }
+
+    const requestParams = {
+      ...params,
+      __toolGuardrails: guardrails,
+      ...(target === 'git' &&
       policy.executionContext &&
       !Object.prototype.hasOwnProperty.call(params, '__agentContext')
-        ? { ...params, __agentContext: policy.executionContext }
-        : params;
+        ? { __agentContext: policy.executionContext }
+        : {}),
+    };
 
     const request: ToolRequest = {
       target,
@@ -805,6 +892,7 @@ export class ToolExecutionMiddleware {
       decisionRefs: sideEffectPolicy.decisionRefs,
       fromCache: result.fromCache,
       durationMs: result.duration_ms,
+      isolationLevel: guardrails.isolationLevel,
     };
     this._audit?.logToolExecution(auditEvent);
     return result;

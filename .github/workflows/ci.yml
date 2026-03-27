@@ -145,6 +145,12 @@ jobs:
       - name: Run performance regression gate
         run: npm run test:perf-gate
 
+      - name: Run autonomy benchmark suite
+        run: npm run test:autonomy-benchmark
+
+      - name: Run autonomy readiness gate
+        run: npm run test:autonomy-readiness-gate
+
   mutation-gate:
     name: Mutation Testing Gate (main)
     runs-on: ubuntu-latest

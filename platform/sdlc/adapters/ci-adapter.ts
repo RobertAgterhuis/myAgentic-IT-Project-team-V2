@@ -20,7 +20,7 @@ import {
   HEALTH_STATUS,
   type HealthCheck,
 } from './tool-adapter.js';
-import { shellExec } from './shell-executor.js';
+import { shellExec, withToolGuardrails } from './shell-executor.js';
 
 export interface CiConfig {
   [key: string]: unknown;
@@ -63,7 +63,8 @@ async function ghApi(
   method: string,
   url: string,
   token: string,
-  body?: Record<string, unknown>
+  body?: Record<string, unknown>,
+  params?: Record<string, unknown>
 ): Promise<GitHubResponse> {
   const args = [
     '-s',
@@ -84,7 +85,7 @@ async function ghApi(
   }
   args.push(url);
 
-  const result = await shellExec('curl', args, { timeout: 30_000 });
+  const result = await shellExec('curl', args, withToolGuardrails({ timeout: 30_000 }, params));
   const lines = result.stdout.trimEnd().split('\n');
   const statusCode = parseInt(lines[lines.length - 1], 10) || 0;
   const jsonBody = lines.slice(0, -1).join('\n');
@@ -135,7 +136,7 @@ export class CiAdapter extends BaseAdapter {
       if (!workflow) throw new Error('workflow is required');
 
       const url = `${this._apiBase()}/repos/${repo}/actions/workflows/${encodeURIComponent(workflow)}/dispatches`;
-      const resp = await withRetry(() => ghApi('POST', url, this._token(), { ref }));
+      const resp = await withRetry(() => ghApi('POST', url, this._token(), { ref }, params));
 
       if (resp.status === 204 || resp.status === 200) {
         return { workflow, repository: repo, ref, status: 'triggered' };
@@ -151,7 +152,7 @@ export class CiAdapter extends BaseAdapter {
       if (!runId) throw new Error('run_id is required');
 
       const url = `${this._apiBase()}/repos/${repo}/actions/runs/${encodeURIComponent(String(runId))}`;
-      const resp = await withRetry(() => ghApi('GET', url, this._token()));
+      const resp = await withRetry(() => ghApi('GET', url, this._token(), undefined, params));
 
       if (resp.status === 200) {
         const data = resp.body as Record<string, unknown>;
@@ -173,7 +174,7 @@ export class CiAdapter extends BaseAdapter {
       if (!repo) throw new Error('repository is required');
 
       const url = `${this._apiBase()}/repos/${repo}/actions/workflows`;
-      const resp = await withRetry(() => ghApi('GET', url, this._token()));
+      const resp = await withRetry(() => ghApi('GET', url, this._token(), undefined, params));
 
       if (resp.status === 200) {
         const data = resp.body as { workflows?: Array<Record<string, unknown>> };
@@ -197,7 +198,7 @@ export class CiAdapter extends BaseAdapter {
       if (!runId) throw new Error('run_id is required');
 
       const url = `${this._apiBase()}/repos/${repo}/actions/runs/${encodeURIComponent(String(runId))}/logs`;
-      const resp = await withRetry(() => ghApi('GET', url, this._token()));
+      const resp = await withRetry(() => ghApi('GET', url, this._token(), undefined, params));
 
       // GitHub redirects to a download URL; curl follows by default with -L
       return {

@@ -62,6 +62,19 @@ describe('shellExec', () => {
     expect(result.duration_ms).toBeGreaterThanOrEqual(400);
     expect(result.exitCode !== 0 || result.timedOut).toBe(true);
   });
+
+  it('rejects execution outside workspace when workspace guardrail is enabled', async () => {
+    const result = await shellExec('node', ['--version'], {
+      cwd: process.platform === 'win32' ? 'C:\\Windows' : '/tmp',
+      guardrails: {
+        workspaceRoot: process.cwd(),
+        requireWorkspaceCwd: true,
+      },
+    });
+
+    expect(result.exitCode).toBe(1);
+    expect(result.stderr).toContain('Workspace-bound execution rejected');
+  });
 });
 
 describe('isBinaryAvailable', () => {

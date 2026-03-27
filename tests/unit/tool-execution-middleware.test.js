@@ -138,7 +138,7 @@ describe('ToolExecutionMiddleware', () => {
       expect.objectContaining({
         target: 'files',
         operation: 'read',
-        params: { path: 'README.md' },
+        params: expect.objectContaining({ path: 'README.md' }),
       })
     );
   });

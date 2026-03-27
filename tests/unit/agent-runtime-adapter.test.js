@@ -759,6 +759,8 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
   });
 
   it('routes model tool calls through ToolExecutor middleware when authorized', async () => {
+    process.env.AGENT_TOOL_ISOLATION_LEVEL = 'restricted';
+
     const contractPath = await writeContractFixture(
       'tool-call-contract.md',
       [
@@ -873,6 +875,8 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
   });
 
   it('derives tool approvals from governance decisions when explicit approvals are absent', async () => {
+    process.env.AGENT_TOOL_ISOLATION_LEVEL = 'restricted';
+
     const contractPath = await writeContractFixture(
       'tool-governance-contract.md',
       [

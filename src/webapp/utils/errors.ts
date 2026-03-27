@@ -95,6 +95,10 @@ export const ERROR_CATALOG: Record<string, ErrorEntry> = {
     message: 'The orchestrator is paused by a human override.',
     recovery: 'Resume the orchestrator before advancing.',
   },
+  REVIEW_GATE_BLOCKED: {
+    message: 'Transition is blocked until required human approvals are resolved.',
+    recovery: 'Approve or reject all pending review items, then retry advance.',
+  },
   ALREADY_PAUSED: {
     message: 'The orchestrator is already paused.',
     recovery: 'Resume the orchestrator or continue with override operations.',

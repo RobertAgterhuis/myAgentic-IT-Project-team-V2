@@ -268,6 +268,33 @@ describe('resolveAdapter', () => {
     expect(error).toBeNull();
     expect(adapter).toBeNull();
   });
+
+  it('fails closed for production profile without explicit adapter', () => {
+    const { adapter, error } = resolveAdapter({ profile: 'production-single-node' });
+
+    expect(adapter).toBeNull();
+    expect(error).toContain('requires AGENT_RUNTIME_ADAPTER');
+  });
+
+  it('rejects null adapter in production profile', () => {
+    const { adapter, error } = resolveAdapter({
+      adapterName: 'null',
+      profile: 'production-distributed',
+    });
+
+    expect(adapter).toBeNull();
+    expect(error).toContain("forbids AGENT_RUNTIME_ADAPTER='null'");
+  });
+
+  it('allows provider-backed adapters in production profile', () => {
+    const { adapter, error } = resolveAdapter({
+      adapterName: 'llm-mock',
+      profile: 'production-single-node',
+    });
+
+    expect(error).toBeNull();
+    expect(adapter).toBeInstanceOf(MockLlmRuntimeAdapter);
+  });
 });
 
 // ─────────────────────────────────────────────────────────────

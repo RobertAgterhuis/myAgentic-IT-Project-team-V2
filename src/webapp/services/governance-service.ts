@@ -11,7 +11,12 @@ import path from 'path';
 import { GovernanceEngine as PersistedGovernanceEngine } from '../../../platform/sdlc/governance';
 import type { ApprovalRequest } from '../../../platform/sdlc/governance';
 import { ServiceValidationError } from './decisions-service';
-import type { ServiceContext, ApprovalItem, ApprovalDecisionResult } from './types';
+import type {
+  ServiceContext,
+  ApprovalItem,
+  ApprovalDecisionResult,
+  CanonicalApprovalDecision,
+} from './types';
 
 /** Minimal governance engine shape. */
 interface GovernanceEngine {
@@ -58,6 +63,28 @@ export class GovernanceService {
   private static readonly TOOL_EXEC_ESCALATION_GATE_ID = 'G-REL-03';
   private static readonly TOOL_EXEC_STAGE = 'RELEASE' as ApprovalRequest['stage'];
 
+  private toCanonicalDecision(
+    result: ApprovalRequest,
+    decidedBy: string
+  ): CanonicalApprovalDecision {
+    const decidedAt = result.decided_at || new Date().toISOString();
+    const decision: CanonicalApprovalDecision['decision'] =
+      result.status === 'APPROVED' ? 'APPROVED' : 'REJECTED';
+
+    return {
+      schema: 'approval-policy-decision',
+      version: '1.0',
+      decision,
+      approval_id: result.id,
+      entity_id: result.entity_id,
+      gate_id: result.gate_id,
+      stage: result.stage,
+      decided_by: result.decided_by || decidedBy,
+      decided_at: decidedAt,
+      reason: result.reason,
+    };
+  }
+
   /* ── List pending approvals ─────────────────────────────────── */
 
   listApprovals(): { approvals: ApprovalItem[]; count: number } {
@@ -93,15 +120,18 @@ export class GovernanceService {
 
     const result = engine.decide(approvalId, user, true, reason);
     engine.saveTo?.(this.ctx.store, this.governanceStatePath);
+    const decision = this.toCanonicalDecision(result, user);
+
     return {
       ok: true,
       approval: {
         id: result.id,
         status: result.status,
-        decided_by: result.decided_by || user,
-        decided_at: result.decided_at || new Date().toISOString(),
+        decided_by: decision.decided_by,
+        decided_at: decision.decided_at,
         reason: result.reason,
       },
+      decision,
     };
   }
 
@@ -115,15 +145,18 @@ export class GovernanceService {
 
     const result = engine.decide(approvalId, user, false, reason);
     engine.saveTo?.(this.ctx.store, this.governanceStatePath);
+    const decision = this.toCanonicalDecision(result, user);
+
     return {
       ok: true,
       approval: {
         id: result.id,
         status: result.status,
-        decided_by: result.decided_by || user,
-        decided_at: result.decided_at || new Date().toISOString(),
+        decided_by: decision.decided_by,
+        decided_at: decision.decided_at,
         reason: result.reason,
       },
+      decision,
     };
   }
 

@@ -1511,6 +1511,7 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
     const userMessage = firstCall.messages.find((m) => m.role === 'user').content;
 
     expect(userMessage).toContain('"trustLevel": "untrusted"');
+    expect(userMessage).toContain('"sourceClassificationTag": "SOURCE_CLASSIFICATION:untrusted"');
     expect(userMessage).toContain('[sanitized-prompt-injection]');
     expect(userMessage).toContain('[sanitized-data-exfiltration-attempt]');
     expect(userMessage).toContain('BusinessDocs/decisions.md:L18');

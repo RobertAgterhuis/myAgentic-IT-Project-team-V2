@@ -410,6 +410,13 @@ describe('validateDocument', () => {
     expect(result.tags['INSUFFICIENT_DATA:']).toHaveLength(1);
   });
 
+  it('tracks SOURCE_CLASSIFICATION: items in tags', () => {
+    const content =
+      '# Doc\n## Section\nSOURCE_CLASSIFICATION:untrusted\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9';
+    const result = validateDocument(content);
+    expect(result.tags['SOURCE_CLASSIFICATION:']).toHaveLength(1);
+  });
+
   it('reports GUARDRAIL_VIOLATION: tags as MAJOR violations', () => {
     const content =
       '# Doc\n## Section\nGUARDRAIL_VIOLATION: G-BUS-01\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9';
@@ -479,6 +486,37 @@ describe('runGate', () => {
     });
     expect(result.verdict).toBe('FAILED');
     expect(result.summary.phase).toBe('PHASE_2');
+  });
+
+  it('returns FAILED when deterministic decision is tied to untrusted retrieval source', () => {
+    const store = createMockStore({
+      'retrieval-violation.md': [
+        '# Analysis',
+        '## Findings',
+        'SOURCE_CLASSIFICATION:untrusted',
+        'Verdict: APPROVED from retrieved context shortcut.',
+        '## HANDOFF CHECKLIST',
+        '- [x] Item 1',
+        '- [x] Item 2',
+        '- [x] Item 3',
+        '- [x] Item 4',
+        '- [x] Item 5',
+        '- [x] Item 6',
+        '- [x] Item 7',
+        '- [x] Item 8',
+        '- [x] Item 9',
+      ].join('\n'),
+    });
+    const result = runGate(store, {
+      criticState: 'CRITIC_1',
+      deliverables: ['retrieval-violation.md'],
+      contractsDir: 'contracts',
+      guardrailsDir: 'guardrails',
+    });
+    expect(result.verdict).toBe('FAILED');
+    const violations = result.violations.filter((v) => v.rule === 'RETRIEVAL_POLICY_VIOLATION');
+    expect(violations).toHaveLength(1);
+    expect(violations[0].description).toContain('section "Findings"');
   });
 
   it('surfaces unmet MAJOR exit criterion without blocking approval', () => {

@@ -108,6 +108,7 @@ export type ContextTrustLevel = 'trusted' | 'untrusted' | 'mixed';
 interface ModelBoundContextBlock {
   source: string;
   trustLevel: ContextTrustLevel;
+  sourceClassificationTag: `SOURCE_CLASSIFICATION:${ContextTrustLevel}`;
   sanitized: boolean;
   content: string;
 }
@@ -356,6 +357,12 @@ function sanitizeModelBoundText(value: string): string {
       )
       .replace(/\b(exfiltrate|leak|reveal)\b[^\n]*/gi, '[sanitized-data-exfiltration-attempt]')
   );
+}
+
+function toSourceClassificationTag(
+  level: ContextTrustLevel
+): `SOURCE_CLASSIFICATION:${ContextTrustLevel}` {
+  return `SOURCE_CLASSIFICATION:${level}`;
 }
 
 function stringifySessionState(value: unknown): string | null {
@@ -1125,30 +1132,35 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
       {
         source: skillPath || 'skill:unresolved',
         trustLevel: 'trusted',
+        sourceClassificationTag: toSourceClassificationTag('trusted'),
         sanitized: true,
         content: trimToTokenEstimate(sanitizedSkillContent, 1000),
       },
       ...predecessorOutputs.map((entry) => ({
         source: entry.source,
         trustLevel: 'untrusted' as const,
+        sourceClassificationTag: toSourceClassificationTag('untrusted' as const),
         sanitized: true,
         content: entry.excerpt,
       })),
       {
         source: 'questionnaireInput',
         trustLevel: 'untrusted',
+        sourceClassificationTag: toSourceClassificationTag('untrusted'),
         sanitized: true,
         content: sanitizedQuestionnaireInput || '',
       },
       ...((ragContext?.matches || []).map((match) => ({
         source: `rag:${match.collection}:${match.source}`,
         trustLevel: 'untrusted' as const,
+        sourceClassificationTag: toSourceClassificationTag('untrusted' as const),
         sanitized: true,
         content: match.excerpt,
       })) as ModelBoundContextBlock[]),
       {
         source: 'sessionState',
         trustLevel: 'trusted',
+        sourceClassificationTag: toSourceClassificationTag('trusted'),
         sanitized: false,
         content: sessionState || '',
       },

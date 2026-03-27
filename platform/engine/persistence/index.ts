@@ -11,5 +11,7 @@ export type {
 } from './storage-provider';
 export { FileStorageProvider } from './file-provider';
 export { SQLiteStorageProvider } from './sqlite-provider';
+export { RemoteStorageProvider, createLoopbackRemoteTransport } from './remote-provider';
+export type { RemoteStorageProviderOptions } from './remote-provider';
 export { createStorageProvider } from './factory';
 export type { ProviderType, StorageProviderConfig } from './factory';

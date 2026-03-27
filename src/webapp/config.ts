@@ -177,9 +177,10 @@ export const SEMANTIC_MEMORY_SWEEPER_ENABLED =
   ).toLowerCase() !== 'false';
 
 /* ── Persistence layer (M23-005) ──────────────────────────────── */
-export type StorageProviderType = 'file' | 'sqlite';
+export type StorageProviderType = 'file' | 'sqlite' | 'remote';
 export const STORAGE_PROVIDER: StorageProviderType = (() => {
   const v = process.env.STORAGE_PROVIDER;
+  if (v === 'remote') return 'remote';
   if (v === 'sqlite') return 'sqlite';
   return 'file';
 })();

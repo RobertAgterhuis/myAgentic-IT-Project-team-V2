@@ -181,7 +181,7 @@ function loadRunHistory(store, filePath) {
  * @param {string} targetState - The state being transitioned to
  * @param {string} [filePath] - Override path to session-state.json
  */
-function saveTransitionIntent(store, targetState, filePath) {
+function saveTransitionIntent(store, targetState, filePath, transitionId) {
   const target = filePath || DEFAULT_SESSION_FILE;
   const dir = path.dirname(target);
   store.mkdirp(dir);
@@ -200,6 +200,7 @@ function saveTransitionIntent(store, targetState, filePath) {
     transition_status: 'IN_PROGRESS',
     transition_target: targetState,
     transition_started_at: new Date().toISOString(),
+    transition_id: transitionId || existing.transition_id || undefined,
   };
 
   store.writeFile(target, JSON.stringify(updated, null, 2));
@@ -227,6 +228,7 @@ function saveTransitionComplete(store, filePath) {
   existing.transition_status = 'COMPLETE';
   delete existing.transition_target;
   delete existing.transition_started_at;
+  delete existing.transition_id;
 
   store.writeFile(target, JSON.stringify(existing, null, 2));
 }

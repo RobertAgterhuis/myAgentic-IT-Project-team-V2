@@ -8,8 +8,9 @@
 import type { StorageProvider } from './storage-provider';
 import { FileStorageProvider } from './file-provider';
 import { SQLiteStorageProvider } from './sqlite-provider';
+import { RemoteStorageProvider } from './remote-provider';
 
-export type ProviderType = 'file' | 'sqlite';
+export type ProviderType = 'file' | 'sqlite' | 'remote';
 
 export interface StorageProviderConfig {
   provider?: ProviderType;
@@ -20,6 +21,8 @@ export interface StorageProviderConfig {
   journalMode?: 'WAL' | 'DELETE';
   synchronous?: 'NORMAL' | 'FULL';
   busyTimeoutMs?: number;
+  remoteUrl?: string;
+  remoteApiKey?: string;
 }
 
 /**
@@ -41,6 +44,12 @@ export async function createStorageProvider(
         journalMode: config?.journalMode,
         synchronous: config?.synchronous,
         busyTimeoutMs: config?.busyTimeoutMs,
+      });
+      break;
+    case 'remote':
+      provider = new RemoteStorageProvider({
+        baseUrl: config?.remoteUrl,
+        apiKey: config?.remoteApiKey,
       });
       break;
     case 'file':

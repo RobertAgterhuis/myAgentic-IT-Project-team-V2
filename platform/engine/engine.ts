@@ -32,11 +32,19 @@ import {
   saveTransitionComplete,
   addDegradationEntry,
 } from './state-persistence';
+import { randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { runGate } from './gate-validator';
 import { runSprintGate } from './sprint-gate';
 import { loadTemplate } from './template-loader';
+import { TransitionLeaseManager } from './transition-lease';
+import {
+  appendTransitionEvent,
+  defaultTransitionEventLogPath,
+  readTransitionEvents,
+  replayStateFromTransitionEvents,
+} from './transition-event-log';
 import {
   createArtifactRegistrationHook,
   type ArtifactDeclaration,
@@ -143,6 +151,10 @@ function createEngine(options: Record<string, unknown>) {
     hooks: userHooks,
     governancePoliciesPath,
     projectContext: inputProjectContext,
+    transitionEventLogPath: customTransitionEventLogPath,
+    transitionLeasePath: customTransitionLeasePath,
+    transitionLeaseOwnerId: customTransitionLeaseOwnerId,
+    transitionLeaseTtlMs: customTransitionLeaseTtlMs,
   } = options as {
     store: {
       exists(p: string): boolean;
@@ -161,6 +173,10 @@ function createEngine(options: Record<string, unknown>) {
     artifactOutputDir?: string;
     gitRunner?: GitCommandRunner;
     autoCommitPhaseGates?: boolean;
+    transitionEventLogPath?: string;
+    transitionLeasePath?: string;
+    transitionLeaseOwnerId?: string;
+    transitionLeaseTtlMs?: number;
   };
 
   if (!store) throw new Error('Engine requires a store');
@@ -218,7 +234,43 @@ function createEngine(options: Record<string, unknown>) {
   }
 
   // AC-7: Load persisted state for crash recovery
-  const sessionState = loadSessionState(store, sessionPath);
+  const sessionState = (loadSessionState(store, sessionPath) || {}) as Record<string, unknown>;
+  const transitionEventLogPath =
+    typeof customTransitionEventLogPath === 'string' && customTransitionEventLogPath.trim() !== ''
+      ? customTransitionEventLogPath.trim()
+      : defaultTransitionEventLogPath(sessionPath);
+  const transitionLeasePath =
+    typeof customTransitionLeasePath === 'string' && customTransitionLeasePath.trim() !== ''
+      ? customTransitionLeasePath.trim()
+      : sessionPath
+        ? (() => {
+            const replaced = sessionPath.replace(/session-state\.json$/, 'transition-lease.json');
+            return replaced === sessionPath
+              ? path.join(path.dirname(sessionPath), 'transition-lease.json')
+              : replaced;
+          })()
+        : undefined;
+  const transitionLeaseOwnerId =
+    typeof customTransitionLeaseOwnerId === 'string' && customTransitionLeaseOwnerId.trim() !== ''
+      ? customTransitionLeaseOwnerId.trim()
+      : `worker-${process.pid}`;
+  const transitionLeaseTtlMs =
+    typeof customTransitionLeaseTtlMs === 'number' && Number.isFinite(customTransitionLeaseTtlMs)
+      ? Math.max(1000, customTransitionLeaseTtlMs)
+      : 30_000;
+
+  // Deterministic replay is only applied during recovery after an interrupted transition.
+  const shouldReplayFromEventLog = sessionState.transition_status === 'IN_PROGRESS';
+  if (shouldReplayFromEventLog) {
+    const replayed = replayStateFromTransitionEvents(
+      readTransitionEvents(store, transitionEventLogPath),
+      'IDLE'
+    );
+    if (replayed.history.length > 0) {
+      sessionState.status = replayed.state;
+      sessionState.state_history = replayed.history;
+    }
+  }
 
   // Determine mode from persisted state or default to CREATE
   const mode = (sessionState && sessionState.mode) || 'CREATE';
@@ -361,6 +413,7 @@ function createEngine(options: Record<string, unknown>) {
     persistedTransitionStatus === 'IN_PROGRESS' || persistedTransitionStatus === 'COMPLETE'
       ? persistedTransitionStatus
       : null;
+  const leaseManager = new TransitionLeaseManager(store, transitionLeasePath);
 
   // Create the state machine (crash recovery is handled by constructor)
   const smOptions: Record<string, unknown> = {
@@ -393,6 +446,24 @@ function createEngine(options: Record<string, unknown>) {
       throw new Error(`No valid transition target from state ${from}`);
     }
 
+    const transitionId =
+      sessionState.transition_status === 'IN_PROGRESS' &&
+      sessionState.transition_target === to &&
+      typeof sessionState.transition_id === 'string'
+        ? (sessionState.transition_id as string)
+        : randomUUID();
+    const lease = leaseManager.acquire({
+      ownerId: transitionLeaseOwnerId,
+      from,
+      to,
+      ttlMs: transitionLeaseTtlMs,
+    });
+    if (!lease.acquired || !lease.token) {
+      throw new Error(
+        `Transition lease acquisition failed (${lease.reason || 'unknown'}) owner=${lease.ownerId || 'n/a'}`
+      );
+    }
+
     // Fire beforeTransition hooks (if any throws, abort + ERROR)
     for (const hook of resolvedHooks.beforeTransition) {
       try {
@@ -411,10 +482,18 @@ function createEngine(options: Record<string, unknown>) {
     }
 
     // Write-ahead: persist transition intent
-    saveTransitionIntent(store, to, sessionPath);
+    saveTransitionIntent(store, to, sessionPath, transitionId);
+    appendTransitionEvent(store, transitionEventLogPath, {
+      transition_id: transitionId,
+      from,
+      to,
+      status: 'intent',
+      timestamp: new Date().toISOString(),
+    });
     transitionStatus = 'IN_PROGRESS';
 
     try {
+      leaseManager.renew(transitionLeaseOwnerId, lease.token, transitionLeaseTtlMs);
       const result = machine.advance(gateResult);
 
       // Fire afterTransition hooks (errors logged, no rollback)
@@ -434,11 +513,30 @@ function createEngine(options: Record<string, unknown>) {
 
       // Write-ahead: mark transition complete
       saveTransitionComplete(store, sessionPath);
+      appendTransitionEvent(store, transitionEventLogPath, {
+        transition_id: transitionId,
+        from,
+        to,
+        status: 'applied',
+        timestamp: result.timestamp,
+      });
       transitionStatus = 'COMPLETE';
+      sessionState.transition_status = 'COMPLETE';
+      delete sessionState.transition_target;
+      delete sessionState.transition_id;
+      delete sessionState.transition_started_at;
 
       return result;
     } catch (err) {
       transitionStatus = null;
+      appendTransitionEvent(store, transitionEventLogPath, {
+        transition_id: transitionId,
+        from,
+        to,
+        status: 'failed',
+        timestamp: new Date().toISOString(),
+        reason: (err as Error).message,
+      });
       // Fire onError hooks
       for (const hook of resolvedHooks.onError) {
         try {
@@ -448,6 +546,8 @@ function createEngine(options: Record<string, unknown>) {
         }
       }
       throw err;
+    } finally {
+      leaseManager.release(transitionLeaseOwnerId, lease.token);
     }
   }
 
@@ -499,6 +599,8 @@ function createEngine(options: Record<string, unknown>) {
       serialized: machine.serialize(),
       templateName: template ? template.name : null,
       transitionStatus: transitionStatus,
+      transitionLeaseOwnerId,
+      transitionEventLogPath,
       governanceMode: governanceConfig.governance_mode,
       identity: resolvedIdentity,
       projectContext,

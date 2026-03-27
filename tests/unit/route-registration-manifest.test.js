@@ -40,6 +40,28 @@ describe('route registration manifest (C3.1)', () => {
     }
   });
 
+  it('registerRoutesFromManifest executes registrars in manifest order', async () => {
+    const mod = await loadManifestModule();
+    const calls = [];
+    const manifest = [
+      {
+        id: 'a',
+        register: async () => {
+          calls.push('a');
+        },
+      },
+      {
+        id: 'b',
+        register: async () => {
+          calls.push('b');
+        },
+      },
+    ];
+
+    await mod.registerRoutesFromManifest({}, {}, manifest);
+    expect(calls).toEqual(['a', 'b']);
+  });
+
   it('manifest module stays in routes bounded context', async () => {
     const modPath = path.resolve(__dirname, '../../src/webapp/routes/manifest.ts');
     expect(modPath.includes(path.normalize('src/webapp/routes'))).toBe(true);

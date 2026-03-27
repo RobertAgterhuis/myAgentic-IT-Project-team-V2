@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0.0",
-  "generatedAt": "2026-03-25T20:38:41.941Z",
+  "generatedAt": "2026-03-27T07:38:41.746Z",
   "source": "platform/schema/agents.json + platform/schema/flows.json",
   "fullFlow": [
     "IDLE",

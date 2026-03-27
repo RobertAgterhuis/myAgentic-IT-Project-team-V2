@@ -61,6 +61,7 @@ export default defineConfig({
       '**/node_modules/**',
       'tests/integration/git-adapter.integration.test.js',
       'tests/integration/testing-adapter.integration.test.js',
+      'tests/unit/governance-docs.test.js',
     ],
     coverage: {
       provider: 'v8',

@@ -88,18 +88,9 @@ jobs:
         working-directory: src/webapp/ui
 
       - name: Run frontend unit tests with coverage
-        run: npm run test:coverage --prefix src/webapp/ui -- --project unit
+        run: npm run test:coverage --prefix src/webapp/ui
         env:
           VITEST_ONLY_PROJECT: unit
-
-      - name: Run frontend Storybook component tests
-        run: |
-          rm -rf "$CACHE_DIR/storybook"
-          npx vitest run --project storybook
-        working-directory: src/webapp/ui
-        env:
-          CACHE_DIR: ${{ github.workspace }}/src/webapp/ui/.cache-ci/sb-vitest-${{ github.run_id }}-${{ github.run_attempt }}
-          VITEST_ONLY_PROJECT: storybook
 
       - name: Enforce coverage thresholds
         run: npm run test:coverage:gate

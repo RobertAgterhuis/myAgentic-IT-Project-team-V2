@@ -19,7 +19,12 @@ import {
   HEALTH_STATUS,
   type HealthCheck,
 } from './tool-adapter.js';
-import { shellExec, isBinaryAvailable, type ShellResult } from './shell-executor.js';
+import {
+  shellExec,
+  isBinaryAvailable,
+  type ShellResult,
+  withToolGuardrails,
+} from './shell-executor.js';
 
 export interface CloudConfig {
   [key: string]: unknown;
@@ -54,7 +59,7 @@ export class CloudAdapter extends BaseAdapter {
       if (!artifact) throw new Error('artifact is required');
 
       if (config.provider === 'azure') {
-        return await this._azureDeploy(appName || artifact, environment, artifact, timeout);
+        return await this._azureDeploy(appName || artifact, environment, artifact, timeout, params);
       }
       throw new Error(`Provider '${config.provider}' deploy not yet implemented`);
     });
@@ -66,7 +71,7 @@ export class CloudAdapter extends BaseAdapter {
       if (!environment) throw new Error('environment is required');
 
       if (config.provider === 'azure') {
-        return await this._azureStatus(appName || environment, timeout);
+        return await this._azureStatus(appName || environment, timeout, params);
       }
       throw new Error(`Provider '${config.provider}' status not yet implemented`);
     });
@@ -74,7 +79,7 @@ export class CloudAdapter extends BaseAdapter {
     // ── list-environments ────────────────────────────────
     this._operations.set('list-environments', async () => {
       if (config.provider === 'azure') {
-        return await this._azureListSlots(timeout);
+        return await this._azureListSlots(timeout, {});
       }
       throw new Error(`Provider '${config.provider}' list not yet implemented`);
     });
@@ -87,7 +92,7 @@ export class CloudAdapter extends BaseAdapter {
       if (!environment) throw new Error('environment is required');
 
       if (config.provider === 'azure') {
-        return await this._azureRollback(appName || environment, version, timeout);
+        return await this._azureRollback(appName || environment, version, timeout, params);
       }
       throw new Error(`Provider '${config.provider}' rollback not yet implemented`);
     });
@@ -103,7 +108,13 @@ export class CloudAdapter extends BaseAdapter {
     return process.platform === 'win32' ? 'az.cmd' : 'az';
   }
 
-  private async _azureDeploy(appName: string, slot: string, artifact: string, timeout: number) {
+  private async _azureDeploy(
+    appName: string,
+    slot: string,
+    artifact: string,
+    timeout: number,
+    params: Record<string, unknown>
+  ) {
     const az = this._azBin();
     const rg = this._rg();
     if (!rg) throw new Error('resource_group is required for Azure deployments');
@@ -125,7 +136,7 @@ export class CloudAdapter extends BaseAdapter {
       args.push('--slot', slot);
     }
 
-    const result = await this._exec(az, args, { timeout });
+    const result = await this._exec(az, args, withToolGuardrails({ timeout }, params));
     if (result.exitCode !== 0) throw new Error(result.stderr || 'az deployment failed');
 
     let response: unknown = {};
@@ -137,7 +148,7 @@ export class CloudAdapter extends BaseAdapter {
     return { app_name: appName, slot, artifact, deployed: true, response };
   }
 
-  private async _azureStatus(appName: string, timeout: number) {
+  private async _azureStatus(appName: string, timeout: number, params: Record<string, unknown>) {
     const az = this._azBin();
     const rg = this._rg();
     if (!rg) throw new Error('resource_group is required');
@@ -145,7 +156,7 @@ export class CloudAdapter extends BaseAdapter {
     const result = await this._exec(
       az,
       ['webapp', 'show', '--resource-group', rg, '--name', appName, '--output', 'json'],
-      { timeout: Math.min(timeout, 30_000) }
+      withToolGuardrails({ timeout: Math.min(timeout, 30_000) }, params)
     );
     if (result.exitCode !== 0) throw new Error(result.stderr || 'az webapp show failed');
 
@@ -158,7 +169,7 @@ export class CloudAdapter extends BaseAdapter {
     return { app_name: appName, status };
   }
 
-  private async _azureListSlots(timeout: number) {
+  private async _azureListSlots(timeout: number, params: Record<string, unknown>) {
     const az = this._azBin();
     const rg = this._rg();
     if (!rg) return { environments: [], note: 'resource_group not configured' };
@@ -166,7 +177,7 @@ export class CloudAdapter extends BaseAdapter {
     const result = await this._exec(
       az,
       ['webapp', 'list', '--resource-group', rg, '--output', 'json'],
-      { timeout: Math.min(timeout, 30_000) }
+      withToolGuardrails({ timeout: Math.min(timeout, 30_000) }, params)
     );
     if (result.exitCode !== 0) throw new Error(result.stderr || 'az webapp list failed');
 
@@ -180,7 +191,12 @@ export class CloudAdapter extends BaseAdapter {
     return { environments: apps };
   }
 
-  private async _azureRollback(appName: string, version: string | undefined, timeout: number) {
+  private async _azureRollback(
+    appName: string,
+    version: string | undefined,
+    timeout: number,
+    params: Record<string, unknown>
+  ) {
     const az = this._azBin();
     const rg = this._rg();
     if (!rg) throw new Error('resource_group is required for rollback');
@@ -201,7 +217,7 @@ export class CloudAdapter extends BaseAdapter {
       'production',
     ];
 
-    const result = await this._exec(az, args, { timeout });
+    const result = await this._exec(az, args, withToolGuardrails({ timeout }, params));
     if (result.exitCode !== 0) throw new Error(result.stderr || 'az slot swap failed');
     return { app_name: appName, rolled_back: true, version: version || 'previous-slot' };
   }

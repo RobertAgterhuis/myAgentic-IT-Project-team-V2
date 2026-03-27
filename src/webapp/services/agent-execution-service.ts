@@ -23,6 +23,11 @@ import {
   SESSION_STORE,
   REDIS_URL,
   TRUST_PROXY,
+  AGENT_TOOL_ISOLATION_LEVEL,
+  TOOL_EXEC_MAX_TIMEOUT_MS,
+  TOOL_EXEC_MAX_OUTPUT_BYTES,
+  TOOL_EXEC_MAX_MEMORY_MB,
+  TOOL_EXEC_REQUIRE_WORKSPACE_CWD,
   resolvePredecessorContractContinuityMode,
 } from '../config';
 import { GitBackendRouter } from './git/git-backend-router';
@@ -164,6 +169,11 @@ function resolvePredecessorContinuityMode():
       apiKey: process.env.API_KEY,
     }),
     trustProxy: TRUST_PROXY,
+    toolIsolationLevel: AGENT_TOOL_ISOLATION_LEVEL,
+    toolExecMaxTimeoutMs: TOOL_EXEC_MAX_TIMEOUT_MS,
+    toolExecMaxOutputBytes: TOOL_EXEC_MAX_OUTPUT_BYTES,
+    toolExecMaxMemoryMb: TOOL_EXEC_MAX_MEMORY_MB,
+    toolExecRequireWorkspaceCwd: TOOL_EXEC_REQUIRE_WORKSPACE_CWD,
   }).profile;
 
   return resolvePredecessorContractContinuityMode(runtimeProfile).mode;
@@ -182,6 +192,11 @@ function resolveRuntimeProfile() {
       apiKey: process.env.API_KEY,
     }),
     trustProxy: TRUST_PROXY,
+    toolIsolationLevel: AGENT_TOOL_ISOLATION_LEVEL,
+    toolExecMaxTimeoutMs: TOOL_EXEC_MAX_TIMEOUT_MS,
+    toolExecMaxOutputBytes: TOOL_EXEC_MAX_OUTPUT_BYTES,
+    toolExecMaxMemoryMb: TOOL_EXEC_MAX_MEMORY_MB,
+    toolExecRequireWorkspaceCwd: TOOL_EXEC_REQUIRE_WORKSPACE_CWD,
   });
 
   return validation.profile;

@@ -16,7 +16,7 @@ import {
   HEALTH_STATUS,
   type HealthCheck,
 } from './tool-adapter.js';
-import { shellExec, isBinaryAvailable } from './shell-executor.js';
+import { shellExec, isBinaryAvailable, withToolGuardrails } from './shell-executor.js';
 
 export interface TestingConfig {
   [key: string]: unknown;
@@ -97,7 +97,11 @@ export class TestingAdapter extends BaseAdapter {
           ? ['vitest', 'run', '--reporter=verbose', ...(pattern ? [pattern] : [])]
           : ['jest', '--verbose', ...(pattern ? [pattern] : [])];
 
-      const result = await shellExec('npx', args, { cwd: projectRoot, timeout });
+      const result = await shellExec(
+        'npx',
+        args,
+        withToolGuardrails({ cwd: projectRoot, timeout }, params)
+      );
       const summary = parseVitestOutput(result.stdout, result.stderr);
 
       return {
@@ -117,7 +121,11 @@ export class TestingAdapter extends BaseAdapter {
           ? ['vitest', 'run', '--reporter=verbose', pattern]
           : ['jest', '--verbose', pattern];
 
-      const result = await shellExec('npx', args, { cwd: projectRoot, timeout });
+      const result = await shellExec(
+        'npx',
+        args,
+        withToolGuardrails({ cwd: projectRoot, timeout }, params)
+      );
       const summary = parseVitestOutput(result.stdout, result.stderr);
 
       return {
@@ -137,7 +145,11 @@ export class TestingAdapter extends BaseAdapter {
           ? ['playwright', 'test', ...(pattern ? [pattern] : [])]
           : ['vitest', 'run', 'tests/e2e', ...(pattern ? [pattern] : [])];
 
-      const result = await shellExec('npx', args, { cwd: projectRoot, timeout: timeout * 2 });
+      const result = await shellExec(
+        'npx',
+        args,
+        withToolGuardrails({ cwd: projectRoot, timeout: timeout * 2 }, params)
+      );
       const summary = parseVitestOutput(result.stdout, result.stderr);
 
       return {
@@ -150,13 +162,17 @@ export class TestingAdapter extends BaseAdapter {
       };
     });
 
-    this._operations.set('get-coverage', async () => {
+    this._operations.set('get-coverage', async (params) => {
       const args =
         framework === 'vitest'
           ? ['vitest', 'run', '--coverage', '--reporter=verbose']
           : ['jest', '--coverage', '--verbose'];
 
-      const result = await shellExec('npx', args, { cwd: projectRoot, timeout });
+      const result = await shellExec(
+        'npx',
+        args,
+        withToolGuardrails({ cwd: projectRoot, timeout }, params)
+      );
 
       // Try to extract coverage summary from output
       const stmtMatch = result.stdout.match(/Statements\s*:\s*([\d.]+)%/);

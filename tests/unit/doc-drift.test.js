@@ -149,6 +149,7 @@ describe('doc-drift: positioning language', () => {
       'not mean',
       'post-ga',
       'fully autonomous',
+      'autonomous-lane-traces',
     ];
     for (const file of publicDocs) {
       const lines = readLines(file);

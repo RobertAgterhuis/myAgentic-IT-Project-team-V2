@@ -14,6 +14,7 @@ describe('TestingAdapter', () => {
     vi.doMock('../../platform/sdlc/adapters/shell-executor.js', () => ({
       shellExec: shellExecMock,
       isBinaryAvailable: isBinaryAvailableMock,
+      withToolGuardrails: (options) => options,
     }));
 
     ({ TestingAdapter } = await import('../../platform/sdlc/adapters/testing-adapter.ts'));

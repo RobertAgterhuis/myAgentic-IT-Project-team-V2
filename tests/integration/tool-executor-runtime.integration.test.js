@@ -65,7 +65,16 @@ afterEach(async () => {
 });
 
 describe('ProviderBackedLlmRuntimeAdapter tool execution integration', () => {
+  const originalIsolation = process.env.AGENT_TOOL_ISOLATION_LEVEL;
+
+  afterEach(() => {
+    if (originalIsolation === undefined) delete process.env.AGENT_TOOL_ISOLATION_LEVEL;
+    else process.env.AGENT_TOOL_ISOLATION_LEVEL = originalIsolation;
+  });
+
   it('allows read-only canonical tools for viewer role and emits audit hashes', async () => {
+    process.env.AGENT_TOOL_ISOLATION_LEVEL = 'restricted';
+
     const contractPath = await writeContractFixture(
       'tool-integration-contract.md',
       [
@@ -167,6 +176,8 @@ describe('ProviderBackedLlmRuntimeAdapter tool execution integration', () => {
   });
 
   it('denies mutating canonical tools for non-admin roles in production profiles', async () => {
+    process.env.AGENT_TOOL_ISOLATION_LEVEL = 'restricted';
+
     const contractPath = await writeContractFixture(
       'tool-integration-deny-contract.md',
       ['# Contract', '', '```markdown', '## Metadata', '## HANDOFF CHECKLIST', '```'].join('\n')
@@ -219,6 +230,125 @@ describe('ProviderBackedLlmRuntimeAdapter tool execution integration', () => {
         sessionState: { mode: 'AUDIT' },
       })
     ).rejects.toThrow(/TOOL_UNAUTHORIZED/);
+
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('blocks production tool execution when isolation level is unsafe', async () => {
+    process.env.AGENT_TOOL_ISOLATION_LEVEL = 'process';
+
+    const contractPath = await writeContractFixture(
+      'tool-integration-isolation-contract.md',
+      ['# Contract', '', '```markdown', '## Metadata', '## HANDOFF CHECKLIST', '```'].join('\n')
+    );
+    const skillPath = await writeSkillFixture('tool-integration-isolation-skill.md', contractPath);
+
+    const complete = vi.fn().mockResolvedValue({
+      content: '',
+      model: 'gpt-test',
+      usage: { promptTokens: 8, completionTokens: 2, totalTokens: 10 },
+      finishReason: 'tool_calls',
+      toolCalls: [
+        {
+          id: 'tc-iso-1',
+          name: 'tool.test.run',
+          arguments: {
+            target: 'testing',
+            operation: 'run-unit',
+            params: { pattern: 'tests/unit/example.test.js' },
+          },
+        },
+      ],
+    });
+
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const execute = vi.fn();
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-tools-isolation',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      toolExecutor: { execute },
+      validationMaxRetries: 0,
+    });
+
+    await expect(
+      adapter.invoke(AGENT, PLATFORM, {
+        skillFile: skillPath,
+        predecessorOutputs: {},
+        questionnaireInput: null,
+        role: 'admin',
+        profile: 'production-distributed',
+        sessionState: { mode: 'AUDIT' },
+      })
+    ).rejects.toThrow(/TOOL_ISOLATION_UNSAFE/);
+
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('blocks tool execution when requested timeout exceeds guardrail', async () => {
+    process.env.AGENT_TOOL_ISOLATION_LEVEL = 'restricted';
+
+    const contractPath = await writeContractFixture(
+      'tool-integration-timeout-contract.md',
+      ['# Contract', '', '```markdown', '## Metadata', '## HANDOFF CHECKLIST', '```'].join('\n')
+    );
+    const skillPath = await writeSkillFixture('tool-integration-timeout-skill.md', contractPath);
+
+    const complete = vi.fn().mockResolvedValue({
+      content: '',
+      model: 'gpt-test',
+      usage: { promptTokens: 8, completionTokens: 2, totalTokens: 10 },
+      finishReason: 'tool_calls',
+      toolCalls: [
+        {
+          id: 'tc-timeout-1',
+          name: 'tool.test.run',
+          arguments: {
+            target: 'testing',
+            operation: 'run-unit',
+            timeout: 999999,
+            params: { pattern: 'tests/unit/example.test.js' },
+          },
+        },
+      ],
+    });
+
+    const providerRegistry = {
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const execute = vi.fn();
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-tools-timeout',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      toolExecutor: { execute },
+      validationMaxRetries: 0,
+    });
+
+    await expect(
+      adapter.invoke(AGENT, PLATFORM, {
+        skillFile: skillPath,
+        predecessorOutputs: {},
+        questionnaireInput: null,
+        role: 'admin',
+        profile: 'production-distributed',
+        sessionState: { mode: 'AUDIT' },
+      })
+    ).rejects.toThrow(/TOOL_GUARDRAIL_TIMEOUT/);
 
     expect(execute).not.toHaveBeenCalled();
   });

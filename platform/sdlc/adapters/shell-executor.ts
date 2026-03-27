@@ -45,12 +45,76 @@ export interface ShellOptions {
   env?: Record<string, string>;
   /** Maximum stdout+stderr buffer size in bytes (default: 10MB) */
   maxBuffer?: number;
+  /** Optional tool-execution guardrails applied by middleware. */
+  guardrails?: ToolShellGuardrails;
+}
+
+export interface ToolShellGuardrails {
+  isolationLevel?: 'none' | 'process' | 'restricted';
+  maxTimeoutMs?: number;
+  maxOutputBytes?: number;
+  maxMemoryMb?: number;
+  workspaceRoot?: string;
+  requireWorkspaceCwd?: boolean;
 }
 
 // ─── Constants ──────────────────────────────────────────────
 
 const DEFAULT_TIMEOUT = 30_000;
 const DEFAULT_MAX_BUFFER = 10 * 1024 * 1024; // 10 MB
+
+function isPathWithin(childPath: string, parentPath: string): boolean {
+  const resolvedChild = resolve(childPath);
+  const resolvedParent = resolve(parentPath);
+  return (
+    resolvedChild === resolvedParent ||
+    resolvedChild.startsWith(`${resolvedParent}${process.platform === 'win32' ? '\\' : '/'}`)
+  );
+}
+
+function applyMemoryGuardrail(
+  bin: string,
+  env: NodeJS.ProcessEnv,
+  guardrails?: ToolShellGuardrails
+): NodeJS.ProcessEnv {
+  const limitMb = guardrails?.maxMemoryMb;
+  if (!limitMb || limitMb <= 0) return env;
+
+  const lowerBin = bin.toLowerCase();
+  const isNodeLike =
+    lowerBin === 'node' ||
+    lowerBin === 'node.exe' ||
+    lowerBin === 'npx' ||
+    lowerBin === 'npx.cmd' ||
+    lowerBin === 'npm' ||
+    lowerBin === 'npm.cmd' ||
+    lowerBin === 'tsx' ||
+    lowerBin === 'tsx.cmd';
+
+  if (!isNodeLike) return env;
+
+  const option = `--max-old-space-size=${Math.floor(limitMb)}`;
+  const existing = env.NODE_OPTIONS || '';
+  if (existing.includes('--max-old-space-size=')) return env;
+  return {
+    ...env,
+    NODE_OPTIONS: existing ? `${existing} ${option}` : option,
+  };
+}
+
+export function withToolGuardrails(
+  baseOptions: ShellOptions,
+  params?: Record<string, unknown>
+): ShellOptions {
+  const guardrails = params?.__toolGuardrails;
+  if (!guardrails || typeof guardrails !== 'object' || Array.isArray(guardrails)) {
+    return baseOptions;
+  }
+  return {
+    ...baseOptions,
+    guardrails: guardrails as ToolShellGuardrails,
+  };
+}
 
 // ─── Shell Executor ─────────────────────────────────────────
 
@@ -68,8 +132,14 @@ export function shellExec(
   options: ShellOptions = {}
 ): Promise<ShellResult> {
   const cwd = options.cwd ? resolve(options.cwd) : process.cwd();
-  const timeout = options.timeout ?? DEFAULT_TIMEOUT;
-  const maxBuffer = options.maxBuffer ?? DEFAULT_MAX_BUFFER;
+  const timeout = Math.min(
+    options.timeout ?? DEFAULT_TIMEOUT,
+    options.guardrails?.maxTimeoutMs ?? Number.MAX_SAFE_INTEGER
+  );
+  const maxBuffer = Math.min(
+    options.maxBuffer ?? DEFAULT_MAX_BUFFER,
+    options.guardrails?.maxOutputBytes ?? Number.MAX_SAFE_INTEGER
+  );
 
   if (!existsSync(cwd)) {
     return Promise.resolve({
@@ -82,11 +152,33 @@ export function shellExec(
     });
   }
 
+  if (
+    options.guardrails?.requireWorkspaceCwd &&
+    (!options.cwd ||
+      !options.guardrails.workspaceRoot ||
+      !isPathWithin(cwd, options.guardrails.workspaceRoot))
+  ) {
+    return Promise.resolve({
+      exitCode: 1,
+      stdout: '',
+      stderr: `Workspace-bound execution rejected for cwd: ${cwd}`,
+      duration_ms: 0,
+      command: `${bin} ${args.join(' ')}`,
+      timedOut: false,
+    });
+  }
+
+  const env = applyMemoryGuardrail(
+    bin,
+    options.env ? { ...process.env, ...options.env } : { ...process.env },
+    options.guardrails
+  );
+
   const execOpts: ExecFileOptions = {
     cwd,
     timeout: timeout || undefined,
     maxBuffer,
-    env: options.env ? { ...process.env, ...options.env } : process.env,
+    env,
     windowsHide: true,
   };
 

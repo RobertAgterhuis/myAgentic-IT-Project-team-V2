@@ -18,7 +18,12 @@ import {
   HEALTH_STATUS,
   type HealthCheck,
 } from './tool-adapter.js';
-import { shellExec, isBinaryAvailable } from './shell-executor.js';
+import {
+  shellExec,
+  isBinaryAvailable,
+  withToolGuardrails,
+  type ShellOptions,
+} from './shell-executor.js';
 
 export interface SecurityConfig {
   [key: string]: unknown;
@@ -63,7 +68,7 @@ interface ShellExecLike {
   (
     bin: string,
     args: string[],
-    options?: { cwd?: string; timeout?: number }
+    options?: ShellOptions
   ): Promise<{
     exitCode: number;
     stdout: string;
@@ -231,7 +236,7 @@ export async function runSastScan(
   const result = await exec(
     eslintBin,
     ['eslint', '--format', 'json', '--no-error-on-unmatched-pattern', targetPath],
-    { timeout: 120_000, cwd: params.cwd as string }
+    withToolGuardrails({ timeout: 120_000, cwd: params.cwd as string }, params)
   );
 
   const findings = parseEslintFindings(result.stdout);
@@ -250,8 +255,7 @@ export async function runDependencyAudit(
 ): Promise<{ vulnerabilities: AuditVulnerability[]; summary: AuditSummary; exit_code: number }> {
   const npmBin = platform === 'win32' ? 'npm.cmd' : 'npm';
   const result = await exec(npmBin, ['audit', '--json'], {
-    timeout: 60_000,
-    cwd: params.cwd as string,
+    ...withToolGuardrails({ timeout: 60_000, cwd: params.cwd as string }, params),
   });
 
   const { vulnerabilities, summary } = parseAuditOutput(result.stdout);
@@ -273,7 +277,7 @@ export async function runSecretScan(
         ? ['/S', '/N', '/R', sp.pattern.source.slice(0, 50), targetPath]
         : ['-rn', '-E', sp.pattern.source, targetPath, '--include=*.{ts,js,json,yaml,yml,env,md}'];
 
-    const result = await exec(grepBin, args, { timeout: 30_000 });
+    const result = await exec(grepBin, args, withToolGuardrails({ timeout: 30_000 }, params));
     if (result.exitCode === 0 && result.stdout.trim()) {
       allFindings.push(...parseSecretScanOutput(sp.name, result.stdout));
     }
@@ -297,8 +301,7 @@ export async function runLicenseCheck(
 }> {
   const npmBin = platform === 'win32' ? 'npx.cmd' : 'npx';
   const result = await exec(npmBin, ['license-checker', '--json', '--production'], {
-    timeout: 60_000,
-    cwd: params.cwd as string,
+    ...withToolGuardrails({ timeout: 60_000, cwd: params.cwd as string }, params),
   });
 
   const { packages, violations } = parseLicenseCheckerOutput(result.stdout);

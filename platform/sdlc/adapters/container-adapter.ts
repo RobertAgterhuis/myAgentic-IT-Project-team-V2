@@ -18,7 +18,7 @@ import {
   HEALTH_STATUS,
   type HealthCheck,
 } from './tool-adapter.js';
-import { shellExec, isBinaryAvailable } from './shell-executor.js';
+import { shellExec, isBinaryAvailable, withToolGuardrails } from './shell-executor.js';
 
 export interface ContainerConfig {
   [key: string]: unknown;
@@ -59,7 +59,7 @@ export class ContainerAdapter extends BaseAdapter {
       }
       args.push(context);
 
-      const result = await this._exec(bin, args, { timeout });
+      const result = await this._exec(bin, args, withToolGuardrails({ timeout }, params));
       if (result.exitCode !== 0) throw new Error(result.stderr || `${bin} build failed`);
       return { image, tag, context, exit_code: result.exitCode };
     });
@@ -75,13 +75,19 @@ export class ContainerAdapter extends BaseAdapter {
 
       // Tag for registry if registry_url is set
       if (registry) {
-        const tagResult = await this._exec(bin, ['tag', `${image}:${tag}`, fullRef], {
-          timeout: 30_000,
-        });
+        const tagResult = await this._exec(
+          bin,
+          ['tag', `${image}:${tag}`, fullRef],
+          withToolGuardrails({ timeout: 30_000 }, params)
+        );
         if (tagResult.exitCode !== 0) throw new Error(tagResult.stderr || 'docker tag failed');
       }
 
-      const result = await this._exec(bin, ['push', fullRef], { timeout });
+      const result = await this._exec(
+        bin,
+        ['push', fullRef],
+        withToolGuardrails({ timeout }, params)
+      );
       if (result.exitCode !== 0) throw new Error(result.stderr || `${bin} push failed`);
       return { image: fullRef, pushed: true, exit_code: result.exitCode };
     });
@@ -92,7 +98,7 @@ export class ContainerAdapter extends BaseAdapter {
       const args = ['images', '--format', '{{.Repository}}|{{.Tag}}|{{.ID}}|{{.Size}}'];
       if (filter) args.push('--filter', `reference=${filter}`);
 
-      const result = await this._exec(bin, args, { timeout: 30_000 });
+      const result = await this._exec(bin, args, withToolGuardrails({ timeout: 30_000 }, params));
       if (result.exitCode !== 0) throw new Error(result.stderr || `${bin} images failed`);
 
       const images = result.stdout
@@ -110,7 +116,11 @@ export class ContainerAdapter extends BaseAdapter {
       const image = params.image as string;
       if (!image) throw new Error('image name is required');
 
-      const result = await this._exec(bin, ['inspect', image], { timeout: 30_000 });
+      const result = await this._exec(
+        bin,
+        ['inspect', image],
+        withToolGuardrails({ timeout: 30_000 }, params)
+      );
       if (result.exitCode !== 0) throw new Error(result.stderr || `${bin} inspect failed`);
 
       let manifest: unknown = {};
@@ -130,9 +140,11 @@ export class ContainerAdapter extends BaseAdapter {
       // Try docker scout / trivy if available
       const scoutAvailable = bin === 'docker' && (await this._isAvail('docker'));
       if (scoutAvailable) {
-        const result = await this._exec(bin, ['scout', 'cves', '--format', 'json', image], {
-          timeout: 120_000,
-        });
+        const result = await this._exec(
+          bin,
+          ['scout', 'cves', '--format', 'json', image],
+          withToolGuardrails({ timeout: 120_000 }, params)
+        );
         if (result.exitCode === 0) {
           let vulnerabilities: unknown[] = [];
           try {

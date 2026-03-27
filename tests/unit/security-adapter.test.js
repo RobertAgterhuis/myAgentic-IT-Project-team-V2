@@ -29,6 +29,7 @@ describe('SecurityAdapter', () => {
     vi.doMock('../../platform/sdlc/adapters/shell-executor.js', () => ({
       shellExec: shellExecMock,
       isBinaryAvailable: isBinaryAvailableMock,
+      withToolGuardrails: (options) => options,
     }));
 
     ({

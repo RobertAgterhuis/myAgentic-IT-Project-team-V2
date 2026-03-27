@@ -12,7 +12,12 @@
  * @module runtime-profiles
  */
 
-import type { StorageProviderType, QueueProviderType, SessionStoreType } from './config';
+import type {
+  StorageProviderType,
+  QueueProviderType,
+  SessionStoreType,
+  ToolIsolationLevel,
+} from './config';
 
 /**
  * Runtime profile identifier.
@@ -57,6 +62,11 @@ export interface ProfileContract {
     required: boolean;
     description: string;
   };
+  toolIsolation: {
+    required: boolean;
+    allowedValues: ToolIsolationLevel[];
+    recommended: ToolIsolationLevel;
+  };
   startupBehavior: string;
 }
 
@@ -97,6 +107,11 @@ export const PROFILE_CONTRACTS: Record<RuntimeProfile, ProfileContract> = {
       required: false,
       description: 'Not applicable; localhost binding exempts from proxy requirements.',
     },
+    toolIsolation: {
+      required: false,
+      allowedValues: ['none', 'process', 'restricted'],
+      recommended: 'process',
+    },
     startupBehavior:
       'Tolerates missing services. Logs warnings but continues with fallback modes. No data loss risk.',
   },
@@ -133,6 +148,11 @@ export const PROFILE_CONTRACTS: Record<RuntimeProfile, ProfileContract> = {
     trustProxy: {
       required: false,
       description: 'Not applicable; CI runners typically bind to localhost.',
+    },
+    toolIsolation: {
+      required: false,
+      allowedValues: ['none', 'process', 'restricted'],
+      recommended: 'process',
     },
     startupBehavior:
       'Tolerates missing services (same as local-dev). Tests run in isolation with minimal external state.',
@@ -174,6 +194,11 @@ export const PROFILE_CONTRACTS: Record<RuntimeProfile, ProfileContract> = {
       description:
         'Required if accessed through a proxy or load balancer. Must be set to an explicit value (IP, count, or list) — never use trustProxy=true.',
     },
+    toolIsolation: {
+      required: true,
+      allowedValues: ['restricted'],
+      recommended: 'restricted',
+    },
     startupBehavior:
       'Strict fail-closed. Storage provider initialization failure exits with code 1. No fallback. All services must be reachable.',
   },
@@ -212,6 +237,11 @@ export const PROFILE_CONTRACTS: Record<RuntimeProfile, ProfileContract> = {
       required: true,
       description:
         'Required. Load balancer in front; must set TRUST_PROXY to explicit proxy config (not true).',
+    },
+    toolIsolation: {
+      required: true,
+      allowedValues: ['restricted'],
+      recommended: 'restricted',
     },
     startupBehavior:
       'Strict fail-closed. All infrastructure must be reachable: storage, Redis, auth. Any initialization failure exits with code 1.',
@@ -287,6 +317,11 @@ export function validateProfile(config: {
   redisUrl?: string;
   hasAuth: boolean;
   trustProxy: boolean | number | string | string[];
+  toolIsolationLevel: ToolIsolationLevel;
+  toolExecMaxTimeoutMs: number;
+  toolExecMaxOutputBytes: number;
+  toolExecMaxMemoryMb: number;
+  toolExecRequireWorkspaceCwd: boolean;
 }): ProfileValidationResult {
   const profile = detectProfile(config as Parameters<typeof detectProfile>[0]);
   const contract = PROFILE_CONTRACTS[profile];
@@ -354,6 +389,46 @@ export function validateProfile(config: {
   // Validate auth requirement
   if (contract.auth.required && !config.hasAuth) {
     errors.push(`Profile '${profile}' requires authentication. ${contract.auth.description}`);
+  }
+
+  if (
+    config.toolIsolationLevel &&
+    !contract.toolIsolation.allowedValues.includes(config.toolIsolationLevel)
+  ) {
+    errors.push(
+      `Profile '${profile}' does not allow AGENT_TOOL_ISOLATION_LEVEL='${config.toolIsolationLevel}'. ` +
+        `Allowed: ${contract.toolIsolation.allowedValues.join(', ')}.`
+    );
+  }
+
+  if (contract.toolIsolation.required && !config.toolIsolationLevel) {
+    errors.push(
+      `Profile '${profile}' requires AGENT_TOOL_ISOLATION_LEVEL. ` +
+        `Allowed: ${contract.toolIsolation.allowedValues.join(', ')}.`
+    );
+  }
+
+  if (profile.startsWith('production-')) {
+    if (!config.toolExecRequireWorkspaceCwd) {
+      errors.push(
+        `Profile '${profile}' requires TOOL_EXEC_REQUIRE_WORKSPACE_CWD=true so tool execution stays workspace-bound.`
+      );
+    }
+    if (!Number.isFinite(config.toolExecMaxTimeoutMs) || config.toolExecMaxTimeoutMs <= 0) {
+      errors.push(
+        `Profile '${profile}' requires TOOL_EXEC_MAX_TIMEOUT_MS to be a positive integer.`
+      );
+    }
+    if (!Number.isFinite(config.toolExecMaxOutputBytes) || config.toolExecMaxOutputBytes <= 0) {
+      errors.push(
+        `Profile '${profile}' requires TOOL_EXEC_MAX_OUTPUT_BYTES to be a positive integer.`
+      );
+    }
+    if (!Number.isFinite(config.toolExecMaxMemoryMb) || config.toolExecMaxMemoryMb <= 0) {
+      errors.push(
+        `Profile '${profile}' requires TOOL_EXEC_MAX_MEMORY_MB to be a positive integer.`
+      );
+    }
   }
 
   // Validate trustProxy requirement

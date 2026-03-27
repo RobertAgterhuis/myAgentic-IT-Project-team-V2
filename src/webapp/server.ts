@@ -53,6 +53,11 @@ import {
   REDIS_URL,
   QUEUE_PROVIDER,
   SESSION_STORE,
+  AGENT_TOOL_ISOLATION_LEVEL,
+  TOOL_EXEC_MAX_TIMEOUT_MS,
+  TOOL_EXEC_MAX_OUTPUT_BYTES,
+  TOOL_EXEC_MAX_MEMORY_MB,
+  TOOL_EXEC_REQUIRE_WORKSPACE_CWD,
   resolvePredecessorContractContinuityMode,
 } from './config';
 import { createStorageProvider } from '../../platform/engine/persistence';
@@ -446,6 +451,11 @@ function validateStartupRuntimeProfile(host: string = HOST): {
       apiKey: process.env.API_KEY,
     }),
     trustProxy: TRUST_PROXY,
+    toolIsolationLevel: AGENT_TOOL_ISOLATION_LEVEL,
+    toolExecMaxTimeoutMs: TOOL_EXEC_MAX_TIMEOUT_MS,
+    toolExecMaxOutputBytes: TOOL_EXEC_MAX_OUTPUT_BYTES,
+    toolExecMaxMemoryMb: TOOL_EXEC_MAX_MEMORY_MB,
+    toolExecRequireWorkspaceCwd: TOOL_EXEC_REQUIRE_WORKSPACE_CWD,
   });
 
   for (const warning of validation.warnings) {

@@ -21,6 +21,11 @@ const ENV_KEYS = [
   'GITHUB_CLIENT_ID',
   'GITHUB_CLIENT_SECRET',
   'TRUST_PROXY',
+  'AGENT_TOOL_ISOLATION_LEVEL',
+  'TOOL_EXEC_MAX_TIMEOUT_MS',
+  'TOOL_EXEC_MAX_OUTPUT_BYTES',
+  'TOOL_EXEC_MAX_MEMORY_MB',
+  'TOOL_EXEC_REQUIRE_WORKSPACE_CWD',
   'ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY',
 ];
 
@@ -76,6 +81,8 @@ describe('startup runtime profile validation', () => {
       GITHUB_CLIENT_ID: undefined,
       GITHUB_CLIENT_SECRET: undefined,
       TRUST_PROXY: undefined,
+      AGENT_TOOL_ISOLATION_LEVEL: 'process',
+      TOOL_EXEC_REQUIRE_WORKSPACE_CWD: 'true',
     });
 
     const { validateStartupRuntimeProfile } = loadServerModule();
@@ -91,6 +98,8 @@ describe('startup runtime profile validation', () => {
       SESSION_STORE: 'sqlite',
       API_KEY: 'abcdefghijklmnopqrstuvwxyz123456',
       TRUST_PROXY: '1',
+      AGENT_TOOL_ISOLATION_LEVEL: 'restricted',
+      TOOL_EXEC_REQUIRE_WORKSPACE_CWD: 'true',
     });
 
     const { validateStartupRuntimeProfile } = loadServerModule();
@@ -108,6 +117,8 @@ describe('startup runtime profile validation', () => {
       SESSION_STORE: 'sqlite',
       API_KEY: 'abcdefghijklmnopqrstuvwxyz123456',
       TRUST_PROXY: 'true',
+      AGENT_TOOL_ISOLATION_LEVEL: 'restricted',
+      TOOL_EXEC_REQUIRE_WORKSPACE_CWD: 'true',
     });
 
     const { validateStartupRuntimeProfile } = loadServerModule();
@@ -123,6 +134,8 @@ describe('startup runtime profile validation', () => {
       SESSION_STORE: 'sqlite',
       API_KEY: 'abcdefghijklmnopqrstuvwxyz123456',
       TRUST_PROXY: '1',
+      AGENT_TOOL_ISOLATION_LEVEL: 'restricted',
+      TOOL_EXEC_REQUIRE_WORKSPACE_CWD: 'true',
     });
 
     const { validateStartupRuntimeProfile } = loadServerModule();
@@ -138,6 +151,8 @@ describe('startup runtime profile validation', () => {
       SESSION_STORE: 'sqlite',
       API_KEY: 'abcdefghijklmnopqrstuvwxyz123456',
       TRUST_PROXY: '1',
+      AGENT_TOOL_ISOLATION_LEVEL: 'restricted',
+      TOOL_EXEC_REQUIRE_WORKSPACE_CWD: 'true',
       ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY: undefined,
     });
 
@@ -149,5 +164,24 @@ describe('startup runtime profile validation', () => {
       mode: true,
       source: 'profile-default',
     });
+  });
+
+  it('rejects production profile when tool isolation is unsafe', () => {
+    setEnv({
+      NODE_ENV: 'production',
+      HOST: '0.0.0.0',
+      STORAGE_PROVIDER: 'sqlite',
+      QUEUE_PROVIDER: 'persistent',
+      SESSION_STORE: 'sqlite',
+      API_KEY: 'abcdefghijklmnopqrstuvwxyz123456',
+      TRUST_PROXY: '1',
+      AGENT_TOOL_ISOLATION_LEVEL: 'process',
+      TOOL_EXEC_REQUIRE_WORKSPACE_CWD: 'true',
+    });
+
+    const { validateStartupRuntimeProfile } = loadServerModule();
+    expect(() => validateStartupRuntimeProfile()).toThrow(
+      /RUNTIME_PROFILE_INVALID|AGENT_TOOL_ISOLATION_LEVEL/
+    );
   });
 });

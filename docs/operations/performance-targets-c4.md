@@ -9,6 +9,8 @@ description: SLOs and baseline workflow for orchestration, SSE, and tool executi
 
 This document defines the initial SLO targets and baseline workflow for Epic E-C4.
 
+It also defines the M0.3 autonomy-readiness benchmark evidence used by CI.
+
 ## Scope
 
 The targets cover three runtime areas:
@@ -16,6 +18,7 @@ The targets cover three runtime areas:
 1. Orchestration stage latency and failure rate
 2. SSE/API response latency and error rate
 3. Per-tool execution latency and failure rate
+4. Mode-level autonomy readiness for CREATE, AUDIT, and FEATURE workloads
 
 ## SLO Targets
 
@@ -51,6 +54,17 @@ Measured from time-series metric series `tool_execution_duration_ms` grouped by 
 | p95 tool latency  | <= 2500 ms |
 | p99 tool latency  | <= 6000 ms |
 | tool failure rate | <= 3.0%    |
+
+### 4. Autonomy readiness workloads
+
+Measured from `BusinessDocs/metrics/autonomy-benchmark-results.json`.
+
+| Metric                  | Target                 |
+| ----------------------- | ---------------------- |
+| workload latency p50    | <= 2000 ms             |
+| workload latency p95    | <= 5000 ms             |
+| workload error rate     | <= 5.0%                |
+| required workload modes | CREATE, AUDIT, FEATURE |
 
 ## Baseline Collection
 
@@ -102,6 +116,29 @@ File:
 - `BusinessDocs/metrics/performance-baseline-c4.json`
 
 This snapshot is generated from current runtime metrics and analytics rollups.
+
+### D. Autonomy readiness benchmark suite
+
+Run:
+
+```bash
+npm run test:autonomy-benchmark
+```
+
+Result file:
+
+- `BusinessDocs/metrics/autonomy-benchmark-results.json`
+
+CI regression gate:
+
+```bash
+npm run test:autonomy-readiness-gate
+```
+
+Evidence links emitted by the gate:
+
+- `BusinessDocs/metrics/autonomy-benchmark-results.json`
+- latest `tests/load/autonomous-lane-traces/*.jsonl`
 
 ## Dashboard/API Sources
 

@@ -583,7 +583,9 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
       }
 
       try {
-        const policyService = new PolicyService(toServiceContext(ctx as Record<string, unknown>));
+        const policyService = new PolicyService(
+          toServiceContext(ctx as unknown as Record<string, unknown>)
+        );
         const packs = policyService.listPolicyPacks();
         const policyStatus: DependencyStatus = packs.count > 0 ? 'healthy' : 'degraded';
         dependencies.policy_service = {

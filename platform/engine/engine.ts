@@ -273,7 +273,7 @@ function createEngine(options: Record<string, unknown>) {
   }
 
   // Determine mode from persisted state or default to CREATE
-  const mode = (sessionState && sessionState.mode) || 'CREATE';
+  const mode = typeof sessionState.mode === 'string' ? sessionState.mode : 'CREATE';
 
   // Variable to hold the machine reference for autopersist closure
   let machine: StateMachine | null = null;

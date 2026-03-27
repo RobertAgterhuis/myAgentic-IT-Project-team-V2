@@ -88,7 +88,7 @@ jobs:
         working-directory: src/webapp/ui
 
       - name: Run frontend unit tests with coverage
-        run: npm run test:coverage --prefix src/webapp/ui -- --project unit
+        run: npm run test:coverage --prefix src/webapp/ui
         env:
           VITEST_ONLY_PROJECT: unit
 

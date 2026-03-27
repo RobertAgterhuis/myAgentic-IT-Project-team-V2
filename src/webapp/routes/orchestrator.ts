@@ -27,7 +27,12 @@ import { listTemplates, seedDecisions } from '../../../platform/engine/template-
 import { errorResponse } from '../utils/errors';
 import { structuredLog } from '../middleware';
 import { sessionTracker } from '../session-tracker';
-import { GovernanceService, ServiceNotAvailableError, toServiceContext } from '../services';
+import {
+  GovernanceService,
+  PolicyService,
+  ServiceNotAvailableError,
+  toServiceContext,
+} from '../services';
 import * as RS from '../route-schemas';
 import {
   HOST,
@@ -62,6 +67,29 @@ type HumanOverrideEvent = {
   mode: string;
   phases?: string[];
 };
+
+type DependencyStatus = 'healthy' | 'degraded' | 'unavailable';
+
+type DependencyHealth = {
+  status: DependencyStatus;
+  detail: string;
+  checked_at: string;
+  metadata?: Record<string, unknown>;
+};
+
+type ControlPlaneAlertSeverity = 'warning' | 'critical';
+
+type ControlPlaneAlert = {
+  code: string;
+  severity: ControlPlaneAlertSeverity;
+  message: string;
+};
+
+const CONTROL_PLANE_SLO_TARGETS = {
+  maxUnavailableDependencies: 0,
+  maxDegradedDependencies: 0,
+  maxProbeLatencyMs: 500,
+} as const;
 
 const PARALLEL_SESSION_STATES = new Set(['PHASE_1']);
 
@@ -270,6 +298,50 @@ function readHumanOverrideEvents(filePath: string): HumanOverrideEvent[] {
   }
 }
 
+function toOverallDependencyStatus(statuses: DependencyStatus[]): DependencyStatus {
+  if (statuses.some((status) => status === 'unavailable')) {
+    return 'unavailable';
+  }
+  if (statuses.some((status) => status === 'degraded')) {
+    return 'degraded';
+  }
+  return 'healthy';
+}
+
+function buildControlPlaneAlerts(
+  unavailableDependencies: number,
+  degradedDependencies: number,
+  probeLatencyMs: number
+): ControlPlaneAlert[] {
+  const alerts: ControlPlaneAlert[] = [];
+
+  if (unavailableDependencies > CONTROL_PLANE_SLO_TARGETS.maxUnavailableDependencies) {
+    alerts.push({
+      code: 'CP_UNAVAILABLE_DEPENDENCIES_BREACH',
+      severity: 'critical',
+      message: `Unavailable dependencies: ${unavailableDependencies} (target <= ${CONTROL_PLANE_SLO_TARGETS.maxUnavailableDependencies})`,
+    });
+  }
+
+  if (degradedDependencies > CONTROL_PLANE_SLO_TARGETS.maxDegradedDependencies) {
+    alerts.push({
+      code: 'CP_DEGRADED_DEPENDENCIES_BREACH',
+      severity: 'warning',
+      message: `Degraded dependencies: ${degradedDependencies} (target <= ${CONTROL_PLANE_SLO_TARGETS.maxDegradedDependencies})`,
+    });
+  }
+
+  if (probeLatencyMs > CONTROL_PLANE_SLO_TARGETS.maxProbeLatencyMs) {
+    alerts.push({
+      code: 'CP_PROBE_LATENCY_BREACH',
+      severity: 'warning',
+      message: `Dependency probe latency ${probeLatencyMs}ms exceeded target <= ${CONTROL_PLANE_SLO_TARGETS.maxProbeLatencyMs}ms`,
+    });
+  }
+
+  return alerts;
+}
+
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const { sseNotify } = ctx;
   const legacyCtx = ctx as unknown as Record<string, unknown>;
@@ -423,6 +495,158 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         structuredLog('error', 'orchestrator_status_error', { error: message });
         return reply.code(500).send(errorResponse('ENGINE_ERROR', message));
       }
+    }
+  );
+
+  // ── GET /api/orchestrator/dependencies/health ─────────────
+
+  app.get(
+    '/api/orchestrator/dependencies/health',
+    { schema: { tags: ['orchestrator'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      const startedAt = Date.now();
+      const checkedAt = new Date().toISOString();
+
+      const dependencies: Record<string, DependencyHealth> = {
+        state_machine: {
+          status: 'unavailable',
+          detail: 'state machine probe failed',
+          checked_at: checkedAt,
+        },
+        dispatcher: {
+          status: 'unavailable',
+          detail: 'dispatcher probe failed',
+          checked_at: checkedAt,
+        },
+        policy_service: {
+          status: 'unavailable',
+          detail: 'policy service probe failed',
+          checked_at: checkedAt,
+        },
+      };
+
+      try {
+        const engine = getEngine();
+        const status = engine.status();
+        const transitionStatus =
+          typeof status.transitionStatus === 'string' ? status.transitionStatus : null;
+
+        dependencies.state_machine = {
+          status: transitionStatus === 'IN_PROGRESS' ? 'degraded' : 'healthy',
+          detail:
+            transitionStatus === 'IN_PROGRESS'
+              ? 'transition in progress; checkpoint recovery may be active'
+              : 'state machine operational',
+          checked_at: checkedAt,
+          metadata: {
+            state: status.state,
+            mode: status.mode,
+            transition_status: transitionStatus,
+          },
+        };
+
+        const trackedAgents = getTrackedAgentsForState(status.state);
+        const isExecutionState =
+          status.state === 'ONBOARDING' ||
+          status.state.startsWith('PHASE_') ||
+          status.state.startsWith('CRITIC_') ||
+          status.state === 'SYNTHESIS' ||
+          status.state === 'SPRINT_GATE';
+        const dispatcherStatus: DependencyStatus =
+          isExecutionState && trackedAgents.length === 0 ? 'degraded' : 'healthy';
+
+        dependencies.dispatcher = {
+          status: dispatcherStatus,
+          detail:
+            dispatcherStatus === 'degraded'
+              ? 'no phase agents mapped for active execution state'
+              : 'dispatcher mappings available',
+          checked_at: checkedAt,
+          metadata: {
+            state: status.state,
+            tracked_agents: trackedAgents.map((agent) => agent.trackedId),
+          },
+        };
+      } catch (err) {
+        dependencies.state_machine = {
+          status: 'unavailable',
+          detail: 'state machine probe failed',
+          checked_at: checkedAt,
+          metadata: { error: getErrorMessage(err) },
+        };
+        dependencies.dispatcher = {
+          status: 'unavailable',
+          detail: 'dispatcher probe failed because state machine is unavailable',
+          checked_at: checkedAt,
+          metadata: { error: getErrorMessage(err) },
+        };
+      }
+
+      try {
+        const policyService = new PolicyService(toServiceContext(ctx as Record<string, unknown>));
+        const packs = policyService.listPolicyPacks();
+        const policyStatus: DependencyStatus = packs.count > 0 ? 'healthy' : 'degraded';
+        dependencies.policy_service = {
+          status: policyStatus,
+          detail:
+            policyStatus === 'healthy'
+              ? 'policy packs loaded'
+              : 'no policy packs loaded from configured context',
+          checked_at: checkedAt,
+          metadata: {
+            pack_count: packs.count,
+          },
+        };
+      } catch (err) {
+        dependencies.policy_service = {
+          status: 'unavailable',
+          detail: 'policy service probe failed',
+          checked_at: checkedAt,
+          metadata: { error: getErrorMessage(err) },
+        };
+      }
+
+      const dependencyStatuses = Object.values(dependencies).map((d) => d.status);
+      const overallStatus = toOverallDependencyStatus(dependencyStatuses);
+      const unavailableDependencies = dependencyStatuses.filter((s) => s === 'unavailable').length;
+      const degradedDependencies = dependencyStatuses.filter((s) => s === 'degraded').length;
+      const probeLatencyMs = Date.now() - startedAt;
+      const alerts = buildControlPlaneAlerts(
+        unavailableDependencies,
+        degradedDependencies,
+        probeLatencyMs
+      );
+
+      if (alerts.length > 0) {
+        const severity = alerts.some((alert) => alert.severity === 'critical') ? 'error' : 'warn';
+        structuredLog(severity, 'orchestrator_dependency_health_alert', {
+          overall_status: overallStatus,
+          unavailable_dependencies: unavailableDependencies,
+          degraded_dependencies: degradedDependencies,
+          probe_latency_ms: probeLatencyMs,
+          alerts,
+        });
+      }
+
+      return reply.status(overallStatus === 'unavailable' ? 503 : 200).send({
+        ok: true,
+        overall_status: overallStatus,
+        dependencies,
+        slos: {
+          targets: {
+            unavailable_dependencies_max: CONTROL_PLANE_SLO_TARGETS.maxUnavailableDependencies,
+            degraded_dependencies_max: CONTROL_PLANE_SLO_TARGETS.maxDegradedDependencies,
+            dependency_probe_latency_ms_max: CONTROL_PLANE_SLO_TARGETS.maxProbeLatencyMs,
+          },
+          observed: {
+            unavailable_dependencies: unavailableDependencies,
+            degraded_dependencies: degradedDependencies,
+            dependency_probe_latency_ms: probeLatencyMs,
+          },
+          alerts,
+        },
+        timestamp: checkedAt,
+      });
     }
   );
 

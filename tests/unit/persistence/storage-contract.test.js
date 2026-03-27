@@ -8,6 +8,10 @@ const path = require('path');
 const os = require('os');
 const { FileStorageProvider } = require('../../../platform/engine/persistence/file-provider');
 const { SQLiteStorageProvider } = require('../../../platform/engine/persistence/sqlite-provider');
+const {
+  RemoteStorageProvider,
+  createLoopbackRemoteTransport,
+} = require('../../../platform/engine/persistence/remote-provider');
 
 /* ── Helper: create temp directory per test run ───────────────── */
 
@@ -37,6 +41,23 @@ const providers = [
       const dir = tmpDir('sqlite');
       const dbPath = path.join(dir, 'test.db');
       const provider = new SQLiteStorageProvider({ dbPath });
+      return {
+        provider,
+        cleanup() {
+          fs.rmSync(dir, { recursive: true, force: true });
+        },
+      };
+    },
+  },
+  {
+    name: 'RemoteStorageProvider(loopback->sqlite)',
+    create() {
+      const dir = tmpDir('remote');
+      const dbPath = path.join(dir, 'remote.db');
+      const backend = new SQLiteStorageProvider({ dbPath });
+      const provider = new RemoteStorageProvider({
+        transport: createLoopbackRemoteTransport(backend),
+      });
       return {
         provider,
         cleanup() {

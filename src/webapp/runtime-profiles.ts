@@ -70,7 +70,7 @@ export const PROFILE_CONTRACTS: Record<RuntimeProfile, ProfileContract> = {
     description: 'Developer workstation with zero external dependencies. All services optional.',
     storageProvider: {
       required: false,
-      allowedValues: ['file', 'sqlite'],
+      allowedValues: ['file', 'sqlite', 'remote'],
       recommended: 'file',
     },
     queueProvider: {
@@ -107,7 +107,7 @@ export const PROFILE_CONTRACTS: Record<RuntimeProfile, ProfileContract> = {
     description: 'Automated testing environment. Deterministic, ephemeral state.',
     storageProvider: {
       required: false,
-      allowedValues: ['file', 'sqlite'],
+      allowedValues: ['file', 'sqlite', 'remote'],
       recommended: 'file',
     },
     queueProvider: {
@@ -146,7 +146,7 @@ export const PROFILE_CONTRACTS: Record<RuntimeProfile, ProfileContract> = {
       'required, startup is fail-closed.',
     storageProvider: {
       required: true,
-      allowedValues: ['sqlite'],
+      allowedValues: ['sqlite', 'remote'],
       recommended: 'sqlite',
     },
     queueProvider: {
@@ -185,8 +185,8 @@ export const PROFILE_CONTRACTS: Record<RuntimeProfile, ProfileContract> = {
       'Multi-instance production with shared state via Redis. High-availability, horizontal scale capable.',
     storageProvider: {
       required: true,
-      allowedValues: ['sqlite'],
-      recommended: 'sqlite',
+      allowedValues: ['sqlite', 'remote'],
+      recommended: 'remote',
     },
     queueProvider: {
       required: true,

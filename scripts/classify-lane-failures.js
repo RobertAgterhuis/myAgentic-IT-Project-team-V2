@@ -113,7 +113,7 @@ function extractFailures(traceContent) {
           details: entry.details,
         });
       }
-    } catch (e) {
+    } catch {
       // Skip malformed JSON lines
     }
   }

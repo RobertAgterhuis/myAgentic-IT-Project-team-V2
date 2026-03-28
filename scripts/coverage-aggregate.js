@@ -28,7 +28,7 @@ function fileExists(filePath) {
 function readCoverageJson(filePath) {
   try {
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  } catch (e) {
+  } catch {
     console.error(`[ERROR] Could not read coverage file: ${filePath}`);
     return null;
   }
@@ -120,7 +120,7 @@ if (!fileExists(ROOT_COVERAGE_FILE)) {
   console.log('  → Running root coverage...');
   try {
     execSync('npm run test:coverage', { cwd: ROOT, stdio: 'inherit' });
-  } catch (e) {
+  } catch {
     console.error('[ERROR] Root coverage failed');
     process.exit(1);
   }
@@ -137,7 +137,7 @@ if (fileExists(UI_PACKAGE_JSON)) {
         cwd: path.join(ROOT, 'src/webapp/ui'),
         stdio: 'inherit',
       });
-    } catch (e) {
+    } catch {
       console.error('[ERROR] UI coverage failed');
       process.exit(1);
     }

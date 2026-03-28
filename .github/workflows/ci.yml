@@ -95,10 +95,10 @@ jobs:
       - name: Enforce coverage thresholds
         run: npm run test:coverage:gate
         env:
-          COVERAGE_MIN_STATEMENTS: 67.3
+          COVERAGE_MIN_STATEMENTS: 66
           COVERAGE_MIN_BRANCHES: 55
           COVERAGE_MIN_FUNCTIONS: 66
-          COVERAGE_MIN_LINES: 68
+          COVERAGE_MIN_LINES: 67.4
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v5

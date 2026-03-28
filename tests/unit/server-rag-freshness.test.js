@@ -2,6 +2,8 @@
 'use strict';
 
 const fs = require('node:fs');
+const { RagIndexer } = require('../../src/webapp/services/rag/rag-indexer');
+const { RagStore } = require('../../src/webapp/services/rag/rag-store');
 
 const MODULES_TO_RESET = [
   '../../src/webapp/server',
@@ -217,6 +219,104 @@ describe('server RAG freshness configuration', () => {
       fs.existsSync = originalExistsSync;
       fs.statSync = originalStatSync;
       fs.watch = originalWatch;
+    }
+  });
+
+  it('self-heals file-backed collections with deleteFile plus indexFile', async () => {
+    const originalStatSync = fs.statSync;
+    const originalIndexFile = RagIndexer.prototype.indexFile;
+    const originalSyncDirectory = RagIndexer.prototype.syncDirectory;
+    const originalDeleteFile = RagStore.prototype.deleteFile;
+
+    const deleteFile = vi.fn();
+    const indexFile = vi.fn().mockResolvedValue({
+      filesProcessed: 1,
+      chunksInserted: 2,
+      filesSkipped: 0,
+    });
+    const syncDirectory = vi.fn().mockResolvedValue({
+      filesProcessed: 99,
+      chunksInserted: 99,
+      filesSkipped: 0,
+    });
+
+    fs.statSync = vi.fn(() => ({
+      isDirectory: () => false,
+    }));
+    RagStore.prototype.deleteFile = deleteFile;
+    RagIndexer.prototype.indexFile = indexFile;
+    RagIndexer.prototype.syncDirectory = syncDirectory;
+
+    try {
+      const { __testing } = loadServerModule();
+      const stats = await __testing.syncRagFreshnessSource(
+        'decisions',
+        'D:\\repositories\\myAgentic-IT-Project-team-V2\\BusinessDocs\\decisions.md'
+      );
+
+      expect(deleteFile).toHaveBeenCalledWith(
+        'decisions',
+        'D:\\repositories\\myAgentic-IT-Project-team-V2\\BusinessDocs\\decisions.md'
+      );
+      expect(indexFile).toHaveBeenCalledWith(
+        'decisions',
+        'D:\\repositories\\myAgentic-IT-Project-team-V2\\BusinessDocs\\decisions.md'
+      );
+      expect(syncDirectory).not.toHaveBeenCalled();
+      expect(stats.filesProcessed).toBe(1);
+    } finally {
+      fs.statSync = originalStatSync;
+      RagIndexer.prototype.indexFile = originalIndexFile;
+      RagIndexer.prototype.syncDirectory = originalSyncDirectory;
+      RagStore.prototype.deleteFile = originalDeleteFile;
+    }
+  });
+
+  it('self-heals directory-backed collections with syncDirectory', async () => {
+    const originalStatSync = fs.statSync;
+    const originalIndexFile = RagIndexer.prototype.indexFile;
+    const originalSyncDirectory = RagIndexer.prototype.syncDirectory;
+    const originalDeleteFile = RagStore.prototype.deleteFile;
+
+    const deleteFile = vi.fn();
+    const indexFile = vi.fn().mockResolvedValue({
+      filesProcessed: 1,
+      chunksInserted: 1,
+      filesSkipped: 0,
+    });
+    const syncDirectory = vi.fn().mockResolvedValue({
+      filesProcessed: 3,
+      chunksInserted: 8,
+      filesSkipped: 1,
+    });
+
+    fs.statSync = vi.fn(() => ({
+      isDirectory: () => true,
+    }));
+    RagStore.prototype.deleteFile = deleteFile;
+    RagIndexer.prototype.indexFile = indexFile;
+    RagIndexer.prototype.syncDirectory = syncDirectory;
+
+    try {
+      const { __testing } = loadServerModule();
+      const stats = await __testing.syncRagFreshnessSource(
+        'decisions',
+        'D:\\repositories\\myAgentic-IT-Project-team-V2\\BusinessDocs\\decisions'
+      );
+
+      expect(syncDirectory).toHaveBeenCalledWith(
+        'decisions',
+        'D:\\repositories\\myAgentic-IT-Project-team-V2\\BusinessDocs\\decisions',
+        { incremental: true }
+      );
+      expect(deleteFile).not.toHaveBeenCalled();
+      expect(indexFile).not.toHaveBeenCalled();
+      expect(stats.filesProcessed).toBe(3);
+    } finally {
+      fs.statSync = originalStatSync;
+      RagIndexer.prototype.indexFile = originalIndexFile;
+      RagIndexer.prototype.syncDirectory = originalSyncDirectory;
+      RagStore.prototype.deleteFile = originalDeleteFile;
     }
   });
 });

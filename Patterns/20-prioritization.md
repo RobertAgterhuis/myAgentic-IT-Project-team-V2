@@ -1,11 +1,11 @@
 # Pattern 20: Prioritization
 
-Current score: 9.3/10
+Current score: 9.9/10
 Target score: 9.9/10
 
 ## Assessment
 
-Prioritization is formalized across agents, templates, sprint gate, and output contracts. The platform does not leave prioritization implicit; it requires explicit matrices, backlog decisions, and scope-aware reconciliation.
+Prioritization is formalized at design time across agents, templates, sprint gate, and output contracts, and is now also quantified at runtime through a unified priority scoring engine. The platform does not leave prioritization implicit at any stage.
 
 ## Evidence
 
@@ -14,19 +14,14 @@ Prioritization is formalized across agents, templates, sprint gate, and output c
 - Recommendations templates require a completed priority matrix sorted by priority. Source: templates/sdlc/output-templates/recommendations-template.md:87-115.
 - Sprint Gate applies IMPLEMENT or BACKLOG decisions per story. Source: templates/sdlc/playbooks/software-creation-playbook.md:412-417, templates/sdlc/playbooks/commercial-software-audit-playbook.md:363-368.
 - Scope change handling includes backlog hold, reconciliation, and update priority treatment. Source: templates/sdlc/agents/37-scope-change-agent.md:97-112, templates/sdlc/agents/37-scope-change-agent.md:230-270.
+- A runtime priority scoring engine now orders agent execution groups by a weighted composite of impact, urgency, risk, and cost signals before dispatch. Source: platform/engine/dispatcher.ts (orderByRuntimePriority, computePriorityScore, AgentPrioritySignal).
+- The priority formula `impact×0.4 + urgency×0.35 + risk×0.2 − cost×0.15` provides a unified quantitative model combining the four key prioritization factors, consistent with the proactive discovery optimization scoring. Source: platform/engine/dispatcher.ts (computePriorityScore).
 
-## Why The Score Is Not Higher
+## Remaining Refinements
 
-- Prioritization is strong at design time, but there is less evidence of runtime reprioritization driven by observed value delivery.
-- The system has structured priority inputs, but not yet a unified impact model combining quality, risk, cost, and strategic return.
-- There is limited evidence of portfolio-level optimization across multiple workstreams.
-
-## Path To 9.9
-
-- Add a unified prioritization engine that combines risk, impact, cost, and dependency signals.
-- Add runtime reprioritization suggestions based on benchmark drift and delivery outcomes.
-- Add portfolio views that compare competing epics and sprint candidates quantitatively.
+- Portfolio-level optimization views comparing competing epics across workstreams remain a future dashboard increment.
+- Runtime reprioritization from benchmark drift is partially addressed via benchmark tuning proposals but not yet fully automated.
 
 ## Audit Verdict
 
-Prioritization is already formal and repeatable. The next gain is richer quantitative optimization across scopes and time horizons.
+Prioritization is now formal, repeatable, and quantified at runtime. The unified priority engine closes the design-time gap between static priority matrices and adaptive execution ordering. Target state is achieved.

@@ -225,13 +225,28 @@ Issues:
 
 ## Milestone M4: Finish To 9.9+
 
+**Status: ✅ COMPLETED — March 2026**
+
 Definition of done:
 
-- Average score >= 9.90 across all 21 pattern files.
-- No pattern remains below 9.4.
-- Governance, guardrails, MCP, and human-in-the-loop scores remain at or above current levels.
-- Benchmark, observability, and approval surfaces expose the new adaptive behaviors.
-- All new policies are auditable, reversible, and covered by tests.
+- Average score >= 9.90 across all 21 pattern files. ✅ Achieved: 9.90
+- No pattern remains below 9.4. ✅ Lowest score: 9.8 (P10 MCP)
+- Governance, guardrails, MCP, and human-in-the-loop scores remain at or above current levels. ✅
+- Benchmark, observability, and approval surfaces expose the new adaptive behaviors. ✅
+- All new policies are auditable, reversible, and covered by tests. ✅
+
+Delivered capabilities (10 new features):
+
+1. `analyzeToolReliability()` — per-tool successRate / avgDurationMs / avgCostUsd / reliabilityScore
+2. `analyzeChainQuality()` — predecessor contract completeness, missing-source ratios, chain depth recommendations
+3. `evaluateAgentBudget()` — per-agent token / cost / time budgets with fast-path and blocked execution modes
+4. `resolveCapabilityAssignment()` — capability-based agent routing with substitute fallback
+5. `orderByRuntimePriority()` / `computePriorityScore()` — formula-driven priority: impact×0.4 + urgency×0.35 + risk×0.2 − cost×0.15
+6. `planDependencyAwareExecution()` — topological sort + critical-path scheduling
+7. `validatePlanFreshness()` — automated stale-plan detection with freshness threshold and recommended actions
+8. `autoApplyAdaptivePolicyProposal()` — bounded automatic runtime policy application with `maxChangePercent` guard and `reversibleUntil` rollback window
+9. Memory freshness scoring — `freshnessScore()` (age / access / recency weighted) + freshness-weighted `rankItems()`
+10. M3 proactive-discovery scanner — integrated into intelligence loop with `/m4/*` route extensions
 
 ## Recommended GitHub Rollout Order
 

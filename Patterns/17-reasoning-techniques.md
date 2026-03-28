@@ -13,6 +13,7 @@ The repository now exposes explicit, reusable reasoning strategies and runtime-s
 - A verifier pass is implemented with explicit rules (VR-001 through VR-007), severity-based findings, verdict scoring, and persisted verification results. Source: platform/engine/verifier-pass.ts:19, platform/engine/verifier-pass.ts:66, platform/engine/verifier-pass.ts:226.
 - A self-revision service is implemented to evaluate revision need, produce structured revision instructions, and track applied revisions before handoff. Source: platform/engine/self-revision.ts:16, platform/engine/self-revision.ts:66, platform/engine/self-revision.ts:115.
 - The web API now exposes profile selection, verifier execution, and self-revision endpoints to operationalize these reasoning techniques at runtime. Source: src/webapp/routes/reasoning-collaboration.ts:48, src/webapp/routes/reasoning-collaboration.ts:117, src/webapp/routes/reasoning-collaboration.ts:202.
+- Chain quality analysis provides an additional reasoning quality signal: it evaluates the quality of reasoning chains by scoring predecessor contract completeness and detecting logic gaps before downstream agents consume the output. Source: platform/engine/proactive-discovery-optimization.ts (analyzeChainQuality).
 
 ## Why The Score Is Not Higher
 

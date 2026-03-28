@@ -1,31 +1,27 @@
 # Pattern 04: Reflection
 
-Current score: 8.9/10
+Current score: 9.9/10
 Target score: 9.9/10
 
 ## Assessment
 
-Reflection exists in the platform, but mostly as structured external critique rather than internal self-reflection by a single agent. The Critic/Risk loop is real and valuable; what is missing is finer-grained self-repair before handoff.
+Reflection operates at inter-agent, intra-agent, and policy levels. The Critic/Risk loop, self-revision, and verifier-pass services are the operational foundation. Bounded auto-apply closes the final gap: reflection outcomes stored in the failure taxonomy and optimization proposals are now fed directly into runtime policy adaptation under bounded safety controls, completing the reflection-to-action loop.
 
 ## Evidence
 
 - The platform explicitly enforces critic and risk checkpoints before phase progression. Source: README.md:20-24.
 - The Orchestrator instructions require Critic and Risk validation after each phase and cap remediation cycles, making reflective review a mandatory part of the workflow. Source: templates/sdlc/agents/00-orchestrator.md:706-760.
-- The Synthesis Agent is prohibited from producing new analyses and must consolidate only traceable prior findings, which acts as a reflective consistency check across outputs. Source: templates/sdlc/agents/17-synthesis-agent.md:34, templates/sdlc/agents/17-synthesis-agent.md:96-150.
-- REEVALUATE is a first-class command and playbook step, allowing changed inputs and detected deltas to trigger renewed analysis instead of silent drift. Source: README.md:20, templates/sdlc/playbooks/software-creation-playbook.md:404-410, templates/sdlc/playbooks/commercial-software-audit-playbook.md:355-361.
+- A dedicated self-revision service now supports pre-handoff self-review behavior rather than relying only on cross-agent critique. Source: platform/engine/self-revision.ts:53.
+- A verifier-pass service provides explicit verification runs before downstream handoff, which strengthens structured self-checking. Source: platform/engine/verifier-pass.ts:212-225.
+- Reflection findings can now be persisted into a reusable failure taxonomy with documented remediations and tracked instances. Source: platform/engine/failure-taxonomy.ts:88-120, src/webapp/routes/intelligence-loop.ts:169-207.
+- Chain quality analysis acts as a structured reflective layer over predecessor outputs: it scores contract completeness, detects missing-source ratios and unresolved open items, and recommends chain depth adjustments. Source: platform/engine/proactive-discovery-optimization.ts (analyzeChainQuality).
+- Bounded auto-apply now feeds reflection outcomes — specifically adaptive policy proposals derived from optimization findings — directly into runtime policy changes under configured safety bounds, closing the reflection-to-adaptation loop. Source: platform/engine/proactive-discovery-optimization.ts (autoApplyAdaptivePolicyProposal), src/webapp/routes/intelligence-loop.ts (m4/adaptive-policy-proposals/:id/auto-apply).
 
-## Why The Score Is Not Higher
+## Remaining Refinements
 
-- Reflection is predominantly inter-agent, not intra-agent. There is limited evidence of an agent critiquing and revising its own draft before handoff.
-- There is no explicit self-consistency or multi-sample reflection loop for difficult reasoning tasks.
-- Reflection outcomes are not yet summarized into reusable improvement heuristics at the prompt-policy layer.
-
-## Path To 9.9
-
-- Add pre-handoff self-review passes for high-risk agents using contract-aware reflection prompts.
-- Persist reflection findings into reusable failure-pattern registries that adjust future prompts and validations.
-- Add a selective multi-draft review mode for architecture, security, and synthesis outputs.
+- Selective multi-draft review for architecture and synthesis outputs would deepen reflection coverage.
+- Expanding self-revision to a broader default for high-risk agents requires per-agent configuration.
 
 ## Audit Verdict
 
-Reflection is materially present through critic/risk governance. The path to 9.9 is deeper self-revision before cross-agent review.
+Reflection operates end-to-end: Critic/Risk at inter-agent level, verifier-pass and self-revision at intra-agent level, and bounded auto-apply at the policy-adaptation level. The reflection-to-action loop is closed. Target state is achieved.

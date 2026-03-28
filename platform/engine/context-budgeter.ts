@@ -43,8 +43,32 @@ export interface ContextItem {
    * Scores outside [0, 1] are clamped.
    */
   relevanceScore: number;
+  /** Optional freshness score in [0, 1] used as a secondary ranking signal. */
+  freshnessScore?: number;
   /** The memory tier this item originated from (informational). */
   tier?: MemoryTier | 'predecessor' | 'questionnaire' | 'decision' | 'doc';
+}
+
+export interface AgentBudget {
+  tokenBudgetBytes: number;
+  wallTimeSeconds?: number;
+  costUsdLimit?: number;
+  consumedBytes?: number;
+  consumedCostUsd?: number;
+}
+
+export interface AgentInvocationEstimate {
+  requiredBytes: number;
+  estimatedCostUsd?: number;
+  estimatedWallTimeSeconds?: number;
+}
+
+export interface AgentBudgetEvaluation {
+  allowed: boolean;
+  executionMode: 'standard' | 'fast-path' | 'blocked';
+  remainingBytes: number;
+  remainingCostUsd: number | null;
+  reasons: string[];
 }
 
 // ─── Output types ─────────────────────────────────────────────
@@ -108,6 +132,8 @@ export interface BudgetOptions {
    * Default: "\n… [truncated]"
    */
   truncationSuffix?: string;
+  /** Weight applied to freshness score when ranking items. Default: 0.2. */
+  freshnessWeight?: number;
 }
 
 const DEFAULTS: Required<BudgetOptions> = {
@@ -115,6 +141,7 @@ const DEFAULTS: Required<BudgetOptions> = {
   maxItemBytes: 16 * 1024, // 16 KiB
   minItems: 1,
   truncationSuffix: '\n… [truncated]',
+  freshnessWeight: 0.2,
 };
 
 // ─── Rank ─────────────────────────────────────────────────────
@@ -129,8 +156,8 @@ const DEFAULTS: Required<BudgetOptions> = {
  */
 export function rankItems(items: ContextItem[]): ContextItem[] {
   return [...items].sort((a, b) => {
-    const sa = Math.max(0, Math.min(1, a.relevanceScore));
-    const sb = Math.max(0, Math.min(1, b.relevanceScore));
+    const sa = clamp01(a.relevanceScore) * 0.8 + clamp01(a.freshnessScore ?? 0) * 0.2;
+    const sb = clamp01(b.relevanceScore) * 0.8 + clamp01(b.freshnessScore ?? 0) * 0.2;
     if (sb !== sa) return sb - sa; // higher score first
     return a.key.localeCompare(b.key); // tie-break by key
   });
@@ -219,7 +246,7 @@ export function budget(items: ContextItem[], options: BudgetOptions = {}): Budge
     output.push({
       key: item.key,
       content,
-      relevanceScore: Math.max(0, Math.min(1, item.relevanceScore)),
+      relevanceScore: clamp01(item.relevanceScore),
       tier: item.tier,
       truncated: wasTruncated,
       bytes: finalBytes,
@@ -253,4 +280,59 @@ export function budget(items: ContextItem[], options: BudgetOptions = {}): Budge
  */
 export function assembleContext(result: BudgetResult): string {
   return result.items.map((item) => `### ${item.key}\n\n${item.content}`).join('\n\n---\n\n');
+}
+
+export function evaluateAgentBudget(
+  budget: AgentBudget,
+  estimate: AgentInvocationEstimate
+): AgentBudgetEvaluation {
+  const remainingBytes = Math.max(0, budget.tokenBudgetBytes - (budget.consumedBytes ?? 0));
+  const remainingCostUsd =
+    budget.costUsdLimit === undefined
+      ? null
+      : Math.max(0, budget.costUsdLimit - (budget.consumedCostUsd ?? 0));
+  const reasons: string[] = [];
+
+  if (estimate.requiredBytes > remainingBytes) {
+    reasons.push('Token budget exhausted for this invocation.');
+  }
+  if (remainingCostUsd !== null && (estimate.estimatedCostUsd ?? 0) > remainingCostUsd) {
+    reasons.push('Cost limit exceeded for this invocation.');
+  }
+  if (
+    budget.wallTimeSeconds !== undefined &&
+    estimate.estimatedWallTimeSeconds !== undefined &&
+    estimate.estimatedWallTimeSeconds > budget.wallTimeSeconds
+  ) {
+    reasons.push('Estimated wall time exceeds the configured limit.');
+  }
+
+  if (reasons.length > 0) {
+    return {
+      allowed: false,
+      executionMode: 'blocked',
+      remainingBytes,
+      remainingCostUsd,
+      reasons,
+    };
+  }
+
+  const remainingByteRatio =
+    budget.tokenBudgetBytes === 0 ? 0 : remainingBytes / budget.tokenBudgetBytes;
+  const executionMode = remainingByteRatio < 0.5 ? 'fast-path' : 'standard';
+  if (executionMode === 'fast-path') {
+    reasons.push('Remaining token budget is below 50%; use the fast-path policy.');
+  }
+
+  return {
+    allowed: true,
+    executionMode,
+    remainingBytes,
+    remainingCostUsd,
+    reasons,
+  };
+}
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
 }

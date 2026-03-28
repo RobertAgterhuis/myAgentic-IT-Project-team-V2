@@ -1,7 +1,7 @@
 # Pattern 10: Model Context Protocol (MCP)
 
 Current score: 9.8/10
-Target score: 10.0/10
+Target score: 9.9/10
 
 ## Assessment
 

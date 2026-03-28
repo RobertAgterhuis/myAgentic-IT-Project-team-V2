@@ -164,6 +164,73 @@ describe('PATTERNS M1: Close The Intelligence Loop', () => {
       expect(safeWriteCall).toHaveBeenCalled();
     });
 
+    it('should map lesson categories and explicit policy domains into recommendations', async () => {
+      const recommendations = await service.generatePolicyRecommendations([
+        {
+          id: 'LESSON-MAP-001',
+          category: 'performance',
+          narrative: 'Cache misses are increasing',
+          evidence: [],
+          confidence: 0.55,
+          applicability: { phases: ['PHASE_2'], agents: ['architect'], scope: 'targeted' },
+          recommendedPolicyChange: {
+            policyDomain: 'cache-policy',
+            changeDescription: 'Reduce cache churn',
+          },
+        },
+        {
+          id: 'LESSON-MAP-002',
+          category: 'collaboration',
+          narrative: 'Escalation behavior caused less churn',
+          evidence: [],
+          confidence: 0.9,
+          applicability: { phases: ['PHASE_3'], agents: ['orchestrator'], scope: 'targeted' },
+          recommendedPolicyChange: {
+            policyDomain: 'unknown-domain',
+            changeDescription: 'Fallback to category mapping',
+          },
+        },
+      ]);
+
+      expect(recommendations).toHaveLength(2);
+      expect(recommendations[0].policyDomain).toBe('cache-policy');
+      expect(recommendations[0].riskLevel).toBe('high');
+      expect(recommendations[1].policyDomain).toBe('escalation-behavior');
+      expect(recommendations[1].expectedImpact.estimatedMagnitude).toBe('large');
+    });
+
+    it('should summarize proposal confidence and high-risk counts', async () => {
+      const proposal = await service.createProposal(
+        [
+          {
+            id: 'LESSON-SUMMARY-001',
+            category: 'validation',
+            narrative: 'Validation noise should be reduced',
+            evidence: [],
+            confidence: 0.5,
+            applicability: { phases: ['PHASE_2'], agents: [], scope: 'universal' },
+          },
+          {
+            id: 'LESSON-SUMMARY-002',
+            category: 'routing',
+            narrative: 'Routing policy is performing well',
+            evidence: [],
+            confidence: 0.95,
+            applicability: { phases: ['PHASE_1'], agents: ['orchestrator'], scope: 'universal' },
+          },
+        ],
+        ['bench-1'],
+        ['retro-1']
+      );
+
+      expect(proposal.derivedFrom.benchmarkRunIds).toEqual(['bench-1']);
+      expect(proposal.derivedFrom.retrospectiveIds).toEqual(['retro-1']);
+      expect(proposal.summary.totalChangesProposed).toBe(2);
+      expect(proposal.summary.highRiskChanges).toBe(1);
+      expect(proposal.summary.requiresApproval).toBe(2);
+      expect(proposal.summary.confidenceScore).toBeGreaterThan(0.6);
+    });
+
     it('should apply and revert proposals with audit trails', async () => {
       const proposal = await service.createProposal([], [], []);
 
@@ -176,6 +243,36 @@ describe('PATTERNS M1: Close The Intelligence Loop', () => {
       expect(safeWriteCall).toHaveBeenCalledWith(
         expect.stringContaining('policy-application-audit'),
         expect.stringContaining('applied')
+      );
+    });
+
+    it('should reject applying proposals that are not approved', async () => {
+      const proposal = await service.createProposal([], [], []);
+
+      await expect(service.applyProposal(proposal)).rejects.toThrow(
+        'Cannot apply proposal with status: pending-review'
+      );
+    });
+
+    it('should revert persisted proposals and reject missing proposal reverts', async () => {
+      const proposal = await service.createProposal([], [], []);
+      proposal.recommendationStatus = 'approved';
+      await service.applyProposal(proposal);
+
+      await service.revertProposal(proposal.proposalId, 'rollback test');
+
+      const stored = JSON.parse(
+        vi.mocked(ctx.store.readFile).mock.results.length
+          ? ctx.store.readFile(
+              `BusinessDocs/intelligence-loop/policy-proposals/${proposal.proposalId}.json`
+            )
+          : '{}'
+      );
+      expect(stored.recommendationStatus).toBe('reverted');
+      expect(stored.reviewNotes).toContain('rollback test');
+
+      await expect(service.revertProposal('missing-proposal', 'no-op')).rejects.toThrow(
+        'Proposal not found: missing-proposal'
       );
     });
   });
@@ -392,6 +489,131 @@ describe('PATTERNS M1: Close The Intelligence Loop', () => {
       expect(summary.healthy).toBe(1);
       expect(summary.atRisk).toBe(1);
     });
+
+    it('should update objectives, link artifacts, filter views and export graph', async () => {
+      await service.addObjective({
+        id: 'OBJ-VIEWS-001',
+        name: 'Objective Views',
+        description: 'Covers graph query operations',
+        ownerAgent: 'orchestrator',
+        status: 'not-started',
+        healthScore: 4.4,
+        kpis: [],
+        linkedEpics: [],
+        linkedSprintItems: [],
+        linkedGates: [],
+        blockingDecisions: [],
+        blockerCount: 0,
+        recommendedActions: [],
+      });
+
+      const updated = await service.updateObjective('OBJ-VIEWS-001', {
+        status: 'at-risk',
+        blockerCount: 1,
+      });
+      expect(updated.status).toBe('at-risk');
+      expect(updated.lastHealthAssessment).toBeDefined();
+
+      await service.addEpic({
+        id: 'EPIC-VIEWS-001',
+        name: 'Graph Query Coverage',
+        objectiveId: 'OBJ-VIEWS-001',
+        status: 'planned',
+      });
+      await service.linkSprintItem('OBJ-VIEWS-001', 'SPRINT-001');
+      await service.linkSprintItem('OBJ-VIEWS-001', 'SPRINT-001');
+      await service.linkGate('OBJ-VIEWS-001', 'gate.critic-risk-1');
+      await service.linkGate('OBJ-VIEWS-001', 'gate.critic-risk-1');
+
+      const byStatus = await service.getObjectivesByStatus('at-risk');
+      const atRisk = await service.getAtRiskObjectives();
+      const byAgent = await service.getObjectivesByAgent('orchestrator');
+      const epics = await service.getEpicsForObjective('OBJ-VIEWS-001');
+      const exported = await service.exportGraph();
+
+      expect(byStatus.map((objective) => objective.id)).toContain('OBJ-VIEWS-001');
+      expect(atRisk.map((objective) => objective.id)).toContain('OBJ-VIEWS-001');
+      expect(byAgent.map((objective) => objective.id)).toContain('OBJ-VIEWS-001');
+      expect(epics.map((epic) => epic.id)).toContain('EPIC-VIEWS-001');
+      expect(exported.healthSummary?.totalObjectives).toBeGreaterThanOrEqual(1);
+      expect(
+        exported.objectives.find((objective) => objective.id === 'OBJ-VIEWS-001')?.linkedSprintItems
+      ).toEqual(['SPRINT-001']);
+      expect(
+        exported.objectives.find((objective) => objective.id === 'OBJ-VIEWS-001')?.linkedGates
+      ).toEqual(['gate.critic-risk-1']);
+    });
+
+    it('should throw for duplicate objectives, missing objectives and duplicate epics', async () => {
+      await service.addObjective({
+        id: 'OBJ-ERROR-001',
+        name: 'Duplicate Objective',
+        description: 'Covers graph errors',
+        ownerAgent: 'orchestrator',
+        status: 'in-progress',
+        kpis: [],
+        linkedEpics: [],
+        linkedSprintItems: [],
+        linkedGates: [],
+        blockingDecisions: [],
+        blockerCount: 0,
+        recommendedActions: [],
+      });
+
+      await expect(
+        service.addObjective({
+          id: 'OBJ-ERROR-001',
+          name: 'Duplicate Objective',
+          description: 'duplicate',
+          ownerAgent: 'orchestrator',
+          status: 'in-progress',
+          kpis: [],
+          linkedEpics: [],
+          linkedSprintItems: [],
+          linkedGates: [],
+          blockingDecisions: [],
+          blockerCount: 0,
+          recommendedActions: [],
+        })
+      ).rejects.toThrow('Objective already exists: OBJ-ERROR-001');
+
+      await expect(service.updateObjective('OBJ-MISSING', { status: 'paused' })).rejects.toThrow(
+        'Objective not found: OBJ-MISSING'
+      );
+      await expect(service.linkSprintItem('OBJ-MISSING', 'SPRINT-404')).rejects.toThrow(
+        'Objective not found: OBJ-MISSING'
+      );
+      await expect(service.linkGate('OBJ-MISSING', 'gate-missing')).rejects.toThrow(
+        'Objective not found: OBJ-MISSING'
+      );
+      await expect(service.updateKPI('OBJ-ERROR-001', 'KPI-MISSING', 1)).rejects.toThrow(
+        'KPI not found: KPI-MISSING'
+      );
+      await expect(
+        service.addEpic({
+          id: 'EPIC-MISSING-OBJECTIVE',
+          name: 'Missing Objective Epic',
+          objectiveId: 'OBJ-MISSING',
+          status: 'planned',
+        })
+      ).rejects.toThrow('Objective not found: OBJ-MISSING');
+
+      await service.addEpic({
+        id: 'EPIC-DUPLICATE',
+        name: 'Duplicate Epic',
+        objectiveId: 'OBJ-ERROR-001',
+        status: 'planned',
+      });
+
+      await expect(
+        service.addEpic({
+          id: 'EPIC-DUPLICATE',
+          name: 'Duplicate Epic',
+          objectiveId: 'OBJ-ERROR-001',
+          status: 'planned',
+        })
+      ).rejects.toThrow('Epic already exists: EPIC-DUPLICATE');
+    });
   });
 
   describe('GoalHealthScoringService', () => {
@@ -477,6 +699,142 @@ describe('PATTERNS M1: Close The Intelligence Loop', () => {
         expect(assessment.recommendedActions[0].priority).toBe('critical');
       }
     });
+
+    it('should classify at-risk objectives and emit notify or reevaluate actions', async () => {
+      const notifyObjective: Objective = {
+        id: 'OBJ-NOTIFY-001',
+        name: 'Decision Queue Warning',
+        description: 'Triggers decision warning action',
+        ownerAgent: 'orchestrator',
+        status: 'in-progress',
+        healthScore: 6,
+        kpis: [],
+        linkedEpics: [],
+        linkedSprintItems: [],
+        linkedGates: [],
+        blockingDecisions: ['DEC-1', 'DEC-2', 'DEC-3', 'DEC-4'],
+        blockerCount: 0,
+        recommendedActions: [],
+      };
+
+      const notifyAssessment = await service.assessObjectiveHealth(notifyObjective);
+      expect(notifyAssessment.overallHealth.status).toBe('at-risk');
+      expect(
+        notifyAssessment.recommendedActions.some((action) => action.actionType === 'reevaluate')
+      ).toBe(true);
+
+      const reevaluateObjective: Objective = {
+        id: 'OBJ-REEVALUATE-001',
+        name: 'At Risk Objective',
+        description: 'Triggers fallback at-risk action',
+        ownerAgent: 'orchestrator',
+        status: 'at-risk',
+        healthScore: 4.6,
+        kpis: [],
+        linkedEpics: [],
+        linkedSprintItems: [],
+        linkedGates: [],
+        blockingDecisions: [],
+        blockerCount: 5,
+        recommendedActions: [],
+      };
+
+      const reevaluateAssessment = await service.assessObjectiveHealth(reevaluateObjective);
+      expect(reevaluateAssessment.overallHealth.status).toBe('at-risk');
+      expect(
+        reevaluateAssessment.recommendedActions.some((action) => action.actionType === 'reevaluate')
+      ).toBe(true);
+    });
+
+    it('should return improving, degrading and stable trends from persisted assessments', async () => {
+      const objective: Objective = {
+        id: 'OBJ-TREND-001',
+        name: 'Trend Objective',
+        description: 'Exercise persisted trend logic',
+        ownerAgent: 'orchestrator',
+        status: 'in-progress',
+        healthScore: 7,
+        kpis: [
+          {
+            id: 'KPI-TREND-001',
+            name: 'Trend KPI',
+            metricType: 'percentage',
+            targetValue: 100,
+            currentValue: 100,
+            driftStatus: 'on-track',
+          },
+        ],
+        linkedEpics: [],
+        linkedSprintItems: [],
+        linkedGates: [],
+        blockingDecisions: [],
+        blockerCount: 0,
+        recommendedActions: [],
+      };
+
+      vi.mocked(ctx.safeWrite).mockImplementation((filePath, data) => {
+        const content = typeof data === 'string' ? data : String(data);
+        vi.mocked(ctx.store.writeFile)(filePath, content);
+      });
+
+      vi.mocked(ctx.store.writeFile).mockImplementation((filePath: string, content: string) => {
+        (ctx as unknown as { __store?: Map<string, string> }).__store ??= new Map<string, string>();
+        (ctx as unknown as { __store: Map<string, string> }).__store.set(filePath, content);
+      });
+      vi.mocked(ctx.store.exists).mockImplementation((filePath: string) =>
+        (
+          (ctx as unknown as { __store?: Map<string, string> }).__store ?? new Map<string, string>()
+        ).has(filePath)
+      );
+      vi.mocked(ctx.store.readFile).mockImplementation((filePath: string) => {
+        const value = (
+          (ctx as unknown as { __store?: Map<string, string> }).__store ?? new Map()
+        ).get(filePath);
+        if (value === undefined) {
+          throw new Error(`ENOENT: ${filePath}`);
+        }
+        return value;
+      });
+      (ctx as unknown as { __store: Map<string, string> }).__store = new Map<string, string>();
+
+      (ctx as unknown as { __store: Map<string, string> }).__store.set(
+        'BusinessDocs/intelligence-loop/goal-health-assessments.jsonl',
+        `${JSON.stringify({ objectiveId: 'OBJ-TREND-001', overallHealth: { score: 4 } })}\n${JSON.stringify({ objectiveId: 'OBJ-TREND-001', overallHealth: { score: 5 } })}\n`
+      );
+      const improving = await service.assessObjectiveHealth(objective);
+      expect(improving.overallHealth.trend).toBe('improving');
+
+      (ctx as unknown as { __store: Map<string, string> }).__store.set(
+        'BusinessDocs/intelligence-loop/goal-health-assessments.jsonl',
+        `${JSON.stringify({ objectiveId: 'OBJ-TREND-001', overallHealth: { score: 9 } })}\n${JSON.stringify({ objectiveId: 'OBJ-TREND-001', overallHealth: { score: 8.8 } })}\n`
+      );
+      const degradingService = new GoalHealthScoringService(ctx);
+      const degrading = await degradingService.assessObjectiveHealth({
+        ...objective,
+        kpis: [
+          {
+            ...objective.kpis[0],
+            currentValue: 60,
+            driftStatus: 'critical',
+          },
+        ],
+        blockerCount: 6,
+        blockingDecisions: ['A', 'B', 'C', 'D', 'E', 'F'],
+      });
+      expect(degrading.overallHealth.trend).toBe('degrading');
+
+      const latest = await degradingService.getLatestAssessment('OBJ-TREND-001');
+      expect(latest?.objectiveId).toBe('OBJ-TREND-001');
+      expect(
+        (await degradingService.getAssessmentsForObjective('OBJ-TREND-001')).length
+      ).toBeGreaterThan(0);
+
+      (ctx as unknown as { __store: Map<string, string> }).__store.set(
+        'BusinessDocs/intelligence-loop/goal-health-assessments.jsonl',
+        'not-json\n'
+      );
+      expect(await degradingService.getAssessmentsForObjective('OBJ-TREND-001')).toEqual([]);
+    });
   });
 
   describe('BenchmarkTuningService', () => {
@@ -538,6 +896,138 @@ describe('PATTERNS M1: Close The Intelligence Loop', () => {
         const reverted = allProposals.find((p) => p.id === proposalId);
         expect(reverted?.revertReason).toBe('Safety concern');
       }
+    });
+
+    it('should compare against a baseline when no previous benchmark is supplied', async () => {
+      const comparison = await service.compareBenchmarks('bench-baseline-only');
+
+      expect(comparison.previousBenchmarkId).toBe('baseline');
+      expect(comparison.metrics).toEqual([]);
+      expect(comparison.regressions).toEqual([]);
+    });
+
+    it('should detect latency, throughput and error-rate regressions from stored benchmark data', async () => {
+      vi.mocked(ctx.store.exists).mockImplementation((filePath: string) =>
+        [
+          'tests/load/bench-prev.json',
+          'tests/load/bench-current.json',
+          'tests/load/bench-throughput-prev.json',
+          'tests/load/bench-throughput-current.json',
+        ].includes(filePath)
+      );
+      vi.mocked(ctx.store.readFile).mockImplementation((filePath: string) => {
+        const fixtures: Record<string, string> = {
+          'tests/load/bench-prev.json': JSON.stringify({
+            avgLatencyMs: 100,
+            p95LatencyMs: 300,
+            throughputRequestsPerSec: 100,
+            errorRate: 0.01,
+            approvalTimeMinutes: 3,
+            cacheMissRate: 0.1,
+          }),
+          'tests/load/bench-current.json': JSON.stringify({
+            avgLatencyMs: 140,
+            p95LatencyMs: 420,
+            throughputRequestsPerSec: 80,
+            errorRate: 0.03,
+            approvalTimeMinutes: 6,
+            cacheMissRate: 0.2,
+          }),
+          'tests/load/bench-throughput-prev.json': JSON.stringify({
+            avgLatencyMs: 100,
+            p95LatencyMs: 100,
+            throughputRequestsPerSec: 100,
+            errorRate: 0.01,
+            approvalTimeMinutes: 4,
+            cacheMissRate: 0.15,
+          }),
+          'tests/load/bench-throughput-current.json': JSON.stringify({
+            avgLatencyMs: 102,
+            p95LatencyMs: 103,
+            throughputRequestsPerSec: 60,
+            errorRate: 0.011,
+            approvalTimeMinutes: 4.1,
+            cacheMissRate: 0.14,
+          }),
+        };
+        return fixtures[filePath];
+      });
+
+      const regressionComparison = await service.compareBenchmarks('bench-current', 'bench-prev');
+      expect(regressionComparison.regressions.map((regression) => regression.metricName)).toEqual(
+        expect.arrayContaining(['avgLatencyMs', 'p95LatencyMs', 'errorRate', 'approvalTimeMinutes'])
+      );
+      expect(regressionComparison.improvementsDetected).toContain('cacheMissRate');
+
+      const proposals = await service.generateTuningProposals(regressionComparison);
+      expect(proposals.some((proposal) => proposal.configurationDomain === 'concurrency')).toBe(
+        true
+      );
+      expect(
+        proposals.some((proposal) => proposal.configurationDomain === 'human-review-threshold')
+      ).toBe(true);
+
+      const throughputComparison = await service.compareBenchmarks(
+        'bench-throughput-current',
+        'bench-throughput-prev'
+      );
+      expect(
+        throughputComparison.regressions.some(
+          (regression) => regression.metricName === 'throughputRequestsPerSec'
+        )
+      ).toBe(true);
+      const throughputProposals = await service.generateTuningProposals({
+        ...throughputComparison,
+        regressions: [
+          {
+            metricName: 'throughput',
+            changePercentage: -40,
+            severity: 'critical',
+          },
+        ],
+      });
+      expect(
+        throughputProposals.some((proposal) => proposal.expectedImprovement.metric === 'throughput')
+      ).toBe(true);
+    });
+
+    it('should reject and filter proposals and handle missing proposal operations', async () => {
+      const proposals = await service.generateTuningProposals({
+        comparisonId: 'cmp-status',
+        currentBenchmarkId: 'bench-status-current',
+        previousBenchmarkId: 'bench-status-prev',
+        comparedAt: new Date().toISOString(),
+        metrics: [],
+        regressions: [
+          {
+            metricName: 'errorRate',
+            changePercentage: 25,
+            severity: 'critical',
+          },
+        ],
+        improvementsDetected: [],
+      });
+
+      expect(proposals).toHaveLength(1);
+      await service.rejectProposal(proposals[0].id, 'too risky');
+      expect(await service.getProposalsByStatus('rejected')).toHaveLength(1);
+
+      await expect(service.applyProposal('missing-proposal')).rejects.toThrow(
+        'Proposal not found: missing-proposal'
+      );
+      await expect(service.rejectProposal('missing-proposal', 'x')).rejects.toThrow(
+        'Proposal not found: missing-proposal'
+      );
+      await expect(service.revertProposal('missing-proposal', 'x')).rejects.toThrow(
+        'Proposal not found: missing-proposal'
+      );
+    });
+
+    it('should return empty proposal collections when storage is missing or malformed', async () => {
+      expect(await service.getAllProposals()).toEqual([]);
+      vi.mocked(ctx.store.exists).mockReturnValue(true);
+      vi.mocked(ctx.store.readFile).mockReturnValue('not-json');
+      expect(await service.getAllProposals()).toEqual([]);
     });
   });
 });

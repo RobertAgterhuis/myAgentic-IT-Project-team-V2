@@ -289,3 +289,50 @@ describe('SemanticMemoryStore — metrics', () => {
     expect(m.project.bytes).toBe(0);
   });
 });
+
+describe('SemanticMemoryStore — freshness and lifecycle management', () => {
+  it('increases freshness when entries are accessed recently', async () => {
+    const store = createStore();
+    const now = Date.now();
+
+    await store.write('project', 'fresh', 'value');
+    const entry = await store.read('project', 'fresh', now + 1000);
+    const score = store.freshnessScore(entry, now + 1000);
+
+    expect(score).toBeGreaterThan(0.5);
+    expect(entry.accessCount).toBe(1);
+  });
+
+  it('compacts aged run-tier entries into project summaries', async () => {
+    const store = createStore();
+    const now = Date.now();
+
+    await store.write('run', 'r1', 'first insight', { topic: 'patterns' });
+    await store.write('run', 'r2', 'second insight', { topic: 'patterns' });
+
+    const farFuture = now + 2 * 24 * 60 * 60 * 1000;
+    const result = await store.compact(farFuture, 24 * 60 * 60 * 1000);
+
+    expect(result.compactedEntries).toBe(2);
+    expect(result.projectEntriesCreated).toBe(1);
+    expect(await store.read('run', 'r1', farFuture)).toBeNull();
+    const compacted = await store.read('project', 'compacted:patterns', farFuture);
+    expect(compacted.content).toContain('first insight');
+    expect(compacted.content).toContain('second insight');
+  });
+
+  it('prunes low-freshness project entries', async () => {
+    const store = createStore();
+    const now = Date.now();
+
+    await store.write('org', 'stale', 'old note');
+    await store.write('org', 'fresh', 'recent note');
+    await store.read('org', 'fresh', now + 1000);
+
+    const farFuture = now + 40 * 24 * 60 * 60 * 1000;
+    const pruneResult = await store.prune('org', 0.2, farFuture);
+
+    expect(pruneResult.prunedEntries).toBeGreaterThanOrEqual(1);
+    expect(pruneResult.prunedKeys).toContain('stale');
+  });
+});

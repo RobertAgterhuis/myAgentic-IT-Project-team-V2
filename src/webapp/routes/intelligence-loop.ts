@@ -629,6 +629,39 @@ export async function registerIntelligenceLoopRoutes(app: FastifyInstance, ctx: 
   );
 
   /**
+   * POST /api/intelligence-loop/m4/adaptive-policy-proposals/:id/auto-apply
+   */
+  app.post<{
+    Params: { id: string };
+    Body: {
+      actor?: string;
+      baselineValues?: Record<string, number>;
+      maxChangePercent?: number;
+      reversibleWithinHours?: number;
+    };
+  }>(
+    '/api/intelligence-loop/m4/adaptive-policy-proposals/:id/auto-apply',
+    async (request, reply) => {
+      try {
+        const result = await proactiveOptimizationService.autoApplyAdaptivePolicyProposal({
+          proposalId: request.params.id,
+          actor: request.body.actor || 'operator',
+          baselineValues: request.body.baselineValues,
+          maxChangePercent: request.body.maxChangePercent,
+          reversibleWithinHours: request.body.reversibleWithinHours,
+        });
+        if (!result) {
+          return reply.status(404).send({ ok: false, error: 'Adaptive policy proposal not found' });
+        }
+        return reply.send({ ok: true, result });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(400).send({ ok: false, error: (error as Error).message });
+      }
+    }
+  );
+
+  /**
    * POST /api/intelligence-loop/m4/adaptive-policy-proposals/:id/revert
    */
   app.post<{ Params: { id: string }; Body: { actor?: string; reason: string } }>(
@@ -686,6 +719,142 @@ export async function registerIntelligenceLoopRoutes(app: FastifyInstance, ctx: 
       return reply
         .status(500)
         .send({ ok: false, error: 'Failed to compute adaptive behavior summary' });
+    }
+  });
+
+  /**
+   * GET /api/intelligence-loop/m4/pattern-scores/analysis
+
+  /**
+   * POST /api/intelligence-loop/m4/chain-quality-analysis
+   */
+  app.post<{
+    Body: {
+      predecessorContracts: Array<{
+        source: string;
+        headingCount: number;
+        hasHandoffChecklist: boolean;
+        checklist: {
+          total: number;
+          checked: number;
+          completionRatio: number;
+        } | null;
+      }>;
+      unresolvedOpenItems?: number;
+      currentChainDepth?: number;
+      maxChainDepth?: number;
+    };
+  }>('/api/intelligence-loop/m4/chain-quality-analysis', async (request, reply) => {
+    try {
+      const analysis = await proactiveOptimizationService.analyzeChainQuality(request.body);
+      return reply.send({ ok: true, analysis });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
+  /**
+   * POST /api/intelligence-loop/m4/dependency-plan
+   */
+  app.post<{
+    Body: {
+      items: Array<{
+        id: string;
+        dependencies?: string[];
+        estimatedDurationMinutes?: number;
+        impactScore?: number;
+        urgencyScore?: number;
+        riskScore?: number;
+        costScore?: number;
+        preferredAgentId?: string;
+        requiredCapability?: string;
+      }>;
+    };
+  }>('/api/intelligence-loop/m4/dependency-plan', async (request, reply) => {
+    try {
+      const result = await proactiveOptimizationService.planDependencyAwareExecution(request.body);
+      return reply.send({ ok: true, result });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
+  /**
+   * POST /api/intelligence-loop/m4/tool-reliability-analysis
+   */
+  app.post<{
+    Body: {
+      traces: Array<{
+        toolId: string;
+        success: boolean;
+        durationMs?: number;
+        planningReason?: string;
+        skippedTools?: string[];
+        escalatedTo?: string;
+        estimatedCostUsd?: number;
+      }>;
+    };
+  }>('/api/intelligence-loop/m4/tool-reliability-analysis', async (request, reply) => {
+    try {
+      const result = await proactiveOptimizationService.analyzeToolReliability(request.body);
+      return reply.send({ ok: true, result });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
+  /**
+   * POST /api/intelligence-loop/m4/plan-freshness/validate
+   */
+  app.post<{
+    Body: {
+      planId: string;
+      assumptions: Array<{
+        key: string;
+        expectedValue: string | number | boolean;
+        actualValue: string | number | boolean;
+        sourceUpdatedAt?: string;
+      }>;
+      staleAfterSeconds?: number;
+      nowIso?: string;
+    };
+  }>('/api/intelligence-loop/m4/plan-freshness/validate', async (request, reply) => {
+    try {
+      const result = await proactiveOptimizationService.validatePlanFreshness(request.body);
+      return reply.send({ ok: true, result });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
+  /**
+   * POST /api/intelligence-loop/m4/runtime-priority/plan
+   */
+  app.post<{
+    Body: {
+      items: Array<{
+        id: string;
+        dependencies?: string[];
+        estimatedDurationMinutes?: number;
+        impactScore?: number;
+        urgencyScore?: number;
+        riskScore?: number;
+        costScore?: number;
+        preferredAgentId?: string;
+        requiredCapability?: string;
+      }>;
+    };
+  }>('/api/intelligence-loop/m4/runtime-priority/plan', async (request, reply) => {
+    try {
+      const result = await proactiveOptimizationService.planDependencyAwareExecution(request.body);
+      return reply.send({ ok: true, result });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
     }
   });
 

@@ -49,8 +49,25 @@ export interface MemoryEntry {
   content: string;
   /** Unix epoch ms when this entry was last written. */
   writtenAt: number;
+  /** Unix epoch ms when this entry was last read. */
+  lastAccessedAt?: number;
+  /** Number of successful reads recorded for this entry. */
+  accessCount?: number;
   /** Optional topic tag for grouped retrieval. */
   topic?: string;
+}
+
+export interface MemoryCompactionResult {
+  compactedEntries: number;
+  projectEntriesCreated: number;
+  bytesSaved: number;
+  prunedRunKeys: string[];
+}
+
+export interface MemoryPruneResult {
+  tier: Exclude<MemoryTier, 'run'>;
+  prunedEntries: number;
+  prunedKeys: string[];
 }
 
 // ─── Storage abstraction ─────────────────────────────────────
@@ -157,6 +174,8 @@ export class SemanticMemoryStore {
       key,
       content,
       writtenAt: Date.now(),
+      lastAccessedAt: Date.now(),
+      accessCount: 0,
       ...(meta.topic ? { topic: meta.topic } : {}),
     };
     await Promise.resolve(this._storage.set(collectionFor(tier), key, entry));
@@ -179,7 +198,13 @@ export class SemanticMemoryStore {
       await Promise.resolve(this._storage.delete(collectionFor(tier), key));
       return null;
     }
-    return entry;
+    const touched: MemoryEntry = {
+      ...entry,
+      lastAccessedAt: now,
+      accessCount: (entry.accessCount || 0) + 1,
+    };
+    await Promise.resolve(this._storage.set(collectionFor(tier), key, touched));
+    return touched;
   }
 
   // ── List ─────────────────────────────────────────────────────
@@ -270,6 +295,93 @@ export class SemanticMemoryStore {
     }
 
     return result;
+  }
+
+  freshnessScore(entry: MemoryEntry, now: number = Date.now()): number {
+    const ageMs = Math.max(0, now - entry.writtenAt);
+    const freshnessWindow = 30 * 24 * 60 * 60 * 1000;
+    const ageScore = clamp01(1 - ageMs / freshnessWindow);
+    const accessScore = clamp01((entry.accessCount || 0) / 10);
+    const accessRecencyScore = entry.lastAccessedAt
+      ? clamp01(1 - Math.max(0, now - entry.lastAccessedAt) / freshnessWindow)
+      : 0;
+    return +clamp01(ageScore * 0.55 + accessScore * 0.25 + accessRecencyScore * 0.2).toFixed(3);
+  }
+
+  async compact(
+    now: number = Date.now(),
+    maxAgeMs: number = 24 * 60 * 60 * 1000
+  ): Promise<MemoryCompactionResult> {
+    const runEntries = await this.list('run', now);
+    const eligible = runEntries.filter((entry) => now - entry.writtenAt >= maxAgeMs);
+    const grouped = new Map<string, MemoryEntry[]>();
+
+    for (const entry of eligible) {
+      const groupKey = entry.topic || entry.key;
+      const rows = grouped.get(groupKey) || [];
+      rows.push(entry);
+      grouped.set(groupKey, rows);
+    }
+
+    let projectEntriesCreated = 0;
+    let compactedEntries = 0;
+    let bytesBefore = 0;
+    let bytesAfter = 0;
+    const prunedRunKeys: string[] = [];
+
+    for (const [groupKey, entries] of grouped.entries()) {
+      const mergedContent = Array.from(
+        new Set(entries.map((entry) => entry.content.trim()).filter(Boolean))
+      ).join('\n\n');
+      if (!mergedContent) {
+        continue;
+      }
+
+      const compactedKey = `compacted:${groupKey}`;
+      const existing = await this.read('project', compactedKey, now);
+      const nextContent = existing?.content
+        ? Array.from(new Set([existing.content.trim(), mergedContent].filter(Boolean))).join('\n\n')
+        : mergedContent;
+      await this.write('project', compactedKey, nextContent, { topic: groupKey });
+      projectEntriesCreated++;
+
+      for (const entry of entries) {
+        bytesBefore += byteLength(entry.content);
+        compactedEntries++;
+        prunedRunKeys.push(entry.key);
+        await Promise.resolve(this._storage.delete(collectionFor('run'), entry.key));
+      }
+      bytesAfter += byteLength(nextContent);
+    }
+
+    return {
+      compactedEntries,
+      projectEntriesCreated,
+      bytesSaved: Math.max(0, bytesBefore - bytesAfter),
+      prunedRunKeys,
+    };
+  }
+
+  async prune(
+    tier: Exclude<MemoryTier, 'run'>,
+    threshold: number,
+    now: number = Date.now()
+  ): Promise<MemoryPruneResult> {
+    const entries = await this.list(tier, now);
+    const prunedKeys: string[] = [];
+    for (const entry of entries) {
+      if (this.freshnessScore(entry, now) >= clamp01(threshold)) {
+        continue;
+      }
+      prunedKeys.push(entry.key);
+      await Promise.resolve(this._storage.delete(collectionFor(tier), entry.key));
+    }
+
+    return {
+      tier,
+      prunedEntries: prunedKeys.length,
+      prunedKeys,
+    };
   }
 
   // ── Private helpers ───────────────────────────────────────────
@@ -363,4 +475,8 @@ export function byteLength(s: string): number {
     }
   }
   return n;
+}
+
+function clamp01(value: number): number {
+  return Math.max(0, Math.min(1, value));
 }

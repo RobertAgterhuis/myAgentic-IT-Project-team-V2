@@ -428,6 +428,33 @@ describe('routes/intelligence-loop', () => {
 
     expect(summaryRes.statusCode).toBe(200);
     expect(summaryRes.json().summary.approvals.revertedProposals).toBeGreaterThanOrEqual(1);
+
+    const autoCreateRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m4/adaptive-policy-proposals',
+      payload: {
+        domain: 'concurrency',
+        title: 'Small concurrency uplift',
+        rationale: 'Queue wait remains elevated.',
+        desiredChange: { maxConcurrency: 11 },
+        approvalRequired: true,
+        actor: 'architect',
+      },
+    });
+
+    const autoProposalId = autoCreateRes.json().proposal.proposalId as string;
+    const autoApplyRes = await app.inject({
+      method: 'POST',
+      url: `/api/intelligence-loop/m4/adaptive-policy-proposals/${autoProposalId}/auto-apply`,
+      payload: {
+        actor: 'operator',
+        baselineValues: { maxConcurrency: 10 },
+        maxChangePercent: 15,
+      },
+    });
+
+    expect(autoApplyRes.statusCode).toBe(200);
+    expect(autoApplyRes.json().result.autoApplied).toBe(true);
   });
 
   it('returns 404 for unknown M4 adaptive policy proposal operations', async () => {
@@ -496,5 +523,99 @@ describe('routes/intelligence-loop', () => {
         .json()
         .proposals.some((proposal: { domain: string }) => proposal.domain === 'pattern-uplift')
     ).toBe(true);
+  });
+
+  it('supports new M4 analytics endpoints for chain quality, dependency planning, tool reliability and plan freshness', async () => {
+    const chainQualityRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m4/chain-quality-analysis',
+      payload: {
+        predecessorContracts: [
+          {
+            source: 'BusinessDocs/phase-1.md',
+            headingCount: 1,
+            hasHandoffChecklist: true,
+            checklist: { total: 4, checked: 2, completionRatio: 0.5 },
+          },
+        ],
+        unresolvedOpenItems: 3,
+        currentChainDepth: 2,
+      },
+    });
+
+    expect(chainQualityRes.statusCode).toBe(200);
+    expect(chainQualityRes.json().analysis.recommendedChainDepth).toBe(3);
+
+    const dependencyPlanRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m4/dependency-plan',
+      payload: {
+        items: [
+          { id: 'A', estimatedDurationMinutes: 10, impactScore: 0.8 },
+          { id: 'B', dependencies: ['A'], estimatedDurationMinutes: 20, impactScore: 0.9 },
+          { id: 'C', dependencies: ['A'], estimatedDurationMinutes: 5, impactScore: 0.4 },
+        ],
+      },
+    });
+
+    expect(dependencyPlanRes.statusCode).toBe(200);
+    expect(dependencyPlanRes.json().result.executionGroups).toEqual([['A'], ['B', 'C']]);
+
+    const toolReliabilityRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m4/tool-reliability-analysis',
+      payload: {
+        traces: [
+          {
+            toolId: 'search',
+            success: true,
+            durationMs: 100,
+            planningReason: 'primary',
+            skippedTools: ['grep'],
+          },
+          {
+            toolId: 'search',
+            success: false,
+            durationMs: 200,
+            escalatedTo: 'manual-review',
+          },
+        ],
+      },
+    });
+
+    expect(toolReliabilityRes.statusCode).toBe(200);
+    expect(toolReliabilityRes.json().result.tools[0].toolId).toBe('search');
+
+    const freshnessRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m4/plan-freshness/validate',
+      payload: {
+        planId: 'PLAN-1',
+        assumptions: [
+          {
+            key: 'coverage-target',
+            expectedValue: 90,
+            actualValue: 85,
+          },
+        ],
+      },
+    });
+
+    expect(freshnessRes.statusCode).toBe(200);
+    expect(freshnessRes.json().result.stale).toBe(true);
+
+    const runtimePriorityRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m4/runtime-priority/plan',
+      payload: {
+        items: [
+          { id: 'A', estimatedDurationMinutes: 10, impactScore: 0.4 },
+          { id: 'B', estimatedDurationMinutes: 5, impactScore: 0.9 },
+        ],
+      },
+    });
+
+    expect(runtimePriorityRes.statusCode).toBe(200);
+    expect(runtimePriorityRes.json().result.prioritizedOrder[0].id).toBe('B');
   });
 });

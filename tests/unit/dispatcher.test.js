@@ -1459,7 +1459,102 @@ describe('Dispatcher — dispatchStateParallel (M4/Epic-661)', () => {
     expect(result.completed).toEqual(
       expect.arrayContaining(['21', '38', '22', '29', '26', '27', '28'])
     );
-    expect(calledIds).toEqual(['20', '21', '38', '22', '29', '26', '27', '28']);
+    expect(calledIds.slice(0, 3)).toEqual(['20', '21', '38']);
+    expect(calledIds.slice(3)).toEqual(expect.arrayContaining(['22', '29', '26', '27', '28']));
+  });
+
+  it('orders agents within a group by runtime priority signals', async () => {
+    const executionOrder = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        executionOrder.push(agent.id);
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+    });
+
+    await d.dispatchStateParallel(
+      STATES.CRITIC_1,
+      {
+        prioritySignals: {
+          18: { impactScore: 0.2, urgencyScore: 0.2, riskScore: 0.1 },
+          19: { impactScore: 0.9, urgencyScore: 0.9, riskScore: 0.8 },
+        },
+      },
+      {},
+      { maxConcurrency: 1 }
+    );
+
+    expect(executionOrder).toEqual(['19', '18']);
+  });
+
+  it('falls back to a capability-compatible agent when the requested one is unavailable', async () => {
+    const seen = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (agent) => {
+        seen.push(agent.id);
+        return { outputPath: `/out/${agent.id}.md` };
+      },
+      phaseAgents: {
+        CUSTOM_CAP: [
+          { id: '50', name: 'Primary' },
+          { id: '51', name: 'Fallback' },
+        ],
+      },
+    });
+
+    const result = await d.dispatchStateParallel(
+      'CUSTOM_CAP',
+      {
+        capabilityRequirements: { 50: 'analysis' },
+        agentCapabilities: { 50: ['analysis'], 51: ['analysis'] },
+        agentAvailability: { 50: false, 51: true },
+      },
+      {},
+      { maxConcurrency: 1 }
+    );
+
+    expect(result.completed).toEqual(['51']);
+    expect(seen).toEqual(['51']);
+  });
+
+  it('blocks over-budget agents and marks tight budgets as fast-path execution', async () => {
+    const executionPolicies = [];
+    const d = new Dispatcher({
+      store: createMockStore(),
+      phaseAgents: {
+        BUDGET_STATE: [
+          { id: '60', name: 'Blocked Agent' },
+          { id: '61', name: 'Fast Path Agent' },
+        ],
+      },
+      invoker: async (_agent, _platform, context) => {
+        executionPolicies.push(context.executionPolicy);
+        return { outputPath: '/out/budget.md' };
+      },
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.dispatchStateParallel(
+      'BUDGET_STATE',
+      {
+        agentBudgets: {
+          60: { tokenBudgetBytes: 100, costUsdLimit: 1 },
+          61: { tokenBudgetBytes: 1000, consumedBytes: 600 },
+        },
+        invocationEstimates: {
+          60: { requiredBytes: 200, estimatedCostUsd: 2 },
+          61: { requiredBytes: 200 },
+        },
+      },
+      {},
+      { maxConcurrency: 1 }
+    );
+
+    expect(result.failed).toContain('60');
+    expect(result.completed).toEqual(['61']);
+    expect(executionPolicies).toContain('fast-path');
   });
 });
 

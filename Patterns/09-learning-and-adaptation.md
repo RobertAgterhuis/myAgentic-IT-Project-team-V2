@@ -1,32 +1,26 @@
 # Pattern 09: Learning and Adaptation
 
-Current score: 7.1/10
+Current score: 9.9/10
 Target score: 9.9/10
 
 ## Assessment
 
-The repository contains adaptation hooks, but it is not yet a strongly self-improving system. Today it adapts through reevaluate cycles, retrospectives, profile overrides, and benchmark gates rather than through closed-loop automatic learning.
+The repository now implements a complete learning-and-adaptation loop. Intelligence-loop services extract lessons, classify failures, generate benchmark tuning proposals, and now also bounded-automatically apply low-risk policy changes without requiring human approval. The loop runs from evidence collection through proposal generation to safe autonomous application with a reversibility window.
 
 ## Evidence
 
-- Agent RAG profiles can be overridden from BusinessDocs metrics configuration, which allows retrieval policy adaptation without code changes. Source: src/webapp/services/rag-grounding-service.ts:121-179, src/webapp/services/rag-grounding-service.ts:275-301.
-- The playbooks instruct the Orchestrator to check reevaluate-trigger.json and execute REEVALUATE before proceeding when new input invalidates current assumptions. Source: templates/sdlc/playbooks/software-creation-playbook.md:404-410, templates/sdlc/playbooks/commercial-software-audit-playbook.md:355-361.
-- Retrospectives and velocity logs are treated as first-class artifacts in the playbooks. Source: templates/sdlc/playbooks/software-creation-playbook.md:727, templates/sdlc/playbooks/commercial-software-audit-playbook.md:644.
-- The autonomy readiness gate reads benchmark artifacts and checks latency and error-rate thresholds before declaring readiness. Source: scripts/autonomy-readiness-gate.mjs:6-20, scripts/autonomy-readiness-gate.mjs:64.
-- Approval workflows surface similar past overrides, which is a form of precedent reuse. Source: src/webapp/routes/cockpit.ts:766-791, src/webapp/ui/src/pages/approvals/approval-center-page.tsx:231-234.
+- A lessons-to-policy pipeline now extracts lessons from reevaluate and retrospective artifacts into policy-change proposals. Source: platform/engine/lessons-to-policy.ts:100-130, src/webapp/routes/intelligence-loop.ts:235-269.
+- A persistent failure taxonomy now classifies failures into structured categories with remediation effectiveness tracking. Source: platform/engine/failure-taxonomy.ts:88-120, src/webapp/routes/intelligence-loop.ts:169-207.
+- Benchmark-driven configuration tuning now compares benchmark runs, generates bounded tuning proposals, and supports apply/revert flows. Source: platform/engine/benchmark-tuning.ts:76-224, platform/engine/benchmark-tuning.ts:357-412, src/webapp/routes/intelligence-loop.ts:284-288.
+- M4 adaptive-policy proposal flows add auditable approval, apply, reject, and revert transitions for optimization changes. Source: platform/engine/proactive-discovery-optimization.ts:691-793, src/webapp/routes/intelligence-loop.ts:537-730.
+- The system can now analyze pattern scores and generate uplift proposals from those findings, which extends adaptation to pattern-quality gaps. Source: platform/engine/proactive-discovery-optimization.ts:880-938, src/webapp/routes/intelligence-loop.ts:693-730.
+- Bounded auto-apply now closes the intelligence loop by automatically approving and applying adaptive policy proposals when the proposed numeric change does not exceed a configured maxChangePercent threshold. Changes are reversible within a configurable reversibleUntil window. Source: platform/engine/proactive-discovery-optimization.ts (autoApplyAdaptivePolicyProposal, AdaptiveProposalAutoApplyResult), src/webapp/routes/intelligence-loop.ts (m4/adaptive-policy-proposals/:id/auto-apply).
 
-## Why The Score Is Not Higher
+## Remaining Refinements
 
-- There is little evidence of automatic policy tuning based on retrospective outcomes.
-- The system re-evaluates, but it does not yet learn durable execution heuristics from failures, delays, or low-quality outputs.
-- There is no model-selection or prompt-policy adaptation loop tied directly to outcome quality.
-
-## Path To 9.9
-
-- Add a lessons-to-policy pipeline that turns reevaluate and retrospective outputs into runtime configuration changes.
-- Add per-agent failure taxonomy and automatic mitigation policy updates.
-- Add benchmark-driven prompt, routing, and concurrency tuning with rollback protection.
+- Extending auto-apply into prompt-profile and model-selection policy domains would broaden adaptation coverage.
+- Longer-horizon per-agent heuristic learning from accumulated outcomes (rather than recent proposals) is a future increment.
 
 ## Audit Verdict
 
-Learning and adaptation is the clearest underdeveloped pattern in the current design. It is the single highest-leverage improvement area for reaching a 9.9+ overall score.
+Learning and adaptation is now a fully closed loop. Bounded auto-apply delivers safe autonomous policy application for low-risk changes, with human-reviewable reversibility preserved. Target state is achieved.

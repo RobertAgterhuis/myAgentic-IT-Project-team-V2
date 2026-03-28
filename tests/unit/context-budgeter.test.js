@@ -16,6 +16,7 @@ const {
   hardTruncate,
   budget,
   assembleContext,
+  evaluateAgentBudget,
 } = require('../../platform/engine/context-budgeter');
 
 // ─── rankItems ────────────────────────────────────────────────
@@ -61,6 +62,15 @@ describe('rankItems', () => {
     const clone = [...items];
     rankItems(items);
     expect(items[0].key).toBe(clone[0].key);
+  });
+
+  it('uses freshness as a secondary ranking signal', () => {
+    const items = [
+      { key: 'older', content: '', relevanceScore: 0.8, freshnessScore: 0.1 },
+      { key: 'fresher', content: '', relevanceScore: 0.8, freshnessScore: 0.9 },
+    ];
+    const ranked = rankItems(items);
+    expect(ranked[0].key).toBe('fresher');
   });
 
   it('returns empty array for empty input', () => {
@@ -215,5 +225,39 @@ describe('assembleContext', () => {
   it('returns empty string for empty budget result', () => {
     const result = budget([]);
     expect(assembleContext(result)).toBe('');
+  });
+});
+
+describe('evaluateAgentBudget', () => {
+  it('blocks invocations that exceed remaining cost budget', () => {
+    const evaluation = evaluateAgentBudget(
+      {
+        tokenBudgetBytes: 1000,
+        costUsdLimit: 5,
+        consumedCostUsd: 1,
+      },
+      {
+        requiredBytes: 200,
+        estimatedCostUsd: 10,
+      }
+    );
+
+    expect(evaluation.allowed).toBe(false);
+    expect(evaluation.executionMode).toBe('blocked');
+  });
+
+  it('switches to fast-path mode when remaining token budget is tight', () => {
+    const evaluation = evaluateAgentBudget(
+      {
+        tokenBudgetBytes: 1000,
+        consumedBytes: 600,
+      },
+      {
+        requiredBytes: 200,
+      }
+    );
+
+    expect(evaluation.allowed).toBe(true);
+    expect(evaluation.executionMode).toBe('fast-path');
   });
 });

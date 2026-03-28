@@ -289,4 +289,110 @@ describe('proactive-discovery-optimization service', () => {
     expect(allProposals.length).toBe(2);
     expect(allProposals.every((proposal) => proposal.domain === 'pattern-uplift')).toBe(true);
   });
+
+  it('analyzes chain quality and recommends deeper review for weak predecessor contracts', async () => {
+    const svc = createProactiveDiscoveryOptimizationService(ctx);
+
+    const result = await svc.analyzeChainQuality({
+      currentChainDepth: 2,
+      predecessorContracts: [
+        {
+          source: 'BusinessDocs/phase-1.md',
+          headingCount: 1,
+          hasHandoffChecklist: true,
+          checklist: { total: 4, checked: 2, completionRatio: 0.5 },
+        },
+      ],
+      unresolvedOpenItems: 3,
+    });
+
+    expect(result.qualityBand).toBe('weak');
+    expect(result.recommendedChainDepth).toBe(3);
+    expect(result.reasons.some((reason) => reason.includes('Unresolved open items'))).toBe(true);
+  });
+
+  it('builds dependency-aware execution groups and a critical path', async () => {
+    const svc = createProactiveDiscoveryOptimizationService(ctx);
+
+    const result = await svc.planDependencyAwareExecution({
+      items: [
+        { id: 'A', estimatedDurationMinutes: 10, impactScore: 0.7, urgencyScore: 0.8 },
+        { id: 'B', dependencies: ['A'], estimatedDurationMinutes: 20, impactScore: 0.9 },
+        { id: 'C', dependencies: ['A'], estimatedDurationMinutes: 5, impactScore: 0.5 },
+        { id: 'D', dependencies: ['B'], estimatedDurationMinutes: 15, impactScore: 0.8 },
+      ],
+    });
+
+    expect(result.executionGroups).toEqual([['A'], ['B', 'C'], ['D']]);
+    expect(result.criticalPath.steps).toEqual(['A', 'B', 'D']);
+    expect(result.criticalPath.totalDurationMinutes).toBe(45);
+  });
+
+  it('scores tool reliability from execution traces', async () => {
+    const svc = createProactiveDiscoveryOptimizationService(ctx);
+
+    const result = await svc.analyzeToolReliability({
+      traces: [
+        {
+          toolId: 'search',
+          success: true,
+          durationMs: 120,
+          planningReason: 'high recall',
+          skippedTools: ['grep'],
+          estimatedCostUsd: 0.02,
+        },
+        {
+          toolId: 'search',
+          success: false,
+          durationMs: 220,
+          planningReason: 'fallback',
+          escalatedTo: 'manual-review',
+          estimatedCostUsd: 0.03,
+        },
+      ],
+    });
+
+    expect(result.tools).toHaveLength(1);
+    expect(result.tools[0].toolId).toBe('search');
+    expect(result.tools[0].successRate).toBe(0.5);
+    expect(result.tools[0].escalationTargets).toContain('manual-review');
+  });
+
+  it('detects stale plans and auto-applies bounded proposals', async () => {
+    const svc = createProactiveDiscoveryOptimizationService(ctx);
+
+    const freshness = await svc.validatePlanFreshness({
+      planId: 'PLAN-1',
+      assumptions: [
+        {
+          key: 'coverage-threshold',
+          expectedValue: 90,
+          actualValue: 85,
+        },
+      ],
+    });
+
+    expect(freshness.stale).toBe(true);
+    expect(freshness.staleAssumptions[0].reason).toBe('value-mismatch');
+
+    const proposal = await svc.createAdaptivePolicyProposal({
+      domain: 'concurrency',
+      title: 'Increase concurrency slightly',
+      rationale: 'Queue wait remains elevated.',
+      desiredChange: { maxConcurrency: 11 },
+      approvalRequired: true,
+      actor: 'architect',
+    });
+
+    const autoApplied = await svc.autoApplyAdaptivePolicyProposal({
+      proposalId: proposal.proposalId,
+      actor: 'operator',
+      baselineValues: { maxConcurrency: 10 },
+      maxChangePercent: 15,
+    });
+
+    expect(autoApplied?.withinBounds).toBe(true);
+    expect(autoApplied?.autoApplied).toBe(true);
+    expect(autoApplied?.proposal.status).toBe('applied');
+  });
 });

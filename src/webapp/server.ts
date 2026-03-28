@@ -565,6 +565,23 @@ let _ragFreshnessPassRunning = false;
 let _ragFreshnessQueued = false;
 let _ragWatchDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 const _ragWatchers: fs.FSWatcher[] = [];
+
+async function syncRagFreshnessSource(
+  collectionId: string,
+  sourcePath: string
+): Promise<{ filesProcessed: number; chunksInserted: number; filesSkipped: number }> {
+  const stat = fs.statSync(sourcePath);
+
+  if (stat.isDirectory()) {
+    return _ragIndexer.syncDirectory(collectionId, sourcePath, {
+      incremental: true,
+    });
+  }
+
+  _ragStore.deleteFile(collectionId, sourcePath);
+  return _ragIndexer.indexFile(collectionId, sourcePath);
+}
+
 let _ragFreshnessPassTrigger: () => Promise<void> = () => runRagFreshnessHealthPass();
 let _ragFreshnessPassExecutor: () => Promise<void> = async () => {
   for (const target of RAG_MONITORED_TARGETS) {
@@ -593,9 +610,7 @@ let _ragFreshnessPassExecutor: () => Promise<void> = async () => {
     for (const sourcePath of target.sourcePaths) {
       if (!fs.existsSync(sourcePath)) continue;
       try {
-        const stats = await _ragIndexer.syncDirectory(target.collectionId, sourcePath, {
-          incremental: true,
-        });
+        const stats = await syncRagFreshnessSource(target.collectionId, sourcePath);
         recordMetric('RAG', '/freshness/self-heal', stats.filesProcessed, 200);
       } catch (err) {
         structuredLog('warn', 'rag_freshness_self_heal_failed', {
@@ -705,6 +720,7 @@ const __testing = {
   setRagFreshnessPassExecutor: (executor: () => Promise<void>) => {
     _ragFreshnessPassExecutor = executor;
   },
+  syncRagFreshnessSource,
   resetRagFreshnessState: () => {
     if (_ragWatchDebounceTimer) {
       clearTimeout(_ragWatchDebounceTimer);
@@ -740,9 +756,7 @@ const __testing = {
         for (const sourcePath of target.sourcePaths) {
           if (!fs.existsSync(sourcePath)) continue;
           try {
-            const stats = await _ragIndexer.syncDirectory(target.collectionId, sourcePath, {
-              incremental: true,
-            });
+            const stats = await syncRagFreshnessSource(target.collectionId, sourcePath);
             recordMetric('RAG', '/freshness/self-heal', stats.filesProcessed, 200);
           } catch (err) {
             structuredLog('warn', 'rag_freshness_self_heal_failed', {

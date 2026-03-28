@@ -19,6 +19,7 @@ import path from 'node:path';
 import { STATES } from './state-machine';
 import type { JobQueue, JobType } from './jobs/job-types';
 import type { AgentRuntimeAdapter, RuntimeAdapterResult } from './agent-runtime-adapter';
+import { evaluateAgentBudget } from './context-budgeter';
 import agentsSchema from '../schema/agents.json';
 
 // ─── Error Severity Classification (M5 / Evolution 5) ───────
@@ -58,6 +59,13 @@ interface AgentRef {
   name: string;
 }
 
+interface AgentPrioritySignal {
+  impactScore?: number;
+  urgencyScore?: number;
+  riskScore?: number;
+  costScore?: number;
+}
+
 interface PredecessorContractSummary {
   source: string;
   headingCount: number;
@@ -91,6 +99,7 @@ export interface AgentExecutionContext {
   sessionState: unknown;
   workspaceId: string | null;
   gitService?: unknown;
+  executionPolicy?: 'standard' | 'fast-path';
 }
 
 interface CanonicalSchemaAgent {
@@ -206,6 +215,52 @@ function shouldEnforcePredecessorContractContinuity(
   }
 
   return false;
+}
+
+function computePriorityScore(signal?: AgentPrioritySignal): number {
+  if (!signal) return 0.5;
+  const impact = clamp01(signal.impactScore ?? 0.5);
+  const urgency = clamp01(signal.urgencyScore ?? 0.5);
+  const risk = clamp01(signal.riskScore ?? 0.5);
+  const cost = clamp01(signal.costScore ?? 0.5);
+  return (
+    Math.round(clamp01(impact * 0.4 + urgency * 0.35 + risk * 0.2 - cost * 0.15) * 1000) / 1000
+  );
+}
+
+function orderByRuntimePriority(
+  agentIds: string[],
+  signals: Record<string, AgentPrioritySignal> = {}
+): string[] {
+  return [...agentIds].sort((left, right) => {
+    const delta = computePriorityScore(signals[right]) - computePriorityScore(signals[left]);
+    if (delta !== 0) return delta;
+    return left.localeCompare(right);
+  });
+}
+
+function resolveCapabilityAssignment(
+  requestedAgentId: string,
+  phaseAgents: AgentRef[],
+  capabilityRequirements: Record<string, string> = {},
+  capabilityMap: Record<string, string[]> = {},
+  availability: Record<string, boolean> = {}
+): AgentRef | undefined {
+  const requestedAgent = phaseAgents.find((agent) => agent.id === requestedAgentId);
+  const requestedAvailable = availability[requestedAgentId] !== false;
+  const requiredCapability = capabilityRequirements[requestedAgentId];
+
+  if (requestedAgent && requestedAvailable) {
+    return requestedAgent;
+  }
+
+  if (!requiredCapability) {
+    return requestedAgent;
+  }
+
+  return phaseAgents
+    .filter((agent) => availability[agent.id] !== false)
+    .find((agent) => (capabilityMap[agent.id] || []).includes(requiredCapability));
 }
 
 interface InvocationResponseContract {
@@ -803,6 +858,7 @@ class Dispatcher {
       sessionState,
       workspaceId,
       gitService,
+      executionPolicy,
     } = options as {
       predecessorPaths?: string[];
       questionnairePath?: string;
@@ -810,6 +866,7 @@ class Dispatcher {
       sessionState?: unknown;
       workspaceId?: string;
       gitService?: unknown;
+      executionPolicy?: AgentExecutionContext['executionPolicy'];
     };
     const context: AgentExecutionContext = {
       agentId,
@@ -821,6 +878,7 @@ class Dispatcher {
       sessionState: sessionState || null,
       workspaceId: workspaceId || null,
       gitService,
+      executionPolicy: executionPolicy || 'standard',
     };
 
     // AC-3: Load predecessor outputs
@@ -1088,10 +1146,65 @@ class Dispatcher {
     const failed: string[] = [];
     const results: Array<Record<string, unknown>> = [];
     let escalated = false;
+    const usedAgentIds = new Set<string>();
+    const capabilityRequirements =
+      (contextOptions.capabilityRequirements as Record<string, string> | undefined) || {};
+    const capabilityMap =
+      (contextOptions.agentCapabilities as Record<string, string[]> | undefined) || {};
+    const availability =
+      (contextOptions.agentAvailability as Record<string, boolean> | undefined) || {};
+    const agentBudgets =
+      (contextOptions.agentBudgets as
+        | Record<string, Parameters<typeof evaluateAgentBudget>[0]>
+        | undefined) || {};
+    const invocationEstimates =
+      (contextOptions.invocationEstimates as
+        | Record<string, Parameters<typeof evaluateAgentBudget>[1]>
+        | undefined) || {};
 
-    for (const agent of agents) {
-      const context = this.buildContext(agent.id, contextOptions);
-      const agentConfig = agentConfigs[agent.id] || {};
+    for (const requestedAgent of agents) {
+      const agent =
+        resolveCapabilityAssignment(
+          requestedAgent.id,
+          agents,
+          capabilityRequirements,
+          capabilityMap,
+          availability
+        ) || requestedAgent;
+      if (usedAgentIds.has(agent.id)) {
+        continue;
+      }
+      usedAgentIds.add(agent.id);
+
+      const budgetPolicy = agentBudgets[agent.id]
+        ? evaluateAgentBudget(
+            agentBudgets[agent.id],
+            invocationEstimates[agent.id] || { requiredBytes: 0 }
+          )
+        : null;
+      if (budgetPolicy && !budgetPolicy.allowed) {
+        results.push({
+          agent,
+          success: false,
+          error: budgetPolicy.reasons.join(' '),
+          degraded: true,
+        });
+        failed.push(agent.id);
+        if (onFailure === 'abort') {
+          break;
+        }
+        if (onFailure === 'escalate') {
+          escalated = true;
+          break;
+        }
+        continue;
+      }
+
+      const context = this.buildContext(agent.id, {
+        ...contextOptions,
+        executionPolicy: budgetPolicy?.executionMode === 'fast-path' ? 'fast-path' : 'standard',
+      });
+      const agentConfig = agentConfigs[requestedAgent.id] || agentConfigs[agent.id] || {};
       const result = await this.invoke(agent, state, context, agentConfig);
 
       results.push({ agent, ...result });
@@ -1229,6 +1342,20 @@ class Dispatcher {
   }> {
     const phaseAgents = this._phaseAgents[state] || [];
     const agentMap = new Map<string, AgentRef>(phaseAgents.map((a) => [a.id, a]));
+    const capabilityRequirements =
+      (contextOptions.capabilityRequirements as Record<string, string> | undefined) || {};
+    const capabilityMap =
+      (contextOptions.agentCapabilities as Record<string, string[]> | undefined) || {};
+    const availability =
+      (contextOptions.agentAvailability as Record<string, boolean> | undefined) || {};
+    const agentBudgets =
+      (contextOptions.agentBudgets as
+        | Record<string, Parameters<typeof evaluateAgentBudget>[0]>
+        | undefined) || {};
+    const invocationEstimates =
+      (contextOptions.invocationEstimates as
+        | Record<string, Parameters<typeof evaluateAgentBudget>[1]>
+        | undefined) || {};
 
     let activeCount = 0;
     let highWaterMark = 0;
@@ -1255,7 +1382,14 @@ class Dispatcher {
     };
 
     const tasks = groupIds.map(async (agentId) => {
-      const agent = agentMap.get(agentId);
+      const agent =
+        resolveCapabilityAssignment(
+          agentId,
+          phaseAgents,
+          capabilityRequirements,
+          capabilityMap,
+          availability
+        ) || agentMap.get(agentId);
       if (!agent) {
         return {
           agent: { id: agentId, name: agentId },
@@ -1264,9 +1398,27 @@ class Dispatcher {
         };
       }
 
+      const budgetPolicy = agentBudgets[agent.id]
+        ? evaluateAgentBudget(
+            agentBudgets[agent.id],
+            invocationEstimates[agent.id] || { requiredBytes: 0 }
+          )
+        : null;
+      if (budgetPolicy && !budgetPolicy.allowed) {
+        return {
+          agent,
+          success: false,
+          error: budgetPolicy.reasons.join(' '),
+          degraded: true,
+        };
+      }
+
       await acquire();
       try {
-        const context = this.buildContext(agentId, contextOptions);
+        const context = this.buildContext(agent.id, {
+          ...contextOptions,
+          executionPolicy: budgetPolicy?.executionMode === 'fast-path' ? 'fast-path' : 'standard',
+        });
         const agentConfig = agentConfigs[agentId] || {};
         const result = await this.invoke(agent, state, context, agentConfig);
         return { agent, ...result };
@@ -1348,9 +1500,13 @@ class Dispatcher {
     let totalWaitMs = 0;
 
     let predecessorPaths: string[] = [...((contextOptions.predecessorPaths as string[]) || [])];
+    const prioritySignals =
+      (contextOptions.prioritySignals as Record<string, AgentPrioritySignal> | undefined) || {};
 
     for (const group of groups) {
       if (escalated) break;
+
+      const orderedGroup = orderByRuntimePriority(group, prioritySignals);
 
       const groupContext: Record<string, unknown> = {
         ...contextOptions,
@@ -1358,7 +1514,7 @@ class Dispatcher {
       };
 
       const groupResult = await this._runBoundedGroup(
-        group,
+        orderedGroup,
         state,
         groupContext,
         agentConfigs,

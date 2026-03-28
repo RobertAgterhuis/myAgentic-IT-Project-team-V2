@@ -276,6 +276,130 @@ export interface PatternUpliftProposalBatchResult {
   proposalsCreated: AdaptivePolicyProposal[];
 }
 
+export interface ChainQualityAnalysisInput {
+  predecessorContracts: Array<{
+    source: string;
+    headingCount: number;
+    hasHandoffChecklist: boolean;
+    checklist: {
+      total: number;
+      checked: number;
+      completionRatio: number;
+    } | null;
+  }>;
+  unresolvedOpenItems?: number;
+  currentChainDepth?: number;
+  maxChainDepth?: number;
+}
+
+export interface ChainQualityAnalysisResult {
+  analyzedAt: string;
+  currentChainDepth: number;
+  recommendedChainDepth: number;
+  score: number;
+  qualityBand: 'strong' | 'watch' | 'weak';
+  metrics: {
+    averageChecklistCompletion: number;
+    averageHeadingCoverage: number;
+    unresolvedOpenItems: number;
+  };
+  reasons: string[];
+}
+
+export interface DependencyPlanWorkItem {
+  id: string;
+  dependencies?: string[];
+  estimatedDurationMinutes?: number;
+  impactScore?: number;
+  urgencyScore?: number;
+  riskScore?: number;
+  costScore?: number;
+  preferredAgentId?: string;
+  requiredCapability?: string;
+}
+
+export interface DependencyAwarePlanInput {
+  items: DependencyPlanWorkItem[];
+}
+
+export interface DependencyAwarePlanResult {
+  plannedAt: string;
+  executionGroups: string[][];
+  prioritizedOrder: Array<{
+    id: string;
+    priorityScore: number;
+    dependencies: string[];
+    preferredAgentId?: string;
+    requiredCapability?: string;
+  }>;
+  criticalPath: {
+    steps: string[];
+    totalDurationMinutes: number;
+  };
+}
+
+export interface ToolExecutionTraceInput {
+  toolId: string;
+  success: boolean;
+  durationMs?: number;
+  planningReason?: string;
+  skippedTools?: string[];
+  escalatedTo?: string;
+  estimatedCostUsd?: number;
+}
+
+export interface ToolReliabilityAnalysisResult {
+  analyzedAt: string;
+  tools: Array<{
+    toolId: string;
+    totalCalls: number;
+    successRate: number;
+    avgDurationMs: number;
+    avgCostUsd: number;
+    reliabilityScore: number;
+    planningReasons: string[];
+    skippedTools: string[];
+    escalationTargets: string[];
+  }>;
+}
+
+export interface PlanFreshnessAssumption {
+  key: string;
+  expectedValue: string | number | boolean;
+  actualValue: string | number | boolean;
+  sourceUpdatedAt?: string;
+}
+
+export interface PlanFreshnessValidationInput {
+  planId: string;
+  assumptions: PlanFreshnessAssumption[];
+  staleAfterSeconds?: number;
+  nowIso?: string;
+}
+
+export interface PlanFreshnessValidationResult {
+  validatedAt: string;
+  planId: string;
+  stale: boolean;
+  staleAssumptions: Array<{
+    key: string;
+    reason: 'value-mismatch' | 'source-stale';
+    expectedValue: string | number | boolean;
+    actualValue: string | number | boolean;
+  }>;
+  recommendedActions: string[];
+}
+
+export interface AdaptiveProposalAutoApplyResult {
+  proposal: AdaptivePolicyProposal;
+  withinBounds: boolean;
+  autoApplied: boolean;
+  requiresApproval: boolean;
+  changePercent: number;
+  reversibleUntil: string;
+  reasons: string[];
+}
+
 const BASE_DIR = 'BusinessDocs/intelligence-loop/m3';
 const STALE_SCANS_PATH = `${BASE_DIR}/stale-knowledge-scans.jsonl`;
 const CONTRADICTION_SCANS_PATH = `${BASE_DIR}/contradiction-scans.jsonl`;
@@ -284,6 +408,10 @@ const CONCURRENCY_POLICY_PATH = `${BASE_DIR}/concurrency-policies.jsonl`;
 const RETRIEVAL_POLICY_PATH = `${BASE_DIR}/retrieval-policies.jsonl`;
 const ROUTE_ESCALATION_PATH = `${BASE_DIR}/route-escalations.jsonl`;
 const ADAPTIVE_POLICY_PROPOSALS_PATH = `${BASE_DIR}/adaptive-policy-proposals.jsonl`;
+const CHAIN_QUALITY_PATH = `${BASE_DIR}/chain-quality-analyses.jsonl`;
+const DEPENDENCY_PLAN_PATH = `${BASE_DIR}/dependency-aware-plans.jsonl`;
+const TOOL_RELIABILITY_PATH = `${BASE_DIR}/tool-reliability-analyses.jsonl`;
+const PLAN_FRESHNESS_PATH = `${BASE_DIR}/plan-freshness-validations.jsonl`;
 const PATTERNS_DIR = 'Patterns';
 
 function clamp(value: number, min: number, max: number): number {
@@ -307,6 +435,14 @@ function toAverage(values: number[]): number {
     return 0;
   }
   return +(values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(3);
+}
+
+function toPriorityScore(item: DependencyPlanWorkItem): number {
+  const impact = clamp(item.impactScore ?? 0.5, 0, 1);
+  const urgency = clamp(item.urgencyScore ?? 0.5, 0, 1);
+  const risk = clamp(item.riskScore ?? 0.5, 0, 1);
+  const cost = clamp(item.costScore ?? 0.5, 0, 1);
+  return +clamp(impact * 0.4 + urgency * 0.35 + risk * 0.2 - cost * 0.15, 0, 1).toFixed(3);
 }
 
 export class ProactiveDiscoveryOptimizationService {
@@ -403,6 +539,65 @@ export class ProactiveDiscoveryOptimizationService {
     };
 
     this.appendJsonl(STALE_SCANS_PATH, result);
+    return result;
+  }
+
+  async analyzeChainQuality(input: ChainQualityAnalysisInput): Promise<ChainQualityAnalysisResult> {
+    const contracts = input.predecessorContracts || [];
+    const averageChecklistCompletion = toAverage(
+      contracts
+        .map((contract) => contract.checklist?.completionRatio)
+        .filter((value): value is number => typeof value === 'number')
+    );
+    const averageHeadingCoverage = toAverage(
+      contracts.map((contract) => clamp(contract.headingCount / 4, 0, 1))
+    );
+    const unresolvedOpenItems = Math.max(0, Math.floor(input.unresolvedOpenItems ?? 0));
+    const unresolvedPenalty = clamp(unresolvedOpenItems * 0.08, 0, 0.4);
+    const score = +clamp(
+      averageChecklistCompletion * 0.55 + averageHeadingCoverage * 0.45 - unresolvedPenalty,
+      0,
+      1
+    ).toFixed(3);
+    const currentChainDepth = Math.max(1, Math.floor(input.currentChainDepth ?? 2));
+    const maxChainDepth = Math.max(currentChainDepth, Math.floor(input.maxChainDepth ?? 4));
+    const reasons: string[] = [];
+
+    let recommendedChainDepth = currentChainDepth;
+    let qualityBand: ChainQualityAnalysisResult['qualityBand'] = 'strong';
+
+    if (score < 0.55) {
+      recommendedChainDepth = Math.min(maxChainDepth, currentChainDepth + 1);
+      qualityBand = 'weak';
+      reasons.push('Low predecessor quality warrants deeper chaining and extra validation.');
+    } else if (score < 0.8) {
+      recommendedChainDepth = Math.min(maxChainDepth, Math.max(currentChainDepth, 2));
+      qualityBand = 'watch';
+      reasons.push('Mixed predecessor quality suggests preserving review depth.');
+    } else {
+      recommendedChainDepth = Math.max(1, currentChainDepth - 1);
+      reasons.push('High predecessor quality supports a shallower, lower-latency chain.');
+    }
+
+    if (unresolvedOpenItems > 0) {
+      reasons.push(`Unresolved open items detected: ${unresolvedOpenItems}.`);
+    }
+
+    const result: ChainQualityAnalysisResult = {
+      analyzedAt: new Date().toISOString(),
+      currentChainDepth,
+      recommendedChainDepth,
+      score,
+      qualityBand,
+      metrics: {
+        averageChecklistCompletion,
+        averageHeadingCoverage,
+        unresolvedOpenItems,
+      },
+      reasons,
+    };
+
+    this.appendJsonl(CHAIN_QUALITY_PATH, result);
     return result;
   }
 
@@ -541,6 +736,99 @@ export class ProactiveDiscoveryOptimizationService {
     };
 
     this.appendJsonl(BRANCH_EXPLORATION_PATH, result);
+    return result;
+  }
+
+  async planDependencyAwareExecution(
+    input: DependencyAwarePlanInput
+  ): Promise<DependencyAwarePlanResult> {
+    const items = input.items || [];
+    const itemMap = new Map(items.map((item) => [item.id, item]));
+    const indegree = new Map<string, number>();
+    const dependents = new Map<string, string[]>();
+
+    for (const item of items) {
+      indegree.set(item.id, 0);
+      dependents.set(item.id, []);
+    }
+
+    for (const item of items) {
+      for (const dependency of item.dependencies || []) {
+        if (!itemMap.has(dependency)) {
+          continue;
+        }
+        indegree.set(item.id, (indegree.get(item.id) || 0) + 1);
+        dependents.get(dependency)?.push(item.id);
+      }
+    }
+
+    const executionGroups: string[][] = [];
+    const prioritizedOrder: DependencyAwarePlanResult['prioritizedOrder'] = [];
+    let ready = items
+      .filter((item) => (indegree.get(item.id) || 0) === 0)
+      .sort((left, right) => toPriorityScore(right) - toPriorityScore(left));
+
+    while (ready.length > 0) {
+      const group = ready.map((item) => item.id);
+      executionGroups.push(group);
+
+      for (const item of ready) {
+        prioritizedOrder.push({
+          id: item.id,
+          priorityScore: toPriorityScore(item),
+          dependencies: [...(item.dependencies || [])],
+          preferredAgentId: item.preferredAgentId,
+          requiredCapability: item.requiredCapability,
+        });
+
+        for (const dependentId of dependents.get(item.id) || []) {
+          indegree.set(dependentId, Math.max(0, (indegree.get(dependentId) || 0) - 1));
+        }
+      }
+
+      ready = items
+        .filter(
+          (item) =>
+            (indegree.get(item.id) || 0) === 0 &&
+            !prioritizedOrder.some((row) => row.id === item.id)
+        )
+        .sort((left, right) => toPriorityScore(right) - toPriorityScore(left));
+    }
+
+    const topoIds = prioritizedOrder.map((row) => row.id);
+    const longestPathTo = new Map<string, { duration: number; path: string[] }>();
+
+    for (const id of topoIds) {
+      const item = itemMap.get(id)!;
+      const duration = Math.max(1, Math.floor(item.estimatedDurationMinutes ?? 15));
+      const deps = item.dependencies || [];
+      const bestParent = deps
+        .map((dependency) => longestPathTo.get(dependency))
+        .filter((value): value is { duration: number; path: string[] } => Boolean(value))
+        .sort((left, right) => right.duration - left.duration)[0];
+
+      const nextDuration = duration + (bestParent?.duration || 0);
+      longestPathTo.set(id, {
+        duration: nextDuration,
+        path: [...(bestParent?.path || []), id],
+      });
+    }
+
+    const criticalPathEntry = Array.from(longestPathTo.values()).sort(
+      (left, right) => right.duration - left.duration
+    )[0] || { duration: 0, path: [] };
+
+    const result: DependencyAwarePlanResult = {
+      plannedAt: new Date().toISOString(),
+      executionGroups,
+      prioritizedOrder,
+      criticalPath: {
+        steps: criticalPathEntry.path,
+        totalDurationMinutes: criticalPathEntry.duration,
+      },
+    };
+
+    this.appendJsonl(DEPENDENCY_PLAN_PATH, result);
     return result;
   }
 
@@ -683,6 +971,116 @@ export class ProactiveDiscoveryOptimizationService {
     return decision;
   }
 
+  async analyzeToolReliability(input: {
+    traces: ToolExecutionTraceInput[];
+  }): Promise<ToolReliabilityAnalysisResult> {
+    const grouped = new Map<string, ToolExecutionTraceInput[]>();
+    for (const trace of input.traces || []) {
+      const rows = grouped.get(trace.toolId) || [];
+      rows.push(trace);
+      grouped.set(trace.toolId, rows);
+    }
+
+    const tools = Array.from(grouped.entries())
+      .map(([toolId, traces]) => {
+        const successRate = toAverage(traces.map((trace) => (trace.success ? 1 : 0)));
+        const avgDurationMs = Math.round(
+          toAverage(traces.map((trace) => Math.max(0, trace.durationMs ?? 0)))
+        );
+        const avgCostUsd = +toAverage(
+          traces.map((trace) => Math.max(0, trace.estimatedCostUsd ?? 0))
+        ).toFixed(4);
+        const reliabilityScore = +clamp(
+          successRate * 0.7 +
+            clamp(1 - avgDurationMs / 5000, 0, 1) * 0.2 +
+            clamp(1 - avgCostUsd / 2, 0, 1) * 0.1,
+          0,
+          1
+        ).toFixed(3);
+
+        return {
+          toolId,
+          totalCalls: traces.length,
+          successRate,
+          avgDurationMs,
+          avgCostUsd,
+          reliabilityScore,
+          planningReasons: Array.from(
+            new Set(traces.map((trace) => trace.planningReason).filter(Boolean) as string[])
+          ),
+          skippedTools: Array.from(new Set(traces.flatMap((trace) => trace.skippedTools || []))),
+          escalationTargets: Array.from(
+            new Set(traces.map((trace) => trace.escalatedTo).filter(Boolean) as string[])
+          ),
+        };
+      })
+      .sort((left, right) => right.reliabilityScore - left.reliabilityScore);
+
+    const result: ToolReliabilityAnalysisResult = {
+      analyzedAt: new Date().toISOString(),
+      tools,
+    };
+
+    this.appendJsonl(TOOL_RELIABILITY_PATH, result);
+    return result;
+  }
+
+  async validatePlanFreshness(
+    input: PlanFreshnessValidationInput
+  ): Promise<PlanFreshnessValidationResult> {
+    const nowIso = input.nowIso || new Date().toISOString();
+    const nowMs = Date.parse(nowIso);
+    const staleAfterSeconds = Math.max(60, input.staleAfterSeconds ?? 3600);
+    const staleAssumptions = (input.assumptions || [])
+      .map((assumption) => {
+        if (assumption.expectedValue !== assumption.actualValue) {
+          return {
+            key: assumption.key,
+            reason: 'value-mismatch' as const,
+            expectedValue: assumption.expectedValue,
+            actualValue: assumption.actualValue,
+          };
+        }
+
+        if (assumption.sourceUpdatedAt) {
+          const sourceMs = Date.parse(assumption.sourceUpdatedAt);
+          const ageSeconds = Number.isFinite(sourceMs)
+            ? Math.max(0, Math.floor((nowMs - sourceMs) / 1000))
+            : staleAfterSeconds + 1;
+          if (ageSeconds > staleAfterSeconds) {
+            return {
+              key: assumption.key,
+              reason: 'source-stale' as const,
+              expectedValue: assumption.expectedValue,
+              actualValue: assumption.actualValue,
+            };
+          }
+        }
+
+        return null;
+      })
+      .filter(
+        (row): row is PlanFreshnessValidationResult['staleAssumptions'][number] => row !== null
+      );
+
+    const result: PlanFreshnessValidationResult = {
+      validatedAt: nowIso,
+      planId: input.planId,
+      stale: staleAssumptions.length > 0,
+      staleAssumptions,
+      recommendedActions:
+        staleAssumptions.length > 0
+          ? [
+              'Revalidate dependent plan steps against current metrics and decisions.',
+              'Reprioritize stale work before dispatching the next execution group.',
+            ]
+          : ['Plan assumptions remain fresh.'],
+    };
+
+    this.appendJsonl(PLAN_FRESHNESS_PATH, result);
+    return result;
+  }
+
   async listRecentRouteEscalations(limit = 20): Promise<RouteEscalationDecision[]> {
     const rows = this.readJsonl<RouteEscalationDecision>(ROUTE_ESCALATION_PATH);
     return rows.slice(-Math.max(1, limit)).reverse();
@@ -732,6 +1130,73 @@ export class ProactiveDiscoveryOptimizationService {
     reason?: string
   ): Promise<AdaptivePolicyProposal | undefined> {
     return this.transitionAdaptivePolicyProposal(proposalId, 'applied', actor, reason);
+  }
+
+  async autoApplyAdaptivePolicyProposal(input: {
+    proposalId: string;
+    actor: string;
+    baselineValues?: Record<string, number>;
+    maxChangePercent?: number;
+    reversibleWithinHours?: number;
+  }): Promise<AdaptiveProposalAutoApplyResult | undefined> {
+    const proposals = this.readJsonl<AdaptivePolicyProposal>(ADAPTIVE_POLICY_PROPOSALS_PATH);
+    const proposal = proposals.find((row) => row.proposalId === input.proposalId);
+    if (!proposal) {
+      return undefined;
+    }
+
+    const reasons: string[] = [];
+    const maxChangePercent = Math.max(1, input.maxChangePercent ?? 10);
+    const reversibleWithinHours = Math.max(1, input.reversibleWithinHours ?? 24);
+    const numericChanges = Object.entries(proposal.desiredChange)
+      .map(([key, value]) => {
+        const baseline = input.baselineValues?.[key];
+        if (typeof value !== 'number' || !Number.isFinite(value) || baseline === undefined) {
+          return null;
+        }
+        const changePercent =
+          baseline === 0 ? 100 : Math.abs(((value - baseline) / baseline) * 100);
+        return changePercent;
+      })
+      .filter((value): value is number => value !== null);
+
+    const changePercent = numericChanges.length > 0 ? Math.max(...numericChanges) : 100;
+    const withinBounds = numericChanges.length > 0 && changePercent <= maxChangePercent;
+    const requiresApproval = proposal.approvalRequired && !withinBounds;
+    let nextProposal = proposal;
+    let autoApplied = false;
+
+    if (withinBounds) {
+      if (proposal.status === 'pending' && proposal.approvalRequired) {
+        nextProposal =
+          (await this.approveAdaptivePolicyProposal(
+            proposal.proposalId,
+            input.actor,
+            `Auto-approved within ${maxChangePercent}% bound.`
+          )) || nextProposal;
+      }
+
+      nextProposal =
+        (await this.applyAdaptivePolicyProposal(
+          proposal.proposalId,
+          input.actor,
+          `Auto-applied within ${maxChangePercent}% bound.`
+        )) || nextProposal;
+      autoApplied = true;
+      reasons.push('Proposal remained within configured change bounds and was auto-applied.');
+    } else {
+      reasons.push('Proposal exceeds automatic application bounds and still requires approval.');
+    }
+
+    return {
+      proposal: nextProposal,
+      withinBounds,
+      autoApplied,
+      requiresApproval,
+      changePercent: +changePercent.toFixed(3),
+      reversibleUntil: new Date(Date.now() + reversibleWithinHours * 60 * 60 * 1000).toISOString(),
+      reasons,
+    };
   }
 
   async revertAdaptivePolicyProposal(

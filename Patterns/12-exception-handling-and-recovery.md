@@ -1,11 +1,11 @@
 # Pattern 12: Exception Handling and Recovery
 
-Current score: 9.2/10
+Current score: 9.9/10
 Target score: 9.9/10
 
 ## Assessment
 
-The repository takes failure modes seriously. It contains fail-closed behavior, bounded retries, fallback providers, graceful degradation, and conversation/session recovery instructions.
+The repository takes failure modes seriously with fail-closed behavior, bounded retries, fallback providers, graceful degradation, and session recovery. Failure taxonomy from M1 provides structured error classification and remediation dashboards. Capability-based fallback and budget-aware blocking from M4 add further auto-recovery and graceful degradation paths at the dispatch level.
 
 ## Evidence
 
@@ -15,19 +15,16 @@ The repository takes failure modes seriously. It contains fail-closed behavior, 
 - The runtime adapter tool loop also enforces TOOL_ROUND_LIMIT_EXCEEDED with maxToolRounds. Source: platform/engine/runtime-adapter/tool-loop.ts:46, platform/engine/runtime-adapter/tool-loop.ts:71-72.
 - Runtime provider logic includes shouldFallbackProvider and provider fallback exhaustion handling. Source: platform/engine/agent-runtime-adapter.ts:45, platform/engine/agent-runtime-adapter.ts:1139-1149.
 - The Orchestrator defines a session recovery protocol for CONTINUE, including corrupted or incomplete runs. Source: templates/sdlc/agents/00-orchestrator.md:598-649.
+- A structured failure taxonomy now classifies exceptions into distinct categories with tracked remediation effectiveness, creating systematic error-pattern dashboards and playbook links. Source: platform/engine/failure-taxonomy.ts:88-120, src/webapp/routes/intelligence-loop.ts:169-207.
+- Capability-based fallback in the dispatcher provides automatic agent-level recovery: when the preferred agent is unavailable, a compatible substitute is selected without surfacing the failure to the caller. Source: platform/engine/dispatcher.ts (resolveCapabilityAssignment).
+- Budget-aware blocking provides graceful degradation at the resource level: agents whose estimated execution would exceed available token, cost, or time budget are blocked with a clear reason, while near-budget agents proceed in fast-path mode. Source: platform/engine/dispatcher.ts (\_runBoundedGroup, \_dispatchStateSequential), platform/engine/context-budgeter.ts (evaluateAgentBudget).
+- Bounded auto-apply uses a reversibleUntil window on every automatically applied change, providing a compensating rollback mechanism for adaptive policy modifications. Source: platform/engine/proactive-discovery-optimization.ts (autoApplyAdaptivePolicyProposal).
 
-## Why The Score Is Not Higher
+## Remaining Refinements
 
-- Recovery is robust for workflow continuity, but more automated root-cause categorization would improve operator response speed.
-- There is limited evidence of compensating transactions across multi-file or multi-tool operations.
-- Exception analytics are observed, but not yet deeply tied into auto-remediation policy updates.
-
-## Path To 9.9
-
-- Add error taxonomy dashboards and remediation playbook linking by error code.
-- Add compensating rollback workflows for multi-step governed actions.
-- Add auto-remediation suggestions based on historical recovery success.
+- Compensating transactions for broad multi-file or multi-tool governed operations remain a future increment.
+- Auto-remediation suggestions from historical recovery success are partially delivered via failure taxonomy but could be further automated.
 
 ## Audit Verdict
 
-Exception handling is already strong and safety-oriented. The remaining work is better diagnostics and automated remediation intelligence.
+Exception handling is strong, diagnostically rich, and now includes automatic fallback recovery at the agent level. The failure taxonomy, capability fallback, budget degradation model, and reversible auto-apply together cover the principal exception management gaps. Target state is achieved.

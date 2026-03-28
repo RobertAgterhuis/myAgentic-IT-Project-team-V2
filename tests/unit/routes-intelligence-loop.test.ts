@@ -227,4 +227,133 @@ describe('routes/intelligence-loop', () => {
     });
     expect(revertRes.statusCode).toBe(400);
   });
+
+  it('runs M3 stale scan and contradiction discovery endpoints', async () => {
+    const staleRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m3/discovery/stale-scan',
+      payload: {
+        staleThresholdSeconds: 3600,
+        entities: [
+          {
+            id: 'DEC-100',
+            type: 'decision',
+            lastUpdatedAt: '2026-03-27T10:00:00.000Z',
+            workflows: ['sprint-gate'],
+          },
+        ],
+      },
+    });
+
+    expect(staleRes.statusCode).toBe(200);
+    expect(staleRes.json().result.totalEntities).toBe(1);
+
+    const contradictionRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m3/discovery/contradictions',
+      payload: {
+        artifacts: [
+          {
+            artifactId: 'phase2',
+            phase: 'PHASE_2',
+            content: 'Decision: transport=http',
+          },
+          {
+            artifactId: 'synthesis',
+            phase: 'SYNTHESIS',
+            content: 'Decision: transport=grpc',
+          },
+        ],
+      },
+    });
+
+    expect(contradictionRes.statusCode).toBe(422);
+    expect(contradictionRes.json().blockSynthesisPublication).toBe(true);
+  });
+
+  it('runs exploratory branch generation and optimization policy endpoints', async () => {
+    const noExploreRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m3/discovery/exploratory-branches',
+      payload: {
+        taskId: 'TASK-LOW',
+        objective: 'Low uncertainty task',
+        basePlanSteps: ['step-1'],
+        uncertainty: 0.3,
+      },
+    });
+
+    expect(noExploreRes.statusCode).toBe(200);
+    expect(noExploreRes.json().generated).toBe(false);
+
+    const exploreRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m3/discovery/exploratory-branches',
+      payload: {
+        taskId: 'TASK-HIGH',
+        objective: 'High uncertainty task',
+        basePlanSteps: ['step-1', 'step-2'],
+        uncertainty: 0.85,
+        maxAlternatives: 3,
+      },
+    });
+
+    expect(exploreRes.statusCode).toBe(201);
+    expect(exploreRes.json().result.alternativesGenerated).toBe(3);
+
+    const concurrencyRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m3/optimization/concurrency-policy',
+      payload: {
+        currentMaxConcurrency: 8,
+        queueWaitMs: 1000,
+        failureRate: 0.22,
+        throughputRps: 40,
+        previousPolicy: {
+          maxConcurrency: 6,
+          baselineFailureRate: 0.1,
+          baselineThroughputRps: 60,
+          rollbackValue: 6,
+        },
+      },
+    });
+
+    expect(concurrencyRes.statusCode).toBe(200);
+    expect(concurrencyRes.json().decision.rollbackApplied).toBe(true);
+
+    const retrievalRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m3/optimization/retrieval-policy',
+      payload: {
+        riskLevel: 'high',
+        citationUsefulness: 0.45,
+        noMatchRate: 0.3,
+        retrievalLatencyP95Ms: 1200,
+        latencyBudgetMs: 900,
+      },
+    });
+
+    expect(retrievalRes.statusCode).toBe(200);
+    expect(retrievalRes.json().decision.metadata.reasons.length).toBeGreaterThan(0);
+
+    const escalateRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m3/optimization/route-escalation',
+      payload: {
+        confidence: 0.4,
+        riskLevel: 'high',
+      },
+    });
+
+    expect(escalateRes.statusCode).toBe(200);
+    expect(escalateRes.json().decision.selectedRoute).toBe('verifier-heavy');
+
+    const recentRes = await app.inject({
+      method: 'GET',
+      url: '/api/intelligence-loop/m3/optimization/route-escalation/recent?limit=1',
+    });
+
+    expect(recentRes.statusCode).toBe(200);
+    expect(recentRes.json().total).toBe(1);
+  });
 });

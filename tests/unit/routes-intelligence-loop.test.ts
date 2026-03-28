@@ -8,6 +8,18 @@ import { registerIntelligenceLoopRoutes } from '../../src/webapp/routes/intellig
 
 function createContext(): ServiceContext {
   const store = new InMemoryStore();
+  store.writeFile(
+    'Patterns/01-prompt-chaining.md',
+    '# Prompt Chaining\nCurrent score: 9.2/10\nTarget score: 9.9/10\n'
+  );
+  store.writeFile(
+    'Patterns/02-routing.md',
+    '# Routing\nCurrent score: 9.6/10\nTarget score: 9.9/10\n'
+  );
+  store.writeFile(
+    'Patterns/03-parallelization.md',
+    '# Parallelization\nCurrent score: 9.95/10\nTarget score: 9.95/10\n'
+  );
 
   return {
     store,
@@ -355,5 +367,134 @@ describe('routes/intelligence-loop', () => {
 
     expect(recentRes.statusCode).toBe(200);
     expect(recentRes.json().total).toBe(1);
+  });
+
+  it('supports M4 adaptive policy proposal lifecycle and summary surfaces', async () => {
+    const createRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m4/adaptive-policy-proposals',
+      payload: {
+        domain: 'concurrency',
+        title: 'Increase bounded concurrency',
+        rationale: 'Queue wait is high with stable failure rate.',
+        desiredChange: { maxConcurrency: 10 },
+        decisionReferences: ['CONCURRENCY-TEST-1'],
+        actor: 'architect',
+      },
+    });
+
+    expect(createRes.statusCode).toBe(201);
+    const proposalId = createRes.json().proposal.proposalId as string;
+
+    const approveRes = await app.inject({
+      method: 'POST',
+      url: `/api/intelligence-loop/m4/adaptive-policy-proposals/${proposalId}/approve`,
+      payload: { actor: 'reviewer', reason: 'looks safe' },
+    });
+
+    expect(approveRes.statusCode).toBe(200);
+    expect(approveRes.json().proposal.status).toBe('approved');
+
+    const applyRes = await app.inject({
+      method: 'POST',
+      url: `/api/intelligence-loop/m4/adaptive-policy-proposals/${proposalId}/apply`,
+      payload: { actor: 'operator', reason: 'rollout' },
+    });
+
+    expect(applyRes.statusCode).toBe(200);
+    expect(applyRes.json().proposal.status).toBe('applied');
+
+    const revertRes = await app.inject({
+      method: 'POST',
+      url: `/api/intelligence-loop/m4/adaptive-policy-proposals/${proposalId}/revert`,
+      payload: { actor: 'operator', reason: 'rollback test' },
+    });
+
+    expect(revertRes.statusCode).toBe(200);
+    expect(revertRes.json().proposal.status).toBe('reverted');
+
+    const listRes = await app.inject({
+      method: 'GET',
+      url: '/api/intelligence-loop/m4/adaptive-policy-proposals',
+    });
+
+    expect(listRes.statusCode).toBe(200);
+    expect(listRes.json().total).toBeGreaterThan(0);
+
+    const summaryRes = await app.inject({
+      method: 'GET',
+      url: '/api/intelligence-loop/m4/adaptive-behaviors/summary',
+    });
+
+    expect(summaryRes.statusCode).toBe(200);
+    expect(summaryRes.json().summary.approvals.revertedProposals).toBeGreaterThanOrEqual(1);
+  });
+
+  it('returns 404 for unknown M4 adaptive policy proposal operations', async () => {
+    const approveRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m4/adaptive-policy-proposals/unknown/approve',
+      payload: { actor: 'reviewer', reason: 'n/a' },
+    });
+    expect(approveRes.statusCode).toBe(404);
+
+    const applyRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m4/adaptive-policy-proposals/unknown/apply',
+      payload: { actor: 'operator', reason: 'n/a' },
+    });
+    expect(applyRes.statusCode).toBe(404);
+
+    const revertRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m4/adaptive-policy-proposals/unknown/revert',
+      payload: { actor: 'operator', reason: 'n/a' },
+    });
+    expect(revertRes.statusCode).toBe(404);
+
+    const rejectRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m4/adaptive-policy-proposals/unknown/reject',
+      payload: { actor: 'reviewer', reason: 'n/a' },
+    });
+    expect(rejectRes.statusCode).toBe(404);
+  });
+
+  it('supports M4 pattern score analysis and uplift proposal generation', async () => {
+    const analysisRes = await app.inject({
+      method: 'GET',
+      url: '/api/intelligence-loop/m4/pattern-scores/analysis?averageTarget=9.9&minimumTarget=9.4&limit=2',
+    });
+
+    expect(analysisRes.statusCode).toBe(200);
+    expect(analysisRes.json().analysis.totalPatterns).toBeGreaterThanOrEqual(3);
+    expect(analysisRes.json().analysis.readyForM4Done).toBe(false);
+
+    const generateRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/m4/pattern-uplift-proposals',
+      payload: {
+        actor: 'optimizer',
+        limit: 2,
+        averageTarget: 9.9,
+        minimumTarget: 9.4,
+      },
+    });
+
+    expect(generateRes.statusCode).toBe(201);
+    expect(generateRes.json().result.proposalsCreated.length).toBe(2);
+    expect(generateRes.json().result.proposalsCreated[0].domain).toBe('pattern-uplift');
+
+    const listRes = await app.inject({
+      method: 'GET',
+      url: '/api/intelligence-loop/m4/adaptive-policy-proposals?status=pending',
+    });
+
+    expect(listRes.statusCode).toBe(200);
+    expect(
+      listRes
+        .json()
+        .proposals.some((proposal: { domain: string }) => proposal.domain === 'pattern-uplift')
+    ).toBe(true);
   });
 });

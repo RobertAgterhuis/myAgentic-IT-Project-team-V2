@@ -18,7 +18,14 @@ function createMockContext(): ServiceContext {
       data.set(filePath, content);
     }),
     mkdirp: vi.fn(),
-    readdir: vi.fn(() => []),
+    readdir: vi.fn((dirPath: string) => {
+      if (dirPath !== 'Patterns') {
+        return [];
+      }
+      return Array.from(data.keys())
+        .filter((key) => key.startsWith('Patterns/') && key.toLowerCase().endsWith('.md'))
+        .map((key) => key.slice('Patterns/'.length));
+    }),
     stat: vi.fn(),
     mtime: vi.fn(() => 0),
   };
@@ -180,5 +187,106 @@ describe('proactive-discovery-optimization service', () => {
 
     const recent = await svc.listRecentRouteEscalations(2);
     expect(recent.length).toBe(2);
+  });
+
+  it('supports auditable and reversible adaptive policy proposal lifecycle', async () => {
+    const svc = createProactiveDiscoveryOptimizationService(ctx);
+
+    await svc.decideConcurrencyPolicy({
+      currentMaxConcurrency: 8,
+      queueWaitMs: 1900,
+      failureRate: 0.05,
+      throughputRps: 90,
+    });
+
+    const proposal = await svc.createAdaptivePolicyProposal({
+      domain: 'concurrency',
+      title: 'Increase bounded concurrency',
+      rationale: 'Queue wait is elevated while failure rate remains low.',
+      desiredChange: { maxConcurrency: 10 },
+      decisionReferences: ['CONCURRENCY-1'],
+      actor: 'architect',
+    });
+
+    expect(proposal.status).toBe('pending');
+    expect(proposal.auditTrail[0].action).toBe('created');
+
+    const approved = await svc.approveAdaptivePolicyProposal(
+      proposal.proposalId,
+      'reviewer',
+      'Approved for rollout'
+    );
+    expect(approved?.status).toBe('approved');
+
+    const applied = await svc.applyAdaptivePolicyProposal(
+      proposal.proposalId,
+      'operator',
+      'Applied safely'
+    );
+    expect(applied?.status).toBe('applied');
+
+    const reverted = await svc.revertAdaptivePolicyProposal(
+      proposal.proposalId,
+      'operator',
+      'Rollback after drift spike'
+    );
+    expect(reverted?.status).toBe('reverted');
+
+    const listed = await svc.listAdaptivePolicyProposals();
+    expect(listed.length).toBe(1);
+    expect(listed[0].auditTrail.length).toBeGreaterThanOrEqual(4);
+
+    const summary = await svc.getAdaptiveBehaviorSummary();
+    expect(summary.optimization.concurrencyDecisions).toBeGreaterThan(0);
+    expect(summary.approvals.revertedProposals).toBe(1);
+    expect(summary.latest.proposal?.proposalId).toBe(proposal.proposalId);
+
+    const missing = await svc.approveAdaptivePolicyProposal('unknown', 'reviewer', 'no-op');
+    expect(missing).toBeUndefined();
+  });
+
+  it('analyzes pattern score readiness and generates uplift proposals for low-scoring patterns', async () => {
+    const svc = createProactiveDiscoveryOptimizationService(ctx);
+
+    ctx.store.writeFile(
+      'Patterns/01-prompt-chaining.md',
+      '# Prompt Chaining\nCurrent score: 9.2/10\nTarget score: 9.9/10\n'
+    );
+    ctx.store.writeFile(
+      'Patterns/02-routing.md',
+      '# Routing\nCurrent score: 9.95/10\nTarget score: 9.95/10\n'
+    );
+    ctx.store.writeFile(
+      'Patterns/03-parallelization.md',
+      '# Parallelization\nCurrent score: 9.5/10\nTarget score: 9.9/10\n'
+    );
+
+    const analysis = await svc.analyzePatternScores({
+      averageTarget: 9.9,
+      minimumTarget: 9.4,
+      limit: 2,
+    });
+
+    expect(analysis.totalPatterns).toBe(3);
+    expect(analysis.averageCurrentScore).toBeLessThan(9.9);
+    expect(analysis.minCurrentScore).toBe(9.2);
+    expect(analysis.belowMinThresholdPatterns.length).toBe(1);
+    expect(analysis.readyForM4Done).toBe(false);
+    expect(analysis.topPriorityPatterns.length).toBe(2);
+
+    const generated = await svc.generatePatternUpliftProposals({
+      actor: 'optimizer',
+      limit: 2,
+      averageTarget: 9.9,
+      minimumTarget: 9.4,
+    });
+
+    expect(generated.proposalsCreated.length).toBe(2);
+    expect(generated.proposalsCreated[0].domain).toBe('pattern-uplift');
+    expect(generated.analysis.totalPatterns).toBe(3);
+
+    const allProposals = await svc.listAdaptivePolicyProposals();
+    expect(allProposals.length).toBe(2);
+    expect(allProposals.every((proposal) => proposal.domain === 'pattern-uplift')).toBe(true);
   });
 });

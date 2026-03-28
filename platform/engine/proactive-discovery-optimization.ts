@@ -188,6 +188,94 @@ export interface RouteEscalationDecision {
   };
 }
 
+export type AdaptivePolicyDomain =
+  | 'concurrency'
+  | 'retrieval'
+  | 'route-escalation'
+  | 'pattern-uplift';
+
+export interface AdaptivePolicyProposal {
+  proposalId: string;
+  createdAt: string;
+  domain: AdaptivePolicyDomain;
+  status: 'pending' | 'approved' | 'applied' | 'reverted' | 'rejected';
+  title: string;
+  rationale: string;
+  desiredChange: Record<string, unknown>;
+  decisionReferences: string[];
+  approvalRequired: boolean;
+  auditTrail: Array<{
+    action: 'created' | 'approved' | 'applied' | 'reverted' | 'rejected';
+    actor: string;
+    at: string;
+    reason?: string;
+  }>;
+}
+
+export interface AdaptivePolicyProposalInput {
+  domain: AdaptivePolicyDomain;
+  title: string;
+  rationale: string;
+  desiredChange: Record<string, unknown>;
+  decisionReferences?: string[];
+  approvalRequired?: boolean;
+  actor?: string;
+}
+
+export interface AdaptiveBehaviorSummary {
+  generatedAt: string;
+  optimization: {
+    concurrencyDecisions: number;
+    retrievalDecisions: number;
+    routeEscalations: number;
+  };
+  approvals: {
+    pendingProposals: number;
+    approvedProposals: number;
+    appliedProposals: number;
+    revertedProposals: number;
+    rejectedProposals: number;
+  };
+  latest: {
+    concurrency: ConcurrencyPolicyDecision | null;
+    retrieval: RetrievalPolicyDecision | null;
+    routeEscalation: RouteEscalationDecision | null;
+    proposal: AdaptivePolicyProposal | null;
+  };
+}
+
+export interface PatternScoreEntry {
+  patternId: string;
+  filePath: string;
+  currentScore: number;
+  targetScore: number | null;
+  projectedScore: number;
+  gapTo99: number;
+  gapToTarget: number;
+}
+
+export interface PatternScoreAnalysis {
+  generatedAt: string;
+  totalPatterns: number;
+  averageCurrentScore: number;
+  minCurrentScore: number;
+  averageTargetScore: number | null;
+  targetThresholds: {
+    average: number;
+    minimum: number;
+  };
+  belowMinThresholdPatterns: PatternScoreEntry[];
+  belowTargetPatterns: PatternScoreEntry[];
+  topPriorityPatterns: PatternScoreEntry[];
+  readyForM4Done: boolean;
+}
+
+export interface PatternUpliftProposalBatchResult {
+  generatedAt: string;
+  analysis: PatternScoreAnalysis;
+  proposalsCreated: AdaptivePolicyProposal[];
+}
+
 const BASE_DIR = 'BusinessDocs/intelligence-loop/m3';
 const STALE_SCANS_PATH = `${BASE_DIR}/stale-knowledge-scans.jsonl`;
 const CONTRADICTION_SCANS_PATH = `${BASE_DIR}/contradiction-scans.jsonl`;
@@ -195,6 +283,8 @@ const BRANCH_EXPLORATION_PATH = `${BASE_DIR}/exploratory-branches.jsonl`;
 const CONCURRENCY_POLICY_PATH = `${BASE_DIR}/concurrency-policies.jsonl`;
 const RETRIEVAL_POLICY_PATH = `${BASE_DIR}/retrieval-policies.jsonl`;
 const ROUTE_ESCALATION_PATH = `${BASE_DIR}/route-escalations.jsonl`;
+const ADAPTIVE_POLICY_PROPOSALS_PATH = `${BASE_DIR}/adaptive-policy-proposals.jsonl`;
+const PATTERNS_DIR = 'Patterns';
 
 function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
@@ -210,6 +300,13 @@ function parseJsonl<T>(content: string): T[] {
     .map((line) => line.trim())
     .filter(Boolean)
     .map((line) => JSON.parse(line) as T);
+}
+
+function toAverage(values: number[]): number {
+  if (values.length === 0) {
+    return 0;
+  }
+  return +(values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(3);
 }
 
 export class ProactiveDiscoveryOptimizationService {
@@ -239,6 +336,17 @@ export class ProactiveDiscoveryOptimizationService {
     const existing = this.read(filePath);
     const next = `${existing}${JSON.stringify(value)}\n`;
     this.write(filePath, next);
+  }
+
+  private readJsonl<T>(filePath: string): T[] {
+    return parseJsonl<T>(this.read(filePath));
+  }
+
+  private overwriteJsonl<T extends object>(filePath: string, rows: T[]): void {
+    this.write(
+      filePath,
+      rows.map((row) => JSON.stringify(row)).join('\n') + (rows.length > 0 ? '\n' : '')
+    );
   }
 
   async scanKnowledgeStaleness(input: StaleKnowledgeScanInput): Promise<StaleKnowledgeScanResult> {
@@ -576,8 +684,317 @@ export class ProactiveDiscoveryOptimizationService {
   }
 
   async listRecentRouteEscalations(limit = 20): Promise<RouteEscalationDecision[]> {
-    const rows = parseJsonl<RouteEscalationDecision>(this.read(ROUTE_ESCALATION_PATH));
+    const rows = this.readJsonl<RouteEscalationDecision>(ROUTE_ESCALATION_PATH);
     return rows.slice(-Math.max(1, limit)).reverse();
+  }
+
+  async createAdaptivePolicyProposal(
+    input: AdaptivePolicyProposalInput
+  ): Promise<AdaptivePolicyProposal> {
+    const now = new Date().toISOString();
+    const actor = input.actor || 'system';
+    const proposal: AdaptivePolicyProposal = {
+      proposalId: makeId('ADAPTIVE-POLICY'),
+      createdAt: now,
+      domain: input.domain,
+      status: 'pending',
+      title: input.title,
+      rationale: input.rationale,
+      desiredChange: input.desiredChange,
+      decisionReferences: input.decisionReferences || [],
+      approvalRequired: input.approvalRequired ?? true,
+      auditTrail: [{ action: 'created', actor, at: now }],
+    };
+
+    this.appendJsonl(ADAPTIVE_POLICY_PROPOSALS_PATH, proposal);
+    return proposal;
+  }
+
+  async listAdaptivePolicyProposals(
+    status?: AdaptivePolicyProposal['status']
+  ): Promise<AdaptivePolicyProposal[]> {
+    const rows = this.readJsonl<AdaptivePolicyProposal>(ADAPTIVE_POLICY_PROPOSALS_PATH);
+    const filtered = status ? rows.filter((row) => row.status === status) : rows;
+    return filtered.slice().reverse();
+  }
+
+  async approveAdaptivePolicyProposal(
+    proposalId: string,
+    actor: string,
+    reason?: string
+  ): Promise<AdaptivePolicyProposal | undefined> {
+    return this.transitionAdaptivePolicyProposal(proposalId, 'approved', actor, reason);
+  }
+
+  async applyAdaptivePolicyProposal(
+    proposalId: string,
+    actor: string,
+    reason?: string
+  ): Promise<AdaptivePolicyProposal | undefined> {
+    return this.transitionAdaptivePolicyProposal(proposalId, 'applied', actor, reason);
+  }
+
+  async revertAdaptivePolicyProposal(
+    proposalId: string,
+    actor: string,
+    reason: string
+  ): Promise<AdaptivePolicyProposal | undefined> {
+    return this.transitionAdaptivePolicyProposal(proposalId, 'reverted', actor, reason);
+  }
+
+  async rejectAdaptivePolicyProposal(
+    proposalId: string,
+    actor: string,
+    reason: string
+  ): Promise<AdaptivePolicyProposal | undefined> {
+    return this.transitionAdaptivePolicyProposal(proposalId, 'rejected', actor, reason);
+  }
+
+  private async transitionAdaptivePolicyProposal(
+    proposalId: string,
+    nextStatus: Exclude<AdaptivePolicyProposal['status'], 'pending'>,
+    actor: string,
+    reason?: string
+  ): Promise<AdaptivePolicyProposal | undefined> {
+    const rows = this.readJsonl<AdaptivePolicyProposal>(ADAPTIVE_POLICY_PROPOSALS_PATH);
+    let updated: AdaptivePolicyProposal | undefined;
+
+    const nextRows = rows.map((row) => {
+      if (row.proposalId !== proposalId) {
+        return row;
+      }
+
+      const patch: AdaptivePolicyProposal = {
+        ...row,
+        status: nextStatus,
+        auditTrail: [
+          ...row.auditTrail,
+          {
+            action: nextStatus,
+            actor,
+            at: new Date().toISOString(),
+            reason,
+          },
+        ],
+      };
+
+      updated = patch;
+      return patch;
+    });
+
+    if (!updated) {
+      return undefined;
+    }
+
+    this.overwriteJsonl(ADAPTIVE_POLICY_PROPOSALS_PATH, nextRows);
+    return updated;
+  }
+
+  async getAdaptiveBehaviorSummary(): Promise<AdaptiveBehaviorSummary> {
+    const concurrency = this.readJsonl<ConcurrencyPolicyDecision>(CONCURRENCY_POLICY_PATH);
+    const retrieval = this.readJsonl<RetrievalPolicyDecision>(RETRIEVAL_POLICY_PATH);
+    const routeEscalation = this.readJsonl<RouteEscalationDecision>(ROUTE_ESCALATION_PATH);
+    const proposals = this.readJsonl<AdaptivePolicyProposal>(ADAPTIVE_POLICY_PROPOSALS_PATH);
+
+    const byStatus = (status: AdaptivePolicyProposal['status']): number =>
+      proposals.filter((proposal) => proposal.status === status).length;
+
+    return {
+      generatedAt: new Date().toISOString(),
+      optimization: {
+        concurrencyDecisions: concurrency.length,
+        retrievalDecisions: retrieval.length,
+        routeEscalations: routeEscalation.length,
+      },
+      approvals: {
+        pendingProposals: byStatus('pending'),
+        approvedProposals: byStatus('approved'),
+        appliedProposals: byStatus('applied'),
+        revertedProposals: byStatus('reverted'),
+        rejectedProposals: byStatus('rejected'),
+      },
+      latest: {
+        concurrency: concurrency.length > 0 ? concurrency[concurrency.length - 1] : null,
+        retrieval: retrieval.length > 0 ? retrieval[retrieval.length - 1] : null,
+        routeEscalation:
+          routeEscalation.length > 0 ? routeEscalation[routeEscalation.length - 1] : null,
+        proposal: proposals.length > 0 ? proposals[proposals.length - 1] : null,
+      },
+    };
+  }
+
+  private readPatternMarkdownFiles(): Array<{ filePath: string; content: string }> {
+    let entries: Array<string | { name: string; isFile(): boolean; isDirectory(): boolean }> = [];
+    try {
+      entries = this.ctx.store.readdir(PATTERNS_DIR);
+    } catch {
+      return [];
+    }
+
+    const markdownFiles = entries
+      .map((entry) => (typeof entry === 'string' ? entry : entry.isFile() ? entry.name : null))
+      .filter((entry): entry is string => Boolean(entry))
+      .filter((name) => name.toLowerCase().endsWith('.md'))
+      .map((name) => `${PATTERNS_DIR}/${name}`);
+
+    return markdownFiles
+      .map((filePath) => {
+        try {
+          return { filePath, content: this.ctx.store.readFile(filePath) };
+        } catch {
+          return null;
+        }
+      })
+      .filter((row): row is { filePath: string; content: string } => row !== null);
+  }
+
+  private parsePatternScoreEntry(filePath: string, content: string): PatternScoreEntry | null {
+    const currentMatch = content.match(/current\s+score\s*:\s*([0-9]+(?:\.[0-9]+)?)\s*\/\s*10/i);
+    if (!currentMatch) {
+      return null;
+    }
+
+    const targetMatch = content.match(/target\s+score\s*:\s*([0-9]+(?:\.[0-9]+)?)\s*\/\s*10/i);
+    const headingMatch = content.match(/^#\s+(.+)$/m);
+    const fileName = filePath.split('/').pop() || filePath;
+    const patternId = headingMatch?.[1]?.trim() || fileName.replace(/\.md$/i, '');
+
+    const currentScore = +clamp(Number(currentMatch[1]), 0, 10).toFixed(3);
+    const targetScore =
+      targetMatch && Number.isFinite(Number(targetMatch[1]))
+        ? +clamp(Number(targetMatch[1]), 0, 10).toFixed(3)
+        : null;
+    const projectedScore = targetScore ?? currentScore;
+
+    return {
+      patternId,
+      filePath,
+      currentScore,
+      targetScore,
+      projectedScore,
+      gapTo99: +Math.max(0, 9.9 - currentScore).toFixed(3),
+      gapToTarget: +(targetScore === null ? 0 : Math.max(0, targetScore - currentScore)).toFixed(3),
+    };
+  }
+
+  async analyzePatternScores(input?: {
+    averageTarget?: number;
+    minimumTarget?: number;
+    limit?: number;
+  }): Promise<PatternScoreAnalysis> {
+    const averageTarget = clamp(input?.averageTarget ?? 9.9, 0, 10);
+    const minimumTarget = clamp(input?.minimumTarget ?? 9.4, 0, 10);
+    const limit = Math.max(1, Math.floor(input?.limit ?? 5));
+
+    const entries = this.readPatternMarkdownFiles()
+      .map((row) => this.parsePatternScoreEntry(row.filePath, row.content))
+      .filter((row): row is PatternScoreEntry => row !== null);
+
+    const ranked = entries
+      .slice()
+      .sort(
+        (a, b) =>
+          b.gapTo99 - a.gapTo99 ||
+          a.currentScore - b.currentScore ||
+          a.patternId.localeCompare(b.patternId)
+      );
+
+    const belowMinThresholdPatterns = ranked.filter((entry) => entry.currentScore < minimumTarget);
+    const belowTargetPatterns = ranked.filter(
+      (entry) => entry.targetScore !== null && entry.currentScore < entry.targetScore
+    );
+
+    const averageCurrentScore = toAverage(entries.map((entry) => entry.currentScore));
+    const minCurrentScore =
+      entries.length > 0 ? Math.min(...entries.map((entry) => entry.currentScore)) : 0;
+
+    const targetScores = entries
+      .map((entry) => entry.targetScore)
+      .filter((score): score is number => score !== null);
+
+    const averageTargetScore = targetScores.length > 0 ? toAverage(targetScores) : null;
+    const readyForM4Done =
+      entries.length > 0 &&
+      averageCurrentScore >= averageTarget &&
+      minCurrentScore >= minimumTarget;
+
+    return {
+      generatedAt: new Date().toISOString(),
+      totalPatterns: entries.length,
+      averageCurrentScore,
+      minCurrentScore,
+      averageTargetScore,
+      targetThresholds: {
+        average: averageTarget,
+        minimum: minimumTarget,
+      },
+      belowMinThresholdPatterns,
+      belowTargetPatterns,
+      topPriorityPatterns: ranked.slice(0, limit),
+      readyForM4Done,
+    };
+  }
+
+  async generatePatternUpliftProposals(input?: {
+    actor?: string;
+    limit?: number;
+    averageTarget?: number;
+    minimumTarget?: number;
+  }): Promise<PatternUpliftProposalBatchResult> {
+    const analysis = await this.analyzePatternScores({
+      averageTarget: input?.averageTarget,
+      minimumTarget: input?.minimumTarget,
+      limit: input?.limit,
+    });
+
+    const actor = input?.actor || 'pattern-optimizer';
+    const uniqueCandidates = new Map<string, PatternScoreEntry>();
+
+    for (const entry of analysis.belowMinThresholdPatterns) {
+      uniqueCandidates.set(entry.filePath, entry);
+    }
+
+    for (const entry of analysis.topPriorityPatterns) {
+      if (entry.gapTo99 > 0) {
+        uniqueCandidates.set(entry.filePath, entry);
+      }
+    }
+
+    const candidates = Array.from(uniqueCandidates.values())
+      .sort((a, b) => b.gapTo99 - a.gapTo99 || a.currentScore - b.currentScore)
+      .slice(0, Math.max(1, Math.floor(input?.limit ?? 3)));
+
+    const proposalsCreated: AdaptivePolicyProposal[] = [];
+    for (const candidate of candidates) {
+      const proposal = await this.createAdaptivePolicyProposal({
+        domain: 'pattern-uplift',
+        title: `Uplift ${candidate.patternId} toward M4 threshold`,
+        rationale: `Current score ${candidate.currentScore.toFixed(2)}/10 is below M4 average guardrail readiness.`,
+        desiredChange: {
+          patternId: candidate.patternId,
+          filePath: candidate.filePath,
+          currentScore: candidate.currentScore,
+          targetScore: candidate.targetScore,
+          gapTo99: candidate.gapTo99,
+          actions: [
+            'Add or strengthen measurable acceptance criteria.',
+            'Increase concrete examples and anti-pattern guidance.',
+            'Align synthesis references with explicit citation anchors.',
+          ],
+        },
+        decisionReferences: [`PATTERN-SCORE:${candidate.patternId}`],
+        approvalRequired: true,
+        actor,
+      });
+
+      proposalsCreated.push(proposal);
+    }
+
+    return {
+      generatedAt: new Date().toISOString(),
+      analysis,
+      proposalsCreated,
+    };
   }
 }
 

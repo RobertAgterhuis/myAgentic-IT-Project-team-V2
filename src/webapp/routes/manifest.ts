@@ -30,6 +30,7 @@ import { registerRoutes as registerRagRoutes } from './rag';
 import { registerRoutes as registerChatRoutes } from './chat';
 import { registerRoutes as registerGitRoutes } from './git';
 import { registerRoutes as registerReasoningCollaborationRoutes } from './reasoning-collaboration';
+import { registerRoutes as registerIntelligenceLoopRoutes } from './intelligence-loop';
 import { registerRoutes as registerMiscRoutes } from './misc';
 
 export type RouteRegistrar = (app: FastifyInstance, ctx: ServerContext) => Promise<void> | void;
@@ -67,6 +68,7 @@ export const ROUTE_REGISTRATION_MANIFEST: RouteManifestEntry[] = [
   { id: 'chat', register: registerChatRoutes },
   { id: 'git', register: registerGitRoutes },
   { id: 'reasoning-collaboration', register: registerReasoningCollaborationRoutes },
+  { id: 'intelligence-loop', register: registerIntelligenceLoopRoutes },
   { id: 'misc', register: registerMiscRoutes },
 ];
 

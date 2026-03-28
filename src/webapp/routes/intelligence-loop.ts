@@ -11,7 +11,9 @@
  */
 
 import type { FastifyInstance } from 'fastify';
+import type { ServerContext } from '../context';
 import type { ServiceContext } from '../services/types';
+import { toServiceContext } from '../services';
 import { createLessonsToPolicyService } from '../../../platform/engine/lessons-to-policy';
 import { createFailureTaxonomyService } from '../../../platform/engine/failure-taxonomy';
 import {
@@ -527,7 +529,223 @@ export async function registerIntelligenceLoopRoutes(app: FastifyInstance, ctx: 
       }
     }
   );
+
+  // ──── M4 Finishing Surfaces (Adaptive approvals + observability) ────
+
+  /**
+   * POST /api/intelligence-loop/m4/adaptive-policy-proposals
+   */
+  app.post<{
+    Body: {
+      domain: 'concurrency' | 'retrieval' | 'route-escalation' | 'pattern-uplift';
+      title: string;
+      rationale: string;
+      desiredChange: Record<string, unknown>;
+      decisionReferences?: string[];
+      approvalRequired?: boolean;
+      actor?: string;
+    };
+  }>('/api/intelligence-loop/m4/adaptive-policy-proposals', async (request, reply) => {
+    try {
+      const proposal = await proactiveOptimizationService.createAdaptivePolicyProposal(
+        request.body
+      );
+      return reply.status(201).send({ ok: true, proposal });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
+  /**
+   * GET /api/intelligence-loop/m4/adaptive-policy-proposals
+   */
+  app.get<{ Querystring: { status?: string } }>(
+    '/api/intelligence-loop/m4/adaptive-policy-proposals',
+    async (request, reply) => {
+      try {
+        const status = request.query.status as
+          | 'pending'
+          | 'approved'
+          | 'applied'
+          | 'reverted'
+          | 'rejected'
+          | undefined;
+        const proposals = await proactiveOptimizationService.listAdaptivePolicyProposals(status);
+        return reply.send({ ok: true, proposals, total: proposals.length });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply
+          .status(500)
+          .send({ ok: false, error: 'Failed to list adaptive policy proposals' });
+      }
+    }
+  );
+
+  /**
+   * POST /api/intelligence-loop/m4/adaptive-policy-proposals/:id/approve
+   */
+  app.post<{ Params: { id: string }; Body: { actor?: string; reason?: string } }>(
+    '/api/intelligence-loop/m4/adaptive-policy-proposals/:id/approve',
+    async (request, reply) => {
+      try {
+        const proposal = await proactiveOptimizationService.approveAdaptivePolicyProposal(
+          request.params.id,
+          request.body.actor || 'reviewer',
+          request.body.reason
+        );
+        if (!proposal) {
+          return reply.status(404).send({ ok: false, error: 'Adaptive policy proposal not found' });
+        }
+        return reply.send({ ok: true, proposal });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(400).send({ ok: false, error: (error as Error).message });
+      }
+    }
+  );
+
+  /**
+   * POST /api/intelligence-loop/m4/adaptive-policy-proposals/:id/apply
+   */
+  app.post<{ Params: { id: string }; Body: { actor?: string; reason?: string } }>(
+    '/api/intelligence-loop/m4/adaptive-policy-proposals/:id/apply',
+    async (request, reply) => {
+      try {
+        const proposal = await proactiveOptimizationService.applyAdaptivePolicyProposal(
+          request.params.id,
+          request.body.actor || 'operator',
+          request.body.reason
+        );
+        if (!proposal) {
+          return reply.status(404).send({ ok: false, error: 'Adaptive policy proposal not found' });
+        }
+        return reply.send({ ok: true, proposal });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(400).send({ ok: false, error: (error as Error).message });
+      }
+    }
+  );
+
+  /**
+   * POST /api/intelligence-loop/m4/adaptive-policy-proposals/:id/revert
+   */
+  app.post<{ Params: { id: string }; Body: { actor?: string; reason: string } }>(
+    '/api/intelligence-loop/m4/adaptive-policy-proposals/:id/revert',
+    async (request, reply) => {
+      try {
+        const proposal = await proactiveOptimizationService.revertAdaptivePolicyProposal(
+          request.params.id,
+          request.body.actor || 'operator',
+          request.body.reason
+        );
+        if (!proposal) {
+          return reply.status(404).send({ ok: false, error: 'Adaptive policy proposal not found' });
+        }
+        return reply.send({ ok: true, proposal });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(400).send({ ok: false, error: (error as Error).message });
+      }
+    }
+  );
+
+  /**
+   * POST /api/intelligence-loop/m4/adaptive-policy-proposals/:id/reject
+   */
+  app.post<{ Params: { id: string }; Body: { actor?: string; reason: string } }>(
+    '/api/intelligence-loop/m4/adaptive-policy-proposals/:id/reject',
+    async (request, reply) => {
+      try {
+        const proposal = await proactiveOptimizationService.rejectAdaptivePolicyProposal(
+          request.params.id,
+          request.body.actor || 'reviewer',
+          request.body.reason
+        );
+        if (!proposal) {
+          return reply.status(404).send({ ok: false, error: 'Adaptive policy proposal not found' });
+        }
+        return reply.send({ ok: true, proposal });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(400).send({ ok: false, error: (error as Error).message });
+      }
+    }
+  );
+
+  /**
+   * GET /api/intelligence-loop/m4/adaptive-behaviors/summary
+   */
+  app.get('/api/intelligence-loop/m4/adaptive-behaviors/summary', async (request, reply) => {
+    try {
+      const summary = await proactiveOptimizationService.getAdaptiveBehaviorSummary();
+      return reply.send({ ok: true, summary });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply
+        .status(500)
+        .send({ ok: false, error: 'Failed to compute adaptive behavior summary' });
+    }
+  });
+
+  /**
+   * GET /api/intelligence-loop/m4/pattern-scores/analysis
+   */
+  app.get<{
+    Querystring: {
+      averageTarget?: string;
+      minimumTarget?: string;
+      limit?: string;
+    };
+  }>('/api/intelligence-loop/m4/pattern-scores/analysis', async (request, reply) => {
+    try {
+      const parsedAverageTarget = Number(request.query.averageTarget || 9.9);
+      const parsedMinimumTarget = Number(request.query.minimumTarget || 9.4);
+      const parsedLimit = Number(request.query.limit || 5);
+
+      const analysis = await proactiveOptimizationService.analyzePatternScores({
+        averageTarget: Number.isFinite(parsedAverageTarget) ? parsedAverageTarget : 9.9,
+        minimumTarget: Number.isFinite(parsedMinimumTarget) ? parsedMinimumTarget : 9.4,
+        limit: Number.isFinite(parsedLimit) ? Math.max(1, Math.floor(parsedLimit)) : 5,
+      });
+
+      return reply.send({ ok: true, analysis });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(500).send({ ok: false, error: 'Failed to analyze pattern scores' });
+    }
+  });
+
+  /**
+   * POST /api/intelligence-loop/m4/pattern-uplift-proposals
+   */
+  app.post<{
+    Body: {
+      actor?: string;
+      limit?: number;
+      averageTarget?: number;
+      minimumTarget?: number;
+    };
+  }>('/api/intelligence-loop/m4/pattern-uplift-proposals', async (request, reply) => {
+    try {
+      const result = await proactiveOptimizationService.generatePatternUpliftProposals(
+        request.body
+      );
+      return reply.status(201).send({ ok: true, result });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
 }
 
 // Backward compatibility alias for any existing imports.
 export const registerM1Routes = registerIntelligenceLoopRoutes;
+
+export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
+  return registerIntelligenceLoopRoutes(
+    app,
+    toServiceContext(ctx as unknown as Record<string, unknown>)
+  );
+}

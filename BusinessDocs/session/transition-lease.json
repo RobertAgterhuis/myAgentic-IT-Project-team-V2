@@ -1,8 +1,8 @@
 {
-  "lease_id": "a45efd4d-c255-4bc7-a30a-9d25bf481b4f",
-  "owner_id": "worker-1566040",
-  "token": "6fc5a54e-79bf-427d-8da5-1bde99151b23",
-  "acquired_at": "2026-03-29T16:44:34.373Z",
+  "lease_id": "210c9db6-da01-422b-b5f8-a82c796837fe",
+  "owner_id": "worker-1574120",
+  "token": "857c38bf-f5a6-47d7-b37c-6d378bbdfd7a",
+  "acquired_at": "2026-03-29T16:49:22.282Z",
   "expires_at": "1970-01-01T00:00:00.000Z",
   "state_from": "IDLE",
   "state_to": "ONBOARDING"

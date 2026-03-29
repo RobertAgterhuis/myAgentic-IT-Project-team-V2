@@ -17,7 +17,7 @@ function EmptyState({ icon, title, description, action, className, ...props }: E
   return (
     <div
       className={cn(
-        'relative flex flex-col items-center justify-center gap-4 overflow-hidden rounded-[28px] border border-border/70 bg-gradient-to-br from-card via-card to-info/6 px-6 py-12 text-center shadow-sm backdrop-blur-sm',
+        'relative flex flex-col items-center justify-center gap-4 overflow-hidden rounded-md border border-border/70 bg-linear-to-br from-card via-card to-info/6 px-6 py-12 text-center shadow-sm backdrop-blur-sm',
         className
       )}
       {...props}
@@ -31,7 +31,7 @@ function EmptyState({ icon, title, description, action, className, ...props }: E
         Ready for next action
       </Badge>
       {icon && (
-        <div className="relative flex size-16 items-center justify-center rounded-2xl border border-border/70 bg-background/80 text-muted-foreground shadow-sm">
+        <div className="relative flex size-16 items-center justify-center rounded-md border border-border/70 bg-background/80 text-muted-foreground shadow-sm">
           {icon}
         </div>
       )}

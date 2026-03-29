@@ -340,7 +340,9 @@ describe('Engine phase-gate auto-commit (#970)', () => {
     const commitCall = calls.find((args) => args[0] === 'commit');
     expect(commitCall).toBeDefined();
     expect(commitCall[1]).toBe('-m');
-    expect(commitCall[2]).toContain('chore(sdlc): phase 1 gate passed');
+    expect(commitCall[2]).toContain('chore(orchestrator): gate passed');
+    expect(commitCall[2]).toContain('[pack=core-runtime]');
+    expect(commitCall[2]).toContain('[phase=PHASE_1]');
     expect(commitCall[2]).toContain('[session=sess-123]');
     expect(commitCall[2]).toContain('[gate=gate.critic-risk-1]');
   });

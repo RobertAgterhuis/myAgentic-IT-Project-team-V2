@@ -5,6 +5,7 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useUIStore } from '@/stores/ui-store';
+import { useOrchestratorPackMetadata } from './use-orchestrator';
 import { resolveHelpRouteSlug } from './use-help';
 
 /**
@@ -17,6 +18,7 @@ export function useKeyboardShortcuts() {
   const closeHelp = useUIStore((s) => s.closeHelp);
   const openHelpForRoute = useUIStore((s) => s.openHelpForRoute);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
+  const { data: packMetadata } = useOrchestratorPackMetadata();
 
   const pendingRef = useRef<string | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout>>();
@@ -76,7 +78,7 @@ export function useKeyboardShortcuts() {
         if (helpOpen) {
           closeHelp();
         } else {
-          openHelpForRoute(resolveHelpRouteSlug(location.pathname));
+          openHelpForRoute(resolveHelpRouteSlug(location.pathname, packMetadata));
         }
         return;
       }
@@ -106,5 +108,6 @@ export function useKeyboardShortcuts() {
     openHelpForRoute,
     toggleSidebar,
     clearPending,
+    packMetadata,
   ]);
 }

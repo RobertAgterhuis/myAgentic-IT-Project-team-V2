@@ -41,11 +41,11 @@ describe('ObservabilityPage', () => {
     expect(screen.getByTestId('observability-page')).toBeInTheDocument();
   });
 
-  it('renders tab bar with five tabs', async () => {
+  it('renders tab bar with six tabs', async () => {
     renderPage();
     await waitForPageLoad();
     const tabs = screen.getAllByRole('tab');
-    expect(tabs).toHaveLength(5);
+    expect(tabs).toHaveLength(6);
   });
 
   it('renders Drift & KPIs tab', async () => {
@@ -64,6 +64,12 @@ describe('ObservabilityPage', () => {
     renderPage();
     await waitForPageLoad();
     expect(screen.getByRole('tab', { name: /traceability/i })).toBeInTheDocument();
+  });
+
+  it('renders Diff Review tab', async () => {
+    renderPage();
+    await waitForPageLoad();
+    expect(screen.getByRole('tab', { name: /diff review/i })).toBeInTheDocument();
   });
 
   it('renders Alerts tab', async () => {
@@ -92,6 +98,21 @@ describe('ObservabilityPage', () => {
     const analyticsTab = screen.getByRole('tab', { name: /analytics/i });
     await user.click(analyticsTab);
     expect(analyticsTab).toHaveAttribute('aria-selected', 'true');
+  });
+
+  it('supports arrow-key navigation between tabs', async () => {
+    const user = userEvent.setup();
+    renderPage();
+    await waitForPageLoad();
+
+    const driftTab = screen.getByRole('tab', { name: /drift/i });
+    driftTab.focus();
+    await user.keyboard('{ArrowRight}');
+
+    expect(screen.getByRole('tab', { name: /analytics/i })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
   });
 
   it('clicking Alerts tab shows alert feed heading', async () => {

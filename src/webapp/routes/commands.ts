@@ -77,4 +77,8 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     const queue = svc.getQueue();
     return reply.send({ command: svc.getLatest(), queue });
   });
+
+  app.get('/api/commands', { schema: RS.commandsCatalogGet }, async (_request, reply) => {
+    return reply.send({ commands: svc.getCatalog() });
+  });
 }

@@ -17,7 +17,9 @@
 
 import path from 'path';
 import { matchPolicies, type GovernancePoliciesConfig } from './governance-config';
+import type { GovernancePolicy } from './governance-config';
 import { type ResolvedIdentity } from './identity';
+import { resolveRuntimeGateForCriticState, type RuntimePackGraph } from './runtime-pack';
 
 interface GateStore {
   exists(path: string): boolean;
@@ -26,16 +28,36 @@ interface GateStore {
 
 // ─── Constants ───────────────────────────────────────────────
 
-const CONTRACTS_DIR = 'templates/sdlc/contracts';
-const GUARDRAILS_DIR = 'templates/sdlc/guardrails';
+const DEFAULT_CONTRACTS_DIR = 'templates/sdlc/contracts';
+const DEFAULT_GUARDRAILS_DIR = 'templates/sdlc/guardrails';
 
 /** Maps CRITIC states to the phase they validate */
-const CRITIC_TO_PHASE = {
+const LEGACY_CRITIC_TO_PHASE = {
   CRITIC_1: 'PHASE_1',
   CRITIC_2: 'PHASE_2',
   CRITIC_3: 'PHASE_3',
   CRITIC_4: 'PHASE_4',
 };
+
+export interface GateEvaluationResult {
+  status: 'approved' | 'failed' | 'pending-approval';
+  verdict: 'APPROVED' | 'FAILED' | 'PENDING_APPROVAL';
+  criticState: string;
+  phase: string | null;
+  gateId: string | null;
+  gateType: string | null;
+  beforeState: string | null;
+  afterState: string | null;
+  counts: {
+    totalViolations: number;
+    critical: number;
+    major: number;
+    minor: number;
+    info: number;
+    questionnaireRequests: number;
+  };
+  blockedByGovernance: boolean;
+}
 
 /** Maps phases to applicable guardrail files */
 const PHASE_GUARDRAILS = {
@@ -122,6 +144,87 @@ const PHASE_EXIT_CRITERIA = [
     blocking: true,
   },
 ] as const;
+
+function toGateStatus(verdict: string) {
+  switch (verdict) {
+    case 'APPROVED':
+      return 'approved';
+    case 'PENDING_APPROVAL':
+      return 'pending-approval';
+    default:
+      return 'failed';
+  }
+}
+
+function derivePhaseFromCriticState(criticState: string): string | null {
+  const match = criticState.match(/^CRITIC_(\d+)$/);
+  if (!match) return null;
+  return `PHASE_${match[1]}`;
+}
+
+function resolvePackAwarePolicyMatches(
+  policies: GovernancePolicy[],
+  criticState: string,
+  runtimeGate: {
+    id: string;
+    type: string;
+    after: string;
+    before: string;
+  } | null
+) {
+  const keys = new Set<string>([criticState]);
+
+  if (runtimeGate) {
+    keys.add(runtimeGate.id);
+    keys.add(runtimeGate.type);
+    keys.add(`${runtimeGate.after}->${runtimeGate.before}`);
+  }
+
+  const matchedById = new Map<string, GovernancePolicy>();
+  for (const key of keys) {
+    for (const policy of matchPolicies(policies, key)) {
+      matchedById.set(policy.id, policy);
+    }
+  }
+
+  return [...matchedById.values()];
+}
+
+function buildGateEvaluationResult(input: {
+  status: 'approved' | 'failed' | 'pending-approval';
+  verdict: 'APPROVED' | 'FAILED' | 'PENDING_APPROVAL';
+  criticState: string;
+  phase: string | null;
+  gate: {
+    id: string | null;
+    type: string | null;
+    beforeState: string | null;
+    afterState: string | null;
+  };
+  violations: Array<{ severity?: string }>;
+  questionnaireRequests: unknown[];
+  blockedByGovernance?: boolean;
+}): GateEvaluationResult {
+  return {
+    status: input.status,
+    verdict: input.verdict,
+    criticState: input.criticState,
+    phase: input.phase,
+    gateId: input.gate.id,
+    gateType: input.gate.type,
+    beforeState: input.gate.beforeState,
+    afterState: input.gate.afterState,
+    counts: {
+      totalViolations: input.violations.length,
+      critical: input.violations.filter((v) => v.severity === 'CRITICAL').length,
+      major: input.violations.filter((v) => v.severity === 'MAJOR').length,
+      minor: input.violations.filter((v) => v.severity === 'MINOR').length,
+      info: input.violations.filter((v) => v.severity === 'INFO').length,
+      questionnaireRequests: input.questionnaireRequests.length,
+    },
+    blockedByGovernance: Boolean(input.blockedByGovernance),
+  };
+}
 
 // ─── Parsing Functions ───────────────────────────────────────
 
@@ -547,13 +650,14 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
   const {
     criticState,
     deliverables = [],
-    contractsDir = CONTRACTS_DIR,
-    guardrailsDir = GUARDRAILS_DIR,
+    contractsDir,
+    guardrailsDir,
     criticToPhase: ctpOverride,
     phaseContracts: pcOverride,
     phaseGuardrails: pgOverride,
     governanceConfig,
     identity,
+    runtimePackGraph,
   } = options as {
     criticState: string;
     deliverables?: string[];
@@ -564,16 +668,47 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
     phaseGuardrails?: Record<string, string[]>;
     governanceConfig?: GovernancePoliciesConfig;
     identity?: ResolvedIdentity;
+    runtimePackGraph?: RuntimePackGraph;
   };
+  const resolvedContractsDir =
+    contractsDir || runtimePackGraph?.contractsBaseDir || DEFAULT_CONTRACTS_DIR;
+  const resolvedGuardrailsDir =
+    guardrailsDir || runtimePackGraph?.guardrailsBaseDir || DEFAULT_GUARDRAILS_DIR;
 
-  const ctp: Record<string, string> = ctpOverride || CRITIC_TO_PHASE;
+  const ctp: Record<string, string> = ctpOverride || LEGACY_CRITIC_TO_PHASE;
   const pc: Record<string, string[]> = pcOverride || PHASE_CONTRACTS;
   const pg: Record<string, string[]> = pgOverride || PHASE_GUARDRAILS;
+  const runtimeGate = resolveRuntimeGateForCriticState(runtimePackGraph, criticState);
 
-  const phase = ctp[criticState];
+  const phase =
+    runtimeGate?.evaluatedPhase || ctp[criticState] || derivePhaseFromCriticState(criticState);
   if (!phase) {
+    const evaluation = buildGateEvaluationResult({
+      status: 'failed',
+      verdict: 'FAILED',
+      criticState,
+      phase: null,
+      gate: {
+        id: null,
+        type: null,
+        beforeState: null,
+        afterState: null,
+      },
+      violations: [{ severity: 'CRITICAL' }],
+      questionnaireRequests: [],
+    });
     return {
       verdict: 'FAILED',
+      status: 'failed',
+      gate: {
+        id: null,
+        type: null,
+        criticState,
+        evaluatedPhase: null,
+        afterState: null,
+        beforeState: null,
+        packId: runtimePackGraph?.pack.id || null,
+      },
       violations: [
         {
           severity: 'CRITICAL',
@@ -582,6 +717,7 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
         },
       ],
       questionnaireRequests: [],
+      evaluation,
       summary: {
         phase: null,
         deliverableCount: 0,
@@ -598,14 +734,18 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
   }
 
   // AC-1: Load contract required sections
-  const contractFiles = (pc[phase] || []).map((c) => path.join(contractsDir, c));
+  const contractFiles = (runtimeGate?.contracts || pc[phase] || []).map((c) =>
+    path.join(resolvedContractsDir, c)
+  );
   const allRequiredSections: string[] = [];
   for (const cp of contractFiles) {
     allRequiredSections.push(...loadContractSections(store, cp));
   }
 
   // AC-4: Load guardrail rules
-  const guardrailFiles = (pg[phase] || []).map((g) => path.join(guardrailsDir, g));
+  const guardrailFiles = (runtimeGate?.guardrails || pg[phase] || []).map((g) =>
+    path.join(resolvedGuardrailsDir, g)
+  );
   const allRules: string[] = [];
   for (const gp of guardrailFiles) {
     allRules.push(...loadGuardrailRules(store, gp));
@@ -676,6 +816,14 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
   const summary = {
     phase,
     criticState,
+    gate: {
+      id: runtimeGate?.id || null,
+      type: runtimeGate?.type || null,
+      afterState: runtimeGate?.after || null,
+      beforeState: runtimeGate?.before || null,
+      evaluatedPhase: phase,
+      packId: runtimePackGraph?.pack.id || null,
+    },
     deliverableCount: deliverables.length,
     totalViolations: allViolations.length,
     bySeverity: {
@@ -711,7 +859,11 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
     | undefined;
 
   if (govMode !== 'off' && governanceConfig) {
-    const matchedPolicies = matchPolicies(governanceConfig.policies, criticState);
+    const matchedPolicies = resolvePackAwarePolicyMatches(
+      governanceConfig.policies,
+      criticState,
+      runtimeGate
+    );
 
     // M6: Check existing approvals when provided
     const existingApprovals =
@@ -763,10 +915,29 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
       const timeoutHours =
         (options as { approval_timeout_hours?: number }).approval_timeout_hours ?? 48;
 
-      return {
+      const evaluation = buildGateEvaluationResult({
+        status: 'pending-approval',
         verdict: 'PENDING_APPROVAL',
+        criticState,
+        phase,
+        gate: {
+          id: summary.gate.id,
+          type: summary.gate.type,
+          beforeState: summary.gate.beforeState,
+          afterState: summary.gate.afterState,
+        },
         violations: allViolations,
         questionnaireRequests: allQuestionnaireRequests,
+        blockedByGovernance: true,
+      });
+
+      return {
+        verdict: 'PENDING_APPROVAL',
+        status: 'pending-approval',
+        gate: summary.gate,
+        violations: allViolations,
+        questionnaireRequests: allQuestionnaireRequests,
+        evaluation,
         summary: {
           ...summary,
           blocked_by_governance: true,
@@ -778,10 +949,28 @@ function runGate(store: GateStore, options: Record<string, unknown>) {
     }
   }
 
-  return {
-    verdict,
+  const evaluation = buildGateEvaluationResult({
+    status: toGateStatus(verdict) as 'approved' | 'failed' | 'pending-approval',
+    verdict: verdict as 'APPROVED' | 'FAILED' | 'PENDING_APPROVAL',
+    criticState,
+    phase,
+    gate: {
+      id: summary.gate.id,
+      type: summary.gate.type,
+      beforeState: summary.gate.beforeState,
+      afterState: summary.gate.afterState,
+    },
     violations: allViolations,
     questionnaireRequests: allQuestionnaireRequests,
+  });
+
+  return {
+    verdict,
+    status: toGateStatus(verdict),
+    gate: summary.gate,
+    violations: allViolations,
+    questionnaireRequests: allQuestionnaireRequests,
+    evaluation,
     summary,
     governance_report,
   };
@@ -800,6 +989,7 @@ class CriticValidator {
   _criticToPhase: Record<string, string>;
   _phaseContracts: Record<string, string[]>;
   _phaseGuardrails: Record<string, string[]>;
+  _runtimePackGraph: RuntimePackGraph | null;
 
   /**
    * @param {object} store - File store
@@ -808,8 +998,15 @@ class CriticValidator {
   constructor(store: GateStore, options: Record<string, unknown> = {}) {
     if (!store) throw new Error('CriticValidator requires a store');
     this._store = store;
-    this._contractsDir = (options.contractsDir as string) || CONTRACTS_DIR;
-    this._guardrailsDir = (options.guardrailsDir as string) || GUARDRAILS_DIR;
+    this._runtimePackGraph = (options.runtimePackGraph as RuntimePackGraph) || null;
+    this._contractsDir =
+      (options.contractsDir as string) ||
+      (this._runtimePackGraph?.contractsBaseDir as string) ||
+      DEFAULT_CONTRACTS_DIR;
+    this._guardrailsDir =
+      (options.guardrailsDir as string) ||
+      (this._runtimePackGraph?.guardrailsBaseDir as string) ||
+      DEFAULT_GUARDRAILS_DIR;
     this._criticToPhase = (options.criticToPhase as Record<string, string>) || null;
     this._phaseContracts = (options.phaseContracts as Record<string, string[]>) || null;
     this._phaseGuardrails = (options.phaseGuardrails as Record<string, string[]>) || null;
@@ -830,6 +1027,7 @@ class CriticValidator {
       criticToPhase: this._criticToPhase,
       phaseContracts: this._phaseContracts,
       phaseGuardrails: this._phaseGuardrails,
+      runtimePackGraph: this._runtimePackGraph,
     });
   }
 }
@@ -845,6 +1043,7 @@ class RiskValidator {
   _criticToPhase: Record<string, string>;
   _phaseContracts: Record<string, string[]>;
   _phaseGuardrails: Record<string, string[]>;
+  _runtimePackGraph: RuntimePackGraph | null;
 
   /**
    * @param {object} store - File store
@@ -853,8 +1052,15 @@ class RiskValidator {
   constructor(store: GateStore, options: Record<string, unknown> = {}) {
     if (!store) throw new Error('RiskValidator requires a store');
     this._store = store;
-    this._contractsDir = (options.contractsDir as string) || CONTRACTS_DIR;
-    this._guardrailsDir = (options.guardrailsDir as string) || GUARDRAILS_DIR;
+    this._runtimePackGraph = (options.runtimePackGraph as RuntimePackGraph) || null;
+    this._contractsDir =
+      (options.contractsDir as string) ||
+      (this._runtimePackGraph?.contractsBaseDir as string) ||
+      DEFAULT_CONTRACTS_DIR;
+    this._guardrailsDir =
+      (options.guardrailsDir as string) ||
+      (this._runtimePackGraph?.guardrailsBaseDir as string) ||
+      DEFAULT_GUARDRAILS_DIR;
     this._criticToPhase = (options.criticToPhase as Record<string, string>) || null;
     this._phaseContracts = (options.phaseContracts as Record<string, string[]>) || null;
     this._phaseGuardrails = (options.phaseGuardrails as Record<string, string[]>) || null;
@@ -875,6 +1081,7 @@ class RiskValidator {
       criticToPhase: this._criticToPhase,
       phaseContracts: this._phaseContracts,
       phaseGuardrails: this._phaseGuardrails,
+      runtimePackGraph: this._runtimePackGraph,
     });
 
     // Extract risk-specific items from tags
@@ -900,9 +1107,10 @@ class RiskValidator {
 }
 
 export {
-  CRITIC_TO_PHASE,
+  LEGACY_CRITIC_TO_PHASE as CRITIC_TO_PHASE,
   PHASE_GUARDRAILS,
   PHASE_CONTRACTS,
+  PHASE_CONTRACTS as _PHASE_CONTRACTS,
   PLACEHOLDER_PATTERNS,
   TRACKED_TAGS,
   HANDOFF_CHECKLIST_COUNT,

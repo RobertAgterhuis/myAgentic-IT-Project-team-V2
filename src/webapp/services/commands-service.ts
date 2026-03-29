@@ -13,33 +13,13 @@ import * as schemas from '../schemas';
 import { withFileLock } from '../file-lock';
 import { sanitizeMarkdown, sanitizeQID, detectSecrets } from '../middleware';
 import { ServiceValidationError } from './decisions-service';
+import { getCommandCatalog, isKnownCommand, type CommandCatalogEntry } from './command-catalog';
 import type {
   ServiceContext,
   CommandQueueEntry,
   QueueCommandInput,
   QueueCommandResult,
 } from './types';
-
-const VALID_COMMANDS = [
-  'CREATE',
-  'CREATE BUSINESS',
-  'CREATE TECH',
-  'CREATE UX',
-  'CREATE MARKETING',
-  'CREATE SYNTHESIS',
-  'AUDIT',
-  'AUDIT BUSINESS',
-  'AUDIT TECH',
-  'AUDIT UX',
-  'AUDIT MARKETING',
-  'AUDIT SYNTHESIS',
-  'REEVALUATE',
-  'FEATURE',
-  'SCOPE CHANGE',
-  'HOTFIX',
-  'REFRESH ONBOARDING',
-  'CONTINUE',
-];
 
 const MAX_QUEUE_SIZE = 50;
 
@@ -67,6 +47,10 @@ export class CommandService {
   getLatest(): CommandQueueEntry | null {
     const queue = this.getQueue();
     return queue.length ? queue[queue.length - 1] : null;
+  }
+
+  getCatalog(): CommandCatalogEntry[] {
+    return getCommandCatalog();
   }
 
   /* ── Queue a new command ────────────────────────────────────── */
@@ -123,12 +107,7 @@ export class CommandService {
   /* ── Validation ─────────────────────────────────────────────── */
 
   isValidCommand(cmd: string): boolean {
-    const parts = cmd.split(/\s+/);
-    return (
-      VALID_COMMANDS.includes(cmd) ||
-      VALID_COMMANDS.includes(parts.slice(0, 2).join(' ')) ||
-      (VALID_COMMANDS.includes(parts[0]) && parts.length <= 1)
-    );
+    return isKnownCommand(cmd);
   }
 
   /* ── Private helpers ────────────────────────────────────────── */

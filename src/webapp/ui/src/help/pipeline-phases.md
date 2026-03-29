@@ -1,31 +1,28 @@
 ---
 title: Pipeline Phases
-description: The phase sequence and what each phase produces.
+description: How phase sequencing is defined by the active runtime pack.
 keywords:
   - pipeline
   - phases
-  - sdlc
+  - runtime-pack
 ---
 
 # Pipeline Phases
 
-The platform uses a phased SDLC pipeline with specialized agents per phase.
+Pipeline sequencing is defined by the active runtime pack, not by fixed SDLC constants in the UI.
 
-## Sequence
+## Where sequence comes from
 
-`IDLE -> ONBOARDING -> PHASE_1 -> CRITIC_1 -> PHASE_2 -> CRITIC_2 -> PHASE_3 -> CRITIC_3 -> PHASE_4 -> CRITIC_4 -> SYNTHESIS -> SPRINT_GATE -> PHASE_5_EXECUTING -> COMPLETED`
+The phase order shown in the Pipeline page is sourced from pack metadata at runtime.
 
-## Phase intent
+- Source endpoint: `/api/orchestrator/pack-metadata`
+- Primary fields: `stages`, `labels.stages`, and runtime flow metadata
+- Fallback behavior: if pack metadata is unavailable, the UI falls back to baseline guidance
 
-- `ONBOARDING`: Collect context and initialize execution framing.
-- `PHASE_1`: Business discovery and product framing.
-- `PHASE_2`: Technical architecture and implementation planning.
-- `PHASE_3`: UX, accessibility, and content definition.
-- `PHASE_4`: Marketing, brand, and growth planning.
-- `SYNTHESIS`: Consolidate outputs and blockers across streams.
-- `SPRINT_GATE`: Confirm readiness and backlog quality.
-- `PHASE_5_EXECUTING`: Implement, test, review, document, and integrate.
+## Reading phase intent
 
-## Critic and risk checks
+Each pack stage can represent a different lifecycle step. Use the stage label and description from metadata as the source of truth for intent and expected outcomes.
 
-`CRITIC_1` through `CRITIC_4` act as phase boundary control points for quality, consistency, and risk.
+## Why this matters
+
+A pack can redefine stage names, sequencing, and operational boundaries without requiring UI code changes. The help panel mirrors that model by treating the active pack as authoritative.

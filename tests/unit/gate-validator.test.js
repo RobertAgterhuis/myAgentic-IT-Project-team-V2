@@ -32,6 +32,7 @@ const {
   _PHASE_CONTRACTS,
   HANDOFF_CHECKLIST_COUNT,
 } = require('../../platform/engine/gate-validator');
+const { loadFlows } = require('../../platform/engine/flow-loader');
 
 // ─── Test Helpers ────────────────────────────────────────────
 
@@ -472,6 +473,27 @@ describe('runGate', () => {
     });
     expect(result.verdict).toBe('APPROVED');
     expect(result.summary.phase).toBe('PHASE_1');
+  });
+
+  it('derives gate metadata and status from the runtime pack graph', () => {
+    const flowsPath = path.join(__dirname, '..', '..', 'platform', 'engine', 'flows.yaml');
+    const flowsContent = fs.readFileSync(flowsPath, 'utf-8');
+    const store = createMockStore({
+      [flowsPath]: flowsContent,
+      'deliverable.md': buildCompliantDeliverable(),
+    });
+    const flows = loadFlows(store, flowsPath);
+
+    const result = runGate(store, {
+      criticState: 'CRITIC_1',
+      deliverables: ['deliverable.md'],
+      runtimePackGraph: flows.runtimeGraph,
+    });
+
+    expect(result.status).toBe('approved');
+    expect(result.gate.id).toBe('gate.critic-risk-1');
+    expect(result.summary.gate.afterState).toBe('PHASE_1');
+    expect(result.summary.gate.beforeState).toBe('PHASE_2');
   });
 
   it('returns FAILED for deliverable with missing handoff checklist', () => {

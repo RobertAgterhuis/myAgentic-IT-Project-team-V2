@@ -8,7 +8,7 @@ function Table({ className, ...props }: React.ComponentProps<'table'>) {
   return (
     <div
       data-slot="table-container"
-      className="scrollbar-surface relative w-full overflow-x-auto rounded-[26px] border border-border/70 bg-gradient-to-br from-card via-card to-info/6 shadow-sm backdrop-blur-sm"
+      className="scrollbar-surface relative w-full overflow-x-auto rounded-md border border-border/70 bg-linear-to-br from-card via-card to-info/6 shadow-sm backdrop-blur-sm"
     >
       <table
         data-slot="table"
@@ -23,7 +23,7 @@ function TableHeader({ className, ...props }: React.ComponentProps<'thead'>) {
   return (
     <thead
       data-slot="table-header"
-      className={cn('bg-background/70 [&_tr]:border-b [&_tr]:border-border/70', className)}
+      className={cn('surface-muted [&_tr]:border-b [&_tr]:border-border/70', className)}
       {...props}
     />
   );
@@ -67,7 +67,7 @@ function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
     <th
       data-slot="table-head"
       className={cn(
-        'h-11 px-3 text-left align-middle text-[11px] font-semibold uppercase tracking-[0.18em] whitespace-nowrap text-muted-foreground [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+        'h-11 px-3 text-left align-middle text-xs font-semibold uppercase tracking-[0.18em] whitespace-nowrap text-muted-foreground [&:has([role=checkbox])]:pr-0',
         className
       )}
       {...props}
@@ -79,10 +79,7 @@ function TableCell({ className, ...props }: React.ComponentProps<'td'>) {
   return (
     <td
       data-slot="table-cell"
-      className={cn(
-        'p-3 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
-        className
-      )}
+      className={cn('p-3 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0', className)}
       {...props}
     />
   );

@@ -23,9 +23,11 @@ import { RuntimeLog, type RuntimeLogEvent } from '@/components/runtime/runtime-l
 import { ExplainabilityPanel } from '@/components/runtime/explainability-panel';
 import { ExecutionTimeline } from '@/components/cockpit/execution-timeline';
 import { InterventionConsole } from '@/components/cockpit/intervention-console';
+import { ArtifactViewerPane } from '@/components/cockpit/monaco-host-panels';
 import { useSession, useOrchestratorStatus, useExecutionHistory } from '@/hooks';
 import { useRuntimeStore } from '@/stores/runtime-store';
 import type {
+  MonacoModelLocator,
   SessionStatus,
   AgentDetailEntry,
   TimelineEvent,
@@ -173,6 +175,26 @@ export default function SessionDetailPage() {
   const filteredLogEvents = useMemo(
     () => (phaseFilter ? mergedLogEvents.filter((e) => e.phase === phaseFilter) : mergedLogEvents),
     [mergedLogEvents, phaseFilter]
+  );
+  const runtimeLogInspectorContent = useMemo(
+    () =>
+      filteredLogEvents
+        .map(
+          (event) =>
+            `[${event.timestamp}] ${event.phase || 'N/A'} ${event.type} :: ${event.description}`
+        )
+        .join('\n'),
+    [filteredLogEvents]
+  );
+  const runtimeLogModelLocator = useMemo<MonacoModelLocator>(
+    () => ({
+      namespace: 'workspace',
+      workspaceId: id || 'default',
+      objectId: `session-${id || 'unknown'}-runtime-log`,
+      path: `sessions/${id || 'unknown'}/runtime-log-${phaseFilter || 'all'}.log`,
+      language: 'plaintext',
+    }),
+    [id, phaseFilter]
   );
 
   const artifactEvents = useMemo(
@@ -610,6 +632,12 @@ export default function SessionDetailPage() {
         {/* Bottom: Runtime Log — M15-036: merged query + SSE events */}
         <section aria-label="Runtime log">
           <Card elevation="flat" className="p-4">
+            <ArtifactViewerPane
+              title="Runtime log inspector"
+              sourceLabel={phaseFilter ? `Phase filter: ${phaseFilter}` : 'All phases'}
+              content={runtimeLogInspectorContent}
+              modelLocator={runtimeLogModelLocator}
+            />
             <RuntimeLog events={filteredLogEvents} maxVisible={50} />
           </Card>
         </section>

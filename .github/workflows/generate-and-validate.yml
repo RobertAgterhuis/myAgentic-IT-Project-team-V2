@@ -5,13 +5,19 @@ on:
     branches: [main]
     paths:
       - "platform/schema/**"
+      - "platform/engine/flows.yaml"
+      - "templates/**/manifest.json"
       - "templates/sdlc/agents/**"
+      - "scripts/check-pack-metadata-completeness.ts"
       - "scripts/generate-platform.js"
   push:
     branches: [main]
     paths:
       - "platform/schema/**"
+      - "platform/engine/flows.yaml"
+      - "templates/**/manifest.json"
       - "templates/sdlc/agents/**"
+      - "scripts/check-pack-metadata-completeness.ts"
       - "scripts/generate-platform.js"
 
 permissions:
@@ -38,6 +44,9 @@ jobs:
       - name: Validate canonical schemas
         run: |
           npx vitest run tests/unit/agent-schema.test.js tests/unit/flow-schema.test.js tests/unit/tool-schema.test.js
+
+      - name: Validate pack metadata completeness
+        run: npm run test:pack-metadata-gate
 
       - name: Run transpiler for all targets
         run: node scripts/generate-platform.js all

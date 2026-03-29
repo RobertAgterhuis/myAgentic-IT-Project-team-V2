@@ -407,17 +407,146 @@ export interface OnboardingDiagnosticsResponse extends OkResponse {
   };
 }
 
-export type OrchestratorCommandName =
-  | 'CREATE'
-  | 'CREATE_BUSINESS'
-  | 'CREATE_TECH'
-  | 'CREATE_UX'
-  | 'CREATE_MARKETING'
-  | 'REEVALUATE'
-  | 'FEATURE'
-  | 'SCOPE_CHANGE'
-  | 'HOTFIX'
-  | 'AUDIT';
+export interface OrchestratorPackCommand {
+  id: string;
+  label?: string;
+  description?: string;
+  mode?: boolean;
+  phase?: string;
+  [key: string]: unknown;
+}
+
+export interface OrchestratorPackMetadataResponse extends OkResponse {
+  pack: {
+    manifest_version: string;
+    id: string;
+    name: string;
+    version: string;
+  };
+  commands: OrchestratorPackCommand[];
+  stages: Array<Record<string, unknown>>;
+  gates: Array<Record<string, unknown>>;
+  labels: {
+    commands: Record<string, string>;
+    stages: Record<string, string>;
+    gates: Record<string, string>;
+  };
+  help_topics: Array<Record<string, unknown>>;
+  capabilities: {
+    supportsRuntimeGraph: boolean;
+    supportsCommandCatalog: boolean;
+    supportsHelpTopics: boolean;
+    supportsArtifactNamespaces: boolean;
+    supportsGateAssets: boolean;
+    supportsMonacoProviders?: boolean;
+    parallelDispatchStates: string[];
+  };
+  editorProviders?: {
+    monaco?: MonacoEditorProvidersContract;
+    providers?: MonacoProviderContract[];
+  };
+  editorSchemas?: {
+    monaco?: MonacoSchemaBindingsContract;
+    bindings?: MonacoSchemaBindingContract[];
+  };
+  warnings: string[];
+}
+
+export type MonacoObjectNamespace = 'workspace' | 'repo' | 'artifact';
+
+export interface MonacoModelLocator {
+  namespace: MonacoObjectNamespace;
+  objectId: string;
+  workspaceId?: string;
+  path?: string;
+  language?: string;
+}
+
+export interface MonacoModelAttachment {
+  uri: string;
+  namespace: MonacoObjectNamespace;
+  objectId: string;
+  workspaceId: string;
+  path?: string;
+  language?: string;
+  reused: boolean;
+}
+
+export interface MonacoSchemaBindingContract {
+  id: string;
+  language: 'json' | 'yaml';
+  schemaUri: string;
+  modelLocator: MonacoModelLocator;
+  required?: boolean;
+}
+
+export interface MonacoSchemaBindingsContract {
+  bindings: MonacoSchemaBindingContract[];
+}
+
+export type MonacoProviderKind = 'hover' | 'completion' | 'codelens';
+
+export interface MonacoProviderMatchContract {
+  words?: string[];
+  contains?: string[];
+  regex?: string;
+}
+
+export interface MonacoHoverProviderContract {
+  id: string;
+  kind: 'hover';
+  language: string;
+  label?: string;
+  markdown: string;
+  match?: MonacoProviderMatchContract;
+  enabled?: boolean;
+}
+
+export interface MonacoCompletionItemContract {
+  label: string;
+  insertText?: string;
+  detail?: string;
+  documentation?: string;
+  kind?: string;
+}
+
+export interface MonacoCompletionProviderContract {
+  id: string;
+  kind: 'completion';
+  language: string;
+  label?: string;
+  triggerCharacters?: string[];
+  items: MonacoCompletionItemContract[];
+  enabled?: boolean;
+}
+
+export interface MonacoCodeLensItemContract {
+  lineNumber: number;
+  title: string;
+  command?: string;
+  arguments?: unknown[];
+}
+
+export interface MonacoCodeLensProviderContract {
+  id: string;
+  kind: 'codelens';
+  language: string;
+  label?: string;
+  lenses: MonacoCodeLensItemContract[];
+  enabled?: boolean;
+}
+
+export type MonacoProviderContract =
+  | MonacoHoverProviderContract
+  | MonacoCompletionProviderContract
+  | MonacoCodeLensProviderContract;
+
+export interface MonacoEditorProvidersContract {
+  providers: MonacoProviderContract[];
+}
+
+// Command names are pack-defined at runtime, not a fixed compile-time union.
+export type OrchestratorCommandName = OrchestratorPackMetadataResponse['commands'][number]['id'];
 
 export interface OrchestratorCommandPayload {
   command: OrchestratorCommandName;

@@ -39,6 +39,7 @@ import { runGate } from './gate-validator';
 import { runSprintGate } from './sprint-gate';
 import { loadTemplate } from './template-loader';
 import { TransitionLeaseManager } from './transition-lease';
+import { resolveRuntimeGateForCriticState, type RuntimePackGraph } from './runtime-pack';
 import {
   appendTransitionEvent,
   defaultTransitionEventLogPath,
@@ -91,14 +92,14 @@ type GitCommandRunner = (args: string[], cwd: string) => GitCommandResult;
 
 interface GateCommitMetadata {
   gateId: string;
-  phaseLabel: string;
+  phaseId: string;
 }
 
 const PHASE_GATE_TRANSITION_MAP: Record<string, GateCommitMetadata> = {
-  'CRITIC_1->PHASE_2': { gateId: 'gate.critic-risk-1', phaseLabel: '1' },
-  'CRITIC_2->PHASE_3': { gateId: 'gate.critic-risk-2', phaseLabel: '2' },
-  'CRITIC_3->PHASE_4': { gateId: 'gate.critic-risk-3', phaseLabel: '3' },
-  'CRITIC_4->SYNTHESIS': { gateId: 'gate.critic-risk-4', phaseLabel: '4' },
+  'CRITIC_1->PHASE_2': { gateId: 'gate.critic-risk-1', phaseId: 'PHASE_1' },
+  'CRITIC_2->PHASE_3': { gateId: 'gate.critic-risk-2', phaseId: 'PHASE_2' },
+  'CRITIC_3->PHASE_4': { gateId: 'gate.critic-risk-3', phaseId: 'PHASE_3' },
+  'CRITIC_4->SYNTHESIS': { gateId: 'gate.critic-risk-4', phaseId: 'PHASE_4' },
 };
 
 function defaultGitRunner(args: string[], cwd: string): GitCommandResult {
@@ -113,7 +114,19 @@ function defaultGitRunner(args: string[], cwd: string): GitCommandResult {
   };
 }
 
-function resolveGateCommitMetadata(from: string, to: string): GateCommitMetadata | null {
+function resolveGateCommitMetadata(
+  from: string,
+  to: string,
+  runtimePackGraph?: RuntimePackGraph
+): GateCommitMetadata | null {
+  const runtimeGate = resolveRuntimeGateForCriticState(runtimePackGraph, from);
+  if (runtimeGate && runtimeGate.before === to) {
+    return {
+      gateId: runtimeGate.id,
+      phaseId: runtimeGate.evaluatedPhase,
+    };
+  }
+
   return PHASE_GATE_TRANSITION_MAP[`${from}->${to}`] || null;
 }
 
@@ -220,6 +233,26 @@ function createEngine(options: Record<string, unknown>) {
 
   // AC-1: Load declarative flow definition
   const flows = loadFlows(store, flowsPath);
+  const runtimePackGraph =
+    (flows as { runtimeGraph?: Record<string, unknown> }).runtimeGraph || undefined;
+  const runtimeFlowPack = {
+    manifest_version:
+      typeof (flows as Record<string, unknown>).manifest_version === 'string'
+        ? ((flows as Record<string, unknown>).manifest_version as string)
+        : '2.0',
+    pack_id:
+      typeof (flows as Record<string, unknown>).pack_id === 'string'
+        ? ((flows as Record<string, unknown>).pack_id as string)
+        : 'core-runtime',
+    pack_name:
+      typeof (flows as Record<string, unknown>).pack_name === 'string'
+        ? ((flows as Record<string, unknown>).pack_name as string)
+        : 'Core Runtime Pack',
+    version:
+      typeof (flows as Record<string, unknown>).version === 'string'
+        ? ((flows as Record<string, unknown>).version as string)
+        : '1.0.0',
+  };
 
   // M4: Load governance policies (defaults to mode=off if file missing)
   const governanceConfig: GovernancePoliciesConfig = loadGovernancePolicies(
@@ -305,7 +338,8 @@ function createEngine(options: Record<string, unknown>) {
         artifactRegistry,
         store,
         template.phaseArtifacts,
-        template.phaseLineage || {}
+        template.phaseLineage || {},
+        runtimePackGraph
       )
     );
   }
@@ -363,7 +397,11 @@ function createEngine(options: Record<string, unknown>) {
   }): void {
     if (!autoCommitPhaseGates) return;
 
-    const gate = resolveGateCommitMetadata(event.from, event.to);
+    const gate = resolveGateCommitMetadata(
+      event.from,
+      event.to,
+      runtimePackGraph as RuntimePackGraph
+    );
     if (!gate) return;
 
     const repoRoot = process.cwd();
@@ -372,7 +410,7 @@ function createEngine(options: Record<string, unknown>) {
     if (statusResult.stdout.trim() === '') return;
 
     const sessionId = readSessionId();
-    const message = `chore(sdlc): phase ${gate.phaseLabel} gate passed [session=${sessionId}] [gate=${gate.gateId}]`;
+    const message = `chore(orchestrator): gate passed [pack=${runtimeFlowPack.pack_id}] [phase=${gate.phaseId}] [session=${sessionId}] [gate=${gate.gateId}]`;
 
     const addResult = gitRunner(['add', '--', artifactOutputDir], repoRoot);
     if (addResult.status !== 0) return;
@@ -390,7 +428,13 @@ function createEngine(options: Record<string, unknown>) {
         status: serialized.status,
         last_updated: serialized.last_updated,
       });
-    }
+    },
+    () => ({
+      flow_manifest_version: runtimeFlowPack.manifest_version,
+      flow_pack_id: runtimeFlowPack.pack_id,
+      flow_pack_name: runtimeFlowPack.pack_name,
+      flow_pack_version: runtimeFlowPack.version,
+    })
   );
 
   // Combined callbacks: hooks + auto-persist
@@ -599,6 +643,7 @@ function createEngine(options: Record<string, unknown>) {
       mode: machine.mode,
       flowVersion: machine.flowVersion,
       flowSource: machine.flowSource,
+      flowPack: runtimeFlowPack,
       nextState: machine.nextState,
       history: machine.history,
       elapsedMs: machine.elapsedMs,
@@ -654,7 +699,17 @@ function createEngine(options: Record<string, unknown>) {
       throw new Error('Engine machine is not initialized');
     }
     const serialized = machine.serialize();
-    saveSessionState(store, serialized, sessionPath);
+    saveSessionState(
+      store,
+      {
+        ...serialized,
+        flow_manifest_version: runtimeFlowPack.manifest_version,
+        flow_pack_id: runtimeFlowPack.pack_id,
+        flow_pack_name: runtimeFlowPack.pack_name,
+        flow_pack_version: runtimeFlowPack.version,
+      },
+      sessionPath
+    );
     saveTransitionComplete(store, sessionPath);
     sseForward('orchestrator:paused', {
       state: machine.state,
@@ -712,7 +767,17 @@ function createEngine(options: Record<string, unknown>) {
     }
 
     // Persist the fresh state
-    saveSessionState(store, machine.serialize(), sessionPath);
+    saveSessionState(
+      store,
+      {
+        ...machine.serialize(),
+        flow_manifest_version: runtimeFlowPack.manifest_version,
+        flow_pack_id: runtimeFlowPack.pack_id,
+        flow_pack_name: runtimeFlowPack.pack_name,
+        flow_pack_version: runtimeFlowPack.version,
+      },
+      sessionPath
+    );
     sseForward('orchestrator:reset', { mode: newMode, state: machine.state });
 
     return status();
@@ -756,6 +821,7 @@ function createEngine(options: Record<string, unknown>) {
       gateOpts.governanceConfig = governanceConfig;
       gateOpts.identity = resolvedIdentity;
     }
+    gateOpts.runtimePackGraph = runtimePackGraph;
     const result = runGate(store, gateOpts);
 
     // Fire onGateResult hooks

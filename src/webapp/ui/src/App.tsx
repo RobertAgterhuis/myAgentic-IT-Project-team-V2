@@ -7,6 +7,7 @@ import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/app-layout';
 import { NotFoundPage } from '@/pages/not-found-page';
 import { AccessGuard } from '@/components/ui/access-guard';
+import { EditorShellProvider } from '@/lib/editor/editor-shell';
 
 const LoginPage = lazy(() => import('@/pages/login/login-page'));
 const DashboardPage = lazy(() => import('@/pages/dashboard/dashboard-page'));
@@ -156,7 +157,11 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <EditorShellProvider>
+      <RouterProvider router={router} />
+    </EditorShellProvider>
+  );
 }
 
 export default App;

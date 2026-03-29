@@ -104,7 +104,7 @@ export function DependencyGraph({
   return (
     <div className={`space-y-4 ${className ?? ''}`} data-testid="dependency-graph">
       {/* Legend */}
-      <div className="flex flex-wrap gap-3 text-[10px] text-muted-foreground">
+      <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
         <span className="flex items-center gap-1">
           <span className="size-2.5 rounded-full bg-green-500" /> Resolved / Passed
         </span>
@@ -153,14 +153,11 @@ export function DependencyGraph({
                       <span className="text-xs font-medium truncate">{node.label}</span>
                     </div>
                     <div className="flex items-center gap-1 mt-1">
-                      <Badge
-                        variant={statusBadge[node.status] ?? 'secondary'}
-                        className="text-[10px]"
-                      >
+                      <Badge variant={statusBadge[node.status] ?? 'secondary'} className="text-xs">
                         {node.status}
                       </Badge>
                       {isCritical && (
-                        <Badge variant="error" className="text-[10px]">
+                        <Badge variant="error" className="text-xs">
                           critical path
                         </Badge>
                       )}
@@ -169,7 +166,7 @@ export function DependencyGraph({
                 );
               })}
               {(grouped[type] ?? []).length === 0 && (
-                <p className="text-[10px] text-muted-foreground italic px-2">None</p>
+                <p className="text-xs text-muted-foreground italic px-2">None</p>
               )}
             </div>
           </div>
@@ -189,7 +186,7 @@ export function DependencyGraph({
                 <span className="font-mono truncate max-w-30">{e.source}</span>
                 <ArrowRight className="size-3 shrink-0" />
                 <span className="font-mono truncate max-w-30">{e.target}</span>
-                <Badge variant={e.critical ? 'error' : 'secondary'} className="text-[10px] ml-auto">
+                <Badge variant={e.critical ? 'error' : 'secondary'} className="text-xs ml-auto">
                   {e.relationship}
                 </Badge>
               </div>

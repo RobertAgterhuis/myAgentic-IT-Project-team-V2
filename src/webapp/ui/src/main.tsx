@@ -8,6 +8,7 @@ import App from './App';
 import './index.css';
 import { initWebVitals } from '@/lib/web-vitals';
 import { validateRuntimeEnv } from '@/lib/runtime-env';
+import { initializeEditorShell } from '@/lib/editor/editor-shell';
 
 applyTheme(getStoredTheme());
 
@@ -19,6 +20,9 @@ if (runtimeEnv.warnings.length > 0) {
   // Warnings are advisory only and should not block startup.
   console.warn('Frontend runtime environment warnings:', runtimeEnv.warnings.join(' '));
 }
+
+// Monaco EditorShell boot path is centralized and uses worker-safe ESM setup.
+void initializeEditorShell();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

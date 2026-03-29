@@ -27,6 +27,75 @@ interface SidePanelProps extends React.ComponentProps<'nav'> {
   onItemSelect?: (itemId: string) => void;
 }
 
+interface NavItemControlProps {
+  item: NavItem;
+  isActive: boolean;
+  collapsed: boolean;
+  onItemSelect?: (itemId: string) => void;
+}
+
+function NavItemControl({ item, isActive, collapsed, onItemSelect }: NavItemControlProps) {
+  const href = item.href;
+  const sharedClassName = cn(
+    'motion-transition-base flex w-full items-center gap-(--space-sm) rounded-md px-3 py-2 text-sm duration-150',
+    'hover:bg-background/80 hover:translate-x-0.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+    item.disabled
+      ? 'cursor-not-allowed text-muted-foreground/60'
+      : isActive
+        ? 'surface-elevated border border-info/20 text-primary font-medium shadow-sm'
+        : 'border border-transparent text-foreground/88'
+  );
+
+  const content = (
+    <>
+      {item.icon && (
+        <span className={cn('shrink-0 [&>svg]:size-4', isActive && 'text-primary')}>
+          {item.icon}
+        </span>
+      )}
+      {!collapsed && <span className="truncate">{item.label}</span>}
+    </>
+  );
+
+  if (href && !item.disabled) {
+    return (
+      <a
+        href={href}
+        onClick={(event) => {
+          if (!onItemSelect) {
+            return;
+          }
+          event.preventDefault();
+          onItemSelect(href);
+        }}
+        className={sharedClassName}
+        aria-current={isActive ? 'page' : undefined}
+        aria-label={item.label}
+        title={collapsed ? item.label : undefined}
+      >
+        {content}
+      </a>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (item.disabled) return;
+        onItemSelect?.(item.id);
+      }}
+      className={sharedClassName}
+      aria-current={isActive ? 'page' : undefined}
+      aria-label={item.label}
+      disabled={item.disabled}
+      title={collapsed ? item.label : undefined}
+    >
+      {content}
+    </button>
+  );
+}
+
 /* ---------- Section component ---------- */
 
 function SectionGroup({
@@ -111,7 +180,7 @@ function SectionGroup({
           );
           const widthClass = progressWidthClasses[step];
           return (
-            <div className="mx-3 mb-2 h-1 rounded-full bg-muted/80 overflow-hidden">
+            <div className="mx-3 mb-2 h-1 overflow-hidden rounded-full bg-muted/80">
               <div
                 className={cn(
                   'h-full bg-linear-to-r from-secondary via-info to-primary transition-all',
@@ -126,39 +195,12 @@ function SectionGroup({
         <ul role="list" className="space-y-0.5 px-1">
           {section.items.map((item) => (
             <li key={item.id}>
-              <button
-                type="button"
-                role="link"
-                onClick={() => {
-                  if (item.disabled) return;
-                  onItemSelect?.(item.href ?? item.id);
-                }}
-                className={cn(
-                  'motion-transition-base flex w-full items-center gap-(--space-sm) rounded-xl px-3 py-2 text-sm duration-150',
-                  'hover:bg-background/80 hover:translate-x-0.5 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-                  item.disabled
-                    ? 'cursor-not-allowed text-muted-foreground/60'
-                    : activeItemId === (item.href ?? item.id)
-                      ? 'border border-info/20 bg-linear-to-r from-primary/16 via-info/10 to-secondary/10 text-primary font-medium shadow-sm'
-                      : 'border border-transparent text-foreground/88'
-                )}
-                aria-current={activeItemId === (item.href ?? item.id) ? 'page' : undefined}
-                aria-label={item.label}
-                disabled={item.disabled}
-                title={collapsed ? item.label : undefined}
-              >
-                {item.icon && (
-                  <span
-                    className={cn(
-                      'shrink-0 [&>svg]:size-4',
-                      activeItemId === (item.href ?? item.id) && 'text-primary'
-                    )}
-                  >
-                    {item.icon}
-                  </span>
-                )}
-                {!collapsed && <span className="truncate">{item.label}</span>}
-              </button>
+              <NavItemControl
+                item={item}
+                isActive={activeItemId === (item.href ?? item.id)}
+                collapsed={collapsed}
+                onItemSelect={onItemSelect}
+              />
             </li>
           ))}
         </ul>
@@ -182,7 +224,7 @@ function SidePanel({
     <nav
       aria-label="Side navigation"
       className={cn(
-        'surface-app motion-transition-base flex flex-col border-r border-border/70 shadow-md supports-backdrop-filter:bg-card/76',
+        'surface-app motion-transition-base flex h-full flex-col border-r border-border/70 shadow-md supports-backdrop-filter:bg-card/76',
         collapsed ? 'w-14' : 'w-60',
         className
       )}

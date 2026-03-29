@@ -11,6 +11,7 @@
 import { randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { Dispatcher, PHASE_AGENTS } from '../../../platform/engine/dispatcher';
+import { loadFlows } from '../../../platform/engine/flow-loader';
 import { getStore } from '../store';
 import { sessionTracker } from '../session-tracker';
 import type { ServiceContext } from './types';
@@ -202,6 +203,42 @@ function resolveRuntimeProfile() {
   return validation.profile;
 }
 
+function resolveRuntimePackManifest() {
+  const store = getStore();
+
+  try {
+    const flowsPath = path.resolve(__dirname, '..', '..', '..', 'platform', 'engine', 'flows.yaml');
+    const flows = loadFlows(store, flowsPath) as {
+      manifest_version?: unknown;
+      pack_id?: unknown;
+      pack_name?: unknown;
+      version?: unknown;
+      runtimeGraph?: unknown;
+    };
+
+    if (
+      typeof flows.manifest_version === 'string' &&
+      typeof flows.pack_id === 'string' &&
+      typeof flows.pack_name === 'string' &&
+      typeof flows.version === 'string'
+    ) {
+      return {
+        manifest: {
+          manifest_version: flows.manifest_version,
+          pack_id: flows.pack_id,
+          pack_name: flows.pack_name,
+          version: flows.version,
+        },
+        runtimeGraph: flows.runtimeGraph,
+      };
+    }
+  } catch {
+    // Manual execution remains functional without pack metadata.
+  }
+
+  return null;
+}
+
 export class AgentExecutionService {
   private _svc: ServiceContext;
 
@@ -257,9 +294,11 @@ export class AgentExecutionService {
       throw new Error(adapterResolutionError);
     }
 
+    const runtimePack = resolveRuntimePackManifest();
     const dispatcher = new Dispatcher({
       store: getStore(),
       adapter: adapter ?? undefined,
+      runtimeGraph: (runtimePack?.runtimeGraph as never) ?? undefined,
       config: {
         enforcePredecessorContractContinuity: resolvePredecessorContinuityMode(),
       },
@@ -267,6 +306,7 @@ export class AgentExecutionService {
     const workspaceId = input.context?.workspaceId || 'default';
     const gitService = this.createGitService(workspaceId);
     const ragContext = await this.buildRagContext(info, input);
+    const runtimePackManifest = runtimePack?.manifest ?? null;
 
     // Build context
     const ctx = dispatcher.buildContext(info.id, {
@@ -274,6 +314,7 @@ export class AgentExecutionService {
       questionnairePath: input.context?.questionnairePath,
       ragContext,
       workspaceId,
+      runtimePackManifest,
       gitService,
     });
 

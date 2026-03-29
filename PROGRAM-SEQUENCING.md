@@ -1,7 +1,7 @@
 # Complete Program Sequencing: Framework Decoupling + UI Audit
 
-**Current Date**: 2026-03-28  
-**Status**: Framework-Decoupling: M-FD-01 through M-FD-05 milestones created (5 of 5). UI-Audit: M-001–M-003 milestones created (3 of 3). 39 framework-decoupling issues + 15 UI-audit issues in GitHub.
+**Current Date**: 2026-03-29  
+**Status**: Phase 1 complete. M-001 and M-FD-01 are closed in GitHub. Phase 2 is unblocked: M-002-PhaseA can proceed independently, and M-FD-02 is now unblocked by M-FD-01 completion.
 
 ---
 
@@ -9,7 +9,7 @@
 
 This chart shows the **strict execution order** required to avoid rework and unblock downstream work.
 
-```
+```text
 Phase
 ─────┬──────────────────────────────────────────────────────────────
   1  │  M-001 (UI Foundations)      M-FD-01 (Kernel Contracts)
@@ -31,9 +31,11 @@ Phase
 
 ## Phase-by-Phase Breakdown
 
-### Phase 1: Parallel Foundation (Start Now)
+### Phase 1: Parallel Foundation (Complete)
 
 **What**: Two independent foundation streams
+
+**Status**: Complete. Both foundation milestones closed with no remaining open Phase 1 issues in GitHub.
 
 | Milestone                                | Issues                    | Purpose                                             | Duration | Can run in parallel? |
 | ---------------------------------------- | ------------------------- | --------------------------------------------------- | -------- | -------------------- |
@@ -194,12 +196,12 @@ Phase
 
 | Milestone     | GitHub # | Status | Issues                     | Epic               | Notes                                                  |
 | ------------- | -------- | ------ | -------------------------- | ------------------ | ------------------------------------------------------ |
-| M-001         | #134     | Open   | I-001–I-008 (8)            | E-001, E-002       | Phase 1 start                                          |
+| M-001         | #134     | Closed | I-001–I-008 (8)            | E-001, E-002       | Phase 1 complete                                       |
 | M-002 Phase A | #135     | Open   | I-009, I-012, I-013        | E-003, E-005       | Phase 2 start                                          |
 | M-002 Phase B | #135     | Open   | I-010, I-011               | E-003, E-004       | After M-001                                            |
 | M-002 Phase C | #135     | Open   | I-016, I-017 (new)         | E-003              | After M-FD-06                                          |
 | M-003         | #136     | Open   | I-014, I-015, I-018, I-019 | E-006              | After M-FD-06 (gates); I-018/I-019 after M-FD-06 ships |
-| M-FD-01       | #137     | Open   | I-FD-001–I-FD-009 (9)      | E-FD-001           | Phase 1 start                                          |
+| M-FD-01       | #137     | Closed | I-FD-001–I-FD-009 (9)      | E-FD-001           | Phase 1 complete; M-FD-02 unblocked                    |
 | M-FD-02       | #138     | Open   | I-FD-010–I-FD-022 (13)     | E-FD-002, E-FD-003 | After M-FD-01                                          |
 | M-FD-03       | #139     | Open   | I-FD-023–I-FD-032 (10)     | E-FD-004           | After M-FD-02                                          |
 | M-FD-04       | #140     | Open   | I-FD-033–I-FD-055 (23)     | E-FD-005, E-FD-006 | After M-FD-03                                          |
@@ -210,9 +212,13 @@ Phase
 
 ## Summary
 
-**Parallel streams (start now)**:
+**Parallel streams (completed)**:
 
 - Phase 1: M-001 + M-FD-01
+
+**Current active front**:
+
+- Phase 2: M-002-PhaseA + M-FD-02
 
 **Sequential dependency chain**:
 M-FD-01 → M-FD-02 → M-FD-03 → M-FD-04 → (M-FD-06 + I-007/I-008 from M-001) → M-002-PhaseC + M-003 → M-FD-05

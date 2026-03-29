@@ -50,9 +50,9 @@ html.dark {
   --color-card-foreground: hsl(210 18% 93%);
   --color-popover: hsl(220 16% 12%);
   --color-popover-foreground: hsl(210 18% 93%);
-  --color-primary: hsl(210 80% 60%);
+  --color-primary: hsl(210 74% 34%);
   --color-primary-foreground: hsl(0 0% 100%);
-  --color-secondary: hsl(190 70% 45%);
+  --color-secondary: hsl(190 72% 30%);
   --color-secondary-foreground: hsl(0 0% 100%);
   --color-muted: hsl(220 12% 20%);
   --color-muted-foreground: hsl(215 14% 66%);
@@ -194,6 +194,41 @@ html.dark {
 }
 
 @layer utilities {
+  .page-container {
+    width: min(100%, 88rem);
+    margin-inline: auto;
+  }
+
+  .page-container-wide {
+    width: min(100%, 104rem);
+    margin-inline: auto;
+  }
+
+  .page-split-grid {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .monaco-host-shell {
+    width: min(100%, 104rem);
+    margin-inline: auto;
+  }
+
+  .monaco-host-canvas {
+    width: 100%;
+    min-height: clamp(18rem, 42vh, 30rem);
+  }
+
+  .monaco-host-canvas-compact {
+    width: 100%;
+    min-height: clamp(14rem, 30vh, 22rem);
+  }
+
+  .monaco-host-fallback {
+    width: 100%;
+    min-height: clamp(14rem, 32vh, 24rem);
+  }
+
   .surface-app {
     background: color-mix(in srgb, var(--color-card) 84%, transparent);
     border: 1px solid color-mix(in srgb, var(--color-border) 80%, transparent);
@@ -271,6 +306,57 @@ html.dark {
   .animate-flash {
     animation: flash-highlight 1.5s ease-out forwards;
   }
+}
+
+@media (min-width: 1280px) {
+  .page-split-grid {
+    grid-template-columns: minmax(0, 1.6fr) minmax(20rem, 0.95fr);
+    align-items: start;
+  }
+}
+
+@media (min-width: 1536px) {
+  .monaco-host-canvas {
+    min-height: clamp(20rem, 46vh, 34rem);
+  }
+
+  .monaco-host-canvas-compact {
+    min-height: clamp(16rem, 34vh, 24rem);
+  }
+}
+
+@media (min-width: 1920px) {
+  .monaco-host-canvas {
+    min-height: clamp(22rem, 48vh, 38rem);
+    max-height: 44rem;
+  }
+
+  .monaco-host-canvas-compact {
+    min-height: clamp(18rem, 36vh, 26rem);
+  }
+}
+
+/* Monaco diff line markers for evidence and review overlays */
+.monaco-editor .monaco-line-marker {
+  transition: background-color var(--motion-duration-fast) var(--motion-ease-standard);
+}
+
+.monaco-editor .monaco-line-marker-gate_failure,
+.monaco-editor .monaco-line-marker-gutter-gate_failure {
+  background: color-mix(in srgb, var(--color-destructive) 16%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--color-destructive) 86%, transparent);
+}
+
+.monaco-editor .monaco-line-marker-approval,
+.monaco-editor .monaco-line-marker-gutter-approval {
+  background: color-mix(in srgb, var(--color-info) 15%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--color-info) 82%, transparent);
+}
+
+.monaco-editor .monaco-line-marker-evidence_reference,
+.monaco-editor .monaco-line-marker-gutter-evidence_reference {
+  background: color-mix(in srgb, var(--color-warning) 16%, transparent);
+  border-left: 2px solid color-mix(in srgb, var(--color-warning) 82%, transparent);
 }
 
 @keyframes fade-in-up {

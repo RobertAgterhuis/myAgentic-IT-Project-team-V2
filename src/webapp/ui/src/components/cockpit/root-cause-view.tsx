@@ -112,7 +112,7 @@ export function RootCauseView({ items, onNavigate, className }: RootCauseViewPro
           <Filter className="size-3 text-muted-foreground" />
           <button
             onClick={() => setTypeFilter(null)}
-            className={`px-2 py-1 rounded-md text-[10px] transition-colors ${
+            className={`px-2 py-1 rounded-md text-xs transition-colors ${
               !typeFilter ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-muted'
             }`}
           >
@@ -124,7 +124,7 @@ export function RootCauseView({ items, onNavigate, className }: RootCauseViewPro
               <button
                 key={type}
                 onClick={() => setTypeFilter(typeFilter === type ? null : type)}
-                className={`px-2 py-1 rounded-md text-[10px] transition-colors ${
+                className={`px-2 py-1 rounded-md text-xs transition-colors ${
                   typeFilter === type
                     ? 'bg-primary/10 text-primary'
                     : 'text-muted-foreground hover:bg-muted'
@@ -162,15 +162,15 @@ export function RootCauseView({ items, onNavigate, className }: RootCauseViewPro
                 </span>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <Badge variant={cfg.variant} className="text-[10px]">
+                    <Badge variant={cfg.variant} className="text-xs">
                       {cfg.label}
                     </Badge>
                     {item.source_agent && (
-                      <Badge variant="secondary" className="text-[10px]">
+                      <Badge variant="secondary" className="text-xs">
                         Agent: {item.source_agent}
                       </Badge>
                     )}
-                    <span className="text-[10px] text-muted-foreground ml-auto">
+                    <span className="text-xs text-muted-foreground ml-auto">
                       {new Date(item.timestamp).toLocaleString()}
                     </span>
                   </div>

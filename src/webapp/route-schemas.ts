@@ -109,6 +109,11 @@ export const commandGet = {
   response: listResponses,
 };
 
+export const commandsCatalogGet = {
+  tags: ['commands'],
+  response: listResponses,
+};
+
 /* ── approvals ────────────────────────────────────────────────── */
 
 export const approvalsList = {

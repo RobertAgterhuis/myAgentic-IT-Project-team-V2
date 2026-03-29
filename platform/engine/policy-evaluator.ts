@@ -67,6 +67,16 @@ export interface PolicyPack {
   policies: Policy[];
 }
 
+type PolicyPackCandidate = {
+  pack_id?: unknown;
+  pack_name?: unknown;
+  version?: unknown;
+  id?: unknown;
+  name?: unknown;
+  title?: unknown;
+  policies?: unknown;
+};
+
 export interface EvaluationContext {
   type: 'gate' | 'pr' | 'deploy' | 'artifact' | 'schedule';
   scope: PolicyScope;
@@ -174,9 +184,19 @@ export function loadPolicyPack(store: PolicyStore, packPath: string): PolicyPack
 
   try {
     const raw = store.readFile(packPath);
-    const parsed = JSON.parse(raw);
+    const parsed = JSON.parse(raw) as PolicyPackCandidate;
     if (!parsed.policies || !Array.isArray(parsed.policies)) return null;
-    return parsed as PolicyPack;
+
+    const packIdCandidate = parsed.pack_id ?? parsed.id;
+    const packNameCandidate = parsed.pack_name ?? parsed.name ?? parsed.title;
+
+    return {
+      ...parsed,
+      pack_id: typeof packIdCandidate === 'string' ? packIdCandidate : undefined,
+      pack_name: typeof packNameCandidate === 'string' ? packNameCandidate : undefined,
+      version: typeof parsed.version === 'string' ? parsed.version : undefined,
+      policies: parsed.policies as Policy[],
+    };
   } catch {
     return null;
   }

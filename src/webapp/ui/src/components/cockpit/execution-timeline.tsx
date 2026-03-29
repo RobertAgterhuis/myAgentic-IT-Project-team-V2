@@ -212,7 +212,7 @@ export function ExecutionTimeline({ events, className }: ExecutionTimelineProps)
                   >
                     <span className="text-white">{outcomeIcon[outcome]}</span>
                   </div>
-                  <span className="text-[10px] text-muted-foreground max-w-20 truncate text-center">
+                  <span className="text-xs text-muted-foreground max-w-20 truncate text-center">
                     {event.type.replace(/_/g, ' ')}
                   </span>
                   <span className="text-[9px] text-muted-foreground/60">
@@ -266,7 +266,7 @@ export function ExecutionTimeline({ events, className }: ExecutionTimelineProps)
           {selectedEvent.metadata && Object.keys(selectedEvent.metadata).length > 0 && (
             <details className="text-xs">
               <summary className="cursor-pointer text-muted-foreground">Metadata</summary>
-              <pre className="mt-1 p-2 rounded-md bg-muted text-[10px] overflow-x-auto">
+              <pre className="mt-1 p-2 rounded-md bg-muted text-xs overflow-x-auto">
                 {JSON.stringify(selectedEvent.metadata, null, 2)}
               </pre>
             </details>

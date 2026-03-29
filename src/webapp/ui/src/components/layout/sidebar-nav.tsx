@@ -28,7 +28,7 @@ export function SidebarNav({
       collapsed={!sidebarOpen}
       onCollapse={onCollapse}
       onItemSelect={onSelectItem}
-      className={cn('hidden md:flex', !sidebarOpen && 'md:hidden', className)}
+      className={cn('hidden md:flex md:shrink-0', className)}
     />
   );
 }

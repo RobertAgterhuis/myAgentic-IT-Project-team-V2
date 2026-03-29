@@ -15,12 +15,20 @@
  * AC-8: Logging
  */
 
+import fs from 'node:fs';
 import path from 'node:path';
 import { STATES } from './state-machine';
 import type { JobQueue, JobType } from './jobs/job-types';
 import type { AgentRuntimeAdapter, RuntimeAdapterResult } from './agent-runtime-adapter';
 import { evaluateAgentBudget } from './context-budgeter';
-import agentsSchema from '../schema/agents.json';
+import {
+  assertRuntimeSchemaParity,
+  compileAgentPhaseMap,
+  PHASE_AGENTS,
+  type AgentRef,
+} from './agent-phase-map';
+import { loadFlows } from './flow-loader';
+import type { RuntimePackGraph } from './runtime-pack';
 
 // ─── Error Severity Classification (M5 / Evolution 5) ───────
 
@@ -54,11 +62,6 @@ interface DispatcherStore {
   read(path: string): string;
 }
 
-interface AgentRef {
-  id: string;
-  name: string;
-}
-
 interface AgentPrioritySignal {
   impactScore?: number;
   urgencyScore?: number;
@@ -76,6 +79,13 @@ interface PredecessorContractSummary {
     checked: number;
     completionRatio: number;
   } | null;
+}
+
+interface RuntimePackManifestSummary {
+  manifest_version: string;
+  pack_id: string;
+  pack_name: string;
+  version: string;
 }
 
 export interface AgentExecutionContext {
@@ -98,14 +108,9 @@ export interface AgentExecutionContext {
   } | null;
   sessionState: unknown;
   workspaceId: string | null;
+  runtimePackManifest: RuntimePackManifestSummary | null;
   gitService?: unknown;
   executionPolicy?: 'standard' | 'fast-path';
-}
-
-interface CanonicalSchemaAgent {
-  id?: unknown;
-  name?: unknown;
-  phase?: unknown;
 }
 
 interface InvocationEntry {
@@ -567,106 +572,34 @@ function assessConfidence(
   };
 }
 
-// ─── Agent Registry ──────────────────────────────────────────
-// Maps runtime state → list of agents to invoke (in order).
-// The source of truth is platform/schema/agents.json.
-
-const RUNTIME_TO_SCHEMA_PHASE = Object.freeze({
-  [STATES.ONBOARDING]: 'ONBOARDING',
-  [STATES.PHASE_1]: 'PHASE_1',
-  [STATES.PHASE_2]: 'PHASE_2',
-  [STATES.PHASE_3]: 'PHASE_3',
-  [STATES.PHASE_4]: 'PHASE_4',
-  [STATES.SYNTHESIS]: 'SYNTHESIS',
-  [STATES.SPRINT_GATE]: 'SPRINT_GATE',
-  [STATES.PHASE_5_EXECUTING]: 'PHASE_5_EXECUTING',
-} as Record<string, string>);
-
-const RUNTIME_STATES_WITH_AGENTS = Object.freeze([
-  STATES.ONBOARDING,
-  STATES.PHASE_1,
-  STATES.CRITIC_1,
-  STATES.PHASE_2,
-  STATES.CRITIC_2,
-  STATES.PHASE_3,
-  STATES.CRITIC_3,
-  STATES.PHASE_4,
-  STATES.CRITIC_4,
-  STATES.SYNTHESIS,
-  STATES.SPRINT_GATE,
-  STATES.PHASE_5_EXECUTING,
-]);
-
-function toAgentRef(row: CanonicalSchemaAgent): AgentRef {
-  if (typeof row.id !== 'string' || typeof row.name !== 'string') {
-    throw new Error('Invalid agents schema row: expected string id and name');
-  }
-  return { id: row.id, name: row.name };
+function createFallbackParallelGroups(phaseAgents: Record<string, AgentRef[]>) {
+  return Object.fromEntries(
+    Object.entries(phaseAgents)
+      .filter(([, agents]) => agents.length > 0)
+      .map(([state, agents]) => [state, [agents.map((agent) => agent.id)]])
+  );
 }
 
-function freezePhaseMap(phaseMap: Record<string, AgentRef[]>): Record<string, AgentRef[]> {
-  for (const [state, agents] of Object.entries(phaseMap)) {
-    const frozenAgents = Object.freeze(
-      agents.map((a) => Object.freeze({ ...a }))
-    ) as unknown as AgentRef[];
-    phaseMap[state] = frozenAgents;
-  }
-  return Object.freeze(phaseMap);
-}
-
-function serializePhaseMap(phaseMap: Record<string, AgentRef[]>) {
-  return RUNTIME_STATES_WITH_AGENTS.map((state) => ({
-    state,
-    agents: (phaseMap[state] || []).map((a) => ({ id: a.id, name: a.name })),
-  }));
-}
-
-function compileAgentPhaseMap(schemaDoc: unknown = agentsSchema): Record<string, AgentRef[]> {
-  const doc = schemaDoc as { agents?: unknown };
-  if (!doc || !Array.isArray(doc.agents)) {
-    throw new Error('Invalid agents schema: expected top-level agents array');
-  }
-
-  const schemaByPhase = new Map<string, AgentRef[]>();
-  for (const rawAgent of doc.agents as CanonicalSchemaAgent[]) {
-    if (!rawAgent || typeof rawAgent.phase !== 'string') {
-      throw new Error('Invalid agents schema row: expected string phase');
-    }
-    const list = schemaByPhase.get(rawAgent.phase) || [];
-    list.push(toAgentRef(rawAgent));
-    schemaByPhase.set(rawAgent.phase, list);
-  }
-
-  const criticRiskAgents = schemaByPhase.get('CRITIC_RISK') || [];
-  const runtimePhaseMap: Record<string, AgentRef[]> = {
-    [STATES.CRITIC_1]: criticRiskAgents.map((a) => ({ ...a })),
-    [STATES.CRITIC_2]: criticRiskAgents.map((a) => ({ ...a })),
-    [STATES.CRITIC_3]: criticRiskAgents.map((a) => ({ ...a })),
-    [STATES.CRITIC_4]: criticRiskAgents.map((a) => ({ ...a })),
+function loadDefaultRuntimeGraph(): RuntimePackGraph | null {
+  const flowsPath = path.join(__dirname, 'flows.yaml');
+  const store = {
+    exists(filePath: string) {
+      return fs.existsSync(filePath);
+    },
+    readFile(filePath: string) {
+      return fs.readFileSync(filePath, 'utf8');
+    },
   };
 
-  for (const [runtimeState, schemaPhase] of Object.entries(RUNTIME_TO_SCHEMA_PHASE)) {
-    runtimePhaseMap[runtimeState] = (schemaByPhase.get(schemaPhase) || []).map((a) => ({ ...a }));
-  }
-
-  return freezePhaseMap(runtimePhaseMap);
-}
-
-function assertRuntimeSchemaParity(
-  runtimePhaseMap: Record<string, AgentRef[]>,
-  schemaDoc: unknown = agentsSchema
-): void {
-  const compiled = compileAgentPhaseMap(schemaDoc);
-  const runtimeSnapshot = JSON.stringify(serializePhaseMap(runtimePhaseMap));
-  const compiledSnapshot = JSON.stringify(serializePhaseMap(compiled));
-
-  if (runtimeSnapshot !== compiledSnapshot) {
-    throw new Error('Runtime/schema parity violation for dispatcher phase-agent map');
+  try {
+    const flows = loadFlows(store, flowsPath) as { runtimeGraph?: RuntimePackGraph };
+    return flows.runtimeGraph || null;
+  } catch {
+    return null;
   }
 }
 
-const PHASE_AGENTS = compileAgentPhaseMap();
-assertRuntimeSchemaParity(PHASE_AGENTS);
+const DEFAULT_RUNTIME_GRAPH = loadDefaultRuntimeGraph();
 
 // ─── Supported Platforms ─────────────────────────────────────
 const PLATFORMS = Object.freeze({
@@ -675,32 +608,9 @@ const PLATFORMS = Object.freeze({
   OPENAI: 'openai',
 });
 
-// ─── Parallel Execution Groups ───────────────────────────────
-// Maps state → list of groups. Each group is an array of agent IDs
-// that can execute concurrently. Groups run serially — outputs of
-// one group feed into the next as predecessor paths.
-
-const AGENT_GROUPS: Record<string, string[][]> = Object.freeze({
-  [STATES.ONBOARDING]: [['25']],
-  [STATES.PHASE_1]: [['01', '02', '03', '04', '34']],
-  [STATES.CRITIC_1]: [['18', '19']],
-  [STATES.PHASE_2]: [['05', '06', '07', '08', '09', '33']],
-  [STATES.CRITIC_2]: [['18', '19']],
-  [STATES.PHASE_3]: [['10', '11', '12', '13', '32', '35']],
-  [STATES.CRITIC_3]: [['18', '19']],
-  [STATES.PHASE_4]: [['14', '15', '16', '30', '31']],
-  [STATES.CRITIC_4]: [['18', '19']],
-  [STATES.SYNTHESIS]: [['17']],
-  [STATES.SPRINT_GATE]: [['00']],
-  // PHASE_5: implementation/test/review can run together; then the
-  // reporting agents run after they have something to work from.
-  [STATES.PHASE_5_EXECUTING]: [
-    ['20', '21', '38'],
-    ['22', '29', '26', '27', '28'],
-  ],
-} as Record<string, string[][]>);
-
-const DEFAULT_PARALLEL_DISPATCH_STATES = new Set<string>([STATES.PHASE_1]);
+const DEFAULT_PARALLEL_DISPATCH_STATES = new Set<string>(
+  DEFAULT_RUNTIME_GRAPH?.defaultParallelDispatchStates || [STATES.PHASE_1]
+);
 
 // ─── Default Configuration ───────────────────────────────────
 const DEFAULT_CONFIG = Object.freeze({
@@ -710,7 +620,7 @@ const DEFAULT_CONFIG = Object.freeze({
   retryDelayMs: 5000,
   backoffBaseMs: 2000,
   backoffCapMs: 30000,
-  skillsDir: 'templates/sdlc/agents',
+  skillsDir: null,
   docsDir: 'docs',
   maxConcurrency: 3, // bounded parallelism ceiling per group
   enforcePredecessorContractContinuity: false,
@@ -755,6 +665,9 @@ class Dispatcher {
   _log: InvocationEntry[];
   _jobQueue: JobQueue | null;
   _adapter: AgentRuntimeAdapter | null;
+  _parallelGroups: Record<string, string[][]>;
+  _runtimeGraph: RuntimePackGraph | null;
+  _defaultParallelDispatchStates: Set<string>;
 
   /**
    * @param {object} options
@@ -770,6 +683,8 @@ class Dispatcher {
       invoker,
       onLog,
       phaseAgents,
+      parallelGroups,
+      runtimeGraph,
       jobQueue,
     } = options as {
       store?: DispatcherStore;
@@ -781,6 +696,8 @@ class Dispatcher {
       ) => Promise<RuntimeAdapterResult>;
       onLog?: (...args: unknown[]) => void;
       phaseAgents?: Record<string, AgentRef[]>;
+      parallelGroups?: Record<string, string[][]>;
+      runtimeGraph?: RuntimePackGraph;
       jobQueue?: JobQueue;
     };
 
@@ -789,7 +706,15 @@ class Dispatcher {
     const { adapter } = options as { adapter?: AgentRuntimeAdapter };
     this._store = store;
     this._config = { ...DEFAULT_CONFIG, ...(config as Record<string, unknown>) };
-    this._phaseAgents = phaseAgents || PHASE_AGENTS;
+    this._runtimeGraph = runtimeGraph || DEFAULT_RUNTIME_GRAPH;
+    this._phaseAgents = phaseAgents || this._runtimeGraph?.phaseAgents || PHASE_AGENTS;
+    this._parallelGroups =
+      parallelGroups ||
+      this._runtimeGraph?.parallelGroups ||
+      createFallbackParallelGroups(this._phaseAgents);
+    this._defaultParallelDispatchStates = new Set(
+      this._runtimeGraph?.defaultParallelDispatchStates || DEFAULT_PARALLEL_DISPATCH_STATES
+    );
     this._adapter = adapter ?? null;
     this._invoker = invoker || this._defaultInvoker.bind(this);
     this._onLog = onLog || (() => {});
@@ -812,11 +737,11 @@ class Dispatcher {
   }
 
   _shouldUseDefaultParallelDispatch(state: string): boolean {
-    if (!DEFAULT_PARALLEL_DISPATCH_STATES.has(state)) {
+    if (!this._defaultParallelDispatchStates.has(state)) {
       return false;
     }
 
-    const groups = AGENT_GROUPS[state];
+    const groups = this._parallelGroups[state];
     const stateAgents = this.getAgentsForState(state);
     if (!groups || groups.length === 0 || stateAgents.length === 0) {
       return false;
@@ -857,6 +782,7 @@ class Dispatcher {
       ragContext,
       sessionState,
       workspaceId,
+      runtimePackManifest,
       gitService,
       executionPolicy,
     } = options as {
@@ -865,18 +791,24 @@ class Dispatcher {
       ragContext?: AgentExecutionContext['ragContext'];
       sessionState?: unknown;
       workspaceId?: string;
+      runtimePackManifest?: AgentExecutionContext['runtimePackManifest'];
       gitService?: unknown;
       executionPolicy?: AgentExecutionContext['executionPolicy'];
     };
     const context: AgentExecutionContext = {
       agentId,
-      skillFile: path.join(this._config.skillsDir as string, `${agentId}-*.md`),
+      skillFile:
+        this._runtimeGraph?.skillFileGlobs[agentId] ||
+        (typeof this._config.skillsDir === 'string' && this._config.skillsDir.trim() !== ''
+          ? path.join(this._config.skillsDir as string, `${agentId}-*.md`)
+          : `${agentId}-*.md`),
       predecessorOutputs: {},
       predecessorContracts: [],
       questionnaireInput: null,
       ragContext: ragContext || null,
       sessionState: sessionState || null,
       workspaceId: workspaceId || null,
+      runtimePackManifest: runtimePackManifest || null,
       gitService,
       executionPolicy: executionPolicy || 'standard',
     };
@@ -1447,7 +1379,7 @@ class Dispatcher {
   /**
    * Dispatch agents for a state using bounded parallel execution groups.
    *
-   * Groups defined in AGENT_GROUPS run serially — the predecessor paths
+   * Groups defined in the runtime pack graph run serially — the predecessor paths
    * collected from one group are passed to the next. Within each group,
    * agents run concurrently up to `maxConcurrency` (default from config).
    * States without a group config fall back to sequential `dispatchState()`.
@@ -1474,7 +1406,7 @@ class Dispatcher {
     concurrencyHighWaterMark: number;
     totalWaitMs: number;
   }> {
-    const groups = AGENT_GROUPS[state];
+    const groups = this._parallelGroups[state];
     if (!groups) {
       const r = await this._dispatchStateSequential(
         state,
@@ -1557,9 +1489,9 @@ export {
   compileAgentPhaseMap,
   assertRuntimeSchemaParity,
   PHASE_AGENTS,
-  AGENT_GROUPS,
   PLATFORMS,
   DEFAULT_CONFIG,
+  DEFAULT_CONFIG as _DEFAULT_CONFIG,
   Dispatcher,
   ErrorSeverity,
   TRANSIENT_PATTERNS,

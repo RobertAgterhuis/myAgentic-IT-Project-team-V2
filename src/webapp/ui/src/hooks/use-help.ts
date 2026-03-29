@@ -1,15 +1,28 @@
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ApiError, apiGet } from '@/lib/api-client';
-import type { HelpSearchResponse, HelpTopicResponse, PageHelpResponse } from '@/lib/api-types';
+import type {
+  HelpSearchResponse,
+  HelpTopicResponse,
+  OrchestratorPackMetadataResponse,
+  PageHelpResponse,
+} from '@/lib/api-types';
+import {
+  mergePackHelpTopicsIntoPageHelp,
+  resolvePackAwareHelpRouteSlug,
+} from '@/help/help-registry';
 import { queryKeys } from '@/lib/query-keys';
+import { useOrchestratorPackMetadata } from './use-orchestrator';
 
 /**
  * Converts a route pathname to the page-help route slug expected by the API.
  * Examples: /commands -> commands, /sessions/abc -> sessions, / -> "".
  */
-export function resolveHelpRouteSlug(pathname: string): string {
-  const [firstSegment] = pathname.split('/').filter(Boolean);
-  return (firstSegment || '').toLowerCase();
+export function resolveHelpRouteSlug(
+  pathname: string,
+  packMetadata?: OrchestratorPackMetadataResponse | null
+): string {
+  return resolvePackAwareHelpRouteSlug(pathname, packMetadata);
 }
 
 /**
@@ -17,7 +30,8 @@ export function resolveHelpRouteSlug(pathname: string): string {
  * Returns null for 404 so callers can hide help UI for unsupported routes.
  */
 export function usePageHelp(routeSlug: string) {
-  return useQuery({
+  const { data: packMetadata } = useOrchestratorPackMetadata();
+  const pageQuery = useQuery({
     queryKey: queryKeys.help.page(routeSlug),
     queryFn: async () => {
       try {
@@ -32,6 +46,16 @@ export function usePageHelp(routeSlug: string) {
     staleTime: 5 * 60_000,
     enabled: routeSlug.trim().length > 0,
   });
+
+  const resolvedPageHelp = useMemo(
+    () => mergePackHelpTopicsIntoPageHelp(pageQuery.data ?? null, routeSlug, packMetadata),
+    [packMetadata, pageQuery.data, routeSlug]
+  );
+
+  return {
+    ...pageQuery,
+    data: resolvedPageHelp,
+  };
 }
 
 /**

@@ -1,0 +1,11 @@
+#1283 [CLOSED] I-010 Adopt PageShell Contract on Remaining Core Pages
+#1284 [CLOSED] I-011 Introduce Textarea/FieldGroup Primitive and Migrate Approval Form
+#1339 [OPEN] I-016 Integrate Monaco Viewer and Diff Surfaces into Cockpit and Observability Tab Panels
+#1340 [OPEN] I-017 Apply Widescreen Container Contract to Monaco Editor Host Containers
+#1270 [OPEN] E-003 Desktop Layout and Navigation Stability
+#1271 [CLOSED] E-004 Page-State and Form Architecture Standardization
+#1304 [CLOSED] [P0][BREAKING] I-FD-020 Refactor gate-validator to resolve contract and guardrail sets from active pack
+#1305 [CLOSED] [P0][BREAKING] I-FD-021 Replace CRITIC_TO_PHASE hardcoding with pack transition definitions
+#1306 [CLOSED] [P1][NON-BREAKING] I-FD-022 Introduce generic GateEvaluationResult format
+#1307 [CLOSED] [P1][NON-BREAKING] I-FD-023 Add pack policy resolver for gate-level governance checks
+#1291 [CLOSED] [EPIC][P0/P1] E-FD-003 Gate and Validation Decoupling

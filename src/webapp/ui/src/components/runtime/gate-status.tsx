@@ -47,23 +47,25 @@ export function GateStatus({
   ...props
 }: GateStatusProps) {
   const config = statusConfig[status];
+  const interactiveProps =
+    typeof onClick === 'function'
+      ? {
+          role: 'button' as const,
+          tabIndex: 0,
+          onClick,
+          onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onClick();
+            }
+          },
+        }
+      : {};
 
   return (
     <div
       data-gate-id={gateId}
-      role={onClick ? 'button' : undefined}
-      tabIndex={onClick ? 0 : undefined}
-      onClick={onClick}
-      onKeyDown={
-        onClick
-          ? (e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                onClick();
-              }
-            }
-          : undefined
-      }
+      {...interactiveProps}
       aria-label={`Gate: ${label} — ${status}`}
       className={cn(
         'rounded-lg border p-3 transition-all',
@@ -83,7 +85,7 @@ export function GateStatus({
       {reason && <p className="mt-2 text-xs text-muted-foreground">{reason}</p>}
 
       {suggestedAction && (
-        <p className="mt-1 text-xs font-medium text-blue-600">Suggested: {suggestedAction}</p>
+        <p className="mt-1 text-xs font-medium text-info">Suggested: {suggestedAction}</p>
       )}
     </div>
   );

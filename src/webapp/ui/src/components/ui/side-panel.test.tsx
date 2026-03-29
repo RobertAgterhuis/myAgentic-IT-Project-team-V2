@@ -47,6 +47,25 @@ describe('SidePanel', () => {
     );
   });
 
+  it('uses anchor semantics when href is provided', () => {
+    render(
+      <SidePanel
+        sections={[
+          {
+            id: 'phase1',
+            title: 'Phase 1',
+            items: [{ id: 'ba', label: 'Business Analyst', href: '/phase-1/business-analyst' }],
+          },
+        ]}
+      />
+    );
+
+    expect(screen.getByRole('link', { name: 'Business Analyst' })).toHaveAttribute(
+      'href',
+      '/phase-1/business-analyst'
+    );
+  });
+
   it('calls onItemSelect when clicking an item', async () => {
     const user = userEvent.setup();
     const onItemSelect = vi.fn();

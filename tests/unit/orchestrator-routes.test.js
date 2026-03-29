@@ -188,8 +188,11 @@ describe('orchestrator routes — template selection (S6)', () => {
       expect(Array.isArray(templates)).toBe(true);
       expect(templates.length).toBeGreaterThanOrEqual(1);
       const sdlc = templates.find((t) => t.name === 'sdlc');
+      const ops = templates.find((t) => t.name === 'ops-command-center');
       expect(sdlc).toBeDefined();
       expect(sdlc.valid).toBe(true);
+      expect(ops).toBeDefined();
+      expect(ops.valid).toBe(true);
       expect(sdlc.displayName).toBeTruthy();
       expect(sdlc.version).toBeTruthy();
     });
@@ -209,6 +212,14 @@ describe('orchestrator routes — template selection (S6)', () => {
       const result = engine.reset('AUDIT');
       expect(result.state).toBe('IDLE');
       expect(result.mode).toBe('AUDIT');
+    });
+
+    it('creates engine with ops-command-center template and template-specific mode', () => {
+      const { engine } = freshEngineWithTemplate('ops-command-center');
+      const result = engine.reset('TRIAGE');
+      expect(result.state).toBe('IDLE');
+      expect(result.mode).toBe('TRIAGE');
+      expect(engine.status().templateName).toBe('ops-command-center');
     });
 
     it('engine without explicit template loads default sdlc', () => {

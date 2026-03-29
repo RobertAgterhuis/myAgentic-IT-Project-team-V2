@@ -2,6 +2,11 @@
 # Declarative specification of states, transitions, and command modes.
 # Parsed by flow-loader.ts using a maintained YAML parser.
 
+manifest_version: "2.0"
+pack_id: core-runtime
+pack_name: Core Runtime Pack
+version: 2.0.0
+
 # ─── State Definitions ──────────────────────────────────────
 states:
   - IDLE
@@ -102,6 +107,108 @@ modes:
     phases: []
     label: Emergency HOTFIX
 
+# ─── Pack Commands Metadata ────────────────────────────────
+commands:
+  - id: CREATE
+    label: CREATE
+    description: Full CREATE cycle
+  - id: CREATE BUSINESS
+    label: CREATE BUSINESS
+    description: Business-only CREATE cycle
+  - id: CREATE TECH
+    label: CREATE TECH
+    description: Tech-only CREATE cycle
+  - id: CREATE UX
+    label: CREATE UX
+    description: UX-only CREATE cycle
+  - id: CREATE MARKETING
+    label: CREATE MARKETING
+    description: Marketing-only CREATE cycle
+  - id: CREATE SYNTHESIS
+    label: CREATE SYNTHESIS
+    description: CREATE synthesis mode
+  - id: AUDIT
+    label: AUDIT
+    description: Full AUDIT cycle
+  - id: AUDIT BUSINESS
+    label: AUDIT BUSINESS
+    description: Business-only AUDIT cycle
+  - id: AUDIT TECH
+    label: AUDIT TECH
+    description: Tech-only AUDIT cycle
+  - id: AUDIT UX
+    label: AUDIT UX
+    description: UX-only AUDIT cycle
+  - id: AUDIT MARKETING
+    label: AUDIT MARKETING
+    description: Marketing-only AUDIT cycle
+  - id: AUDIT SYNTHESIS
+    label: AUDIT SYNTHESIS
+    description: AUDIT synthesis mode
+  - id: REEVALUATE
+    label: REEVALUATE
+    description: Reevaluate a scoped change
+  - id: FEATURE
+    label: FEATURE
+    description: Deliver a feature increment
+  - id: SCOPE CHANGE
+    label: SCOPE CHANGE
+    description: Trigger scope-change analysis
+  - id: HOTFIX
+    label: HOTFIX
+    description: Emergency hotfix path
+  - id: REFRESH ONBOARDING
+    label: REFRESH ONBOARDING
+    description: Refresh onboarding context
+  - id: CONTINUE
+    label: CONTINUE
+    description: Continue current session flow
+
+# ─── Pack Stages Metadata ──────────────────────────────────
+stages:
+  - id: IDLE
+    label: Idle
+    order: 0
+  - id: ONBOARDING
+    label: Onboarding
+    order: 1
+  - id: PHASE_1
+    label: Phase 1
+    order: 2
+  - id: CRITIC_1
+    label: Critic 1
+    order: 3
+  - id: PHASE_2
+    label: Phase 2
+    order: 4
+  - id: CRITIC_2
+    label: Critic 2
+    order: 5
+  - id: PHASE_3
+    label: Phase 3
+    order: 6
+  - id: CRITIC_3
+    label: Critic 3
+    order: 7
+  - id: PHASE_4
+    label: Phase 4
+    order: 8
+  - id: CRITIC_4
+    label: Critic 4
+    order: 9
+  - id: SYNTHESIS
+    label: Synthesis
+    order: 10
+  - id: SPRINT_GATE
+    label: Sprint Gate
+    order: 11
+  - id: PHASE_5_EXECUTING
+    label: Phase 5 Executing
+    order: 12
+  - id: COMPLETED
+    label: Completed
+    order: 13
+
 # ─── Events ─────────────────────────────────────────────────
 events:
   - transition
@@ -109,3 +216,232 @@ events:
   - gate_passed
   - gate_failed
   - crash_recovery
+
+# ─── Gates ──────────────────────────────────────────────────
+gates:
+  - id: gate.critic-risk-1
+    after: PHASE_1
+    before: PHASE_2
+    type: CRITIC_RISK
+    conditions:
+      - All PHASE_1 agent handoff checklists complete
+      - Critic agent validation passed
+      - Risk agent assessment completed
+      - No unresolved BLOCKING items
+
+  - id: gate.critic-risk-2
+    after: PHASE_2
+    before: PHASE_3
+    type: CRITIC_RISK
+    conditions:
+      - All PHASE_2 agent handoff checklists complete
+      - Critic agent validation passed
+      - Risk agent assessment completed
+      - No unresolved BLOCKING items
+
+  - id: gate.critic-risk-3
+    after: PHASE_3
+    before: PHASE_4
+    type: CRITIC_RISK
+    conditions:
+      - All PHASE_3 agent handoff checklists complete
+      - Critic agent validation passed
+      - Risk agent assessment completed
+      - No unresolved BLOCKING items
+
+  - id: gate.critic-risk-4
+    after: PHASE_4
+    before: SYNTHESIS
+    type: CRITIC_RISK
+    conditions:
+      - All PHASE_4 agent handoff checklists complete
+      - Critic agent validation passed
+      - Risk agent assessment completed
+      - No unresolved BLOCKING items
+
+  - id: gate.synthesis-approval
+    after: SYNTHESIS
+    before: SPRINT_GATE
+    type: SYNTHESIS_APPROVAL
+    conditions:
+      - All 6 synthesis documents approved
+      - BLOCKING items linked to sprint plan
+      - Cross-team blocker matrix complete
+
+  - id: gate.sprint-gate
+    after: SPRINT_GATE
+    before: PHASE_5_EXECUTING
+    type: SPRINT_GATE
+    conditions:
+      - Definition of Ready check passed
+      - Lessons-learned injection completed
+      - Sprint backlog approved
+
+# ─── Assignments ────────────────────────────────────────────
+assignments:
+  - phase: ONBOARDING
+    agent_id: "25"
+
+  - phase: PHASE_1
+    agent_id: "01"
+  - phase: PHASE_1
+    agent_id: "02"
+  - phase: PHASE_1
+    agent_id: "03"
+  - phase: PHASE_1
+    agent_id: "04"
+  - phase: PHASE_1
+    agent_id: "34"
+
+  - phase: CRITIC_1
+    agent_id: "18"
+  - phase: CRITIC_1
+    agent_id: "19"
+
+  - phase: PHASE_2
+    agent_id: "05"
+  - phase: PHASE_2
+    agent_id: "06"
+  - phase: PHASE_2
+    agent_id: "07"
+  - phase: PHASE_2
+    agent_id: "08"
+  - phase: PHASE_2
+    agent_id: "09"
+  - phase: PHASE_2
+    agent_id: "33"
+
+  - phase: CRITIC_2
+    agent_id: "18"
+  - phase: CRITIC_2
+    agent_id: "19"
+
+  - phase: PHASE_3
+    agent_id: "10"
+  - phase: PHASE_3
+    agent_id: "11"
+  - phase: PHASE_3
+    agent_id: "12"
+  - phase: PHASE_3
+    agent_id: "13"
+  - phase: PHASE_3
+    agent_id: "32"
+  - phase: PHASE_3
+    agent_id: "35"
+
+  - phase: CRITIC_3
+    agent_id: "18"
+  - phase: CRITIC_3
+    agent_id: "19"
+
+  - phase: PHASE_4
+    agent_id: "14"
+  - phase: PHASE_4
+    agent_id: "15"
+  - phase: PHASE_4
+    agent_id: "16"
+  - phase: PHASE_4
+    agent_id: "30"
+  - phase: PHASE_4
+    agent_id: "31"
+
+  - phase: CRITIC_4
+    agent_id: "18"
+  - phase: CRITIC_4
+    agent_id: "19"
+
+  - phase: SYNTHESIS
+    agent_id: "17"
+
+  - phase: SPRINT_GATE
+    agent_id: "00"
+
+  - phase: PHASE_5_EXECUTING
+    agent_id: "20"
+  - phase: PHASE_5_EXECUTING
+    agent_id: "21"
+  - phase: PHASE_5_EXECUTING
+    agent_id: "38"
+  - phase: PHASE_5_EXECUTING
+    agent_id: "22"
+  - phase: PHASE_5_EXECUTING
+    agent_id: "29"
+  - phase: PHASE_5_EXECUTING
+    agent_id: "26"
+  - phase: PHASE_5_EXECUTING
+    agent_id: "27"
+  - phase: PHASE_5_EXECUTING
+    agent_id: "28"
+
+# ─── Runtime Topology ───────────────────────────────────────
+runtime:
+  skills_base_dir: templates/sdlc/agents
+  contracts_base_dir: templates/sdlc/contracts
+  guardrails_base_dir: templates/sdlc/guardrails
+  default_parallel_dispatch_states:
+    - PHASE_1
+  parallel_groups:
+    ONBOARDING:
+      - ["25"]
+    PHASE_1:
+      - ["01", "02", "03", "04", "34"]
+    CRITIC_1:
+      - ["18", "19"]
+    PHASE_2:
+      - ["05", "06", "07", "08", "09", "33"]
+    CRITIC_2:
+      - ["18", "19"]
+    PHASE_3:
+      - ["10", "11", "12", "13", "32", "35"]
+    CRITIC_3:
+      - ["18", "19"]
+    PHASE_4:
+      - ["14", "15", "16", "30", "31"]
+    CRITIC_4:
+      - ["18", "19"]
+    SYNTHESIS:
+      - ["17"]
+    SPRINT_GATE:
+      - ["00"]
+    PHASE_5_EXECUTING:
+      - ["20", "21", "38"]
+      - ["22", "29", "26", "27", "28"]
+  gate_assets:
+    gate.critic-risk-1:
+      contracts:
+        - analysis-output-contract.md
+        - recommendations-output-contract.md
+        - sprintplan-output-contract.md
+        - guardrails-output-contract.md
+      guardrails:
+        - 00-global-guardrails.md
+        - 01-business-guardrails.md
+    gate.critic-risk-2:
+      contracts:
+        - analysis-output-contract.md
+        - recommendations-output-contract.md
+        - sprintplan-output-contract.md
+        - guardrails-output-contract.md
+      guardrails:
+        - 00-global-guardrails.md
+        - 02-architecture-guardrails.md
+        - 03-security-guardrails.md
+    gate.critic-risk-3:
+      contracts:
+        - analysis-output-contract.md
+        - recommendations-output-contract.md
+        - sprintplan-output-contract.md
+        - guardrails-output-contract.md
+      guardrails:
+        - 00-global-guardrails.md
+        - 04-ux-guardrails.md
+        - 08-content-guardrails.md
+    gate.critic-risk-4:
+      contracts:
+        - analysis-output-contract.md
+        - recommendations-output-contract.md
+        - sprintplan-output-contract.md
+        - guardrails-output-contract.md
+      guardrails:
+        - 00-global-guardrails.md
+        - 05-marketing-guardrails.md

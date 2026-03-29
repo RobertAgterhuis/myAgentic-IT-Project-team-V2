@@ -40,6 +40,10 @@ const REQUIRED_MANIFEST_KEYS = [
   'modes',
 ];
 
+const DEFAULT_ARTIFACT_NAMESPACES = Object.freeze({
+  business_docs: 'BusinessDocs',
+});
+
 // ─── Core Functions ──────────────────────────────────────────
 
 /**
@@ -157,6 +161,24 @@ function validateManifest(manifest: Record<string, unknown>) {
       const hasArrayPhases = Array.isArray(config.phases);
       if (!hasArrayPhases) {
         errors.push(`modes['${mode}'].phases must be an array`);
+      }
+    }
+  }
+
+  // Validate artifactNamespaces structure (optional)
+  if (manifest.artifactNamespaces !== undefined) {
+    if (typeof manifest.artifactNamespaces !== 'object' || manifest.artifactNamespaces === null) {
+      errors.push('artifactNamespaces must be an object');
+    } else {
+      for (const [key, namespacePath] of Object.entries(manifest.artifactNamespaces)) {
+        if (!/^[a-z][a-z0-9_]*$/.test(key)) {
+          errors.push(
+            `artifactNamespaces key '${key}' must be lowercase snake_case starting with a letter`
+          );
+        }
+        if (typeof namespacePath !== 'string' || namespacePath.trim() === '') {
+          errors.push(`artifactNamespaces['${key}'] must be a non-empty string`);
+        }
       }
     }
   }
@@ -300,6 +322,39 @@ function resolveTemplatePaths(manifest: Record<string, unknown>, templateRoot: s
     manifest.outputTemplates !== undefined && manifest.outputTemplates !== null
       ? manifest.outputTemplates
       : [];
+  const artifactNamespaces = {
+    ...DEFAULT_ARTIFACT_NAMESPACES,
+    ...((manifest.artifactNamespaces as Record<string, string>) || {}),
+  };
+  const resolveArtifactPath = (rawPath: string) => {
+    const namespaced = rawPath.match(/^([a-z][a-z0-9_]*):(.+)$/i);
+    if (namespaced) {
+      const namespaceKey = namespaced[1].toLowerCase();
+      const relativePath = namespaced[2].replace(/^\/+/, '');
+      const namespaceRoot = artifactNamespaces[namespaceKey];
+      return namespaceRoot ? path.join(namespaceRoot, relativePath) : rawPath;
+    }
+
+    if (rawPath.startsWith('BusinessDocs/') && artifactNamespaces.business_docs) {
+      return path.join(artifactNamespaces.business_docs, rawPath.slice('BusinessDocs/'.length));
+    }
+
+    return rawPath;
+  };
+  const resolvedPhaseArtifacts = Object.fromEntries(
+    Object.entries(phaseArtifacts as Record<string, Array<Record<string, unknown>>>).map(
+      ([phase, declarations]) => [
+        phase,
+        (declarations || []).map((declaration) => ({
+          ...declaration,
+          path:
+            typeof declaration.path === 'string'
+              ? resolveArtifactPath(declaration.path)
+              : declaration.path,
+        })),
+      ]
+    )
+  );
 
   return {
     name: manifest.name,
@@ -323,10 +378,11 @@ function resolveTemplatePaths(manifest: Record<string, unknown>, templateRoot: s
     phaseAgents: manifest.phaseAgents || computedPhaseAgents,
     phaseContracts: manifest.phaseContracts,
     phaseGuardrails: manifest.phaseGuardrails,
+    artifactNamespaces,
     criticToPhase: manifest.criticToPhase,
     modes: manifest.modes,
     decisionCategories,
-    phaseArtifacts,
+    phaseArtifacts: resolvedPhaseArtifacts,
     phaseLineage,
     outputTemplates,
     governance: manifest.governance

@@ -40,11 +40,23 @@ describe('DataTable', () => {
   it('sorts on column header click', async () => {
     const user = userEvent.setup();
     render(<DataTable columns={columns} data={data} enableSorting />);
-    const nameHeader = screen.getByText('Name');
+    const nameHeader = screen.getByRole('button', { name: 'Name' });
     await user.click(nameHeader);
     const cells = screen.getAllByRole('cell');
     const names = cells.filter((_, i) => i % 2 === 0).map((c) => c.textContent);
     expect(names).toEqual(['Alpha', 'Beta', 'Gamma']); // asc
+  });
+
+  it('sets aria-sort on sortable header cells', async () => {
+    const user = userEvent.setup();
+    render(<DataTable columns={columns} data={data} enableSorting />);
+
+    const nameHeaderButton = screen.getByRole('button', { name: 'Name' });
+    const nameHeaderCell = nameHeaderButton.closest('th');
+
+    expect(nameHeaderCell).toHaveAttribute('aria-sort', 'none');
+    await user.click(nameHeaderButton);
+    expect(nameHeaderCell).toHaveAttribute('aria-sort', 'ascending');
   });
 
   it('filters with global filter', async () => {

@@ -1,0 +1,230 @@
+{
+  "schemaVersion": "1.1.0",
+  "name": "ops-command-center",
+  "version": "1.0.0",
+  "displayName": "Operations Command Center",
+  "description": "Reference non-SDLC runtime pack focused on operational incident workflows.",
+  "flowsFile": "../../platform/engine/flows.yaml",
+  "agentsDir": "../sdlc/agents",
+  "contractsDir": "../sdlc/contracts",
+  "guardrailsDir": "../sdlc/guardrails",
+  "playbooksDir": "../sdlc/playbooks",
+  "decisionsDir": "../sdlc/decisions",
+  "decisionIndexSeed": "../sdlc/decisions/_index-seed.md",
+  "artifactNamespaces": {
+    "business_docs": "BusinessDocs"
+  },
+  "editorProviders": {
+    "monaco": {
+      "providers": [
+        {
+          "id": "ops-hover-incident",
+          "kind": "hover",
+          "language": "markdown",
+          "label": "Incident guidance",
+          "match": {
+            "contains": ["MITIGATION", "RESTORATION", "LEARNING"]
+          },
+          "markdown": "**Ops guidance**\\n\\nCapture impact, mitigation, and restoration evidence to preserve audit continuity."
+        },
+        {
+          "id": "ops-completion-commands",
+          "kind": "completion",
+          "language": "markdown",
+          "triggerCharacters": ["T", "C", "R", "P"],
+          "items": [
+            {
+              "label": "TRIAGE",
+              "detail": "Run incident triage workflow",
+              "kind": "keyword"
+            },
+            {
+              "label": "CONTAIN",
+              "detail": "Run containment workflow",
+              "kind": "keyword"
+            },
+            {
+              "label": "RESTORE",
+              "detail": "Run service restoration workflow",
+              "kind": "keyword"
+            },
+            {
+              "label": "POSTMORTEM",
+              "detail": "Run postmortem workflow",
+              "kind": "keyword"
+            }
+          ]
+        },
+        {
+          "id": "ops-codelens-checkpoint",
+          "kind": "codelens",
+          "language": "markdown",
+          "lenses": [
+            {
+              "lineNumber": 1,
+              "title": "Review operator intervention checklist"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "editorSchemas": {
+    "monaco": {
+      "bindings": [
+        {
+          "id": "ops-contract-json",
+          "language": "json",
+          "schemaUri": "https://agentic.dev/schemas/contracts/output-contract.schema.json",
+          "modelLocator": {
+            "namespace": "repo",
+            "objectId": "ops-contract-json",
+            "path": "templates/ops-command-center/contracts/triage-output-contract.json",
+            "language": "json"
+          },
+          "required": true
+        },
+        {
+          "id": "ops-policy-yaml",
+          "language": "yaml",
+          "schemaUri": "https://agentic.dev/schemas/policy/policy-pack.schema.json",
+          "modelLocator": {
+            "namespace": "repo",
+            "objectId": "ops-policy-yaml",
+            "path": "templates/ops-command-center/guardrails/policy-pack.yaml",
+            "language": "yaml"
+          },
+          "required": false
+        }
+      ]
+    }
+  },
+  "phaseContracts": {
+    "PHASE_1": [
+      "analysis-output-contract.md",
+      "recommendations-output-contract.md",
+      "sprintplan-output-contract.md",
+      "guardrails-output-contract.md"
+    ],
+    "PHASE_2": [
+      "analysis-output-contract.md",
+      "recommendations-output-contract.md",
+      "sprintplan-output-contract.md",
+      "guardrails-output-contract.md"
+    ],
+    "PHASE_3": [
+      "analysis-output-contract.md",
+      "recommendations-output-contract.md",
+      "sprintplan-output-contract.md",
+      "guardrails-output-contract.md"
+    ],
+    "PHASE_4": [
+      "analysis-output-contract.md",
+      "recommendations-output-contract.md",
+      "sprintplan-output-contract.md",
+      "guardrails-output-contract.md"
+    ],
+    "SYNTHESIS": ["synthesis-output-contract.md"],
+    "PHASE_5_EXECUTING": [
+      "implementation-output-contract.md",
+      "test-output-contract.md",
+      "architecture-compliance-output-contract.md",
+      "pr-review-output-contract.md",
+      "kpi-output-contract.md",
+      "retrospective-output-contract.md",
+      "github-integration-output-contract.md"
+    ],
+    "CRITIC": ["critic-output-contract.md", "risk-output-contract.md"],
+    "CROSS_PHASE": [
+      "session-state-contract.md",
+      "agent-handoff-contract.md",
+      "tooling-contract.md",
+      "decisions-output-contract.md",
+      "questionnaire-output-contract.md",
+      "brand-assets-output-contract.md",
+      "storybook-output-contract.md",
+      "github-state-snapshot-output-contract.md"
+    ]
+  },
+  "phaseGuardrails": {
+    "PHASE_1": ["00-global-guardrails.md", "01-business-guardrails.md"],
+    "PHASE_2": [
+      "00-global-guardrails.md",
+      "02-architecture-guardrails.md",
+      "03-security-guardrails.md"
+    ],
+    "PHASE_3": ["00-global-guardrails.md", "04-ux-guardrails.md", "08-content-guardrails.md"],
+    "PHASE_4": ["00-global-guardrails.md", "05-marketing-guardrails.md"],
+    "PHASE_5_EXECUTING": [
+      "00-global-guardrails.md",
+      "06-implementation-guardrails.md",
+      "03-security-guardrails.md"
+    ],
+    "CROSS_PHASE": [
+      "00-global-guardrails.md",
+      "07-legal-guardrails.md",
+      "09-questionnaire-guardrails.md"
+    ]
+  },
+  "criticToPhase": {
+    "CRITIC_1": "PHASE_1",
+    "CRITIC_2": "PHASE_2",
+    "CRITIC_3": "PHASE_3",
+    "CRITIC_4": "PHASE_4"
+  },
+  "modes": {
+    "CREATE": {
+      "phases": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"],
+      "label": "Compatibility bootstrap mode"
+    },
+    "TRIAGE": {
+      "phases": ["PHASE_1", "PHASE_2"],
+      "label": "Incident triage workflow"
+    },
+    "CONTAIN": {
+      "phases": ["PHASE_2", "PHASE_3"],
+      "label": "Containment and mitigation"
+    },
+    "RESTORE": {
+      "phases": ["PHASE_3", "PHASE_4"],
+      "label": "Service restoration workflow"
+    },
+    "POSTMORTEM": {
+      "phases": ["PHASE_1", "PHASE_4"],
+      "label": "Postmortem and corrective planning"
+    }
+  },
+  "commands": [
+    {
+      "id": "TRIAGE",
+      "label": "TRIAGE",
+      "category": "on-demand",
+      "description": "Run incident triage workflow"
+    },
+    {
+      "id": "CONTAIN",
+      "label": "CONTAIN",
+      "category": "on-demand",
+      "description": "Run containment workflow"
+    },
+    {
+      "id": "RESTORE",
+      "label": "RESTORE",
+      "category": "on-demand",
+      "description": "Run service restoration workflow"
+    },
+    {
+      "id": "POSTMORTEM",
+      "label": "POSTMORTEM",
+      "category": "on-demand",
+      "description": "Run postmortem workflow"
+    }
+  ],
+  "stages": [
+    { "id": "INTAKE", "label": "Incident Intake", "order": 1 },
+    { "id": "ASSESSMENT", "label": "Impact Assessment", "order": 2 },
+    { "id": "MITIGATION", "label": "Mitigation", "order": 3 },
+    { "id": "RESTORATION", "label": "Restoration", "order": 4 },
+    { "id": "LEARNING", "label": "Learning Loop", "order": 5 }
+  ]
+}

@@ -1,5 +1,8 @@
 'use strict';
 
+const fs = require('node:fs');
+const path = require('node:path');
+
 /**
  * Agent Invocation Dispatcher — Unit Tests (FEAT-05-B / SP-5-ORCH-B)
  *
@@ -22,6 +25,7 @@ const {
   _DEFAULT_CONFIG,
   Dispatcher,
 } = require('../../platform/engine/dispatcher');
+const { loadFlows } = require('../../platform/engine/flow-loader');
 const { STATES } = require('../../platform/engine/state-machine');
 
 // ─── Test Helpers ────────────────────────────────────────────
@@ -31,7 +35,11 @@ function createMockStore(files = {}) {
   return {
     exists: (fp) => fp in files,
     read: (fp) => files[fp] || '',
+    readFile: (fp) => files[fp] || '',
     write: (fp, content) => {
+      files[fp] = content;
+    },
+    writeFile: (fp, content) => {
       files[fp] = content;
     },
     _files: files,
@@ -239,6 +247,16 @@ describe('Dispatcher — buildContext', () => {
     expect(ctx.skillFile).toContain('01-');
   });
 
+  it('resolves skill file from the active runtime pack graph', () => {
+    const flowsPath = path.join(__dirname, '..', '..', 'platform', 'engine', 'flows.yaml');
+    const store = createMockStore({ [flowsPath]: fs.readFileSync(flowsPath, 'utf-8') });
+    const flows = loadFlows(store, flowsPath);
+    const d = new Dispatcher({ store, runtimeGraph: flows.runtimeGraph });
+    const ctx = d.buildContext('01');
+
+    expect(ctx.skillFile).toContain(path.join('templates', 'sdlc', 'agents'));
+  });
+
   it('loads predecessor outputs from store', () => {
     const store = createMockStore({
       '/BusinessDocs/phase-1/01.md': 'business analyst output',
@@ -339,6 +357,19 @@ describe('Dispatcher — buildContext', () => {
 
     const ctx = d.buildContext('01', { ragContext });
     expect(ctx.ragContext).toEqual(ragContext);
+  });
+
+  it('includes runtime pack manifest metadata when provided', () => {
+    const d = new Dispatcher({ store: createMockStore() });
+    const runtimePackManifest = {
+      manifest_version: '2.0',
+      pack_id: 'core-runtime',
+      pack_name: 'Core Runtime Pack',
+      version: '1.0.0',
+    };
+
+    const ctx = d.buildContext('01', { runtimePackManifest });
+    expect(ctx.runtimePackManifest).toEqual(runtimePackManifest);
   });
 });
 

@@ -8,9 +8,12 @@ import { Spinner } from '@/components/ui/spinner';
 import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { PageShell } from '@/components/ui/page-shell';
+import { TabsList } from '@/components/ui/tabs';
 import { QueueTriageList, type QueueTriageItem } from '@/components/ui/queue-triage-list';
 import { OperationalCard } from '@/components/ui/operational-card';
+import { DiffReviewHostPane, type DiffLineMarker } from '@/components/cockpit/monaco-host-panels';
 import { useObservabilityContracts } from '@/hooks';
+import type { MonacoModelLocator } from '@/lib/api-types';
 
 const MetricsPage = lazy(() => import('@/pages/metrics/metrics-page'));
 const AnalyticsTrendsPage = lazy(() => import('@/pages/analytics/analytics-trends-page'));
@@ -18,12 +21,13 @@ const TraceabilityExplorerPage = lazy(
   () => import('@/pages/traceability/traceability-explorer-page')
 );
 
-type Tab = 'drift' | 'analytics' | 'traceability' | 'alerts' | 'streams';
+type Tab = 'drift' | 'analytics' | 'traceability' | 'diff-review' | 'alerts' | 'streams';
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'drift', label: 'Drift & KPIs' },
   { id: 'analytics', label: 'Analytics & Velocity' },
   { id: 'traceability', label: 'Traceability' },
+  { id: 'diff-review', label: 'Diff Review' },
   { id: 'alerts', label: 'Alerts' },
   { id: 'streams', label: 'Telemetry Streams' },
 ];
@@ -110,6 +114,94 @@ export default function ObservabilityPage() {
     [data?.alerts]
   );
 
+  const diffOriginalContent = useMemo(
+    () => JSON.stringify(data?.alerts?.slice(0, 3) ?? [], null, 2),
+    [data?.alerts]
+  );
+
+  const diffModifiedContent = useMemo(
+    () => JSON.stringify(data?.streams?.slice(0, 3) ?? [], null, 2),
+    [data?.streams]
+  );
+
+  const diffLineMarkers = useMemo<DiffLineMarker[]>(() => {
+    const markers: DiffLineMarker[] = [];
+    const originalLines = diffOriginalContent.split('\n');
+    const modifiedLines = diffModifiedContent.split('\n');
+    const alerts = data?.alerts?.slice(0, 3) ?? [];
+
+    alerts.forEach((alert) => {
+      const idLineIndex = originalLines.findIndex((line) => line.includes(`"id": "${alert.id}"`));
+      if (idLineIndex < 0) {
+        return;
+      }
+
+      const windowEnd = Math.min(originalLines.length - 1, idLineIndex + 12);
+      const severityLineIndex = originalLines.findIndex(
+        (line, index) => index >= idLineIndex && index <= windowEnd && line.includes('"severity"')
+      );
+      const metadataLineIndex = originalLines.findIndex(
+        (line, index) => index >= idLineIndex && index <= windowEnd && line.includes('"metadata"')
+      );
+
+      if (alert.severity === 'critical' || alert.severity === 'warning') {
+        markers.push({
+          id: `${alert.id}-gate-failure`,
+          side: 'original',
+          lineNumber: (severityLineIndex >= 0 ? severityLineIndex : idLineIndex) + 1,
+          kind: 'gate_failure',
+          label: `Gate failure signal (${alert.severity})`,
+          detail: alert.message,
+        });
+      }
+
+      if (alert.metadata && Object.keys(alert.metadata).length > 0) {
+        markers.push({
+          id: `${alert.id}-evidence-reference`,
+          side: 'original',
+          lineNumber: (metadataLineIndex >= 0 ? metadataLineIndex : idLineIndex) + 1,
+          kind: 'evidence_reference',
+          label: 'Evidence reference attached',
+          detail: `Source: ${alert.source}`,
+        });
+      }
+    });
+
+    if ((data?.summary.open_alerts ?? 0) > 0) {
+      const approvalLineIndex = modifiedLines.findIndex((line) => line.includes('"sample_count"'));
+      markers.push({
+        id: 'observability-approval-checkpoint',
+        side: 'modified',
+        lineNumber: (approvalLineIndex >= 0 ? approvalLineIndex : 0) + 1,
+        kind: 'approval',
+        label: 'Approval checkpoint',
+        detail: 'Human acknowledgement is required before clearing active alert drift.',
+      });
+    }
+
+    return markers;
+  }, [data?.alerts, data?.summary.open_alerts, diffModifiedContent, diffOriginalContent]);
+
+  const originalDiffModelLocator = useMemo<MonacoModelLocator>(
+    () => ({
+      namespace: 'workspace',
+      objectId: 'observability-diff-original-alerts',
+      path: 'observability/diff/original-alerts.json',
+      language: 'json',
+    }),
+    []
+  );
+
+  const modifiedDiffModelLocator = useMemo<MonacoModelLocator>(
+    () => ({
+      namespace: 'workspace',
+      objectId: 'observability-diff-modified-streams',
+      path: 'observability/diff/modified-streams.json',
+      language: 'json',
+    }),
+    []
+  );
+
   return (
     <PageShell
       isLoading={isLoading}
@@ -117,7 +209,7 @@ export default function ObservabilityPage() {
       error={error as Error | null}
       onRetry={() => refetch()}
     >
-      <div className="p-6 space-y-6" data-testid="observability-page">
+      <div className="page-container-wide p-6 space-y-6" data-testid="observability-page">
         <PageHeader
           title="Observability"
           subtitle="Drift detection, velocity trends, agent analytics, and traceability"
@@ -129,52 +221,38 @@ export default function ObservabilityPage() {
 
         <ContextStrip items={contextItems} />
 
-        {/* Tab bar */}
-        <div
-          role="tablist"
-          aria-label="Observability tabs"
-          className="flex items-center gap-1 border-b"
-        >
-          {tabs.map((tab) =>
-            activeTab === tab.id ? (
-              <button
-                key={tab.id}
-                role="tab"
-                aria-selected="true"
-                aria-controls={`panel-${tab.id}`}
-                id={`tab-${tab.id}`}
-                className="px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px border-primary text-foreground"
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {tab.label}
-              </button>
-            ) : (
-              <button
-                key={tab.id}
-                role="tab"
-                aria-selected="false"
-                aria-controls={`panel-${tab.id}`}
-                id={`tab-${tab.id}`}
-                className="px-4 py-2 text-sm font-medium border-b-2 transition-colors -mb-px border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/50"
-                onClick={() => setActiveTab(tab.id)}
-              >
-                {tab.label}
-              </button>
-            )
-          )}
-        </div>
+        <TabsList
+          ariaLabel="Observability tabs"
+          idPrefix="observability"
+          items={tabs}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          variant="underline"
+        />
 
         {/* Tab panels */}
         <div
-          id={`panel-${activeTab}`}
+          id={`observability-panel-${activeTab}`}
           role="tabpanel"
-          aria-labelledby={`tab-${activeTab}`}
+          aria-labelledby={`observability-tab-${activeTab}`}
           className={activeTab === 'alerts' || activeTab === 'streams' ? undefined : '-mx-6 -mt-6'}
         >
           <Suspense fallback={<TabSpinner />}>
             {activeTab === 'drift' && <MetricsPage />}
             {activeTab === 'analytics' && <AnalyticsTrendsPage />}
             {activeTab === 'traceability' && <TraceabilityExplorerPage />}
+            {activeTab === 'diff-review' && (
+              <DiffReviewHostPane
+                title="Observability diff review"
+                originalLabel="Original snapshot"
+                modifiedLabel="Current snapshot"
+                originalContent={diffOriginalContent}
+                modifiedContent={diffModifiedContent}
+                originalModelLocator={originalDiffModelLocator}
+                modifiedModelLocator={modifiedDiffModelLocator}
+                lineMarkers={diffLineMarkers}
+              />
+            )}
             {activeTab === 'alerts' && (
               <div className="space-y-4 pt-2">
                 <QueueTriageList

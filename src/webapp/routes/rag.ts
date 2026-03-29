@@ -7,6 +7,7 @@ import type { ServerContext } from '../context';
 import { errorResponse } from '../utils/errors';
 import { PersistentQueue } from '../../../platform/engine/jobs';
 import type { StorageProvider } from '../../../platform/engine/persistence';
+import { loadTemplate } from '../../../platform/engine/template-loader';
 import * as RS from '../route-schemas';
 import {
   parseCollectionScope,
@@ -122,30 +123,31 @@ function getStandardCollectionSpec(
   ctx: ServerContext,
   collection: StandardCollectionName
 ): StandardCollectionSpec {
-  const businessDocsDir = ctx.BUSINESS_DOCS || path.join(ctx.PROJECT_ROOT, 'BusinessDocs');
-  const decisionsFile = ctx.DECISIONS_FILE || path.join(businessDocsDir, 'decisions.md');
-  const decisionsDir = ctx.DECISIONS_DIR || path.join(businessDocsDir, 'decisions');
+  const artifactRoots = resolveArtifactNamespaceRoots(ctx);
+  const primaryArtifactRoot = artifactRoots[0] || path.join(ctx.PROJECT_ROOT, 'BusinessDocs');
+  const decisionsFile = ctx.DECISIONS_FILE || path.join(primaryArtifactRoot, 'decisions.md');
+  const decisionsDir = ctx.DECISIONS_DIR || path.join(primaryArtifactRoot, 'decisions');
+  const phaseOutputPaths = [
+    ...artifactRoots,
+    ...artifactRoots.map((root) => path.join(root, 'session')),
+    ...artifactRoots.map((root) => path.join(root, 'synthesis')),
+  ];
+  const sprintArtifactPaths = [
+    ...artifactRoots.map((root) => path.join(root, 'session')),
+    ...artifactRoots.map((root) => path.join(root, 'metrics')),
+    ...artifactRoots.map((root) => path.join(root, 'audit')),
+  ];
   const businessDocsEntries = {
     decisions: [decisionsFile, decisionsDir],
-    'phase-outputs': [
-      path.join(businessDocsDir, 'Phase1-Business'),
-      path.join(businessDocsDir, 'Phase2-Tech'),
-      path.join(businessDocsDir, 'Phase3-UX'),
-      path.join(businessDocsDir, 'synthesis'),
-      path.join(businessDocsDir, 'session'),
-    ],
+    'phase-outputs': phaseOutputPaths,
     codebase: [path.join(ctx.PROJECT_ROOT, 'src')],
-    'sprint-artifacts': [
-      path.join(businessDocsDir, 'session'),
-      path.join(businessDocsDir, 'metrics'),
-      path.join(businessDocsDir, 'audit'),
-    ],
-    retrospectives: [path.join(businessDocsDir, 'retrospectives')],
+    'sprint-artifacts': sprintArtifactPaths,
+    retrospectives: artifactRoots.map((root) => path.join(root, 'retrospectives')),
   } as const;
 
   const descriptions: Record<StandardCollectionName, string> = {
     decisions: 'Decision logs and category-specific decision records.',
-    'phase-outputs': 'Phase deliverables and synthesis outputs across BusinessDocs.',
+    'phase-outputs': 'Phase deliverables and synthesis outputs across pack artifact namespaces.',
     codebase: 'Workspace source code for implementation and pattern retrieval.',
     'sprint-artifacts': 'Session state, metrics, and audit artifacts for prior runs.',
     retrospectives: 'Sprint retrospectives and incident learning records.',
@@ -155,6 +157,29 @@ function getStandardCollectionSpec(
     description: descriptions[collection],
     paths: listExistingRelativePaths(ctx, [...businessDocsEntries[collection]]),
   };
+}
+
+function resolveArtifactNamespaceRoots(ctx: ServerContext): string[] {
+  const fallback = ctx.BUSINESS_DOCS || path.join(ctx.PROJECT_ROOT, 'BusinessDocs');
+
+  try {
+    const template = loadTemplate('sdlc') as { artifactNamespaces?: Record<string, string> };
+    const namespaces = template.artifactNamespaces || {};
+    const roots = Object.values(namespaces)
+      .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+      .map((value) => {
+        const candidate = value.trim();
+        return path.isAbsolute(candidate) ? candidate : path.join(ctx.PROJECT_ROOT, candidate);
+      });
+
+    if (roots.length > 0) {
+      return [...new Set(roots)];
+    }
+  } catch {
+    // Fall back to legacy default when template metadata cannot be loaded.
+  }
+
+  return [fallback];
 }
 
 function resolveSafePath(projectRoot: string, inputPath: string): string | null {

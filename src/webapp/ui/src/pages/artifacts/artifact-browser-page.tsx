@@ -18,8 +18,10 @@ import { QueueTriageList, type QueueTriageItem } from '@/components/ui/queue-tri
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
+import { ArtifactViewerPane, DiffReviewPane } from '@/components/cockpit/monaco-host-panels';
 import { useArtifactContent, useArtifacts, useAuditEvidenceAggregation } from '@/hooks';
 import type { Artifact } from '@/lib/api-types';
+import { createArtifactModelLocator, monacoModelRegistry } from '@/lib/editor/model-registry';
 import type { ColumnDef } from '@tanstack/react-table';
 import { Package, Hash, Layers, Filter, RefreshCw, Copy, Download, Share2 } from 'lucide-react';
 
@@ -31,53 +33,13 @@ const statusVariant: Record<string, 'success' | 'warning' | 'info' | 'secondary'
   INVALID: 'warning',
 };
 
-function buildContentChunks(content: string): Array<{ id: string; title: string; body: string }> {
-  const headingChunks = content
-    .split(/\n(?=##\s+)/)
-    .map((chunk) => chunk.trim())
-    .filter(Boolean);
-
-  if (headingChunks.length > 1) {
-    return headingChunks.map((chunk, index) => {
-      const firstLine = chunk.split('\n')[0] || `Section ${index + 1}`;
-      const title = firstLine.replace(/^##\s+/, '').trim() || `Section ${index + 1}`;
-      return { id: `heading-${index}`, title, body: chunk };
-    });
+function resolveArtifactWorkspaceId(artifact: Artifact | null): string | undefined {
+  if (!artifact?.metadata || typeof artifact.metadata !== 'object') {
+    return undefined;
   }
 
-  const lines = content.split(/\r?\n/);
-  const chunkSize = 60;
-  const chunks: Array<{ id: string; title: string; body: string }> = [];
-  for (let i = 0; i < lines.length; i += chunkSize) {
-    const start = i + 1;
-    const end = Math.min(i + chunkSize, lines.length);
-    chunks.push({
-      id: `lines-${start}`,
-      title: `Lines ${start}-${end}`,
-      body: lines.slice(i, end).join('\n'),
-    });
-  }
-  return chunks;
-}
-
-function buildDiffPreview(left: string, right: string): string[] {
-  const leftLines = left.split(/\r?\n/);
-  const rightLines = right.split(/\r?\n/);
-  const max = Math.max(leftLines.length, rightLines.length);
-  const diff: string[] = [];
-
-  for (let i = 0; i < max; i++) {
-    const before = leftLines[i] ?? '';
-    const after = rightLines[i] ?? '';
-    if (before === after) {
-      diff.push(`  ${after}`);
-      continue;
-    }
-    if (before) diff.push(`- ${before}`);
-    if (after) diff.push(`+ ${after}`);
-  }
-
-  return diff;
+  const candidate = (artifact.metadata as Record<string, unknown>).workspace_id;
+  return typeof candidate === 'string' && candidate.trim() ? candidate.trim() : undefined;
 }
 
 /* ── Table columns ── */
@@ -136,6 +98,8 @@ export default function ArtifactBrowserPage() {
     () => searchParams.get('artifact') ?? ''
   );
   const [diffArtifactId, setDiffArtifactId] = useState(() => searchParams.get('diff') ?? '');
+  const [selectedArtifactModelUri, setSelectedArtifactModelUri] = useState('');
+  const [diffArtifactModelUri, setDiffArtifactModelUri] = useState('');
 
   const filters = useMemo(() => {
     const f: { stage?: string; type?: string; status?: string } = {};
@@ -163,6 +127,14 @@ export default function ArtifactBrowserPage() {
     [artifacts]
   );
   const statuses = useMemo(() => [...new Set(artifacts.map((a) => a.status))].sort(), [artifacts]);
+  const selectedArtifact = useMemo(
+    () => artifacts.find((artifact) => artifact.id === selectedArtifactId) ?? null,
+    [artifacts, selectedArtifactId]
+  );
+  const diffArtifact = useMemo(
+    () => artifacts.find((artifact) => artifact.id === diffArtifactId) ?? null,
+    [artifacts, diffArtifactId]
+  );
 
   useEffect(() => {
     const next = new URLSearchParams();
@@ -174,18 +146,89 @@ export default function ArtifactBrowserPage() {
     setSearchParams(next, { replace: true });
   }, [filterPhase, filterType, filterStatus, selectedArtifactId, diffArtifactId, setSearchParams]);
 
-  const chunkedArtifactContent = useMemo(() => {
-    const content = selectedArtifactContent.data?.content ?? '';
-    if (!content.trim()) return [];
-    return buildContentChunks(content);
-  }, [selectedArtifactContent.data?.content]);
+  useEffect(() => {
+    let cancelled = false;
 
-  const diffPreview = useMemo(() => {
-    const left = selectedArtifactContent.data?.content ?? '';
-    const right = diffArtifactContent.data?.content ?? '';
-    if (!left || !right) return [];
-    return buildDiffPreview(left, right);
-  }, [selectedArtifactContent.data?.content, diffArtifactContent.data?.content]);
+    async function attachSelectedArtifactModel(): Promise<void> {
+      if (!selectedArtifact || !selectedArtifactId) {
+        if (!cancelled) setSelectedArtifactModelUri('');
+        return;
+      }
+
+      const content = selectedArtifactContent.data?.content ?? '';
+      if (!content) {
+        if (!cancelled) setSelectedArtifactModelUri('');
+        return;
+      }
+
+      const attachment = await monacoModelRegistry.upsertModelContent(
+        createArtifactModelLocator({
+          artifactId: selectedArtifact.id,
+          artifactPath: selectedArtifact.path,
+          workspaceId: resolveArtifactWorkspaceId(selectedArtifact),
+          mimeType: selectedArtifactContent.data?.mime_type,
+        }),
+        content
+      );
+
+      if (!cancelled) {
+        setSelectedArtifactModelUri(attachment.uri);
+      }
+    }
+
+    void attachSelectedArtifactModel();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    selectedArtifact,
+    selectedArtifactId,
+    selectedArtifactContent.data?.content,
+    selectedArtifactContent.data?.mime_type,
+  ]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function attachDiffArtifactModel(): Promise<void> {
+      if (!diffArtifact || !diffArtifactId) {
+        if (!cancelled) setDiffArtifactModelUri('');
+        return;
+      }
+
+      const content = diffArtifactContent.data?.content ?? '';
+      if (!content) {
+        if (!cancelled) setDiffArtifactModelUri('');
+        return;
+      }
+
+      const attachment = await monacoModelRegistry.upsertModelContent(
+        createArtifactModelLocator({
+          artifactId: diffArtifact.id,
+          artifactPath: diffArtifact.path,
+          workspaceId: resolveArtifactWorkspaceId(diffArtifact),
+          mimeType: diffArtifactContent.data?.mime_type,
+        }),
+        content
+      );
+
+      if (!cancelled) {
+        setDiffArtifactModelUri(attachment.uri);
+      }
+    }
+
+    void attachDiffArtifactModel();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    diffArtifact,
+    diffArtifactId,
+    diffArtifactContent.data?.content,
+    diffArtifactContent.data?.mime_type,
+  ]);
 
   const artifactShareUrl = useMemo(() => {
     if (!selectedArtifactId || typeof window === 'undefined') return '';
@@ -521,47 +564,62 @@ export default function ArtifactBrowserPage() {
               <div>
                 <h3 className="text-sm font-semibold">Integrated artifact viewer</h3>
                 <p className="text-xs text-muted-foreground">
-                  Long artifacts are chunked into foldable sections for review efficiency.
+                  Monaco surfaces use stable model URIs so viewer and diff panes share the same
+                  model lifecycle.
                 </p>
               </div>
-              {selectedArtifactContent.isLoading && <Badge variant="info">Loading content…</Badge>}
+              <div className="flex items-center gap-2">
+                {selectedArtifactModelUri && (
+                  <Badge variant="outline" className="font-mono text-xs max-w-84 truncate">
+                    {selectedArtifactModelUri}
+                  </Badge>
+                )}
+                {selectedArtifactContent.isLoading && (
+                  <Badge variant="info">Loading content…</Badge>
+                )}
+              </div>
             </div>
 
             {selectedArtifactContent.error ? (
               <AlertBanner variant="warning">
                 Unable to load artifact content for the selected artifact.
               </AlertBanner>
-            ) : chunkedArtifactContent.length === 0 ? (
+            ) : !selectedArtifactContent.data?.content ? (
               <p className="text-sm text-muted-foreground">
                 No readable artifact content available.
               </p>
             ) : (
-              <div className="space-y-2">
-                {chunkedArtifactContent.map((chunk, index) => (
-                  <details
-                    key={chunk.id}
-                    open={index === 0}
-                    className="rounded-lg border border-border/70 bg-background/70"
-                  >
-                    <summary className="cursor-pointer px-3 py-2 text-sm font-medium">
-                      {chunk.title}
-                    </summary>
-                    <pre className="max-h-72 overflow-auto border-t border-border/70 p-3 text-xs leading-relaxed whitespace-pre-wrap">
-                      {chunk.body}
-                    </pre>
-                  </details>
-                ))}
-              </div>
+              <ArtifactViewerPane
+                title="Artifact viewer"
+                sourceLabel={selectedArtifactContent.data.path || selectedArtifactId}
+                content={selectedArtifactContent.data.content}
+                modelUri={selectedArtifactModelUri || undefined}
+              />
             )}
 
-            {diffArtifactId && diffPreview.length > 0 && (
-              <div className="space-y-2">
-                <h4 className="text-sm font-semibold">Diff mode preview</h4>
-                <pre className="max-h-80 overflow-auto rounded-lg border border-border/70 bg-background/70 p-3 text-xs leading-relaxed whitespace-pre-wrap">
-                  {diffPreview.join('\n')}
-                </pre>
-              </div>
-            )}
+            {diffArtifactId &&
+              diffArtifactContent.data?.content &&
+              selectedArtifactContent.data?.content && (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-semibold">Diff review pane</h4>
+                    {diffArtifactModelUri && (
+                      <Badge variant="outline" className="font-mono text-xs max-w-84 truncate">
+                        {diffArtifactModelUri}
+                      </Badge>
+                    )}
+                  </div>
+                  <DiffReviewPane
+                    title="Artifact diff"
+                    originalLabel={selectedArtifactId}
+                    modifiedLabel={diffArtifactId}
+                    originalContent={selectedArtifactContent.data.content}
+                    modifiedContent={diffArtifactContent.data.content}
+                    originalModelUri={selectedArtifactModelUri || undefined}
+                    modifiedModelUri={diffArtifactModelUri || undefined}
+                  />
+                </div>
+              )}
           </Card>
         )}
 
@@ -581,6 +639,8 @@ export default function ArtifactBrowserPage() {
               enableFiltering
               filterPlaceholder="Search artifacts…"
               enablePagination
+              tableAriaLabel="Artifact registry table"
+              caption="Registered artifacts and their metadata."
               emptyTitle="No matching artifacts"
             />
           )}

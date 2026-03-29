@@ -28,3 +28,5 @@ facts. It is intended for focused reading rather than first-time onboarding.
 - [Architecture Index](architecture-index)
 - [RAG Scaling Governance](rag-scaling-governance)
 - [Frontend State Ownership Contract](frontend-state-ownership-contract)
+- [Design Governance CI Gates](design-governance-ci-gates)
+- [UI Proposal Inventory Baseline](ui-proposal-inventory-baseline)

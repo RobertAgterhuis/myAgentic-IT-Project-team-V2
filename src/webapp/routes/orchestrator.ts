@@ -23,10 +23,16 @@ import type { ServerContext } from '../context';
 import { getStore } from '../store';
 import { createEngine } from '../../../platform/engine/engine';
 import { PHASE_AGENTS } from '../../../platform/engine/dispatcher';
-import { listTemplates, seedDecisions } from '../../../platform/engine/template-loader';
+import { loadFlows } from '../../../platform/engine/flow-loader';
+import {
+  listTemplates,
+  loadTemplate,
+  seedDecisions,
+} from '../../../platform/engine/template-loader';
 import { errorResponse } from '../utils/errors';
 import { structuredLog } from '../middleware';
 import { sessionTracker } from '../session-tracker';
+import { getCommandCatalog } from '../services/command-catalog';
 import {
   GovernanceService,
   PolicyService,
@@ -85,13 +91,85 @@ type ControlPlaneAlert = {
   message: string;
 };
 
+type RuntimeTrackingTopology = {
+  phaseAgents: Record<string, PhaseAgent[]>;
+  parallelStates: Set<string>;
+  stateToSessionPhase: Record<string, string>;
+};
+
 const CONTROL_PLANE_SLO_TARGETS = {
   maxUnavailableDependencies: 0,
   maxDegradedDependencies: 0,
   maxProbeLatencyMs: 500,
 } as const;
 
-const PARALLEL_SESSION_STATES = new Set(['PHASE_1']);
+let runtimeTrackingTopology: RuntimeTrackingTopology = {
+  phaseAgents: PHASE_AGENTS as Record<string, PhaseAgent[]>,
+  parallelStates: new Set(['PHASE_1']),
+  stateToSessionPhase: {
+    ONBOARDING: 'ONBOARDING',
+    PHASE_1: 'PHASE-1',
+    CRITIC_1: 'PHASE-1',
+    PHASE_2: 'PHASE-2',
+    CRITIC_2: 'PHASE-2',
+    PHASE_3: 'PHASE-3',
+    CRITIC_3: 'PHASE-3',
+    PHASE_4: 'PHASE-4',
+    CRITIC_4: 'PHASE-4',
+    SYNTHESIS: 'SYNTHESIS',
+    SPRINT_GATE: 'SPRINT_GATE',
+    PHASE_5_EXECUTING: 'PHASE-5',
+  },
+};
+
+function updateRuntimeTrackingTopology(topology: RuntimeTrackingTopology): void {
+  runtimeTrackingTopology = topology;
+}
+
+function toSessionPhaseKeyFromState(state: string): string | null {
+  if (state === 'ONBOARDING') return 'ONBOARDING';
+  if (state === 'SYNTHESIS') return 'SYNTHESIS';
+  if (state === 'SPRINT_GATE') return 'SPRINT_GATE';
+
+  const phaseMatch = state.match(/^PHASE_(\d+)(?:_|$)/);
+  if (phaseMatch) {
+    return `PHASE-${phaseMatch[1]}`;
+  }
+
+  return null;
+}
+
+function buildStateToSessionPhaseMap(runtimeGraph: {
+  states?: string[];
+  gates?: Array<{ criticState?: string | null; evaluatedPhase?: string | null }>;
+}): Record<string, string> {
+  const mapped: Record<string, string> = { ...runtimeTrackingTopology.stateToSessionPhase };
+
+  const states = Array.isArray(runtimeGraph.states) ? runtimeGraph.states : [];
+  for (const state of states) {
+    const sessionPhase = toSessionPhaseKeyFromState(state);
+    if (sessionPhase) {
+      mapped[state] = sessionPhase;
+    }
+  }
+
+  const gates = Array.isArray(runtimeGraph.gates) ? runtimeGraph.gates : [];
+  for (const gate of gates) {
+    if (typeof gate.criticState !== 'string' || gate.criticState.trim() === '') {
+      continue;
+    }
+
+    const validatedPhase =
+      typeof gate.evaluatedPhase === 'string'
+        ? toSessionPhaseKeyFromState(gate.evaluatedPhase)
+        : null;
+    if (validatedPhase) {
+      mapped[gate.criticState] = validatedPhase;
+    }
+  }
+
+  return mapped;
+}
 
 function getErrorMessage(err: unknown): string {
   return err instanceof Error ? err.message : String(err);
@@ -105,31 +183,35 @@ function shouldEnforceReviewGate(profile: string): boolean {
   return profile.startsWith('production-');
 }
 
-function toSessionPhase(state: string): string | null {
-  switch (state) {
-    case 'ONBOARDING':
-      return 'ONBOARDING';
-    case 'PHASE_1':
-    case 'CRITIC_1':
-      return 'PHASE-1';
-    case 'PHASE_2':
-    case 'CRITIC_2':
-      return 'PHASE-2';
-    case 'PHASE_3':
-    case 'CRITIC_3':
-      return 'PHASE-3';
-    case 'PHASE_4':
-    case 'CRITIC_4':
-      return 'PHASE-4';
-    case 'SYNTHESIS':
-      return 'SYNTHESIS';
-    case 'SPRINT_GATE':
-      return 'SPRINT_GATE';
-    case 'PHASE_5_EXECUTING':
-      return 'PHASE-5';
-    default:
-      return null;
+function normalizeCommandToken(value: unknown): string {
+  return String(value || '')
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, '_');
+}
+
+function resolveCommandValidation(templateName: string) {
+  const catalog = getCommandCatalog(templateName);
+  const knownCommands = new Set<string>();
+  for (const entry of catalog) {
+    knownCommands.add(normalizeCommandToken(entry.name));
+    knownCommands.add(normalizeCommandToken(entry.label));
   }
+
+  const template = loadTemplate(templateName) as { modes?: Record<string, unknown> };
+  const modeCommands = new Set(
+    Object.keys(template.modes || {}).map((modeName) => normalizeCommandToken(modeName))
+  );
+
+  return {
+    knownCommands,
+    modeCommands,
+    validDisplay: catalog.map((entry) => entry.name),
+  };
+}
+
+function toSessionPhase(state: string): string | null {
+  return runtimeTrackingTopology.stateToSessionPhase[state] || null;
 }
 
 function toTrackedAgentId(agent: PhaseAgent): string {
@@ -137,7 +219,7 @@ function toTrackedAgentId(agent: PhaseAgent): string {
 }
 
 function getTrackedAgentsForState(state: string): TrackedPhaseAgent[] {
-  const agents = PHASE_AGENTS[state as keyof typeof PHASE_AGENTS] as PhaseAgent[] | undefined;
+  const agents = runtimeTrackingTopology.phaseAgents[state] as PhaseAgent[] | undefined;
   return (agents || []).map((agent) => ({
     ...agent,
     trackedId: toTrackedAgentId(agent),
@@ -145,7 +227,7 @@ function getTrackedAgentsForState(state: string): TrackedPhaseAgent[] {
 }
 
 function isParallelTrackedState(state: string): boolean {
-  return PARALLEL_SESSION_STATES.has(state);
+  return runtimeTrackingTopology.parallelStates.has(state);
 }
 
 function getTrackedAgentName(state: string, trackedId: string | null): string | null {
@@ -298,6 +380,69 @@ function readHumanOverrideEvents(filePath: string): HumanOverrideEvent[] {
   }
 }
 
+function normalizeModeToken(value: unknown): string {
+  return String(value || '')
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, '_');
+}
+
+function getPreferredModeForTemplate(templateName: string, currentMode: string): string {
+  const template = loadTemplate(templateName) as { modes?: Record<string, unknown> };
+  const modeNames = Object.keys(template.modes || {}).map((modeName) =>
+    normalizeModeToken(modeName)
+  );
+  if (modeNames.length === 0) {
+    return currentMode;
+  }
+
+  const normalizedCurrentMode = normalizeModeToken(currentMode);
+  if (modeNames.includes(normalizedCurrentMode)) {
+    return normalizedCurrentMode;
+  }
+
+  if (modeNames.includes('CREATE')) {
+    return 'CREATE';
+  }
+
+  return modeNames[0] || normalizedCurrentMode;
+}
+
+function resolveSessionStatePath(ctx: Record<string, unknown>): string {
+  const sessionDir = typeof ctx.SESSION_DIR === 'string' ? ctx.SESSION_DIR.trim() : '';
+  if (sessionDir) {
+    return path.join(sessionDir, 'session-state.json');
+  }
+
+  return path.join(getRepoRoot(ctx), 'BusinessDocs', 'session', 'session-state.json');
+}
+
+function persistSessionMode(sessionPath: string, mode: string): void {
+  const store = getStore();
+  let sessionState: Record<string, unknown> = {};
+
+  if (store.exists(sessionPath)) {
+    try {
+      sessionState = JSON.parse(store.readFile(sessionPath, 'utf8')) as Record<string, unknown>;
+    } catch {
+      sessionState = {};
+    }
+  }
+
+  store.mkdirp(path.dirname(sessionPath));
+  store.writeFile(
+    sessionPath,
+    JSON.stringify(
+      {
+        ...sessionState,
+        mode,
+      },
+      null,
+      2
+    )
+  );
+}
+
 function toOverallDependencyStatus(statuses: DependencyStatus[]): DependencyStatus {
   if (statuses.some((status) => status === 'unavailable')) {
     return 'unavailable';
@@ -345,6 +490,7 @@ function buildControlPlaneAlerts(
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const { sseNotify } = ctx;
   const legacyCtx = ctx as unknown as Record<string, unknown>;
+  const sessionStatePath = resolveSessionStatePath(legacyCtx);
   const governanceService = new GovernanceService(
     toServiceContext(ctx as unknown as Record<string, unknown>)
   );
@@ -354,6 +500,30 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     'session',
     'human-override-events.json'
   );
+  const flowsPath = path.resolve(__dirname, '..', '..', '..', 'platform', 'engine', 'flows.yaml');
+
+  try {
+    const runtimeFlows = loadFlows(getStore(), flowsPath) as {
+      runtimeGraph?: {
+        phaseAgents?: Record<string, Array<{ id: string; name: string }>>;
+        defaultParallelDispatchStates?: string[];
+        states?: string[];
+        gates?: Array<{ criticState?: string | null; evaluatedPhase?: string | null }>;
+      };
+    };
+    if (runtimeFlows.runtimeGraph) {
+      const stateToSessionPhase = buildStateToSessionPhaseMap(runtimeFlows.runtimeGraph);
+      updateRuntimeTrackingTopology({
+        phaseAgents:
+          (runtimeFlows.runtimeGraph.phaseAgents as Record<string, PhaseAgent[]>) ||
+          (PHASE_AGENTS as Record<string, PhaseAgent[]>),
+        parallelStates: new Set(runtimeFlows.runtimeGraph.defaultParallelDispatchStates || []),
+        stateToSessionPhase,
+      });
+    }
+  } catch {
+    // Route telemetry remains operational with schema-backed defaults.
+  }
 
   // Lazy-initialized engine (created on first request)
   let _engine: OrchestratorEngine | null = null;
@@ -381,6 +551,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         store: getStore(),
         sseNotify,
         templateName: _templateName,
+        sessionPath: sessionStatePath,
       });
       _engine = engine;
       structuredLog('info', 'orchestrator_engine_initialized', {
@@ -405,6 +576,89 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const message = getErrorMessage(err);
         structuredLog('error', 'orchestrator_templates_error', { error: message });
         return reply.code(500).send(errorResponse('TEMPLATE_ERROR', message));
+      }
+    }
+  );
+
+  // ── GET /api/orchestrator/active-pack ─────────────────────
+
+  app.get(
+    '/api/orchestrator/active-pack',
+    { schema: { tags: ['orchestrator'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const templates = listTemplates();
+        const engine = getEngine();
+        const status = engine.status();
+        return reply.send({
+          ok: true,
+          active_template: status.templateName || _templateName || 'sdlc',
+          status,
+          templates,
+        });
+      } catch (err) {
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_active_pack_error', { error: message });
+        return reply.code(500).send(errorResponse('ACTIVE_PACK_ERROR', message));
+      }
+    }
+  );
+
+  // ── POST /api/orchestrator/active-pack ────────────────────
+
+  app.post(
+    '/api/orchestrator/active-pack',
+    { schema: { tags: ['orchestrator'] } },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const body = (request.body as Record<string, unknown>) || {};
+        const requestedTemplate = typeof body.template === 'string' ? body.template.trim() : '';
+
+        if (!requestedTemplate) {
+          return reply.code(400).send(errorResponse('INVALID_INPUT', 'template is required'));
+        }
+
+        const templates = listTemplates();
+        const match = templates.find((template) => template.name === requestedTemplate);
+        if (!match) {
+          return reply
+            .code(404)
+            .send(errorResponse('NOT_FOUND', `Unknown template '${requestedTemplate}'`));
+        }
+
+        if (!match.valid) {
+          return reply
+            .code(400)
+            .send(errorResponse('INVALID_TEMPLATE', `Template '${requestedTemplate}' is invalid`));
+        }
+
+        const currentMode = getEngine().status().mode;
+        const preferredMode = getPreferredModeForTemplate(requestedTemplate, currentMode);
+        if (normalizeModeToken(currentMode) !== preferredMode) {
+          persistSessionMode(sessionStatePath, preferredMode);
+        }
+
+        _templateName = requestedTemplate;
+        _engine = null;
+        const engine = getEngine();
+        const status = engine.status();
+
+        structuredLog('info', 'orchestrator_active_pack_switched', {
+          templateName: status.templateName,
+          state: status.state,
+          mode: status.mode,
+        });
+
+        return reply.send({
+          ok: true,
+          active_template: status.templateName || requestedTemplate,
+          status,
+          templates,
+        });
+      } catch (err) {
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_active_pack_switch_error', { error: message });
+        return reply.code(500).send(errorResponse('ACTIVE_PACK_SWITCH_ERROR', message));
       }
     }
   );
@@ -1257,6 +1511,142 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     }
   );
 
+  // ── GET /api/orchestrator/runtime-pack-graph ─────────────
+
+  app.get(
+    '/api/orchestrator/pack-metadata',
+    { schema: { tags: ['orchestrator'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const store = getStore();
+        const flows = loadFlows(store, flowsPath) as {
+          manifest_version?: string;
+          pack_id?: string;
+          pack_name?: string;
+          version?: string;
+          commands?: Array<Record<string, unknown>>;
+          stages?: Array<Record<string, unknown>>;
+          gates?: Array<Record<string, unknown>>;
+          help?: { topics?: Array<Record<string, unknown>> };
+          runtime?: {
+            default_parallel_dispatch_states?: string[];
+            gate_assets?: Record<string, unknown>;
+          };
+          artifact_namespaces?: Record<string, string>;
+          runtimeGraph?: { warnings?: string[] };
+        };
+
+        const commands = Array.isArray(flows.commands) ? flows.commands : [];
+        const stages = Array.isArray(flows.stages) ? flows.stages : [];
+        const gates = Array.isArray(flows.gates) ? flows.gates : [];
+        const helpTopics = Array.isArray(flows.help?.topics) ? flows.help?.topics || [] : [];
+        const commandLabels = Object.fromEntries(
+          commands
+            .filter((entry) => typeof entry.id === 'string')
+            .map((entry) => [entry.id as string, String(entry.label || entry.id)])
+        );
+        const stageLabels = Object.fromEntries(
+          stages
+            .filter((entry) => typeof entry.id === 'string')
+            .map((entry) => [entry.id as string, String(entry.label || entry.id)])
+        );
+        const gateLabels = Object.fromEntries(
+          gates
+            .filter((entry) => typeof entry.id === 'string')
+            .map((entry) => [entry.id as string, String(entry.type || 'GATE')])
+        );
+        const capabilities = {
+          supportsRuntimeGraph: Boolean(flows.runtimeGraph),
+          supportsCommandCatalog: commands.length > 0,
+          supportsHelpTopics: helpTopics.length > 0,
+          supportsArtifactNamespaces:
+            !!flows.artifact_namespaces && Object.keys(flows.artifact_namespaces).length > 0,
+          supportsGateAssets:
+            !!flows.runtime?.gate_assets && Object.keys(flows.runtime.gate_assets).length > 0,
+          parallelDispatchStates: Array.isArray(flows.runtime?.default_parallel_dispatch_states)
+            ? flows.runtime?.default_parallel_dispatch_states || []
+            : [],
+        };
+
+        return reply.send({
+          ok: true,
+          pack: {
+            manifest_version: flows.manifest_version || '2.0',
+            id: flows.pack_id || 'core-runtime',
+            name: flows.pack_name || 'Core Runtime Pack',
+            version: flows.version || '1.0.0',
+          },
+          commands,
+          stages,
+          gates,
+          labels: {
+            commands: commandLabels,
+            stages: stageLabels,
+            gates: gateLabels,
+          },
+          help_topics: helpTopics,
+          capabilities,
+          warnings:
+            flows.runtimeGraph && Array.isArray(flows.runtimeGraph.warnings)
+              ? flows.runtimeGraph.warnings
+              : [],
+        });
+      } catch (err) {
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_pack_metadata_error', { error: message });
+        return reply.code(500).send(errorResponse('PACK_METADATA_ERROR', message));
+      }
+    }
+  );
+
+  app.get(
+    '/api/orchestrator/runtime-pack-graph',
+    { schema: { tags: ['orchestrator'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const store = getStore();
+        const flows = loadFlows(store, flowsPath) as {
+          runtimeGraph?: {
+            pack: Record<string, unknown>;
+            states: string[];
+            fullFlow: string[];
+            phaseAgents: Record<string, Array<{ id: string; name: string }>>;
+            parallelGroups: Record<string, string[][]>;
+            defaultParallelDispatchStates: string[];
+            skillsBaseDir: string | null;
+            gates: Array<Record<string, unknown>>;
+            warnings: string[];
+          };
+        };
+
+        if (!flows.runtimeGraph) {
+          return reply
+            .code(404)
+            .send(
+              errorResponse('RUNTIME_PACK_GRAPH_UNAVAILABLE', 'Runtime pack graph is unavailable')
+            );
+        }
+
+        return reply.send({
+          ok: true,
+          pack: flows.runtimeGraph.pack,
+          states: flows.runtimeGraph.states,
+          full_flow: flows.runtimeGraph.fullFlow,
+          phase_agents: flows.runtimeGraph.phaseAgents,
+          parallel_groups: flows.runtimeGraph.parallelGroups,
+          default_parallel_dispatch_states: flows.runtimeGraph.defaultParallelDispatchStates,
+          skills_base_dir: flows.runtimeGraph.skillsBaseDir,
+          gates: flows.runtimeGraph.gates,
+          warnings: flows.runtimeGraph.warnings,
+        });
+      } catch (err) {
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_runtime_pack_graph_error', { error: message });
+        return reply.code(500).send(errorResponse('RUNTIME_PACK_GRAPH_ERROR', message));
+      }
+    }
+  );
+
   // ── POST /api/orchestrator/command ─────────────────────────
 
   app.post(
@@ -1269,28 +1659,37 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           return reply.code(400).send(errorResponse('INVALID_INPUT', 'command is required'));
         }
 
-        const VALID_COMMANDS = [
-          'CREATE',
-          'CREATE_BUSINESS',
-          'CREATE_TECH',
-          'CREATE_UX',
-          'CREATE_MARKETING',
-          'AUDIT',
-          'FEATURE',
-          'SCOPE_CHANGE',
-          'HOTFIX',
-          'REEVALUATE',
-        ];
-        const command = String(body.command)
-          .toUpperCase()
-          .replace(/[\s-]+/g, '_');
-        if (!VALID_COMMANDS.includes(command)) {
+        let resume = Boolean(body.resume);
+        const requestedTemplateName =
+          typeof body.template === 'string' && body.template.trim() !== ''
+            ? body.template.trim()
+            : _templateName;
+
+        const command = normalizeCommandToken(body.command);
+        const validation = resolveCommandValidation(requestedTemplateName);
+        if (!validation.knownCommands.has(command)) {
           return reply
             .code(400)
             .send(
               errorResponse(
                 'INVALID_COMMAND',
-                `Unknown command "${body.command}". Valid: ${VALID_COMMANDS.join(', ')}`
+                `Unknown command "${body.command}". Valid: ${validation.validDisplay.join(', ')}`
+              )
+            );
+        }
+
+        // CONTINUE is an explicit resume command in pack metadata.
+        if (command === 'CONTINUE') {
+          resume = true;
+        }
+
+        if (!resume && !validation.modeCommands.has(command)) {
+          return reply
+            .code(400)
+            .send(
+              errorResponse(
+                'INVALID_COMMAND',
+                `Command "${body.command}" is not executable as a fresh orchestrator mode.`
               )
             );
         }
@@ -1308,7 +1707,6 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
             );
         }
 
-        const resume = Boolean(body.resume);
         const project = body.project ? String(body.project).slice(0, 200) : undefined;
         const template = body.template ? String(body.template).slice(0, 100) : undefined;
 

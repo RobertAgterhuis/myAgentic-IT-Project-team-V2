@@ -9,6 +9,9 @@
 
 import path from 'path';
 import { parse } from 'yaml';
+import { toLegacyFlowDefinition, toPackManifestV2 } from './pack-contract';
+import { compileRuntimePackGraph } from './runtime-pack';
+import { toWorkflowDefinition } from './workflow-contract';
 
 // ─── YAML Parsing & Normalization ───────────────────────────
 
@@ -129,25 +132,15 @@ function loadFlows(store: FlowStore, flowsPath?: string) {
   const content = store.readFile(filePath);
   const parsed = parseFlowYaml(content);
 
-  // Validate required sections
-  const required: Array<keyof ParsedFlowYaml> = [
-    'states',
-    'full_flow',
-    'structural_states',
-    'modes',
-    'events',
-  ];
-  for (const key of required) {
-    if (!parsed[key]) {
-      throw new Error(`flows.yaml missing required section: ${key}`);
-    }
-  }
-
-  const states = Array.isArray(parsed.states) ? parsed.states : [];
-  const fullFlow = Array.isArray(parsed.full_flow) ? parsed.full_flow : [];
-  const structuralStates = Array.isArray(parsed.structural_states) ? parsed.structural_states : [];
-  const events = Array.isArray(parsed.events) ? parsed.events : [];
-  const modes = parsed.modes ?? {};
+  const manifest = toPackManifestV2(parsed);
+  const workflow = toWorkflowDefinition(manifest);
+  const runtimeGraph = compileRuntimePackGraph(manifest, workflow);
+  const legacy = toLegacyFlowDefinition(manifest);
+  const states = legacy.states;
+  const fullFlow = legacy.full_flow;
+  const structuralStates = legacy.structural_states;
+  const events = legacy.events;
+  const modes = legacy.modes;
 
   // Validate that full_flow entries are in states
   const stateSet = new Set(states);
@@ -168,11 +161,25 @@ function loadFlows(store: FlowStore, flowsPath?: string) {
   }
 
   return {
+    manifest_version: manifest.manifest_version,
+    pack_id: manifest.pack_id,
+    pack_name: manifest.pack_name,
+    version: manifest.version,
     states,
     full_flow: fullFlow,
     structural_states: structuralStates,
     modes,
     events,
+    commands: manifest.commands,
+    stages: manifest.stages,
+    transitions: manifest.transitions,
+    gates: manifest.gates,
+    assignments: manifest.assignments,
+    artifact_namespaces: manifest.artifact_namespaces,
+    help: manifest.help,
+    runtime: manifest.runtime,
+    workflow,
+    runtimeGraph,
   };
 }
 

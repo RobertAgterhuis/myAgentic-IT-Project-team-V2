@@ -203,14 +203,3 @@ export interface ServerContext {
     phases?: string[];
   }>;
 }
-
-/* ── Legacy adapter: typed context → Record<string, unknown> ── */
-
-/**
- * Convert a typed ServerContext to the legacy untyped `ctx` for backward
- * compatibility during incremental migration. Route modules that still
- * use `(ctx: Record<string, unknown>)` can consume this.
- */
-export function toLegacyCtx(ctx: ServerContext): Record<string, unknown> {
-  return ctx as unknown as Record<string, unknown>;
-}

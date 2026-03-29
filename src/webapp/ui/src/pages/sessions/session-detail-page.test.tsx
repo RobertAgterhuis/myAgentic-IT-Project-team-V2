@@ -2,7 +2,7 @@
  * Session Detail page tests — M15 / Issues #M15-029, #M15-034, #M15-035, #M15-036, #M15-037, #M15-038
  */
 import { describe, it, expect, afterAll, afterEach, beforeAll, vi } from 'vitest';
-import { act, render, screen, waitFor } from '@testing-library/react';
+import { act, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import SessionDetailPage from './session-detail-page';
@@ -189,8 +189,11 @@ describe('SessionDetailPage — M15-036: Merged runtime log events', () => {
       expect(screen.getByTestId('session-detail-page')).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/Session started: CREATE for TestProject/)).toBeInTheDocument();
-    expect(screen.getByText(/Phase started: PHASE-1/)).toBeInTheDocument();
+    const runtimeEvents = screen.getByRole('list', { name: /runtime events/i });
+    expect(
+      within(runtimeEvents).getByText(/Session started: CREATE for TestProject/)
+    ).toBeInTheDocument();
+    expect(within(runtimeEvents).getByText(/Phase started: PHASE-1/)).toBeInTheDocument();
   });
 
   it('merges runtime store events into the log', async () => {
@@ -208,7 +211,10 @@ describe('SessionDetailPage — M15-036: Merged runtime log events', () => {
       expect(screen.getByTestId('session-detail-page')).toBeInTheDocument();
     });
 
-    expect(screen.getByText(/Agent completed: Business Analyst/)).toBeInTheDocument();
+    const runtimeEvents = screen.getByRole('list', { name: /runtime events/i });
+    expect(
+      within(runtimeEvents).getByText(/Agent completed: Business Analyst/)
+    ).toBeInTheDocument();
   });
 
   it('deduplicates events by id', async () => {
@@ -225,7 +231,8 @@ describe('SessionDetailPage — M15-036: Merged runtime log events', () => {
       expect(screen.getByTestId('session-detail-page')).toBeInTheDocument();
     });
 
-    const matches = screen.getAllByText(/Session started: CREATE for TestProject/);
+    const runtimeEvents = screen.getByRole('list', { name: /runtime events/i });
+    const matches = within(runtimeEvents).getAllByText(/Session started: CREATE for TestProject/);
     expect(matches).toHaveLength(1);
   });
 });

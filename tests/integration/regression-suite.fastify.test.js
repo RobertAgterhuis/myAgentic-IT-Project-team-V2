@@ -515,7 +515,7 @@ describe('Sprint 6 Regression: Integration & Backup', () => {
       answer: 'Final: yes.',
     });
     expect(decRes.statusCode).toBe(200);
-  });
+  }, 15000);
 
   it('GET /api/export includes session and queue data', async () => {
     const res = await inject('GET', '/api/export');

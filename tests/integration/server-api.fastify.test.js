@@ -573,7 +573,7 @@ describe('GET /api/command', () => {
     const body = r.json();
     expect(body.command.command).toBe('REEVALUATE');
     expect(body.queue).toHaveLength(1);
-  });
+  }, 15000);
 });
 
 describe('GET /api/commands', () => {

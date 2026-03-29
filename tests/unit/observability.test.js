@@ -233,7 +233,7 @@ describe('metrics store', () => {
   });
 
   it('queryMetric filters by time range', () => {
-    let store = createMetricsStore();
+    const store = createMetricsStore();
     store.metrics['m'] = {
       name: 'm',
       unit: 'ms',

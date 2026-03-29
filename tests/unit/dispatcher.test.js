@@ -1214,7 +1214,7 @@ describe('Dispatcher — dispatchStateParallel (M4/Epic-661)', () => {
 
   it('observes semaphore queueing with high concurrency demand', async () => {
     let peakActive = 0;
-    let activeSamples = [];
+    const activeSamples = [];
 
     const d = new Dispatcher({
       store: createMockStore(),

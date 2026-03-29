@@ -1,0 +1,4006 @@
+[
+  {
+    "transition_id": "8656166e-88f6-4e51-bd40-a86141357679",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T17:59:19.293Z"
+  },
+  {
+    "transition_id": "8656166e-88f6-4e51-bd40-a86141357679",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T17:59:19.294Z"
+  },
+  {
+    "transition_id": "3e68b6aa-98e2-4c9c-9fbe-10e5e261bb64",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T17:59:19.776Z"
+  },
+  {
+    "transition_id": "3e68b6aa-98e2-4c9c-9fbe-10e5e261bb64",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T17:59:19.778Z"
+  },
+  {
+    "transition_id": "2e7b1e6e-dd95-497b-8f99-2f74dc8eb8ed",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T17:59:19.926Z"
+  },
+  {
+    "transition_id": "2e7b1e6e-dd95-497b-8f99-2f74dc8eb8ed",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T17:59:19.928Z"
+  },
+  {
+    "transition_id": "59624fcb-5077-459a-8236-812579e09440",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T17:59:19.958Z"
+  },
+  {
+    "transition_id": "59624fcb-5077-459a-8236-812579e09440",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T17:59:19.960Z"
+  },
+  {
+    "transition_id": "b95a47ea-0e9b-4adc-b567-7ad7546dee15",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T17:59:20.098Z"
+  },
+  {
+    "transition_id": "b95a47ea-0e9b-4adc-b567-7ad7546dee15",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T17:59:20.100Z"
+  },
+  {
+    "transition_id": "81fc9f5b-1432-4494-b629-d5f3c38148e5",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T17:59:20.129Z"
+  },
+  {
+    "transition_id": "81fc9f5b-1432-4494-b629-d5f3c38148e5",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T17:59:20.132Z"
+  },
+  {
+    "transition_id": "b9088f27-459e-4fd5-8920-c891e0745690",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T17:59:20.266Z"
+  },
+  {
+    "transition_id": "b9088f27-459e-4fd5-8920-c891e0745690",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T17:59:20.268Z"
+  },
+  {
+    "transition_id": "085db9fa-e3e9-459a-a904-3c49981b4192",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T17:59:20.301Z"
+  },
+  {
+    "transition_id": "085db9fa-e3e9-459a-a904-3c49981b4192",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T17:59:20.304Z"
+  },
+  {
+    "transition_id": "5fc63b12-9c03-417b-b17c-a51287beb68c",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T17:59:20.334Z"
+  },
+  {
+    "transition_id": "5fc63b12-9c03-417b-b17c-a51287beb68c",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T17:59:20.337Z"
+  },
+  {
+    "transition_id": "9ef638e8-6d8b-4d7c-9121-b47e3c1733dd",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T17:59:21.624Z"
+  },
+  {
+    "transition_id": "9ef638e8-6d8b-4d7c-9121-b47e3c1733dd",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T17:59:21.627Z"
+  },
+  {
+    "transition_id": "5f8b0551-b438-491b-951a-5c27d3cfd60f",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T17:59:21.659Z"
+  },
+  {
+    "transition_id": "5f8b0551-b438-491b-951a-5c27d3cfd60f",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T17:59:21.662Z"
+  },
+  {
+    "transition_id": "42d14aba-2e71-4db7-9c1d-47ddeb9fc427",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T17:59:21.689Z"
+  },
+  {
+    "transition_id": "42d14aba-2e71-4db7-9c1d-47ddeb9fc427",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T17:59:21.691Z"
+  },
+  {
+    "transition_id": "c7abea19-c4b7-449b-a28e-5d7547bc5e80",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T17:59:24.304Z"
+  },
+  {
+    "transition_id": "c7abea19-c4b7-449b-a28e-5d7547bc5e80",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T17:59:24.307Z"
+  },
+  {
+    "transition_id": "a7204ff7-3c3f-4249-8f8e-5952213a1dc9",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:19:23.879Z"
+  },
+  {
+    "transition_id": "a7204ff7-3c3f-4249-8f8e-5952213a1dc9",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:19:23.882Z"
+  },
+  {
+    "transition_id": "bc1c0de8-3ac3-4863-8f8e-c52962b6081f",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:19:24.390Z"
+  },
+  {
+    "transition_id": "bc1c0de8-3ac3-4863-8f8e-c52962b6081f",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:19:24.393Z"
+  },
+  {
+    "transition_id": "ad3d52fe-6f3d-435f-a612-326852a002aa",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:19:24.551Z"
+  },
+  {
+    "transition_id": "ad3d52fe-6f3d-435f-a612-326852a002aa",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:19:24.555Z"
+  },
+  {
+    "transition_id": "70a96b8b-8fb6-4d36-a797-0394cec7651d",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:19:24.585Z"
+  },
+  {
+    "transition_id": "70a96b8b-8fb6-4d36-a797-0394cec7651d",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:19:24.588Z"
+  },
+  {
+    "transition_id": "242dcdf8-bb10-4900-90db-9f463dec7a9f",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:19:24.736Z"
+  },
+  {
+    "transition_id": "242dcdf8-bb10-4900-90db-9f463dec7a9f",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:19:24.738Z"
+  },
+  {
+    "transition_id": "6af9bc91-b9bc-4706-b335-80a8d15be7ad",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:19:24.770Z"
+  },
+  {
+    "transition_id": "6af9bc91-b9bc-4706-b335-80a8d15be7ad",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:19:24.773Z"
+  },
+  {
+    "transition_id": "4d3578d2-c17a-43c5-978e-454be14332ef",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:19:24.920Z"
+  },
+  {
+    "transition_id": "4d3578d2-c17a-43c5-978e-454be14332ef",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:19:24.922Z"
+  },
+  {
+    "transition_id": "00e073a0-c6c0-4cff-bfc2-ef0e2526d5dc",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:19:24.953Z"
+  },
+  {
+    "transition_id": "00e073a0-c6c0-4cff-bfc2-ef0e2526d5dc",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:19:24.956Z"
+  },
+  {
+    "transition_id": "d39c5869-ce4d-44c7-b2fd-838136ccb57c",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:19:24.988Z"
+  },
+  {
+    "transition_id": "d39c5869-ce4d-44c7-b2fd-838136ccb57c",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:19:24.990Z"
+  },
+  {
+    "transition_id": "7eefef82-e509-445a-9f01-d4b45fa19603",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:19:26.375Z"
+  },
+  {
+    "transition_id": "7eefef82-e509-445a-9f01-d4b45fa19603",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:19:26.377Z"
+  },
+  {
+    "transition_id": "1bf063a0-6b5d-4914-a0a3-aba616b2a653",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:19:26.408Z"
+  },
+  {
+    "transition_id": "1bf063a0-6b5d-4914-a0a3-aba616b2a653",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:19:26.411Z"
+  },
+  {
+    "transition_id": "95753cac-5852-4ff3-8d25-6e92147061db",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:19:26.440Z"
+  },
+  {
+    "transition_id": "95753cac-5852-4ff3-8d25-6e92147061db",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:19:26.443Z"
+  },
+  {
+    "transition_id": "a8de91a3-e7fa-4fd7-8914-9f3eee8a0bc9",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:19:29.008Z"
+  },
+  {
+    "transition_id": "a8de91a3-e7fa-4fd7-8914-9f3eee8a0bc9",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:19:29.010Z"
+  },
+  {
+    "transition_id": "922a38e7-3d22-4459-bee6-6c7d2012ffb8",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:33:03.113Z"
+  },
+  {
+    "transition_id": "922a38e7-3d22-4459-bee6-6c7d2012ffb8",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:33:03.116Z"
+  },
+  {
+    "transition_id": "38b8b5e7-69e9-46bb-9598-2c2050721172",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:33:03.608Z"
+  },
+  {
+    "transition_id": "38b8b5e7-69e9-46bb-9598-2c2050721172",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:33:03.612Z"
+  },
+  {
+    "transition_id": "2dbdbfe7-a1f6-463e-a34f-f16342dc7961",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:33:03.762Z"
+  },
+  {
+    "transition_id": "2dbdbfe7-a1f6-463e-a34f-f16342dc7961",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:33:03.765Z"
+  },
+  {
+    "transition_id": "6e2b3db6-7993-41e8-b5fc-4d000705a4f8",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:33:03.795Z"
+  },
+  {
+    "transition_id": "6e2b3db6-7993-41e8-b5fc-4d000705a4f8",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:33:03.797Z"
+  },
+  {
+    "transition_id": "58df124c-a9e7-4789-a826-08fd37a3086b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:33:03.944Z"
+  },
+  {
+    "transition_id": "58df124c-a9e7-4789-a826-08fd37a3086b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:33:03.947Z"
+  },
+  {
+    "transition_id": "53f4a027-5c67-4240-88fb-e33cf5c35073",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:33:03.975Z"
+  },
+  {
+    "transition_id": "53f4a027-5c67-4240-88fb-e33cf5c35073",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:33:03.978Z"
+  },
+  {
+    "transition_id": "f8bdbe9b-6d12-4a7a-9aa5-b33099a70ac9",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:33:04.117Z"
+  },
+  {
+    "transition_id": "f8bdbe9b-6d12-4a7a-9aa5-b33099a70ac9",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:33:04.120Z"
+  },
+  {
+    "transition_id": "f90167e7-1941-4e67-a41b-4380d5bf35eb",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:33:04.147Z"
+  },
+  {
+    "transition_id": "f90167e7-1941-4e67-a41b-4380d5bf35eb",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:33:04.149Z"
+  },
+  {
+    "transition_id": "69714094-342a-4d6d-a478-b8beb6ff33f8",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:33:04.175Z"
+  },
+  {
+    "transition_id": "69714094-342a-4d6d-a478-b8beb6ff33f8",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:33:04.178Z"
+  },
+  {
+    "transition_id": "e34c89ae-eaa7-450c-a61e-c857d12030cf",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:33:05.513Z"
+  },
+  {
+    "transition_id": "e34c89ae-eaa7-450c-a61e-c857d12030cf",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:33:05.516Z"
+  },
+  {
+    "transition_id": "af6d92b1-a658-4382-a87a-f48d289f69a0",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:33:05.545Z"
+  },
+  {
+    "transition_id": "af6d92b1-a658-4382-a87a-f48d289f69a0",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:33:05.547Z"
+  },
+  {
+    "transition_id": "b8f8c47f-b5a9-49b8-8da2-a2ef9061f92d",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:33:05.578Z"
+  },
+  {
+    "transition_id": "b8f8c47f-b5a9-49b8-8da2-a2ef9061f92d",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:33:05.580Z"
+  },
+  {
+    "transition_id": "6568fb46-58b6-4ddb-8e64-5c5427c48861",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T18:33:08.133Z"
+  },
+  {
+    "transition_id": "6568fb46-58b6-4ddb-8e64-5c5427c48861",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T18:33:08.136Z"
+  },
+  {
+    "transition_id": "77da06d8-9cbb-4338-b310-5635f8a6fea6",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T19:59:33.345Z"
+  },
+  {
+    "transition_id": "77da06d8-9cbb-4338-b310-5635f8a6fea6",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T19:59:33.348Z"
+  },
+  {
+    "transition_id": "dc0606f9-36df-46b2-85c8-fa122c2c7738",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T19:59:33.909Z"
+  },
+  {
+    "transition_id": "dc0606f9-36df-46b2-85c8-fa122c2c7738",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T19:59:33.914Z"
+  },
+  {
+    "transition_id": "5d120107-b0a0-4b8a-8f14-2cc19d8c4e2d",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T19:59:34.077Z"
+  },
+  {
+    "transition_id": "5d120107-b0a0-4b8a-8f14-2cc19d8c4e2d",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T19:59:34.081Z"
+  },
+  {
+    "transition_id": "5172dc45-5be5-41ce-9ae1-085331c5c7e1",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T19:59:34.107Z"
+  },
+  {
+    "transition_id": "5172dc45-5be5-41ce-9ae1-085331c5c7e1",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T19:59:34.110Z"
+  },
+  {
+    "transition_id": "787c88eb-84ff-49e2-b0a8-a7c6f5b52426",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T19:59:34.255Z"
+  },
+  {
+    "transition_id": "787c88eb-84ff-49e2-b0a8-a7c6f5b52426",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T19:59:34.258Z"
+  },
+  {
+    "transition_id": "572d2517-a987-4b1a-8e22-d2dfc8dcb20e",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T19:59:34.288Z"
+  },
+  {
+    "transition_id": "572d2517-a987-4b1a-8e22-d2dfc8dcb20e",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T19:59:34.291Z"
+  },
+  {
+    "transition_id": "c04524d4-c442-48a3-b225-386d40339669",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T19:59:34.440Z"
+  },
+  {
+    "transition_id": "c04524d4-c442-48a3-b225-386d40339669",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T19:59:34.443Z"
+  },
+  {
+    "transition_id": "b1247e32-9b81-4e56-b1c9-6fe9f9ab8355",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T19:59:34.472Z"
+  },
+  {
+    "transition_id": "b1247e32-9b81-4e56-b1c9-6fe9f9ab8355",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T19:59:34.475Z"
+  },
+  {
+    "transition_id": "f41e403a-26c7-446b-aad8-20d149fb760a",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T19:59:34.502Z"
+  },
+  {
+    "transition_id": "f41e403a-26c7-446b-aad8-20d149fb760a",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T19:59:34.504Z"
+  },
+  {
+    "transition_id": "50d270f8-3e30-4255-af40-f10729bb0417",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T19:59:35.902Z"
+  },
+  {
+    "transition_id": "50d270f8-3e30-4255-af40-f10729bb0417",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T19:59:35.905Z"
+  },
+  {
+    "transition_id": "afea73d7-dfdf-4960-9ccd-e9b7302dd471",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T19:59:35.930Z"
+  },
+  {
+    "transition_id": "afea73d7-dfdf-4960-9ccd-e9b7302dd471",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T19:59:35.933Z"
+  },
+  {
+    "transition_id": "39268797-25c3-4214-8e37-10c892bdf656",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T19:59:35.956Z"
+  },
+  {
+    "transition_id": "39268797-25c3-4214-8e37-10c892bdf656",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T19:59:35.959Z"
+  },
+  {
+    "transition_id": "91b8e74a-172d-41eb-ba27-404f99c04f5a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T19:59:38.670Z"
+  },
+  {
+    "transition_id": "91b8e74a-172d-41eb-ba27-404f99c04f5a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T19:59:38.673Z"
+  },
+  {
+    "transition_id": "d23d58e1-dac9-43d3-8738-d9595921bd76",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:13:09.811Z"
+  },
+  {
+    "transition_id": "d23d58e1-dac9-43d3-8738-d9595921bd76",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:13:09.814Z"
+  },
+  {
+    "transition_id": "4fec3b29-98ca-4915-ae48-ccaab7c5d965",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:13:10.351Z"
+  },
+  {
+    "transition_id": "4fec3b29-98ca-4915-ae48-ccaab7c5d965",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:13:10.355Z"
+  },
+  {
+    "transition_id": "aa108ff3-f5c1-42cd-97bc-f360a0dc001e",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:13:10.509Z"
+  },
+  {
+    "transition_id": "aa108ff3-f5c1-42cd-97bc-f360a0dc001e",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:13:10.513Z"
+  },
+  {
+    "transition_id": "d512b3b2-ae91-45e9-ad34-8fde79e3264d",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:13:10.542Z"
+  },
+  {
+    "transition_id": "d512b3b2-ae91-45e9-ad34-8fde79e3264d",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:13:10.544Z"
+  },
+  {
+    "transition_id": "300ff391-2874-4695-a834-bc34af58e1dd",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:13:10.691Z"
+  },
+  {
+    "transition_id": "300ff391-2874-4695-a834-bc34af58e1dd",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:13:10.694Z"
+  },
+  {
+    "transition_id": "3b03a909-d017-4aa3-a3ae-67bfc7a4afab",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:13:10.722Z"
+  },
+  {
+    "transition_id": "3b03a909-d017-4aa3-a3ae-67bfc7a4afab",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:13:10.725Z"
+  },
+  {
+    "transition_id": "87153fb6-d915-44fc-9c35-802e7c874282",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:13:10.874Z"
+  },
+  {
+    "transition_id": "87153fb6-d915-44fc-9c35-802e7c874282",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:13:10.877Z"
+  },
+  {
+    "transition_id": "ec92c06b-0b1e-4f71-aab6-45d26bd4160d",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:13:10.908Z"
+  },
+  {
+    "transition_id": "ec92c06b-0b1e-4f71-aab6-45d26bd4160d",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:13:10.911Z"
+  },
+  {
+    "transition_id": "1b057159-35a1-4af1-9f1c-fb3016c81ded",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:13:10.939Z"
+  },
+  {
+    "transition_id": "1b057159-35a1-4af1-9f1c-fb3016c81ded",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:13:10.942Z"
+  },
+  {
+    "transition_id": "87653feb-1f76-412b-8dba-e142e334b73a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:13:12.355Z"
+  },
+  {
+    "transition_id": "87653feb-1f76-412b-8dba-e142e334b73a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:13:12.359Z"
+  },
+  {
+    "transition_id": "ad075efe-6446-4d00-be53-bbc3f157c777",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:13:12.387Z"
+  },
+  {
+    "transition_id": "ad075efe-6446-4d00-be53-bbc3f157c777",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:13:12.391Z"
+  },
+  {
+    "transition_id": "b8ea1a8d-b174-4a04-8149-00b33587a686",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:13:12.417Z"
+  },
+  {
+    "transition_id": "b8ea1a8d-b174-4a04-8149-00b33587a686",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:13:12.420Z"
+  },
+  {
+    "transition_id": "c987da72-a07c-4f52-af97-0fcc29d7c227",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:13:15.142Z"
+  },
+  {
+    "transition_id": "c987da72-a07c-4f52-af97-0fcc29d7c227",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:13:15.147Z"
+  },
+  {
+    "transition_id": "c490f57f-7958-4d2e-b6e3-cb00dcb41ac1",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:19:25.241Z"
+  },
+  {
+    "transition_id": "c490f57f-7958-4d2e-b6e3-cb00dcb41ac1",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:19:25.244Z"
+  },
+  {
+    "transition_id": "3a7d4c95-7a4a-4a95-9094-0d6c8e2d6838",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:19:25.788Z"
+  },
+  {
+    "transition_id": "3a7d4c95-7a4a-4a95-9094-0d6c8e2d6838",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:19:25.792Z"
+  },
+  {
+    "transition_id": "6f4d2e6b-4c38-4678-b242-41ff776d0f76",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:19:25.951Z"
+  },
+  {
+    "transition_id": "6f4d2e6b-4c38-4678-b242-41ff776d0f76",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:19:25.956Z"
+  },
+  {
+    "transition_id": "449da864-04af-4e19-b7d7-5e5cf2017615",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:19:25.980Z"
+  },
+  {
+    "transition_id": "449da864-04af-4e19-b7d7-5e5cf2017615",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:19:25.983Z"
+  },
+  {
+    "transition_id": "868fa0f8-2a29-4db9-8c9e-bd383307376a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:19:26.130Z"
+  },
+  {
+    "transition_id": "868fa0f8-2a29-4db9-8c9e-bd383307376a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:19:26.133Z"
+  },
+  {
+    "transition_id": "1e322e44-d8e1-45d0-8daa-f89eb18ddbed",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:19:26.162Z"
+  },
+  {
+    "transition_id": "1e322e44-d8e1-45d0-8daa-f89eb18ddbed",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:19:26.165Z"
+  },
+  {
+    "transition_id": "6519b337-c807-457b-b287-0ec8be0dd0b9",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:19:26.306Z"
+  },
+  {
+    "transition_id": "6519b337-c807-457b-b287-0ec8be0dd0b9",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:19:26.309Z"
+  },
+  {
+    "transition_id": "02fb320b-6667-4f4e-81ff-715316a535dc",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:19:26.336Z"
+  },
+  {
+    "transition_id": "02fb320b-6667-4f4e-81ff-715316a535dc",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:19:26.339Z"
+  },
+  {
+    "transition_id": "083f9935-4ddd-42b4-95cd-7e1b1be7c453",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:19:26.365Z"
+  },
+  {
+    "transition_id": "083f9935-4ddd-42b4-95cd-7e1b1be7c453",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:19:26.368Z"
+  },
+  {
+    "transition_id": "d3bcc1ba-de66-40d3-ae49-a2e8bf662d04",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:19:27.787Z"
+  },
+  {
+    "transition_id": "d3bcc1ba-de66-40d3-ae49-a2e8bf662d04",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:19:27.790Z"
+  },
+  {
+    "transition_id": "d445ea07-0333-4754-8e12-08be684add26",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:19:27.818Z"
+  },
+  {
+    "transition_id": "d445ea07-0333-4754-8e12-08be684add26",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:19:27.820Z"
+  },
+  {
+    "transition_id": "c4a29caa-ce3a-4bd9-aed9-0e35d5bf5874",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:19:27.848Z"
+  },
+  {
+    "transition_id": "c4a29caa-ce3a-4bd9-aed9-0e35d5bf5874",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:19:27.851Z"
+  },
+  {
+    "transition_id": "5ac42032-2e1d-4ffd-850f-af4c21aafdf1",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:19:30.568Z"
+  },
+  {
+    "transition_id": "5ac42032-2e1d-4ffd-850f-af4c21aafdf1",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:19:30.572Z"
+  },
+  {
+    "transition_id": "27a29b3d-dfd8-44d0-8c39-340831cd7463",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:28:34.602Z"
+  },
+  {
+    "transition_id": "27a29b3d-dfd8-44d0-8c39-340831cd7463",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:28:34.605Z"
+  },
+  {
+    "transition_id": "25896d31-5a12-40d0-9407-4b79dc9c05a0",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:28:35.150Z"
+  },
+  {
+    "transition_id": "25896d31-5a12-40d0-9407-4b79dc9c05a0",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:28:35.154Z"
+  },
+  {
+    "transition_id": "8adc98b3-eab4-425d-8d60-39ca6cabbe65",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:28:35.315Z"
+  },
+  {
+    "transition_id": "8adc98b3-eab4-425d-8d60-39ca6cabbe65",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:28:35.320Z"
+  },
+  {
+    "transition_id": "d66f9a56-221f-4f1b-a4fc-d8c08e523a34",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:28:35.345Z"
+  },
+  {
+    "transition_id": "d66f9a56-221f-4f1b-a4fc-d8c08e523a34",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:28:35.347Z"
+  },
+  {
+    "transition_id": "f0537822-c3fc-454c-8ea0-251c309ab23c",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:28:35.499Z"
+  },
+  {
+    "transition_id": "f0537822-c3fc-454c-8ea0-251c309ab23c",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:28:35.502Z"
+  },
+  {
+    "transition_id": "4ed8ba70-d7b8-4d82-9cf1-0f20a77a5bc3",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:28:35.532Z"
+  },
+  {
+    "transition_id": "4ed8ba70-d7b8-4d82-9cf1-0f20a77a5bc3",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:28:35.535Z"
+  },
+  {
+    "transition_id": "6ec45de3-31e1-4f9b-b1d4-d34968748a14",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:28:35.686Z"
+  },
+  {
+    "transition_id": "6ec45de3-31e1-4f9b-b1d4-d34968748a14",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:28:35.689Z"
+  },
+  {
+    "transition_id": "97a2f8f1-9b30-4c00-9373-656a3753d048",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:28:35.717Z"
+  },
+  {
+    "transition_id": "97a2f8f1-9b30-4c00-9373-656a3753d048",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:28:35.720Z"
+  },
+  {
+    "transition_id": "cb4f7d3d-e9c7-4bd2-b7f3-5fd70202e2eb",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:28:35.749Z"
+  },
+  {
+    "transition_id": "cb4f7d3d-e9c7-4bd2-b7f3-5fd70202e2eb",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:28:35.752Z"
+  },
+  {
+    "transition_id": "e9a9a4bd-7fe4-4276-9aab-4bc6f376fd9a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:28:37.193Z"
+  },
+  {
+    "transition_id": "e9a9a4bd-7fe4-4276-9aab-4bc6f376fd9a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:28:37.196Z"
+  },
+  {
+    "transition_id": "ad631bf8-202c-44ff-a8a2-88f7e7732cac",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:28:37.229Z"
+  },
+  {
+    "transition_id": "ad631bf8-202c-44ff-a8a2-88f7e7732cac",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:28:37.233Z"
+  },
+  {
+    "transition_id": "4ca8d8ff-5cdc-44ec-b4a8-0f30ea8e016d",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:28:37.264Z"
+  },
+  {
+    "transition_id": "4ca8d8ff-5cdc-44ec-b4a8-0f30ea8e016d",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:28:37.268Z"
+  },
+  {
+    "transition_id": "e753a469-af9d-43c9-93a6-c478bb6dfdb1",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:28:40.040Z"
+  },
+  {
+    "transition_id": "e753a469-af9d-43c9-93a6-c478bb6dfdb1",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:28:40.043Z"
+  },
+  {
+    "transition_id": "15f77890-b0dd-49ed-a541-6666e56af0b0",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:57:29.745Z"
+  },
+  {
+    "transition_id": "15f77890-b0dd-49ed-a541-6666e56af0b0",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:57:29.748Z"
+  },
+  {
+    "transition_id": "83f9b186-0af3-4865-a272-37084d6bc7d4",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:57:30.306Z"
+  },
+  {
+    "transition_id": "83f9b186-0af3-4865-a272-37084d6bc7d4",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:57:30.310Z"
+  },
+  {
+    "transition_id": "80141b50-5246-450f-a935-e487f9733560",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:57:30.472Z"
+  },
+  {
+    "transition_id": "80141b50-5246-450f-a935-e487f9733560",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:57:30.476Z"
+  },
+  {
+    "transition_id": "943a0489-5479-493e-ace9-1cc8aea87ab2",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:57:30.506Z"
+  },
+  {
+    "transition_id": "943a0489-5479-493e-ace9-1cc8aea87ab2",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:57:30.509Z"
+  },
+  {
+    "transition_id": "7b7d1e3c-930d-454c-a0ab-1cce14d63b55",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:57:30.666Z"
+  },
+  {
+    "transition_id": "7b7d1e3c-930d-454c-a0ab-1cce14d63b55",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:57:30.668Z"
+  },
+  {
+    "transition_id": "744aaece-de26-4f11-b0bb-4a37934119dc",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:57:30.699Z"
+  },
+  {
+    "transition_id": "744aaece-de26-4f11-b0bb-4a37934119dc",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:57:30.704Z"
+  },
+  {
+    "transition_id": "c568beeb-0be4-4e7b-8bc4-2298418afe3c",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:57:30.854Z"
+  },
+  {
+    "transition_id": "c568beeb-0be4-4e7b-8bc4-2298418afe3c",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:57:30.857Z"
+  },
+  {
+    "transition_id": "3e7a0441-e739-496d-b3c6-13d38500d70d",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:57:30.886Z"
+  },
+  {
+    "transition_id": "3e7a0441-e739-496d-b3c6-13d38500d70d",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:57:30.889Z"
+  },
+  {
+    "transition_id": "b885e9f4-1566-44b9-ba43-d837ec35cfb5",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:57:30.916Z"
+  },
+  {
+    "transition_id": "b885e9f4-1566-44b9-ba43-d837ec35cfb5",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:57:30.919Z"
+  },
+  {
+    "transition_id": "11fcf151-b7c1-4461-a114-6e571a575104",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:57:32.384Z"
+  },
+  {
+    "transition_id": "11fcf151-b7c1-4461-a114-6e571a575104",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:57:32.387Z"
+  },
+  {
+    "transition_id": "638b5731-4668-435f-950d-b43161ea8272",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:57:32.418Z"
+  },
+  {
+    "transition_id": "638b5731-4668-435f-950d-b43161ea8272",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:57:32.421Z"
+  },
+  {
+    "transition_id": "62f29668-bf43-478f-b058-4a5c0ef04d62",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:57:32.451Z"
+  },
+  {
+    "transition_id": "62f29668-bf43-478f-b058-4a5c0ef04d62",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:57:32.454Z"
+  },
+  {
+    "transition_id": "bb786361-5531-497d-9edc-ba9246c4f389",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T20:57:35.269Z"
+  },
+  {
+    "transition_id": "bb786361-5531-497d-9edc-ba9246c4f389",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T20:57:35.271Z"
+  },
+  {
+    "transition_id": "e5c07fc8-3e68-41ad-b697-520e5ca3b041",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T21:09:20.557Z"
+  },
+  {
+    "transition_id": "e5c07fc8-3e68-41ad-b697-520e5ca3b041",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T21:09:20.560Z"
+  },
+  {
+    "transition_id": "39f5aaf5-d143-4806-92ca-a13ae303b9f7",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T21:09:21.150Z"
+  },
+  {
+    "transition_id": "39f5aaf5-d143-4806-92ca-a13ae303b9f7",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T21:09:21.152Z"
+  },
+  {
+    "transition_id": "be56188f-39d1-4f00-a9f5-c0e498c75f8d",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T21:09:21.321Z"
+  },
+  {
+    "transition_id": "be56188f-39d1-4f00-a9f5-c0e498c75f8d",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T21:09:21.324Z"
+  },
+  {
+    "transition_id": "42404a83-6a2f-482c-960f-8dd71be02267",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T21:09:21.351Z"
+  },
+  {
+    "transition_id": "42404a83-6a2f-482c-960f-8dd71be02267",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T21:09:21.353Z"
+  },
+  {
+    "transition_id": "8df13013-6643-440d-8503-b2894f913072",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T21:09:21.512Z"
+  },
+  {
+    "transition_id": "8df13013-6643-440d-8503-b2894f913072",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T21:09:21.514Z"
+  },
+  {
+    "transition_id": "464f5d77-d062-4360-857b-a1f1bb78686a",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T21:09:21.542Z"
+  },
+  {
+    "transition_id": "464f5d77-d062-4360-857b-a1f1bb78686a",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T21:09:21.545Z"
+  },
+  {
+    "transition_id": "3e6c2e91-6360-448c-9aa7-b88b71ab4314",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T21:09:21.707Z"
+  },
+  {
+    "transition_id": "3e6c2e91-6360-448c-9aa7-b88b71ab4314",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T21:09:21.709Z"
+  },
+  {
+    "transition_id": "732966b0-d895-4153-b64c-d50b1c190b51",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T21:09:21.739Z"
+  },
+  {
+    "transition_id": "732966b0-d895-4153-b64c-d50b1c190b51",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T21:09:21.743Z"
+  },
+  {
+    "transition_id": "7d196936-f6ad-4edb-af72-9a4e7024e7f0",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T21:09:21.767Z"
+  },
+  {
+    "transition_id": "7d196936-f6ad-4edb-af72-9a4e7024e7f0",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T21:09:21.769Z"
+  },
+  {
+    "transition_id": "061166bd-8ca6-49cf-923b-a6b22b186c78",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T21:09:23.293Z"
+  },
+  {
+    "transition_id": "061166bd-8ca6-49cf-923b-a6b22b186c78",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T21:09:23.296Z"
+  },
+  {
+    "transition_id": "8fa439a4-4f8c-4d8f-9542-acef6b5ba3ed",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T21:09:23.328Z"
+  },
+  {
+    "transition_id": "8fa439a4-4f8c-4d8f-9542-acef6b5ba3ed",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T21:09:23.331Z"
+  },
+  {
+    "transition_id": "2e42da69-9c1f-4671-9f4e-43030c84ef9a",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-27T21:09:23.361Z"
+  },
+  {
+    "transition_id": "2e42da69-9c1f-4671-9f4e-43030c84ef9a",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-27T21:09:23.364Z"
+  },
+  {
+    "transition_id": "33400745-6be2-4d90-a5af-a42999695476",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-27T21:09:26.235Z"
+  },
+  {
+    "transition_id": "33400745-6be2-4d90-a5af-a42999695476",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-27T21:09:26.238Z"
+  },
+  {
+    "transition_id": "84450373-3209-4e30-87d7-ea346a8e9954",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:15:16.527Z"
+  },
+  {
+    "transition_id": "84450373-3209-4e30-87d7-ea346a8e9954",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:15:16.530Z"
+  },
+  {
+    "transition_id": "8121d8dd-97a7-4ccf-b398-b94e5491ad40",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:15:17.234Z"
+  },
+  {
+    "transition_id": "8121d8dd-97a7-4ccf-b398-b94e5491ad40",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:15:17.240Z"
+  },
+  {
+    "transition_id": "f8c52bd7-953f-4864-a701-f522a6e4f528",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:15:17.430Z"
+  },
+  {
+    "transition_id": "f8c52bd7-953f-4864-a701-f522a6e4f528",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:15:17.434Z"
+  },
+  {
+    "transition_id": "5b5c32a1-f2ca-4fa5-b290-0461f4730bcd",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:15:17.462Z"
+  },
+  {
+    "transition_id": "5b5c32a1-f2ca-4fa5-b290-0461f4730bcd",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:15:17.465Z"
+  },
+  {
+    "transition_id": "04dea792-3502-4f38-9f85-bc7abf4ffc79",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:15:17.667Z"
+  },
+  {
+    "transition_id": "04dea792-3502-4f38-9f85-bc7abf4ffc79",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:15:17.670Z"
+  },
+  {
+    "transition_id": "cdecf0ca-9a7c-467b-82d7-26ebb6f09149",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:15:17.697Z"
+  },
+  {
+    "transition_id": "cdecf0ca-9a7c-467b-82d7-26ebb6f09149",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:15:17.700Z"
+  },
+  {
+    "transition_id": "c06887a0-6d3d-46df-a6ca-0c353c2329df",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:15:17.881Z"
+  },
+  {
+    "transition_id": "c06887a0-6d3d-46df-a6ca-0c353c2329df",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:15:17.886Z"
+  },
+  {
+    "transition_id": "9a66c8b6-7baa-4c71-ae86-828a9fe0b4bf",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:15:17.913Z"
+  },
+  {
+    "transition_id": "9a66c8b6-7baa-4c71-ae86-828a9fe0b4bf",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:15:17.916Z"
+  },
+  {
+    "transition_id": "9b4bab64-cd56-4763-a4df-2528f9d1f862",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:15:17.940Z"
+  },
+  {
+    "transition_id": "9b4bab64-cd56-4763-a4df-2528f9d1f862",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:15:17.943Z"
+  },
+  {
+    "transition_id": "8f861db0-3f9f-44dc-9b40-3e616ea8fd33",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:15:19.715Z"
+  },
+  {
+    "transition_id": "8f861db0-3f9f-44dc-9b40-3e616ea8fd33",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:15:19.718Z"
+  },
+  {
+    "transition_id": "a2cf14b8-8b6f-4c85-b86d-f3ac21db2f31",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:15:19.745Z"
+  },
+  {
+    "transition_id": "a2cf14b8-8b6f-4c85-b86d-f3ac21db2f31",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:15:19.749Z"
+  },
+  {
+    "transition_id": "1688126d-fe1f-441b-98f7-73057579ea7b",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:15:19.779Z"
+  },
+  {
+    "transition_id": "1688126d-fe1f-441b-98f7-73057579ea7b",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:15:19.782Z"
+  },
+  {
+    "transition_id": "24407fbb-444f-444e-b36e-ac19d8e37c2d",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:15:23.189Z"
+  },
+  {
+    "transition_id": "24407fbb-444f-444e-b36e-ac19d8e37c2d",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:15:23.191Z"
+  },
+  {
+    "transition_id": "d728b182-afa9-4b4c-823d-55a8c13c0410",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:49:02.487Z"
+  },
+  {
+    "transition_id": "d728b182-afa9-4b4c-823d-55a8c13c0410",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:49:02.490Z"
+  },
+  {
+    "transition_id": "b9b34a3f-7919-4528-94b4-c8e7eba91bf5",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:49:03.205Z"
+  },
+  {
+    "transition_id": "b9b34a3f-7919-4528-94b4-c8e7eba91bf5",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:49:03.209Z"
+  },
+  {
+    "transition_id": "57e5ae1b-fcac-4e9c-b4b6-2faa23b2dc29",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:49:03.402Z"
+  },
+  {
+    "transition_id": "57e5ae1b-fcac-4e9c-b4b6-2faa23b2dc29",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:49:03.407Z"
+  },
+  {
+    "transition_id": "6a779a58-aacc-47db-95b8-bc98946f8244",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:49:03.433Z"
+  },
+  {
+    "transition_id": "6a779a58-aacc-47db-95b8-bc98946f8244",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:49:03.435Z"
+  },
+  {
+    "transition_id": "f9287088-b1c0-4baf-8b20-d7a074b224b8",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:49:03.620Z"
+  },
+  {
+    "transition_id": "f9287088-b1c0-4baf-8b20-d7a074b224b8",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:49:03.623Z"
+  },
+  {
+    "transition_id": "386ee58d-e698-4bca-bb23-42655cfbccbb",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:49:03.651Z"
+  },
+  {
+    "transition_id": "386ee58d-e698-4bca-bb23-42655cfbccbb",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:49:03.654Z"
+  },
+  {
+    "transition_id": "7107cf83-5ab1-47bf-a9ad-cfc1abf302ba",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:49:03.862Z"
+  },
+  {
+    "transition_id": "7107cf83-5ab1-47bf-a9ad-cfc1abf302ba",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:49:03.865Z"
+  },
+  {
+    "transition_id": "25f4fa88-93c8-4a1b-a53f-b11687bfd44c",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:49:03.897Z"
+  },
+  {
+    "transition_id": "25f4fa88-93c8-4a1b-a53f-b11687bfd44c",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:49:03.900Z"
+  },
+  {
+    "transition_id": "d98d9dc2-1f83-42b0-a3cf-daa8e8f6af9e",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:49:03.929Z"
+  },
+  {
+    "transition_id": "d98d9dc2-1f83-42b0-a3cf-daa8e8f6af9e",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:49:03.933Z"
+  },
+  {
+    "transition_id": "9bbd745b-9a47-4d58-817e-5d2949daeb25",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:49:05.727Z"
+  },
+  {
+    "transition_id": "9bbd745b-9a47-4d58-817e-5d2949daeb25",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:49:05.730Z"
+  },
+  {
+    "transition_id": "f3df1757-bb22-4544-93c6-695144e40caa",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:49:05.757Z"
+  },
+  {
+    "transition_id": "f3df1757-bb22-4544-93c6-695144e40caa",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:49:05.760Z"
+  },
+  {
+    "transition_id": "b2308945-1d6d-420b-9d49-7d92f6289124",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:49:05.787Z"
+  },
+  {
+    "transition_id": "b2308945-1d6d-420b-9d49-7d92f6289124",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:49:05.790Z"
+  },
+  {
+    "transition_id": "2c7718a8-fd76-4b22-96cb-53f5bc4bc5d3",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T06:49:09.249Z"
+  },
+  {
+    "transition_id": "2c7718a8-fd76-4b22-96cb-53f5bc4bc5d3",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T06:49:09.253Z"
+  },
+  {
+    "transition_id": "297cc554-3ad7-4df0-a4ca-dce7f94a112b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:40:42.666Z"
+  },
+  {
+    "transition_id": "297cc554-3ad7-4df0-a4ca-dce7f94a112b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:40:42.668Z"
+  },
+  {
+    "transition_id": "edc785c4-6304-46f6-9ba0-c6744fad5811",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:40:43.303Z"
+  },
+  {
+    "transition_id": "edc785c4-6304-46f6-9ba0-c6744fad5811",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:40:43.307Z"
+  },
+  {
+    "transition_id": "056ca368-3e35-4629-b944-adb4f0053c79",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:40:43.487Z"
+  },
+  {
+    "transition_id": "056ca368-3e35-4629-b944-adb4f0053c79",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:40:43.490Z"
+  },
+  {
+    "transition_id": "41bb1438-c1d2-459e-8603-cc2e1f255f93",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:40:43.514Z"
+  },
+  {
+    "transition_id": "41bb1438-c1d2-459e-8603-cc2e1f255f93",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:40:43.516Z"
+  },
+  {
+    "transition_id": "07fa1628-8957-4afe-82c5-f8e3ecb91d7b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:40:43.727Z"
+  },
+  {
+    "transition_id": "07fa1628-8957-4afe-82c5-f8e3ecb91d7b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:40:43.729Z"
+  },
+  {
+    "transition_id": "962a7db3-af98-4762-9234-4fde471d010f",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:40:43.755Z"
+  },
+  {
+    "transition_id": "962a7db3-af98-4762-9234-4fde471d010f",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:40:43.757Z"
+  },
+  {
+    "transition_id": "f89d69d8-31b7-4fd0-9f3d-b09aadfbaccf",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:40:43.923Z"
+  },
+  {
+    "transition_id": "f89d69d8-31b7-4fd0-9f3d-b09aadfbaccf",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:40:43.926Z"
+  },
+  {
+    "transition_id": "dcc173ae-d164-4752-8327-1ddb1f471dcd",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:40:43.951Z"
+  },
+  {
+    "transition_id": "dcc173ae-d164-4752-8327-1ddb1f471dcd",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:40:43.954Z"
+  },
+  {
+    "transition_id": "6e6bc501-2ec4-4b12-92fa-b7fde827547a",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:40:43.977Z"
+  },
+  {
+    "transition_id": "6e6bc501-2ec4-4b12-92fa-b7fde827547a",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:40:43.979Z"
+  },
+  {
+    "transition_id": "fbf2bcfd-cda0-42de-ac8d-4709b8c258d4",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:40:45.931Z"
+  },
+  {
+    "transition_id": "fbf2bcfd-cda0-42de-ac8d-4709b8c258d4",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:40:45.934Z"
+  },
+  {
+    "transition_id": "4aff0060-c9d0-4bfe-a702-57d904d7a77b",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:40:45.959Z"
+  },
+  {
+    "transition_id": "4aff0060-c9d0-4bfe-a702-57d904d7a77b",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:40:45.961Z"
+  },
+  {
+    "transition_id": "16328f1d-3aa9-46a7-9d24-1b9f210c0aba",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:40:45.995Z"
+  },
+  {
+    "transition_id": "16328f1d-3aa9-46a7-9d24-1b9f210c0aba",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:40:45.998Z"
+  },
+  {
+    "transition_id": "7892e559-9209-48d2-9aa3-714554419cbf",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:40:49.333Z"
+  },
+  {
+    "transition_id": "7892e559-9209-48d2-9aa3-714554419cbf",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:40:49.336Z"
+  },
+  {
+    "transition_id": "a1b29f20-8c8b-413c-afd1-58853b74e02c",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:45:54.843Z"
+  },
+  {
+    "transition_id": "a1b29f20-8c8b-413c-afd1-58853b74e02c",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:45:54.846Z"
+  },
+  {
+    "transition_id": "2787b88b-6800-454e-8273-da6ad68f3023",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:45:55.673Z"
+  },
+  {
+    "transition_id": "2787b88b-6800-454e-8273-da6ad68f3023",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:45:55.677Z"
+  },
+  {
+    "transition_id": "11f39569-f52d-466f-b820-0940f2275ec4",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:45:55.857Z"
+  },
+  {
+    "transition_id": "11f39569-f52d-466f-b820-0940f2275ec4",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:45:55.861Z"
+  },
+  {
+    "transition_id": "56104052-43dd-4438-96b6-c2f2906043fd",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:45:55.884Z"
+  },
+  {
+    "transition_id": "56104052-43dd-4438-96b6-c2f2906043fd",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:45:55.886Z"
+  },
+  {
+    "transition_id": "c30ca09f-fbf3-43f9-8391-42dc57c576d2",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:45:56.066Z"
+  },
+  {
+    "transition_id": "c30ca09f-fbf3-43f9-8391-42dc57c576d2",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:45:56.070Z"
+  },
+  {
+    "transition_id": "771df801-3dd0-4676-aaee-957a3e2ec37e",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:45:56.094Z"
+  },
+  {
+    "transition_id": "771df801-3dd0-4676-aaee-957a3e2ec37e",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:45:56.097Z"
+  },
+  {
+    "transition_id": "28a33e29-32e8-40b0-a1f4-13f3ff380808",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:45:56.277Z"
+  },
+  {
+    "transition_id": "28a33e29-32e8-40b0-a1f4-13f3ff380808",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:45:56.279Z"
+  },
+  {
+    "transition_id": "e2a75144-081b-4c80-85d3-e44993004524",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:45:56.304Z"
+  },
+  {
+    "transition_id": "e2a75144-081b-4c80-85d3-e44993004524",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:45:56.306Z"
+  },
+  {
+    "transition_id": "c97a596d-a14d-4355-900b-129b68660f40",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:45:56.329Z"
+  },
+  {
+    "transition_id": "c97a596d-a14d-4355-900b-129b68660f40",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:45:56.332Z"
+  },
+  {
+    "transition_id": "6a3a9f95-d0e2-4600-bba3-a46bd739f3cb",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:45:58.134Z"
+  },
+  {
+    "transition_id": "6a3a9f95-d0e2-4600-bba3-a46bd739f3cb",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:45:58.137Z"
+  },
+  {
+    "transition_id": "ca824165-505c-46d4-b91a-a377cdbb7dc5",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:45:58.165Z"
+  },
+  {
+    "transition_id": "ca824165-505c-46d4-b91a-a377cdbb7dc5",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:45:58.168Z"
+  },
+  {
+    "transition_id": "828a3a00-7dcf-4cc1-a3d1-b5c07f6326c8",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:45:58.192Z"
+  },
+  {
+    "transition_id": "828a3a00-7dcf-4cc1-a3d1-b5c07f6326c8",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:45:58.194Z"
+  },
+  {
+    "transition_id": "d193bd1e-3d92-4904-8893-fececd7c61c5",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:46:01.587Z"
+  },
+  {
+    "transition_id": "d193bd1e-3d92-4904-8893-fececd7c61c5",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:46:01.590Z"
+  },
+  {
+    "transition_id": "8f5e6045-7b4c-4810-96f1-2fe3905cd105",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:49:26.397Z"
+  },
+  {
+    "transition_id": "8f5e6045-7b4c-4810-96f1-2fe3905cd105",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:49:26.402Z"
+  },
+  {
+    "transition_id": "3df46ff4-b684-4314-8102-907e9ec5ba79",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:49:26.853Z"
+  },
+  {
+    "transition_id": "3df46ff4-b684-4314-8102-907e9ec5ba79",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:49:26.856Z"
+  },
+  {
+    "transition_id": "8aaca1cd-cfe8-44d9-b9a5-ef373fe805d6",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:49:26.987Z"
+  },
+  {
+    "transition_id": "8aaca1cd-cfe8-44d9-b9a5-ef373fe805d6",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:49:26.991Z"
+  },
+  {
+    "transition_id": "4191e7b2-4c4b-4bef-ab5d-d0270aa40be4",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:49:27.012Z"
+  },
+  {
+    "transition_id": "4191e7b2-4c4b-4bef-ab5d-d0270aa40be4",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:49:27.014Z"
+  },
+  {
+    "transition_id": "c5f7f815-a3c4-4890-b26d-825d0b23ff5a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:49:27.161Z"
+  },
+  {
+    "transition_id": "c5f7f815-a3c4-4890-b26d-825d0b23ff5a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:49:27.165Z"
+  },
+  {
+    "transition_id": "74d33925-e5b3-4eb3-aaac-2699639bd144",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:49:27.191Z"
+  },
+  {
+    "transition_id": "74d33925-e5b3-4eb3-aaac-2699639bd144",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:49:27.193Z"
+  },
+  {
+    "transition_id": "cc581989-1710-45ec-863a-6ff5aac4827f",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:49:27.320Z"
+  },
+  {
+    "transition_id": "cc581989-1710-45ec-863a-6ff5aac4827f",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:49:27.322Z"
+  },
+  {
+    "transition_id": "0d270ef5-a40b-49e1-8730-2f8cb273ca06",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:49:27.348Z"
+  },
+  {
+    "transition_id": "0d270ef5-a40b-49e1-8730-2f8cb273ca06",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:49:27.350Z"
+  },
+  {
+    "transition_id": "404d7661-25da-4836-bd2b-05f4d7e90b68",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:49:27.376Z"
+  },
+  {
+    "transition_id": "404d7661-25da-4836-bd2b-05f4d7e90b68",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:49:27.378Z"
+  },
+  {
+    "transition_id": "ef96f8aa-675c-4625-a15a-7ea2e128e2cc",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:49:28.637Z"
+  },
+  {
+    "transition_id": "ef96f8aa-675c-4625-a15a-7ea2e128e2cc",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:49:28.640Z"
+  },
+  {
+    "transition_id": "fce4ffe6-bb19-476e-bb49-426992dd7289",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:49:28.665Z"
+  },
+  {
+    "transition_id": "fce4ffe6-bb19-476e-bb49-426992dd7289",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:49:28.668Z"
+  },
+  {
+    "transition_id": "548f56ea-3388-4c3d-aa1b-2391a74e2261",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:49:28.691Z"
+  },
+  {
+    "transition_id": "548f56ea-3388-4c3d-aa1b-2391a74e2261",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:49:28.693Z"
+  },
+  {
+    "transition_id": "c407b683-6367-449b-902d-91ba2793510b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T07:49:31.011Z"
+  },
+  {
+    "transition_id": "c407b683-6367-449b-902d-91ba2793510b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T07:49:31.014Z"
+  },
+  {
+    "transition_id": "25e8883c-3573-43e1-bf25-791b80a3f765",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:18:26.164Z"
+  },
+  {
+    "transition_id": "25e8883c-3573-43e1-bf25-791b80a3f765",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:18:26.167Z"
+  },
+  {
+    "transition_id": "2036502a-44bf-4d4f-b608-0fb89c9250e1",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:18:26.850Z"
+  },
+  {
+    "transition_id": "2036502a-44bf-4d4f-b608-0fb89c9250e1",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:18:26.853Z"
+  },
+  {
+    "transition_id": "fc13bc64-b51f-47cd-97bf-7cb95af80873",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:18:27.041Z"
+  },
+  {
+    "transition_id": "fc13bc64-b51f-47cd-97bf-7cb95af80873",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:18:27.044Z"
+  },
+  {
+    "transition_id": "d83fd018-0192-43aa-aa9d-231dd83a0a48",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:18:27.068Z"
+  },
+  {
+    "transition_id": "d83fd018-0192-43aa-aa9d-231dd83a0a48",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:18:27.070Z"
+  },
+  {
+    "transition_id": "5b25548b-4e07-4b57-8c87-1bea9d1a025e",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:18:27.252Z"
+  },
+  {
+    "transition_id": "5b25548b-4e07-4b57-8c87-1bea9d1a025e",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:18:27.255Z"
+  },
+  {
+    "transition_id": "6d06f5c6-0173-4cb2-b753-f97ac10e6049",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:18:27.278Z"
+  },
+  {
+    "transition_id": "6d06f5c6-0173-4cb2-b753-f97ac10e6049",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:18:27.280Z"
+  },
+  {
+    "transition_id": "65e70a8d-0d5d-484f-9596-63218ae16ce8",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:18:27.454Z"
+  },
+  {
+    "transition_id": "65e70a8d-0d5d-484f-9596-63218ae16ce8",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:18:27.456Z"
+  },
+  {
+    "transition_id": "117330cd-9da9-4b16-829f-1ca852d627d3",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:18:27.479Z"
+  },
+  {
+    "transition_id": "117330cd-9da9-4b16-829f-1ca852d627d3",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:18:27.482Z"
+  },
+  {
+    "transition_id": "eff75f73-c902-4cf1-8c1e-a7afc244914c",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:18:27.506Z"
+  },
+  {
+    "transition_id": "eff75f73-c902-4cf1-8c1e-a7afc244914c",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:18:27.508Z"
+  },
+  {
+    "transition_id": "bbb6711c-9883-44fd-a3d2-9ce882d03850",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:18:29.308Z"
+  },
+  {
+    "transition_id": "bbb6711c-9883-44fd-a3d2-9ce882d03850",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:18:29.310Z"
+  },
+  {
+    "transition_id": "1c28d00f-0f8e-4d86-8924-f051b881e560",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:18:29.334Z"
+  },
+  {
+    "transition_id": "1c28d00f-0f8e-4d86-8924-f051b881e560",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:18:29.337Z"
+  },
+  {
+    "transition_id": "6dbeae5f-6ea2-4a86-89b2-23aaa08114ba",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:18:29.361Z"
+  },
+  {
+    "transition_id": "6dbeae5f-6ea2-4a86-89b2-23aaa08114ba",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:18:29.363Z"
+  },
+  {
+    "transition_id": "6f3fe943-49ca-4b22-8e94-c3ef135a1411",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:18:32.785Z"
+  },
+  {
+    "transition_id": "6f3fe943-49ca-4b22-8e94-c3ef135a1411",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:18:32.788Z"
+  },
+  {
+    "transition_id": "ab1a8611-3e46-4a1f-a782-5a64f31cbb01",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:24:35.613Z"
+  },
+  {
+    "transition_id": "ab1a8611-3e46-4a1f-a782-5a64f31cbb01",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:24:35.616Z"
+  },
+  {
+    "transition_id": "219598c3-bb16-4d5e-9a3d-c1b1d7c9f6d7",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:24:36.281Z"
+  },
+  {
+    "transition_id": "219598c3-bb16-4d5e-9a3d-c1b1d7c9f6d7",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:24:36.285Z"
+  },
+  {
+    "transition_id": "e85a3f12-b775-4d33-9501-5c66718c7786",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:24:36.478Z"
+  },
+  {
+    "transition_id": "e85a3f12-b775-4d33-9501-5c66718c7786",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:24:36.481Z"
+  },
+  {
+    "transition_id": "4e034d87-0bcb-4db9-ac97-51554033828e",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:24:36.508Z"
+  },
+  {
+    "transition_id": "4e034d87-0bcb-4db9-ac97-51554033828e",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:24:36.511Z"
+  },
+  {
+    "transition_id": "6af48fb1-bb59-4f3b-a90a-bb0405efd1bd",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:24:36.695Z"
+  },
+  {
+    "transition_id": "6af48fb1-bb59-4f3b-a90a-bb0405efd1bd",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:24:36.697Z"
+  },
+  {
+    "transition_id": "d390b86e-979e-4cb8-aa9f-6e36b265de8c",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:24:36.723Z"
+  },
+  {
+    "transition_id": "d390b86e-979e-4cb8-aa9f-6e36b265de8c",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:24:36.726Z"
+  },
+  {
+    "transition_id": "1c7fa6b2-7f8c-463c-b9e4-da6579f857b7",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:24:36.904Z"
+  },
+  {
+    "transition_id": "1c7fa6b2-7f8c-463c-b9e4-da6579f857b7",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:24:36.907Z"
+  },
+  {
+    "transition_id": "619d3a18-0503-473d-9aeb-e9307bffed54",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:24:36.934Z"
+  },
+  {
+    "transition_id": "619d3a18-0503-473d-9aeb-e9307bffed54",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:24:36.936Z"
+  },
+  {
+    "transition_id": "eb94f0ba-18ff-427b-889b-3869f86175d2",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:24:36.962Z"
+  },
+  {
+    "transition_id": "eb94f0ba-18ff-427b-889b-3869f86175d2",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:24:36.964Z"
+  },
+  {
+    "transition_id": "0bde9922-8a46-46a3-8fa1-6fa32547b069",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:24:38.819Z"
+  },
+  {
+    "transition_id": "0bde9922-8a46-46a3-8fa1-6fa32547b069",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:24:38.822Z"
+  },
+  {
+    "transition_id": "95be497e-abef-48e1-b73a-e8208b897711",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:24:38.847Z"
+  },
+  {
+    "transition_id": "95be497e-abef-48e1-b73a-e8208b897711",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:24:38.849Z"
+  },
+  {
+    "transition_id": "b24ff4ad-da9b-4a0f-9d9f-9c9460901308",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:24:38.872Z"
+  },
+  {
+    "transition_id": "b24ff4ad-da9b-4a0f-9d9f-9c9460901308",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:24:38.874Z"
+  },
+  {
+    "transition_id": "42fd3dd6-f344-4d82-b86a-34b5cf45d78a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:24:42.327Z"
+  },
+  {
+    "transition_id": "42fd3dd6-f344-4d82-b86a-34b5cf45d78a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:24:42.329Z"
+  },
+  {
+    "transition_id": "1d3d75c9-ff23-4915-969f-f72c52a29340",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:29:36.958Z"
+  },
+  {
+    "transition_id": "1d3d75c9-ff23-4915-969f-f72c52a29340",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:29:36.962Z"
+  },
+  {
+    "transition_id": "1b5e124d-9452-40d7-a5d0-cdb34081abeb",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:29:37.691Z"
+  },
+  {
+    "transition_id": "1b5e124d-9452-40d7-a5d0-cdb34081abeb",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:29:37.694Z"
+  },
+  {
+    "transition_id": "83b84538-1271-4221-902a-accf4889c261",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:29:37.921Z"
+  },
+  {
+    "transition_id": "83b84538-1271-4221-902a-accf4889c261",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:29:37.924Z"
+  },
+  {
+    "transition_id": "ebe34148-eafb-4dd4-a084-d57ecbc72b37",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:29:37.951Z"
+  },
+  {
+    "transition_id": "ebe34148-eafb-4dd4-a084-d57ecbc72b37",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:29:37.953Z"
+  },
+  {
+    "transition_id": "0e7f7ac5-f192-4c67-b5ed-5e40fd5038b9",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:29:38.139Z"
+  },
+  {
+    "transition_id": "0e7f7ac5-f192-4c67-b5ed-5e40fd5038b9",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:29:38.143Z"
+  },
+  {
+    "transition_id": "c81e74a6-4c0a-4f74-a211-9938f3a8b970",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:29:38.172Z"
+  },
+  {
+    "transition_id": "c81e74a6-4c0a-4f74-a211-9938f3a8b970",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:29:38.175Z"
+  },
+  {
+    "transition_id": "bfd2fa9c-d7f2-4b53-8599-aa0a291525f9",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:29:38.364Z"
+  },
+  {
+    "transition_id": "bfd2fa9c-d7f2-4b53-8599-aa0a291525f9",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:29:38.367Z"
+  },
+  {
+    "transition_id": "3528ba84-c07a-4b6d-9410-47701d4d6ffa",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:29:38.395Z"
+  },
+  {
+    "transition_id": "3528ba84-c07a-4b6d-9410-47701d4d6ffa",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:29:38.397Z"
+  },
+  {
+    "transition_id": "e30e3d8b-4b34-4adb-a104-c907c3e9f784",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:29:38.426Z"
+  },
+  {
+    "transition_id": "e30e3d8b-4b34-4adb-a104-c907c3e9f784",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:29:38.429Z"
+  },
+  {
+    "transition_id": "44897b47-bc97-4356-afa0-5a0dcf1b091b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:29:40.307Z"
+  },
+  {
+    "transition_id": "44897b47-bc97-4356-afa0-5a0dcf1b091b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:29:40.310Z"
+  },
+  {
+    "transition_id": "71bedf12-ada4-48e8-938a-af2e0d7bd160",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:29:40.336Z"
+  },
+  {
+    "transition_id": "71bedf12-ada4-48e8-938a-af2e0d7bd160",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:29:40.339Z"
+  },
+  {
+    "transition_id": "98dac7ad-5a2c-4d04-b3d6-facda0844d14",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:29:40.362Z"
+  },
+  {
+    "transition_id": "98dac7ad-5a2c-4d04-b3d6-facda0844d14",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:29:40.365Z"
+  },
+  {
+    "transition_id": "368ddca8-4061-4f9c-860e-bdf1c6ce1393",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:29:43.736Z"
+  },
+  {
+    "transition_id": "368ddca8-4061-4f9c-860e-bdf1c6ce1393",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:29:43.739Z"
+  },
+  {
+    "transition_id": "ad611ae4-f60e-4d4c-bf4e-5675d697246d",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:34:39.993Z"
+  },
+  {
+    "transition_id": "ad611ae4-f60e-4d4c-bf4e-5675d697246d",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:34:39.996Z"
+  },
+  {
+    "transition_id": "91eda618-a85c-4206-a05d-e85dd6fe944b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:34:40.696Z"
+  },
+  {
+    "transition_id": "91eda618-a85c-4206-a05d-e85dd6fe944b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:34:40.701Z"
+  },
+  {
+    "transition_id": "70d912ca-ffb2-4f5c-9b55-c19ff525a6cc",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:34:40.901Z"
+  },
+  {
+    "transition_id": "70d912ca-ffb2-4f5c-9b55-c19ff525a6cc",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:34:40.905Z"
+  },
+  {
+    "transition_id": "3701dd88-f927-4d66-ae82-c3d32253b49b",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:34:40.934Z"
+  },
+  {
+    "transition_id": "3701dd88-f927-4d66-ae82-c3d32253b49b",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:34:40.937Z"
+  },
+  {
+    "transition_id": "e28c0256-19d0-459a-ab81-6c1e82a1cb77",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:34:41.146Z"
+  },
+  {
+    "transition_id": "e28c0256-19d0-459a-ab81-6c1e82a1cb77",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:34:41.149Z"
+  },
+  {
+    "transition_id": "b4f5c462-0cab-4a4f-92d3-e24aea0d6806",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:34:41.175Z"
+  },
+  {
+    "transition_id": "b4f5c462-0cab-4a4f-92d3-e24aea0d6806",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:34:41.178Z"
+  },
+  {
+    "transition_id": "dadcf221-3942-40fe-8246-fddaa608f485",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:34:41.367Z"
+  },
+  {
+    "transition_id": "dadcf221-3942-40fe-8246-fddaa608f485",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:34:41.369Z"
+  },
+  {
+    "transition_id": "ffdde5ac-a189-4498-b517-778cd82a85eb",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:34:41.396Z"
+  },
+  {
+    "transition_id": "ffdde5ac-a189-4498-b517-778cd82a85eb",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:34:41.399Z"
+  },
+  {
+    "transition_id": "148fc585-2e9f-4218-bc0f-e6d371e61b6e",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:34:41.429Z"
+  },
+  {
+    "transition_id": "148fc585-2e9f-4218-bc0f-e6d371e61b6e",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:34:41.431Z"
+  },
+  {
+    "transition_id": "df7da198-d3ab-42dd-a213-f4716bfc7467",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:34:43.333Z"
+  },
+  {
+    "transition_id": "df7da198-d3ab-42dd-a213-f4716bfc7467",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:34:43.335Z"
+  },
+  {
+    "transition_id": "735e3543-6311-44b1-992b-d59d6c3719c7",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:34:43.366Z"
+  },
+  {
+    "transition_id": "735e3543-6311-44b1-992b-d59d6c3719c7",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:34:43.369Z"
+  },
+  {
+    "transition_id": "d8a60153-1258-4709-b39d-9e644dd81f32",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:34:43.397Z"
+  },
+  {
+    "transition_id": "d8a60153-1258-4709-b39d-9e644dd81f32",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:34:43.399Z"
+  },
+  {
+    "transition_id": "042da050-3f88-4c52-a961-31944b1d3a37",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:34:47.000Z"
+  },
+  {
+    "transition_id": "042da050-3f88-4c52-a961-31944b1d3a37",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:34:47.003Z"
+  },
+  {
+    "transition_id": "936ea706-2100-4c9f-9363-33aadc19b138",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:48:43.530Z"
+  },
+  {
+    "transition_id": "936ea706-2100-4c9f-9363-33aadc19b138",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:48:43.534Z"
+  },
+  {
+    "transition_id": "3bc9876e-0aef-4c23-abb7-66fe81e9da2c",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:48:44.215Z"
+  },
+  {
+    "transition_id": "3bc9876e-0aef-4c23-abb7-66fe81e9da2c",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:48:44.219Z"
+  },
+  {
+    "transition_id": "4092b55e-4373-4a8c-93e0-c845557fc76d",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:48:44.412Z"
+  },
+  {
+    "transition_id": "4092b55e-4373-4a8c-93e0-c845557fc76d",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:48:44.417Z"
+  },
+  {
+    "transition_id": "38e7c551-f05c-4bfc-b904-0ab9f6cf54f0",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:48:44.447Z"
+  },
+  {
+    "transition_id": "38e7c551-f05c-4bfc-b904-0ab9f6cf54f0",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:48:44.450Z"
+  },
+  {
+    "transition_id": "27f9272d-a3da-4ddc-97bc-ddfce7704a80",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:48:44.644Z"
+  },
+  {
+    "transition_id": "27f9272d-a3da-4ddc-97bc-ddfce7704a80",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:48:44.647Z"
+  },
+  {
+    "transition_id": "d5f3412b-2d1e-4070-bdc4-37a34bdc5808",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:48:44.672Z"
+  },
+  {
+    "transition_id": "d5f3412b-2d1e-4070-bdc4-37a34bdc5808",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:48:44.675Z"
+  },
+  {
+    "transition_id": "3b6cb296-0910-4cc5-abd2-5ee584a6cc56",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:48:44.864Z"
+  },
+  {
+    "transition_id": "3b6cb296-0910-4cc5-abd2-5ee584a6cc56",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:48:44.867Z"
+  },
+  {
+    "transition_id": "cc94292c-cd1f-48e6-bd4a-952cf203ae7b",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:48:44.897Z"
+  },
+  {
+    "transition_id": "cc94292c-cd1f-48e6-bd4a-952cf203ae7b",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:48:44.900Z"
+  },
+  {
+    "transition_id": "cec9f2b7-54ac-4605-a3d5-10ac9574ed89",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:48:44.928Z"
+  },
+  {
+    "transition_id": "cec9f2b7-54ac-4605-a3d5-10ac9574ed89",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:48:44.931Z"
+  },
+  {
+    "transition_id": "cf70a4eb-c2f7-47e7-a60d-7d09443436cc",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:48:46.863Z"
+  },
+  {
+    "transition_id": "cf70a4eb-c2f7-47e7-a60d-7d09443436cc",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:48:46.866Z"
+  },
+  {
+    "transition_id": "3af78328-ec01-492f-a212-64bed75bd1be",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:48:46.893Z"
+  },
+  {
+    "transition_id": "3af78328-ec01-492f-a212-64bed75bd1be",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:48:46.896Z"
+  },
+  {
+    "transition_id": "2d7cef75-234e-4b41-aa7e-215431c9ea84",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:48:46.920Z"
+  },
+  {
+    "transition_id": "2d7cef75-234e-4b41-aa7e-215431c9ea84",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:48:46.923Z"
+  },
+  {
+    "transition_id": "7c7d5ede-9c12-4616-a8b7-76dfad41dd23",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T08:48:50.506Z"
+  },
+  {
+    "transition_id": "7c7d5ede-9c12-4616-a8b7-76dfad41dd23",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T08:48:50.509Z"
+  },
+  {
+    "transition_id": "34f4a973-4153-4084-a137-258bbbe7ffae",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:34:43.179Z"
+  },
+  {
+    "transition_id": "34f4a973-4153-4084-a137-258bbbe7ffae",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:34:43.182Z"
+  },
+  {
+    "transition_id": "91a790fc-cd65-42ed-bc3e-dcd9c6c70038",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:34:44.019Z"
+  },
+  {
+    "transition_id": "91a790fc-cd65-42ed-bc3e-dcd9c6c70038",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:34:44.023Z"
+  },
+  {
+    "transition_id": "16e5aeca-eda8-495c-a94a-a000819b8177",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:34:44.234Z"
+  },
+  {
+    "transition_id": "16e5aeca-eda8-495c-a94a-a000819b8177",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:34:44.238Z"
+  },
+  {
+    "transition_id": "faa6f8f3-6e1f-403b-bb27-c5321deedcbe",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:34:44.266Z"
+  },
+  {
+    "transition_id": "faa6f8f3-6e1f-403b-bb27-c5321deedcbe",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:34:44.269Z"
+  },
+  {
+    "transition_id": "1f5cf1cf-ebaf-4992-97aa-9f1ee16531fd",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:34:44.478Z"
+  },
+  {
+    "transition_id": "1f5cf1cf-ebaf-4992-97aa-9f1ee16531fd",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:34:44.480Z"
+  },
+  {
+    "transition_id": "c0e06236-b967-441b-8a61-cf0ed50b3baf",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:34:44.511Z"
+  },
+  {
+    "transition_id": "c0e06236-b967-441b-8a61-cf0ed50b3baf",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:34:44.513Z"
+  },
+  {
+    "transition_id": "f28305d0-1fca-474a-9d4e-9efbcff547f2",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:34:44.712Z"
+  },
+  {
+    "transition_id": "f28305d0-1fca-474a-9d4e-9efbcff547f2",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:34:44.715Z"
+  },
+  {
+    "transition_id": "3fcad8dc-1d71-4581-9fce-4c4642a3e758",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:34:44.741Z"
+  },
+  {
+    "transition_id": "3fcad8dc-1d71-4581-9fce-4c4642a3e758",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:34:44.744Z"
+  },
+  {
+    "transition_id": "d72b1ebb-4832-460d-8582-081366250513",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:34:44.772Z"
+  },
+  {
+    "transition_id": "d72b1ebb-4832-460d-8582-081366250513",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:34:44.775Z"
+  },
+  {
+    "transition_id": "6c05391d-ec4f-423e-9cd7-ebc1e02db7c3",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:34:46.859Z"
+  },
+  {
+    "transition_id": "6c05391d-ec4f-423e-9cd7-ebc1e02db7c3",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:34:46.861Z"
+  },
+  {
+    "transition_id": "69b9f150-2afe-4140-b904-7cce5eaf9be3",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:34:46.891Z"
+  },
+  {
+    "transition_id": "69b9f150-2afe-4140-b904-7cce5eaf9be3",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:34:46.895Z"
+  },
+  {
+    "transition_id": "65cbb4a8-fecd-42d8-b92a-a509427c7ca7",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:34:46.920Z"
+  },
+  {
+    "transition_id": "65cbb4a8-fecd-42d8-b92a-a509427c7ca7",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:34:46.922Z"
+  },
+  {
+    "transition_id": "8167e974-130e-41de-8d48-5cb24daf4679",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:34:50.731Z"
+  },
+  {
+    "transition_id": "8167e974-130e-41de-8d48-5cb24daf4679",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:34:50.734Z"
+  },
+  {
+    "transition_id": "e7140fa3-eea2-4002-91ae-5fec379aa991",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:37:45.997Z"
+  },
+  {
+    "transition_id": "e7140fa3-eea2-4002-91ae-5fec379aa991",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:37:46.001Z"
+  },
+  {
+    "transition_id": "79bb8be5-3637-465c-b147-17c41e8d7164",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:37:46.860Z"
+  },
+  {
+    "transition_id": "79bb8be5-3637-465c-b147-17c41e8d7164",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:37:46.864Z"
+  },
+  {
+    "transition_id": "afcf3f60-516b-455e-bcf9-6aaab5b7bc98",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:37:47.085Z"
+  },
+  {
+    "transition_id": "afcf3f60-516b-455e-bcf9-6aaab5b7bc98",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:37:47.089Z"
+  },
+  {
+    "transition_id": "18f502b4-d078-448c-bd97-053248210174",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:37:47.116Z"
+  },
+  {
+    "transition_id": "18f502b4-d078-448c-bd97-053248210174",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:37:47.118Z"
+  },
+  {
+    "transition_id": "82cdb2aa-aead-42c6-a170-a0b6bddfaabb",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:37:47.335Z"
+  },
+  {
+    "transition_id": "82cdb2aa-aead-42c6-a170-a0b6bddfaabb",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:37:47.338Z"
+  },
+  {
+    "transition_id": "ea2f5cc8-dc10-4347-adf3-7fb1d2ef5003",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:37:47.364Z"
+  },
+  {
+    "transition_id": "ea2f5cc8-dc10-4347-adf3-7fb1d2ef5003",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:37:47.367Z"
+  },
+  {
+    "transition_id": "dc2275cf-0da1-486f-856f-875c0b194de1",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:37:47.574Z"
+  },
+  {
+    "transition_id": "dc2275cf-0da1-486f-856f-875c0b194de1",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:37:47.577Z"
+  },
+  {
+    "transition_id": "57c3100c-e08f-493a-ae09-a5408b585767",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:37:47.605Z"
+  },
+  {
+    "transition_id": "57c3100c-e08f-493a-ae09-a5408b585767",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:37:47.608Z"
+  },
+  {
+    "transition_id": "d77b6d19-e80b-45f0-ac48-ecb8a74c2376",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:37:47.636Z"
+  },
+  {
+    "transition_id": "d77b6d19-e80b-45f0-ac48-ecb8a74c2376",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:37:47.639Z"
+  },
+  {
+    "transition_id": "9fabf2a6-313b-4a03-9f3f-a8b1d7249d35",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:37:49.916Z"
+  },
+  {
+    "transition_id": "9fabf2a6-313b-4a03-9f3f-a8b1d7249d35",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:37:49.920Z"
+  },
+  {
+    "transition_id": "14efe640-3874-4663-8cd0-dd592254ce6b",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:37:49.945Z"
+  },
+  {
+    "transition_id": "14efe640-3874-4663-8cd0-dd592254ce6b",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:37:49.949Z"
+  },
+  {
+    "transition_id": "1143f747-8508-4516-81fa-ab144fa47e37",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:37:49.988Z"
+  },
+  {
+    "transition_id": "1143f747-8508-4516-81fa-ab144fa47e37",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:37:49.993Z"
+  },
+  {
+    "transition_id": "3594f8c0-a511-499e-bb1e-a90451cc90ba",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-28T14:37:54.437Z"
+  },
+  {
+    "transition_id": "3594f8c0-a511-499e-bb1e-a90451cc90ba",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-28T14:37:54.440Z"
+  },
+  {
+    "transition_id": "2dd68b5c-b48d-45af-8868-40b9c9a0da33",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-29T05:35:03.556Z"
+  },
+  {
+    "transition_id": "2dd68b5c-b48d-45af-8868-40b9c9a0da33",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-29T05:35:03.560Z"
+  },
+  {
+    "transition_id": "8dd48cf6-6258-427d-8db0-5eb7a247423a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-29T05:35:04.571Z"
+  },
+  {
+    "transition_id": "8dd48cf6-6258-427d-8db0-5eb7a247423a",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-29T05:35:04.575Z"
+  },
+  {
+    "transition_id": "c2a15c17-ba33-46e4-9d32-b8709820808c",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-29T05:35:04.856Z"
+  },
+  {
+    "transition_id": "c2a15c17-ba33-46e4-9d32-b8709820808c",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-29T05:35:04.860Z"
+  },
+  {
+    "transition_id": "932047d7-0d09-429c-ad6b-4fc1af255a7a",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-29T05:35:04.893Z"
+  },
+  {
+    "transition_id": "932047d7-0d09-429c-ad6b-4fc1af255a7a",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-29T05:35:04.897Z"
+  },
+  {
+    "transition_id": "41ed3362-715f-40b6-98c1-1e4d9d0264cc",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-29T05:35:05.241Z"
+  },
+  {
+    "transition_id": "41ed3362-715f-40b6-98c1-1e4d9d0264cc",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-29T05:35:05.245Z"
+  },
+  {
+    "transition_id": "97565a3e-dc5c-41be-b0d6-50791c9e407e",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-29T05:35:05.277Z"
+  },
+  {
+    "transition_id": "97565a3e-dc5c-41be-b0d6-50791c9e407e",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-29T05:35:05.281Z"
+  },
+  {
+    "transition_id": "65545769-0e32-4896-8518-e8188b74768b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-29T05:35:05.545Z"
+  },
+  {
+    "transition_id": "65545769-0e32-4896-8518-e8188b74768b",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-29T05:35:05.549Z"
+  },
+  {
+    "transition_id": "ce4677b4-e59e-4b01-aebd-2b3266357cc5",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-29T05:35:05.583Z"
+  },
+  {
+    "transition_id": "ce4677b4-e59e-4b01-aebd-2b3266357cc5",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-29T05:35:05.587Z"
+  },
+  {
+    "transition_id": "83ea1861-eba8-4b1d-a69c-5b8ce55fd0a4",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-29T05:35:05.618Z"
+  },
+  {
+    "transition_id": "83ea1861-eba8-4b1d-a69c-5b8ce55fd0a4",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-29T05:35:05.622Z"
+  },
+  {
+    "transition_id": "2151033e-49f0-4fd9-85ad-6cf522be1a34",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-29T05:35:08.440Z"
+  },
+  {
+    "transition_id": "2151033e-49f0-4fd9-85ad-6cf522be1a34",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-29T05:35:08.443Z"
+  },
+  {
+    "transition_id": "3079e0d6-6b88-4e56-8f66-bcd3478f941e",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "intent",
+    "timestamp": "2026-03-29T05:35:08.478Z"
+  },
+  {
+    "transition_id": "3079e0d6-6b88-4e56-8f66-bcd3478f941e",
+    "from": "ONBOARDING",
+    "to": "PHASE_1",
+    "status": "applied",
+    "timestamp": "2026-03-29T05:35:08.481Z"
+  },
+  {
+    "transition_id": "8883561f-4700-4b42-b566-29b6530ad583",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "intent",
+    "timestamp": "2026-03-29T05:35:08.513Z"
+  },
+  {
+    "transition_id": "8883561f-4700-4b42-b566-29b6530ad583",
+    "from": "PHASE_1",
+    "to": "CRITIC_1",
+    "status": "applied",
+    "timestamp": "2026-03-29T05:35:08.518Z"
+  },
+  {
+    "transition_id": "987503c6-6454-4922-8a94-d9c56db5cfcb",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "intent",
+    "timestamp": "2026-03-29T05:35:13.804Z"
+  },
+  {
+    "transition_id": "987503c6-6454-4922-8a94-d9c56db5cfcb",
+    "from": "IDLE",
+    "to": "ONBOARDING",
+    "status": "applied",
+    "timestamp": "2026-03-29T05:35:13.808Z"
+  }
+]

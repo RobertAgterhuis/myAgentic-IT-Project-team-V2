@@ -31,7 +31,7 @@ function opt(val: unknown, name: string, type: string, errors: string[]): boolea
 /**
  * Validate a session-state object for required fields and types.
  */
-// eslint-disable-next-line complexity
+
 export function validateSessionState(data: unknown): ValidationResult {
   const errors: string[] = [];
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
@@ -308,7 +308,7 @@ export const VALID_SEVERITIES: string[] = ['CRITICAL', 'WARNING', 'INFO'];
 /**
  * Validate a drift report object.
  */
-// eslint-disable-next-line complexity
+
 export function validateDriftReport(data: unknown): ValidationResult {
   const errors: string[] = [];
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
@@ -356,7 +356,6 @@ export function validateDriftReport(data: unknown): ValidationResult {
 
 /* ── GitHub State Snapshot ────────────────────────────────────── */
 
-// eslint-disable-next-line complexity
 export function validateGithubSnapshot(data: unknown): ValidationResult {
   const errors: string[] = [];
   if (!data || typeof data !== 'object' || Array.isArray(data)) {

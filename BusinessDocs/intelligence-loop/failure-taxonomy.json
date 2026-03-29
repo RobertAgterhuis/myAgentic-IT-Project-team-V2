@@ -1,0 +1,168 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-03-28T06:03:25.653Z",
+  "failureClasses": [
+    {
+      "id": "FAIL-TOOL-001",
+      "name": "Tool Loop Timeout",
+      "description": "Tool execution loop exceeded time limit without completion",
+      "category": "tool-loop",
+      "severityLevels": ["high", "critical"],
+      "indicators": ["timeout", "timed out", "tool execution exceeded"],
+      "documentedRemediations": [
+        {
+          "id": "REM-TOOL-001",
+          "name": "Reduce tool recursion depth",
+          "description": "Decrease max_recursion_depth in tool profile from 5 to 3",
+          "executionTimeMinutes": 2,
+          "successRate": 0.85,
+          "timesApplied": 12,
+          "confidence": "proven"
+        },
+        {
+          "id": "REM-TOOL-002",
+          "name": "Increase tool timeout",
+          "description": "Increase timeout threshold by 50%",
+          "executionTimeMinutes": 1,
+          "successRate": 0.6,
+          "timesApplied": 7,
+          "confidence": "likely"
+        }
+      ],
+      "metrics": {
+        "totalOccurrences": 0,
+        "last7Days": 0,
+        "last30Days": 0,
+        "remediationSuccessRate": 0.85,
+        "trend": "insufficient-data"
+      }
+    },
+    {
+      "id": "FAIL-PROVIDER-001",
+      "name": "Provider Unavailable",
+      "description": "LLM or external provider returned error or was unreachable",
+      "category": "provider-fallback",
+      "severityLevels": ["high", "critical"],
+      "indicators": [
+        "provider unavailable",
+        "api error",
+        "service unavailable",
+        "connection refused"
+      ],
+      "documentedRemediations": [
+        {
+          "id": "REM-PROV-001",
+          "name": "Trigger fallback provider",
+          "description": "Switch to secondary LLM provider",
+          "executionTimeMinutes": 1,
+          "successRate": 0.92,
+          "timesApplied": 24,
+          "confidence": "proven"
+        },
+        {
+          "id": "REM-PROV-002",
+          "name": "Defer to next window",
+          "description": "Defer task to next execution window with retry",
+          "executionTimeMinutes": 0,
+          "successRate": 0.75,
+          "timesApplied": 8,
+          "confidence": "likely"
+        }
+      ],
+      "metrics": {
+        "totalOccurrences": 0,
+        "last7Days": 0,
+        "last30Days": 0,
+        "remediationSuccessRate": 0.92,
+        "trend": "insufficient-data"
+      }
+    },
+    {
+      "id": "FAIL-EVIDENCE-001",
+      "name": "Missing Evidence for Grounding",
+      "description": "No relevant evidence available for grounding prompt",
+      "category": "missing-evidence",
+      "severityLevels": ["medium", "high"],
+      "indicators": ["no matches", "no relevant documents", "rag returned empty", "no evidence"],
+      "documentedRemediations": [
+        {
+          "id": "REM-EVD-001",
+          "name": "Expand RAG retrieval",
+          "description": "Increase topK and lower similarity threshold",
+          "executionTimeMinutes": 3,
+          "successRate": 0.68,
+          "timesApplied": 15,
+          "confidence": "likely"
+        },
+        {
+          "id": "REM-EVD-002",
+          "name": "Switch to broader collection",
+          "description": "Broaden RAG search to include related collections",
+          "executionTimeMinutes": 2,
+          "successRate": 0.72,
+          "timesApplied": 11,
+          "confidence": "likely"
+        }
+      ],
+      "metrics": {
+        "totalOccurrences": 0,
+        "last7Days": 0,
+        "last30Days": 0,
+        "remediationSuccessRate": 0.7,
+        "trend": "insufficient-data"
+      }
+    },
+    {
+      "id": "FAIL-CONTRACT-001",
+      "name": "Output Contract Violation",
+      "description": "Agent output did not conform to required contract",
+      "category": "contract-violation",
+      "severityLevels": ["critical"],
+      "indicators": ["contract violation", "missing required section", "validation failed"],
+      "documentedRemediations": [
+        {
+          "id": "REM-CON-001",
+          "name": "Retry with contract reminder",
+          "description": "Run agent again with explicit contract reminder in prompt",
+          "executionTimeMinutes": 5,
+          "successRate": 0.81,
+          "timesApplied": 18,
+          "confidence": "proven"
+        }
+      ],
+      "metrics": {
+        "totalOccurrences": 0,
+        "last7Days": 0,
+        "last30Days": 0,
+        "remediationSuccessRate": 0.81,
+        "trend": "insufficient-data"
+      }
+    },
+    {
+      "id": "FAIL-APPROVAL-001",
+      "name": "Approval Bottleneck",
+      "description": "Task waiting for human approval exceeded timeout",
+      "category": "approval-bottleneck",
+      "severityLevels": ["medium"],
+      "indicators": ["approval timeout", "awaiting approval", "approval overdue"],
+      "documentedRemediations": [
+        {
+          "id": "REM-APP-001",
+          "name": "Escalate with summary",
+          "description": "Send escalation with clear summary to primary approver",
+          "executionTimeMinutes": 2,
+          "successRate": 0.78,
+          "timesApplied": 9,
+          "confidence": "likely"
+        }
+      ],
+      "metrics": {
+        "totalOccurrences": 0,
+        "last7Days": 0,
+        "last30Days": 0,
+        "remediationSuccessRate": 0.78,
+        "trend": "insufficient-data"
+      }
+    }
+  ]
+}

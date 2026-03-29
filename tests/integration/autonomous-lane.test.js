@@ -24,7 +24,7 @@ class MockRuntimeAdapter {
 describe('Autonomous Lane Smoke Path (E-B2)', () => {
   let traceDir = '';
   let traceFile = '';
-  let laneTrace = [];
+  const laneTrace = [];
 
   beforeAll(() => {
     traceDir = 'tests/load/autonomous-lane-traces';

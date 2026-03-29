@@ -1499,7 +1499,7 @@ class Dispatcher {
     let concurrencyHighWaterMark = 0;
     let totalWaitMs = 0;
 
-    let predecessorPaths: string[] = [...((contextOptions.predecessorPaths as string[]) || [])];
+    const predecessorPaths: string[] = [...((contextOptions.predecessorPaths as string[]) || [])];
     const prioritySignals =
       (contextOptions.prioritySignals as Record<string, AgentPrioritySignal> | undefined) || {};
 

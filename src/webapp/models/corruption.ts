@@ -9,7 +9,7 @@
  * Checks for: broken YAML frontmatter, incomplete table rows,
  * unclosed fences, and malformed question blocks.
  */
-// eslint-disable-next-line complexity
+
 export function detectMarkdownCorruption(content: unknown): string[] {
   if (typeof content !== 'string') return ['Content is not a string'];
   const issues: string[] = [];

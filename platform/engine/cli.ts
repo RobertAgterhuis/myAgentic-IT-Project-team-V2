@@ -635,7 +635,6 @@ function run(
 // ── Auto-run when executed directly ──────────────────────────
 /* c8 ignore start */
 if (require.main === module) {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
   const { getStore } = require('../../src/webapp/store');
   const result = run(process.argv.slice(2), { store: getStore() });
   if (!result.ok) {

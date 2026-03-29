@@ -1,0 +1,19 @@
+[
+  {
+    "type": "override",
+    "rationale": "Continue with remaining open issues and epics from miliestone: [PATTERNS] M2 - Upgrade Reasoning And Collaboration",
+    "requested_by": "operator-ui",
+    "timestamp": "2026-03-27T19:50:15.911Z",
+    "state": "IDLE",
+    "mode": "FEATURE",
+    "phases": ["PHASE_5_EXECUTING"]
+  },
+  {
+    "type": "resume",
+    "rationale": "Continue with remaining open issues and epics from miliestone: [PATTERNS] M2 - Upgrade Reasoning And Collaboration",
+    "requested_by": "operator-ui",
+    "timestamp": "2026-03-27T19:50:26.212Z",
+    "state": "IDLE",
+    "mode": "FEATURE"
+  }
+]

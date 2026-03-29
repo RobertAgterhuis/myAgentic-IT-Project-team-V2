@@ -12,16 +12,16 @@ import path from 'node:path';
 import fsp from 'node:fs/promises';
 
 /* ── MCP SDK imports ────────────────────────────────────────────── */
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+
 const sdkBase: string = require.resolve('@modelcontextprotocol/sdk/server');
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+
 const { McpServer } = require(sdkBase.replace(/index\.js$/, 'mcp.js')) as {
   McpServer: new (
     info: { name: string; version: string },
     opts: { capabilities: { tools: Record<string, unknown>; resources: Record<string, unknown> } }
   ) => McpServerInstance;
 };
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+
 const { StdioServerTransport } = require(sdkBase.replace(/index\.js$/, 'stdio.js')) as {
   StdioServerTransport: new () => unknown;
 };
@@ -703,7 +703,6 @@ mcp.tool(
   'Detect drift between session-state sprint statuses and GitHub board sync reports. Returns a drift report with severity levels (CRITICAL, WARNING, INFO) and recommendations.',
   async () => {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { detectDrift } = require('./drift-detector') as {
         detectDrift: (opts: {
           sessionState: unknown;
@@ -1197,7 +1196,6 @@ mcp.resource(
 /*  STARTUP                                                        */
 /* ════════════════════════════════════════════════════════════════ */
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 if (require.main === module) {
   (async () => {
     // Initialize StorageProvider (M23-005)

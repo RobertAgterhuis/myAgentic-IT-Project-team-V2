@@ -23,7 +23,7 @@ interface ServerContext {
   sseManager: import('../sse-manager').SSEManager;
   _metrics: RuntimeMetrics;
   _audit: { log(meta: AuditMeta): void; read(limit?: number): AuditEntry[] };
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   safeWriteSync(filePath: string, data: string, encoding?: string, auditMeta?: AuditMeta): void;
   sseNotify(eventType: string, data: object): void;
   computePercentiles(times: number[]): { p50: number; p95: number; p99: number };
@@ -99,7 +99,7 @@ interface Milestone {
   status: string;
   created_at: string;
   updated_at: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
   stories?: Record<string, unknown>[];
   [key: string]: unknown;
 }

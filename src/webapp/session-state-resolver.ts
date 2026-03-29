@@ -44,7 +44,7 @@ function _scoreByLastUpdated(cache: FileCache, fp: string): number {
     return Number.isNaN(t) ? 0 : t;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    // eslint-disable-next-line no-console
+
     console.warn('[session-state-resolver] _scoreByLastUpdated failed for %s: %s', fp, message);
     return 0;
   }
@@ -56,7 +56,7 @@ function _scoreByMtime(store: FileStore | InMemoryStore, fp: string): number {
     return stat && stat.mtimeMs ? stat.mtimeMs : 0;
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    // eslint-disable-next-line no-console
+
     console.warn('[session-state-resolver] _scoreByMtime failed for %s: %s', fp, message);
     return 0;
   }

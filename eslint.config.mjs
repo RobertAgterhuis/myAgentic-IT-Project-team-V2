@@ -1,13 +1,12 @@
 // @ts-check
 // S2-5: ESLint flat config — replaces legacy .eslintrc.js
 import js from '@eslint/js';
-import tsPlugin from '@typescript-eslint/eslint-plugin';
-import tsParser from '@typescript-eslint/parser';
 import prettierConfig from 'eslint-config-prettier';
 import prettierPlugin from 'eslint-plugin-prettier';
 import globals from 'globals';
+import tseslint from 'typescript-eslint';
 
-export default [
+export default tseslint.config(
   /* ── Global ignores ─────────────────────────────────────────── */
   {
     ignores: [
@@ -33,8 +32,8 @@ export default [
   /* ── All JS/TS files: TypeScript parser + Prettier ──────────── */
   {
     files: ['**/*.js', '**/*.mjs', '**/*.ts', '**/*.jsx', '**/*.tsx'],
+    extends: [...tseslint.configs.recommended],
     languageOptions: {
-      parser: tsParser,
       ecmaVersion: 2022,
       sourceType: 'module',
       globals: {
@@ -43,11 +42,9 @@ export default [
       },
     },
     plugins: {
-      '@typescript-eslint': tsPlugin,
       prettier: prettierPlugin,
     },
     rules: {
-      ...tsPlugin.configs.recommended.rules,
       'prettier/prettier': 'error',
       '@typescript-eslint/no-unused-vars': [
         'error',
@@ -55,11 +52,12 @@ export default [
           argsIgnorePattern: '^_',
           varsIgnorePattern: '^_',
           destructuredArrayIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
         },
       ],
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-var-requires': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
       'no-empty': ['error', { allowEmptyCatch: true }],
     },
@@ -115,4 +113,4 @@ export default [
 
   /* ── Prettier must come last to disable conflicting rules ───── */
   prettierConfig,
-];
+);

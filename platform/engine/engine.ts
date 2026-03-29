@@ -233,8 +233,7 @@ function createEngine(options: Record<string, unknown>) {
 
   // AC-1: Load declarative flow definition
   const flows = loadFlows(store, flowsPath);
-  const runtimePackGraph =
-    (flows as { runtimeGraph?: Record<string, unknown> }).runtimeGraph || undefined;
+  const runtimePackGraph = flows.runtimeGraph;
   const runtimeFlowPack = {
     manifest_version:
       typeof (flows as Record<string, unknown>).manifest_version === 'string'
@@ -397,11 +396,7 @@ function createEngine(options: Record<string, unknown>) {
   }): void {
     if (!autoCommitPhaseGates) return;
 
-    const gate = resolveGateCommitMetadata(
-      event.from,
-      event.to,
-      runtimePackGraph as RuntimePackGraph
-    );
+    const gate = resolveGateCommitMetadata(event.from, event.to, runtimePackGraph);
     if (!gate) return;
 
     const repoRoot = process.cwd();

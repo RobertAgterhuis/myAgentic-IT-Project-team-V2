@@ -1519,22 +1519,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     async (_request: FastifyRequest, reply: FastifyReply) => {
       try {
         const store = getStore();
-        const flows = loadFlows(store, flowsPath) as {
-          manifest_version?: string;
-          pack_id?: string;
-          pack_name?: string;
-          version?: string;
-          commands?: Array<Record<string, unknown>>;
-          stages?: Array<Record<string, unknown>>;
-          gates?: Array<Record<string, unknown>>;
-          help?: { topics?: Array<Record<string, unknown>> };
-          runtime?: {
-            default_parallel_dispatch_states?: string[];
-            gate_assets?: Record<string, unknown>;
-          };
-          artifact_namespaces?: Record<string, string>;
-          runtimeGraph?: { warnings?: string[] };
-        };
+        const flows = loadFlows(store, flowsPath);
 
         const commands = Array.isArray(flows.commands) ? flows.commands : [];
         const stages = Array.isArray(flows.stages) ? flows.stages : [];
@@ -1605,19 +1590,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     async (_request: FastifyRequest, reply: FastifyReply) => {
       try {
         const store = getStore();
-        const flows = loadFlows(store, flowsPath) as {
-          runtimeGraph?: {
-            pack: Record<string, unknown>;
-            states: string[];
-            fullFlow: string[];
-            phaseAgents: Record<string, Array<{ id: string; name: string }>>;
-            parallelGroups: Record<string, string[][]>;
-            defaultParallelDispatchStates: string[];
-            skillsBaseDir: string | null;
-            gates: Array<Record<string, unknown>>;
-            warnings: string[];
-          };
-        };
+        const flows = loadFlows(store, flowsPath);
 
         if (!flows.runtimeGraph) {
           return reply
@@ -1663,7 +1636,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const requestedTemplateName =
           typeof body.template === 'string' && body.template.trim() !== ''
             ? body.template.trim()
-            : _templateName;
+            : (_templateName ?? 'sdlc');
 
         const command = normalizeCommandToken(body.command);
         const validation = resolveCommandValidation(requestedTemplateName);

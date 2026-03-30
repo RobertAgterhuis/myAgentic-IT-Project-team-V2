@@ -184,6 +184,15 @@ export interface SessionState {
   session_id?: string;
   projectName?: string | null;
   mode?: string | null;
+  execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID' | null;
+  execution_plan?: {
+    mode?: string;
+    selectedAgencyAgents?: Array<{ id?: string; name?: string }>;
+    hybridInjections?: Array<{
+      atState?: string;
+      agents?: Array<{ id?: string; name?: string }>;
+    }>;
+  } | null;
   status?: string | null;
   cycle_type?: string | null;
   currentPhase?: string | null;

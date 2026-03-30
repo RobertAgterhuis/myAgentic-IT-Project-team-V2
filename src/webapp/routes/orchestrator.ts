@@ -22,8 +22,10 @@ import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import type { ServerContext } from '../context';
 import { getStore } from '../store';
 import { createEngine } from '../../../platform/engine/engine';
-import { PHASE_AGENTS } from '../../../platform/engine/dispatcher';
+import { Dispatcher, PHASE_AGENTS } from '../../../platform/engine/dispatcher';
 import { loadFlows } from '../../../platform/engine/flow-loader';
+import { createHybridExecutor } from '../../../platform/engine/hybrid-executor';
+import { resolveAdapter } from '../../../platform/engine/agent-runtime-adapter';
 import {
   listTemplates,
   loadTemplate,
@@ -48,6 +50,7 @@ import {
   REDIS_URL,
   TRUST_PROXY,
   AGENT_TOOL_ISOLATION_LEVEL,
+  AGENT_RUNTIME_ADAPTER,
   TOOL_EXEC_MAX_TIMEOUT_MS,
   TOOL_EXEC_MAX_OUTPUT_BYTES,
   TOOL_EXEC_MAX_MEMORY_MB,
@@ -55,6 +58,7 @@ import {
   resolvePredecessorContractContinuityMode,
 } from '../config';
 import { validateProfile, hasAuthConfigured, PROFILE_CONTRACTS } from '../runtime-profiles';
+import { buildExecutionModePlan } from '../../../platform/engine/execution-mode-plan';
 
 type OrchestratorEngine = ReturnType<typeof createEngine>;
 type OrchestratorStatus = ReturnType<OrchestratorEngine['status']>;
@@ -95,6 +99,11 @@ type RuntimeTrackingTopology = {
   phaseAgents: Record<string, PhaseAgent[]>;
   parallelStates: Set<string>;
   stateToSessionPhase: Record<string, string>;
+};
+
+type PlannedHybridInjection = {
+  atState: string;
+  agents: Array<{ id: string; name: string }>;
 };
 
 const CONTROL_PLANE_SLO_TARGETS = {
@@ -462,6 +471,335 @@ function persistSessionMode(sessionPath: string, mode: string): void {
       2
     )
   );
+}
+
+function persistSessionExecutionContext(
+  sessionPath: string,
+  executionMode: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID',
+  executionPlan: Record<string, unknown> | null
+): void {
+  const store = getStore();
+  let sessionState: Record<string, unknown> = {};
+
+  if (store.exists(sessionPath)) {
+    try {
+      sessionState = JSON.parse(store.readFile(sessionPath, 'utf8')) as Record<string, unknown>;
+    } catch {
+      sessionState = {};
+    }
+  }
+
+  const nextState: Record<string, unknown> = {
+    ...sessionState,
+    execution_mode: executionMode,
+  };
+
+  if (executionPlan) {
+    nextState.execution_plan = executionPlan;
+  } else {
+    delete nextState.execution_plan;
+  }
+
+  store.mkdirp(path.dirname(sessionPath));
+  store.writeFile(sessionPath, JSON.stringify(nextState, null, 2));
+}
+
+function readSessionStateRecord(sessionPath: string): Record<string, unknown> {
+  const store = getStore();
+  if (!store.exists(sessionPath)) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(store.readFile(sessionPath, 'utf8')) as Record<string, unknown>;
+  } catch {
+    return {};
+  }
+}
+
+function collectPredecessorPaths(sessionState: Record<string, unknown>): string[] {
+  const phaseOutputs = isRecord(sessionState.phase_outputs)
+    ? (sessionState.phase_outputs as Record<string, unknown>)
+    : {};
+  const paths = new Set<string>();
+
+  const collect = (value: unknown) => {
+    if (typeof value === 'string' && value.trim().length > 0) {
+      paths.add(value.trim());
+      return;
+    }
+    if (Array.isArray(value)) {
+      for (const entry of value) collect(entry);
+      return;
+    }
+    if (isRecord(value)) {
+      for (const entry of Object.values(value)) collect(entry);
+    }
+  };
+
+  for (const value of Object.values(phaseOutputs)) {
+    collect(value);
+  }
+
+  return [...paths];
+}
+
+function readHybridInjectionsFromSession(sessionStatePath: string): PlannedHybridInjection[] {
+  const sessionState = readSessionStateRecord(sessionStatePath);
+  const executionMode = String(sessionState.execution_mode || '').toUpperCase();
+  if (executionMode !== 'HYBRID') {
+    return [];
+  }
+
+  const executionPlan = isRecord(sessionState.execution_plan)
+    ? (sessionState.execution_plan as Record<string, unknown>)
+    : null;
+  const injections = Array.isArray(executionPlan?.hybridInjections)
+    ? executionPlan.hybridInjections
+    : [];
+
+  return injections
+    .map((entry) => {
+      const row = isRecord(entry) ? entry : null;
+      const atState = typeof row?.atState === 'string' ? row.atState : '';
+      const agents = Array.isArray(row?.agents)
+        ? row.agents
+            .map((agent) => {
+              const item = isRecord(agent) ? agent : null;
+              const id = typeof item?.id === 'string' ? item.id.trim() : '';
+              const name = typeof item?.name === 'string' ? item.name.trim() : '';
+              return id && name ? { id, name } : null;
+            })
+            .filter((agent): agent is { id: string; name: string } => !!agent)
+        : [];
+
+      return atState && agents.length > 0 ? { atState, agents } : null;
+    })
+    .filter((entry): entry is PlannedHybridInjection => !!entry);
+}
+
+function persistHybridInjectionOutputs(
+  sessionStatePath: string,
+  phaseKey: string,
+  outputs: Record<string, string>
+): void {
+  if (Object.keys(outputs).length === 0) {
+    return;
+  }
+
+  const store = getStore();
+  const sessionState = readSessionStateRecord(sessionStatePath);
+  const phaseOutputs = isRecord(sessionState.phase_outputs)
+    ? { ...(sessionState.phase_outputs as Record<string, unknown>) }
+    : {};
+
+  const phaseKeyLower = phaseKey.toLowerCase();
+  const existingPhaseOutputs = isRecord(phaseOutputs[phaseKeyLower])
+    ? { ...(phaseOutputs[phaseKeyLower] as Record<string, unknown>) }
+    : {};
+
+  for (const [agentId, outputPath] of Object.entries(outputs)) {
+    existingPhaseOutputs[agentId] = outputPath;
+  }
+
+  phaseOutputs[phaseKeyLower] = existingPhaseOutputs;
+  sessionState.phase_outputs = phaseOutputs;
+
+  store.mkdirp(path.dirname(sessionStatePath));
+  store.writeFile(sessionStatePath, JSON.stringify(sessionState, null, 2));
+}
+
+async function runHybridInjectionsForTransition(options: {
+  profile: string;
+  targetState: string;
+  phaseKey: string;
+  sessionStatePath: string;
+  sessionId?: string;
+  sseNotify: ServerContext['sseNotify'];
+}): Promise<{ injected: number; outputPaths: Record<string, string> }> {
+  const { profile, targetState, phaseKey, sessionStatePath, sessionId, sseNotify } = options;
+  const injections = readHybridInjectionsFromSession(sessionStatePath);
+  if (!injections.some((entry) => entry.atState === targetState)) {
+    return { injected: 0, outputPaths: {} };
+  }
+
+  const { adapter, error } = resolveAdapter({
+    adapterName: AGENT_RUNTIME_ADAPTER,
+    profile,
+  });
+  if (error) {
+    throw new Error(error);
+  }
+
+  const store = getStore();
+  const dispatcher = new Dispatcher({
+    store,
+    adapter: adapter ?? undefined,
+    config: {
+      enforcePredecessorContractContinuity: resolvePredecessorContractContinuityMode(profile).mode,
+    },
+  });
+
+  const baseSessionState = readSessionStateRecord(sessionStatePath);
+  const predecessorPaths = collectPredecessorPaths(baseSessionState);
+  const outputPaths: Record<string, string> = {};
+  const trackedByAgentId = new Map<string, string>();
+
+  const getInjectedTrackedId = (agentId: string): string =>
+    `hybrid-${targetState.toLowerCase()}-${agentId}`;
+
+  const executor = createHybridExecutor({
+    injections,
+    invokeAgent: async (agent) => {
+      const trackedAgentId = getInjectedTrackedId(agent.id);
+      trackedByAgentId.set(agent.id, trackedAgentId);
+
+      if (sessionId) {
+        sessionTracker.startAgent(
+          sessionId,
+          trackedAgentId,
+          agent.name,
+          phaseKey,
+          `Hybrid injection for ${targetState}`
+        );
+        sessionTracker.updateSession(sessionId, {
+          phase: phaseKey,
+          current_agent: trackedAgentId,
+          current_agents: [trackedAgentId],
+        });
+        sessionTracker.addTimelineEvent(sessionId, {
+          type: 'agent_start',
+          description: `Hybrid injection started: ${agent.name}`,
+          agent: trackedAgentId,
+          phase: phaseKey,
+          metadata: {
+            hybrid_injection: true,
+            target_state: targetState,
+            source_agent_id: agent.id,
+            agent_name: agent.name,
+          },
+        });
+        sseNotify('hybrid_injection_start', {
+          type: 'hybrid_injection_start',
+          session_id: sessionId,
+          phase: phaseKey,
+          target_state: targetState,
+          agent: trackedAgentId,
+          source_agent_id: agent.id,
+          agent_name: agent.name,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      const context = dispatcher.buildContext(agent.id, {
+        predecessorPaths,
+      });
+      const result = await dispatcher.invoke(
+        { id: agent.id, name: agent.name },
+        targetState,
+        context
+      );
+
+      const deliverable =
+        result.success &&
+        typeof result.outputPath === 'string' &&
+        result.outputPath.length > 0 &&
+        store.exists(result.outputPath)
+          ? store.readFile(result.outputPath)
+          : '';
+
+      if (result.success && typeof result.outputPath === 'string' && result.outputPath.length > 0) {
+        predecessorPaths.push(result.outputPath);
+        outputPaths[agent.id] = result.outputPath;
+      }
+
+      return {
+        success: result.success,
+        deliverable,
+        error: result.error,
+      };
+    },
+    onInjectionComplete: (step) => {
+      if (!sessionId) return;
+
+      const trackedAgentId =
+        trackedByAgentId.get(step.agentId) || getInjectedTrackedId(step.agentId);
+
+      if (step.status === 'completed') {
+        sessionTracker.completeAgent(
+          trackedAgentId,
+          step.deliverable && outputPaths[step.agentId] ? [outputPaths[step.agentId]] : []
+        );
+        sessionTracker.addTimelineEvent(sessionId, {
+          type: 'agent_complete',
+          description: `Hybrid injection completed: ${step.agentName}`,
+          agent: trackedAgentId,
+          phase: phaseKey,
+          metadata: {
+            hybrid_injection: true,
+            target_state: targetState,
+            source_agent_id: step.agentId,
+            agent_name: step.agentName,
+            duration_ms: step.durationMs,
+          },
+        });
+        sseNotify('hybrid_injection_complete', {
+          type: 'hybrid_injection_complete',
+          session_id: sessionId,
+          phase: phaseKey,
+          target_state: targetState,
+          agent: trackedAgentId,
+          source_agent_id: step.agentId,
+          agent_name: step.agentName,
+          duration_ms: step.durationMs,
+          output_path: outputPaths[step.agentId] || null,
+          timestamp: new Date().toISOString(),
+        });
+      } else if (step.status === 'failed') {
+        sessionTracker.failAgent(trackedAgentId);
+        sessionTracker.addTimelineEvent(sessionId, {
+          type: 'error',
+          description: `Hybrid injection failed: ${step.agentName}`,
+          agent: trackedAgentId,
+          phase: phaseKey,
+          metadata: {
+            hybrid_injection: true,
+            target_state: targetState,
+            source_agent_id: step.agentId,
+            agent_name: step.agentName,
+            error: step.error || null,
+            violations: step.violations,
+          },
+        });
+        sseNotify('hybrid_injection_failed', {
+          type: 'hybrid_injection_failed',
+          session_id: sessionId,
+          phase: phaseKey,
+          target_state: targetState,
+          agent: trackedAgentId,
+          source_agent_id: step.agentId,
+          agent_name: step.agentName,
+          error: step.error || null,
+          violations: step.violations,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    },
+  });
+
+  const hybridResult = await executor.runInjection(targetState, {});
+  if (hybridResult.status === 'failed') {
+    throw new Error(
+      `Hybrid injection failed for ${targetState}: ${hybridResult.failureReason || 'unknown reason'}`
+    );
+  }
+
+  persistHybridInjectionOutputs(sessionStatePath, phaseKey, outputPaths);
+
+  return {
+    injected: hybridResult.injectionSteps.length,
+    outputPaths,
+  };
 }
 
 function toOverallDependencyStatus(statuses: DependencyStatus[]): DependencyStatus {
@@ -998,6 +1336,34 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const prevStatus = engine.status();
         const prevState = prevStatus.state;
         const prevRuntime = getSessionRuntime(prevStatus);
+        const targetState =
+          typeof prevStatus.nextState === 'string' && prevStatus.nextState.trim() !== ''
+            ? prevStatus.nextState
+            : null;
+
+        if (targetState) {
+          const targetPhase = toSessionPhase(targetState);
+          const mode = deriveExecutionMode(prevStatus as unknown as Record<string, unknown>);
+          if (mode === 'HYBRID' && targetPhase) {
+            const hybrid = await runHybridInjectionsForTransition({
+              profile,
+              targetState,
+              phaseKey: targetPhase,
+              sessionStatePath,
+              sessionId: sessionTracker.listSessions().find((s) => s.status === 'active')?.id,
+              sseNotify,
+            });
+
+            if (hybrid.injected > 0) {
+              structuredLog('info', 'orchestrator_hybrid_injection_completed', {
+                target_state: targetState,
+                injected_agents: hybrid.injected,
+                output_paths: Object.values(hybrid.outputPaths),
+              });
+            }
+          }
+        }
+
         const gateResult = isRecord(body.gateResult) ? body.gateResult : undefined;
         const result = engine.advance(gateResult);
         const newStatus = engine.status();
@@ -1745,6 +2111,22 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         }
 
         const st = engine.status();
+        const effectiveExecutionMode = deriveExecutionMode(st as Record<string, unknown>);
+        const executionPlan =
+          !resume && (effectiveExecutionMode === 'AGENCY_ONLY' || effectiveExecutionMode === 'HYBRID')
+            ? buildExecutionModePlan({
+                mode: effectiveExecutionMode,
+                brief: typeof body.brief === 'string' ? body.brief : undefined,
+              })
+            : null;
+
+        if (!resume) {
+          persistSessionExecutionContext(
+            sessionStatePath,
+            effectiveExecutionMode,
+            executionPlan as unknown as Record<string, unknown> | null
+          );
+        }
         structuredLog('info', 'orchestrator_command', {
           command,
           applied_command: appliedCommand,
@@ -1754,6 +2136,8 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           resume,
           state: st.state,
           mode: st.mode,
+          execution_mode: effectiveExecutionMode,
+          selected_agency_agents: executionPlan ? executionPlan.selectedAgencyAgents.length : 0,
         });
 
         return reply.send({
@@ -1765,6 +2149,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           platform,
           resume,
           status: st,
+          execution_plan: executionPlan,
         });
       } catch (err) {
         const message = getErrorMessage(err);

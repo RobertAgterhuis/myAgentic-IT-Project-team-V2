@@ -64,6 +64,10 @@ const PROGRESS_PHASE_FROM_RUNTIME_STATE = Object.freeze({
   [STATES.PHASE_5_EXECUTING]: 'PHASE-5',
 } as Record<string, string>);
 
+function toProgressPhaseFromRuntimeState(runtimeState: string): string | null {
+  return PROGRESS_PHASE_FROM_RUNTIME_STATE[runtimeState] || null;
+}
+
 function compileProgressPhaseAgents(runtimePhaseAgents: Record<string, AgentDef[]>) {
   const phaseAgents: Record<string, AgentDef[]> = Object.fromEntries(
     PHASE_ORDER.map((key) => [key, [] as AgentDef[]])
@@ -96,6 +100,58 @@ const PHASE_AGENTS: Record<string, AgentDef[]> = compileProgressPhaseAgents(
   RUNTIME_PHASE_AGENTS as Record<string, AgentDef[]>
 );
 
+function buildDynamicPhaseAgents(session: SessionState): Record<string, AgentDef[]> {
+  const phaseAgents: Record<string, AgentDef[]> = Object.fromEntries(
+    PHASE_ORDER.map((key) => [key, [...(PHASE_AGENTS[key] || [])]])
+  );
+
+  const executionMode = String(session.execution_mode || session.mode || '')
+    .trim()
+    .toUpperCase();
+  const executionPlan = session.execution_plan;
+  if (!executionPlan || typeof executionPlan !== 'object') {
+    return phaseAgents;
+  }
+
+  const addUniqueAgent = (phaseKey: string, agentId: string, agentName: string) => {
+    if (!phaseAgents[phaseKey]) return;
+    if (phaseAgents[phaseKey].some((entry) => entry.id === agentId)) return;
+    phaseAgents[phaseKey].push({
+      id: agentId,
+      name: agentName,
+      automation_level: 'autonomous',
+    });
+  };
+
+  if (executionMode === 'HYBRID' && Array.isArray(executionPlan.hybridInjections)) {
+    for (const injection of executionPlan.hybridInjections) {
+      const runtimeState = typeof injection?.atState === 'string' ? injection.atState : '';
+      const phaseKey = toProgressPhaseFromRuntimeState(runtimeState);
+      if (!phaseKey || !Array.isArray(injection?.agents)) continue;
+
+      for (const agent of injection.agents) {
+        const agentId = typeof agent?.id === 'string' ? agent.id.trim() : '';
+        const agentName = typeof agent?.name === 'string' ? agent.name.trim() : '';
+        if (!agentId || !agentName) continue;
+        addUniqueAgent(phaseKey, agentId, agentName);
+      }
+    }
+  }
+
+  if (executionMode === 'AGENCY_ONLY' && Array.isArray(executionPlan.selectedAgencyAgents)) {
+    // AGENCY_ONLY bypasses SDLC lanes, so display the selected agency roster
+    // in ONBOARDING as the launch lane to keep the run dashboard informative.
+    for (const agent of executionPlan.selectedAgencyAgents) {
+      const agentId = typeof agent?.id === 'string' ? agent.id.trim() : '';
+      const agentName = typeof agent?.name === 'string' ? agent.name.trim() : '';
+      if (!agentId || !agentName) continue;
+      addUniqueAgent('ONBOARDING', agentId, agentName);
+    }
+  }
+
+  return phaseAgents;
+}
+
 function isAgentCompleted(agent: AgentDef, completedAgents: string[]): boolean {
   const agentFile = agent.id + '-' + agent.name.toLowerCase().replace(/[^a-z]+/g, '-');
   return completedAgents.includes(agentFile) || completedAgents.includes(agent.id);
@@ -112,7 +168,12 @@ function isAgentActive(
     currentAgents.length > 0 ? currentAgents : currentAgent ? [currentAgent] : [];
   return (
     currentPhase === phaseKey &&
-    activeAgents.some((entry) => entry.startsWith(agent.id + '-') || entry === agent.id)
+    activeAgents.some(
+      (entry) =>
+        entry.startsWith(agent.id + '-') ||
+        entry.endsWith(`-${agent.id}`) ||
+        entry === agent.id
+    )
   );
 }
 
@@ -194,9 +255,10 @@ export function buildPhaseProgress(session: SessionState): PhaseProgressItem[] {
   const currentPhase = session.current_phase || null;
   const currentAgents = session.currentAgents || session.current_agents || [];
   const phaseOutputs = session.phase_outputs || {};
+  const phaseAgents = buildDynamicPhaseAgents(session);
 
   return PHASE_ORDER.map((phaseKey) => {
-    const agents = (PHASE_AGENTS[phaseKey] || []).map((a) => ({
+    const agents = (phaseAgents[phaseKey] || []).map((a) => ({
       id: a.id,
       name: a.name,
       status: resolveAgentStatus(

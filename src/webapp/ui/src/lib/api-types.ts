@@ -702,6 +702,15 @@ export interface PhaseEntry {
 export interface SessionInfo {
   session_id: string;
   cycle_type: string;
+  execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID' | string;
+  execution_plan?: {
+    mode?: string;
+    selectedAgencyAgents?: Array<{ id: string; name: string }>;
+    hybridInjections?: Array<{
+      atState: string;
+      agents: Array<{ id: string; name: string }>;
+    }>;
+  } | null;
   status: string;
   current_phase: string;
   current_agent: string;

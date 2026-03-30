@@ -115,6 +115,10 @@ const agentStatusLabel: Record<SwimlaneAgentStatus, string> = {
   'needs-input': 'Needs input',
 };
 
+function isInjectedAgencyAgent(agentId: string): boolean {
+  return agentId.startsWith('agency-') || agentId.startsWith('hybrid-');
+}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
@@ -823,6 +827,9 @@ export default function PipelinePage() {
                               <Badge variant={agentBadgeVariant[agent.swimlaneStatus]} dot>
                                 {agentStatusLabel[agent.swimlaneStatus]}
                               </Badge>
+                              {isInjectedAgencyAgent(agent.id) && (
+                                <Badge variant="outline">Hybrid injected</Badge>
+                              )}
                             </div>
                             {agent.swimlaneStatus === 'needs-input' && (
                               <Text className="mt-2 text-xs text-muted-foreground">

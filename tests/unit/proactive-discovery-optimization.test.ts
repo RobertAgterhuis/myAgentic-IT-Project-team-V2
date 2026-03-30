@@ -395,4 +395,137 @@ describe('proactive-discovery-optimization service', () => {
     expect(autoApplied?.autoApplied).toBe(true);
     expect(autoApplied?.proposal.status).toBe('applied');
   });
+
+  it('runs quarterly registry optimization cycle and flags overdue, missing-metadata, and deprecated entries', async () => {
+    const svc = createProactiveDiscoveryOptimizationService(ctx);
+
+    const now = '2026-04-01T00:00:00.000Z';
+    // lastReviewedAt 100 days ago — overdue for 90-day cycle
+    const overdueDate = new Date(Date.parse(now) - 100 * 24 * 60 * 60 * 1000).toISOString();
+    // lastReviewedAt 30 days ago — still within 90-day window
+    const recentDate = new Date(Date.parse(now) - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    const result = await svc.runQuarterlyRegistryOptimizationCycle({
+      nowIso: now,
+      reviewIntervalDays: 90,
+      entries: [
+        {
+          providerId: 'github',
+          providerType: 'git',
+          description: 'GitHub git provider',
+          owner: 'platform-team',
+          version: '1.0.0',
+          lastReviewedAt: overdueDate,
+        },
+        {
+          providerId: 'docker',
+          providerType: 'container',
+          // missing description, owner, version
+          lastReviewedAt: recentDate,
+        },
+        {
+          providerId: 'legacy-ci',
+          providerType: 'ci',
+          description: 'Legacy CI system',
+          owner: 'infra-team',
+          version: '0.1.0',
+          deprecated: true,
+          lastReviewedAt: recentDate,
+        },
+        {
+          providerId: 'openai',
+          providerType: 'llm',
+          description: 'OpenAI LLM provider',
+          owner: 'ai-team',
+          version: '2.0.0',
+          lastReviewedAt: recentDate,
+        },
+      ],
+    });
+
+    expect(result.totalEntries).toBe(4);
+    expect(result.reviewIntervalDays).toBe(90);
+    expect(result.nextReviewDue).toBeDefined();
+    expect(new Date(result.nextReviewDue) > new Date(now)).toBe(true);
+
+    // github: overdue review
+    const overdueFinding = result.findings.find(
+      (f) => f.providerId === 'github' && f.findingType === 'overdue-review'
+    );
+    expect(overdueFinding).toBeDefined();
+    expect(['medium', 'high', 'critical']).toContain(overdueFinding?.severity);
+
+    // docker: missing metadata
+    const missingMetaFinding = result.findings.find(
+      (f) => f.providerId === 'docker' && f.findingType === 'missing-metadata'
+    );
+    expect(missingMetaFinding).toBeDefined();
+    expect(missingMetaFinding?.severity).toBe('high');
+
+    // legacy-ci: deprecated
+    const deprecatedFinding = result.findings.find(
+      (f) => f.providerId === 'legacy-ci' && f.findingType === 'deprecated-provider'
+    );
+    expect(deprecatedFinding).toBeDefined();
+    expect(deprecatedFinding?.severity).toBe('high');
+
+    // openai: no findings expected
+    expect(result.findings.filter((f) => f.providerId === 'openai')).toHaveLength(0);
+
+    expect(result.entriesNeedingReview).toBeGreaterThan(0);
+    expect(result.optimizationRecommendations.length).toBeGreaterThan(0);
+  });
+
+  it('reports healthy cycle when all registry entries are current and complete', async () => {
+    const svc = createProactiveDiscoveryOptimizationService(ctx);
+
+    const now = '2026-04-01T00:00:00.000Z';
+    const recentDate = new Date(Date.parse(now) - 15 * 24 * 60 * 60 * 1000).toISOString();
+
+    const result = await svc.runQuarterlyRegistryOptimizationCycle({
+      nowIso: now,
+      entries: [
+        {
+          providerId: 'github',
+          providerType: 'git',
+          description: 'GitHub git provider',
+          owner: 'platform-team',
+          version: '1.0.0',
+          lastReviewedAt: recentDate,
+        },
+      ],
+    });
+
+    expect(result.totalEntries).toBe(1);
+    expect(result.findings).toHaveLength(0);
+    expect(result.entriesNeedingReview).toBe(0);
+    expect(result.cycleHealthy).toBe(true);
+    expect(result.optimizationRecommendations).toContain(
+      'All registry entries are current. No action required this cycle.'
+    );
+  });
+
+  it('flags entry with no review date as overdue and defaults review interval to 90 days', async () => {
+    const svc = createProactiveDiscoveryOptimizationService(ctx);
+
+    const result = await svc.runQuarterlyRegistryOptimizationCycle({
+      entries: [
+        {
+          providerId: 'untracked-provider',
+          providerType: 'tool',
+          description: 'An untracked tool provider',
+          owner: 'ops-team',
+          version: '1.0.0',
+          // no lastReviewedAt
+        },
+      ],
+    });
+
+    expect(result.reviewIntervalDays).toBe(90);
+    const finding = result.findings.find(
+      (f) => f.providerId === 'untracked-provider' && f.findingType === 'overdue-review'
+    );
+    expect(finding).toBeDefined();
+    expect(finding?.severity).toBe('high');
+  });
 });

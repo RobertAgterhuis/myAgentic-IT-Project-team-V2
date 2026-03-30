@@ -192,7 +192,8 @@ export type AdaptivePolicyDomain =
   | 'concurrency'
   | 'retrieval'
   | 'route-escalation'
-  | 'pattern-uplift';
+  | 'pattern-uplift'
+  | 'registry-optimization';
 
 export interface AdaptivePolicyProposal {
   proposalId: string;
@@ -400,6 +401,52 @@ export interface AdaptiveProposalAutoApplyResult {
   reasons: string[];
 }
 
+// ─── Quarterly Registry Optimization Cycle ──────────────────
+
+export interface RegistryEntryMetadata {
+  providerId: string;
+  providerType: string;
+  description?: string;
+  owner?: string;
+  lastReviewedAt?: string;
+  version?: string;
+  deprecated?: boolean;
+  tags?: string[];
+}
+
+export type RegistryOptimizationFindingType =
+  | 'overdue-review'
+  | 'missing-metadata'
+  | 'deprecated-provider';
+
+export interface RegistryOptimizationFinding {
+  findingId: string;
+  providerId: string;
+  providerType: string;
+  findingType: RegistryOptimizationFindingType;
+  severity: FindingSeverity;
+  message: string;
+  recommendedAction: string;
+}
+
+export interface RegistryOptimizationCycleInput {
+  entries: RegistryEntryMetadata[];
+  reviewIntervalDays?: number;
+  nowIso?: string;
+}
+
+export interface RegistryOptimizationCycleResult {
+  cycleId: string;
+  executedAt: string;
+  reviewIntervalDays: number;
+  nextReviewDue: string;
+  totalEntries: number;
+  entriesNeedingReview: number;
+  findings: RegistryOptimizationFinding[];
+  optimizationRecommendations: string[];
+  cycleHealthy: boolean;
+}
+
 const BASE_DIR = 'BusinessDocs/intelligence-loop/m3';
 const STALE_SCANS_PATH = `${BASE_DIR}/stale-knowledge-scans.jsonl`;
 const CONTRADICTION_SCANS_PATH = `${BASE_DIR}/contradiction-scans.jsonl`;
@@ -412,6 +459,7 @@ const CHAIN_QUALITY_PATH = `${BASE_DIR}/chain-quality-analyses.jsonl`;
 const DEPENDENCY_PLAN_PATH = `${BASE_DIR}/dependency-aware-plans.jsonl`;
 const TOOL_RELIABILITY_PATH = `${BASE_DIR}/tool-reliability-analyses.jsonl`;
 const PLAN_FRESHNESS_PATH = `${BASE_DIR}/plan-freshness-validations.jsonl`;
+const REGISTRY_OPTIMIZATION_PATH = `${BASE_DIR}/registry-optimization-cycles.jsonl`;
 const PATTERNS_DIR = 'Patterns';
 
 function clamp(value: number, min: number, max: number): number {
@@ -1460,6 +1508,127 @@ export class ProactiveDiscoveryOptimizationService {
       analysis,
       proposalsCreated,
     };
+  }
+
+  async runQuarterlyRegistryOptimizationCycle(
+    input: RegistryOptimizationCycleInput
+  ): Promise<RegistryOptimizationCycleResult> {
+    const nowIso = input.nowIso || new Date().toISOString();
+    const nowMs = Date.parse(nowIso);
+    const reviewIntervalDays = Math.max(1, Math.floor(input.reviewIntervalDays ?? 90));
+    const reviewIntervalMs = reviewIntervalDays * 24 * 60 * 60 * 1000;
+
+    const findings: RegistryOptimizationFinding[] = [];
+
+    for (const entry of input.entries) {
+      // Check for overdue review
+      if (entry.lastReviewedAt) {
+        const lastReviewMs = Date.parse(entry.lastReviewedAt);
+        if (Number.isFinite(lastReviewMs) && nowMs - lastReviewMs > reviewIntervalMs) {
+          const overdueDays = Math.floor((nowMs - lastReviewMs) / (24 * 60 * 60 * 1000));
+          const severity: FindingSeverity =
+            overdueDays > reviewIntervalDays * 2
+              ? 'critical'
+              : overdueDays > reviewIntervalDays * 1.5
+                ? 'high'
+                : 'medium';
+          findings.push({
+            findingId: makeId('REGOPT'),
+            providerId: entry.providerId,
+            providerType: entry.providerType,
+            findingType: 'overdue-review',
+            severity,
+            message: `Provider '${entry.providerId}' has not been reviewed in ${overdueDays} days (interval: ${reviewIntervalDays} days).`,
+            recommendedAction: 'Schedule a registry metadata review for this provider.',
+          });
+        }
+      } else {
+        findings.push({
+          findingId: makeId('REGOPT'),
+          providerId: entry.providerId,
+          providerType: entry.providerType,
+          findingType: 'overdue-review',
+          severity: 'high',
+          message: `Provider '${entry.providerId}' has no recorded review date.`,
+          recommendedAction: 'Establish an initial review date for this provider entry.',
+        });
+      }
+
+      // Check for missing metadata fields
+      const missingFields: string[] = [];
+      if (!entry.description) missingFields.push('description');
+      if (!entry.owner) missingFields.push('owner');
+      if (!entry.version) missingFields.push('version');
+
+      if (missingFields.length > 0) {
+        findings.push({
+          findingId: makeId('REGOPT'),
+          providerId: entry.providerId,
+          providerType: entry.providerType,
+          findingType: 'missing-metadata',
+          severity: missingFields.length >= 2 ? 'high' : 'medium',
+          message: `Provider '${entry.providerId}' is missing metadata: ${missingFields.join(', ')}.`,
+          recommendedAction: `Populate the following registry metadata fields: ${missingFields.join(', ')}.`,
+        });
+      }
+
+      // Check for deprecated providers still in use
+      if (entry.deprecated) {
+        findings.push({
+          findingId: makeId('REGOPT'),
+          providerId: entry.providerId,
+          providerType: entry.providerType,
+          findingType: 'deprecated-provider',
+          severity: 'high',
+          message: `Provider '${entry.providerId}' is marked deprecated and should be removed or replaced.`,
+          recommendedAction: 'Plan migration away from this provider and update registry.',
+        });
+      }
+    }
+
+    const entriesNeedingReview = new Set(findings.map((f) => f.providerId)).size;
+    const cycleHealthy = findings.filter((f) => f.severity === 'critical').length === 0;
+
+    const recommendations: string[] = [];
+    const overdueCount = findings.filter((f) => f.findingType === 'overdue-review').length;
+    const missingMetaCount = findings.filter((f) => f.findingType === 'missing-metadata').length;
+    const deprecatedCount = findings.filter((f) => f.findingType === 'deprecated-provider').length;
+
+    if (overdueCount > 0) {
+      recommendations.push(
+        `Review and update ${overdueCount} provider entr${overdueCount === 1 ? 'y' : 'ies'} that missed the ${reviewIntervalDays}-day review cadence.`
+      );
+    }
+    if (missingMetaCount > 0) {
+      recommendations.push(
+        `Complete missing metadata for ${missingMetaCount} provider entr${missingMetaCount === 1 ? 'y' : 'ies'} to improve registry quality.`
+      );
+    }
+    if (deprecatedCount > 0) {
+      recommendations.push(
+        `Retire or replace ${deprecatedCount} deprecated provider${deprecatedCount === 1 ? '' : 's'} to reduce operational risk.`
+      );
+    }
+    if (findings.length === 0) {
+      recommendations.push('All registry entries are current. No action required this cycle.');
+    }
+
+    const nextReviewDue = new Date(nowMs + reviewIntervalMs).toISOString();
+
+    const result: RegistryOptimizationCycleResult = {
+      cycleId: makeId('REGCYCLE'),
+      executedAt: nowIso,
+      reviewIntervalDays,
+      nextReviewDue,
+      totalEntries: input.entries.length,
+      entriesNeedingReview,
+      findings,
+      optimizationRecommendations: recommendations,
+      cycleHealthy,
+    };
+
+    this.appendJsonl(REGISTRY_OPTIMIZATION_PATH, result);
+    return result;
   }
 }
 

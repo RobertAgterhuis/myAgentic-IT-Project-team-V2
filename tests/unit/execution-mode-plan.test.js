@@ -30,4 +30,17 @@ describe('buildExecutionModePlan', () => {
     expect(plan.hybridInjections.every((entry) => entry.agents.length > 0)).toBe(true);
     expect(plan.hybridInjections.every((entry) => entry.agents.length <= 2)).toBe(true);
   });
+
+  test('clamps invalid selection limits to at least one agent and one injection assignee', () => {
+    const plan = buildExecutionModePlan({
+      mode: 'HYBRID',
+      brief: '',
+      maxAgencyAgents: 0,
+      maxAgentsPerInjection: 0,
+    });
+
+    expect(plan.selectedAgencyAgents).toHaveLength(1);
+    expect(plan.hybridInjections.length).toBeGreaterThan(0);
+    expect(plan.hybridInjections.every((entry) => entry.agents.length === 1)).toBe(true);
+  });
 });

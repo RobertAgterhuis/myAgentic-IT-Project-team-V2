@@ -273,4 +273,115 @@ describe('SessionService', () => {
     const architect = phase2.agents.find((a) => a.id === '05');
     expect(architect.status).toBe('done');
   });
+
+  it('adds hybrid injection agents to mapped progress phases and skips invalid duplicates', () => {
+    const state5 = {
+      ...SESSION_STATE,
+      execution_mode: 'HYBRID',
+      current_phase: 'PHASE-2',
+      current_agent: null,
+      current_agents: ['90'],
+      execution_plan: {
+        hybridInjections: [
+          {
+            atState: 'PHASE_2',
+            agents: [
+              { id: '90', name: 'Hybrid UX' },
+              { id: '90', name: 'Hybrid UX' },
+              { id: '', name: 'Ignored Missing Id' },
+            ],
+          },
+          {
+            atState: 'SYNTHESIS',
+            agents: [{ id: '91', name: 'Synthesis Specialist' }],
+          },
+          {
+            atState: 'UNKNOWN_STATE',
+            agents: [{ id: '92', name: 'Ignored Unknown State' }],
+          },
+        ],
+      },
+    };
+
+    const phases = svc.buildPhaseProgress(state5);
+    const phase2 = phases.find((p) => p.key === 'PHASE-2');
+    const synthesis = phases.find((p) => p.key === 'SYNTHESIS');
+
+    expect(phase2.agents.filter((agent) => agent.id === '90')).toHaveLength(1);
+    expect(phase2.agents.find((agent) => agent.id === '90')).toMatchObject({
+      name: 'Hybrid UX',
+      status: 'active',
+      automation_level: 'autonomous',
+    });
+    expect(synthesis.agents.find((agent) => agent.id === '91')).toMatchObject({
+      name: 'Synthesis Specialist',
+      status: 'pending',
+      automation_level: 'autonomous',
+    });
+    expect(phases.every((phase) => phase.agents.every((agent) => agent.id !== '92'))).toBe(true);
+  });
+
+  it('shows selected agency roster in onboarding for AGENCY_ONLY mode', () => {
+    const state6 = {
+      ...SESSION_STATE,
+      execution_mode: 'AGENCY_ONLY',
+      execution_plan: {
+        selectedAgencyAgents: [
+          { id: '88', name: 'Brand Strategist' },
+          { id: '88', name: 'Brand Strategist' },
+          { id: '89', name: 'Growth Lead' },
+          { id: '', name: 'Ignored Missing Id' },
+        ],
+      },
+    };
+
+    const phases = svc.buildPhaseProgress(state6);
+    const onboarding = phases.find((p) => p.key === 'ONBOARDING');
+
+    expect(onboarding.agents.filter((agent) => agent.id === '88')).toHaveLength(1);
+    expect(onboarding.agents.find((agent) => agent.id === '88')).toMatchObject({
+      name: 'Brand Strategist',
+      status: 'done',
+      automation_level: 'autonomous',
+    });
+    expect(onboarding.agents.find((agent) => agent.id === '89')).toMatchObject({
+      name: 'Growth Lead',
+      status: 'done',
+      automation_level: 'autonomous',
+    });
+  });
+
+  it('builds runtime alerts for stalled long-running sessions', () => {
+    const now = Date.now();
+    const summary = svc.buildSessionSummary({
+      ...SESSION_STATE,
+      status: 'RUNNING',
+      initiated_at: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
+      phase_started_at: new Date(now - 75 * 60 * 1000).toISOString(),
+      last_updated: new Date(now - 20 * 60 * 1000).toISOString(),
+    });
+
+    expect(summary.runtime_alerts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'phase-timeout', kind: 'timeout', severity: 'critical' }),
+        expect.objectContaining({ id: 'phase-stall', kind: 'stall', severity: 'warning' }),
+      ])
+    );
+    expect(summary.phase_watch).toMatchObject({
+      timeout_ms: expect.any(Number),
+      stall_alert_ms: expect.any(Number),
+    });
+  });
+
+  it('skips runtime alerts for terminal session states', () => {
+    const now = Date.now();
+    const summary = svc.buildSessionSummary({
+      ...SESSION_STATE,
+      status: 'COMPLETED',
+      phase_started_at: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
+      last_updated: new Date(now - 30 * 60 * 1000).toISOString(),
+    });
+
+    expect(summary.runtime_alerts).toEqual([]);
+  });
 });

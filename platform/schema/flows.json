@@ -97,6 +97,24 @@
       "phases": [],
       "supportsPartial": false,
       "supportsCombination": false
+    },
+    "SDLC_ONLY": {
+      "label": "SDLC Only (default execution mode)",
+      "phases": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"],
+      "supportsPartial": false,
+      "supportsCombination": false
+    },
+    "AGENCY_ONLY": {
+      "label": "Agency Only (pure agency team execution)",
+      "phases": [],
+      "supportsPartial": false,
+      "supportsCombination": false
+    },
+    "HYBRID": {
+      "label": "Hybrid SDLC + Agency injection",
+      "phases": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"],
+      "supportsPartial": false,
+      "supportsCombination": false
     }
   },
   "gates": [

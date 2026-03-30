@@ -170,9 +170,7 @@ function isAgentActive(
     currentPhase === phaseKey &&
     activeAgents.some(
       (entry) =>
-        entry.startsWith(agent.id + '-') ||
-        entry.endsWith(`-${agent.id}`) ||
-        entry === agent.id
+        entry.startsWith(agent.id + '-') || entry.endsWith(`-${agent.id}`) || entry === agent.id
     )
   );
 }

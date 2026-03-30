@@ -2113,7 +2113,8 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const st = engine.status();
         const effectiveExecutionMode = deriveExecutionMode(st as Record<string, unknown>);
         const executionPlan =
-          !resume && (effectiveExecutionMode === 'AGENCY_ONLY' || effectiveExecutionMode === 'HYBRID')
+          !resume &&
+          (effectiveExecutionMode === 'AGENCY_ONLY' || effectiveExecutionMode === 'HYBRID')
             ? buildExecutionModePlan({
                 mode: effectiveExecutionMode,
                 brief: typeof body.brief === 'string' ? body.brief : undefined,

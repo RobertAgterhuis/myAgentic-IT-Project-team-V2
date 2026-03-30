@@ -128,13 +128,14 @@ export function buildExecutionModePlan(options: BuildExecutionModePlanOptions): 
     .slice(0, Math.max(1, maxAgencyAgents))
     .map(({ agent, score }) => toPlannedAgent(agent, score));
 
-  const hybridInjections = descriptor.mode === 'HYBRID'
-    ? buildHybridInjections(
-        descriptor.injectionPoints,
-        selectedAgencyAgents,
-        Math.max(1, maxAgentsPerInjection)
-      )
-    : [];
+  const hybridInjections =
+    descriptor.mode === 'HYBRID'
+      ? buildHybridInjections(
+          descriptor.injectionPoints,
+          selectedAgencyAgents,
+          Math.max(1, maxAgentsPerInjection)
+        )
+      : [];
 
   return {
     mode,

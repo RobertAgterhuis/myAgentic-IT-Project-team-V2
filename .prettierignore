@@ -1,4 +1,5 @@
 # Runtime-generated session files (written by the orchestrator engine)
 .agentic/
+BusinessDocs/session/**
 BusinessDocs/session/session-state.json
 BusinessDocs/session/run-history.json

@@ -67,4 +67,50 @@ describe('Canonical flow schema validation (S4-2)', () => {
       fs.unlinkSync(badPath);
     }
   });
+
+  it('rejects fullFlow/structuralStates references to unknown states', () => {
+    const tmpDir = path.join(__dirname, '..', '..', 'platform', 'schema');
+    const badPath = path.join(tmpDir, '_test_bad_semantics_states.json');
+
+    const data = JSON.parse(fs.readFileSync(FLOWS_PATH, 'utf8'));
+    data.fullFlow = [...data.fullFlow, 'PHASE_X'];
+    data.structuralStates = [...data.structuralStates, 'STATE_X'];
+
+    fs.writeFileSync(badPath, JSON.stringify(data), 'utf8');
+    try {
+      const result = validateCanonicalFlows({ flowsPath: badPath });
+      expect(result.valid).toBe(false);
+      expect(
+        result.errors.some((e) => String(e.message).includes('fullFlow references unknown state'))
+      ).toBe(true);
+      expect(
+        result.errors.some((e) =>
+          String(e.message).includes('structuralStates references unknown state')
+        )
+      ).toBe(true);
+    } finally {
+      fs.unlinkSync(badPath);
+    }
+  });
+
+  it('rejects gate references to unknown states', () => {
+    const tmpDir = path.join(__dirname, '..', '..', 'platform', 'schema');
+    const badPath = path.join(tmpDir, '_test_bad_semantics_gate_mode.json');
+
+    const data = JSON.parse(fs.readFileSync(FLOWS_PATH, 'utf8'));
+    data.gates = [
+      ...data.gates,
+      { id: 'gate-test-unknown', after: 'PHASE_DOES_NOT_EXIST', before: 'PHASE_1' },
+      { id: 'gate-test-unknown-before', after: 'PHASE_1', before: 'PHASE_DOES_NOT_EXIST_2' },
+    ];
+
+    fs.writeFileSync(badPath, JSON.stringify(data), 'utf8');
+    try {
+      const result = validateCanonicalFlows({ flowsPath: badPath });
+      expect(result.valid).toBe(false);
+      expect(result.errors.length).toBeGreaterThan(0);
+    } finally {
+      fs.unlinkSync(badPath);
+    }
+  });
 });

@@ -35,7 +35,7 @@
     "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
     "build": "npm run scaffold:runtime && npm run tokens:build && npm run build --prefix src/webapp/ui",
-    "scaffold:runtime": "tsx src/webapp/runtime-scaffold.ts",
+    "scaffold:runtime": "tsx scripts/scaffold-runtime.ts",
     "tokens:build": "node scripts/build-tokens.mjs",
     "plugin": "tsx src/webapp/plugins/mcp-governance/cli.ts",
     "test:e2e": "npx playwright test",

@@ -2,7 +2,6 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
-import { pathToFileURL } from 'node:url';
 
 export interface RuntimeScaffoldResult {
   created: string[];
@@ -39,13 +38,4 @@ export function ensureRuntimeScaffold(projectRoot = process.cwd()): RuntimeScaff
   }
 
   return result;
-}
-
-const isDirectRun = !!process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
-
-if (isDirectRun) {
-  const rootArg = process.argv[2];
-  const projectRoot = rootArg ? path.resolve(rootArg) : process.cwd();
-  const outcome = ensureRuntimeScaffold(projectRoot);
-  process.stdout.write(`${JSON.stringify({ ok: true, projectRoot, ...outcome }, null, 2)}\n`);
 }

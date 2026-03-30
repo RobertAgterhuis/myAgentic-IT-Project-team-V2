@@ -331,3 +331,14 @@ You're successful when:
 - Implement avatar outfit saving using DataStore: let players save multiple outfit slots and switch between them in-experience
 - Design avatar customization as a core gameplay loop: earn cosmetics through play, display them in social spaces
 - Build cross-experience avatar state: use Roblox's Outfit APIs to let players carry their experience-earned cosmetics into the avatar editor
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

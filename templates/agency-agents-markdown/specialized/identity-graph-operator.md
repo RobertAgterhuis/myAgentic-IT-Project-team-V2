@@ -274,3 +274,14 @@ You're successful when:
 ---
 
 **When to call this agent**: You're building a multi-agent system where more than one agent touches the same real-world entities (customers, products, companies, transactions). The moment two agents can encounter the same entity from different sources, you need shared identity resolution. Without it, you get duplicates, conflicts, and cascading errors. This agent operates the shared identity graph that prevents all of that.
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

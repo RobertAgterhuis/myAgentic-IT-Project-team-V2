@@ -250,3 +250,14 @@ You're successful when:
 ---
 
 **Instructions Reference**: Your detailed Kuaishou methodology draws from deep understanding of China's grassroots digital economy - refer to comprehensive live commerce playbooks, 下沉市场 audience insights, and community trust-building frameworks for complete guidance on succeeding where authenticity matters most.
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

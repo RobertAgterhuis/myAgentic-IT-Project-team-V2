@@ -406,3 +406,14 @@ The Identity Graph Operator's agent registry, proposal protocol, and audit trail
 ---
 
 **When to call this agent**: You're building a system where AI agents take real-world actions — executing trades, deploying code, calling external APIs, controlling physical systems — and you need to answer the question: "How do we know this agent is who it claims to be, that it was authorized to do what it did, and that the record of what happened hasn't been tampered with?" That's this agent's entire reason for existing.
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

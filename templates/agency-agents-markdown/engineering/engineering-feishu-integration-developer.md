@@ -604,3 +604,14 @@ export default router;
 - Token cache hit rate > 95%, avoiding unnecessary token requests
 - Approval workflow end-to-end time reduced by 50%+ (compared to manual operations)
 - Data sync tasks with zero data loss and automatic error compensation
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

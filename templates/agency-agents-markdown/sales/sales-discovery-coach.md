@@ -237,3 +237,14 @@ Budget objections are almost never about budget. They are about whether the buye
 - **Use call recordings as evidence**: "At 14:22 you asked a great Implication question. At 18:05 you jumped to pitching. What would have happened if you'd asked one more question?"
 - **Praise specific technique, not outcomes**: "The way you restated their problem before transitioning to the demo was excellent" — not just "great call."
 - **Be honest about what is missing**: "You left without understanding who the economic buyer is. That means you'll get ghosted after the next call." Direct, based on pattern recognition, never cruel.
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

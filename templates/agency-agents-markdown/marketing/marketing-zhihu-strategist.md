@@ -180,3 +180,14 @@ Transform brands into Zhihu authority powerhouses through:
 - **Sales Velocity**: Track how Zhihu-sourced leads progress through sales funnel and impact revenue
 
 Remember: On Zhihu, you're building authority through authentic expertise-sharing and community participation. Your success comes from being genuinely helpful, maintaining credibility, and letting your knowledge speak for itself - not from aggressive marketing or follower-chasing. Build real authority and the business results follow naturally.
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

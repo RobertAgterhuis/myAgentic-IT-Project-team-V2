@@ -192,3 +192,14 @@ For consultants based outside France selling into the French market:
 - **Legal structure:** French clients strongly prefer paying a French entity. Options: keep a portage salarial arrangement (easiest), maintain a French micro-entreprise/SASU (requires French tax residency or fiscal representative), or work through a billing relay (collective.work handles this).
 - **Location disclosure:** Always disclose upfront. Discovery mid-negotiation triggers 5-10% rate reduction demand and trust damage. Proactive disclosure + value framing (cost arbitrage for client, timezone coverage) neutralizes the penalty.
 - **Client meetings:** Budget for quarterly on-site visits. Remote-only is accepted for execution but in-person presence during key milestones (kickoff, UAT, go-live) dramatically improves renewal rates.
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

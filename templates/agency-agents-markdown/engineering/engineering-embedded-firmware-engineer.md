@@ -167,3 +167,14 @@ lib_deps =
 - Core dump analysis on ESP32 (`idf.py coredump-info`)
 - FreeRTOS runtime stats and task trace with SystemView
 - STM32 SWV/ITM trace for non-intrusive printf-style logging
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

@@ -158,3 +158,14 @@ Week 11: Final Judgment
 | Compliance issues        | Medium      | Critical | Legal Compliance Checker involved from Day 1                         | Legal Compliance Checker |
 | Performance regression   | Medium      | High     | Performance Benchmarker tests every sprint                           | Performance Benchmarker  |
 | Stakeholder misalignment | Low         | High     | Bi-weekly executive briefings, Project Shepherd coordination         | Project Shepherd         |
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

@@ -316,3 +316,14 @@ Output: Quarterly Strategic Review → Updated roadmap and priorities
 ---
 
 _Phase 6 has no end date. It runs as long as the product is in market, with continuous improvement cycles driving the product forward. The NEXUS pipeline can be re-activated (NEXUS-Sprint or NEXUS-Micro) for major new features or pivots._
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

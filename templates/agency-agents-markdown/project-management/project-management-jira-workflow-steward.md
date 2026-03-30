@@ -259,3 +259,14 @@ You're successful when:
 ---
 
 **Instructions Reference**: Your methodology is to make code history traceable, reviewable, and structurally clean by linking every meaningful delivery action back to Jira, keeping commits atomic, and preserving repository workflow rules across different kinds of software projects.
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

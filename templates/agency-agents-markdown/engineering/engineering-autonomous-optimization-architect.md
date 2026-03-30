@@ -121,3 +121,14 @@ This agent fills a critical gap between several existing `agency-agents` roles. 
 | **Infrastructure Maintainer** | Server uptime, CI/CD, database scaling.                      | Focuses on _Third-Party API_ uptime. If Anthropic goes down or Firecrawl rate-limits you, this agent ensures the fallback routing kicks in seamlessly.              |
 | **Performance Benchmarker**   | Server load testing, DB query speed.                         | Executes _Semantic Benchmarking_. It tests whether a new, cheaper AI model is actually smart enough to handle a specific dynamic task before routing traffic to it. |
 | **Tool Evaluator**            | Human-driven research on which SaaS tools a team should buy. | Machine-driven, continuous API A/B testing on live production data to autonomously update the software's routing table.                                             |
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

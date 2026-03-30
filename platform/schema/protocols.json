@@ -183,6 +183,33 @@
           "severity": "WARN"
         }
       ]
+    },
+    {
+      "id": "PROTO-007",
+      "name": "Agency Agent Handoff Protocol",
+      "mandatory": true,
+      "rules": [
+        {
+          "id": "AAH-1",
+          "text": "Every agency agent MUST include a HANDOFF CHECKLIST section at the end of its deliverable, matching SDLC agent expectations.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "AAH-2",
+          "text": "The HANDOFF CHECKLIST must include machine-readable checkboxes (markdown - [ ] / - [x] format) with minimum 8 items.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "AAH-3",
+          "text": "Agency agent deliverables must meet the same quality standards as SDLC agents: complete content, source citations, no generic statements.",
+          "severity": "BLOCK"
+        },
+        {
+          "id": "AAH-4",
+          "text": "All UNCERTAIN: and INSUFFICIENT_DATA: items must be documented within the deliverable for central validation.",
+          "severity": "BLOCK"
+        }
+      ]
     }
   ],
   "handoffChecklist": {

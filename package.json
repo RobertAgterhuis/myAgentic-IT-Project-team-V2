@@ -42,6 +42,7 @@
     "audit:github": "node scripts/github-config-audit.js",
     "snapshot:github": "node scripts/github-state-snapshot.js",
     "generate:platform": "node scripts/generate-platform.js all",
+    "generate:agent-registry": "tsx scripts/generate-agent-registry.ts",
     "generate:openapi": "tsx scripts/generate-openapi.ts",
     "postinstall": "node scripts/generate-platform.js all"
   },
@@ -73,7 +74,6 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^20.19.37",
-    "typescript-eslint": "^8.0.0",
     "@vitest/coverage-v8": "^4.0.18",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^10.0.0",
@@ -81,10 +81,12 @@
     "globals": "^17.4.0",
     "husky": "^9.1.7",
     "jsdom": "^28.1.0",
+    "json-schema-to-typescript": "^15.0.4",
     "lighthouse": "^12.6.0",
     "lint-staged": "^16.3.3",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.0.0",
     "vitest": "^4.0.18"
   },
   "dependencies": {

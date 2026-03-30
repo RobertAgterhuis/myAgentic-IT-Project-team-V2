@@ -8,7 +8,7 @@
 
 ## Deliverables
 
-- templates/agency-agents-markdown/strategy/README.md - agency strategy reference for cross-domain work.
+- templates/agency-agents-markdown/strategy/QUICKSTART.md - agency strategy reference for cross-domain work.
 - agency-team/03-ARCHITECTURAL-DECISIONS.md - ADR context for unified templates.
 
 ## Handoff to Next Agent

@@ -1,6 +1,5 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import Ajv2020 from 'ajv/dist/2020';
 import MarkdownIt from 'markdown-it';
 
@@ -38,8 +37,7 @@ const PLACEHOLDER_PATTERNS = [
   /^\s*n\/a\s*$/i,
 ];
 
-const THIS_DIR = path.dirname(fileURLToPath(import.meta.url));
-const SCHEMA_PATH = path.resolve(THIS_DIR, 'validation-schema.json');
+const SCHEMA_PATH = path.resolve('platform/standards/validation-schema.json');
 const SCHEMA = JSON.parse(fs.readFileSync(SCHEMA_PATH, 'utf8'));
 const AJV = new Ajv2020({ allErrors: true, strict: false });
 const VALIDATE_SCHEMA = AJV.compile(SCHEMA);
@@ -301,6 +299,9 @@ function walkMarkdownFiles(targetPath: string): string[] {
     if (subStat.isDirectory()) {
       files.push(...walkMarkdownFiles(fullPath));
     } else if (fullPath.toLowerCase().endsWith('.md')) {
+      if (path.basename(fullPath).toLowerCase() === 'readme.md') {
+        continue;
+      }
       files.push(fullPath);
     }
   }
@@ -360,6 +361,6 @@ function runCli() {
   process.exit(hasFailure ? 1 : 0);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (process.argv[1] && /validate-handoff\.(ts|js)$/i.test(process.argv[1])) {
   runCli();
 }

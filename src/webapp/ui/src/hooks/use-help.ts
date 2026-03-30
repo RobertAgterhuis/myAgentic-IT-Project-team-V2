@@ -8,6 +8,7 @@ import type {
   PageHelpResponse,
 } from '@/lib/api-types';
 import {
+  buildHelpRouteCandidates,
   mergePackHelpTopicsIntoPageHelp,
   resolvePackAwareHelpRouteSlug,
 } from '@/help/help-registry';
@@ -34,14 +35,20 @@ export function usePageHelp(routeSlug: string) {
   const pageQuery = useQuery({
     queryKey: queryKeys.help.page(routeSlug),
     queryFn: async () => {
-      try {
-        return await apiGet<PageHelpResponse>(`/v1/help/page/${encodeURIComponent(routeSlug)}`);
-      } catch (error) {
-        if (error instanceof ApiError && error.status === 404) {
-          return null;
+      const candidates = buildHelpRouteCandidates(routeSlug);
+
+      for (const candidate of candidates) {
+        try {
+          return await apiGet<PageHelpResponse>(`/v1/help/page/${encodeURIComponent(candidate)}`);
+        } catch (error) {
+          if (error instanceof ApiError && error.status === 404) {
+            continue;
+          }
+          throw error;
         }
-        throw error;
       }
+
+      return null;
     },
     staleTime: 5 * 60_000,
     enabled: routeSlug.trim().length > 0,

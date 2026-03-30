@@ -49,7 +49,7 @@ This folder contains the complete roadmap, architecture, and checklist for integ
 
 ## THE BIG PICTURE: What Gets Built?
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │                      AGENCY TEAM INTEGRATION                │
 │                       (9–13 weeks)                          │
@@ -169,9 +169,9 @@ You're handling the build. Here's your one-page cheat sheet:
 
 ### Files You'll Create (In Order)
 
-**Week 1–2: Registry & Metadata**
+#### Week 1–2: Registry & Metadata
 
-```
+```text
 registry/schema/agent.ts                    (TypeScript interface)
 registry/schema/agent-registry.schema.json  (JSON Schema)
 registry/data/agent-registry.json           (230-agent data, generated)
@@ -179,9 +179,9 @@ registry/utils/queryAgents.ts               (search/filter API)
 registry/utils/registry.test.ts             (≥15 tests)
 ```
 
-**Week 3: Handoff Protocol**
+#### Week 3: Handoff Protocol
 
-```
+```text
 standards/HANDOFF-TEMPLATE.md               (unified markdown template)
 standards/validation-schema.json            (JSON schema for validation)
 standards/validate-handoff.ts               (validator + CLI tool)
@@ -189,9 +189,9 @@ standards/validate-handoff.test.ts          (≥10 tests)
 docs/handoff-examples/*.md                  (10 example documents)
 ```
 
-**Week 4–6: Orchestrator**
+#### Week 4–6: Orchestrator
 
-```
+```text
 orchestrator/schema/task.ts                 (task interface)
 orchestrator/matching/scoringFunction.ts    (matching algorithm)
 orchestrator/matching/matching.test.ts      (≥15 tests)
@@ -200,9 +200,9 @@ orchestrator/api/assembleTeam.ts            (team assembly API)
 orchestrator/api/assembleTeam.test.ts       (≥20 tests)
 ```
 
-**Week 7–10: Execution Modes**
+#### Week 7–10: Execution Modes
 
-```
+```text
 orchestrator/modes/executeSDLCMode.ts       (refactored SDLC logic)
 orchestrator/modes/executeAgencyMode.ts     (new AGENCY_ONLY mode)
 orchestrator/modes/executeHybridMode.ts     (new HYBRID mode)
@@ -210,14 +210,48 @@ orchestrator/modes/executionModes.test.ts   (≥35 integration tests)
 orchestrator/qualityGates/criticAgent.ts    (updated Critic Agent)
 ```
 
-**Week 11–13: Learning**
+#### Week 11–13: Learning
 
-```
+```text
 analytics/schema/outcome.ts                 (outcome data interface)
 analytics/database/outcomes.sql             (database schema)
 analytics/analysis/patternAnalysis.ts       (pattern analysis)
 analytics/dashboard/top-patterns.html       (dashboard view)
 ```
+
+---
+
+## AGENT REGISTRY STATUS (M1)
+
+The M1 registry foundation now lives in the platform schema layer so it can be generated, validated, and queried without disturbing the existing runtime flow schema.
+
+**Registry artifacts:**
+
+- `platform/schema/agent-registry.schema.json` — rich JSON schema for 230 agents
+- `platform/schema/agent-registry.json` — generated merged registry
+- `platform/schema/agent-registry.generated.ts` — TypeScript definitions generated from schema
+- `platform/engine/agent-registry.ts` — validation + query functions
+- `scripts/generate-agent-registry.ts` — regeneration pipeline
+
+**Quick start:**
+
+```bash
+npm run generate:agent-registry
+node -e "const { queryAgents } = require('./platform/engine/agent-registry'); console.log(queryAgents({ domain: ['marketing'], limit: 3 }).map(a => a.name));"
+```
+
+**Annotated examples:**
+
+1. `sdlc-01-business-analyst`
+   Phase-aware SDLC agent with explicit sequence dependencies, phase membership, contracts-as-outputs, and gate-aware metadata.
+2. `agency-engineering-engineering-senior-developer`
+   Frontmatter-driven engineering agent with extracted premium implementation capabilities and engineering defaults for inputs/outputs.
+3. `agency-marketing-marketing-content-creator`
+   Marketing specialist with explicit tools from frontmatter and capabilities extracted from structured markdown sections.
+4. `agency-specialized-identity-graph-operator`
+   Specialized agent showing how deep technical narrative content still maps cleanly into capabilities, outputs, and success patterns.
+5. `agency-project-management-project-manager-senior`
+   Delivery-focused example emphasizing timeline, stakeholder, and execution-plan metadata for orchestration use.
 
 ### Daily Standup Template
 

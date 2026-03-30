@@ -10,6 +10,9 @@ and framework extraction.
 
 - `agent-canonical.schema.json`: JSON Schema definition for canonical agents.
 - `agents.json`: Current mapped agent registry (38 agents from `docs/reference/agent-index.md`).
+- `agent-registry.schema.json`: Rich registry schema for the M1 230-agent registry.
+- `agent-registry.json`: Generated registry with 39 SDLC agents + 191 agency agents.
+- `agent-registry.generated.ts`: Auto-generated TypeScript definitions derived from the registry schema.
 
 ### Flow Schema (S4-2)
 
@@ -82,6 +85,12 @@ Run all schema tests:
 
 ```bash
 npx vitest run tests/unit/agent-schema.test.js tests/unit/flow-schema.test.js tests/unit/tool-schema.test.js tests/unit/transpiler.test.js
+```
+
+Generate the M1 agent registry and TypeScript types:
+
+```bash
+npm run generate:agent-registry
 ```
 
 ## Example

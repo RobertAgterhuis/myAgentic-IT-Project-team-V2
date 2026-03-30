@@ -1,0 +1,507 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://myagentic-it.local/schema/agent-registry.schema.json",
+  "title": "Agent Registry Schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "source", "generatedAt", "stats", "agents"],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "stats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["totalAgents", "agencyAgents", "sdlcAgents", "domains"],
+      "properties": {
+        "totalAgents": { "type": "integer", "minimum": 1 },
+        "agencyAgents": { "type": "integer", "minimum": 0 },
+        "sdlcAgents": { "type": "integer", "minimum": 0 },
+        "domains": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/domain" },
+          "uniqueItems": true
+        }
+      }
+    },
+    "agents": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/agent" }
+    }
+  },
+  "$defs": {
+    "domain": {
+      "type": "string",
+      "enum": [
+        "academic",
+        "design",
+        "engineering",
+        "game-development",
+        "integrations",
+        "marketing",
+        "paid-media",
+        "product",
+        "project-management",
+        "sales",
+        "spatial-computing",
+        "specialized",
+        "strategy",
+        "support",
+        "testing",
+        "sdlc"
+      ]
+    },
+    "timelineEstimate": {
+      "type": "string",
+      "enum": ["<4 hours", "4-8 hours", "1-3 days", "3-5 days", ">1 week"]
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "SPRINT_GATE",
+        "ONBOARDING",
+        "PHASE_1",
+        "PHASE_2",
+        "PHASE_3",
+        "PHASE_4",
+        "CRITIC_RISK",
+        "SYNTHESIS",
+        "PHASE_5_EXECUTING",
+        "REEVALUATE",
+        "FEATURE",
+        "QUESTIONNAIRE",
+        "SCOPE_CHANGE",
+        "ON_DEMAND"
+      ]
+    },
+    "agent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "legacyId",
+        "agentType",
+        "name",
+        "description",
+        "domain",
+        "color",
+        "emoji",
+        "vibe",
+        "capabilities",
+        "inputs",
+        "outputs",
+        "minPrerequisites",
+        "optionalInputs",
+        "skillPath",
+        "requiredTools",
+        "phase",
+        "gatekeeper",
+        "gateMembership",
+        "sequenceDependencies",
+        "maxRetries",
+        "timelineEstimate",
+        "successRate",
+        "avgQualityScore",
+        "commonFailures",
+        "worksWith",
+        "conflictsWith",
+        "successPatterns",
+        "lastUpdated",
+        "sourceFiles"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^(agency|sdlc)-[a-z0-9]+(?:-[a-z0-9]+)*$"
+        },
+        "legacyId": {
+          "type": ["string", "null"]
+        },
+        "agentType": {
+          "type": "string",
+          "enum": ["agency", "sdlc"]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1
+        },
+        "domain": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/domain" },
+          "uniqueItems": true
+        },
+        "color": {
+          "type": ["string", "null"]
+        },
+        "emoji": {
+          "type": ["string", "null"]
+        },
+        "vibe": {
+          "type": ["string", "null"]
+        },
+        "capabilities": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "inputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "outputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "minPrerequisites": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "optionalInputs": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "skillPath": {
+          "type": "string",
+          "minLength": 1
+        },
+        "requiredTools": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "phase": {
+          "anyOf": [{ "$ref": "#/$defs/phase" }, { "type": "null" }]
+        },
+        "gatekeeper": {
+          "type": "boolean"
+        },
+        "gateMembership": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "sequenceDependencies": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(agency|sdlc)-[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "uniqueItems": true
+        },
+        "maxRetries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10
+        },
+        "timelineEstimate": { "$ref": "#/$defs/timelineEstimate" },
+        "successRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "avgQualityScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "commonFailures": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "worksWith": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(agency|sdlc)-[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "uniqueItems": true
+        },
+        "conflictsWith": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^(agency|sdlc)-[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "uniqueItems": true
+        },
+        "successPatterns": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        },
+        "lastUpdated": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "sourceFiles": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      }
+    }
+  },
+  "examples": [
+    {
+      "schemaVersion": "1.0.0",
+      "source": "templates/sdlc/agents/01-business-analyst.md",
+      "generatedAt": "2026-03-30T00:00:00.000Z",
+      "stats": {
+        "totalAgents": 1,
+        "agencyAgents": 0,
+        "sdlcAgents": 1,
+        "domains": ["sdlc"]
+      },
+      "agents": [
+        {
+          "id": "sdlc-01-business-analyst",
+          "legacyId": "01",
+          "agentType": "sdlc",
+          "name": "Business Analyst",
+          "description": "Business analysis specialist for product vision, business rules, and requirements framing.",
+          "domain": ["sdlc"],
+          "color": null,
+          "emoji": null,
+          "vibe": null,
+          "capabilities": [
+            "product vision and business model definition",
+            "requirements gap analysis"
+          ],
+          "inputs": ["onboarding output", "market research"],
+          "outputs": ["analysis", "recommendations", "sprint plan"],
+          "minPrerequisites": ["onboarding complete"],
+          "optionalInputs": ["stakeholder interviews"],
+          "skillPath": "templates/sdlc/agents/01-business-analyst.md",
+          "requiredTools": ["tool.files.read", "tool.files.write"],
+          "phase": "PHASE_1",
+          "gatekeeper": false,
+          "gateMembership": [],
+          "sequenceDependencies": ["sdlc-25-onboarding-agent"],
+          "maxRetries": 2,
+          "timelineEstimate": "4-8 hours",
+          "successRate": 85,
+          "avgQualityScore": 85,
+          "commonFailures": ["missing onboarding inputs"],
+          "worksWith": ["sdlc-02-domain-expert"],
+          "conflictsWith": [],
+          "successPatterns": ["clear business brief", "traceable source references"],
+          "lastUpdated": "2026-03-30T00:00:00.000Z",
+          "sourceFiles": ["templates/sdlc/agents/01-business-analyst.md"]
+        }
+      ]
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "source": "templates/agency-agents-markdown/engineering/engineering-senior-developer.md",
+      "generatedAt": "2026-03-30T00:00:00.000Z",
+      "stats": {
+        "totalAgents": 1,
+        "agencyAgents": 1,
+        "sdlcAgents": 0,
+        "domains": ["engineering"]
+      },
+      "agents": [
+        {
+          "id": "agency-engineering-engineering-senior-developer",
+          "legacyId": null,
+          "agentType": "agency",
+          "name": "Senior Developer",
+          "description": "Premium implementation specialist focused on Laravel, Livewire, Three.js, and advanced CSS.",
+          "domain": ["engineering"],
+          "color": "green",
+          "emoji": "💎",
+          "vibe": "Premium full-stack craftsperson — Laravel, Livewire, Three.js, advanced CSS.",
+          "capabilities": [
+            "Laravel/Livewire integration patterns",
+            "Three.js integration",
+            "premium CSS patterns"
+          ],
+          "inputs": ["task brief", "specification requirements"],
+          "outputs": ["implementation plan", "code recommendations", "quality notes"],
+          "minPrerequisites": ["clear implementation objective"],
+          "optionalInputs": ["component library reference"],
+          "skillPath": "templates/agency-agents-markdown/engineering/engineering-senior-developer.md",
+          "requiredTools": [],
+          "phase": null,
+          "gatekeeper": false,
+          "gateMembership": [],
+          "sequenceDependencies": [],
+          "maxRetries": 2,
+          "timelineEstimate": "4-8 hours",
+          "successRate": 85,
+          "avgQualityScore": 85,
+          "commonFailures": ["unclear acceptance criteria"],
+          "worksWith": ["agency-engineering-engineering-solution-architect"],
+          "conflictsWith": [],
+          "successPatterns": ["clear implementation brief", "design guidance attached"],
+          "lastUpdated": "2026-03-30T00:00:00.000Z",
+          "sourceFiles": [
+            "templates/agency-agents-markdown/engineering/engineering-senior-developer.md"
+          ]
+        }
+      ]
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "source": "templates/agency-agents-markdown/marketing/marketing-content-creator.md",
+      "generatedAt": "2026-03-30T00:00:00.000Z",
+      "stats": {
+        "totalAgents": 1,
+        "agencyAgents": 1,
+        "sdlcAgents": 0,
+        "domains": ["marketing"]
+      },
+      "agents": [
+        {
+          "id": "agency-marketing-marketing-content-creator",
+          "legacyId": null,
+          "agentType": "agency",
+          "name": "Content Creator",
+          "description": "Content strategist and creator for multi-platform campaigns and brand storytelling.",
+          "domain": ["marketing"],
+          "color": "teal",
+          "emoji": "✍️",
+          "vibe": "Crafts compelling stories across every platform your audience lives on.",
+          "capabilities": ["content strategy", "multi-format creation", "brand storytelling"],
+          "inputs": ["campaign brief", "audience definition"],
+          "outputs": ["content plan", "campaign messaging", "performance analysis"],
+          "minPrerequisites": ["target audience identified"],
+          "optionalInputs": ["brand voice guide", "analytics baseline"],
+          "skillPath": "templates/agency-agents-markdown/marketing/marketing-content-creator.md",
+          "requiredTools": ["WebFetch", "WebSearch", "Read", "Write", "Edit"],
+          "phase": null,
+          "gatekeeper": false,
+          "gateMembership": [],
+          "sequenceDependencies": [],
+          "maxRetries": 2,
+          "timelineEstimate": "1-3 days",
+          "successRate": 85,
+          "avgQualityScore": 85,
+          "commonFailures": ["missing campaign constraints"],
+          "worksWith": ["agency-marketing-marketing-brand-strategist"],
+          "conflictsWith": [],
+          "successPatterns": ["audience insights provided", "distribution channels known"],
+          "lastUpdated": "2026-03-30T00:00:00.000Z",
+          "sourceFiles": ["templates/agency-agents-markdown/marketing/marketing-content-creator.md"]
+        }
+      ]
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "source": "templates/agency-agents-markdown/specialized/identity-graph-operator.md",
+      "generatedAt": "2026-03-30T00:00:00.000Z",
+      "stats": {
+        "totalAgents": 1,
+        "agencyAgents": 1,
+        "sdlcAgents": 0,
+        "domains": ["specialized"]
+      },
+      "agents": [
+        {
+          "id": "agency-specialized-identity-graph-operator",
+          "legacyId": null,
+          "agentType": "agency",
+          "name": "Identity Graph Operator",
+          "description": "Identity resolution specialist for deterministic multi-agent entity resolution.",
+          "domain": ["specialized"],
+          "color": "#C5A572",
+          "emoji": "🕸️",
+          "vibe": "Ensures every agent in a multi-agent system gets the same canonical answer for \"who is this?\"",
+          "capabilities": ["identity resolution", "merge proposals", "graph integrity"],
+          "inputs": ["tenant-scoped records", "identity graph rules"],
+          "outputs": ["canonical entity resolution", "merge proposals", "audit evidence"],
+          "minPrerequisites": ["tenant scope defined"],
+          "optionalInputs": ["confidence thresholds"],
+          "skillPath": "templates/agency-agents-markdown/specialized/identity-graph-operator.md",
+          "requiredTools": [],
+          "phase": null,
+          "gatekeeper": false,
+          "gateMembership": [],
+          "sequenceDependencies": [],
+          "maxRetries": 2,
+          "timelineEstimate": "1-3 days",
+          "successRate": 85,
+          "avgQualityScore": 85,
+          "commonFailures": ["missing tenant isolation metadata"],
+          "worksWith": ["agency-specialized-agentic-identity-trust"],
+          "conflictsWith": [],
+          "successPatterns": ["per-field evidence attached", "deterministic sorting rules used"],
+          "lastUpdated": "2026-03-30T00:00:00.000Z",
+          "sourceFiles": ["templates/agency-agents-markdown/specialized/identity-graph-operator.md"]
+        }
+      ]
+    },
+    {
+      "schemaVersion": "1.0.0",
+      "source": "templates/agency-agents-markdown/project-management/project-manager-senior.md",
+      "generatedAt": "2026-03-30T00:00:00.000Z",
+      "stats": {
+        "totalAgents": 1,
+        "agencyAgents": 1,
+        "sdlcAgents": 0,
+        "domains": ["project-management"]
+      },
+      "agents": [
+        {
+          "id": "agency-project-management-project-manager-senior",
+          "legacyId": null,
+          "agentType": "agency",
+          "name": "Senior Project Manager",
+          "description": "Project delivery specialist for milestones, risks, and stakeholder coordination.",
+          "domain": ["project-management"],
+          "color": null,
+          "emoji": null,
+          "vibe": null,
+          "capabilities": ["delivery planning", "risk management", "stakeholder coordination"],
+          "inputs": ["delivery scope", "timeline constraints"],
+          "outputs": ["execution plan", "risk log", "status reporting"],
+          "minPrerequisites": ["scope defined"],
+          "optionalInputs": ["resource availability"],
+          "skillPath": "templates/agency-agents-markdown/project-management/project-manager-senior.md",
+          "requiredTools": [],
+          "phase": null,
+          "gatekeeper": false,
+          "gateMembership": [],
+          "sequenceDependencies": [],
+          "maxRetries": 2,
+          "timelineEstimate": "1-3 days",
+          "successRate": 85,
+          "avgQualityScore": 85,
+          "commonFailures": ["missing delivery constraints"],
+          "worksWith": ["agency-project-management-project-risk-manager"],
+          "conflictsWith": [],
+          "successPatterns": ["clear milestones defined", "owners assigned"],
+          "lastUpdated": "2026-03-30T00:00:00.000Z",
+          "sourceFiles": [
+            "templates/agency-agents-markdown/project-management/project-manager-senior.md"
+          ]
+        }
+      ]
+    }
+  ]
+}

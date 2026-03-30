@@ -134,4 +134,75 @@ describe('routes/progress', () => {
     });
     expect(body.command).toMatchObject({ command: 'AUDIT', project: 'ActiveProject' });
   });
+
+  it('returns null sprints when session has no sprint_backlog (line 34)', async () => {
+    const session = {
+      session_id: 'sess-99',
+      cycle_type: 'AUDIT',
+      execution_mode: 'FULL',
+      status: 'RUNNING',
+      current_phase: 'PHASE-1',
+      current_agent: '01-business-analyst',
+      completed_phases: [],
+      completed_agents: [],
+      phase_outputs: {},
+      blockers: [],
+      open_human_escalations: [],
+      initiated_at: new Date().toISOString(),
+      last_updated: new Date().toISOString(),
+      // NO sprint_backlog
+    };
+
+    const store = new InMemoryStore({ [sessionFile]: JSON.stringify(session) });
+    setStore(store);
+
+    const ctx = {
+      PROJECT_ROOT: projectRoot,
+      BUSINESS_DOCS: businessDocs,
+      SESSION_DIR: sessionDir,
+      SESSION_FILE: sessionFile,
+      _cache: new FileCache(store),
+      _audit: { read: () => [] },
+      _getLatestCommand: () => ({ command: 'AUDIT', project: 'NoSprints' }),
+      safeWriteSync(filePath, data) {
+        store.writeFile(filePath, data);
+      },
+    };
+
+    const routes = createTestableRoutes(registerRoutes, ctx);
+    const res = createRes();
+    await routes['GET /api/progress'](createReq(), res);
+
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body.active).toBe(true);
+    expect(body.sprints).toBeNull();
+  });
+
+  it('returns undefined command when ctx has no _getLatestCommand (optional chaining)', async () => {
+    const store = new InMemoryStore({});
+    setStore(store);
+
+    const ctx = {
+      PROJECT_ROOT: projectRoot,
+      BUSINESS_DOCS: businessDocs,
+      SESSION_DIR: sessionDir,
+      SESSION_FILE: sessionFile,
+      _cache: new FileCache(store),
+      _audit: { read: () => [] },
+      // _getLatestCommand intentionally omitted
+      safeWriteSync(filePath, data) {
+        store.writeFile(filePath, data);
+      },
+    };
+
+    const routes = createTestableRoutes(registerRoutes, ctx);
+    const res = createRes();
+    await routes['GET /api/progress'](createReq(), res);
+
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body.active).toBe(false);
+    expect(body.command).toBeUndefined();
+  });
 });

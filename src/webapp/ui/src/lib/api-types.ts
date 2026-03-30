@@ -1309,6 +1309,7 @@ export interface Session {
   id: string;
   project: string;
   flow: string;
+  executionMode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID';
   phase: string;
   status: SessionStatus;
   progress: number;

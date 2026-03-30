@@ -19,3 +19,5 @@ export type { GateStatusValue } from './gate-status';
 export { ExplainabilityPanel } from './explainability-panel';
 export { SessionStatus } from './session-status';
 export type { SessionSummary } from './session-status';
+export { ExecutionModeSelector } from './execution-mode-selector';
+export { ExecutionModeBadge } from './execution-mode-badge';

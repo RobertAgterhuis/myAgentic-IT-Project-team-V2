@@ -386,7 +386,12 @@ export default function SessionDetailPage() {
             </>
           }
           metrics={[
-            { label: 'Flow', value: session.flow, detail: 'Execution mode for this session' },
+            {
+              label: 'Execution Mode',
+              value: session.executionMode || 'SDLC_ONLY',
+              detail: 'Orchestrator execution strategy',
+            },
+            { label: 'Flow', value: session.flow, detail: 'Command mode for this session' },
             { label: 'Current phase', value: session.phase, detail: 'Where the run is now' },
             {
               label: activeAgents.length > 1 ? 'Active agents' : 'Active agent',

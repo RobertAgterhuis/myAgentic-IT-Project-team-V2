@@ -2,7 +2,8 @@
 
 import { mkdirSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { Dispatcher, AGENT_GROUPS } from '../../platform/engine/dispatcher';
+import { Dispatcher } from '../../platform/engine/dispatcher';
+import { PHASE_AGENTS } from '../../platform/engine/agent-phase-map';
 import { createStateMachine } from '../../platform/engine/state-machine';
 
 type BenchmarkMode = 'CREATE' | 'AUDIT' | 'FEATURE';
@@ -55,7 +56,7 @@ function benchmarkStatesForMode(mode: BenchmarkMode): string[] {
 
   while (machine.nextState) {
     const next = machine.nextState;
-    if (next && AGENT_GROUPS[next]) {
+    if (next && (PHASE_AGENTS[next]?.length ?? 0) > 0) {
       states.push(next);
     }
     machine.advance();
@@ -66,9 +67,8 @@ function benchmarkStatesForMode(mode: BenchmarkMode): string[] {
 }
 
 function buildPhaseAgents(state: string) {
-  const groups = AGENT_GROUPS[state] || [];
-  const agentIds = Array.from(new Set(groups.flat()));
-  return agentIds.map((agentId) => ({ id: agentId, name: `Benchmark Agent ${agentId}` }));
+  const agents = PHASE_AGENTS[state] || [];
+  return agents.map((agent) => ({ id: agent.id, name: agent.name }));
 }
 
 async function runScenario(mode: BenchmarkMode): Promise<ScenarioSummary> {

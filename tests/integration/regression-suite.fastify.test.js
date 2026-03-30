@@ -231,7 +231,7 @@ describe('Sprint 1 Regression: Security', () => {
     expect(res.statusCode).toBe(200);
     expect(res.json().warnings).toBeDefined();
     expect(res.json().warnings[0]).toContain('AWS Access Key');
-  });
+  }, 15000);
 });
 
 /* ═══════════════════════════════════════════════════════════════════

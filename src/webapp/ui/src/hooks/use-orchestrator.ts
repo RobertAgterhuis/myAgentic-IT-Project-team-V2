@@ -253,6 +253,7 @@ export function useQueueCommand() {
       description?: string;
       scope?: string;
       brief?: string;
+      execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID';
     }) =>
       apiPost<OkResponse & { clipboard_text: string; brief_saved: boolean }>('/command', payload),
 

@@ -36,6 +36,7 @@ export function CommandQueueSection({ queue }: CommandQueueSectionProps) {
                   <Badge variant={commandQueueStatusVariant[entry.status] ?? 'secondary'}>
                     {entry.status}
                   </Badge>
+                  {entry.execution_mode && <Badge variant="outline">{entry.execution_mode}</Badge>}
                   <div>
                     <span className="font-mono text-sm font-medium">{entry.command}</span>
                     {entry.project && (

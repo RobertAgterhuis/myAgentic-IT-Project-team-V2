@@ -76,6 +76,7 @@ export class CommandService {
       project: input.project?.trim() || null,
       description: input.description?.trim() || null,
       scope: input.scope?.trim() || null,
+      execution_mode: input.execution_mode || null,
       requested_at: models.isoNow(),
       status: 'PENDING',
       source: user,
@@ -116,6 +117,7 @@ export class CommandService {
     let text = entry.command;
     if (entry.project) text += ' ' + entry.project;
     if (entry.description) text += ': ' + entry.description;
+    if (entry.execution_mode) text += ` [${entry.execution_mode}]`;
     return text;
   }
 

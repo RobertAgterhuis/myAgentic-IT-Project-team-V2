@@ -260,21 +260,34 @@ function getPipelineGuidance(
 }
 
 function getLaunchCommandHint(metadata?: OrchestratorPackMetadataResponse | null): string {
+  const normalize = (value: string) =>
+    value
+      .trim()
+      .toUpperCase()
+      .replace(/[\s-]+/g, '_');
+
   const commands = (metadata?.commands ?? [])
     .filter((entry) => entry.mode !== false)
     .map((entry) => String(entry.id || '').trim())
-    .filter((entry) => entry.length > 0)
-    .slice(0, 4);
-  if (commands.length === 0) {
-    return 'CREATE, AUDIT, FEATURE, or HOTFIX';
+    .filter((entry) => entry.length > 0);
+
+  const priority = ['CREATE', 'AUDIT', 'FEATURE', 'HOTFIX', 'HYBRID', 'AGENCY_ONLY'];
+  const prioritized = [
+    ...priority.flatMap((target) => commands.filter((command) => normalize(command) === target)),
+    ...commands.filter((command) => !priority.includes(normalize(command))),
+  ].slice(0, 6);
+
+  const hintCommands = prioritized.length > 0 ? prioritized : commands.slice(0, 6);
+  if (hintCommands.length === 0) {
+    return 'CREATE, AUDIT, FEATURE, HOTFIX, HYBRID, or AGENCY ONLY';
   }
-  if (commands.length === 1) {
-    return commands[0];
+  if (hintCommands.length === 1) {
+    return hintCommands[0];
   }
-  if (commands.length === 2) {
-    return `${commands[0]} or ${commands[1]}`;
+  if (hintCommands.length === 2) {
+    return `${hintCommands[0]} or ${hintCommands[1]}`;
   }
-  return `${commands.slice(0, -1).join(', ')}, or ${commands[commands.length - 1]}`;
+  return `${hintCommands.slice(0, -1).join(', ')}, or ${hintCommands[hintCommands.length - 1]}`;
 }
 
 function getRuntimeStageSequence(

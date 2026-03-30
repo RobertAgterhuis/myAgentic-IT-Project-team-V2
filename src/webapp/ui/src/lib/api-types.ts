@@ -553,6 +553,7 @@ export interface OrchestratorCommandPayload {
   platform?: 'copilot' | 'claude' | 'codex';
   resume?: boolean;
   project?: string;
+  execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID';
 }
 
 export interface SprintGatePayload {
@@ -575,6 +576,7 @@ export interface CommandQueueEntry {
   project: string | null;
   description: string | null;
   scope: string | null;
+  execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID' | null;
   requested_at: string;
   status: 'PENDING' | 'PROCESSING' | 'DONE' | 'ERROR';
   source: string;

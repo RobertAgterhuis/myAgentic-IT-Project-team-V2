@@ -218,6 +218,27 @@ function toTrackedAgentId(agent: PhaseAgent): string {
   return `${agent.id}-${agent.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 }
 
+function deriveExecutionMode(
+  status: Record<string, unknown>
+): 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID' {
+  const mode = normalizeCommandToken(status.mode);
+  if (mode === 'AGENCY_ONLY') {
+    return 'AGENCY_ONLY';
+  }
+  if (mode === 'HYBRID') {
+    return 'HYBRID';
+  }
+
+  const explicitExecutionMode = String(status.executionMode || '')
+    .trim()
+    .toUpperCase();
+  if (explicitExecutionMode === 'AGENCY_ONLY' || explicitExecutionMode === 'HYBRID') {
+    return explicitExecutionMode;
+  }
+
+  return 'SDLC_ONLY';
+}
+
 function getTrackedAgentsForState(state: string): TrackedPhaseAgent[] {
   const agents = runtimeTrackingTopology.phaseAgents[state] as PhaseAgent[] | undefined;
   return (agents || []).map((agent) => ({
@@ -987,7 +1008,10 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         if (!activeSession && (prevState === 'IDLE' || prevState === 'READY')) {
           const project = newStatus.templateName ?? 'default';
           const flow = newStatus.mode || 'CREATE';
-          sessionTracker.startSession(project, flow);
+          const executionMode = deriveExecutionMode(
+            newStatus as unknown as Record<string, unknown>
+          );
+          sessionTracker.startSession(project, flow, executionMode);
         }
 
         // Track phase transitions
@@ -1639,6 +1663,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
             : (_templateName ?? 'sdlc');
 
         const command = normalizeCommandToken(body.command);
+        const requestedExecutionMode = normalizeCommandToken(body.execution_mode);
         const validation = resolveCommandValidation(requestedTemplateName);
         if (!validation.knownCommands.has(command)) {
           return reply
@@ -1689,9 +1714,18 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           _engine = null;
         }
         const engine = getEngine();
+        let appliedCommand = command;
+
+        // Allow callers to start CREATE with explicit execution mode semantics.
+        if (
+          command === 'CREATE' &&
+          (requestedExecutionMode === 'HYBRID' || requestedExecutionMode === 'AGENCY_ONLY')
+        ) {
+          appliedCommand = requestedExecutionMode;
+        }
 
         if (!resume) {
-          engine.reset(command);
+          engine.reset(appliedCommand);
 
           // Seed decision templates into BusinessDocs/ if decisions/ doesn't exist yet
           const businessDocsDir = path.resolve(process.cwd(), 'BusinessDocs');
@@ -1713,6 +1747,8 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const st = engine.status();
         structuredLog('info', 'orchestrator_command', {
           command,
+          applied_command: appliedCommand,
+          requested_execution_mode: requestedExecutionMode || null,
           platform,
           project,
           resume,
@@ -1723,6 +1759,8 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         return reply.send({
           ok: true,
           command,
+          applied_command: appliedCommand,
+          requested_execution_mode: requestedExecutionMode || null,
           project,
           platform,
           resume,

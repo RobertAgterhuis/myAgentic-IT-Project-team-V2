@@ -114,6 +114,7 @@ export interface CommandQueueEntry {
   project?: string | null;
   scope?: string | null;
   description?: string | null;
+  execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID' | null;
   requested_at?: string;
   timestamp?: string;
   status: string;
@@ -129,6 +130,7 @@ export interface QueueCommandInput {
   scope?: string;
   description?: string;
   brief?: string;
+  execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID';
 }
 
 export interface QueueCommandResult {

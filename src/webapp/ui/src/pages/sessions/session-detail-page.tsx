@@ -350,6 +350,11 @@ export default function SessionDetailPage() {
               label: `${gateFailuresCount} gate failures`,
               tone: gateFailuresCount > 0 ? 'warning' : 'success',
             },
+            {
+              id: 'execution-mode',
+              label: session.executionMode || 'SDLC_ONLY',
+              tone: 'info',
+            },
           ]}
           actions={
             <Button

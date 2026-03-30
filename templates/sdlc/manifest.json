@@ -352,6 +352,18 @@
       "label": "CONTINUE",
       "category": "session",
       "description": "Continue current session flow"
+    },
+    {
+      "id": "AGENCY ONLY",
+      "label": "AGENCY ONLY",
+      "category": "on-demand",
+      "description": "Pure agency team execution without SDLC phases"
+    },
+    {
+      "id": "HYBRID",
+      "label": "HYBRID",
+      "category": "on-demand",
+      "description": "Hybrid SDLC + agency specialist injection"
     }
   ],
   "stages": [

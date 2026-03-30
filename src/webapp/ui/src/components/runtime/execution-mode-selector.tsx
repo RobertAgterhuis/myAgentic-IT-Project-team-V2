@@ -20,6 +20,24 @@ const ModeIcons = {
   GitBranch,
 };
 
+const selectedCardClass: Record<ExecutionMode, string> = {
+  SDLC_ONLY: 'border-blue-500 bg-blue-50 shadow-md',
+  AGENCY_ONLY: 'border-purple-500 bg-purple-50 shadow-md',
+  HYBRID: 'border-emerald-500 bg-emerald-50 shadow-md',
+};
+
+const iconClass: Record<ExecutionMode, string> = {
+  SDLC_ONLY: 'mt-1 h-5 w-5 text-blue-600 flex-shrink-0',
+  AGENCY_ONLY: 'mt-1 h-5 w-5 text-purple-600 flex-shrink-0',
+  HYBRID: 'mt-1 h-5 w-5 text-emerald-600 flex-shrink-0',
+};
+
+const selectedDotClass: Record<ExecutionMode, string> = {
+  SDLC_ONLY: 'h-2 w-2 rounded-full bg-blue-600',
+  AGENCY_ONLY: 'h-2 w-2 rounded-full bg-purple-600',
+  HYBRID: 'h-2 w-2 rounded-full bg-emerald-600',
+};
+
 export function ExecutionModeSelector({
   selectedMode,
   onChange,
@@ -29,7 +47,8 @@ export function ExecutionModeSelector({
     <div className="space-y-4">
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {Object.entries(EXECUTION_MODE_DESCRIPTORS).map(([mode, descriptor]) => {
-          const isSelected = selectedMode === mode;
+          const typedMode = mode as ExecutionMode;
+          const isSelected = selectedMode === typedMode;
           const Icon = ModeIcons[descriptor.icon as keyof typeof ModeIcons];
 
           return (
@@ -39,15 +58,13 @@ export function ExecutionModeSelector({
               disabled={disabled}
               className={`relative overflow-hidden rounded-lg border-2 transition-all ${
                 isSelected
-                  ? `border-${descriptor.color}-500 bg-${descriptor.color}-50 shadow-md`
+                  ? selectedCardClass[typedMode]
                   : 'border-gray-200 bg-white hover:border-gray-300'
               } ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
             >
               <div className="p-4">
                 <div className="flex items-start gap-3">
-                  {Icon && (
-                    <Icon className={`mt-1 h-5 w-5 text-${descriptor.color}-600 flex-shrink-0`} />
-                  )}
+                  {Icon && <Icon className={iconClass[typedMode]} />}
                   <div className="flex-1 text-left">
                     <h3 className="font-semibold text-gray-900">{descriptor.label}</h3>
                     <p className="mt-1 text-sm text-gray-600">{descriptor.description}</p>
@@ -56,7 +73,7 @@ export function ExecutionModeSelector({
 
                 {isSelected && (
                   <div className="mt-3 flex items-center gap-2">
-                    <div className={`h-2 w-2 rounded-full bg-${descriptor.color}-600`} />
+                    <div className={selectedDotClass[typedMode]} />
                     <span className="text-xs font-medium text-gray-700">Selected</span>
                   </div>
                 )}

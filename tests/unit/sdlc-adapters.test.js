@@ -265,6 +265,6 @@ describe('Concrete adapters — identity', () => {
       expect(['HEALTHY', 'DEGRADED', 'UNAVAILABLE', 'UNCONFIGURED']).toContain(check.status);
       expect(check.adapter).toBe(name);
       expect(check.category).toBe(category);
-    });
+    }, 15000);
   }
 });

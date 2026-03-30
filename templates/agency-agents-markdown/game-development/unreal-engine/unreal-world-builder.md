@@ -193,7 +193,7 @@ Exposed Graph Parameters:
 ```markdown
 ## Open-World Performance Review — [Build Version]
 
-**Platform**: *** **Target Frame Rate**: ***fps
+**Platform**: **\* **Target Frame Rate**: \***fps
 
 Streaming
 

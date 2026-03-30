@@ -55,6 +55,7 @@ import {
   TOOL_EXEC_MAX_OUTPUT_BYTES,
   TOOL_EXEC_MAX_MEMORY_MB,
   TOOL_EXEC_REQUIRE_WORKSPACE_CWD,
+  type RuntimeProfileName,
   resolvePredecessorContractContinuityMode,
 } from '../config';
 import { validateProfile, hasAuthConfigured, PROFILE_CONTRACTS } from '../runtime-profiles';
@@ -610,7 +611,7 @@ function persistHybridInjectionOutputs(
 }
 
 async function runHybridInjectionsForTransition(options: {
-  profile: string;
+  profile: RuntimeProfileName;
   targetState: string;
   phaseKey: string;
   sessionStatePath: string;
@@ -650,7 +651,7 @@ async function runHybridInjectionsForTransition(options: {
 
   const executor = createHybridExecutor({
     injections,
-    invokeAgent: async (agent) => {
+    invokeAgent: async (agent, _context) => {
       const trackedAgentId = getInjectedTrackedId(agent.id);
       trackedByAgentId.set(agent.id, trackedAgentId);
 
@@ -714,6 +715,8 @@ async function runHybridInjectionsForTransition(options: {
       }
 
       return {
+        agentId: agent.id,
+        agentName: agent.name,
         success: result.success,
         deliverable,
         error: result.error,

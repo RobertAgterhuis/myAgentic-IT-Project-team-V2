@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "1.1.0",
+  "name": "agency-agents-markdown",
+  "version": "0.1.0",
+  "displayName": "Agency Specialized Agents",
+  "description": "Specialized domain agent pack for agency workflows and orchestrator delegation.",
+  "flowsFile": "../../platform/engine/flows.yaml",
+  "agentsDir": ".",
+  "contractsDir": "../sdlc/contracts",
+  "guardrailsDir": "../sdlc/guardrails",
+  "playbooksDir": "../sdlc/playbooks",
+  "decisionsDir": "../sdlc/decisions",
+  "decisionIndexSeed": "../sdlc/decisions/_index-seed.md",
+  "artifactNamespaces": {
+    "business_docs": "BusinessDocs"
+  },
+  "phaseContracts": {
+    "PHASE_1": [
+      "analysis-output-contract.md",
+      "recommendations-output-contract.md",
+      "sprintplan-output-contract.md",
+      "guardrails-output-contract.md"
+    ],
+    "PHASE_2": [
+      "analysis-output-contract.md",
+      "recommendations-output-contract.md",
+      "sprintplan-output-contract.md",
+      "guardrails-output-contract.md"
+    ],
+    "PHASE_3": [
+      "analysis-output-contract.md",
+      "recommendations-output-contract.md",
+      "sprintplan-output-contract.md",
+      "guardrails-output-contract.md"
+    ],
+    "PHASE_4": [
+      "analysis-output-contract.md",
+      "recommendations-output-contract.md",
+      "sprintplan-output-contract.md",
+      "guardrails-output-contract.md"
+    ],
+    "SYNTHESIS": ["synthesis-output-contract.md"],
+    "PHASE_5_EXECUTING": [
+      "implementation-output-contract.md",
+      "test-output-contract.md",
+      "architecture-compliance-output-contract.md",
+      "pr-review-output-contract.md",
+      "kpi-output-contract.md",
+      "retrospective-output-contract.md",
+      "github-integration-output-contract.md"
+    ],
+    "CRITIC": ["critic-output-contract.md", "risk-output-contract.md"],
+    "CROSS_PHASE": [
+      "session-state-contract.md",
+      "agent-handoff-contract.md",
+      "tooling-contract.md",
+      "decisions-output-contract.md",
+      "questionnaire-output-contract.md",
+      "brand-assets-output-contract.md",
+      "storybook-output-contract.md",
+      "github-state-snapshot-output-contract.md"
+    ]
+  },
+  "phaseGuardrails": {
+    "PHASE_1": ["00-global-guardrails.md", "01-business-guardrails.md"],
+    "PHASE_2": [
+      "00-global-guardrails.md",
+      "02-architecture-guardrails.md",
+      "03-security-guardrails.md"
+    ],
+    "PHASE_3": ["00-global-guardrails.md", "04-ux-guardrails.md", "08-content-guardrails.md"],
+    "PHASE_4": ["00-global-guardrails.md", "05-marketing-guardrails.md"],
+    "PHASE_5_EXECUTING": [
+      "00-global-guardrails.md",
+      "06-implementation-guardrails.md",
+      "03-security-guardrails.md"
+    ],
+    "CROSS_PHASE": [
+      "00-global-guardrails.md",
+      "07-legal-guardrails.md",
+      "09-questionnaire-guardrails.md"
+    ]
+  },
+  "criticToPhase": {
+    "CRITIC_1": "PHASE_1",
+    "CRITIC_2": "PHASE_2",
+    "CRITIC_3": "PHASE_3",
+    "CRITIC_4": "PHASE_4"
+  },
+  "modes": {
+    "CREATE": {
+      "phases": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"],
+      "label": "Compatibility bootstrap mode"
+    },
+    "AGENCY_SPECIALIST": {
+      "phases": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"],
+      "label": "Specialized agency delegation workflow"
+    },
+    "AGENCY_AUDIT": {
+      "phases": ["PHASE_1", "PHASE_2"],
+      "label": "Agency capability and readiness audit"
+    }
+  },
+  "commands": [
+    {
+      "id": "AGENCY_SPECIALIST",
+      "label": "AGENCY_SPECIALIST",
+      "category": "on-demand",
+      "description": "Delegate to specialized agency domain agents"
+    },
+    {
+      "id": "AGENCY_AUDIT",
+      "label": "AGENCY_AUDIT",
+      "category": "audit",
+      "description": "Run agency pack metadata and quality audit"
+    }
+  ],
+  "stages": [
+    { "id": "INTAKE", "label": "Task Intake", "order": 1 },
+    { "id": "MATCH", "label": "Agent Matching", "order": 2 },
+    { "id": "DELEGATE", "label": "Specialist Delegation", "order": 3 },
+    { "id": "REVIEW", "label": "Quality Review", "order": 4 },
+    { "id": "HANDOFF", "label": "Handoff and Traceability", "order": 5 }
+  ]
+}

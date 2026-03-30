@@ -151,11 +151,26 @@ function normalizeRouteSlug(value: string): string {
     .replace(/^\/+|\/+$/g, '');
 
   if (!normalized) {
-    return '';
+    return 'dashboard';
   }
 
-  const [firstSegment] = normalized.split('/').filter(Boolean);
-  return firstSegment || '';
+  return normalized;
+}
+
+export function buildHelpRouteCandidates(routeSlug: string): string[] {
+  const normalized = normalizeRouteSlug(routeSlug);
+  if (!normalized) {
+    return [];
+  }
+
+  const segments = normalized.split('/').filter(Boolean);
+  const candidates: string[] = [];
+
+  for (let length = segments.length; length >= 1; length -= 1) {
+    candidates.push(segments.slice(0, length).join('/'));
+  }
+
+  return [...new Set(candidates)];
 }
 
 function normalizeTopicId(value: string): string {

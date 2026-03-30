@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { OrchestratorPackMetadataResponse, PageHelpResponse } from '@/lib/api-types';
-import { mergePackHelpTopicsIntoPageHelp, resolvePackAwareHelpRouteSlug } from './help-registry';
+import {
+  buildHelpRouteCandidates,
+  mergePackHelpTopicsIntoPageHelp,
+  resolvePackAwareHelpRouteSlug,
+} from './help-registry';
 
 function createPackMetadata(
   helpTopics: Array<Record<string, unknown>>,
@@ -65,11 +69,21 @@ describe('help-registry', () => {
     expect(resolvePackAwareHelpRouteSlug('/flow-overview', metadata)).toBe('pipeline');
   });
 
-  it('falls back to first route segment when no pack mapping exists', () => {
+  it('preserves deep routes when no pack mapping exists', () => {
     const metadata = createPackMetadata([{ id: 'commands', title: 'Commands' }]);
 
-    expect(resolvePackAwareHelpRouteSlug('/commands/new', metadata)).toBe('commands');
-    expect(resolvePackAwareHelpRouteSlug('/unknown/path', metadata)).toBe('unknown');
+    expect(resolvePackAwareHelpRouteSlug('/commands/new', metadata)).toBe('commands/new');
+    expect(resolvePackAwareHelpRouteSlug('/unknown/path', metadata)).toBe('unknown/path');
+  });
+
+  it('returns dashboard for the root route and builds progressive fallback candidates', () => {
+    expect(resolvePackAwareHelpRouteSlug('/', null)).toBe('dashboard');
+    expect(buildHelpRouteCandidates('admin/mcp/agents/agent-42')).toEqual([
+      'admin/mcp/agents/agent-42',
+      'admin/mcp/agents',
+      'admin/mcp',
+      'admin',
+    ]);
   });
 
   it('merges explicit and inferred pack topics into page help topic links', () => {

@@ -486,10 +486,10 @@ Print this checklist and tick off files as they're created:
 
 ### Handoff Protocol
 
-- [ ] `standards/HANDOFF-TEMPLATE.md` — Unified template
-- [ ] `standards/validation-schema.json` — Validation schema
-- [ ] `standards/validate-handoff.ts` — Validator implementation + CLI
-- [ ] `standards/validate-handoff.test.ts` — Unit tests (≥10)
+- [ ] `platform/standards/HANDOFF-TEMPLATE.md` — Unified template
+- [ ] `platform/standards/validation-schema.json` — Validation schema
+- [ ] `platform/standards/validate-handoff.ts` — Validator implementation + CLI
+- [ ] `tests/unit/validate-handoff.test.ts` — Unit tests (≥10)
 - [ ] `docs/handoff-examples/` — 10 example handoff documents (agents, designers, engineers, etc.)
 - [ ] `docs/HANDOFF-GUIDE.md` — Guide for agents on how to use template
 

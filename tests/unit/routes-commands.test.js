@@ -4,6 +4,7 @@ const path = require('path');
 const { InMemoryStore, setStore } = require('../../src/webapp/store');
 const { FileCache } = require('../../src/webapp/cache');
 const { registerRoutes } = require('../../src/webapp/routes/commands');
+const { CommandService } = require('../../src/webapp/services');
 const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
 
 function createRes() {
@@ -122,6 +123,30 @@ describe('routes/commands', () => {
     expect(body).toMatchObject({ code: 'UNKNOWN_COMMAND' });
   });
 
+  it('attaches secret warnings when command fields contain secret-like values', async () => {
+    const store = new InMemoryStore({});
+    setStore(store);
+    const ctx = makeCtx(store);
+    const routes = createTestableRoutes(registerRoutes, ctx);
+
+    const res = createRes();
+    await routes['POST /api/command'](
+      createReq('/api/command', 'POST', {
+        command: 'audit',
+        project: 'SecretWarningProject',
+        description: "api_key: 'abcdefghijklmnopqrstuvwxyz123456'",
+        brief: "secret_key = 'abcdefghijklmnopqrstuvwxyz123456'",
+      }),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const body = JSON.parse(res.body);
+    expect(body.ok).toBe(true);
+    expect(Array.isArray(body.warnings)).toBe(true);
+    expect(body.warnings[0]).toContain('Generic API Key');
+  });
+
   it('returns latest command and queue via GET /api/command and returns catalog', async () => {
     const store = new InMemoryStore({});
     setStore(store);
@@ -148,5 +173,27 @@ describe('routes/commands', () => {
     const catalogBody = JSON.parse(catalogRes.body);
     expect(Array.isArray(catalogBody.commands)).toBe(true);
     expect(catalogBody.commands.length).toBeGreaterThan(0);
+  });
+
+  it('rethrows non-validation queue failures', async () => {
+    const store = new InMemoryStore({});
+    setStore(store);
+    const ctx = makeCtx(store);
+    const queueSpy = vi
+      .spyOn(CommandService.prototype, 'queue')
+      .mockRejectedValueOnce(new Error('queue unavailable'));
+    const routes = createTestableRoutes(registerRoutes, ctx);
+
+    await expect(
+      routes['POST /api/command'](
+        createReq('/api/command', 'POST', {
+          command: 'create',
+          project: 'BoomProject',
+        }),
+        createRes()
+      )
+    ).rejects.toThrow('queue unavailable');
+
+    queueSpy.mockRestore();
   });
 });

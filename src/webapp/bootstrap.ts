@@ -4,6 +4,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { ensureRuntimeScaffold } from './runtime-scaffold';
 
 function loadEnvIfPresent(filePath: string): void {
   if (!fs.existsSync(filePath)) return;
@@ -31,6 +32,7 @@ function loadEnvIfPresent(filePath: string): void {
 };
 
 const cwd = process.cwd();
+ensureRuntimeScaffold(cwd);
 loadEnvIfPresent(path.join(cwd, '.env'));
 loadEnvIfPresent(path.join(cwd, '.env.local'));
 loadEnvIfPresent(path.join(cwd, 'src', 'webapp', '.env'));

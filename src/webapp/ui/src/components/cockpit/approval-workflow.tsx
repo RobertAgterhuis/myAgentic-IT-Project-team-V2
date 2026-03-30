@@ -10,6 +10,9 @@ import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { AlertBanner } from '@/components/ui/alert-banner';
+import { FieldGroup } from '@/components/ui/field-group';
+import { TextareaField } from '@/components/ui/textarea-field';
+import { DiffReviewHostPane } from '@/components/cockpit/monaco-host-panels';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
 import {
   useApprovalDetail,
@@ -23,7 +26,6 @@ import {
   XCircle,
   Shield,
   AlertTriangle,
-  MessageSquare,
   Clock,
   FileText,
   ChevronDown,
@@ -193,7 +195,7 @@ export function ApprovalDetailPanel({ approval, onClose }: ApprovalDetailPanelPr
               </Text>
               <div className="flex flex-wrap gap-1 mt-1">
                 {approvalDetail.related_artifacts.map((a, i) => (
-                  <Badge key={i} variant="secondary" className="text-[10px] font-mono">
+                  <Badge key={i} variant="secondary" className="text-xs font-mono">
                     {a}
                   </Badge>
                 ))}
@@ -212,12 +214,12 @@ export function ApprovalDetailPanel({ approval, onClose }: ApprovalDetailPanelPr
                   className="rounded-xl border border-border/60 bg-background/80 p-3 space-y-1"
                 >
                   <Text className="text-xs">{lesson.summary}</Text>
-                  <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
-                    <Badge variant="secondary" className="text-[10px]">
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    <Badge variant="secondary" className="text-xs">
                       score {lesson.score.toFixed(2)}
                     </Badge>
                     {lesson.workspace_id && (
-                      <Badge variant="outline" className="text-[10px]">
+                      <Badge variant="outline" className="text-xs">
                         workspace {lesson.workspace_id}
                       </Badge>
                     )}
@@ -251,23 +253,14 @@ export function ApprovalDetailPanel({ approval, onClose }: ApprovalDetailPanelPr
                 {showComparison ? 'Hide' : 'Show'} Comparison
               </Button>
               {showComparison && (
-                <div className="grid grid-cols-2 gap-3 mt-2">
-                  <Card elevation="flat" className="p-3 bg-background/70">
-                    <Text className="text-[10px] font-semibold text-muted-foreground mb-1">
-                      Before
-                    </Text>
-                    <pre className="text-[10px] whitespace-pre-wrap">
-                      {approvalDetail.comparison.before}
-                    </pre>
-                  </Card>
-                  <Card elevation="flat" className="p-3 bg-background/70">
-                    <Text className="text-[10px] font-semibold text-muted-foreground mb-1">
-                      After
-                    </Text>
-                    <pre className="text-[10px] whitespace-pre-wrap">
-                      {approvalDetail.comparison.after}
-                    </pre>
-                  </Card>
+                <div className="mt-2">
+                  <DiffReviewHostPane
+                    title="Approval comparison"
+                    originalLabel="Before"
+                    modifiedLabel="After"
+                    originalContent={approvalDetail.comparison.before}
+                    modifiedContent={approvalDetail.comparison.after}
+                  />
                 </div>
               )}
             </div>
@@ -278,22 +271,23 @@ export function ApprovalDetailPanel({ approval, onClose }: ApprovalDetailPanelPr
       {/* Comment + Actions */}
       {approval.status === 'PENDING' && (
         <div className="space-y-3 rounded-2xl border border-border/60 bg-background/65 p-4">
-          <div>
-            <label
-              htmlFor="approval-comment"
-              className="text-xs font-semibold text-muted-foreground flex items-center gap-1"
-            >
-              <MessageSquare className="size-3" /> Comment (required)
-            </label>
-            <textarea
+          <FieldGroup
+            title="Decision rationale"
+            description="A written rationale is required for both approve and reject actions."
+          >
+            <TextareaField
               id="approval-comment"
+              label="Comment"
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Provide your rationale…"
-              className="mt-1 min-h-20 w-full rounded-xl border border-border/70 bg-background/80 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30"
               required
+              rows={4}
+              maxLength={2000}
+              showCount
+              helperText="This comment is stored with the approval decision for audit history."
             />
-          </div>
+          </FieldGroup>
           <div className="flex gap-2">
             <Button
               variant="default"
@@ -316,7 +310,7 @@ export function ApprovalDetailPanel({ approval, onClose }: ApprovalDetailPanelPr
             </Button>
           </div>
           {!comment.trim() && (
-            <p className="text-[10px] text-amber-600">
+            <p className="text-xs text-amber-600">
               A comment is required before approving or rejecting.
             </p>
           )}
@@ -373,7 +367,7 @@ export function ApprovalHistoryTimeline({ className }: ApprovalHistoryTimelinePr
             <div className="flex items-center gap-2">
               <Badge
                 variant={entry.action === 'APPROVED' ? 'success' : 'error'}
-                className="text-[10px]"
+                className="text-xs"
               >
                 {entry.action}
               </Badge>

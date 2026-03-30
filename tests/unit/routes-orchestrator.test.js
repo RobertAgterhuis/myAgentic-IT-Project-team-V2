@@ -133,6 +133,9 @@ describe('orchestrator routes (integration)', () => {
 
   it('exports all 10 route handlers', () => {
     expect(routes['GET /api/orchestrator/status']).toBeTypeOf('function');
+    expect(routes['GET /api/orchestrator/templates']).toBeTypeOf('function');
+    expect(routes['GET /api/orchestrator/active-pack']).toBeTypeOf('function');
+    expect(routes['POST /api/orchestrator/active-pack']).toBeTypeOf('function');
     expect(routes['GET /api/orchestrator/run-history']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/advance']).toBeTypeOf('function');
     expect(routes['POST /api/orchestrator/error']).toBeTypeOf('function');
@@ -178,6 +181,66 @@ describe('orchestrator routes (integration)', () => {
       expect(res.body.history).toBeInstanceOf(Array);
       expect(res.body.human_override).toBeDefined();
       expect(res.body.human_override.paused).toBe(false);
+    });
+  });
+
+  describe('active pack switching', () => {
+    it('returns active pack metadata', async () => {
+      const res = fakeRes();
+      await routes['GET /api/orchestrator/active-pack'](fakeGetReq(), res);
+      expect(res.status).toBe(200);
+      expect(res.body.ok).toBe(true);
+      expect(typeof res.body.active_template).toBe('string');
+      expect(Array.isArray(res.body.templates)).toBe(true);
+    });
+
+    it('switches active pack and accepts pack-specific command without template override', async () => {
+      const switchRes = fakeRes();
+      await routes['POST /api/orchestrator/active-pack'](
+        fakeReq({ template: 'ops-command-center' }),
+        switchRes
+      );
+      expect(switchRes.status).toBe(200);
+      expect(switchRes.body.active_template).toBe('ops-command-center');
+
+      const commandRes = fakeRes();
+      await routes['POST /api/orchestrator/command'](fakeReq({ command: 'TRIAGE' }), commandRes);
+      expect(commandRes.status).toBe(200);
+      expect(commandRes.body.command).toBe('TRIAGE');
+      expect(commandRes.body.status.mode).toBe('TRIAGE');
+    });
+
+    it('switches back to sdlc and accepts sdlc command without template override', async () => {
+      const switchToOps = fakeRes();
+      await routes['POST /api/orchestrator/active-pack'](
+        fakeReq({ template: 'ops-command-center' }),
+        switchToOps
+      );
+      expect(switchToOps.status).toBe(200);
+
+      const switchToSdlc = fakeRes();
+      await routes['POST /api/orchestrator/active-pack'](
+        fakeReq({ template: 'sdlc' }),
+        switchToSdlc
+      );
+      expect(switchToSdlc.status).toBe(200);
+      expect(switchToSdlc.body.active_template).toBe('sdlc');
+
+      const commandRes = fakeRes();
+      await routes['POST /api/orchestrator/command'](fakeReq({ command: 'AUDIT' }), commandRes);
+      expect(commandRes.status).toBe(200);
+      expect(commandRes.body.command).toBe('AUDIT');
+      expect(commandRes.body.status.mode).toBe('AUDIT');
+    });
+
+    it('returns 404 when switching to unknown template', async () => {
+      const res = fakeRes();
+      await routes['POST /api/orchestrator/active-pack'](
+        fakeReq({ template: 'unknown-pack' }),
+        res
+      );
+      expect(res.status).toBe(404);
+      expect(res.body.code).toBe('NOT_FOUND');
     });
   });
 
@@ -622,6 +685,35 @@ describe('orchestrator routes (integration)', () => {
       expect(res.status).toBe(200);
       expect(res.body.command).toBe('REEVALUATE');
       expect(res.body.resume).toBe(true);
+    });
+
+    it('accepts CONTINUE as a metadata-driven resume command', async () => {
+      const res = fakeRes();
+      await routes['POST /api/orchestrator/command'](fakeReq({ command: 'CONTINUE' }), res);
+      expect(res.status).toBe(200);
+      expect(res.body.command).toBe('CONTINUE');
+      expect(res.body.resume).toBe(true);
+    });
+
+    it('rejects non-mode metadata commands when resume is false', async () => {
+      const res = fakeRes();
+      await routes['POST /api/orchestrator/command'](
+        fakeReq({ command: 'REFRESH ONBOARDING' }),
+        res
+      );
+      expect(res.status).toBe(400);
+      expect(res.body.error).toMatch(/not executable as a fresh orchestrator mode/i);
+    });
+
+    it('accepts template-specific command modes for non-SDLC reference packs', async () => {
+      const res = fakeRes();
+      await routes['POST /api/orchestrator/command'](
+        fakeReq({ command: 'TRIAGE', template: 'ops-command-center' }),
+        res
+      );
+      expect(res.status).toBe(200);
+      expect(res.body.command).toBe('TRIAGE');
+      expect(res.body.status.mode).toBe('TRIAGE');
     });
 
     it('defaults platform to copilot', async () => {

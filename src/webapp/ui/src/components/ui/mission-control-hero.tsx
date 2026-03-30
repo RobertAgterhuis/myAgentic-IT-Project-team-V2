@@ -42,6 +42,7 @@ export function MissionControlHero({
 }: MissionControlHeroProps) {
   const [folded, toggleFold] = useHeroFold(heroId ?? '');
   const foldable = Boolean(heroId);
+  const bodyId = React.useId();
 
   return (
     <section className={cn('relative', className)} {...props}>
@@ -71,6 +72,7 @@ export function MissionControlHero({
             <button
               type="button"
               aria-label={folded ? 'Expand hero section' : 'Collapse hero section'}
+              aria-controls={bodyId}
               aria-expanded={!folded}
               onClick={toggleFold}
               className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-background/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -84,10 +86,11 @@ export function MissionControlHero({
 
         {/* Collapsible body */}
         <div
+          id={bodyId}
           className={cn(
-            'relative grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(20rem,0.9fr)]',
+            'page-split-grid page-container-wide relative',
             'overflow-hidden transition-all duration-300',
-            folded ? 'max-h-0 opacity-0' : 'max-h-[9999px] opacity-100'
+            folded ? 'hidden opacity-0' : 'block opacity-100'
           )}
         >
           <div className="space-y-5">
@@ -108,7 +111,7 @@ export function MissionControlHero({
                 {metrics.map((metric) => (
                   <div
                     key={metric.label}
-                    className="rounded-2xl border border-border/60 bg-background/72 px-4 py-4 shadow-sm backdrop-blur-sm"
+                    className="surface-elevated rounded-md border border-border/60 px-4 py-4 shadow-sm backdrop-blur-sm"
                   >
                     <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
                       {metric.label}
@@ -128,7 +131,7 @@ export function MissionControlHero({
           </div>
 
           {(asideTitle || asideDescription || asideContent) && (
-            <div className="rounded-[28px] border border-border/70 bg-card/78 p-5 shadow-md backdrop-blur-sm">
+            <div className="surface-elevated rounded-md border border-border/70 p-5 shadow-md backdrop-blur-sm">
               {asideTitle && (
                 <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
                   {asideTitle}

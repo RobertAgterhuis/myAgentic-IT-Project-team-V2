@@ -68,6 +68,35 @@ describe('loadSessionState', () => {
     expect(result).toEqual(state);
   });
 
+  it('migrates legacy SDLC status and mode literals on load', () => {
+    const legacy = {
+      status: 'phase-2',
+      mode: 'create tech',
+      state_history: [
+        { from: 'onboarding', to: 'phase-1', timestamp: '2026-01-01T00:00:00Z' },
+        { from: 'phase-1', to: 'critic-1', timestamp: '2026-01-01T01:00:00Z' },
+      ],
+    };
+    const store = createMockStore({ '/legacy.json': JSON.stringify(legacy) });
+
+    const result = loadSessionState(store, '/legacy.json');
+
+    expect(result.status).toBe('PHASE_2');
+    expect(result.mode).toBe('CREATE_TECH');
+    expect(result.state_history[0]).toMatchObject({ from: 'ONBOARDING', to: 'PHASE_1' });
+    expect(result.state_history[1]).toMatchObject({ from: 'PHASE_1', to: 'CRITIC_1' });
+  });
+
+  it('maps ONBOARDING_COMPLETE legacy snapshot status to PHASE_1', () => {
+    const store = createMockStore({
+      '/legacy-onboarding.json': JSON.stringify({ status: 'ONBOARDING_COMPLETE', mode: 'CREATE' }),
+    });
+
+    const result = loadSessionState(store, '/legacy-onboarding.json');
+
+    expect(result.status).toBe('PHASE_1');
+  });
+
   it('uses default path when not specified', () => {
     const store = createMockStore({});
     // Should not throw, just return null
@@ -93,6 +122,31 @@ describe('saveSessionState', () => {
     const written = JSON.parse(store._files['/test/session.json']);
     expect(written.status).toBe('PHASE_1');
     expect(written.mode).toBe('CREATE');
+  });
+
+  it('persists runtime flow pack metadata when provided', () => {
+    const store = createMockStore({});
+    saveSessionState(
+      store,
+      {
+        status: 'PHASE_1',
+        mode: 'CREATE',
+        flow_manifest_version: '2.0',
+        flow_pack_id: 'core-runtime',
+        flow_pack_name: 'Core Runtime Pack',
+        flow_pack_version: '1.0.0',
+        state_history: [],
+        gate_results: {},
+        last_updated: '2026-01-01T00:00:00Z',
+      },
+      '/test/session-with-pack.json'
+    );
+
+    const written = JSON.parse(store._files['/test/session-with-pack.json']);
+    expect(written.flow_manifest_version).toBe('2.0');
+    expect(written.flow_pack_id).toBe('core-runtime');
+    expect(written.flow_pack_name).toBe('Core Runtime Pack');
+    expect(written.flow_pack_version).toBe('1.0.0');
   });
 
   it('merges with existing non-engine fields', () => {
@@ -205,6 +259,31 @@ describe('createAutoPersist', () => {
     callbacks.onTransition({});
     expect(persisted).toHaveLength(1);
     expect(persisted[0].status).toBe('PHASE_1');
+  });
+
+  it('allows augmenting serialized state before persist', () => {
+    const store = createMockStore({});
+    const mockMachine = {
+      serialize: () => ({
+        status: 'PHASE_1',
+        mode: 'CREATE',
+        state_history: [],
+        gate_results: {},
+        last_updated: 'ts',
+      }),
+    };
+
+    const callbacks = createAutoPersist(
+      store,
+      () => mockMachine,
+      '/auto-augmented.json',
+      undefined,
+      () => ({ flow_pack_id: 'core-runtime' })
+    );
+    callbacks.onTransition({});
+
+    const written = JSON.parse(store._files['/auto-augmented.json']);
+    expect(written.flow_pack_id).toBe('core-runtime');
   });
 
   it('does nothing when getStateMachine returns null', () => {

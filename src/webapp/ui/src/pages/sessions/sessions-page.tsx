@@ -181,7 +181,7 @@ export default function SessionsPage() {
           'Sessions appear after you start a command. Use Commands to launch a cycle, then come back here to follow it.',
       }}
     >
-      <div className="p-6 space-y-6" data-testid="sessions-page">
+      <div className="page-container-wide space-y-6 p-6" data-testid="sessions-page">
         <PageHeader
           title="Runs"
           subtitle="Inspect active and historical orchestration sessions with clear runtime status and next-step guidance."
@@ -287,7 +287,7 @@ export default function SessionsPage() {
           }
         />
 
-        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,1fr)]">
+        <div className="page-split-grid">
           <Card elevation="flat" className="border border-border/70 px-5 py-5">
             <div className="flex items-start gap-3">
               <Sparkles className="mt-0.5 size-5 text-info" />

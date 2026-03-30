@@ -11,6 +11,7 @@
 
 const path = require('path');
 const { parseFlowYaml, parseInlineValue, loadFlows } = require('../../platform/engine/flow-loader');
+const { toPackManifestV2, toLegacyFlowDefinition } = require('../../platform/engine/pack-contract');
 
 // ─── Test Helpers ────────────────────────────────────────────
 
@@ -172,7 +173,7 @@ describe('loadFlows', () => {
   it('throws when required section is missing', () => {
     const yaml = 'states:\n  - IDLE\n';
     const store = createMockStore({ '/test.yaml': yaml });
-    expect(() => loadFlows(store, '/test.yaml')).toThrow('missing required section');
+    expect(() => loadFlows(store, '/test.yaml')).toThrow('Invalid full_flow');
   });
 
   it('throws when full_flow references unknown state', () => {
@@ -224,7 +225,7 @@ events:
   - transition
 `;
     const store = createMockStore({ '/test.yaml': yaml });
-    expect(() => loadFlows(store, '/test.yaml')).toThrow('missing phases');
+    expect(() => loadFlows(store, '/test.yaml')).toThrow('Invalid mode phases');
   });
 
   it('throws when mode is missing label', () => {
@@ -249,6 +250,87 @@ events:
   - transition
 `;
     const store = createMockStore({ '/test.yaml': yaml });
-    expect(() => loadFlows(store, '/test.yaml')).toThrow('missing label');
+    const result = loadFlows(store, '/test.yaml');
+    expect(result.modes.BAD_MODE.label).toBe('BAD_MODE');
+  });
+});
+
+describe('pack manifest compatibility', () => {
+  it('normalizes legacy flow shape into PackManifestV2', () => {
+    const manifest = toPackManifestV2({
+      states: ['IDLE', 'COMPLETED'],
+      full_flow: ['IDLE', 'COMPLETED'],
+      structural_states: ['IDLE', 'COMPLETED'],
+      events: ['transition'],
+      modes: {
+        CREATE: {
+          phases: [],
+          label: 'Create',
+        },
+      },
+    });
+
+    expect(manifest.manifest_version).toBe('2.0');
+    expect(manifest.pack_id).toBe('core-runtime');
+    expect(manifest.pack_name).toBe('Core Runtime Pack');
+  });
+
+  it('maps PackManifestV2 back to legacy flow structure', () => {
+    const legacy = toLegacyFlowDefinition(
+      toPackManifestV2({
+        pack_id: 'test-pack',
+        pack_name: 'Test pack',
+        version: '2.3.4',
+        states: ['IDLE', 'COMPLETED'],
+        full_flow: ['IDLE', 'COMPLETED'],
+        structural_states: ['IDLE', 'COMPLETED'],
+        events: ['transition'],
+        modes: {
+          CREATE: {
+            phases: [],
+            label: 'Create',
+          },
+        },
+      })
+    );
+
+    expect(legacy.full_flow).toEqual(['IDLE', 'COMPLETED']);
+    expect(legacy.structural_states).toEqual(['IDLE', 'COMPLETED']);
+    expect(legacy.modes.CREATE.label).toBe('Create');
+  });
+
+  it('supports extended manifest contract sections', () => {
+    const manifest = toPackManifestV2({
+      pack_id: 'test-pack',
+      pack_name: 'Test pack',
+      version: '2.3.4',
+      states: ['IDLE', 'PHASE_1', 'COMPLETED'],
+      full_flow: ['IDLE', 'PHASE_1', 'COMPLETED'],
+      structural_states: ['IDLE', 'COMPLETED'],
+      events: ['transition'],
+      modes: {
+        CREATE: {
+          phases: ['PHASE_1'],
+          label: 'Create',
+        },
+      },
+      commands: [{ id: 'CREATE', label: 'Create' }],
+      stages: [{ id: 'PHASE_1', label: 'Phase 1', order: 1 }],
+      transitions: [{ from: 'IDLE', to: 'PHASE_1', event: 'transition' }],
+      gates: [{ id: 'gate.1', after: 'PHASE_1', before: 'COMPLETED', type: 'SIMPLE' }],
+      assignments: [{ phase: 'PHASE_1', agent_id: '01' }],
+      artifact_namespaces: { docs: 'BusinessDocs' },
+      help: {
+        topics: [{ id: 'commands', title: 'Commands' }],
+      },
+    });
+
+    expect(manifest.commands).toHaveLength(1);
+    expect(manifest.stages[0].id).toBe('PHASE_1');
+    expect(manifest.transitions[0].from).toBe('IDLE');
+    expect(manifest.gates[0].before).toBe('COMPLETED');
+    expect(manifest.assignments[0].agent_id).toBe('01');
+    expect(manifest.artifact_namespaces.docs).toBe('BusinessDocs');
+    expect(manifest.help.topics[0].id).toBe('commands');
   });
 });

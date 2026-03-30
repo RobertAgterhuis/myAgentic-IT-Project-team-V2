@@ -12,14 +12,14 @@ const elevationClasses: Record<CardElevation, string> = {
 };
 
 const toneClasses: Record<CardTone, string> = {
-  default: 'bg-gradient-to-br from-card via-card to-info/6 text-card-foreground backdrop-blur-sm',
-  info: 'bg-gradient-to-br from-card via-info/8 to-info/14 border-info/25 text-card-foreground backdrop-blur-sm',
+  default: 'surface-elevated text-card-foreground backdrop-blur-sm',
+  info: 'surface-elevated bg-linear-to-br from-card via-info/8 to-info/14 border-info/25 text-card-foreground backdrop-blur-sm',
   warning:
-    'bg-gradient-to-br from-card via-warning/8 to-warning/14 border-warning/30 text-card-foreground backdrop-blur-sm',
+    'surface-elevated bg-linear-to-br from-card via-warning/8 to-warning/14 border-warning/30 text-card-foreground backdrop-blur-sm',
   error:
-    'bg-gradient-to-br from-card via-destructive/8 to-destructive/14 border-destructive/30 text-card-foreground backdrop-blur-sm',
+    'surface-elevated bg-linear-to-br from-card via-destructive/8 to-destructive/14 border-destructive/30 text-card-foreground backdrop-blur-sm',
   success:
-    'bg-gradient-to-br from-card via-success/8 to-success/14 border-success/28 text-card-foreground backdrop-blur-sm',
+    'surface-elevated bg-linear-to-br from-card via-success/8 to-success/14 border-success/28 text-card-foreground backdrop-blur-sm',
 };
 
 interface CardSharedProps {
@@ -35,7 +35,7 @@ type CardProps =
 function Card(props: CardProps) {
   const { className, elevation = 'outlined', tone = 'default', clickable } = props;
   const cardClassName = cn(
-    'relative flex flex-col gap-6 overflow-hidden rounded-[calc(var(--radius-md)+2px)] py-6',
+    'relative flex flex-col gap-6 overflow-hidden rounded-md py-6',
     elevationClasses[elevation],
     toneClasses[tone],
     clickable &&

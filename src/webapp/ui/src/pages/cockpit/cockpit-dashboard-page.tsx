@@ -14,12 +14,14 @@ import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { ControlSignalBadge } from '@/components/ui/control-signal';
+import { TabsList } from '@/components/ui/tabs';
 import { ConfidencePanel } from '@/components/cockpit/confidence-indicators';
 import { DependencyGraph } from '@/components/cockpit/dependency-graph';
 import { DecisionProvenanceView } from '@/components/cockpit/decision-provenance-view';
 import { InterventionConsole } from '@/components/cockpit/intervention-console';
 import { RootCauseView } from '@/components/cockpit/root-cause-view';
 import { ApprovalHistoryTimeline } from '@/components/cockpit/approval-workflow';
+import { ArtifactViewerHostPane } from '@/components/cockpit/monaco-host-panels';
 import {
   useCockpitHealth,
   useDependencyGraph,
@@ -29,19 +31,35 @@ import {
   useOrchestratorStatus,
 } from '@/hooks';
 import type {
+  MonacoModelLocator,
   CockpitHealthResponse,
   DependencyGraphResponse,
   ProvenanceResponse,
   RootCauseResponse,
   ApprovalHistoryResponse,
 } from '@/lib/api-types';
-import { Gauge, GitBranch, AlertTriangle, ClipboardCheck, RefreshCw, Network } from 'lucide-react';
+import {
+  Gauge,
+  GitBranch,
+  AlertTriangle,
+  ClipboardCheck,
+  RefreshCw,
+  Network,
+  FileSearch,
+} from 'lucide-react';
 
-type Tab = 'health' | 'dependencies' | 'provenance' | 'root-cause' | 'approvals';
+type Tab =
+  | 'health'
+  | 'dependencies'
+  | 'artifact-viewer'
+  | 'provenance'
+  | 'root-cause'
+  | 'approvals';
 
 const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'health', label: 'Health & Confidence', icon: <Gauge className="size-3" /> },
   { id: 'dependencies', label: 'Dependencies', icon: <GitBranch className="size-3" /> },
+  { id: 'artifact-viewer', label: 'Intelligence Viewer', icon: <FileSearch className="size-3" /> },
   { id: 'provenance', label: 'Decision Provenance', icon: <Network className="size-3" /> },
   { id: 'root-cause', label: 'Root-Cause Analysis', icon: <AlertTriangle className="size-3" /> },
   { id: 'approvals', label: 'Approval History', icon: <ClipboardCheck className="size-3" /> },
@@ -88,7 +106,7 @@ export default function CockpitDashboardPage() {
   );
 
   return (
-    <div className="p-6 space-y-6" data-testid="cockpit-dashboard-page">
+    <div className="page-container-wide p-6 space-y-6" data-testid="cockpit-dashboard-page">
       <PageHeader
         title="Cockpit"
         subtitle="Investigate confidence, dependencies, root-cause analysis, and approval history."
@@ -164,42 +182,14 @@ export default function CockpitDashboardPage() {
         />
       </section>
 
-      {/* Tab bar */}
-      <div
-        role="tablist"
-        aria-label="Cockpit sections"
-        className="flex items-center gap-1 rounded-2xl border border-border/70 bg-card/72 p-1.5 shadow-sm backdrop-blur-sm"
-      >
-        {tabs.map((tab) =>
-          activeTab === tab.id ? (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected="true"
-              aria-controls={`cockpit-panel-${tab.id}`}
-              id={`cockpit-tab-${tab.id}`}
-              className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-colors bg-background/80 text-foreground shadow-sm"
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ) : (
-            <button
-              key={tab.id}
-              role="tab"
-              aria-selected="false"
-              aria-controls={`cockpit-panel-${tab.id}`}
-              id={`cockpit-tab-${tab.id}`}
-              className="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-colors text-muted-foreground hover:bg-background/60 hover:text-foreground"
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          )
-        )}
-      </div>
+      <TabsList
+        ariaLabel="Cockpit sections"
+        idPrefix="cockpit"
+        items={tabs}
+        activeTab={activeTab}
+        onChange={setActiveTab}
+        variant="pill"
+      />
 
       {/* Tab panels */}
       <div
@@ -212,6 +202,9 @@ export default function CockpitDashboardPage() {
 
         {/* Dependencies */}
         {activeTab === 'dependencies' && <DependenciesPanel query={dependencyQuery} />}
+
+        {/* Intelligence viewer */}
+        {activeTab === 'artifact-viewer' && <ArtifactViewerPanel query={provenanceQuery} />}
 
         {/* Provenance */}
         {activeTab === 'provenance' && <ProvenancePanel query={provenanceQuery} />}
@@ -279,6 +272,34 @@ function ProvenancePanel({ query }: { query: QueryState<ProvenanceResponse> }) {
   if (query.isLoading) return <Spinner label="Loading decision provenance…" />;
   if (query.error) return <ErrorBanner error={query.error} onRetry={query.refetch} />;
   return <DecisionProvenanceView items={query.data?.items ?? []} />;
+}
+
+function ArtifactViewerPanel({ query }: { query: QueryState<ProvenanceResponse> }) {
+  if (query.isLoading) return <Spinner label="Loading intelligence artifacts…" />;
+  if (query.error) return <ErrorBanner error={query.error} onRetry={query.refetch} />;
+
+  const firstItem = query.data?.items?.[0];
+  const sourceLabel = firstItem?.source || 'Runtime artifact';
+  const content = firstItem
+    ? JSON.stringify(firstItem, null, 2)
+    : 'No provenance artifacts are available for this session yet.';
+  const modelLocator: MonacoModelLocator = {
+    namespace: 'workspace',
+    objectId: firstItem?.id ? `cockpit-intelligence-${firstItem.id}` : 'cockpit-intelligence-empty',
+    path: firstItem?.id
+      ? `cockpit/intelligence/${firstItem.id}.json`
+      : 'cockpit/intelligence/empty.json',
+    language: 'json',
+  };
+
+  return (
+    <ArtifactViewerHostPane
+      title="Intelligence artifact viewer"
+      sourceLabel={sourceLabel}
+      content={content}
+      modelLocator={modelLocator}
+    />
+  );
 }
 
 function ApprovalsPanel({ query }: { query: QueryState<ApprovalHistoryResponse> }) {

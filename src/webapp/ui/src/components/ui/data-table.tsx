@@ -35,6 +35,8 @@ interface DataTableProps<TData> {
   onRowSelectionChange?: (selection: RowSelectionState) => void;
   emptyTitle?: string;
   emptyDescription?: string;
+  caption?: string;
+  tableAriaLabel?: string;
   className?: string;
 }
 
@@ -54,6 +56,8 @@ function DataTable<TData>({
   onRowSelectionChange,
   emptyTitle = 'No data',
   emptyDescription,
+  caption,
+  tableAriaLabel,
   className,
 }: DataTableProps<TData>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
@@ -108,35 +112,43 @@ function DataTable<TData>({
       )}
 
       {/* Table */}
-      <Table>
+      <Table aria-label={tableAriaLabel}>
+        {caption ? <caption className="sr-only">{caption}</caption> : null}
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 const sorted = header.column.getIsSorted();
+                const canSort = enableSorting && header.column.getCanSort();
+                const sortLabel =
+                  sorted === 'asc' ? 'ascending' : sorted === 'desc' ? 'descending' : 'none';
                 return (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : (
-                      <div
-                        className={cn(
-                          'flex items-center gap-1',
-                          header.column.getCanSort() && 'cursor-pointer select-none'
-                        )}
+                  <TableHead
+                    key={header.id}
+                    scope="col"
+                    aria-sort={canSort ? sortLabel : undefined}
+                  >
+                    {header.isPlaceholder ? null : canSort ? (
+                      <button
+                        type="button"
+                        className="group flex items-center gap-1 cursor-pointer select-none"
                         onClick={header.column.getToggleSortingHandler()}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}
-                        {enableSorting && header.column.getCanSort() && (
-                          <span className="text-muted-foreground">
-                            {sorted === 'asc' ? (
-                              <ArrowUp className="size-3.5" />
-                            ) : sorted === 'desc' ? (
-                              <ArrowDown className="size-3.5" />
-                            ) : (
-                              <ArrowUpDown className="size-3.5" />
-                            )}
-                          </span>
-                        )}
-                      </div>
+                        <span className="text-muted-foreground group-hover:text-foreground">
+                          {sorted === 'asc' ? (
+                            <ArrowUp className="size-3.5" />
+                          ) : sorted === 'desc' ? (
+                            <ArrowDown className="size-3.5" />
+                          ) : (
+                            <ArrowUpDown className="size-3.5" />
+                          )}
+                        </span>
+                      </button>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        {flexRender(header.column.columnDef.header, header.getContext())}
+                      </span>
                     )}
                   </TableHead>
                 );

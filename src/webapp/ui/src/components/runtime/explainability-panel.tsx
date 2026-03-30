@@ -24,7 +24,7 @@ export function ExplainabilityPanel({
       role="complementary"
       aria-label={title}
       className={cn(
-        'relative overflow-hidden rounded-[26px] border border-amber-500/25 bg-gradient-to-br from-card via-warning/6 to-warning/12 p-4 shadow-sm backdrop-blur-sm',
+        'relative overflow-hidden rounded-[26px] border border-amber-500/25 bg-linear-to-br from-card via-warning/6 to-warning/12 p-4 shadow-sm backdrop-blur-sm',
         className
       )}
       {...props}
@@ -61,7 +61,7 @@ export function ExplainabilityPanel({
       {/* Reason */}
       <div className="relative space-y-3 text-sm">
         <div className="rounded-2xl border border-border/60 bg-background/60 p-3">
-          <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+          <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
             Reason
           </span>
           <p className="mt-0.5">{reason}</p>
@@ -69,7 +69,7 @@ export function ExplainabilityPanel({
 
         {suggestedAction && (
           <div className="rounded-2xl border border-info/20 bg-info/8 p-3">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-info-foreground/80">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-info-foreground/80">
               Suggested Action
             </span>
             <p className="mt-1 font-medium text-info-foreground">{suggestedAction}</p>

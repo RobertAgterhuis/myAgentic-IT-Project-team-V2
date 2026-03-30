@@ -86,7 +86,7 @@ export function ConfidenceCard({ score, className }: ConfidenceCardProps) {
           </div>
           <div>
             <p className="text-sm font-medium">{score.label}</p>
-            <p className="text-[10px] text-muted-foreground">
+            <p className="text-xs text-muted-foreground">
               {score.factors.length} contributing factors
             </p>
           </div>

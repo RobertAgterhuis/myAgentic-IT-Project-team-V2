@@ -83,7 +83,7 @@ export function RuntimeLog({
               type="button"
               onClick={() => toggleFilter(type)}
               className={cn(
-                'rounded px-1.5 py-0.5 text-[10px] font-medium transition-colors',
+                'rounded px-1.5 py-0.5 text-xs font-medium transition-colors',
                 activeFilter?.includes(type)
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground hover:bg-accent'

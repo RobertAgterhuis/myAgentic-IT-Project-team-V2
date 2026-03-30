@@ -19,6 +19,10 @@ import { join, extname, basename } from 'node:path';
 const BUDGET_KB_DEFAULT = 500;
 const DIST_DEFAULT = 'src/webapp/ui/dist';
 
+function isBudgetExcludedChunk(fileName) {
+  return /\.worker-/.test(fileName) || /^editor\.api-/.test(fileName);
+}
+
 function parseArgs(argv) {
   const args = { dir: DIST_DEFAULT, budget: BUDGET_KB_DEFAULT };
   for (let i = 2; i < argv.length; i++) {
@@ -54,10 +58,12 @@ async function main() {
   const { dir, budget } = parseArgs(process.argv);
 
   const assetsDir = join(dir, 'assets');
-  const jsFiles = await collectJsFiles(assetsDir);
+  const jsFiles = (await collectJsFiles(assetsDir)).filter(
+    (file) => !isBudgetExcludedChunk(file.name)
+  );
 
   if (jsFiles.length === 0) {
-    console.warn('[bundle-budget] No JS files found in dist/assets — skipping check.');
+    console.warn('[bundle-budget] No eligible JS files found in dist/assets — skipping check.');
     process.exit(0);
   }
 

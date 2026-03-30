@@ -11,6 +11,86 @@
   "playbooksDir": "playbooks",
   "decisionsDir": "decisions",
   "decisionIndexSeed": "decisions/_index-seed.md",
+  "artifactNamespaces": {
+    "business_docs": "BusinessDocs"
+  },
+  "editorProviders": {
+    "monaco": {
+      "providers": [
+        {
+          "id": "sdlc-hover-guardrail",
+          "kind": "hover",
+          "language": "markdown",
+          "label": "Guardrail hint",
+          "match": {
+            "contains": ["UNCERTAIN:", "INSUFFICIENT_DATA:"]
+          },
+          "markdown": "**Governance note**\\n\\nDocument unresolved uncertainty and link traceable evidence before handoff."
+        },
+        {
+          "id": "sdlc-completion-tags",
+          "kind": "completion",
+          "language": "markdown",
+          "triggerCharacters": ["#", "U"],
+          "items": [
+            {
+              "label": "UNCERTAIN:",
+              "insertText": "UNCERTAIN: ",
+              "detail": "Mark statements requiring confirmation",
+              "kind": "keyword"
+            },
+            {
+              "label": "INSUFFICIENT_DATA:",
+              "insertText": "INSUFFICIENT_DATA: ",
+              "detail": "Mark missing required data",
+              "kind": "keyword"
+            }
+          ]
+        },
+        {
+          "id": "sdlc-codelens-checklist",
+          "kind": "codelens",
+          "language": "markdown",
+          "lenses": [
+            {
+              "lineNumber": 1,
+              "title": "Run handoff checklist"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "editorSchemas": {
+    "monaco": {
+      "bindings": [
+        {
+          "id": "sdlc-contract-json",
+          "language": "json",
+          "schemaUri": "https://agentic.dev/schemas/contracts/output-contract.schema.json",
+          "modelLocator": {
+            "namespace": "repo",
+            "objectId": "contract-output-json",
+            "path": "templates/sdlc/contracts/output-contract.json",
+            "language": "json"
+          },
+          "required": true
+        },
+        {
+          "id": "sdlc-policy-yaml",
+          "language": "yaml",
+          "schemaUri": "https://agentic.dev/schemas/policy/policy-pack.schema.json",
+          "modelLocator": {
+            "namespace": "repo",
+            "objectId": "policy-pack-yaml",
+            "path": "templates/sdlc/guardrails/policy-pack.yaml",
+            "language": "yaml"
+          },
+          "required": false
+        }
+      ]
+    }
+  },
   "decisionCategories": [
     {
       "file": "transformation.md",
@@ -164,31 +244,162 @@
       "label": "Emergency HOTFIX"
     }
   },
+  "commands": [
+    {
+      "id": "CREATE",
+      "label": "CREATE",
+      "category": "create",
+      "description": "Full CREATE cycle"
+    },
+    {
+      "id": "CREATE BUSINESS",
+      "label": "CREATE BUSINESS",
+      "category": "create",
+      "description": "Business-only CREATE cycle"
+    },
+    {
+      "id": "CREATE TECH",
+      "label": "CREATE TECH",
+      "category": "create",
+      "description": "Tech-only CREATE cycle"
+    },
+    {
+      "id": "CREATE UX",
+      "label": "CREATE UX",
+      "category": "create",
+      "description": "UX-only CREATE cycle"
+    },
+    {
+      "id": "CREATE MARKETING",
+      "label": "CREATE MARKETING",
+      "category": "create",
+      "description": "Marketing-only CREATE cycle"
+    },
+    {
+      "id": "CREATE SYNTHESIS",
+      "label": "CREATE SYNTHESIS",
+      "category": "create",
+      "description": "CREATE synthesis mode"
+    },
+    {
+      "id": "AUDIT",
+      "label": "AUDIT",
+      "category": "audit",
+      "description": "Full AUDIT cycle"
+    },
+    {
+      "id": "AUDIT BUSINESS",
+      "label": "AUDIT BUSINESS",
+      "category": "audit",
+      "description": "Business-only AUDIT cycle"
+    },
+    {
+      "id": "AUDIT TECH",
+      "label": "AUDIT TECH",
+      "category": "audit",
+      "description": "Tech-only AUDIT cycle"
+    },
+    {
+      "id": "AUDIT UX",
+      "label": "AUDIT UX",
+      "category": "audit",
+      "description": "UX-only AUDIT cycle"
+    },
+    {
+      "id": "AUDIT MARKETING",
+      "label": "AUDIT MARKETING",
+      "category": "audit",
+      "description": "Marketing-only AUDIT cycle"
+    },
+    {
+      "id": "AUDIT SYNTHESIS",
+      "label": "AUDIT SYNTHESIS",
+      "category": "audit",
+      "description": "AUDIT synthesis mode"
+    },
+    {
+      "id": "REEVALUATE",
+      "label": "REEVALUATE",
+      "category": "on-demand",
+      "description": "Reevaluate a scoped change"
+    },
+    {
+      "id": "FEATURE",
+      "label": "FEATURE",
+      "category": "on-demand",
+      "description": "Deliver a feature increment"
+    },
+    {
+      "id": "SCOPE CHANGE",
+      "label": "SCOPE CHANGE",
+      "category": "on-demand",
+      "description": "Trigger scope-change analysis"
+    },
+    {
+      "id": "HOTFIX",
+      "label": "HOTFIX",
+      "category": "on-demand",
+      "description": "Emergency hotfix path"
+    },
+    {
+      "id": "REFRESH ONBOARDING",
+      "label": "REFRESH ONBOARDING",
+      "category": "session",
+      "description": "Refresh onboarding context"
+    },
+    {
+      "id": "CONTINUE",
+      "label": "CONTINUE",
+      "category": "session",
+      "description": "Continue current session flow"
+    }
+  ],
+  "stages": [
+    { "id": "IDLE", "label": "Idle", "order": 0, "structural": true },
+    { "id": "ONBOARDING", "label": "Onboarding", "order": 1, "structural": true },
+    { "id": "PHASE_1", "label": "Phase 1", "order": 2, "structural": false },
+    { "id": "CRITIC_1", "label": "Critic 1", "order": 3, "structural": false },
+    { "id": "PHASE_2", "label": "Phase 2", "order": 4, "structural": false },
+    { "id": "CRITIC_2", "label": "Critic 2", "order": 5, "structural": false },
+    { "id": "PHASE_3", "label": "Phase 3", "order": 6, "structural": false },
+    { "id": "CRITIC_3", "label": "Critic 3", "order": 7, "structural": false },
+    { "id": "PHASE_4", "label": "Phase 4", "order": 8, "structural": false },
+    { "id": "CRITIC_4", "label": "Critic 4", "order": 9, "structural": false },
+    { "id": "SYNTHESIS", "label": "Synthesis", "order": 10, "structural": true },
+    { "id": "SPRINT_GATE", "label": "Sprint Gate", "order": 11, "structural": true },
+    {
+      "id": "PHASE_5_EXECUTING",
+      "label": "Phase 5 Executing",
+      "order": 12,
+      "structural": true
+    },
+    { "id": "COMPLETED", "label": "Completed", "order": 13, "structural": true }
+  ],
   "phaseArtifacts": {
     "PHASE_1": [
       {
         "id": "P1-BA-analysis",
         "type": "DOCUMENT",
         "stage": "REQUIREMENTS",
-        "path": "BusinessDocs/Phase1-Business/analysis.md"
+        "path": "business_docs:Phase1-Business/analysis.md"
       },
       {
         "id": "P1-BA-recommendations",
         "type": "DOCUMENT",
         "stage": "REQUIREMENTS",
-        "path": "BusinessDocs/Phase1-Business/recommendations.md"
+        "path": "business_docs:Phase1-Business/recommendations.md"
       },
       {
         "id": "P1-BA-sprint-plan",
         "type": "DOCUMENT",
         "stage": "PLANNING",
-        "path": "BusinessDocs/Phase1-Business/sprint-plan.md"
+        "path": "business_docs:Phase1-Business/sprint-plan.md"
       },
       {
         "id": "P1-BA-guardrails",
         "type": "DOCUMENT",
         "stage": "REQUIREMENTS",
-        "path": "BusinessDocs/Phase1-Business/guardrails.md"
+        "path": "business_docs:Phase1-Business/guardrails.md"
       }
     ],
     "PHASE_2": [
@@ -196,25 +407,25 @@
         "id": "P2-SA-analysis",
         "type": "DOCUMENT",
         "stage": "ARCHITECTURE",
-        "path": "BusinessDocs/Phase2-Tech/analysis.md"
+        "path": "business_docs:Phase2-Tech/analysis.md"
       },
       {
         "id": "P2-SA-recommendations",
         "type": "DOCUMENT",
         "stage": "ARCHITECTURE",
-        "path": "BusinessDocs/Phase2-Tech/recommendations.md"
+        "path": "business_docs:Phase2-Tech/recommendations.md"
       },
       {
         "id": "P2-SD-sprint-plan",
         "type": "DOCUMENT",
         "stage": "PLANNING",
-        "path": "BusinessDocs/Phase2-Tech/sprint-plan.md"
+        "path": "business_docs:Phase2-Tech/sprint-plan.md"
       },
       {
         "id": "P2-SEC-guardrails",
         "type": "DOCUMENT",
         "stage": "ARCHITECTURE",
-        "path": "BusinessDocs/Phase2-Tech/guardrails.md"
+        "path": "business_docs:Phase2-Tech/guardrails.md"
       }
     ],
     "PHASE_3": [
@@ -222,31 +433,31 @@
         "id": "P3-UXR-analysis",
         "type": "DOCUMENT",
         "stage": "REQUIREMENTS",
-        "path": "BusinessDocs/Phase3-UX/analysis.md"
+        "path": "business_docs:Phase3-UX/analysis.md"
       },
       {
         "id": "P3-UXD-wireframes",
         "type": "DESIGN_ASSET",
         "stage": "ARCHITECTURE",
-        "path": "BusinessDocs/Phase3-UX/wireframes.md"
+        "path": "business_docs:Phase3-UX/wireframes.md"
       },
       {
         "id": "P3-UID-design-system",
         "type": "DESIGN_ASSET",
         "stage": "ARCHITECTURE",
-        "path": "BusinessDocs/Phase3-UX/design-system.md"
+        "path": "business_docs:Phase3-UX/design-system.md"
       },
       {
         "id": "P3-A11Y-baseline",
         "type": "DOCUMENT",
         "stage": "REQUIREMENTS",
-        "path": "BusinessDocs/Phase3-UX/a11y-baseline.md"
+        "path": "business_docs:Phase3-UX/a11y-baseline.md"
       },
       {
         "id": "P3-CS-strategy",
         "type": "DOCUMENT",
         "stage": "REQUIREMENTS",
-        "path": "BusinessDocs/Phase3-UX/content-strategy.md"
+        "path": "business_docs:Phase3-UX/content-strategy.md"
       }
     ],
     "PHASE_4": [
@@ -254,31 +465,31 @@
         "id": "P4-BR-strategy",
         "type": "DOCUMENT",
         "stage": "PLANNING",
-        "path": "BusinessDocs/Phase4-Marketing/brand-strategy.md"
+        "path": "business_docs:Phase4-Marketing/brand-strategy.md"
       },
       {
         "id": "P4-BR-design-tokens",
         "type": "CONFIGURATION",
         "stage": "ARCHITECTURE",
-        "path": "BusinessDocs/brand/design-tokens.json"
+        "path": "business_docs:brand/design-tokens.json"
       },
       {
         "id": "P4-BR-guidelines",
         "type": "DOCUMENT",
         "stage": "PLANNING",
-        "path": "BusinessDocs/brand/brand-guidelines.md"
+        "path": "business_docs:brand/brand-guidelines.md"
       },
       {
         "id": "P4-GM-strategy",
         "type": "DOCUMENT",
         "stage": "PLANNING",
-        "path": "BusinessDocs/Phase4-Marketing/growth-strategy.md"
+        "path": "business_docs:Phase4-Marketing/growth-strategy.md"
       },
       {
         "id": "P4-CRO-strategy",
         "type": "DOCUMENT",
         "stage": "PLANNING",
-        "path": "BusinessDocs/Phase4-Marketing/cro-strategy.md"
+        "path": "business_docs:Phase4-Marketing/cro-strategy.md"
       }
     ],
     "SYNTHESIS": [
@@ -286,37 +497,37 @@
         "id": "SYN-master-report",
         "type": "DOCUMENT",
         "stage": "PLANNING",
-        "path": "BusinessDocs/synthesis/final-report-master.md"
+        "path": "business_docs:synthesis/final-report-master.md"
       },
       {
         "id": "SYN-dept-business",
         "type": "DOCUMENT",
         "stage": "PLANNING",
-        "path": "BusinessDocs/synthesis/final-report-business.md"
+        "path": "business_docs:synthesis/final-report-business.md"
       },
       {
         "id": "SYN-dept-tech",
         "type": "DOCUMENT",
         "stage": "PLANNING",
-        "path": "BusinessDocs/synthesis/final-report-tech.md"
+        "path": "business_docs:synthesis/final-report-tech.md"
       },
       {
         "id": "SYN-dept-ux",
         "type": "DOCUMENT",
         "stage": "PLANNING",
-        "path": "BusinessDocs/synthesis/final-report-ux.md"
+        "path": "business_docs:synthesis/final-report-ux.md"
       },
       {
         "id": "SYN-dept-marketing",
         "type": "DOCUMENT",
         "stage": "PLANNING",
-        "path": "BusinessDocs/synthesis/final-report-marketing.md"
+        "path": "business_docs:synthesis/final-report-marketing.md"
       },
       {
         "id": "SYN-blocker-matrix",
         "type": "DOCUMENT",
         "stage": "PLANNING",
-        "path": "BusinessDocs/synthesis/cross-team-blocker-matrix.md"
+        "path": "business_docs:synthesis/cross-team-blocker-matrix.md"
       }
     ]
   },

@@ -28,6 +28,7 @@ import {
   type ArtifactType,
 } from '../sdlc/artifacts';
 import type { LifecycleStage } from '../sdlc/entities';
+import { resolveValidatedPhaseForCriticState, type RuntimePackGraph } from './runtime-pack';
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -50,15 +51,6 @@ export interface RegistrationStore {
   readFile(path: string): string;
 }
 
-// ─── Phase-to-critic mapping (from state machine naming convention) ─
-
-const CRITIC_TO_PHASE: Record<string, string> = {
-  CRITIC_1: 'PHASE_1',
-  CRITIC_2: 'PHASE_2',
-  CRITIC_3: 'PHASE_3',
-  CRITIC_4: 'PHASE_4',
-};
-
 const SYNTHESIS_STATE = 'SYNTHESIS';
 
 /**
@@ -78,8 +70,17 @@ export function resolveCompletedPhase(fromState: string): string | null {
  * Resolve the phase that just completed from a critic transition.
  * When engine transitions FROM a critic state, its validated phase is done.
  */
-export function resolvePhaseFromCritic(fromState: string): string | null {
-  return CRITIC_TO_PHASE[fromState] || null;
+export function resolvePhaseFromCritic(
+  fromState: string,
+  runtimePackGraph?: RuntimePackGraph | null
+): string | null {
+  const runtimeResolved = resolveValidatedPhaseForCriticState(runtimePackGraph, fromState);
+  if (runtimeResolved) {
+    return runtimeResolved;
+  }
+
+  const match = fromState.match(/^CRITIC_(\d+)$/);
+  return match ? `PHASE_${match[1]}` : null;
 }
 
 // ─── Registration Logic ─────────────────────────────────────
@@ -210,11 +211,12 @@ export function createArtifactRegistrationHook(
   registry: ArtifactRegistry,
   store: RegistrationStore,
   phaseArtifacts: Record<string, ArtifactDeclaration[]>,
-  phaseLineage: Record<string, PhaseLineageConfig>
+  phaseLineage: Record<string, PhaseLineageConfig>,
+  runtimePackGraph?: RuntimePackGraph
 ): (event: { from: string; to: string; timestamp: string }) => void {
   return (event: { from: string; to: string; timestamp: string }) => {
     // Check if transition is from a critic state (phase just validated)
-    const phaseFromCritic = resolvePhaseFromCritic(event.from);
+    const phaseFromCritic = resolvePhaseFromCritic(event.from, runtimePackGraph);
     if (phaseFromCritic) {
       registerPhaseArtifacts(phaseFromCritic, registry, store, phaseArtifacts, phaseLineage);
       return;

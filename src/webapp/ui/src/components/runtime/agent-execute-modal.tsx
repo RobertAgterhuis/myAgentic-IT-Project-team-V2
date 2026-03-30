@@ -314,16 +314,11 @@ function ExecutionOutputViewer({ result }: { result: AgentExecutionResult }) {
 
       {/* Toolbar */}
       <div className="flex gap-2">
-        <Button variant="outline" size="sm" className="h-6 px-2 text-[10px]" onClick={handleCopy}>
+        <Button variant="outline" size="sm" className="h-6 px-2 text-xs" onClick={handleCopy}>
           <Copy className="size-3 mr-1" />
           {copied ? 'Copied!' : 'Copy'}
         </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-6 px-2 text-[10px]"
-          onClick={handleDownload}
-        >
+        <Button variant="outline" size="sm" className="h-6 px-2 text-xs" onClick={handleDownload}>
           <Download className="size-3 mr-1" /> Download
         </Button>
       </div>

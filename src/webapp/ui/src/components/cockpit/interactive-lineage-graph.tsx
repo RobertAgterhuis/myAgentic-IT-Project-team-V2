@@ -16,10 +16,10 @@ const PAD = 40;
 
 /* ── Status styles ── */
 const statusFill: Record<string, string> = {
-  VALID: '#22c55e',
-  DRAFT: '#60a5fa',
-  SUPERSEDED: '#fbbf24',
-  INVALID: '#f87171',
+  VALID: 'var(--status-online)',
+  DRAFT: 'var(--status-running)',
+  SUPERSEDED: 'var(--status-paused)',
+  INVALID: 'var(--status-failed)',
 };
 
 const statusBadge: Record<string, 'success' | 'info' | 'warning' | 'error'> = {
@@ -30,9 +30,9 @@ const statusBadge: Record<string, 'success' | 'info' | 'warning' | 'error'> = {
 };
 
 const edgeColor: Record<string, string> = {
-  PRODUCES: '#22c55e',
-  CONSUMES: '#60a5fa',
-  SUPERSEDES: '#fbbf24',
+  PRODUCES: 'var(--status-online)',
+  CONSUMES: 'var(--status-running)',
+  SUPERSEDES: 'var(--status-paused)',
 };
 
 /* ── Simple topological layer assignment ── */
@@ -216,7 +216,7 @@ export function InteractiveLineageGraph({
                 <path
                   d={`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`}
                   fill="none"
-                  stroke={edgeColor[edge.relationship] ?? '#94a3b8'}
+                  stroke={edgeColor[edge.relationship] ?? 'var(--color-muted-foreground)'}
                   strokeWidth={isHighlighted ? 3 : 1.5}
                   strokeDasharray={edge.relationship === 'SUPERSEDES' ? '6,4' : undefined}
                   opacity={isHighlighted ? 1 : 0.6}
@@ -237,7 +237,7 @@ export function InteractiveLineageGraph({
           {/* Arrowhead marker */}
           <defs>
             <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-              <polygon points="0 0, 8 3, 0 6" fill="#94a3b8" />
+              <polygon points="0 0, 8 3, 0 6" fill="var(--color-muted-foreground)" />
             </marker>
           </defs>
 
@@ -272,23 +272,22 @@ export function InteractiveLineageGraph({
                   width={NODE_W}
                   height={NODE_H}
                   rx={8}
-                  fill={
-                    isSelected || isHovered
-                      ? 'var(--color-primary-50, #eff6ff)'
-                      : 'var(--color-card, #fff)'
-                  }
-                  stroke={
-                    isSelected ? 'var(--color-primary, #3b82f6)' : 'var(--color-border, #e2e8f0)'
-                  }
+                  fill={isSelected || isHovered ? 'var(--color-primary-50)' : 'var(--color-card)'}
+                  stroke={isSelected ? 'var(--color-primary)' : 'var(--color-border)'}
                   strokeWidth={isSelected ? 2.5 : 1}
                 />
                 {/* Status dot */}
-                <circle cx={14} cy={NODE_H / 2} r={5} fill={statusFill[node.status] ?? '#94a3b8'} />
+                <circle
+                  cx={14}
+                  cy={NODE_H / 2}
+                  r={5}
+                  fill={statusFill[node.status] ?? 'var(--color-muted-foreground)'}
+                />
                 {/* Label */}
                 <text
                   x={28}
                   y={22}
-                  className="fill-foreground text-[11px] font-mono"
+                  className="fill-foreground text-xs font-mono"
                   clipPath={`inset(0 ${NODE_W - 30}px 0 0)`}
                 >
                   {node.id.length > 20 ? `${node.id.slice(0, 18)}…` : node.id}
@@ -310,11 +309,11 @@ export function InteractiveLineageGraph({
             <div className="flex gap-1 mt-1">
               <Badge
                 variant={statusBadge[nodeById.get(hoveredNode)!.status] ?? 'secondary'}
-                className="text-[10px]"
+                className="text-xs"
               >
                 {nodeById.get(hoveredNode)!.status}
               </Badge>
-              <Badge variant="secondary" className="text-[10px]">
+              <Badge variant="secondary" className="text-xs">
                 {nodeById.get(hoveredNode)!.artifact_type}
               </Badge>
             </div>

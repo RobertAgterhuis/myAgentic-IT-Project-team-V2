@@ -8,7 +8,6 @@ const uiRoot = path.join(root, 'src', 'webapp', 'ui', 'src');
 const allowedLiteralFiles = new Set([
   normalize(path.join(uiRoot, 'tokens.css')),
   normalize(path.join(uiRoot, 'index.css')),
-  normalize(path.join(uiRoot, 'components', 'cockpit', 'interactive-lineage-graph.tsx')),
 ]);
 
 const includeExt = new Set(['.ts', '.tsx', '.css']);
@@ -18,6 +17,7 @@ const colorLiteralInCode = /(["'`])\s*(#(?:[0-9a-fA-F]{3,8})|rgba?\(|hsla?\()/g;
 const colorLiteralInCss = /(?:#(?:[0-9a-fA-F]{3,8})|rgba?\(|hsla?\()/g;
 const fontFamilyInCode = /fontFamily\s*:/g;
 const fontFamilyInCss = /font-family\s*:/g;
+const forbiddenMicroText = /text-\[(10|11)px\]/g;
 
 const violations = [];
 
@@ -91,6 +91,14 @@ function checkFile(filePath, ext) {
       violations.push(`${rel(filePath)}:${lineNo} hardcoded color literal detected.`);
     }
     colorLiteralInCode.lastIndex = 0;
+
+    // Restrict arbitrary micro-text classes in key dense-runtime/table surfaces.
+    if (isTypographyPolicyTarget(filePath) && forbiddenMicroText.test(line)) {
+      violations.push(
+        `${rel(filePath)}:${lineNo} avoid text-[10px]/text-[11px]; use approved text-xs or typography primitives.`
+      );
+    }
+    forbiddenMicroText.lastIndex = 0;
   }
 }
 
@@ -100,4 +108,9 @@ function rel(filePath) {
 
 function normalize(filePath) {
   return filePath.replace(/\\/g, '/');
+}
+
+function isTypographyPolicyTarget(filePath) {
+  const target = normalize(filePath);
+  return target.includes('/components/runtime/') || target.includes('/components/ui/data-table');
 }

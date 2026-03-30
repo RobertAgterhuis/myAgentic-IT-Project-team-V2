@@ -20,6 +20,7 @@ import type {
   SprintGatePayload,
   SprintGateResponse,
   CommandQueueResponse,
+  OrchestratorPackMetadataResponse,
   OkResponse,
 } from '@/lib/api-types';
 import { useSSEAwareRefetchInterval } from '@/hooks/use-sse-aware-polling';
@@ -183,6 +184,15 @@ export function useOrchestratorQueue() {
     queryKey: queryKeys.orchestrator.queue,
     queryFn: () => apiGet<CommandQueueResponse>('/command'),
     refetchInterval,
+  });
+}
+
+/** Runtime pack metadata (commands, stages, gates, capabilities). */
+export function useOrchestratorPackMetadata() {
+  return useQuery({
+    queryKey: ['orchestrator', 'pack-metadata'] as const,
+    queryFn: () => apiGet<OrchestratorPackMetadataResponse>('/orchestrator/pack-metadata'),
+    staleTime: 60_000,
   });
 }
 

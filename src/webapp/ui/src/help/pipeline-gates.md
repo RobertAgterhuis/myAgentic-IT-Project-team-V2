@@ -1,30 +1,30 @@
 ---
 title: Gate Types and Overrides
-description: How gate checks work, what blocks movement, and how exceptions are handled.
+description: How gate checks are defined by the active runtime pack and enforced at runtime.
 keywords:
   - pipeline
   - gates
   - approvals
   - overrides
+  - runtime-pack
 ---
 
 # Gate Types and Overrides
 
-Pipeline progression is controlled by explicit gates.
+Gate definitions are supplied by the active runtime pack.
 
-## Gate types
+## Where gate definitions come from
 
-- `gate.critic-risk-1`: PHASE_1 -> PHASE_2
-- `gate.critic-risk-2`: PHASE_2 -> PHASE_3
-- `gate.critic-risk-3`: PHASE_3 -> PHASE_4
-- `gate.critic-risk-4`: PHASE_4 -> SYNTHESIS
-- `gate.synthesis-approval`: SYNTHESIS -> SPRINT_GATE
-- `gate.sprint-gate`: SPRINT_GATE -> PHASE_5_EXECUTING
+The Pipeline page and help guidance read gate metadata at runtime.
 
-## Blocking conditions
+- Source endpoint: `/api/orchestrator/pack-metadata`
+- Primary fields: `gates`, `labels.gates`, and gate capability flags
+- Runtime diagnostics: gate outcomes and violations from orchestrator diagnostics APIs
 
-A gate remains closed when required phase outputs are incomplete, unresolved blocking items remain, or mandatory validations are missing.
+## Blocking behavior
+
+A gate remains closed when the pack-declared criteria for that transition are not satisfied, or when required approvals and validations are missing.
 
 ## Overrides and exceptions
 
-Use overrides only through approved governance paths. Every exception should be traceable to an auditable decision record, including who approved it, when it was approved, and what risk was accepted.
+Use overrides only through governed approval paths. Every exception should remain traceable to an auditable decision record with approver identity, timestamp, and accepted risk.

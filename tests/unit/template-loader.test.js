@@ -228,6 +228,34 @@ describe('validateManifest', () => {
     expect(result.valid).toBe(false);
     expect(result.errors.some((e) => e.includes('PHASE_N pattern'))).toBe(true);
   });
+
+  test('rejects artifactNamespaces when not an object', () => {
+    const manifest = createMinimalManifest({
+      artifactNamespaces: 'BusinessDocs',
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('artifactNamespaces must be an object'))).toBe(
+      true
+    );
+  });
+
+  test('rejects artifactNamespaces with invalid key format', () => {
+    const manifest = createMinimalManifest({
+      artifactNamespaces: { 'Business-Docs': 'BusinessDocs' },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(false);
+    expect(result.errors.some((e) => e.includes('artifactNamespaces key'))).toBe(true);
+  });
+
+  test('accepts valid artifactNamespaces map', () => {
+    const manifest = createMinimalManifest({
+      artifactNamespaces: { business_docs: 'BusinessDocs' },
+    });
+    const result = validateManifest(manifest);
+    expect(result.valid).toBe(true);
+  });
 });
 
 // ─── resolveTemplatePaths ────────────────────────────────────
@@ -312,6 +340,48 @@ describe('resolveTemplatePaths', () => {
     const manifest = createMinimalManifest();
     const resolved = resolveTemplatePaths(manifest, '/root');
     expect(resolved.decisionIndexSeed).toBeNull();
+  });
+
+  test('resolves namespaced artifact paths using artifactNamespaces map', () => {
+    const manifest = createMinimalManifest({
+      artifactNamespaces: { business_docs: 'BusinessDocs' },
+      phaseArtifacts: {
+        PHASE_1: [
+          {
+            id: 'A-1',
+            type: 'DOCUMENT',
+            stage: 'REQUIREMENTS',
+            path: 'business_docs:Phase1-Business/analysis.md',
+          },
+        ],
+      },
+    });
+
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.phaseArtifacts.PHASE_1[0].path).toBe(
+      path.join('BusinessDocs', 'Phase1-Business', 'analysis.md')
+    );
+  });
+
+  test('keeps backward compatibility for legacy BusinessDocs artifact paths', () => {
+    const manifest = createMinimalManifest({
+      artifactNamespaces: { business_docs: 'BusinessDocs' },
+      phaseArtifacts: {
+        PHASE_1: [
+          {
+            id: 'A-1',
+            type: 'DOCUMENT',
+            stage: 'REQUIREMENTS',
+            path: 'BusinessDocs/Phase1-Business/analysis.md',
+          },
+        ],
+      },
+    });
+
+    const resolved = resolveTemplatePaths(manifest, '/root');
+    expect(resolved.phaseArtifacts.PHASE_1[0].path).toBe(
+      path.join('BusinessDocs', 'Phase1-Business', 'analysis.md')
+    );
   });
 });
 

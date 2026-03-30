@@ -706,6 +706,8 @@ export default function DecisionsPage() {
           enableFiltering
           filterPlaceholder="Search decisions…"
           enablePagination
+          tableAriaLabel="Decisions register table"
+          caption="Decision records with status, scope, and timestamps."
           emptyTitle="No matching decisions"
           emptyDescription="Try adjusting your filters."
         />

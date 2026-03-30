@@ -285,6 +285,57 @@ describe('M5 Epic #665 orchestrator workflow automation', () => {
     expect(typeof body.slos.observed.dependency_probe_latency_ms).toBe('number');
   });
 
+  it('exposes active pack metadata for commands, stages, gates, labels, help, and capabilities', async () => {
+    const res = await inject('GET', '/api/orchestrator/pack-metadata');
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.ok).toBe(true);
+    expect(body.pack).toBeDefined();
+    expect(body.pack.id).toBeTruthy();
+    expect(Array.isArray(body.commands)).toBe(true);
+    expect(Array.isArray(body.stages)).toBe(true);
+    expect(Array.isArray(body.gates)).toBe(true);
+    expect(body.labels).toBeDefined();
+    expect(body.labels.commands).toBeDefined();
+    expect(body.labels.stages).toBeDefined();
+    expect(body.labels.gates).toBeDefined();
+    expect(Array.isArray(body.help_topics)).toBe(true);
+    expect(body.capabilities).toBeDefined();
+    expect(typeof body.capabilities.supportsCommandCatalog).toBe('boolean');
+    expect(Array.isArray(body.capabilities.parallelDispatchStates)).toBe(true);
+  });
+
+  it('supports cross-pack switching via active-pack API without kernel changes', async () => {
+    const switchToOps = await inject('POST', '/api/orchestrator/active-pack', {
+      template: 'ops-command-center',
+    });
+    expect(switchToOps.statusCode).toBe(200);
+    expect(switchToOps.json().active_template).toBe('ops-command-center');
+
+    const opsCommand = await inject('POST', '/api/orchestrator/command', {
+      command: 'TRIAGE',
+      platform: 'copilot',
+      project: 'M5-CrossPack-Ops',
+    });
+    expect(opsCommand.statusCode).toBe(200);
+    expect(opsCommand.json().status.mode).toBe('TRIAGE');
+
+    const switchToSdlc = await inject('POST', '/api/orchestrator/active-pack', {
+      template: 'sdlc',
+    });
+    expect(switchToSdlc.statusCode).toBe(200);
+    expect(switchToSdlc.json().active_template).toBe('sdlc');
+
+    const sdlcCommand = await inject('POST', '/api/orchestrator/command', {
+      command: 'AUDIT',
+      platform: 'copilot',
+      project: 'M5-CrossPack-SDLC',
+    });
+    expect(sdlcCommand.statusCode).toBe(200);
+    expect(sdlcCommand.json().status.mode).toBe('AUDIT');
+  });
+
   it('exposes stop + run-history paths for automation observability', async () => {
     await inject('POST', '/api/orchestrator/command', {
       command: 'CREATE',

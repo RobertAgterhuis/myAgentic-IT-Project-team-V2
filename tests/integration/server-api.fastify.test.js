@@ -573,6 +573,18 @@ describe('GET /api/command', () => {
     const body = r.json();
     expect(body.command.command).toBe('REEVALUATE');
     expect(body.queue).toHaveLength(1);
+  }, 15000);
+});
+
+describe('GET /api/commands', () => {
+  it('returns metadata-backed command catalog', async () => {
+    const r = await inject('GET', '/api/commands');
+    expect(r.statusCode).toBe(200);
+    const body = r.json();
+    expect(Array.isArray(body.commands)).toBe(true);
+    expect(body.commands.length).toBeGreaterThan(0);
+    expect(body.commands.some((entry) => entry.name === 'CREATE')).toBe(true);
+    expect(body.commands.some((entry) => entry.name === 'AUDIT')).toBe(true);
   });
 });
 

@@ -48,6 +48,7 @@ export {
   useOrchestratorCommand,
   useSprintGate,
   useOrchestratorQueue,
+  useOrchestratorPackMetadata,
   useQueueCommand,
   useGates,
   useOrchestratorErrors,

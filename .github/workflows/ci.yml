@@ -56,6 +56,9 @@ jobs:
       - name: TypeScript strict type check
         run: npm run typecheck
 
+      - name: Enforce pack metadata completeness
+        run: npm run test:pack-metadata-gate
+
   # ──────────────────────────────────────────────
   # Gate 2: Tests
   # ──────────────────────────────────────────────
@@ -91,6 +94,15 @@ jobs:
         run: npm run test:coverage --prefix src/webapp/ui
         env:
           VITEST_ONLY_PROJECT: unit
+
+      - name: Run Storybook governance gate
+        run: npm run test:storybook-governance --prefix src/webapp/ui
+
+      - name: Run Monaco governance gate
+        run: npm run test:monaco-governance --prefix src/webapp/ui
+
+      - name: Run dense-surface contrast gate
+        run: npm run test:dense-surface-contrast --prefix src/webapp/ui
 
       - name: Enforce coverage thresholds
         run: npm run test:coverage:gate

@@ -90,6 +90,21 @@ describe('loadPolicyPack', () => {
     expect(result.policies).toHaveLength(1);
     expect(result.policies[0].id).toBe('POL-TEST-001');
   });
+
+  it('normalizes legacy pack header keys', () => {
+    const legacyPack = {
+      id: 'legacy-pack-id',
+      name: 'Legacy Pack Name',
+      version: '0.9.0',
+      policies: [makePolicy()],
+    };
+    const store = createMockStore({ '/legacy-pack.json': JSON.stringify(legacyPack) });
+    const result = loadPolicyPack(store, '/legacy-pack.json');
+
+    expect(result).not.toBeNull();
+    expect(result.pack_id).toBe('legacy-pack-id');
+    expect(result.pack_name).toBe('Legacy Pack Name');
+  });
 });
 
 // ─── loadAllPolicyPacks ──────────────────────────────────────

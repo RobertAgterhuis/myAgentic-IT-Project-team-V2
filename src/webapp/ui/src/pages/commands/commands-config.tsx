@@ -1,14 +1,16 @@
-import type { OrchestratorCommandName } from '@/lib/api-types';
+import type { OrchestratorCommandName, OrchestratorPackMetadataResponse } from '@/lib/api-types';
 import { Play, Search, Zap, Bug } from 'lucide-react';
 
-export const QUICK_ACTIONS: {
+export interface QuickActionConfig {
   command: OrchestratorCommandName;
   label: string;
   icon: React.ReactNode;
   description: string;
   whenToUse: string;
   nextStep: string;
-}[] = [
+}
+
+export const QUICK_ACTIONS: QuickActionConfig[] = [
   {
     command: 'CREATE',
     label: 'CREATE',
@@ -45,7 +47,7 @@ export const QUICK_ACTIONS: {
   },
 ];
 
-export const COMMAND_VARIANTS: Record<OrchestratorCommandName, 'info' | 'warning' | 'secondary'> = {
+const COMMAND_VARIANTS: Record<string, 'info' | 'warning' | 'secondary'> = {
   CREATE: 'info',
   CREATE_BUSINESS: 'info',
   CREATE_TECH: 'info',
@@ -57,3 +59,50 @@ export const COMMAND_VARIANTS: Record<OrchestratorCommandName, 'info' | 'warning
   HOTFIX: 'warning',
   AUDIT: 'secondary',
 };
+
+const COMMAND_ICON_BY_NAME: Record<string, React.ReactNode> = {
+  CREATE: <Play className="size-4" />,
+  AUDIT: <Search className="size-4" />,
+  FEATURE: <Zap className="size-4" />,
+  HOTFIX: <Bug className="size-4" />,
+};
+
+const DEFAULT_COMMAND_DETAILS = {
+  description: 'Execute a pack-provided workflow command.',
+  whenToUse: 'Use when this command best matches the work objective and available context.',
+  nextStep: 'The orchestrator queues and starts this command according to pack runtime rules.',
+};
+
+export function getCommandVariant(command: string): 'info' | 'warning' | 'secondary' {
+  return COMMAND_VARIANTS[command] ?? 'secondary';
+}
+
+export function buildQuickActionsFromPackMetadata(
+  metadata?: OrchestratorPackMetadataResponse | null
+): QuickActionConfig[] {
+  const commands = metadata?.commands ?? [];
+  const modeCommands = commands.filter((entry) => entry.mode !== false);
+  if (modeCommands.length === 0) {
+    return QUICK_ACTIONS;
+  }
+
+  const quickActions: QuickActionConfig[] = [];
+  for (const entry of modeCommands.slice(0, 6)) {
+    const id = String(entry.id || '').trim();
+    if (!id) continue;
+
+    const fallback = QUICK_ACTIONS.find((candidate) => candidate.command === id);
+    const displayLabel = metadata?.labels?.commands?.[id] || entry.label || id;
+
+    quickActions.push({
+      command: id,
+      label: displayLabel,
+      icon: COMMAND_ICON_BY_NAME[id] ?? <Play className="size-4" />,
+      description: fallback?.description ?? DEFAULT_COMMAND_DETAILS.description,
+      whenToUse: fallback?.whenToUse ?? DEFAULT_COMMAND_DETAILS.whenToUse,
+      nextStep: fallback?.nextStep ?? DEFAULT_COMMAND_DETAILS.nextStep,
+    });
+  }
+
+  return quickActions.length > 0 ? quickActions : QUICK_ACTIONS;
+}

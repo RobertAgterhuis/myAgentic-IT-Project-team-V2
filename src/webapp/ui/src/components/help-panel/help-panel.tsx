@@ -2,7 +2,13 @@ import { useEffect, useMemo, useCallback, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { X, BookOpenText, Link2, ListTree, Loader2, Search } from 'lucide-react';
-import { useHelpSearch, useHelpTopic, usePageHelp, resolveHelpRouteSlug } from '@/hooks';
+import {
+  useHelpSearch,
+  useHelpTopic,
+  useOrchestratorPackMetadata,
+  usePageHelp,
+  resolveHelpRouteSlug,
+} from '@/hooks';
 import { useUIStore } from '@/stores/ui-store';
 
 interface HelpPanelProps {
@@ -16,8 +22,9 @@ export function HelpPanel({ onClose }: HelpPanelProps) {
   const helpTopicId = useUIStore((s) => s.helpTopicId);
   const setHelpTopic = useUIStore((s) => s.setHelpTopic);
   const openHelpForRoute = useUIStore((s) => s.openHelpForRoute);
+  const { data: packMetadata } = useOrchestratorPackMetadata();
 
-  const routeSlug = helpRouteSlug || resolveHelpRouteSlug(location.pathname);
+  const routeSlug = helpRouteSlug || resolveHelpRouteSlug(location.pathname, packMetadata);
   const { data: pageHelp, isLoading: isPageLoading } = usePageHelp(routeSlug);
   const activeTopicId = helpTopicId ?? pageHelp?.topicLinks[0]?.topicId ?? null;
   const { data: topic, isLoading: isTopicLoading } = useHelpTopic(activeTopicId);

@@ -16,6 +16,99 @@ const DEFAULT_SESSION_DIR = path.resolve(__dirname, '..', '..', 'BusinessDocs', 
 const DEFAULT_SESSION_FILE = path.join(DEFAULT_SESSION_DIR, 'session-state.json');
 const DEFAULT_HISTORY_FILE = path.join(DEFAULT_SESSION_DIR, 'run-history.json');
 
+const LEGACY_STATUS_ALIASES = Object.freeze({
+  'PHASE-1': 'PHASE_1',
+  'PHASE-2': 'PHASE_2',
+  'PHASE-3': 'PHASE_3',
+  'PHASE-4': 'PHASE_4',
+  'CRITIC-1': 'CRITIC_1',
+  'CRITIC-2': 'CRITIC_2',
+  'CRITIC-3': 'CRITIC_3',
+  'CRITIC-4': 'CRITIC_4',
+  'SPRINT-GATE': 'SPRINT_GATE',
+  'PHASE-5': 'PHASE_5_EXECUTING',
+  'PHASE-5-EXECUTING': 'PHASE_5_EXECUTING',
+  ONBOARDING_COMPLETE: 'PHASE_1',
+  'ONBOARDING-COMPLETE': 'PHASE_1',
+  COMPLETE: 'COMPLETED',
+});
+
+const LEGACY_MODE_ALIASES = Object.freeze({
+  'CREATE-BUSINESS': 'CREATE_BUSINESS',
+  'CREATE BUSINESS': 'CREATE_BUSINESS',
+  'CREATE-TECH': 'CREATE_TECH',
+  'CREATE TECH': 'CREATE_TECH',
+  'CREATE-UX': 'CREATE_UX',
+  'CREATE UX': 'CREATE_UX',
+  'CREATE-MARKETING': 'CREATE_MARKETING',
+  'CREATE MARKETING': 'CREATE_MARKETING',
+  'SCOPE-CHANGE': 'SCOPE_CHANGE',
+  'SCOPE CHANGE': 'SCOPE_CHANGE',
+});
+
+function normalizeLegacyStatus(status: unknown): unknown {
+  if (typeof status !== 'string') {
+    return status;
+  }
+
+  const trimmed = status.trim();
+  if (trimmed === '') {
+    return status;
+  }
+
+  const upper = trimmed.toUpperCase();
+  const alias = LEGACY_STATUS_ALIASES[upper as keyof typeof LEGACY_STATUS_ALIASES];
+  if (alias) {
+    return alias;
+  }
+
+  return upper;
+}
+
+function normalizeLegacyMode(mode: unknown): unknown {
+  if (typeof mode !== 'string') {
+    return mode;
+  }
+
+  const trimmed = mode.trim();
+  if (trimmed === '') {
+    return mode;
+  }
+
+  const upper = trimmed.toUpperCase();
+  const alias = LEGACY_MODE_ALIASES[upper as keyof typeof LEGACY_MODE_ALIASES];
+  if (alias) {
+    return alias;
+  }
+
+  return upper.replace(/[\s-]+/g, '_');
+}
+
+function migrateLegacySessionSnapshot(parsed: Record<string, unknown>): Record<string, unknown> {
+  const migrated: Record<string, unknown> = {
+    ...parsed,
+    status: normalizeLegacyStatus(parsed.status),
+    mode: normalizeLegacyMode(parsed.mode),
+  };
+
+  if (Array.isArray(parsed.state_history)) {
+    migrated.state_history = parsed.state_history.map((item) => {
+      if (!item || typeof item !== 'object') {
+        return item;
+      }
+
+      const event = item as Record<string, unknown>;
+      return {
+        ...event,
+        from: normalizeLegacyStatus(event.from),
+        to: normalizeLegacyStatus(event.to),
+      };
+    });
+  }
+
+  return migrated;
+}
+
 /**
  * @typedef {object} PersistedState
  * @property {string} status - Current state machine state
@@ -42,7 +135,7 @@ function loadSessionState(store, filePath) {
 
   try {
     const raw = store.readFile(target);
-    const parsed = JSON.parse(raw);
+    const parsed = migrateLegacySessionSnapshot(JSON.parse(raw));
 
     // Basic validation — must have at least a status field
     if (!parsed || typeof parsed.status !== 'string') {
@@ -91,6 +184,20 @@ function saveSessionState(store, serializedState, filePath) {
     flow_source:
       serializedState.flow_source ||
       (typeof existing.flow_source === 'string' ? existing.flow_source : undefined),
+    flow_manifest_version:
+      serializedState.flow_manifest_version ||
+      (typeof existing.flow_manifest_version === 'string'
+        ? existing.flow_manifest_version
+        : undefined),
+    flow_pack_id:
+      serializedState.flow_pack_id ||
+      (typeof existing.flow_pack_id === 'string' ? existing.flow_pack_id : undefined),
+    flow_pack_name:
+      serializedState.flow_pack_name ||
+      (typeof existing.flow_pack_name === 'string' ? existing.flow_pack_name : undefined),
+    flow_pack_version:
+      serializedState.flow_pack_version ||
+      (typeof existing.flow_pack_version === 'string' ? existing.flow_pack_version : undefined),
     state_history: serializedState.state_history,
     gate_results: serializedState.gate_results,
     last_updated: serializedState.last_updated,
@@ -111,13 +218,17 @@ function saveSessionState(store, serializedState, filePath) {
  * @param {function} [onPersist] - Optional callback after each persist
  * @returns {{ onTransition: Function, onError: Function }}
  */
-function createAutoPersist(store, getStateMachine, filePath, onPersist) {
+function createAutoPersist(store, getStateMachine, filePath, onPersist, augmentSerializedState) {
   const persist = () => {
     const machine = getStateMachine();
     if (!machine) return;
     const serialized = machine.serialize();
-    saveSessionState(store, serialized, filePath);
-    if (onPersist) onPersist(serialized);
+    const augmented =
+      typeof augmentSerializedState === 'function'
+        ? { ...serialized, ...augmentSerializedState(serialized) }
+        : serialized;
+    saveSessionState(store, augmented, filePath);
+    if (onPersist) onPersist(augmented);
   };
 
   return {

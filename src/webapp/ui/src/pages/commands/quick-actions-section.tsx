@@ -7,14 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { OrchestratorCommandName } from '@/lib/api-types';
-import { QUICK_ACTIONS } from './commands-config';
+import type { QuickActionConfig } from './commands-config';
 
 interface QuickActionsProps {
+  actions: QuickActionConfig[];
   recommendedCommand: OrchestratorCommandName;
   onAction: (command: OrchestratorCommandName) => void;
 }
 
-export function QuickActionsSection({ recommendedCommand, onAction }: QuickActionsProps) {
+export function QuickActionsSection({ actions, recommendedCommand, onAction }: QuickActionsProps) {
   return (
     <div>
       <Heading level={2} className="mb-3">
@@ -25,7 +26,7 @@ export function QuickActionsSection({ recommendedCommand, onAction }: QuickActio
         and what starts immediately after.
       </Text>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {QUICK_ACTIONS.map((action) => (
+        {actions.map((action) => (
           <Card
             key={action.command}
             clickable

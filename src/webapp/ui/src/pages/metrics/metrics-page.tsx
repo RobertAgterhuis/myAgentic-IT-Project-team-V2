@@ -316,6 +316,8 @@ export default function MetricsPage() {
             columns={velocityColumns}
             data={trends.velocity}
             enableSorting
+            tableAriaLabel="Velocity trends table"
+            caption="Historical velocity snapshots per sprint window."
             emptyTitle="No velocity data"
           />
         ) : (
@@ -340,6 +342,8 @@ export default function MetricsPage() {
             enableSorting
             enableFiltering
             filterPlaceholder="Search agents…"
+            tableAriaLabel="Agent performance table"
+            caption="Agent performance metrics across execution runs."
             emptyTitle="No agent data"
           />
         ) : (
@@ -401,6 +405,8 @@ export default function MetricsPage() {
             enableFiltering
             filterPlaceholder="Search drifts…"
             enablePagination
+            tableAriaLabel="Session drift details table"
+            caption="Detected drifts between runtime state and expected sprint progress."
             emptyTitle="No matching drifts"
           />
         )}

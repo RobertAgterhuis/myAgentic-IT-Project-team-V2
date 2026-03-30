@@ -13,7 +13,7 @@ import { ErrorBoundary } from '@/components/ui/empty-state';
 import { Spinner } from '@/components/ui/spinner';
 import { HelpPanel } from '@/components/help-panel/help-panel';
 import { useUIStore } from '@/stores/ui-store';
-import { useOrchestratorStatus } from '@/hooks';
+import { useOrchestratorPackMetadata, useOrchestratorStatus } from '@/hooks';
 import { useCurrentUser } from '@/hooks/use-auth';
 import { useSSEEvents } from '@/hooks/use-sse-events';
 import { useRuntimeEvents } from '@/hooks/use-runtime-events';
@@ -33,6 +33,8 @@ import { BreadcrumbNav } from '@/components/layout/breadcrumb-nav';
 import { ChatPanel } from '@/components/chat/chat-panel';
 import { showToast } from '@/components/ui/toast-system';
 import { AUTH_EXPIRED_EVENT } from '@/lib/api-client';
+import { monacoProviderRegistry } from '@/lib/editor/provider-registry';
+import { monacoSchemaRegistry } from '@/lib/editor/schema-registry';
 import {
   LayoutDashboard,
   Terminal,
@@ -142,6 +144,7 @@ export function AppLayout() {
   const connectionRecovery = useUIStore((s) => s.connectionRecovery);
 
   const { data: orchestratorStatus } = useOrchestratorStatus();
+  const { data: packMetadata } = useOrchestratorPackMetadata();
 
   // Fetch current user session (M29-006)
   const currentUserQuery = useCurrentUser();
@@ -186,6 +189,14 @@ export function AppLayout() {
     }
   }, [currentUserQuery.isLoading, location.pathname, navigate, personaRole]);
 
+  useEffect(() => {
+    void monacoProviderRegistry.registerFromPackMetadata(packMetadata ?? null);
+  }, [packMetadata]);
+
+  useEffect(() => {
+    void monacoSchemaRegistry.registerFromPackMetadata(packMetadata ?? null);
+  }, [packMetadata]);
+
   return (
     <AppShell
       topNavigation={
@@ -195,7 +206,9 @@ export function AppLayout() {
           connectionStatus={connectionStatus}
           connectionRecovery={connectionRecovery}
           onMenuToggle={toggleSidebar}
-          onHelpClick={() => openHelpForRoute(resolveHelpRouteSlug(location.pathname))}
+          onHelpClick={() =>
+            openHelpForRoute(resolveHelpRouteSlug(location.pathname, packMetadata))
+          }
           onChatClick={toggleChat}
         />
       }

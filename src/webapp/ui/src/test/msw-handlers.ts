@@ -21,6 +21,7 @@ import type {
   TimelineResponse,
   GateDiagnosticsResponse,
   OnboardingDiagnosticsResponse,
+  OrchestratorPackMetadataResponse,
   AgentsListResponse,
   AgentDetailResponse,
   Session,
@@ -331,6 +332,46 @@ export const mockAgentsList: AgentsListResponse = {
   agents: [mockAgentDetail],
 };
 
+export const mockOrchestratorPackMetadata: OrchestratorPackMetadataResponse = {
+  ok: true,
+  pack: {
+    manifest_version: '2.0',
+    id: 'core-runtime',
+    name: 'Core Runtime Pack',
+    version: '1.0.0',
+  },
+  commands: [
+    { id: 'CREATE', label: 'CREATE', mode: true },
+    { id: 'AUDIT', label: 'AUDIT', mode: true },
+    { id: 'FEATURE', label: 'FEATURE', mode: true },
+    { id: 'HOTFIX', label: 'HOTFIX', mode: true },
+    { id: 'CONTINUE', label: 'CONTINUE', mode: false },
+  ],
+  stages: [],
+  gates: [],
+  labels: {
+    commands: {
+      CREATE: 'CREATE',
+      AUDIT: 'AUDIT',
+      FEATURE: 'FEATURE',
+      HOTFIX: 'HOTFIX',
+      CONTINUE: 'CONTINUE',
+    },
+    stages: {},
+    gates: {},
+  },
+  help_topics: [],
+  capabilities: {
+    supportsRuntimeGraph: true,
+    supportsCommandCatalog: true,
+    supportsHelpTopics: false,
+    supportsArtifactNamespaces: true,
+    supportsGateAssets: false,
+    parallelDispatchStates: [],
+  },
+  warnings: [],
+};
+
 const mockPageHelpByRoute: Record<
   string,
   {
@@ -600,6 +641,9 @@ export const handlers = [
 
   /* Orchestrator */
   http.get('/api/orchestrator/status', () => HttpResponse.json(mockOrchestratorStatus)),
+  http.get('/api/orchestrator/pack-metadata', () =>
+    HttpResponse.json(mockOrchestratorPackMetadata)
+  ),
   http.get('/api/orchestrator/run-history', () => HttpResponse.json([])),
   http.post('/api/orchestrator/advance', () =>
     HttpResponse.json({ ok: true, transition: {}, status: mockOrchestratorStatus })

@@ -12,6 +12,7 @@ import {
   resolveGroundingCollectionId,
   type ChatGroundingIntent,
 } from '../services/rag-grounding-service';
+import { loadTemplate } from '../../../platform/engine/template-loader';
 import { IntentClassifier, type ChatIntent } from '../services/chat/intent-classifier';
 import {
   CommandService,
@@ -505,17 +506,20 @@ function resolveRefreshTargets(
   intent: ChatGroundingIntent,
   workspaceId: string
 ): Array<{ collectionId: string; path: string }> {
-  const businessDocs = path.join(ctx.PROJECT_ROOT, 'BusinessDocs');
+  const artifactRoots = resolveArtifactNamespaceRoots(ctx);
+  const primaryArtifactRoot = artifactRoots[0] || path.join(ctx.PROJECT_ROOT, 'BusinessDocs');
+  const decisionsFile = ctx.DECISIONS_FILE || path.join(primaryArtifactRoot, 'decisions.md');
+  const decisionsDir = ctx.DECISIONS_DIR || path.join(primaryArtifactRoot, 'decisions');
 
   if (intent === 'decision_lookup') {
     return [
       {
         collectionId: resolveGroundingCollectionId('decisions', workspaceId),
-        path: path.join(businessDocs, 'decisions.md'),
+        path: decisionsFile,
       },
       {
         collectionId: resolveGroundingCollectionId('decisions', workspaceId),
-        path: path.join(businessDocs, 'decisions'),
+        path: decisionsDir,
       },
     ];
   }
@@ -529,28 +533,46 @@ function resolveRefreshTargets(
     ];
   }
 
-  return [
-    {
+  const targets: Array<{ collectionId: string; path: string }> = [];
+  for (const root of artifactRoots) {
+    targets.push({
       collectionId: resolveGroundingCollectionId('phase-outputs', workspaceId),
-      path: path.join(businessDocs, 'Phase1-Business'),
-    },
-    {
+      path: root,
+    });
+    targets.push({
       collectionId: resolveGroundingCollectionId('phase-outputs', workspaceId),
-      path: path.join(businessDocs, 'Phase2-Tech'),
-    },
-    {
+      path: path.join(root, 'session'),
+    });
+    targets.push({
       collectionId: resolveGroundingCollectionId('phase-outputs', workspaceId),
-      path: path.join(businessDocs, 'Phase3-UX'),
-    },
-    {
-      collectionId: resolveGroundingCollectionId('phase-outputs', workspaceId),
-      path: path.join(businessDocs, 'session'),
-    },
-    {
-      collectionId: resolveGroundingCollectionId('phase-outputs', workspaceId),
-      path: path.join(businessDocs, 'synthesis'),
-    },
-  ];
+      path: path.join(root, 'synthesis'),
+    });
+  }
+
+  return targets;
+}
+
+function resolveArtifactNamespaceRoots(ctx: ServerContext): string[] {
+  const fallback = ctx.BUSINESS_DOCS || path.join(ctx.PROJECT_ROOT, 'BusinessDocs');
+
+  try {
+    const template = loadTemplate('sdlc') as { artifactNamespaces?: Record<string, string> };
+    const namespaces = template.artifactNamespaces || {};
+    const roots = Object.values(namespaces)
+      .filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
+      .map((value) => {
+        const candidate = value.trim();
+        return path.isAbsolute(candidate) ? candidate : path.join(ctx.PROJECT_ROOT, candidate);
+      });
+
+    if (roots.length > 0) {
+      return [...new Set(roots)];
+    }
+  } catch {
+    // Fall back to legacy default when template metadata is unavailable.
+  }
+
+  return [fallback];
 }
 
 async function triggerGroundingRefreshOnMiss(input: {
@@ -602,10 +624,9 @@ async function triggerGroundingRefreshOnMiss(input: {
 
 function resolveCitationLink(sourcePath: string): string {
   const normalized = sourcePath.replace(/\\/g, '/');
-  if (normalized.includes('BusinessDocs/decisions')) return '/decisions';
-  if (normalized.includes('BusinessDocs/session')) return '/sessions';
-  if (normalized.includes('BusinessDocs')) return '/artifacts';
-  if (normalized.includes('src/')) return '/workspaces';
+  if (normalized.includes('/decisions') || normalized.includes('decisions.md')) return '/decisions';
+  if (normalized.includes('/session')) return '/sessions';
+  if (normalized.includes('/src/') || normalized.startsWith('src/')) return '/workspaces';
   return '/artifacts';
 }
 
@@ -616,7 +637,13 @@ function resolveCitationSourceType(
   if (normalized.includes('decisions')) return 'decision';
   if (normalized.includes('policy')) return 'policy';
   if (normalized.includes('session')) return 'session';
-  if (normalized.includes('businessdocs')) return 'artifact';
+  if (
+    normalized.includes('artifact') ||
+    normalized.includes('phase') ||
+    normalized.includes('synthesis')
+  ) {
+    return 'artifact';
+  }
   return 'rag_chunk';
 }
 

@@ -6,18 +6,27 @@
 import { Text } from '@/components/ui/typography';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { PageShell } from '@/components/ui/page-shell';
 import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { PageHelpStrip } from '@/components/help-panel/page-help-strip';
 import { useCommandsController } from './use-commands-controller';
 import { QuickActionsSection } from './quick-actions-section';
-import { COMMAND_VARIANTS, QUICK_ACTIONS } from './commands-config';
+import { getCommandVariant, QUICK_ACTIONS } from './commands-config';
 import { ProjectBriefSection } from './project-brief-section';
 import { CommandQueueSection } from './command-queue-section';
 import { Sparkles, ClipboardList, Radar } from 'lucide-react';
 
-function getRecommendedAction(hasBrief: boolean) {
-  return hasBrief ? QUICK_ACTIONS[0] : QUICK_ACTIONS[1]; // CREATE vs AUDIT
+function getRecommendedAction(hasBrief: boolean, quickActions: typeof QUICK_ACTIONS) {
+  if (quickActions.length === 0) {
+    return QUICK_ACTIONS[0];
+  }
+
+  const createAction = quickActions.find((action) => action.command === 'CREATE');
+  const auditAction = quickActions.find((action) => action.command === 'AUDIT');
+  if (hasBrief && createAction) return createAction;
+  if (!hasBrief && auditAction) return auditAction;
+  return quickActions[0];
 }
 
 export default function CommandsPage() {
@@ -31,12 +40,16 @@ export default function CommandsPage() {
     activeQueueEntry,
     hasProjectName,
     hasBrief,
+    quickActions,
     isSubmitting,
+    isLoading,
+    error,
+    refetch,
     handleQuickAction,
     handleSubmitBrief,
   } = useCommandsController();
 
-  const recommendedAction = getRecommendedAction(hasBrief);
+  const recommendedAction = getRecommendedAction(hasBrief, quickActions);
 
   const guidanceStep = activeQueueEntry
     ? {
@@ -96,118 +109,126 @@ export default function CommandsPage() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
-      <PageHeader
-        title="Commands"
-        subtitle="Choose the right action, understand what happens next, and then queue it with clear operational context."
-        chips={[
-          {
-            id: 'commands-state',
-            label: status?.state ?? 'UNKNOWN',
-            tone: status?.state === 'IDLE' ? 'default' : 'info',
-          },
-          {
-            id: 'commands-mode',
-            label: status?.mode ?? 'No mode',
-            tone: 'info',
-          },
-          {
-            id: 'commands-queue',
-            label: `${queue?.queue?.length ?? 0} queued`,
-            tone: (queue?.queue?.length ?? 0) > 0 ? 'warning' : 'success',
-          },
-        ]}
-      />
+    <PageShell
+      isLoading={isLoading}
+      loadingLabel="Loading commands…"
+      error={error as Error | null}
+      onRetry={refetch}
+    >
+      <div className="page-container-wide p-6 space-y-6">
+        <PageHeader
+          title="Commands"
+          subtitle="Choose the right action, understand what happens next, and then queue it with clear operational context."
+          chips={[
+            {
+              id: 'commands-state',
+              label: status?.state ?? 'UNKNOWN',
+              tone: status?.state === 'IDLE' ? 'default' : 'info',
+            },
+            {
+              id: 'commands-mode',
+              label: status?.mode ?? 'No mode',
+              tone: 'info',
+            },
+            {
+              id: 'commands-queue',
+              label: `${queue?.queue?.length ?? 0} queued`,
+              tone: (queue?.queue?.length ?? 0) > 0 ? 'warning' : 'success',
+            },
+          ]}
+        />
 
-      <PageHelpStrip routeSlug="commands" />
+        <PageHelpStrip routeSlug="commands" />
 
-      <ContextStrip items={contextItems} />
+        <ContextStrip items={contextItems} />
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,1fr)]">
-        <Card elevation="flat" className="border border-border/70 px-5 py-5">
-          <div className="flex items-start gap-3">
-            <Sparkles className="mt-0.5 size-5 text-info" />
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-semibold">How to proceed</span>
-                <Badge variant="outline">3 steps</Badge>
-              </div>
-              <div className="mt-4 grid gap-3 md:grid-cols-3">
-                <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
-                  <Badge variant="secondary">1</Badge>
-                  <div className="mt-3 font-medium">Name the work</div>
-                  <Text muted className="mt-1 text-xs">
-                    Enter the project or feature name so queued commands are recognizable in the
-                    pipeline.
-                  </Text>
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(18rem,1fr)]">
+          <Card elevation="flat" className="border border-border/70 px-5 py-5">
+            <div className="flex items-start gap-3">
+              <Sparkles className="mt-0.5 size-5 text-info" />
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold">How to proceed</span>
+                  <Badge variant="outline">3 steps</Badge>
                 </div>
-                <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
-                  <Badge variant="secondary">2</Badge>
-                  <div className="mt-3 font-medium">Explain the goal</div>
-                  <Text muted className="mt-1 text-xs">
-                    Add a short brief with outcome, scope, or problem statement. This becomes
-                    execution context.
-                  </Text>
-                </div>
-                <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
-                  <Badge variant="secondary">3</Badge>
-                  <div className="mt-3 font-medium">Choose the right command</div>
-                  <Text muted className="mt-1 text-xs">
-                    Use Submit Brief for a guided CREATE start, or select AUDIT, FEATURE, or HOTFIX
-                    directly.
-                  </Text>
+                <div className="mt-4 grid gap-3 md:grid-cols-3">
+                  <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                    <Badge variant="secondary">1</Badge>
+                    <div className="mt-3 font-medium">Name the work</div>
+                    <Text muted className="mt-1 text-xs">
+                      Enter the project or feature name so queued commands are recognizable in the
+                      pipeline.
+                    </Text>
+                  </div>
+                  <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                    <Badge variant="secondary">2</Badge>
+                    <div className="mt-3 font-medium">Explain the goal</div>
+                    <Text muted className="mt-1 text-xs">
+                      Add a short brief with outcome, scope, or problem statement. This becomes
+                      execution context.
+                    </Text>
+                  </div>
+                  <div className="rounded-2xl border border-border/70 bg-background/70 p-4">
+                    <Badge variant="secondary">3</Badge>
+                    <div className="mt-3 font-medium">Choose the right command</div>
+                    <Text muted className="mt-1 text-xs">
+                      Use Submit Brief for a guided CREATE start, or select AUDIT, FEATURE, or
+                      HOTFIX directly.
+                    </Text>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
 
-        <Card elevation="flat" className="border border-border/70 px-5 py-5">
-          <div className="flex items-start gap-3">
-            <ClipboardList className="mt-0.5 size-5 text-warning" />
-            <div className="min-w-0">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-semibold">Recommended next step</span>
-                <Badge variant="warning">{guidanceStep.badge}</Badge>
-              </div>
-              <div className="mt-3 text-sm font-medium">{guidanceStep.title}</div>
-              <Text muted className="mt-1 text-sm">
-                {guidanceStep.description}
-              </Text>
-              <div className="mt-4 rounded-2xl border border-border/70 bg-background/70 p-4">
-                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                  <Radar className="size-3.5" /> Suggested command
+          <Card elevation="flat" className="border border-border/70 px-5 py-5">
+            <div className="flex items-start gap-3">
+              <ClipboardList className="mt-0.5 size-5 text-warning" />
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="font-semibold">Recommended next step</span>
+                  <Badge variant="warning">{guidanceStep.badge}</Badge>
                 </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <Badge variant={COMMAND_VARIANTS[recommendedAction.command]}>
-                    {recommendedAction.label}
-                  </Badge>
-                  <span className="text-sm font-medium">{recommendedAction.description}</span>
-                </div>
-                <Text muted className="mt-2 text-xs">
-                  {recommendedAction.nextStep}
+                <div className="mt-3 text-sm font-medium">{guidanceStep.title}</div>
+                <Text muted className="mt-1 text-sm">
+                  {guidanceStep.description}
                 </Text>
+                <div className="mt-4 rounded-2xl border border-border/70 bg-background/70 p-4">
+                  <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                    <Radar className="size-3.5" /> Suggested command
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <Badge variant={getCommandVariant(recommendedAction.command)}>
+                      {recommendedAction.label}
+                    </Badge>
+                    <span className="text-sm font-medium">{recommendedAction.description}</span>
+                  </div>
+                  <Text muted className="mt-2 text-xs">
+                    {recommendedAction.nextStep}
+                  </Text>
+                </div>
               </div>
             </div>
-          </div>
-        </Card>
+          </Card>
+        </div>
+
+        <ProjectBriefSection
+          projectName={projectName}
+          setProjectName={setProjectName}
+          briefText={briefText}
+          setBriefText={setBriefText}
+          onSubmit={handleSubmitBrief}
+          isSubmitting={isSubmitting}
+        />
+
+        <QuickActionsSection
+          actions={quickActions}
+          recommendedCommand={recommendedAction.command}
+          onAction={handleQuickAction}
+        />
+
+        <CommandQueueSection queue={queue} />
       </div>
-
-      <ProjectBriefSection
-        projectName={projectName}
-        setProjectName={setProjectName}
-        briefText={briefText}
-        setBriefText={setBriefText}
-        onSubmit={handleSubmitBrief}
-        isSubmitting={isSubmitting}
-      />
-
-      <QuickActionsSection
-        recommendedCommand={recommendedAction.command}
-        onAction={handleQuickAction}
-      />
-
-      <CommandQueueSection queue={queue} />
-    </div>
+    </PageShell>
   );
 }

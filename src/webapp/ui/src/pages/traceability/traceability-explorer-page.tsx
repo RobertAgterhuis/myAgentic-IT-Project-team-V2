@@ -358,7 +358,14 @@ export default function TraceabilityExplorerPage() {
               <AlertTriangle className="size-4 inline mr-2 text-amber-500" />
               Coverage Gaps
             </Heading>
-            <DataTable columns={gapColumns} data={gaps} enableSorting emptyTitle="No gaps" />
+            <DataTable
+              columns={gapColumns}
+              data={gaps}
+              enableSorting
+              tableAriaLabel="Traceability coverage gaps table"
+              caption="Coverage gaps detected across traceability entities."
+              emptyTitle="No gaps"
+            />
           </section>
         )}
 
@@ -405,6 +412,8 @@ export default function TraceabilityExplorerPage() {
               data={filtered}
               enableSorting
               enablePagination
+              tableAriaLabel="Traceability entities table"
+              caption="Traceability entities with type, status, and references."
               emptyTitle="No matching entities"
             />
           )}

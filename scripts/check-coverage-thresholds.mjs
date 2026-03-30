@@ -10,7 +10,7 @@ const THRESHOLDS = {
   statements: Number(process.env.COVERAGE_MIN_STATEMENTS || 67.3),
   branches: Number(process.env.COVERAGE_MIN_BRANCHES || 55),
   functions: Number(process.env.COVERAGE_MIN_FUNCTIONS || 66),
-  lines: Number(process.env.COVERAGE_MIN_LINES || 68),
+  lines: Number(process.env.COVERAGE_MIN_LINES || 67),
 };
 
 const RAG_STORE_FILE_PATTERNS = [

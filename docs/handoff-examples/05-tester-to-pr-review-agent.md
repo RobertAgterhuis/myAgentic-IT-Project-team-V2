@@ -10,7 +10,7 @@
 
 - templates/sdlc/agents/21-test-agent.md - testing gate requirements.
 - templates/sdlc/agents/22-pr-review-agent.md - receiving review requirements.
-- coverage/coverage-summary.json - evidence for coverage checks.
+- tests/unit/validate-handoff.test.ts - test evidence source for this handoff example.
 
 ## Handoff to Next Agent
 

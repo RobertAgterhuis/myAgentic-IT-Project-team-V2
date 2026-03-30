@@ -182,10 +182,10 @@ registry/utils/registry.test.ts             (≥15 tests)
 #### Week 3: Handoff Protocol
 
 ```text
-standards/HANDOFF-TEMPLATE.md               (unified markdown template)
-standards/validation-schema.json            (JSON schema for validation)
-standards/validate-handoff.ts               (validator + CLI tool)
-standards/validate-handoff.test.ts          (≥10 tests)
+platform/standards/HANDOFF-TEMPLATE.md      (unified markdown template)
+platform/standards/validation-schema.json   (JSON schema for validation)
+platform/standards/validate-handoff.ts      (validator + CLI tool)
+tests/unit/validate-handoff.test.ts         (≥10 tests)
 docs/handoff-examples/*.md                  (10 example documents)
 ```
 

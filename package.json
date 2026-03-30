@@ -44,6 +44,8 @@
     "generate:platform": "node scripts/generate-platform.js all",
     "generate:agent-registry": "tsx scripts/generate-agent-registry.ts",
     "generate:openapi": "tsx scripts/generate-openapi.ts",
+    "validate:handoff": "tsx platform/standards/validate-handoff.ts",
+    "validate:handoff:examples": "tsx platform/standards/validate-handoff.ts docs/handoff-examples",
     "postinstall": "node scripts/generate-platform.js all"
   },
   "bin": {

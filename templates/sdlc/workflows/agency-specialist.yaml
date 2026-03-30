@@ -1,0 +1,101 @@
+# Agency Specialist Workflow
+# Workflow for the AGENCY_SPECIALIST and AGENCY_AUDIT commands.
+# Orchestrator drives the five-stage agency delegation pipeline.
+
+id: agency-specialist
+name: Agency Specialist Delegation
+description: >
+  End-to-end workflow for delegating tasks to specialized domain agents in
+  the agency-agents-markdown pack. Covers task intake, domain matching,
+  specialist delegation, quality review, and handoff traceability.
+version: "1.0.0"
+triggers:
+  - command: "AGENCY_SPECIALIST"
+  - command: "AGENCY_AUDIT"
+
+stages:
+  - stage: INTAKE
+    description: Capture and normalise the task brief before agent involvement.
+    agents:
+      - orchestrator
+    gates:
+      - INTAKE_COMPLETE
+    artifacts:
+      - session-state
+
+  - stage: MATCH
+    description: Identify the best-fit domain agent from the manifest delegationMap.
+    agents:
+      - orchestrator
+    gates:
+      - MATCH_COMPLETE
+    artifacts:
+      - matched-agent-record
+
+  - stage: DELEGATE
+    description: Hand off the task to the matched specialist with full context payload.
+    agents:
+      - domain-specialist
+    gates:
+      - DELEGATE_COMPLETE
+    artifacts:
+      - delegation-payload
+
+  - stage: REVIEW
+    description: Validate specialist output against contracts and guardrails.
+    agents:
+      - critic-agent
+      - questionnaire-agent
+    gates:
+      - REVIEW_COMPLETE
+    artifacts:
+      - reviewed-output
+
+  - stage: HANDOFF
+    description: Persist output, update session state, and notify the orchestrator.
+    agents:
+      - orchestrator
+    gates:
+      - HANDOFF_COMPLETE
+    artifacts:
+      - final-output-artifact
+
+gates:
+  - id: INTAKE_COMPLETE
+    conditions:
+      - Structured context object persisted to session state
+      - No INSUFFICIENT_DATA items outstanding
+
+  - id: MATCH_COMPLETE
+    conditions:
+      - One agent confirmed as target (human-approved if confidence < 70%)
+      - Agent path recorded in session state
+
+  - id: DELEGATE_COMPLETE
+    conditions:
+      - Delegation payload built and logged
+      - Specialist agent acknowledged scope
+
+  - id: REVIEW_COMPLETE
+    conditions:
+      - HANDOFF CHECKLIST fully checked
+      - Traceability reference present
+      - No outstanding UNCERTAIN/INSUFFICIENT_DATA items
+
+  - id: HANDOFF_COMPLETE
+    conditions:
+      - Output artefact persisted to correct namespace
+      - Session state updated to COMPLETE
+      - Orchestrator notified with full stage trace
+      - CI metadata check passes
+
+guardrails:
+  - 00-global-guardrails.md
+  - 10-agency-guardrails.md
+
+contracts:
+  - agent-handoff-contract.md
+  - tooling-contract.md
+  - session-state-contract.md
+
+playbook: agency-specialist-playbook.md

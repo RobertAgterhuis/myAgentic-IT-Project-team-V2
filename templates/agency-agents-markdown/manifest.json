@@ -79,7 +79,246 @@
       "00-global-guardrails.md",
       "07-legal-guardrails.md",
       "09-questionnaire-guardrails.md"
-    ]
+    ],
+    "AGENCY": ["00-global-guardrails.md", "10-agency-guardrails.md"]
+  },
+  "playbooks": ["agency-specialist-playbook.md"],
+  "workflows": ["agency-specialist.yaml"],
+  "delegationMap": {
+    "academic": {
+      "dir": "academic",
+      "agentPattern": "academic-*.md",
+      "keywords": [
+        "research",
+        "academic",
+        "anthropology",
+        "history",
+        "geography",
+        "psychology",
+        "narrative",
+        "scholarly"
+      ],
+      "defaultAgent": "academic/academic-psychologist.md"
+    },
+    "design": {
+      "dir": "design",
+      "agentPattern": "design-*.md",
+      "keywords": [
+        "design",
+        "ui",
+        "ux",
+        "visual",
+        "branding",
+        "graphic",
+        "illustration",
+        "motion",
+        "typography",
+        "icon"
+      ],
+      "defaultAgent": "design/design-ux-architect.md"
+    },
+    "engineering": {
+      "dir": "engineering",
+      "agentPattern": "engineering-*.md",
+      "keywords": [
+        "engineering",
+        "code",
+        "develop",
+        "backend",
+        "frontend",
+        "architecture",
+        "devops",
+        "security",
+        "infrastructure",
+        "api",
+        "database",
+        "mobile",
+        "embedded",
+        "smart contract",
+        "solidity",
+        "sre",
+        "incident"
+      ],
+      "defaultAgent": "engineering/engineering-senior-developer.md"
+    },
+    "game-development": {
+      "dir": "game-development",
+      "agentPattern": "game-*.md",
+      "keywords": [
+        "game",
+        "unity",
+        "unreal",
+        "gameplay",
+        "level design",
+        "narrative design",
+        "game engine"
+      ],
+      "defaultAgent": "game-development/game-designer.md"
+    },
+    "integrations": {
+      "dir": "integrations",
+      "agentPattern": "integrations-*.md",
+      "keywords": [
+        "integration",
+        "connector",
+        "middleware",
+        "webhook",
+        "third-party",
+        "api gateway"
+      ],
+      "defaultAgent": "integrations/README.md"
+    },
+    "marketing": {
+      "dir": "marketing",
+      "agentPattern": "marketing-*.md",
+      "keywords": [
+        "marketing",
+        "campaign",
+        "content",
+        "seo",
+        "email",
+        "social media",
+        "copy",
+        "brand voice",
+        "audience",
+        "engagement"
+      ],
+      "defaultAgent": "marketing/marketing-content-creator.md"
+    },
+    "paid-media": {
+      "dir": "paid-media",
+      "agentPattern": "paid-media-*.md",
+      "keywords": [
+        "paid media",
+        "ads",
+        "ppc",
+        "google ads",
+        "meta ads",
+        "linkedin ads",
+        "programmatic",
+        "cpm",
+        "cpc",
+        "roas"
+      ],
+      "defaultAgent": "paid-media/paid-media-ppc-strategist.md"
+    },
+    "product": {
+      "dir": "product",
+      "agentPattern": "product-*.md",
+      "keywords": [
+        "product",
+        "roadmap",
+        "feature",
+        "backlog",
+        "user story",
+        "acceptance criteria",
+        "product manager",
+        "prioritization",
+        "sprint planning"
+      ],
+      "defaultAgent": "product/product-manager.md"
+    },
+    "project-management": {
+      "dir": "project-management",
+      "agentPattern": "project-*.md",
+      "keywords": [
+        "project management",
+        "scrum",
+        "agile",
+        "kanban",
+        "milestone",
+        "risk management",
+        "stakeholder",
+        "timeline",
+        "delivery"
+      ],
+      "defaultAgent": "project-management/project-manager-senior.md"
+    },
+    "sales": {
+      "dir": "sales",
+      "agentPattern": "sales-*.md",
+      "keywords": [
+        "sales",
+        "crm",
+        "lead",
+        "pipeline",
+        "proposal",
+        "deal",
+        "revenue",
+        "outreach",
+        "prospect",
+        "closing"
+      ],
+      "defaultAgent": "sales/sales-account-strategist.md"
+    },
+    "spatial-computing": {
+      "dir": "spatial-computing",
+      "agentPattern": "xr-*.md",
+      "keywords": [
+        "spatial computing",
+        "ar",
+        "augmented reality",
+        "vr",
+        "virtual reality",
+        "xr",
+        "mixed reality",
+        "3d",
+        "metaverse"
+      ],
+      "defaultAgent": "spatial-computing/xr-immersive-developer.md"
+    },
+    "specialized": {
+      "dir": "specialized",
+      "agentPattern": "specialized-*.md",
+      "keywords": ["specialized", "niche", "domain expert", "consultant", "advisor"],
+      "defaultAgent": "specialized/specialized-developer-advocate.md"
+    },
+    "strategy": {
+      "dir": "strategy",
+      "agentPattern": "*.md",
+      "keywords": [
+        "strategy",
+        "business strategy",
+        "competitive analysis",
+        "market research",
+        "vision",
+        "mission",
+        "okr",
+        "kpi"
+      ],
+      "defaultAgent": "strategy/nexus-strategy.md"
+    },
+    "support": {
+      "dir": "support",
+      "agentPattern": "support-*.md",
+      "keywords": [
+        "support",
+        "customer success",
+        "helpdesk",
+        "ticket",
+        "escalation",
+        "knowledge base",
+        "faq",
+        "user onboarding"
+      ],
+      "defaultAgent": "support/support-support-responder.md"
+    },
+    "testing": {
+      "dir": "testing",
+      "agentPattern": "testing-*.md",
+      "keywords": [
+        "testing",
+        "qa",
+        "quality assurance",
+        "test automation",
+        "e2e",
+        "unit test",
+        "integration test",
+        "performance test",
+        "security test"
+      ],
+      "defaultAgent": "testing/testing-api-tester.md"
+    }
   },
   "criticToPhase": {
     "CRITIC_1": "PHASE_1",

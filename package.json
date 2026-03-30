@@ -24,6 +24,7 @@
     "test:a11y": "npx playwright test tests/e2e/s9h-accessibility.spec.ts --project=chromium",
     "test:autonomous-lane": "vitest run tests/integration/autonomous-lane.test.js --reporter=verbose",
     "test:pack-metadata-gate": "tsx scripts/check-pack-metadata-completeness.ts",
+    "test:agency-pack-gate": "tsx scripts/check-agency-pack-structure.ts",
     "tms:validate": "node scripts/weblate-sync.js validate",
     "tms:pull": "node scripts/weblate-sync.js pull",
     "tms:push": "node scripts/weblate-sync.js push",

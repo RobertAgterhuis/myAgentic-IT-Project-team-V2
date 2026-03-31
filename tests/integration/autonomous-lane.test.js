@@ -6,25 +6,15 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import * as fs from 'fs';
 import * as path from 'path';
-
-class MockRuntimeAdapter {
-  async invoke(_agent, _instruction) {
-    return {
-      success: true,
-      output: { type: 'plan', steps: ['Plan', 'Code', 'Test', 'PR'] },
-      metadata: { latencyMs: 100 },
-    };
-  }
-
-  async executeTool(toolName, _params) {
-    return { success: true, result: `Executed ${toolName}` };
-  }
-}
+import { SandboxRuntimeAdapter } from '../../platform/engine/agent-runtime-adapter';
 
 describe('Autonomous Lane Smoke Path (E-B2)', () => {
   let traceDir = '';
   let traceFile = '';
+  let sandboxSessionId = '';
   const laneTrace = [];
+  const adapter = new SandboxRuntimeAdapter();
+  const plannerAgent = { id: '06', name: 'Senior Developer' };
 
   beforeAll(() => {
     traceDir = 'tests/load/autonomous-lane-traces';
@@ -33,6 +23,7 @@ describe('Autonomous Lane Smoke Path (E-B2)', () => {
     }
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     traceFile = path.join(traceDir, `autonomous-lane-${timestamp}.jsonl`);
+    sandboxSessionId = `m2-proof-${timestamp}`;
   });
 
   afterAll(() => {
@@ -67,34 +58,52 @@ describe('Autonomous Lane Smoke Path (E-B2)', () => {
 
   it('S-B2-2: Should execute planning phase', async () => {
     recordTrace('planning', 'started', { phase: 'S-B2-2' });
-    const adapter = new MockRuntimeAdapter();
-    const response = await adapter.invoke('planner', {});
-    expect(response.success).toBe(true);
-    recordTrace('planning', 'completed', response.output);
+    const response = await adapter.invoke(plannerAgent, 'copilot', {
+      sandboxSessionId,
+      sandboxStep: 'plan',
+    });
+    expect(response.outputPath).toBeTruthy();
+    recordTrace('planning', 'completed', { outputPath: response.outputPath });
   });
 
   it('S-B2-2: Should execute implementation phase', async () => {
     recordTrace('implementation', 'started', { phase: 'S-B2-2' });
-    const adapter = new MockRuntimeAdapter();
-    const response = await adapter.invoke('developer', {});
-    expect(response.success).toBe(true);
-    recordTrace('implementation', 'completed', { changes: 3 });
+    const response = await adapter.invoke(plannerAgent, 'copilot', {
+      sandboxSessionId,
+      sandboxStep: 'code',
+      filePath: 'src/autonomous-lane-proof.txt',
+      fileContent: `proof update ${new Date().toISOString()}\n`,
+    });
+    expect(response.outputPath).toBeTruthy();
+    recordTrace('implementation', 'completed', {
+      changes: 1,
+      outputPath: response.outputPath,
+    });
   });
 
   it('S-B2-2: Should execute testing phase', async () => {
     recordTrace('testing', 'started', { phase: 'S-B2-2' });
-    const adapter = new MockRuntimeAdapter();
-    const response = await adapter.executeTool('runTests', {});
-    expect(response.success).toBe(true);
-    recordTrace('testing', 'completed', { passed: 4, failed: 0 });
+    const response = await adapter.invoke(plannerAgent, 'copilot', {
+      sandboxSessionId,
+      sandboxStep: 'test',
+      command: ['node', '-e', 'console.log("autonomous sandbox test ok")'],
+    });
+    expect(response.outputPath).toBeTruthy();
+    recordTrace('testing', 'completed', { passed: 1, failed: 0, outputPath: response.outputPath });
   });
 
   it('S-B2-2: Should create pull request', async () => {
     recordTrace('pr_creation', 'started', { phase: 'S-B2-2' });
-    const adapter = new MockRuntimeAdapter();
-    const response = await adapter.executeTool('createPullRequest', {});
-    expect(response.success).toBe(true);
-    recordTrace('pr_creation', 'completed', { number: 999 });
+    const response = await adapter.invoke(plannerAgent, 'copilot', {
+      sandboxSessionId,
+      sandboxStep: 'pr',
+      prTitle: 'M2 autonomous lane sandbox proof',
+    });
+    expect(response.outputPath).toBeTruthy();
+    recordTrace('pr_creation', 'completed', {
+      sandboxSessionId,
+      outputPath: response.outputPath,
+    });
   });
 
   it('S-B2-3: Should capture trace artifacts', async () => {
@@ -102,10 +111,13 @@ describe('Autonomous Lane Smoke Path (E-B2)', () => {
     expect(traceFile).toBeDefined();
     expect(laneTrace.length).toBeGreaterThan(0);
 
+    const timelinePath = path.join(traceDir, 'sandbox-runs', sandboxSessionId, 'timeline.jsonl');
+    expect(fs.existsSync(timelinePath)).toBe(true);
+
     const scriptPath = path.join(traceDir, 'replay-autonomous-lane.sh');
     fs.writeFileSync(scriptPath, '#!/bin/bash\necho "Replay"', 'utf-8');
     expect(fs.existsSync(scriptPath)).toBe(true);
-    recordTrace('trace_generation', 'completed', { artifacts: 1 });
+    recordTrace('trace_generation', 'completed', { artifacts: 2, sandboxSessionId });
   });
 
   it('I-B2-001: Should have machine-readable artifacts', async () => {

@@ -14,6 +14,9 @@
 
 import path from 'node:path';
 import { existsSync, readFileSync, promises as fs } from 'node:fs';
+import { randomUUID } from 'node:crypto';
+import { execFile as execFileCallback } from 'node:child_process';
+import { promisify } from 'node:util';
 import { createDefaultRegistry, type ProviderRegistry } from '../sdlc/adapters/registry.js';
 import { AdapterRegistry as ToolAdapterRegistry } from '../sdlc/adapters/tool-adapter.js';
 import {
@@ -44,6 +47,8 @@ import { buildPromptEnvelope } from './runtime-adapter/prompt-assembly.js';
 import { completeWithToolExecution } from './runtime-adapter/tool-loop.js';
 import { deriveEnvScope, shouldFallbackProvider } from './runtime-adapter/profile.js';
 import { resolveAdapterSelection } from './runtime-adapter/adapter-resolution.js';
+
+const execFile = promisify(execFileCallback);
 
 // ─── Interface ────────────────────────────────────────────────
 
@@ -910,6 +915,230 @@ export class MockLlmRuntimeAdapter extends FileProducingRuntimeAdapter {
   }
 }
 
+interface SandboxRuntimeAdapterConfig {
+  outputDir?: string;
+  sandboxRoot?: string;
+  commandTimeoutMs?: number;
+}
+
+interface SandboxInvocationContext {
+  sandboxSessionId?: string;
+  sandboxStep?: 'plan' | 'code' | 'test' | 'pr';
+  filePath?: string;
+  fileContent?: string;
+  command?: string[];
+  prTitle?: string;
+}
+
+/**
+ * SandboxRuntimeAdapter — branch-safe runtime adapter for autonomous lane proofing.
+ *
+ * The adapter executes all edits and commands inside an isolated sandbox repo
+ * under tests/load/autonomous-lane-traces/sandbox-runs, never in the caller's
+ * active worktree.
+ */
+export class SandboxRuntimeAdapter extends FileProducingRuntimeAdapter {
+  readonly name = 'sandbox-runtime';
+
+  private readonly _sandboxRoot: string;
+  private readonly _commandTimeoutMs: number;
+
+  constructor(config: SandboxRuntimeAdapterConfig = {}) {
+    super(config.outputDir);
+    this._sandboxRoot =
+      config.sandboxRoot ||
+      path.resolve(process.cwd(), 'tests', 'load', 'autonomous-lane-traces', 'sandbox-runs');
+    this._commandTimeoutMs = config.commandTimeoutMs ?? 15_000;
+  }
+
+  async invoke(
+    agent: { id: string; name: string },
+    platform: string,
+    context: Record<string, unknown>
+  ): Promise<RuntimeAdapterResult> {
+    const runtimeContext = context as SandboxInvocationContext;
+    const requestedAt = new Date().toISOString();
+    const requestId = createRequestId(agent.id);
+    const sessionId = runtimeContext.sandboxSessionId || randomUUID();
+    const sessionDir = path.join(this._sandboxRoot, sessionId);
+    const branchName = `sandbox/${sessionId.slice(0, 12)}`;
+
+    await this._ensureSandboxRepo(sessionDir, branchName);
+
+    const step = runtimeContext.sandboxStep || 'plan';
+    const timelinePath = path.join(sessionDir, 'timeline.jsonl');
+
+    let stepSummary = '';
+    if (step === 'plan') {
+      const planPath = path.join(sessionDir, 'plan.json');
+      const plan = {
+        issue: 'autonomous-lane-proof',
+        steps: ['plan', 'code', 'test', 'pr'],
+        branch: branchName,
+      };
+      await fs.writeFile(planPath, JSON.stringify(plan, null, 2), 'utf8');
+      stepSummary = `Planned autonomous lane workflow in ${planPath}`;
+    } else if (step === 'code') {
+      const relativeTarget = sanitizeRelativePath(
+        runtimeContext.filePath || 'src/sandbox-change.txt'
+      );
+      const targetPath = path.join(sessionDir, relativeTarget);
+      await fs.mkdir(path.dirname(targetPath), { recursive: true });
+      const content =
+        runtimeContext.fileContent ||
+        `sandbox change generated at ${new Date().toISOString()} for ${agent.id}\n`;
+      await fs.writeFile(targetPath, content, 'utf8');
+
+      await execFile('git', ['add', '.'], { cwd: sessionDir, timeout: this._commandTimeoutMs });
+      await execFile('git', ['commit', '-m', `sandbox: ${agent.id} code update`], {
+        cwd: sessionDir,
+        timeout: this._commandTimeoutMs,
+      });
+
+      stepSummary = `Applied code change at ${relativeTarget} on ${branchName}`;
+    } else if (step === 'test') {
+      const command = normalizeSandboxCommand(runtimeContext.command);
+      const { stdout, stderr } = await execFile(command[0], command.slice(1), {
+        cwd: sessionDir,
+        timeout: this._commandTimeoutMs,
+      });
+      stepSummary = [
+        `Executed test command: ${command.join(' ')}`,
+        stdout ? `stdout: ${truncate(stdout.trim(), 400)}` : null,
+        stderr ? `stderr: ${truncate(stderr.trim(), 400)}` : null,
+      ]
+        .filter(Boolean)
+        .join('\n');
+    } else {
+      const title = runtimeContext.prTitle || `Sandbox proof for ${sessionId}`;
+      const { stdout: diff } = await execFile('git', ['show', '--name-status', '--oneline', '-1'], {
+        cwd: sessionDir,
+        timeout: this._commandTimeoutMs,
+      });
+      const prDraft = {
+        title,
+        branch: branchName,
+        sessionId,
+        generatedAt: new Date().toISOString(),
+        summary: diff.trim(),
+      };
+      const prPath = path.join(sessionDir, 'pull-request-draft.json');
+      await fs.writeFile(prPath, JSON.stringify(prDraft, null, 2), 'utf8');
+      stepSummary = `Generated PR draft at ${prPath}`;
+    }
+
+    const timelineEntry = {
+      ts: new Date().toISOString(),
+      step,
+      agentId: agent.id,
+      branch: branchName,
+      summary: stepSummary,
+    };
+    await fs.appendFile(timelinePath, `${JSON.stringify(timelineEntry)}\n`, 'utf8');
+
+    const completedAt = new Date().toISOString();
+    const response: AgentResponseEnvelope = {
+      version: '2026-03-19',
+      requestId,
+      adapter: this.name,
+      provider: 'sandbox-local',
+      model: 'deterministic-executor',
+      status: 'success',
+      finishReason: 'stop',
+      usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+      content: [
+        `Sandbox step completed: ${step}`,
+        `Agent: ${agent.id}`,
+        `Platform: ${platform}`,
+        `Session: ${sessionId}`,
+        `Branch: ${branchName}`,
+        '',
+        stepSummary,
+      ].join('\n'),
+      attempts: 1,
+      requestedAt,
+      completedAt,
+    };
+
+    const outputPath = await this._writeArtifact(agent, response);
+    return { outputPath, response, usage: response.usage };
+  }
+
+  private async _ensureSandboxRepo(sessionDir: string, branchName: string): Promise<void> {
+    await fs.mkdir(sessionDir, { recursive: true });
+    const gitDir = path.join(sessionDir, '.git');
+    if (!existsSync(gitDir)) {
+      await execFile('git', ['init'], { cwd: sessionDir, timeout: this._commandTimeoutMs });
+      await execFile('git', ['config', 'user.email', 'sandbox@example.local'], {
+        cwd: sessionDir,
+        timeout: this._commandTimeoutMs,
+      });
+      await execFile('git', ['config', 'user.name', 'Sandbox Runtime'], {
+        cwd: sessionDir,
+        timeout: this._commandTimeoutMs,
+      });
+      await fs.writeFile(path.join(sessionDir, 'README.md'), '# Sandbox Runtime Session\n', 'utf8');
+      await execFile('git', ['add', '.'], { cwd: sessionDir, timeout: this._commandTimeoutMs });
+      await execFile('git', ['commit', '-m', 'sandbox: bootstrap repository'], {
+        cwd: sessionDir,
+        timeout: this._commandTimeoutMs,
+      });
+    }
+
+    const { stdout } = await execFile('git', ['branch', '--list', branchName], {
+      cwd: sessionDir,
+      timeout: this._commandTimeoutMs,
+    });
+    const branchExists = stdout.trim().length > 0;
+    if (!branchExists) {
+      await execFile('git', ['checkout', '-b', branchName], {
+        cwd: sessionDir,
+        timeout: this._commandTimeoutMs,
+      });
+    } else {
+      await execFile('git', ['checkout', branchName], {
+        cwd: sessionDir,
+        timeout: this._commandTimeoutMs,
+      });
+    }
+  }
+}
+
+function sanitizeRelativePath(input: string): string {
+  const normalized = input.replace(/\\/g, '/').replace(/^\/+/, '');
+  const safe = normalized
+    .split('/')
+    .filter((segment) => segment && segment !== '.' && segment !== '..')
+    .join('/');
+  return safe || 'src/sandbox-change.txt';
+}
+
+function normalizeSandboxCommand(command: unknown): string[] {
+  const fallback = ['node', '-e', 'console.log("sandbox-test-pass")'];
+  if (!Array.isArray(command) || command.length === 0) return fallback;
+
+  const normalized = command
+    .map((part) => (typeof part === 'string' ? part.trim() : ''))
+    .filter((part) => part.length > 0);
+  if (normalized.length === 0) return fallback;
+
+  const [bin, ...args] = normalized;
+  if (!['node', 'npm', 'git'].includes(bin)) {
+    throw new Error(`Sandbox command '${bin}' is not allowed.`);
+  }
+
+  if (bin === 'npm' && !(args[0] === 'test' || (args[0] === 'run' && args[1] === 'test'))) {
+    throw new Error('Sandbox npm command is restricted to test execution.');
+  }
+
+  const containsShellControl = normalized.some((part) => /[|;&><`]/.test(part));
+  if (containsShellControl) {
+    throw new Error('Sandbox command contains shell control characters and was rejected.');
+  }
+
+  return normalized;
+}
+
 export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter {
   readonly name: string;
 
@@ -1300,6 +1529,7 @@ export const DEFAULT_REGISTRY = new AdapterRegistry();
 DEFAULT_REGISTRY.register(new NullAdapter());
 DEFAULT_REGISTRY.register(new LogOnlyAdapter());
 DEFAULT_REGISTRY.register(new MockLlmRuntimeAdapter());
+DEFAULT_REGISTRY.register(new SandboxRuntimeAdapter());
 DEFAULT_REGISTRY.register(
   new ProviderBackedLlmRuntimeAdapter({ name: 'llm-openai', providerName: 'openai' })
 );

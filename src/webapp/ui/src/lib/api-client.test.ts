@@ -44,10 +44,16 @@ describe('api-client', () => {
 
   it('apiPost sends POST with JSON body', async () => {
     mockFetch(200, { ok: true });
+    Object.defineProperty(document, 'cookie', {
+      configurable: true,
+      writable: true,
+      value: 'csrf=test-csrf-token',
+    });
     await apiPost('/test', { data: 1 });
     const [, opts] = (globalThis.fetch as ReturnType<typeof vi.fn>).mock.calls[0];
     expect(opts.method).toBe('POST');
     expect(opts.body).toBe(JSON.stringify({ data: 1 }));
+    expect(opts.headers['x-csrf-token']).toBe('test-csrf-token');
   });
 
   it('apiPut sends PUT', async () => {

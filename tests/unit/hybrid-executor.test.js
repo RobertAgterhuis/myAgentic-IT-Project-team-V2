@@ -1,7 +1,3 @@
-'use strict';
-
-'use strict';
-
 /**
  * Hybrid Executor — Unit Tests (M4 / Issue #1399)
  *
@@ -24,7 +20,8 @@
  *   - executor.agencyOutputs keyed by agent.id, not phase name
  */
 
-const { createHybridExecutor } = require('../../platform/engine/hybrid-executor');
+import * as __req_0 from '../../platform/engine/hybrid-executor';
+const { createHybridExecutor } = __req_0;
 
 // ─── Helpers ──────────────────────────────────────────────────
 

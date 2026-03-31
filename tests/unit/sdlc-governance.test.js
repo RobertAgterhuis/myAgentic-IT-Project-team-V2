@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * SDLC Governance Model — Unit Tests
  *
@@ -7,12 +5,8 @@
  * gate evaluation, serialisation, and default policies.
  */
 
-const {
-  GovernanceEngine,
-  ROLES,
-  PERMISSIONS,
-  DEFAULT_POLICIES,
-} = require('../../platform/sdlc/governance');
+import * as __req_0 from '../../platform/sdlc/governance';
+const { GovernanceEngine, ROLES, PERMISSIONS, DEFAULT_POLICIES } = __req_0;
 
 // ─── Enum Guards ─────────────────────────────────────────────
 

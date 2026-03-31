@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
+import * as __req_0 from '../../platform/sdlc/observability';
 const {
   DORA_LEVELS,
   computeLeadTime,
@@ -24,7 +24,7 @@ const {
   computeAgentStats,
   computeVelocityTrendEntry,
   recordSprintBoundary,
-} = require('../../platform/sdlc/observability');
+} = __req_0;
 
 /* ── helpers ─────────────────────────────────────────────── */
 

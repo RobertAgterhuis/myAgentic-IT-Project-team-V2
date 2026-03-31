@@ -1,4 +1,6 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 /**
  * RagIndexer unit tests (RAG-1.2.1).
  * Uses in-memory SQLite, a temp LanceDB dir, a MockEmbeddingProvider,

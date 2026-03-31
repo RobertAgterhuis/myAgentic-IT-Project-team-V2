@@ -1,15 +1,15 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 const Database = require('better-sqlite3');
 const os = require('node:os');
 const path = require('node:path');
 const fs = require('node:fs');
 
-const {
-  resolveSqliteConcurrencyConfig,
-  applySqliteConcurrencyPragmas,
-} = require('../../platform/engine/sqlite-concurrency');
-const { SQLiteStorageProvider } = require('../../platform/engine/persistence/sqlite-provider');
+import * as __req_0 from '../../platform/engine/sqlite-concurrency';
+const { resolveSqliteConcurrencyConfig, applySqliteConcurrencyPragmas } = __req_0;
+import * as __req_1 from '../../platform/engine/persistence/sqlite-provider';
+const { SQLiteStorageProvider } = __req_1;
 
 function tmpDir() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'sqlite-concurrency-'));

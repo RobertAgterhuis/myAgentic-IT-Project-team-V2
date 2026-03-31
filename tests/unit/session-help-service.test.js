@@ -1,6 +1,5 @@
-'use strict';
-
-const { getHelpTopics, getHelpTopic } = require('../../src/webapp/services/session/help');
+import * as __req_0 from '../../src/webapp/services/session/help';
+const { getHelpTopics, getHelpTopic } = __req_0;
 
 describe('session help service', () => {
   it('lists markdown help topics from directory entries', () => {

@@ -1,6 +1,5 @@
-'use strict';
-
-const { assessDeliverableQuality } = require('../../platform/engine/deliverable-quality');
+import * as __req_0 from '../../platform/engine/deliverable-quality';
+const { assessDeliverableQuality } = __req_0;
 
 describe('assessDeliverableQuality', () => {
   it('returns an approve signal for a well-structured deliverable', () => {

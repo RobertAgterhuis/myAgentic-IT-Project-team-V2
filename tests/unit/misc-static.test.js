@@ -1,11 +1,11 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
 const path = require('path');
-const {
-  createStaticHandler,
-  registerStaticFallback,
-} = require('../../src/webapp/routes/misc-static');
+import * as __req_0 from '../../src/webapp/routes/misc-static';
+const { createStaticHandler, registerStaticFallback } = __req_0;
 
 function createReply() {
   const raw = {

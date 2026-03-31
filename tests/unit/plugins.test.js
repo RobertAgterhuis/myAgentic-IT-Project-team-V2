@@ -1,5 +1,7 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
 /**
  * Unit Tests: Fastify Plugins (M30-005)
@@ -9,11 +11,8 @@
  */
 
 const Fastify = require('fastify');
-const {
-  securityHeadersPlugin,
-  rateLimitPlugin,
-  bodyParserPlugin,
-} = require('../../src/webapp/plugins');
+import * as __req_0 from '../../src/webapp/plugins';
+const { securityHeadersPlugin, rateLimitPlugin, bodyParserPlugin } = __req_0;
 
 /* ── Helpers ──────────────────────────────────────────────────── */
 

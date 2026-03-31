@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
-const { ERROR_CATALOG, errorResponse, statusToCode } = require('../../src/webapp/utils/errors');
+import * as __req_0 from '../../src/webapp/utils/errors';
+const { ERROR_CATALOG, errorResponse, statusToCode } = __req_0;
 
 describe('errorResponse', () => {
   it('returns standardized format with all four fields', () => {

@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
+import * as __req_0 from '../../src/webapp/schemas';
 const {
   validateSessionState,
   validateCommandEntry,
@@ -14,7 +14,7 @@ const {
   validateDriftReport,
   validateGithubSnapshot,
   VALID_ANALYTICS_EVENTS,
-} = require('../../src/webapp/schemas');
+} = __req_0;
 
 /* ── Story #17: JSON schema validation (SP-R2-002-005) ──────── */
 

@@ -1,8 +1,9 @@
-'use strict';
 /* Unit tests for the shared file-lock module.
  * Tests concurrency primitives and cross-module lock coordination. */
 
-const { withFileLock, _writeLocks, LOCK_TIMEOUT_MS } = require('../../src/webapp/file-lock');
+import * as __req_0 from '../../src/webapp/file-lock';
+import * as pathModule from 'node:path';
+const { withFileLock, _writeLocks, LOCK_TIMEOUT_MS } = __req_0;
 
 describe('withFileLock — concurrency', () => {
   it('serializes concurrent writes to the same path', async () => {
@@ -53,7 +54,7 @@ describe('withFileLock — concurrency', () => {
   it('cleans up lock map after completion', async () => {
     const path = '/test/cleanup.md';
     await withFileLock(path, async () => 'done');
-    expect(_writeLocks.has(require('node:path').resolve(path))).toBe(false);
+    expect(_writeLocks.has(pathModule.resolve(path))).toBe(false);
   });
 
   it('cleans up lock map even after error', async () => {
@@ -63,7 +64,7 @@ describe('withFileLock — concurrency', () => {
         throw new Error('fail');
       })
     ).rejects.toThrow('fail');
-    expect(_writeLocks.has(require('node:path').resolve(path))).toBe(false);
+    expect(_writeLocks.has(pathModule.resolve(path))).toBe(false);
   });
 
   it('serializes three chained writes to the same path', async () => {
@@ -85,8 +86,8 @@ describe('withFileLock — concurrency', () => {
 
   it('shares the same lock instance across repeated requires', () => {
     // Module caching must guarantee the same singleton
-    const lock1 = require('../../src/webapp/file-lock').withFileLock;
-    const lock2 = require('../../src/webapp/file-lock').withFileLock;
+    const lock1 = __req_0.withFileLock;
+    const lock2 = __req_0.withFileLock;
     expect(lock1).toBe(lock2);
   });
 
@@ -105,7 +106,7 @@ describe('withFileLock — concurrency', () => {
   it('replaces a stale predecessor lock when waiting times out', async () => {
     vi.useFakeTimers();
     const filePath = '/test/timeout.md';
-    const key = require('node:path').resolve(filePath);
+    const key = pathModule.resolve(filePath);
     const staleLock = new Promise(() => {});
     _writeLocks.set(key, staleLock);
 

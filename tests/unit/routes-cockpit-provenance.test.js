@@ -1,8 +1,12 @@
-// Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
-const { registerRoutes } = require('../../src/webapp/routes/cockpit');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+// Copyright (c) 2026 Robert Agterhuis. MIT License.
+
+import * as __req_0 from '../../src/webapp/routes/cockpit';
+const { registerRoutes } = __req_0;
+import * as __req_1 from '../helpers/fastify-test-adapter.js';
+const { createTestableRoutes } = __req_1;
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');

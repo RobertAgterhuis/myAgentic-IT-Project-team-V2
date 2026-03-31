@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Memory Namespace — Unit Tests (C2.3)
  *
@@ -12,11 +10,8 @@
  *     - Key validation and segment safety.
  */
 
-const {
-  MemoryNamespace,
-  NamespaceIsolationError,
-  isDurableTier,
-} = require('../../platform/engine/memory-namespace');
+import * as __req_0 from '../../platform/engine/memory-namespace';
+const { MemoryNamespace, NamespaceIsolationError, isDurableTier } = __req_0;
 
 // ─── isDurableTier ────────────────────────────────────────────
 

@@ -1,3 +1,10 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import { dirname as _dirname } from 'node:path';
+const require = createRequire(import.meta.url);
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
+
 /**
  * SP-2-202 + SP-2-201-P — Pilot Readiness Validation Tests
  * Verifies all pilot materials are present and structurally complete

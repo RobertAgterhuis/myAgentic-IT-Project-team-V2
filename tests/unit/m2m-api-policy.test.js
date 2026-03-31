@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { isM2MRouteAllowed, M2M_API_POLICY } = require('../../src/webapp/m2m-api-policy.ts');
+import * as __req_0 from '../../src/webapp/m2m-api-policy.ts';
+const { isM2MRouteAllowed, M2M_API_POLICY } = __req_0;
 
 describe('M2M API Policy', () => {
   describe('isM2MRouteAllowed', () => {

@@ -1,6 +1,5 @@
-'use strict';
-
-const { TransitionLeaseManager } = require('../../platform/engine/transition-lease');
+import * as __req_0 from '../../platform/engine/transition-lease';
+const { TransitionLeaseManager } = __req_0;
 
 function createMockStore(files = {}) {
   const _files = { ...files };

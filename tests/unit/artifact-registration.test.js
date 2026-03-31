@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Artifact Registration — Unit Tests (M2: Artifact Registration Integration)
  *
@@ -16,19 +14,16 @@
  * - computeContentHash / verifyContentHash
  */
 
+import * as __req_0 from '../../platform/engine/artifact-registration';
 const {
   resolveCompletedPhase,
   resolvePhaseFromCritic,
   registerPhaseArtifacts,
   createArtifactRegistrationHook,
-} = require('../../platform/engine/artifact-registration');
+} = __req_0;
 
-const {
-  ArtifactRegistry,
-  computeContentHash,
-  verifyContentHash,
-  resetArtifactIdCounter,
-} = require('../../platform/sdlc/artifacts');
+import * as __req_1 from '../../platform/sdlc/artifacts';
+const { ArtifactRegistry, computeContentHash, verifyContentHash, resetArtifactIdCounter } = __req_1;
 
 // ─── Helpers ─────────────────────────────────────────────────
 

@@ -1,7 +1,3 @@
-'use strict';
-
-'use strict';
-
 /**
  * Execution Mode — Unit Tests (M4 / Issue #1396)
  *
@@ -15,14 +11,14 @@
  *   - EXECUTION_MODE_DECISION_MATRIX: non-empty, correct field names
  */
 
-const {
+import {
   VALID_EXECUTION_MODES,
   EXECUTION_MODE_DESCRIPTORS,
   EXECUTION_MODE_DECISION_MATRIX,
   assertExecutionMode,
   resolveExecutionMode,
   getExecutionModeDescriptor,
-} = require('../../platform/engine/execution-mode');
+} from '../../platform/engine/execution-mode';
 
 // ─── VALID_EXECUTION_MODES ───────────────────────────────────
 

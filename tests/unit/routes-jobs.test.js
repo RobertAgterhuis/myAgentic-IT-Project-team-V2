@@ -1,8 +1,9 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { registerRoutes } = require('../../src/webapp/routes/jobs');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+import * as __req_0 from '../../src/webapp/routes/jobs';
+const { registerRoutes } = __req_0;
+import * as __req_1 from '../helpers/fastify-test-adapter.js';
+const { createTestableRoutes } = __req_1;
 
 /* ── Mock ctx ─────────────────────────────────────────────── */
 

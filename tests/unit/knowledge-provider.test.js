@@ -1,6 +1,5 @@
-'use strict';
-
-const { KnowledgeProvider } = require('../../platform/engine/knowledge-provider');
+import * as __req_0 from '../../platform/engine/knowledge-provider';
+const { KnowledgeProvider } = __req_0;
 
 describe('KnowledgeProvider', () => {
   test('queries semantic memory and rag through one normalized surface', async () => {

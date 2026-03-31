@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * State Machine Engine — Unit Tests (FEAT-05-A / SP-5-ORCH-A)
  *
@@ -14,7 +12,7 @@
  * - AC-8: Unit tests for all transitions and edge cases
  */
 
-const {
+import {
   STATES,
   EVENTS,
   MODE_CONFIGS,
@@ -26,7 +24,7 @@ const {
   createStateMachine,
   createCombinationMachine,
   createHotfixMachine,
-} = require('../../platform/engine/state-machine');
+} from '../../platform/engine/state-machine';
 
 // ─────────────────────────────────────────────────────────────
 // AC-2: State definitions

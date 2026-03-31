@@ -1,17 +1,18 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const Database = require('better-sqlite3');
-const {
-  isEffectivelyEnabled,
-} = require('../../src/webapp/plugins/identity/workload-identity-types');
-const { WorkloadIdentityStore } = require('../../src/webapp/services/workload-identity-store');
-const {
-  WorkloadIdentityService,
-} = require('../../src/webapp/plugins/identity/workload-identity-service');
-const { run } = require('../../src/webapp/plugins/mcp-governance/cli');
+import * as __req_0 from '../../src/webapp/plugins/identity/workload-identity-types';
+const { isEffectivelyEnabled } = __req_0;
+import * as __req_1 from '../../src/webapp/services/workload-identity-store';
+const { WorkloadIdentityStore } = __req_1;
+import * as __req_2 from '../../src/webapp/plugins/identity/workload-identity-service';
+const { WorkloadIdentityService } = __req_2;
+import * as __req_3 from '../../src/webapp/plugins/mcp-governance/cli';
+const { run } = __req_3;
 
 function identity(seed = {}) {
   return {

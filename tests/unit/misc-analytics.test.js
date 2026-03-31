@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { registerAnalyticsRoutes } = require('../../src/webapp/routes/misc-analytics');
+import * as __req_0 from '../../src/webapp/routes/misc-analytics';
+const { registerAnalyticsRoutes } = __req_0;
 
 function createFakeApp() {
   const routes = new Map();

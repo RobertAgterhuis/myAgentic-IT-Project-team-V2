@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * CLI & Command Interface — Unit Tests (FEAT-05-E)
  *
@@ -14,17 +12,21 @@
  * - AC-8: Interactive mode flag parsing
  */
 
-const path = require('path');
-const fs = require('fs');
-const {
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import {
   parseArgs,
   executeCommand,
   run,
   COMMAND_ALIASES,
   VALID_PLATFORMS,
   HELP_TEXT,
-} = require('../../platform/engine/cli');
-const { createEngine } = require('../../platform/engine/engine');
+} from '../../platform/engine/cli';
+import { createEngine } from '../../platform/engine/engine';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ─── Test Helpers ────────────────────────────────────────────
 

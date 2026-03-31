@@ -1,5 +1,3 @@
-'use strict';
-
 describe('TestingAdapter', () => {
   let TestingAdapter;
   let HEALTH_STATUS;

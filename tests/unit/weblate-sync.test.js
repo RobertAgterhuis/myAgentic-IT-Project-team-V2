@@ -1,3 +1,6 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 /**
  * Weblate Sync Script Unit Tests
  * Tests for scripts/weblate-sync.js — validate, readLocaleFile, writeLocaleFile
@@ -6,6 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 
+import * as __req_0 from '../../scripts/weblate-sync';
 const {
   readLocaleFile,
   writeLocaleFile,
@@ -14,7 +18,7 @@ const {
   SOURCE_LANG,
   TARGET_LANGS,
   COMPONENTS,
-} = require('../../scripts/weblate-sync');
+} = __req_0;
 
 describe('weblate-sync — constants', () => {
   test('SOURCE_LANG is en-US', () => {

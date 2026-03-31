@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Analytics & Observability — Unit Tests (M7: Issues #372–#377)
  *
@@ -10,6 +8,7 @@
  *   #375: Analytics API endpoints (trends, agents, metrics, metrics/:name)
  */
 
+import * as __req_0 from '../../platform/sdlc/observability';
 const {
   createMetricsStore,
   ensureMetric,
@@ -24,17 +23,13 @@ const {
   computeToolLatencyStats,
   computeVelocityTrendEntry,
   recordSprintBoundary,
-} = require('../../platform/sdlc/observability');
+} = __req_0;
 
-const {
-  createAgentPerformanceHook,
-  METRICS_STORE_PATH,
-} = require('../../platform/engine/agent-performance-hook');
+import * as __req_1 from '../../platform/engine/agent-performance-hook';
+const { createAgentPerformanceHook, METRICS_STORE_PATH } = __req_1;
 
-const {
-  computeAndPersistSprintTrends,
-  METRICS_STORE_PATH: GATE_METRICS_PATH,
-} = require('../../platform/engine/sprint-gate');
+import * as __req_2 from '../../platform/engine/sprint-gate';
+const { computeAndPersistSprintTrends, METRICS_STORE_PATH: GATE_METRICS_PATH } = __req_2;
 
 // ─── Helpers ─────────────────────────────────────────────────
 

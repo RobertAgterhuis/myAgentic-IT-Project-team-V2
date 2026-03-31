@@ -1,9 +1,8 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { registerRoutes } = require('../../src/webapp/routes/agents');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
-const { Dispatcher } = require('../../platform/engine/dispatcher');
+import { registerRoutes } from '../../src/webapp/routes/agents';
+import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
+import { Dispatcher } from '../../platform/engine/dispatcher';
 
 /* ── Mock ctx with sseNotify ─────────────────────────────── */
 

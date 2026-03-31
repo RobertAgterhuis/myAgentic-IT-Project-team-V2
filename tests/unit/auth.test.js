@@ -1,4 +1,6 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 /**
  * Auth integration tests (M29-012).
  * Tests the AuthStore (SQLite), AuthManager (session, CSRF, RBAC),

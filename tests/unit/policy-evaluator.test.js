@@ -1,4 +1,5 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 const fs = require('node:fs');
 const os = require('node:os');
@@ -11,6 +12,7 @@ const path = require('node:path');
  * exception handling, and the addPolicyException helper.
  */
 
+import * as __req_0 from '../../platform/engine/policy-evaluator';
 const {
   listPolicyPackPaths,
   loadPolicyPack,
@@ -20,7 +22,7 @@ const {
   runPolicyEvaluation,
   addPolicyException,
   updatePolicyInPack,
-} = require('../../platform/engine/policy-evaluator');
+} = __req_0;
 
 // ─── Helpers ─────────────────────────────────────────────────
 

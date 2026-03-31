@@ -1,12 +1,11 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
 const path = require('path');
-const {
-  createStaticHandler,
-  resolveMimeType,
-  MIME_TYPES,
-} = require('../../src/webapp/static-handler');
+import * as __req_0 from '../../src/webapp/static-handler';
+const { createStaticHandler, resolveMimeType, MIME_TYPES } = __req_0;
 
 function mockRes() {
   const res = {

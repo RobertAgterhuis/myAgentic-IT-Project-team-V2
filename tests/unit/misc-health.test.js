@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { registerHealthRoutes } = require('../../src/webapp/routes/misc-health');
+import * as __req_0 from '../../src/webapp/routes/misc-health';
+const { registerHealthRoutes } = __req_0;
 
 function createFakeApp() {
   const routes = new Map();

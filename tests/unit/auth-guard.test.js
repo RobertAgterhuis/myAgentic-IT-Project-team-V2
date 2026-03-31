@@ -1,4 +1,3 @@
-'use strict';
 /* Unit tests for the auth guard logic in server.ts.
  * The guard rejects mutating API requests on non-localhost bindings
  * unless the caller provides a valid API key. */

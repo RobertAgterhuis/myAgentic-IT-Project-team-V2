@@ -43,7 +43,7 @@ jobs:
 
       - name: Validate canonical schemas
         run: |
-          npx vitest run tests/unit/agent-schema.test.js tests/unit/flow-schema.test.js tests/unit/tool-schema.test.js
+          npx vitest run --config vitest.migrated-istanbul.config.mjs tests/unit/agent-schema.test.js tests/unit/flow-schema.test.js tests/unit/tool-schema.test.js
 
       - name: Validate pack metadata completeness
         run: npm run test:pack-metadata-gate
@@ -68,4 +68,4 @@ jobs:
           fi
 
       - name: Run transpiler tests
-        run: npx vitest run tests/unit/transpiler.test.js
+        run: npx vitest run --config vitest.migrated-istanbul.config.mjs tests/unit/transpiler.test.js

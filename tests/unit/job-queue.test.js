@@ -1,9 +1,9 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 // M24: Background Job Execution — Unit Tests
-'use strict';
-
-const { MemoryQueue } = require('../../platform/engine/jobs/memory-queue');
-const { JobWorker } = require('../../platform/engine/jobs/worker');
+import { MemoryQueue } from '../../platform/engine/jobs/memory-queue';
+import { JobWorker } from '../../platform/engine/jobs/worker';
+import { Dispatcher } from '../../platform/engine/dispatcher';
+import { collectJobMetrics, flushJobMetrics } from '../../platform/engine/jobs/job-metrics';
 
 // ─── Test Helpers ────────────────────────────────────────────
 
@@ -308,8 +308,6 @@ describe('JobWorker — worker loop', () => {
 // M24-005: Dispatcher job queue integration
 // ─────────────────────────────────────────────────────────────
 describe('Dispatcher — job queue integration', () => {
-  const { Dispatcher } = require('../../platform/engine/dispatcher');
-
   function createMockStore(files = {}) {
     return {
       exists: (fp) => fp in files,
@@ -357,8 +355,6 @@ describe('Dispatcher — job queue integration', () => {
 // M24-007: Job metrics
 // ─────────────────────────────────────────────────────────────
 describe('Job metrics — snapshot collection', () => {
-  const { collectJobMetrics, flushJobMetrics } = require('../../platform/engine/jobs/job-metrics');
-
   it('collectJobMetrics returns a valid snapshot', async () => {
     const queue = new MemoryQueue({ concurrency: 5, defaultTimeoutMs: 60000 });
     await queue.enqueue(makeInput());

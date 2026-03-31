@@ -1,10 +1,10 @@
-'use strict';
 /* Unit test example: isolated pure-function testing.
  * Pattern: test pure functions with no external dependencies.
  * These tests validate content sanitization edge cases beyond
  * what the co-located server.test.js covers. */
 
-const { sanitizeMarkdown, sanitizeQID } = require('../../src/webapp/middleware');
+import * as __req_0 from '../../src/webapp/middleware';
+const { sanitizeMarkdown, sanitizeQID } = __req_0;
 
 describe('sanitizeMarkdown — edge cases', () => {
   it('handles multi-line content with mixed markdown syntax', () => {

@@ -1,67 +1,11 @@
 import { defineConfig } from 'vitest/config';
-import path from 'node:path';
-import fs from 'node:fs';
-
-/**
- * Vite plugin that resolves .js/.mjs/.cjs imports to .ts when the
- * original file doesn't exist on disk.  This handles CJS require()
- * calls in test files that reference source modules renamed from
- * .js to .ts during the TypeScript conversion.
- */
-function resolveJsToTs() {
-  const jsExts = ['.js', '.mjs', '.cjs'];
-  return {
-    name: 'resolve-js-to-ts',
-    enforce: 'pre',
-    resolveId(source, importer) {
-      if (!importer || /node_modules/.test(source)) return null;
-      if (!source.startsWith('.') && !path.isAbsolute(source)) return null;
-
-      const dir = path.dirname(importer);
-
-      // Case 1: explicit .js extension → try .ts
-      if (source.endsWith('.js')) {
-        const resolved = path.resolve(dir, source);
-        if (fs.existsSync(resolved)) return null;
-        const tsPath = resolved.replace(/\.js$/, '.ts');
-        if (fs.existsSync(tsPath)) return tsPath;
-        return null;
-      }
-
-      // Case 2: no extension (bare require) → try .ts first, then .js
-      const hasExt =
-        jsExts.some((e) => source.endsWith(e)) ||
-        source.endsWith('.ts') ||
-        source.endsWith('.json');
-      if (!hasExt) {
-        const base = path.resolve(dir, source);
-        const tsPath = base + '.ts';
-        if (fs.existsSync(tsPath)) return tsPath;
-      }
-
-      return null;
-    },
-  };
-}
 
 export default defineConfig({
-  plugins: [resolveJsToTs()],
-  resolve: {
-    extensions: ['.ts', '.js', '.mjs', '.cjs', '.json'],
-  },
   test: {
     globals: true,
     fileParallelism: false,
-    deps: {
-      inline: [/./],
-    },
-    setupFiles: ['tests/setup-require-hook.js'],
-    include: ['tests/**/*.test.{js,ts}'],
-    exclude: [
-      '**/node_modules/**',
+    include: [
       'tests/integration/dispatcher-reflection-loop.test.js',
-      'tests/integration/git-adapter.integration.test.js',
-      'tests/integration/testing-adapter.integration.test.js',
       'tests/unit/action-proposer.test.js',
       'tests/unit/adapter-result-cache.test.js',
       'tests/unit/agency-executor.test.js',
@@ -272,26 +216,180 @@ export default defineConfig({
       'tests/unit/write-ahead-persistence.test.js',
     ],
     coverage: {
-      provider: 'v8',
+      provider: 'istanbul',
       include: [
-        'src/webapp/**/*.{js,ts}',
-        'platform/engine/**/*.{js,ts}',
-        'platform/sdlc/**/*.{js,ts}',
+        'platform/engine/a2a-collaboration-tracer.ts',
+        'platform/engine/a2a-messaging.ts',
+        'platform/engine/adapter-result-cache.ts',
+        'platform/engine/agency-executor.ts',
+        'platform/engine/agent-performance-hook.ts',
+        'platform/engine/agent-registry.ts',
+        'platform/engine/agent-runtime-adapter.ts',
+        'platform/engine/agent-schema.ts',
+        'platform/engine/artifact-registration.ts',
+        'platform/engine/cli.ts',
+        'platform/engine/context-budgeter.ts',
+        'platform/engine/deliverable-quality.ts',
+        'platform/engine/dispatcher.ts',
+        'platform/engine/engine.ts',
+        'platform/engine/execution-mode-plan.ts',
+        'platform/engine/execution-mode.ts',
+        'platform/engine/flow-loader.ts',
+        'platform/engine/flow-schema.ts',
+        'platform/engine/gate-validator.ts',
+        'platform/engine/governance-config.ts',
+        'platform/engine/hybrid-executor.ts',
+        'platform/engine/identity.ts',
+        'platform/engine/jobs/bullmq-queue.ts',
+        'platform/engine/jobs/job-metrics.ts',
+        'platform/engine/jobs/memory-queue.ts',
+        'platform/engine/jobs/persistent-queue.ts',
+        'platform/engine/jobs/worker.ts',
+        'platform/engine/knowledge-provider.ts',
+        'platform/engine/memory-access-policy.ts',
+        'platform/engine/memory-namespace.ts',
+        'platform/engine/pack-contract.ts',
+        'platform/engine/peer-clarification.ts',
+        'platform/engine/persistence/file-provider.ts',
+        'platform/engine/persistence/index.ts',
+        'platform/engine/persistence/remote-provider.ts',
+        'platform/engine/persistence/sqlite-provider.ts',
+        'platform/engine/policy-evaluator.ts',
+        'platform/engine/reasoning-profile.ts',
+        'platform/engine/retrieval-api.ts',
+        'platform/engine/runtime-adapter/adapter-resolution.ts',
+        'platform/engine/runtime-adapter/profile.ts',
+        'platform/engine/runtime-adapter/prompt-assembly.ts',
+        'platform/engine/runtime-adapter/tool-loop.ts',
+        'platform/engine/self-revision.ts',
+        'platform/engine/semantic-memory.ts',
+        'platform/engine/sprint-gate.ts',
+        'platform/engine/sqlite-concurrency.ts',
+        'platform/engine/state-machine.ts',
+        'platform/engine/state-persistence.ts',
+        'platform/engine/template-loader.ts',
+        'platform/engine/tool-execution-middleware.ts',
+        'platform/engine/tool-executor.ts',
+        'platform/engine/tool-schema.ts',
+        'platform/engine/transition-event-log.ts',
+        'platform/engine/transition-lease.ts',
+        'platform/engine/verifier-pass.ts',
+        'platform/engine/workspace/index.ts',
+        'platform/engine/workspace/repo-indexer.ts',
+        'platform/sdlc/adapters/ci-adapter.ts',
+        'platform/sdlc/adapters/cloud-adapter.ts',
+        'platform/sdlc/adapters/container-adapter.ts',
+        'platform/sdlc/adapters/git-adapter.ts',
+        'platform/sdlc/adapters/index.ts',
+        'platform/sdlc/adapters/llm-adapter.ts',
+        'platform/sdlc/adapters/registry.ts',
+        'platform/sdlc/adapters/security-adapter.ts',
+        'platform/sdlc/adapters/shell-executor.ts',
+        'platform/sdlc/adapters/testing-adapter.ts',
+        'platform/sdlc/adapters/tool-adapter.ts',
+        'platform/sdlc/artifacts.ts',
+        'platform/sdlc/entities.ts',
+        'platform/sdlc/governance.ts',
+        'platform/sdlc/lifecycle.ts',
+        'platform/sdlc/observability.ts',
+        'platform/sdlc/traceability.ts',
+        'src/webapp/app.ts',
+        'src/webapp/audit.ts',
+        'src/webapp/cache.ts',
+        'src/webapp/config.ts',
+        'src/webapp/drift-detector.ts',
+        'src/webapp/file-lock.ts',
+        'src/webapp/lesson-promotion.ts',
+        'src/webapp/m2m-api-policy.ts',
+        'src/webapp/mcp-server.ts',
+        'src/webapp/metrics-collector.ts',
+        'src/webapp/middleware.ts',
+        'src/webapp/models/corruption.ts',
+        'src/webapp/models/index.ts',
+        'src/webapp/models/session.ts',
+        'src/webapp/plugins/identity/workload-identity-service.ts',
+        'src/webapp/plugins/identity/workload-identity-types.ts',
+        'src/webapp/plugins/index.ts',
+        'src/webapp/plugins/mcp-governance/cli.ts',
+        'src/webapp/plugins/mcp-governance/factories.ts',
+        'src/webapp/plugins/mcp-governance/health-monitor.ts',
+        'src/webapp/plugins/mcp-governance/index.ts',
+        'src/webapp/plugins/mcp-governance/service.ts',
+        'src/webapp/plugins/rate-limit.ts',
+        'src/webapp/rate-limiter.ts',
+        'src/webapp/redis.ts',
+        'src/webapp/route-schemas.ts',
+        'src/webapp/router.ts',
+        'src/webapp/routes/agents.ts',
+        'src/webapp/routes/analytics.ts',
+        'src/webapp/routes/approvals.ts',
+        'src/webapp/routes/artifacts.ts',
+        'src/webapp/routes/chat.ts',
+        'src/webapp/routes/cockpit.ts',
+        'src/webapp/routes/commands.ts',
+        'src/webapp/routes/dashboard.ts',
+        'src/webapp/routes/decisions.ts',
+        'src/webapp/routes/drift.ts',
+        'src/webapp/routes/git.ts',
+        'src/webapp/routes/help.ts',
+        'src/webapp/routes/jobs.ts',
+        'src/webapp/routes/mcp.ts',
+        'src/webapp/routes/metrics-dashboard.ts',
+        'src/webapp/routes/milestones.ts',
+        'src/webapp/routes/misc-analytics.ts',
+        'src/webapp/routes/misc-export.ts',
+        'src/webapp/routes/misc-health.ts',
+        'src/webapp/routes/misc-observability.ts',
+        'src/webapp/routes/misc-static.ts',
+        'src/webapp/routes/orchestrator.ts',
+        'src/webapp/routes/policies.ts',
+        'src/webapp/routes/progress.ts',
+        'src/webapp/routes/rag.ts',
+        'src/webapp/routes/reasoning-collaboration.ts',
+        'src/webapp/routes/sessions.ts',
+        'src/webapp/routes/subscribe.ts',
+        'src/webapp/routes/task-assembly.ts',
+        'src/webapp/routes/workspaces.ts',
+        'src/webapp/runtime-profiles.ts',
+        'src/webapp/runtime-scaffold.ts',
+        'src/webapp/server.ts',
+        'src/webapp/schemas.ts',
+        'src/webapp/services/agent-execution-service.ts',
+        'src/webapp/services/chat/action-proposer.ts',
+        'src/webapp/services/chat/intent-classifier.ts',
+        'src/webapp/services/context-adapter.ts',
+        'src/webapp/services/dashboard-service.ts',
+        'src/webapp/services/git/azure-devops-provider-backend.ts',
+        'src/webapp/services/git/git-service.ts',
+        'src/webapp/services/git/github-provider-backend.ts',
+        'src/webapp/services/help-service.ts',
+        'src/webapp/services/index.ts',
+        'src/webapp/services/outcome-tracking-service.ts',
+        'src/webapp/services/pattern-analysis-service.ts',
+        'src/webapp/services/rag/embedding-provider.ts',
+        'src/webapp/services/rag/text-chunker.ts',
+        'src/webapp/services/session/help.ts',
+        'src/webapp/services/workload-identity-store.ts',
+        'src/webapp/session-state-resolver.ts',
+        'src/webapp/session-tracker.ts',
+        'src/webapp/sse-manager.ts',
+        'src/webapp/static-handler.ts',
+        'src/webapp/store.ts',
+        'src/webapp/strings.ts',
+        'src/webapp/utils/errors.ts',
+        'src/webapp/utils/secret-utils.ts',
       ],
       exclude: [
-        'src/webapp/node_modules/**',
-        'src/webapp/ui/**',
+        '**/node_modules/**',
         '**/index.ts',
         '**/types.ts',
-        'platform/sdlc/adapters/contracts/**',
+        '**/*.d.ts',
+        'platform/engine/flows.yaml',
         'platform/engine/persistence/storage-provider.ts',
         'platform/engine/jobs/job-types.ts',
-        'src/webapp/start.ps1',
-        'platform/engine/flows.yaml',
-        '**/*.d.ts',
       ],
       reporter: ['text', 'text-summary', 'json-summary', 'json'],
-      reportsDirectory: 'coverage',
+      reportsDirectory: 'coverage/migrated-istanbul',
     },
   },
 });

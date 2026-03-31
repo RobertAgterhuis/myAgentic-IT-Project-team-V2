@@ -1,5 +1,4 @@
-'use strict';
-
+import * as __req_0 from '../../platform/sdlc/artifacts';
 const {
   ARTIFACT_TYPES,
   ARTIFACT_STATUS,
@@ -9,7 +8,7 @@ const {
   createArtifact,
   computeContentHash,
   verifyContentHash,
-} = require('../../platform/sdlc/artifacts');
+} = __req_0;
 
 // ── helpers ──────────────────────────────────────────────────
 

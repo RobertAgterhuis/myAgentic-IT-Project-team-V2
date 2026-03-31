@@ -1,7 +1,6 @@
-'use strict';
-
-const fs = require('node:fs');
-const path = require('node:path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Agent Invocation Dispatcher — Unit Tests (FEAT-05-B / SP-5-ORCH-B)
@@ -17,16 +16,19 @@ const path = require('node:path');
  * AC-8: Logging
  */
 
-const {
+import {
   compileAgentPhaseMap,
   assertRuntimeSchemaParity,
   PHASE_AGENTS,
   PLATFORMS,
   _DEFAULT_CONFIG,
   Dispatcher,
-} = require('../../platform/engine/dispatcher');
-const { loadFlows } = require('../../platform/engine/flow-loader');
-const { STATES } = require('../../platform/engine/state-machine');
+} from '../../platform/engine/dispatcher';
+import { loadFlows } from '../../platform/engine/flow-loader';
+import { STATES } from '../../platform/engine/state-machine';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ─── Test Helpers ────────────────────────────────────────────
 
@@ -42,6 +44,7 @@ function createMockStore(files = {}) {
     writeFile: (fp, content) => {
       files[fp] = content;
     },
+    mkdirp: () => {},
     _files: files,
   };
 }
@@ -660,6 +663,118 @@ describe('Dispatcher — invoke (retry)', () => {
     expect(d.log.length).toBe(2);
     expect(d.log[0].status).toBe('retry');
     expect(d.log[0].errorSeverity).toBe('TRANSIENT');
+  });
+
+  it('reinvokes with revision context when deliverable quality is below threshold', async () => {
+    const contexts = [];
+    let calls = 0;
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (_agent, _platform, context) => {
+        calls += 1;
+        contexts.push(context);
+        if (calls === 1) {
+          return {
+            outputPath: '/out/draft.md',
+            response: {
+              status: 'success',
+              finishReason: 'stop',
+              attempts: 1,
+              usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+              deliverableQuality: { score: 42, approvalSignal: 'block', summary: 'weak draft' },
+              contractValidation: { status: 'passed' },
+            },
+          };
+        }
+        return {
+          outputPath: '/out/final.md',
+          response: {
+            status: 'success',
+            finishReason: 'stop',
+            attempts: 1,
+            usage: { promptTokens: 12, completionTokens: 18, totalTokens: 30 },
+            deliverableQuality: { score: 92, approvalSignal: 'approve', summary: 'strong draft' },
+            contractValidation: { status: 'passed' },
+          },
+        };
+      },
+      config: { maxRetries: 0, maxRevisionAttempts: 1 },
+    });
+
+    const result = await d.invoke({ id: '06', name: 'Senior Developer' }, STATES.PHASE_2, {});
+
+    expect(result.success).toBe(true);
+    expect(result.outputPath).toBe('/out/final.md');
+    expect(contexts).toHaveLength(2);
+    expect(contexts[1].revisionContext).toMatchObject({
+      attempt: 1,
+      maxAttempts: 1,
+      trigger: 'quality-below-threshold',
+      previousOutputPath: '/out/draft.md',
+    });
+    expect(d.log[0].status).toBe('retry');
+    expect(d.log[0].revisionStatus).toBe('applied');
+    expect(d.log[1].revisionStatus).toBe('succeeded');
+  });
+
+  it('escalates when revision budget is exhausted on repeated low-quality outputs', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/draft.md',
+        response: {
+          status: 'success',
+          finishReason: 'stop',
+          attempts: 1,
+          usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+          deliverableQuality: { score: 40, approvalSignal: 'block', summary: 'weak draft' },
+          contractValidation: { status: 'passed' },
+        },
+      }),
+      config: { maxRetries: 0, maxRevisionAttempts: 1 },
+    });
+
+    const result = await d.invoke({ id: '06', name: 'Senior Developer' }, STATES.PHASE_2, {});
+
+    expect(result.success).toBe(false);
+    expect(result.stopReason).toBe('max-revision-attempts');
+    expect(result.revisionEventId).toBeTruthy();
+    expect(d.log.at(-1).revisionStatus).toBe('escalated');
+  });
+
+  it('routes recoverable validation failures into a bounded revision reinvocation', async () => {
+    const contexts = [];
+    let calls = 0;
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (_agent, _platform, context) => {
+        calls += 1;
+        contexts.push(context);
+        if (calls === 1) {
+          throw new Error(
+            'Provider output failed contract validation after 2 attempt(s). Missing required sections.'
+          );
+        }
+        return {
+          outputPath: '/out/recovered.md',
+          response: {
+            status: 'success',
+            finishReason: 'stop',
+            attempts: 1,
+            usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+            deliverableQuality: { score: 90, approvalSignal: 'approve', summary: 'recovered' },
+            contractValidation: { status: 'passed' },
+          },
+        };
+      },
+      config: { maxRetries: 0, maxRevisionAttempts: 1 },
+    });
+
+    const result = await d.invoke({ id: '05', name: 'Software Architect' }, STATES.PHASE_2, {});
+
+    expect(result.success).toBe(true);
+    expect(contexts[1].revisionContext.trigger).toBe('verifier-findings');
+    expect(contexts[1].revisionContext.priorFailure).toContain('contract validation');
   });
 });
 
@@ -1775,5 +1890,408 @@ describe('Dispatcher — helper path coverage buffer', () => {
       context
     );
     expect(enforcedByAgent.success).toBe(false);
+  });
+});
+
+// ─────────────────────────────────────────────────────────────
+// Revision coverage — contract-failed responses & edge cases
+// ─────────────────────────────────────────────────────────────
+describe('Dispatcher — revision from contract-failed response', () => {
+  it('triggers revision when response has contractValidation failed', async () => {
+    let calls = 0;
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => {
+        calls += 1;
+        if (calls === 1) {
+          return {
+            outputPath: '/out/draft.md',
+            response: {
+              status: 'success',
+              finishReason: 'stop',
+              attempts: 1,
+              usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+              contractValidation: { status: 'failed' },
+            },
+          };
+        }
+        return {
+          outputPath: '/out/fixed.md',
+          response: {
+            status: 'success',
+            finishReason: 'stop',
+            attempts: 1,
+            usage: { promptTokens: 12, completionTokens: 18, totalTokens: 30 },
+            deliverableQuality: { score: 90, approvalSignal: 'approve' },
+            contractValidation: { status: 'passed' },
+          },
+        };
+      },
+      config: { maxRetries: 0, maxRevisionAttempts: 1 },
+    });
+
+    const result = await d.invoke({ id: '06', name: 'Senior Developer' }, STATES.PHASE_2, {});
+    expect(result.success).toBe(true);
+    expect(result.outputPath).toBe('/out/fixed.md');
+    expect(d.log[0].status).toBe('retry');
+    expect(d.log[0].revisionStatus).toBe('applied');
+    expect(d.log[1].revisionStatus).toBe('succeeded');
+  });
+
+  it('escalates contract failure without prior revision events when budget is zero', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/draft.md',
+        response: {
+          status: 'success',
+          finishReason: 'stop',
+          attempts: 1,
+          usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+          contractValidation: { status: 'failed' },
+        },
+      }),
+      config: { maxRetries: 0, maxRevisionAttempts: 0 },
+    });
+
+    const result = await d.invoke({ id: '06', name: 'Senior Developer' }, STATES.PHASE_2, {});
+    expect(result.success).toBe(false);
+    expect(result.stopReason).toBe('max-revision-attempts');
+    expect(result.degraded).toBe(true);
+    // No revision event was created because the budget was zero
+    const lastLog = d.log.at(-1);
+    expect(lastLog.revisionStatus).toBeUndefined();
+  });
+
+  it('records provider latency when requestedAt and completedAt are present', async () => {
+    const baseTime = Date.now();
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/latency.md',
+        response: {
+          status: 'success',
+          finishReason: 'stop',
+          attempts: 1,
+          usage: { promptTokens: 5, completionTokens: 5, totalTokens: 10 },
+          contractValidation: { status: 'passed' },
+          requestedAt: new Date(baseTime).toISOString(),
+          completedAt: new Date(baseTime + 1500).toISOString(),
+        },
+      }),
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+    expect(result.success).toBe(true);
+    expect(d.log[0].providerLatencyMs).toBe(1500);
+  });
+
+  it('handles quality below threshold with approve signal but low score', async () => {
+    let calls = 0;
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => {
+        calls += 1;
+        if (calls === 1) {
+          return {
+            outputPath: '/out/low-score.md',
+            response: {
+              status: 'success',
+              finishReason: 'stop',
+              attempts: 1,
+              usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+              deliverableQuality: {
+                score: 30,
+                approvalSignal: 'approve',
+                summary: 'low score despite approve',
+              },
+            },
+          };
+        }
+        return {
+          outputPath: '/out/improved.md',
+          response: {
+            status: 'success',
+            finishReason: 'stop',
+            attempts: 1,
+            usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+            deliverableQuality: { score: 90, approvalSignal: 'approve', summary: 'good' },
+            contractValidation: { status: 'passed' },
+          },
+        };
+      },
+      config: { maxRetries: 0, maxRevisionAttempts: 1, revisionQualityThreshold: 75 },
+    });
+
+    const result = await d.invoke({ id: '06', name: 'Senior Developer' }, STATES.PHASE_2, {});
+    expect(result.success).toBe(true);
+    expect(d.log[0].status).toBe('retry');
+    expect(d.log[0].revisionStatus).toBe('applied');
+  });
+
+  it('skips revision when response has no quality or contract data', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/plain.md',
+        response: {
+          status: 'success',
+          finishReason: 'stop',
+          attempts: 1,
+          usage: { promptTokens: 5, completionTokens: 5, totalTokens: 10 },
+        },
+      }),
+      config: { maxRetries: 0, maxRevisionAttempts: 1 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+    expect(result.success).toBe(true);
+    expect(result.outputPath).toBe('/out/plain.md');
+    expect(d.log).toHaveLength(1);
+    expect(d.log[0].revisionStatus).toBeUndefined();
+  });
+
+  it('escalates error-driven revision when retry budget is also exhausted', async () => {
+    let calls = 0;
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => {
+        calls += 1;
+        if (calls <= 2) {
+          throw new Error(
+            'Provider output failed contract validation after 1 attempt(s). Missing sections.'
+          );
+        }
+        return { outputPath: '/out/ok.md' };
+      },
+      config: { maxRetries: 0, maxRevisionAttempts: 1 },
+    });
+
+    const result = await d.invoke({ id: '05', name: 'Software Architect' }, STATES.PHASE_2, {});
+    expect(result.success).toBe(false);
+    expect(result.stopReason).toBe('max-revision-attempts');
+    expect(result.revisionEventId).toBeTruthy();
+  });
+
+  it('returns degraded result on repeated contract failures exceeding revision budget', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/bad.md',
+        response: {
+          status: 'success',
+          finishReason: 'stop',
+          attempts: 1,
+          usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+          contractValidation: { status: 'failed' },
+          deliverableQuality: { score: 40, approvalSignal: 'block', summary: 'bad' },
+        },
+      }),
+      config: { maxRetries: 0, maxRevisionAttempts: 1 },
+    });
+
+    const result = await d.invoke({ id: '06', name: 'Senior Developer' }, STATES.PHASE_2, {});
+    expect(result.success).toBe(false);
+    expect(result.degraded).toBe(true);
+    expect(result.needs_human_review).toBe(true);
+    expect(result.stopReason).toBe('max-revision-attempts');
+    expect(d.log.at(-1).revisionStatus).toBe('escalated');
+  });
+
+  it('normalizes non-standard deliverableQuality score to percentage', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/normalized.md',
+        response: {
+          status: 'success',
+          finishReason: 'stop',
+          attempts: 1,
+          usage: { promptTokens: 8, completionTokens: 8, totalTokens: 16 },
+          deliverableQuality: {
+            score: 0.92,
+            approvalSignal: 'approve',
+            summary: 'good normalized',
+          },
+          contractValidation: { status: 'passed' },
+        },
+      }),
+      config: { maxRetries: 0, maxRevisionAttempts: 1, revisionQualityThreshold: 75 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+    // normalizePercentValue treats 0.92 as a fraction → 92%, which passes the 75% threshold
+    expect(result.success).toBe(true);
+    expect(d.log).toHaveLength(1);
+    expect(d.log[0].revisionStatus).toBeUndefined();
+  });
+
+  it('halts immediately when FATAL error occurs in catch block', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => {
+        throw new Error('Authentication failed: 401 Unauthorized');
+      },
+      config: { maxRetries: 2, maxRevisionAttempts: 1 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+    expect(result.success).toBe(false);
+    expect(result.severity).toBe('FATAL');
+    // FATAL errors should not retry
+    expect(d.log).toHaveLength(1);
+    expect(d.log[0].status).toBe('failure');
+    expect(d.log[0].errorSeverity).toBe('FATAL');
+  });
+
+  it('retries transient errors then returns retry-budget-exhausted without revision', async () => {
+    let calls = 0;
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => {
+        calls += 1;
+        throw new Error('ETIMEDOUT: connection timed out');
+      },
+      config: { maxRetries: 1, maxRevisionAttempts: 0, backoffBaseMs: 1, backoffCapMs: 10 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+    expect(result.success).toBe(false);
+    expect(result.stopReason).toBe('retry-budget-exhausted');
+    expect(calls).toBe(2);
+  });
+
+  it('processes response with tool audit events in success path', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/with-tools.md',
+        response: {
+          status: 'success',
+          finishReason: 'stop',
+          attempts: 1,
+          usage: { promptTokens: 20, completionTokens: 30, totalTokens: 50 },
+          contractValidation: { status: 'passed' },
+          toolAuditEvents: [
+            { toolId: 'search', operation: 'query', durationMs: 150, success: true },
+            { toolId: 'write', success: false, errorCode: 'EPERM' },
+          ],
+        },
+      }),
+      config: { maxRetries: 0 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+    expect(result.success).toBe(true);
+    const log = d.log[0];
+    expect(log.toolAuditEvents).toHaveLength(2);
+    expect(log.toolAuditEvents[0].toolId).toBe('search');
+    expect(log.toolAuditEvents[0].durationMs).toBe(150);
+    expect(log.toolAuditEvents[1].errorCode).toBe('EPERM');
+  });
+
+  it('handles recoverable non-revision error with single retry', async () => {
+    let calls = 0;
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => {
+        calls += 1;
+        if (calls === 1) {
+          throw new Error('503 Service Unavailable');
+        }
+        return { outputPath: '/out/ok.md' };
+      },
+      config: { maxRetries: 1, maxRevisionAttempts: 0, backoffBaseMs: 1, backoffCapMs: 10 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+    expect(result.success).toBe(true);
+    expect(calls).toBe(2);
+  });
+
+  it('marks entry status as timeout on TIMEOUT error', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: createSlowInvoker(200),
+      config: { timeoutMs: 10, maxRetries: 0 },
+    });
+
+    const result = await d.invoke({ id: '01', name: 'BA' }, STATES.PHASE_1, {});
+    expect(result.success).toBe(false);
+    const log = d.log[0];
+    expect(log.status).toBe('timeout');
+    expect(log.error).toBe('TIMEOUT');
+  });
+
+  it('passes revision context with findings from error-driven revision', async () => {
+    const contexts = [];
+    let calls = 0;
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (_agent, _platform, context) => {
+        calls += 1;
+        contexts.push(context);
+        if (calls === 1) {
+          throw new Error('Provider output failed contract validation. Missing required markers.');
+        }
+        return {
+          outputPath: '/out/recovered.md',
+          response: {
+            status: 'success',
+            finishReason: 'stop',
+            attempts: 1,
+            usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+            contractValidation: { status: 'passed' },
+          },
+        };
+      },
+      config: {
+        maxRetries: 0,
+        maxRevisionAttempts: 1,
+        revisionBackoffBaseMs: 1,
+        revisionBackoffCapMs: 10,
+      },
+    });
+
+    const result = await d.invoke({ id: '05', name: 'Software Architect' }, STATES.PHASE_2, {});
+    expect(result.success).toBe(true);
+    expect(contexts).toHaveLength(2);
+    expect(contexts[1].revisionContext).toBeDefined();
+    expect(contexts[1].revisionContext.trigger).toBe('verifier-findings');
+    expect(contexts[1].revisionContext.instructions).toBeDefined();
+    expect(Array.isArray(contexts[1].revisionContext.instructions)).toBe(true);
+  });
+
+  it('logs multiple revision attempts before escalation', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/draft.md',
+        response: {
+          status: 'success',
+          finishReason: 'stop',
+          attempts: 1,
+          usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+          deliverableQuality: { score: 30, approvalSignal: 'block', summary: 'poor' },
+          contractValidation: { status: 'passed' },
+        },
+      }),
+      config: {
+        maxRetries: 0,
+        maxRevisionAttempts: 2,
+        revisionBackoffBaseMs: 1,
+        revisionBackoffCapMs: 10,
+      },
+    });
+
+    const result = await d.invoke({ id: '06', name: 'Senior Developer' }, STATES.PHASE_2, {});
+    expect(result.success).toBe(false);
+    expect(result.stopReason).toBe('max-revision-attempts');
+    // Should have 2 retry entries + 1 final failure
+    expect(d.log.length).toBeGreaterThanOrEqual(3);
+    expect(d.log[0].revisionStatus).toBe('applied');
+    expect(d.log[1].revisionStatus).toBe('applied');
+    expect(d.log.at(-1).revisionStatus).toBe('escalated');
   });
 });

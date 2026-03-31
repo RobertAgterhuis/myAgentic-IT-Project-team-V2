@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Orchestrator Engine — Unit Tests (FEAT-05-A integration)
  *
@@ -10,10 +8,14 @@
  * - Auto-persistence on transitions
  */
 
-const path = require('path');
-const fs = require('fs');
-const { createEngine } = require('../../platform/engine/engine');
-const { FLOW_SOURCE_ENV, LEGACY_FLOW_VERSION } = require('../../platform/engine/state-machine');
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { createEngine } from '../../platform/engine/engine';
+import { FLOW_SOURCE_ENV, LEGACY_FLOW_VERSION } from '../../platform/engine/state-machine';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ─── Test Helpers ────────────────────────────────────────────
 

@@ -1,7 +1,10 @@
-// Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
-const { createSSEManager } = require('../../src/webapp/sse-manager');
+// Copyright (c) 2026 Robert Agterhuis. MIT License.
+
+import * as __req_0 from '../../src/webapp/sse-manager';
+const { createSSEManager } = __req_0;
 const EventEmitter = require('events');
 
 function mockReq() {

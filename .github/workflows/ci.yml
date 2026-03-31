@@ -114,6 +114,10 @@ jobs:
           COVERAGE_MIN_BRANCHES: 55
           COVERAGE_MIN_FUNCTIONS: 66
           COVERAGE_MIN_LINES: 67
+          COVERAGE_MIN_REFLECTION_STATEMENTS: 55
+          COVERAGE_MIN_REFLECTION_BRANCHES: 50
+          COVERAGE_MIN_REFLECTION_FUNCTIONS: 35
+          COVERAGE_MIN_REFLECTION_LINES: 55
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v5
@@ -214,7 +218,7 @@ jobs:
         run: npm ci
 
       - name: Validate runtime profile contract
-        run: npx vitest run tests/unit/runtime-profiles.test.js tests/unit/server-startup-validation.test.js tests/unit/server-storage-enforcement.test.js
+        run: npx vitest run --config vitest.migrated-istanbul.config.mjs tests/unit/runtime-profiles.test.js tests/unit/server-startup-validation.test.js tests/unit/server-storage-enforcement.test.js
 
   chat-quality-gate:
     name: Chat Quality & Latency Gate
@@ -252,7 +256,7 @@ jobs:
         run: npm ci
 
       - name: Validate translations (en-US, fr-FR, de-DE)
-        run: npx vitest run tests/unit/translation-validation.test.js
+        run: npm run test:translations
 
   integration-test:
     name: Integration Tests

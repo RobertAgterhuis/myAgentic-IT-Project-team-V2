@@ -1,10 +1,5 @@
-'use strict';
-
-const {
-  ToolExecutionMiddleware,
-  ToolAuthorizationError,
-  ToolValidationError,
-} = require('../../platform/engine/tool-execution-middleware');
+import * as __req_0 from '../../platform/engine/tool-execution-middleware';
+const { ToolExecutionMiddleware, ToolAuthorizationError, ToolValidationError } = __req_0;
 
 describe('ToolExecutionMiddleware', () => {
   it('ToolAuthorizationError sets code/name/message', () => {

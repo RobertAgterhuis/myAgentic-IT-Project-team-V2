@@ -1,8 +1,14 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import { dirname as _dirname } from 'node:path';
+const require = createRequire(import.meta.url);
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { generate, loadCanonical, TARGETS } = require('../../scripts/generate-platform');
+import * as __req_0 from '../../scripts/generate-platform';
+const { generate, loadCanonical, TARGETS } = __req_0;
 
 const ROOT = path.resolve(__dirname, '..', '..');
 

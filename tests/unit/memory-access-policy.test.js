@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Memory Access Policy — Unit Tests (C2.1 / C2.2)
  *
@@ -10,11 +8,8 @@
  *           access blocked and audited; advisory always permitted.
  */
 
-const {
-  MEMORY_CLASS_POLICY,
-  MemoryAccessPolicy,
-  MemoryAccessDeniedError,
-} = require('../../platform/engine/memory-access-policy');
+import * as __req_0 from '../../platform/engine/memory-access-policy';
+const { MEMORY_CLASS_POLICY, MemoryAccessPolicy, MemoryAccessDeniedError } = __req_0;
 
 // ─── C2.1: MEMORY_CLASS_POLICY contract ──────────────────────
 

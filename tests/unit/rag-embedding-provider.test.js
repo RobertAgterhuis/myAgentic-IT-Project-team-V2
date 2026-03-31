@@ -1,4 +1,3 @@
-'use strict';
 /**
  * EmbeddingProvider unit tests (RAG-1.1.3).
  *

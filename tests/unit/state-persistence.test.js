@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * State Persistence — Unit Tests (FEAT-05-A / AC-1, AC-7)
  *
@@ -9,15 +7,14 @@
  * - createAutoPersist: auto-save on transition/error
  */
 
-const _path = require('path');
-const {
+import {
   _DEFAULT_SESSION_FILE,
   loadSessionState,
   saveSessionState,
   createAutoPersist,
   saveRunHistory,
   loadRunHistory,
-} = require('../../platform/engine/state-persistence');
+} from '../../platform/engine/state-persistence';
 
 // ─── Test Helpers ────────────────────────────────────────────
 

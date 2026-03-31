@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
+import * as __req_0 from '../../src/webapp/drift-detector';
 const {
   detectDrift,
   parseStoryIssueMap,
@@ -8,9 +8,10 @@ const {
   parseSyncReport,
   SEVERITY,
   DRIFT_TYPE,
-} = require('../../src/webapp/drift-detector');
+} = __req_0;
 
-const { validateDriftReport } = require('../../src/webapp/schemas');
+import * as __req_1 from '../../src/webapp/schemas';
+const { validateDriftReport } = __req_1;
 
 /* ── Fixtures ─────────────────────────────────────────────────── */
 

@@ -1,6 +1,5 @@
-'use strict';
-
-const { errorResponse, ERROR_CATALOG, statusToCode } = require('../../src/webapp/utils/errors');
+import * as __req_0 from '../../src/webapp/utils/errors';
+const { errorResponse, ERROR_CATALOG, statusToCode } = __req_0;
 
 describe('ERROR_CATALOG', () => {
   it('is a non-empty record of error entries', () => {

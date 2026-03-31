@@ -1,10 +1,13 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 /* SP-R2-006-006: Tests for snapshot-on-write backup strategy.
  * Verifies that InMemoryStore (and by contract, FileStore) creates
  * timestamped backups before every write, retains max 10, and prunes oldest. */
 
 const path = require('path');
-const { InMemoryStore, MAX_BACKUPS_PER_FILE } = require('../../src/webapp/store');
+import * as __req_0 from '../../src/webapp/store';
+const { InMemoryStore, MAX_BACKUPS_PER_FILE } = __req_0;
 
 describe('Snapshot-on-write backup (InMemoryStore)', () => {
   const FILE = path.resolve('/test/data.md');

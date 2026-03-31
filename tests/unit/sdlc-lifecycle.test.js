@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * SDLC Lifecycle Model — Unit Tests
  *
@@ -7,6 +5,7 @@
  * the canonical stage sequence.
  */
 
+import * as __req_0 from '../../platform/sdlc/lifecycle';
 const {
   STAGE_DEFINITIONS,
   STAGE_SEQUENCE,
@@ -14,7 +13,7 @@ const {
   canTransition,
   validateTransition,
   nextStage,
-} = require('../../platform/sdlc/lifecycle');
+} = __req_0;
 
 // ─── Stage Definitions ───────────────────────────────────────
 

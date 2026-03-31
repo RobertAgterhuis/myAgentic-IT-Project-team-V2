@@ -1,4 +1,5 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 /**
  * Analytics API Routes — Unit Tests (M7 / Issue #375)
@@ -11,16 +12,20 @@
  */
 
 const path = require('path');
-const { InMemoryStore, setStore, getStore } = require('../../src/webapp/store');
-const { registerRoutes } = require('../../src/webapp/routes/analytics');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+import * as __req_0 from '../../src/webapp/store';
+const { InMemoryStore, setStore, getStore } = __req_0;
+import * as __req_1 from '../../src/webapp/routes/analytics';
+const { registerRoutes } = __req_1;
+import * as __req_2 from '../helpers/fastify-test-adapter.js';
+const { createTestableRoutes } = __req_2;
+import * as __req_3 from '../../platform/sdlc/observability';
 const {
   createMetricsStore,
   ensureMetric,
   appendMetric,
   serializeMetricsStore,
   recordAgentPerformance,
-} = require('../../platform/sdlc/observability');
+} = __req_3;
 
 // ─── Helpers ─────────────────────────────────────────────────
 

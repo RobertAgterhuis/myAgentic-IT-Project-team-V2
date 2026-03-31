@@ -1,3 +1,6 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
 /**
@@ -7,10 +10,8 @@
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const {
-  FileStorageProvider,
-  SQLiteStorageProvider,
-} = require('../../../platform/engine/persistence');
+import * as __req_0 from '../../../platform/engine/persistence';
+const { FileStorageProvider, SQLiteStorageProvider } = __req_0;
 
 /** Create a unique temp directory for each test. */
 function tmpDir(prefix) {

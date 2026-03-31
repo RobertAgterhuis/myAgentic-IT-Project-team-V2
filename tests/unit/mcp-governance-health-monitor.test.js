@@ -1,6 +1,5 @@
-'use strict';
-
-const { McpHealthMonitor } = require('../../src/webapp/plugins/mcp-governance/health-monitor');
+import * as __req_0 from '../../src/webapp/plugins/mcp-governance/health-monitor';
+const { McpHealthMonitor } = __req_0;
 
 describe('McpHealthMonitor', () => {
   const originalEnv = process.env.MCP_HEALTH_INTERVAL_MS;

@@ -1,4 +1,11 @@
-'use strict';
+import * as __req_0 from '../../platform/engine/sprint-gate';
+import { createEngine } from '../../platform/engine/engine';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import { dirname as _dirname } from 'node:path';
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
 
 /**
  * Sprint Gate — Unit Tests (FEAT-05-D)
@@ -34,7 +41,7 @@ const {
   VELOCITY_WINDOW,
   CAPACITY_THRESHOLD,
   validateSynthesisArtifacts,
-} = require('../../platform/engine/sprint-gate');
+} = __req_0;
 
 // ─── Test Helpers ────────────────────────────────────────────
 
@@ -1154,9 +1161,6 @@ describe('engine integration — sprintGate', () => {
   // These tests verify that engine.js correctly wires runSprintGate
   // and emits SSE events (AC-1: Sprint Gate fires before Phase 5)
 
-  const path = require('path');
-  const fs = require('fs');
-  const { createEngine } = require('../../platform/engine/engine');
   const FLOWS_PATH = path.join(__dirname, '..', '..', 'platform', 'engine', 'flows.yaml');
   const FLOWS_CONTENT = fs.readFileSync(FLOWS_PATH, 'utf-8');
 

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Semantic Memory Store — Unit Tests (I-A4-001)
  *
@@ -11,12 +9,8 @@
  *   - Metrics (per-tier entry counts and byte sums)
  */
 
-const {
-  SemanticMemoryStore,
-  InMemoryStorage,
-  byteLength,
-  TIER_RETENTION_MS,
-} = require('../../platform/engine/semantic-memory');
+import * as __req_0 from '../../platform/engine/semantic-memory';
+const { SemanticMemoryStore, InMemoryStorage, byteLength, TIER_RETENTION_MS } = __req_0;
 
 // ─── Helpers ─────────────────────────────────────────────────
 

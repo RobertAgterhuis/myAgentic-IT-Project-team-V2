@@ -1,8 +1,6 @@
-'use strict';
-
-const os = require('node:os');
-const path = require('node:path');
-const fs = require('node:fs/promises');
+import os from 'node:os';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 
 /**
  * AgentRuntimeAdapter — Unit & Integration Tests (Epic E-A1 / I-A1-004)
@@ -15,7 +13,7 @@ const fs = require('node:fs/promises');
  *             at invocation (not a silent no-op).
  */
 
-const {
+import {
   NullAdapter,
   LogOnlyAdapter,
   MockLlmRuntimeAdapter,
@@ -23,9 +21,8 @@ const {
   AdapterRegistry,
   DEFAULT_REGISTRY,
   resolveAdapter,
-} = require('../../platform/engine/agent-runtime-adapter');
-
-const { Dispatcher } = require('../../platform/engine/dispatcher');
+} from '../../platform/engine/agent-runtime-adapter';
+import { Dispatcher } from '../../platform/engine/dispatcher';
 
 // ─── Test Helpers ────────────────────────────────────────────
 

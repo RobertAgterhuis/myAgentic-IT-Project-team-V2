@@ -1,7 +1,3 @@
-'use strict';
-
-'use strict';
-
 /**
  * Agency Executor — Unit Tests (M4 / Issue #1398)
  *
@@ -21,7 +17,8 @@
  *   - validateHandoff returns { passed: boolean, violations: string[] }
  */
 
-const { runAgencyExecution } = require('../../platform/engine/agency-executor');
+import * as __req_0 from '../../platform/engine/agency-executor';
+const { runAgencyExecution } = __req_0;
 
 // ─── Helpers ──────────────────────────────────────────────────
 

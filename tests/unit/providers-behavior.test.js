@@ -1,5 +1,4 @@
-'use strict';
-
+import * as __req_0 from '../../platform/sdlc/adapters';
 const {
   GitHubProvider,
   DockerContainerProvider,
@@ -7,7 +6,7 @@ const {
   OpenAILLMProvider,
   AnthropicLLMProvider,
   CopilotLLMProvider,
-} = require('../../platform/sdlc/adapters');
+} = __req_0;
 
 function makeExecQueue(responses) {
   const queue = [...responses];

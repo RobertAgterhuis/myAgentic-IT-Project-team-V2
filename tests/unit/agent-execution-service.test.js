@@ -1,12 +1,11 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const {
+import {
   AgentExecutionService,
   AgentNotFoundError,
   AgentCancelledError,
-} = require('../../src/webapp/services/agent-execution-service');
-const { Dispatcher } = require('../../platform/engine/dispatcher');
+} from '../../src/webapp/services/agent-execution-service';
+import { Dispatcher } from '../../platform/engine/dispatcher';
 
 /* ── Mock ServiceContext ─────────────────────────────────── */
 

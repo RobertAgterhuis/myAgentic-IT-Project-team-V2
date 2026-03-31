@@ -1,5 +1,3 @@
-'use strict';
-
 let GitHubProviderBackend;
 
 beforeAll(async () => {

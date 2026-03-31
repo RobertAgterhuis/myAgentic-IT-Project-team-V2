@@ -1,8 +1,9 @@
-'use strict';
-
-const { registerRoutes } = require('../../src/webapp/routes/mcp');
-const { McpGovernanceService } = require('../../src/webapp/plugins/mcp-governance');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+import * as __req_0 from '../../src/webapp/routes/mcp';
+const { registerRoutes } = __req_0;
+import * as __req_1 from '../../src/webapp/plugins/mcp-governance';
+const { McpGovernanceService } = __req_1;
+import * as __req_2 from '../helpers/fastify-test-adapter.js';
+const { createTestableRoutes } = __req_2;
 
 function createReq(url, method = 'GET', body, user) {
   return {

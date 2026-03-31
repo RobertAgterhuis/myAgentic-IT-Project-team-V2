@@ -1,7 +1,9 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
-const { InMemoryStore, setStore, getStore } = require('../../src/webapp/store');
-const { FileCache } = require('../../src/webapp/cache');
+import * as __req_0 from '../../src/webapp/store';
+import * as __req_1 from '../../src/webapp/cache';
+import * as path from 'node:path';
+const { InMemoryStore, setStore, getStore } = __req_0;
+const { FileCache } = __req_1;
 
 /* ── Story #16: File cache with mtime invalidation (SP-R2-002-004) ── */
 
@@ -29,7 +31,7 @@ describe('FileCache', () => {
       store.writeFile('/tmp/a.txt', 'original');
       cache.read('/tmp/a.txt'); // cache it
       // Overwrite data in the Map directly without updating mtime
-      const resolved = require('path').resolve('/tmp/a.txt');
+      const resolved = path.resolve('/tmp/a.txt');
       const entry = store._files.get(resolved);
       entry.data = 'mutated-behind-cache';
       expect(cache.read('/tmp/a.txt')).toBe('original'); // cached
@@ -40,7 +42,7 @@ describe('FileCache', () => {
       cache.read('/tmp/a.txt');
       // Write again and bump mtime to guarantee change detection
       store.writeFile('/tmp/a.txt', 'v2');
-      const resolved = require('path').resolve('/tmp/a.txt');
+      const resolved = path.resolve('/tmp/a.txt');
       store._files.get(resolved).mtime += 1000;
       expect(cache.read('/tmp/a.txt')).toBe('v2');
     });

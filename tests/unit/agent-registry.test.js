@@ -1,7 +1,5 @@
-'use strict';
-
-const fs = require('node:fs');
-const {
+import fs from 'node:fs';
+import {
   REGISTRY_PATH,
   REGISTRY_SCHEMA_PATH,
   validateAgentRegistry,
@@ -12,7 +10,7 @@ const {
   getNextQuarterlyReviewDate,
   buildQuarterlyOptimizationCycle,
   applyQuarterlyRegistryUpdates,
-} = require('../../platform/engine/agent-registry');
+} from '../../platform/engine/agent-registry';
 
 describe('Agent registry generation and query API', () => {
   it('loads schema and registry files', () => {

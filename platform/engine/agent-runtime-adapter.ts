@@ -97,6 +97,17 @@ interface AgentInvocationContext {
     }>;
   } | null;
   sessionState?: unknown;
+  revisionContext?: {
+    eventId: string;
+    attempt: number;
+    maxAttempts: number;
+    trigger: 'verifier-findings' | 'quality-below-threshold' | 'manual';
+    instructions: Array<{ heading: string; directive: string }>;
+    findingsAddressed: string[];
+    estimatedImpact: 'high' | 'medium' | 'low';
+    priorFailure?: string;
+    previousOutputPath?: string;
+  } | null;
   workspaceId?: string | null;
   gitService?: unknown;
   role?: 'viewer' | 'operator' | 'admin';
@@ -149,6 +160,17 @@ export interface AgentPromptEnvelope {
       }>;
     } | null;
     sessionState: string | null;
+    revisionContext: {
+      eventId: string;
+      attempt: number;
+      maxAttempts: number;
+      trigger: 'verifier-findings' | 'quality-below-threshold' | 'manual';
+      instructions: Array<{ heading: string; directive: string }>;
+      findingsAddressed: string[];
+      estimatedImpact: 'high' | 'medium' | 'low';
+      priorFailure?: string;
+      previousOutputPath?: string;
+    } | null;
     blocks: ModelBoundContextBlock[];
   };
   requestedAt: string;
@@ -985,6 +1007,10 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
         }
       : null;
     const sessionState = stringifySessionState(runtimeContext.sessionState);
+    const revisionContext =
+      runtimeContext.revisionContext && typeof runtimeContext.revisionContext === 'object'
+        ? (runtimeContext.revisionContext as AgentPromptEnvelope['context']['revisionContext'])
+        : null;
     const contextBlocksRaw: ModelBoundContextBlock[] = [
       {
         source: skillPath || 'skill:unresolved',
@@ -1042,6 +1068,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
       questionnaireInput: sanitizedQuestionnaireInput,
       ragContext,
       sessionState,
+      revisionContext,
       contextBlocks,
       contractPaths: contractBinding.contractPaths,
     });

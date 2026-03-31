@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * CI Adapter — Unit Tests (M6 #371)
  *
@@ -7,7 +5,8 @@
  * and parameter validation.
  */
 
-const { CiAdapter } = require('../../platform/sdlc/adapters/ci-adapter');
+import * as __req_0 from '../../platform/sdlc/adapters/ci-adapter';
+const { CiAdapter } = __req_0;
 
 // ─── Tests ───────────────────────────────────────────────────
 

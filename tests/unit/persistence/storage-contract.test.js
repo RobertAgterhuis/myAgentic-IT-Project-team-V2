@@ -1,17 +1,18 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 // M23-004: StorageProvider contract test suite
 // Parameterized — every provider implementation must pass all tests.
-'use strict';
-
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
-const { FileStorageProvider } = require('../../../platform/engine/persistence/file-provider');
-const { SQLiteStorageProvider } = require('../../../platform/engine/persistence/sqlite-provider');
-const {
-  RemoteStorageProvider,
-  createLoopbackRemoteTransport,
-} = require('../../../platform/engine/persistence/remote-provider');
+import * as __req_0 from '../../../platform/engine/persistence/file-provider';
+const { FileStorageProvider } = __req_0;
+import * as __req_1 from '../../../platform/engine/persistence/sqlite-provider';
+const { SQLiteStorageProvider } = __req_1;
+import * as __req_2 from '../../../platform/engine/persistence/remote-provider';
+const { RemoteStorageProvider, createLoopbackRemoteTransport } = __req_2;
 
 /* ── Helper: create temp directory per test run ───────────────── */
 

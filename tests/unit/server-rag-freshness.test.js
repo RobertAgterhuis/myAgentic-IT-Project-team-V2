@@ -1,17 +1,11 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
+import fs from 'node:fs';
 
-const fs = require('node:fs');
-const { RagIndexer } = require('../../src/webapp/services/rag/rag-indexer');
-const { RagStore } = require('../../src/webapp/services/rag/rag-store');
-
-const MODULES_TO_RESET = [
-  '../../src/webapp/server',
-  '../../src/webapp/config',
-  '../../src/webapp/auth',
-  '../../src/webapp/redis',
-  '../../src/webapp/runtime-profiles',
-];
+vi.mock('../../src/webapp/services/rag/embedding-provider', () => ({
+  createEmbeddingProvider: () => ({
+    embedText: async () => [0.1, 0.2, 0.3],
+  }),
+}));
 
 const ENV_KEYS = [
   'RAG_FRESHNESS_HEALTH_INTERVAL_MS',
@@ -19,16 +13,6 @@ const ENV_KEYS = [
   'RAG_WATCH_DEBOUNCE_MS',
   'RAG_WATCH_ENABLED',
 ];
-
-function resetModuleCache() {
-  for (const mod of MODULES_TO_RESET) {
-    try {
-      delete require.cache[require.resolve(mod)];
-    } catch {
-      // Module may not be loaded in this test path.
-    }
-  }
-}
 
 function setEnv(next) {
   for (const key of ENV_KEYS) {
@@ -40,12 +24,33 @@ function setEnv(next) {
   }
 }
 
-function loadServerModule() {
-  resetModuleCache();
-  return require('../../src/webapp/server');
+let _lastLoadedServerModule = null;
+let _serverImportCounter = 0;
+
+const _serverLoaders = [
+  () => import('../../src/webapp/server.ts?rgf0'),
+  () => import('../../src/webapp/server.ts?rgf1'),
+  () => import('../../src/webapp/server.ts?rgf2'),
+  () => import('../../src/webapp/server.ts?rgf3'),
+  () => import('../../src/webapp/server.ts?rgf4'),
+  () => import('../../src/webapp/server.ts?rgf5'),
+  () => import('../../src/webapp/server.ts?rgf6'),
+  () => import('../../src/webapp/server.ts?rgf7'),
+  () => import('../../src/webapp/server.ts?rgf8'),
+  () => import('../../src/webapp/server.ts?rgf9'),
+  () => import('../../src/webapp/server.ts?rgf10'),
+  () => import('../../src/webapp/server.ts?rgf11'),
+];
+
+async function loadServerModule() {
+  vi.resetModules();
+  _lastLoadedServerModule = await _serverLoaders[_serverImportCounter % _serverLoaders.length]();
+  _serverImportCounter += 1;
+  return _lastLoadedServerModule;
 }
 
 describe('server RAG freshness configuration', () => {
+  const itSlow = (name, fn) => it(name, fn, 120000);
   let originalEnv;
 
   beforeEach(() => {
@@ -59,16 +64,13 @@ describe('server RAG freshness configuration', () => {
       if (originalEnv[key] === undefined) delete process.env[key];
       else process.env[key] = originalEnv[key];
     }
-    try {
-      const { __testing } = require('../../src/webapp/server');
-      __testing.resetRagFreshnessState();
-    } catch {
-      // Server module may not have been loaded.
+    if (_lastLoadedServerModule?.__testing?.resetRagFreshnessState) {
+      _lastLoadedServerModule.__testing.resetRagFreshnessState();
     }
-    resetModuleCache();
+    _lastLoadedServerModule = null;
   });
 
-  it('reads env overrides for freshness interval and watch debounce', () => {
+  itSlow('reads env overrides for freshness interval and watch debounce', async () => {
     setEnv({
       RAG_FRESHNESS_HEALTH_INTERVAL_MS: '120000',
       RAG_FRESHNESS_STALE_SEC: '1800',
@@ -76,7 +78,7 @@ describe('server RAG freshness configuration', () => {
       RAG_WATCH_ENABLED: 'false',
     });
 
-    const { __testing } = loadServerModule();
+    const { __testing } = await loadServerModule();
 
     expect(__testing.getRagFreshnessConfig()).toEqual({
       intervalMs: 120000,
@@ -86,7 +88,7 @@ describe('server RAG freshness configuration', () => {
     });
   });
 
-  it('falls back to defaults when env values are invalid', () => {
+  itSlow('falls back to defaults when env values are invalid', async () => {
     setEnv({
       RAG_FRESHNESS_HEALTH_INTERVAL_MS: '0',
       RAG_FRESHNESS_STALE_SEC: '-1',
@@ -94,7 +96,7 @@ describe('server RAG freshness configuration', () => {
       RAG_WATCH_ENABLED: 'TRUE',
     });
 
-    const { __testing } = loadServerModule();
+    const { __testing } = await loadServerModule();
 
     expect(__testing.getRagFreshnessConfig()).toEqual({
       intervalMs: 300000,
@@ -104,8 +106,8 @@ describe('server RAG freshness configuration', () => {
     });
   });
 
-  it('parsePositiveIntEnv handles missing, blank, invalid, and valid values', () => {
-    const { __testing } = loadServerModule();
+  itSlow('parsePositiveIntEnv handles missing, blank, invalid, and valid values', async () => {
+    const { __testing } = await loadServerModule();
     const key = 'RAG_TEST_PARSE_POSITIVE_INT';
 
     delete process.env[key];
@@ -126,20 +128,20 @@ describe('server RAG freshness configuration', () => {
     delete process.env[key];
   });
 
-  it('does not register filesystem watchers when disabled via env', () => {
+  itSlow('does not register filesystem watchers when disabled via env', async () => {
     setEnv({ RAG_WATCH_ENABLED: 'false' });
 
-    const { __testing } = loadServerModule();
+    const { __testing } = await loadServerModule();
     __testing.setupRagFreshnessWatchers();
 
     expect(__testing.getRagWatcherCount()).toBe(0);
   });
 
-  it('debounces repeated watch-triggered freshness passes', async () => {
+  itSlow('debounces repeated watch-triggered freshness passes', async () => {
     setEnv({ RAG_WATCH_DEBOUNCE_MS: '25' });
     vi.useFakeTimers();
 
-    const { __testing } = loadServerModule();
+    const { __testing } = await loadServerModule();
     const invocations = [];
     __testing.setRagFreshnessPassTrigger(async () => {
       invocations.push(Date.now());
@@ -158,8 +160,8 @@ describe('server RAG freshness configuration', () => {
     expect(invocations).toHaveLength(1);
   });
 
-  it('queues exactly one follow-up freshness pass while one is still running', async () => {
-    const { __testing } = loadServerModule();
+  itSlow('queues exactly one follow-up freshness pass while one is still running', async () => {
+    const { __testing } = await loadServerModule();
     const started = [];
     let releaseFirstPass;
 
@@ -192,7 +194,7 @@ describe('server RAG freshness configuration', () => {
     expect(started).toHaveLength(2);
   });
 
-  it('registers one watcher per unique monitored path when enabled', () => {
+  itSlow('registers one watcher per unique monitored path when enabled', async () => {
     setEnv({ RAG_WATCH_ENABLED: 'true' });
 
     const originalExistsSync = fs.existsSync;
@@ -210,7 +212,7 @@ describe('server RAG freshness configuration', () => {
     fs.watch = vi.fn(() => watcher);
 
     try {
-      const { __testing } = loadServerModule();
+      const { __testing } = await loadServerModule();
       __testing.setupRagFreshnessWatchers();
 
       expect(__testing.getRagWatcherCount()).toBe(9);
@@ -222,7 +224,10 @@ describe('server RAG freshness configuration', () => {
     }
   });
 
-  it('self-heals file-backed collections with deleteFile plus indexFile', async () => {
+  itSlow('self-heals file-backed collections with deleteFile plus indexFile', async () => {
+    const { __testing } = await loadServerModule();
+    const { RagIndexer } = await import('../../src/webapp/services/rag/rag-indexer');
+    const { RagStore } = await import('../../src/webapp/services/rag/rag-store');
     const originalStatSync = fs.statSync;
     const originalIndexFile = RagIndexer.prototype.indexFile;
     const originalSyncDirectory = RagIndexer.prototype.syncDirectory;
@@ -248,7 +253,6 @@ describe('server RAG freshness configuration', () => {
     RagIndexer.prototype.syncDirectory = syncDirectory;
 
     try {
-      const { __testing } = loadServerModule();
       const stats = await __testing.syncRagFreshnessSource(
         'decisions',
         'D:\\repositories\\myAgentic-IT-Project-team-V2\\BusinessDocs\\decisions.md'
@@ -272,7 +276,10 @@ describe('server RAG freshness configuration', () => {
     }
   });
 
-  it('self-heals directory-backed collections with syncDirectory', async () => {
+  itSlow('self-heals directory-backed collections with syncDirectory', async () => {
+    const { __testing } = await loadServerModule();
+    const { RagIndexer } = await import('../../src/webapp/services/rag/rag-indexer');
+    const { RagStore } = await import('../../src/webapp/services/rag/rag-store');
     const originalStatSync = fs.statSync;
     const originalIndexFile = RagIndexer.prototype.indexFile;
     const originalSyncDirectory = RagIndexer.prototype.syncDirectory;
@@ -298,7 +305,6 @@ describe('server RAG freshness configuration', () => {
     RagIndexer.prototype.syncDirectory = syncDirectory;
 
     try {
-      const { __testing } = loadServerModule();
       const stats = await __testing.syncRagFreshnessSource(
         'decisions',
         'D:\\repositories\\myAgentic-IT-Project-team-V2\\BusinessDocs\\decisions'

@@ -1,8 +1,11 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
 const path = require('path');
-const { resolveSessionFile } = require('../../src/webapp/session-state-resolver');
+import * as __req_0 from '../../src/webapp/session-state-resolver';
+const { resolveSessionFile } = __req_0;
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 

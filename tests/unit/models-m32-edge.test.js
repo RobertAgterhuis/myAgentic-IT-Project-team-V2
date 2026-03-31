@@ -1,12 +1,12 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
 /**
  * M32-004 — Edge-case unit tests for markdown parsing, decision
  * mutations, corruption detection, and session helpers.
  */
 
-const models = require('../../src/webapp/models');
+import * as __req_0 from '../../src/webapp/models';
+const models = __req_0.default ?? __req_0;
 
 /* ── detectMarkdownCorruption ─────────────────────────────────── */
 

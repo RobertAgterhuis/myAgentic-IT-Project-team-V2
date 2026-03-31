@@ -1,7 +1,9 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 const Fastify = require('fastify');
-const rateLimitPlugin = require('../../src/webapp/plugins/rate-limit').default;
+import * as __req_0 from '../../src/webapp/plugins/rate-limit';
+const rateLimitPlugin = __req_0.default ?? __req_0;
 
 describe('rate-limit plugin hardening', () => {
   async function createApp(opts = {}) {

@@ -1,5 +1,3 @@
-'use strict';
-
 function createBullJob(overrides = {}) {
   let data = {
     type: 'agent-invocation',

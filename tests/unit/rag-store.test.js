@@ -1,4 +1,6 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 /**
  * RagStore unit tests (RAG-1.1.2).
  * Uses an in-memory SQLite database and a temp directory for LanceDB.

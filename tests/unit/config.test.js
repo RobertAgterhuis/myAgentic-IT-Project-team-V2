@@ -7,10 +7,8 @@
  * are pure and deterministic.
  */
 
-const {
-  parseTrustedProxySetting,
-  parsePredecessorContractContinuitySetting,
-} = require('../../src/webapp/config');
+import * as __req_0 from '../../src/webapp/config';
+const { parseTrustedProxySetting, parsePredecessorContractContinuitySetting } = __req_0;
 
 async function loadFreshConfig() {
   vi.resetModules();

@@ -1,5 +1,11 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import { dirname as _dirname } from 'node:path';
+const require = createRequire(import.meta.url);
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
+
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 const fs = require('fs');
 const path = require('path');
 

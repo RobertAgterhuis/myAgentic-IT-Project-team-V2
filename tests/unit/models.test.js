@@ -1,6 +1,6 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
-const models = require('../../src/webapp/models');
+import * as __req_0 from '../../src/webapp/models';
+const models = __req_0.default ?? __req_0;
 
 /* ── Story #14: Domain model extraction (SP-R2-002-003) ──────── */
 

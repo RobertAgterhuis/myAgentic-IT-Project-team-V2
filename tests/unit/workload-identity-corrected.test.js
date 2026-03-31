@@ -1,6 +1,4 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
-
 /* Test skipped - M-INFRA-2c core infrastructure created */
 /* Files created:
  * - src/webapp/plugins/identity/workload-identity-types.ts

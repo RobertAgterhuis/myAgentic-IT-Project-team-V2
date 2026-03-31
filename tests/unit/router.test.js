@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { matchPathTemplate, resolveRoute, findRouteTemplate } = require('../../src/webapp/router');
+import * as __req_0 from '../../src/webapp/router';
+const { matchPathTemplate, resolveRoute, findRouteTemplate } = __req_0;
 
 describe('router', () => {
   describe('matchPathTemplate', () => {

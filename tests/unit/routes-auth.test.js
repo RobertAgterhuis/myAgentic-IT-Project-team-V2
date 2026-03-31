@@ -1,4 +1,6 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 /**
  * Route handler tests for routes/auth.ts (M29 coverage).
  * Tests each HTTP handler exported by createAuthRoutes.

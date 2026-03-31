@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Error Recovery & Long-Running Support — Unit Tests (M5)
  *
@@ -13,9 +11,9 @@
  * - Degradation log entries
  */
 
-const { Dispatcher, ErrorSeverity } = require('../../platform/engine/dispatcher');
-const { addDegradationEntry } = require('../../platform/engine/state-persistence');
-const { parseArgs, executeCommand } = require('../../platform/engine/cli');
+import { Dispatcher, ErrorSeverity } from '../../platform/engine/dispatcher';
+import { addDegradationEntry } from '../../platform/engine/state-persistence';
+import { parseArgs, executeCommand } from '../../platform/engine/cli';
 
 // ─── Test Helpers ────────────────────────────────────────────
 

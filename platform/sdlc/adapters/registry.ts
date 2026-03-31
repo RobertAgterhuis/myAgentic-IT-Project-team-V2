@@ -24,6 +24,7 @@ import type { LLMProvider } from './contracts/llm-provider.js';
 import type { SecurityProvider } from './contracts/security-provider.js';
 import type { TestingProvider } from './contracts/testing-provider.js';
 import type { ToolProvider } from './contracts/tool-provider.js';
+import { LocalLLMProvider } from './providers/local-llm.js';
 
 // ─── Provider Category Map ──────────────────────────────────
 
@@ -404,7 +405,6 @@ export function createDefaultRegistry(): ProviderRegistry {
 
   // LLM: Local (last-resort fallback — no API key required)
   registry.registerProvider('llm', 'local', (config) => {
-    const { LocalLLMProvider } = require('./providers/local-llm.js');
     return new LocalLLMProvider({ label: (config?.label as string) || 'local' });
   });
 

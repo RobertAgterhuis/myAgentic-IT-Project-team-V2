@@ -1,10 +1,14 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 // Unit tests for P2 adapters — mocked shell to exercise internal branches.
 
-const { ContainerAdapter } = require('../../platform/sdlc/adapters/container-adapter');
-const { CloudAdapter } = require('../../platform/sdlc/adapters/cloud-adapter');
-const { LlmAdapter } = require('../../platform/sdlc/adapters/llm-adapter');
-const { HEALTH_STATUS } = require('../../platform/sdlc/adapters/tool-adapter');
+import * as __req_0 from '../../platform/sdlc/adapters/container-adapter';
+const { ContainerAdapter } = __req_0;
+import * as __req_1 from '../../platform/sdlc/adapters/cloud-adapter';
+const { CloudAdapter } = __req_1;
+import * as __req_2 from '../../platform/sdlc/adapters/llm-adapter';
+const { LlmAdapter } = __req_2;
+import * as __req_3 from '../../platform/sdlc/adapters/tool-adapter';
+const { HEALTH_STATUS } = __req_3;
 
 /**
  * Inject mock functions into an adapter's DI points.

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * SDLC Artifact Management — Unit Tests
  *
@@ -7,13 +5,14 @@
  * the createArtifact factory, and Store-based persistence.
  */
 
+import * as __req_0 from '../../platform/sdlc/artifacts';
 const {
   ArtifactRegistry,
   createArtifact,
   resetArtifactIdCounter,
   ARTIFACT_TYPES,
   ARTIFACT_STATUS,
-} = require('../../platform/sdlc/artifacts');
+} = __req_0;
 
 /** Helper: minimal in-memory ArtifactStore */
 function createMockStore() {

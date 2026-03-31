@@ -1,4 +1,3 @@
-'use strict';
 /**
  * MarkdownChunker unit tests (RAG-1.2.2).
  * Tests chunk boundaries on real markdown content patterns.

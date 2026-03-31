@@ -1,9 +1,11 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
-const { ensureRuntimeScaffold } = require('../../src/webapp/runtime-scaffold');
+import * as __req_0 from '../../src/webapp/runtime-scaffold';
+const { ensureRuntimeScaffold } = __req_0;
 
 describe('runtime scaffold', () => {
   it('creates .agentic and runtime subdirectories for a fresh project root', () => {

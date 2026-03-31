@@ -1,9 +1,11 @@
-import '@testing-library/jest-dom/vitest';
 import { act } from '@testing-library/react';
+import * as matchers from '@testing-library/jest-dom/matchers';
 import { notifyManager } from '@tanstack/react-query';
 import { server } from './msw-server';
-import { afterAll, afterEach, beforeAll, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, expect, vi } from 'vitest';
 import './browser-globals';
+
+expect.extend(matchers);
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 

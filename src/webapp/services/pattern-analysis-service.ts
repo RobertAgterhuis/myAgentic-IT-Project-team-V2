@@ -108,7 +108,7 @@ export class PatternAnalysisService implements IPatternAnalysisService {
           ? pair.qualityScores.reduce((a: number, b: number) => a + b, 0) /
             pair.qualityScores.length
           : undefined,
-      commonBlockers: Object.entries(pair.blockers)
+      commonBlockers: Object.entries(pair.blockers as Record<string, number>)
         .sort((a, b) => b[1] - a[1])
         .slice(0, 3)
         .map((e) => e[0]),
@@ -172,7 +172,9 @@ export class PatternAnalysisService implements IPatternAnalysisService {
           ? team.qualityScores.reduce((a: number, b: number) => a + b, 0) /
             team.qualityScores.length
           : undefined,
-      taskTypes: Object.entries(team.taskTypes).map(([type, stats]) => ({
+      taskTypes: Object.entries(
+        team.taskTypes as Record<string, { count: number; success: number }>
+      ).map(([type, stats]) => ({
         type,
         count: stats.count,
         successRate: stats.count > 0 ? stats.success / stats.count : 0,
@@ -230,7 +232,7 @@ export class PatternAnalysisService implements IPatternAnalysisService {
       domainCategory: task.domainCategory,
       totalExecutions: task.totalExecutions,
       successRate: task.totalExecutions > 0 ? task.successCount / task.totalExecutions : 0,
-      topTeams: Object.entries(task.teams)
+      topTeams: Object.entries(task.teams as Record<string, { count: number; success: number }>)
         .filter((e) => e[1].count >= MIN_SAMPLE_SIZE)
         .map(([teamId, stats]) => ({
           teamId,
@@ -240,7 +242,7 @@ export class PatternAnalysisService implements IPatternAnalysisService {
         }))
         .sort((a, b) => b.successRate - a.successRate)
         .slice(0, 5),
-      topAgents: Object.entries(task.agents)
+      topAgents: Object.entries(task.agents as Record<string, { count: number; success: number }>)
         .filter((e) => e[1].count >= MIN_SAMPLE_SIZE)
         .map(([agentId, stats]) => ({
           agentId,
@@ -371,11 +373,11 @@ export class PatternAnalysisService implements IPatternAnalysisService {
         subsequentAgentId: pattern.subsequentAgentId,
         conflicts: pattern.conflicts,
         rejectionRate: pattern.conflicts > 0 ? pattern.rejections / pattern.conflicts : 0,
-        commonReasons: Object.entries(pattern.reasons)
+        commonReasons: Object.entries(pattern.reasons as Record<string, number>)
           .sort((a, b) => b[1] - a[1])
           .slice(0, 3)
           .map((e) => e[0]),
-        recommendation: (function () {
+        recommendation: (function (): 'AVOID' | 'RISKY' | 'SAFE' {
           const rate = pattern.conflicts > 0 ? pattern.rejections / pattern.conflicts : 0;
           if (rate >= 0.5) return 'AVOID';
           if (rate >= 0.2) return 'RISKY';
@@ -398,11 +400,10 @@ export class PatternAnalysisService implements IPatternAnalysisService {
     const bestPair =
       pairs.length > 0 ? pairs.reduce((a, b) => (a.successRate > b.successRate ? a : b)) : null;
 
+    const comparablePairs = pairs.filter((p) => p.totalSequences >= MIN_SAMPLE_SIZE);
     const worstPair =
-      pairs.length > 0
-        ? pairs
-            .filter((p) => p.totalSequences >= MIN_SAMPLE_SIZE)
-            .reduce((a, b) => (a.successRate < b.successRate ? a : b), bestPair)
+      comparablePairs.length > 0
+        ? comparablePairs.reduce((a, b) => (a.successRate < b.successRate ? a : b))
         : null;
 
     const bestTeam =

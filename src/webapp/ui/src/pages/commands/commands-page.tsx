@@ -231,7 +231,7 @@ export default function CommandsPage() {
           onAction={handleQuickAction}
         />
 
-        <CommandQueueSection queue={queue} />
+        <CommandQueueSection queue={queue} status={status} />
       </div>
     </PageShell>
   );

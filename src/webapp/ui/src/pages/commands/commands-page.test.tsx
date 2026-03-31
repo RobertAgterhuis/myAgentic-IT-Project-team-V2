@@ -52,9 +52,16 @@ describe('CommandsPage', () => {
   it('renders quick action cards', async () => {
     await renderPage();
     expect(screen.getAllByText('CREATE').length).toBeGreaterThan(0);
+    expect(screen.getByText('CREATE BUSINESS')).toBeInTheDocument();
+    expect(screen.getByText('CREATE TECH')).toBeInTheDocument();
+    expect(screen.getByText('CREATE UX')).toBeInTheDocument();
+    expect(screen.getByText('CREATE MARKETING')).toBeInTheDocument();
     expect(screen.getAllByText('AUDIT').length).toBeGreaterThan(0);
     expect(screen.getAllByText('FEATURE').length).toBeGreaterThan(0);
+    expect(screen.getByText('SCOPE CHANGE')).toBeInTheDocument();
     expect(screen.getByText('HOTFIX')).toBeInTheDocument();
+    expect(screen.getByText('AGENCY ONLY')).toBeInTheDocument();
+    expect(screen.getByText('HYBRID')).toBeInTheDocument();
   });
 
   it('renders empty queue state', async () => {

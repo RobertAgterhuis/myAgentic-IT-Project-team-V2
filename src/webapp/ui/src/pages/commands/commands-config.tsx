@@ -20,6 +20,38 @@ export const QUICK_ACTIONS: QuickActionConfig[] = [
     nextStep: 'The orchestrator starts with onboarding and Phase 1 discovery based on your brief.',
   },
   {
+    command: 'CREATE BUSINESS',
+    label: 'CREATE BUSINESS',
+    icon: <Play className="size-4" />,
+    description: 'Run business-only creation work',
+    whenToUse: 'Use when only Phase 1 business analysis and market framing are needed.',
+    nextStep: 'The orchestrator starts directly in the business discovery path.',
+  },
+  {
+    command: 'CREATE TECH',
+    label: 'CREATE TECH',
+    icon: <Play className="size-4" />,
+    description: 'Run tech-only creation work',
+    whenToUse: 'Use when architecture and engineering definition are the main focus.',
+    nextStep: 'The orchestrator starts the Phase 2 technical path.',
+  },
+  {
+    command: 'CREATE UX',
+    label: 'CREATE UX',
+    icon: <Play className="size-4" />,
+    description: 'Run UX-only creation work',
+    whenToUse: 'Use when UX research, design, and accessibility work should start directly.',
+    nextStep: 'The orchestrator starts the Phase 3 UX path.',
+  },
+  {
+    command: 'CREATE MARKETING',
+    label: 'CREATE MARKETING',
+    icon: <Play className="size-4" />,
+    description: 'Run marketing-only creation work',
+    whenToUse: 'Use when brand, growth, and conversion work should start directly.',
+    nextStep: 'The orchestrator starts the Phase 4 marketing path.',
+  },
+  {
     command: 'AUDIT',
     label: 'AUDIT',
     icon: <Search className="size-4" />,
@@ -36,6 +68,14 @@ export const QUICK_ACTIONS: QuickActionConfig[] = [
     description: 'Add a new feature',
     whenToUse: 'Use when the product already exists and you want to add a scoped capability.',
     nextStep: 'The team prepares the feature path, then moves into design and implementation work.',
+  },
+  {
+    command: 'SCOPE CHANGE',
+    label: 'SCOPE CHANGE',
+    icon: <GitBranch className="size-4" />,
+    description: 'Re-analyze an active initiative after a scope shift',
+    whenToUse: 'Use when assumptions, constraints, or scope changed after work already started.',
+    nextStep: 'The orchestrator runs scope-change analysis and invalidation review.',
   },
   {
     command: 'HOTFIX',
@@ -65,7 +105,19 @@ export const QUICK_ACTIONS: QuickActionConfig[] = [
   },
 ];
 
-const COMMAND_PRIORITY = ['CREATE', 'AUDIT', 'FEATURE', 'HOTFIX', 'AGENCY_ONLY', 'HYBRID'];
+const COMMAND_PRIORITY = [
+  'CREATE',
+  'CREATE_BUSINESS',
+  'CREATE_TECH',
+  'CREATE_UX',
+  'CREATE_MARKETING',
+  'AUDIT',
+  'FEATURE',
+  'SCOPE_CHANGE',
+  'HOTFIX',
+  'AGENCY_ONLY',
+  'HYBRID',
+];
 
 function normalizeCommandId(value: unknown): string {
   return String(value || '')
@@ -91,8 +143,13 @@ const COMMAND_VARIANTS: Record<string, 'info' | 'warning' | 'secondary'> = {
 
 const COMMAND_ICON_BY_NAME: Record<string, React.ReactNode> = {
   CREATE: <Play className="size-4" />,
+  CREATE_BUSINESS: <Play className="size-4" />,
+  CREATE_TECH: <Play className="size-4" />,
+  CREATE_UX: <Play className="size-4" />,
+  CREATE_MARKETING: <Play className="size-4" />,
   AUDIT: <Search className="size-4" />,
   FEATURE: <Zap className="size-4" />,
+  SCOPE_CHANGE: <GitBranch className="size-4" />,
   HOTFIX: <Bug className="size-4" />,
   AGENCY_ONLY: <Users className="size-4" />,
   HYBRID: <GitBranch className="size-4" />,
@@ -137,7 +194,13 @@ export function buildQuickActionsFromPackMetadata(
     (entry) => !preferred.some((preferredEntry) => preferredEntry.id === entry.id)
   );
 
-  const ranked = [...preferred, ...remaining].slice(0, 6);
+  const ranked = [...preferred, ...remaining].filter(
+    (entry) =>
+      COMMAND_PRIORITY.includes(entry.normalized) ||
+      !['CONTINUE', 'REFRESH_ONBOARDING', 'CREATE_SYNTHESIS', 'AUDIT_SYNTHESIS'].includes(
+        entry.normalized
+      )
+  );
   const quickActions: QuickActionConfig[] = [];
   for (const entry of ranked) {
     const fallback = QUICK_ACTIONS.find(

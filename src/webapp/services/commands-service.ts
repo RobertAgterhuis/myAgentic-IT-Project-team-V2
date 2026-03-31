@@ -13,7 +13,12 @@ import * as schemas from '../schemas';
 import { withFileLock } from '../file-lock';
 import { sanitizeMarkdown, sanitizeQID, detectSecrets } from '../middleware';
 import { ServiceValidationError } from './decisions-service';
-import { getCommandCatalog, isKnownCommand, type CommandCatalogEntry } from './command-catalog';
+import {
+  getCommandCatalog,
+  isKnownCommand,
+  resolveKnownCommand,
+  type CommandCatalogEntry,
+} from './command-catalog';
 import type {
   ServiceContext,
   CommandQueueEntry,
@@ -56,7 +61,7 @@ export class CommandService {
   /* ── Queue a new command ────────────────────────────────────── */
 
   async queue(input: QueueCommandInput, user = 'service'): Promise<QueueCommandResult> {
-    const cmd = input.command.trim().toUpperCase();
+    const cmd = resolveKnownCommand(input.command) || input.command.trim().toUpperCase();
     if (!this.isValidCommand(cmd)) {
       throw new ServiceValidationError(`Unknown command: ${input.command}`);
     }

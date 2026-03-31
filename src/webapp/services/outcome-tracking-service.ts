@@ -73,7 +73,8 @@ export class OutcomeTrackingService implements IOutcomeTrackingService {
     // Validate enums
     for (const [field, allowedValues] of Object.entries(OUTCOME_VALIDATION_RULES.enums)) {
       const value = (outcome as any)[field];
-      if (value !== undefined && !allowedValues.includes(value)) {
+      const allowed = allowedValues as readonly string[];
+      if (value !== undefined && !allowed.includes(String(value))) {
         errors.push(`${field} must be one of ${allowedValues.join(', ')}, got ${value}`);
       }
     }
@@ -313,7 +314,7 @@ export class OutcomeTrackingService implements IOutcomeTrackingService {
             ? stats.timelineAccuracies.reduce((a: number, b: number) => a + b, 0) /
               stats.timelineAccuracies.length
             : undefined,
-        mostCommonBlockers: Object.entries(stats.blockers)
+        mostCommonBlockers: Object.entries(stats.blockers as Record<string, number>)
           .map(([blocker, frequency]) => ({ blocker, frequency }))
           .sort((a, b) => b.frequency - a.frequency)
           .slice(0, 5),

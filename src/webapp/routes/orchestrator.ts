@@ -1792,7 +1792,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
             .send(errorResponse('NO_QUEUED_COMMAND', 'No queued command available to activate'));
         }
 
-        const mode = String(latestCmd.command || 'CREATE').slice(0, 50);
+        const mode = normalizeCommandToken(latestCmd.command || 'CREATE').slice(0, 50);
         const executionMode = String(latestCmd.execution_mode || '').trim() as
           | 'SDLC_ONLY'
           | 'AGENCY_ONLY'

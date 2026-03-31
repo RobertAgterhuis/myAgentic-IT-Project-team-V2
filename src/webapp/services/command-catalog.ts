@@ -131,6 +131,10 @@ const DEFAULT_COMMAND_CATALOG: readonly CommandCatalogEntry[] = Object.freeze([
 
 const commandCatalogCache = new Map<string, CommandCatalogEntry[]>();
 
+function normalizeCommandLookupValue(value: string): string {
+  return value.trim().toUpperCase().replace(/[_-]+/g, ' ').replace(/\s+/g, ' ');
+}
+
 function isCategory(value: unknown): value is CommandCatalogCategory {
   return value === 'create' || value === 'audit' || value === 'on-demand' || value === 'session';
 }
@@ -192,19 +196,19 @@ export function getCommandCatalog(templateName = 'sdlc'): CommandCatalogEntry[] 
   return resolveCatalog(templateName).map((entry) => ({ ...entry }));
 }
 
+export function resolveKnownCommand(command: string, templateName = 'sdlc'): string | null {
+  const normalized = normalizeCommandLookupValue(command);
+  if (normalized.length === 0) return null;
+
+  const match = resolveCatalog(templateName).find(
+    (entry) =>
+      normalizeCommandLookupValue(entry.name) === normalized ||
+      normalizeCommandLookupValue(entry.label) === normalized
+  );
+
+  return match?.name ?? null;
+}
+
 export function isKnownCommand(command: string, templateName = 'sdlc'): boolean {
-  const normalized = command.trim().toUpperCase();
-  if (normalized.length === 0) return false;
-
-  const commandSet = new Set(resolveCatalog(templateName).map((entry) => entry.name));
-
-  if (commandSet.has(normalized)) return true;
-
-  const tokens = normalized.split(/\s+/);
-  if (tokens.length === 0) return false;
-
-  if (commandSet.has(tokens[0])) return true;
-  if (tokens.length >= 2 && commandSet.has(`${tokens[0]} ${tokens[1]}`)) return true;
-
-  return false;
+  return resolveKnownCommand(command, templateName) !== null;
 }

@@ -20,6 +20,7 @@ import type {
   SprintGatePayload,
   SprintGateResponse,
   CommandQueueResponse,
+  CommandQueueEntry,
   OrchestratorPackMetadataResponse,
   OkResponse,
 } from '@/lib/api-types';
@@ -247,20 +248,78 @@ export function useQueueCommand() {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: {
+    mutationFn: async (payload: {
       command: string;
       project?: string;
       description?: string;
       scope?: string;
       brief?: string;
       execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID';
-    }) =>
-      apiPost<OkResponse & { clipboard_text: string; brief_saved: boolean }>('/command', payload),
+    }) => {
+      const queued = await apiPost<OkResponse & { clipboard_text: string; brief_saved: boolean }>(
+        '/command',
+        payload
+      );
+
+      await apiPost<OkResponse>('/orchestrator/command', {
+        command: payload.command,
+        project: payload.project,
+        execution_mode: payload.execution_mode,
+        platform: 'copilot',
+      });
+
+      return queued;
+    },
+
+    onMutate: async (payload) => {
+      await qc.cancelQueries({ queryKey: queryKeys.orchestrator.status });
+      await qc.cancelQueries({ queryKey: queryKeys.orchestrator.queue });
+
+      const previousStatus = qc.getQueryData<OrchestratorStatus>(queryKeys.orchestrator.status);
+      const previousQueue = qc.getQueryData<CommandQueueResponse>(queryKeys.orchestrator.queue);
+      const requestedAt = new Date().toISOString();
+
+      const optimisticEntry: CommandQueueEntry = {
+        command: String(payload.command).trim(),
+        project: payload.project?.trim() || null,
+        description: payload.description?.trim() || null,
+        scope: payload.scope?.trim() || null,
+        execution_mode: payload.execution_mode || null,
+        requested_at: requestedAt,
+        status: 'PROCESSING',
+        source: 'webapp',
+        clipboard_text: String(payload.command).trim(),
+      };
+
+      qc.setQueryData<OrchestratorStatus>(queryKeys.orchestrator.status, (current) => ({
+        ...(current || { state: 'IDLE', mode: 'CREATE' }),
+        state: 'STARTING',
+        mode: optimisticEntry.command,
+      }));
+
+      qc.setQueryData<CommandQueueResponse>(queryKeys.orchestrator.queue, (current) => ({
+        command: optimisticEntry,
+        queue: [optimisticEntry, ...(current?.queue || [])],
+      }));
+
+      return { previousStatus, previousQueue };
+    },
+
+    onError: (_error, _payload, context) => {
+      if (context?.previousStatus) {
+        qc.setQueryData(queryKeys.orchestrator.status, context.previousStatus);
+      }
+      if (context?.previousQueue) {
+        qc.setQueryData(queryKeys.orchestrator.queue, context.previousQueue);
+      }
+    },
 
     onSuccess: (data) => {
-      showToast.success('Command queued');
+      showToast.success('Command queued and started');
       if (data.brief_saved) showToast.info('Project brief saved');
       qc.invalidateQueries({ queryKey: queryKeys.orchestrator.queue });
+      qc.invalidateQueries({ queryKey: queryKeys.orchestrator.status });
+      qc.invalidateQueries({ queryKey: queryKeys.progress.all });
     },
   });
 }

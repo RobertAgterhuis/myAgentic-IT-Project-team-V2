@@ -5,11 +5,12 @@
  * Exposes the state machine engine to the webapp UI.
  *
  * Endpoints:
- *   GET  /api/orchestrator/status   — Current engine state
- *   POST /api/orchestrator/advance  — Advance to next state
- *   POST /api/orchestrator/error    — Force ERROR state
- *   POST /api/orchestrator/recover  — Recover from ERROR
- *   POST /api/orchestrator/reset    — Reset with a new mode
+ *   GET  /api/orchestrator/status            — Current engine state
+ *   POST /api/orchestrator/advance           — Advance to next state
+ *   POST /api/orchestrator/activate-command  — Load latest queued command & start execution
+ *   POST /api/orchestrator/error             — Force ERROR state
+ *   POST /api/orchestrator/recover           — Recover from ERROR
+ *   POST /api/orchestrator/reset             — Reset with a new mode
  *
  * @module routes/orchestrator
  * @param {object} ctx - Shared server context.
@@ -1763,6 +1764,88 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const message = getErrorMessage(err);
         structuredLog('error', 'orchestrator_resume_failed', { error: message });
         return reply.code(500).send(errorResponse('RESUME_FAILED', message));
+      }
+    }
+  );
+
+  // ── POST /api/orchestrator/activate-command ──────────────────────────
+
+  app.post(
+    '/api/orchestrator/activate-command',
+    { schema: { tags: ['orchestrator'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        // Retrieve the latest queued command
+        const readQueue = ctx._readCommandQueue as () => Array<Record<string, unknown>>;
+        const queue = readQueue ? readQueue() : [];
+
+        if (!queue || queue.length === 0) {
+          return reply
+            .code(400)
+            .send(errorResponse('NO_QUEUED_COMMAND', 'No queued command available to activate'));
+        }
+
+        const latestCmd = queue[queue.length - 1] as Record<string, unknown> | undefined;
+        if (!latestCmd) {
+          return reply
+            .code(400)
+            .send(errorResponse('NO_QUEUED_COMMAND', 'No queued command available to activate'));
+        }
+
+        const mode = normalizeCommandToken(latestCmd.command || 'CREATE').slice(0, 50);
+        const executionMode = String(latestCmd.execution_mode || '').trim() as
+          | 'SDLC_ONLY'
+          | 'AGENCY_ONLY'
+          | 'HYBRID'
+          | '';
+
+        const engine = getEngine();
+
+        // Reset the engine with the queued command's mode
+        engine.reset(mode);
+
+        // Persist execution mode and plan if hybrid or agency mode
+        if (executionMode === 'HYBRID' || executionMode === 'AGENCY_ONLY') {
+          const plan = buildExecutionModePlan({
+            mode: executionMode,
+            brief: typeof latestCmd.brief === 'string' ? latestCmd.brief : undefined,
+          });
+          persistSessionExecutionContext(
+            sessionStatePath,
+            executionMode,
+            plan as unknown as Record<string, unknown> | null
+          );
+        }
+
+        const newStatus = engine.status();
+
+        sseNotify('command_activated', {
+          type: 'command_activated',
+          command: latestCmd.command,
+          mode,
+          execution_mode: executionMode || 'SDLC_ONLY',
+          state: newStatus.state,
+          timestamp: new Date().toISOString(),
+        });
+
+        structuredLog('info', 'orchestrator_command_activated', {
+          command: latestCmd.command,
+          mode,
+          execution_mode: executionMode || 'SDLC_ONLY',
+          state: newStatus.state,
+        });
+
+        return reply.send({
+          ok: true,
+          command: latestCmd.command,
+          mode,
+          execution_mode: executionMode || 'SDLC_ONLY',
+          status: newStatus,
+        });
+      } catch (err) {
+        const message = getErrorMessage(err);
+        structuredLog('error', 'orchestrator_activate_command_failed', { error: message });
+        return reply.code(500).send(errorResponse('ACTIVATE_COMMAND_FAILED', message));
       }
     }
   );

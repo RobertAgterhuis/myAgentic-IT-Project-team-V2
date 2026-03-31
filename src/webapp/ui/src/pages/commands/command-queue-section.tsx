@@ -7,15 +7,21 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { EmptyState } from '@/components/ui/empty-state';
 import { commandQueueStatusVariant } from '@/lib/status-helpers';
-import type { CommandQueueResponse } from '@/lib/api-types';
+import type { CommandQueueResponse, OrchestratorStatus } from '@/lib/api-types';
 import { ShieldAlert } from 'lucide-react';
 
 interface CommandQueueSectionProps {
   queue: CommandQueueResponse | undefined;
+  status: OrchestratorStatus | undefined;
 }
 
-export function CommandQueueSection({ queue }: CommandQueueSectionProps) {
+function formatRuntimeLabel(value: string | undefined): string {
+  return String(value || 'UNKNOWN').replace(/[_-]+/g, ' ');
+}
+
+export function CommandQueueSection({ queue, status }: CommandQueueSectionProps) {
   const entries = queue?.queue ?? [];
+  const liveRunVisible = !!status && status.state !== 'IDLE';
 
   return (
     <div>
@@ -26,6 +32,26 @@ export function CommandQueueSection({ queue }: CommandQueueSectionProps) {
         After submitting, check here first: `PENDING` means waiting, `PROCESSING` means agents are
         actively running, and `DONE` means the command finished.
       </Text>
+
+      {liveRunVisible && (
+        <Card elevation="outlined" className="mb-4 border-info/30 bg-info/5">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <Badge variant="info">LIVE RUN</Badge>
+                <Badge variant="outline">{formatRuntimeLabel(status?.mode)}</Badge>
+              </div>
+              <div className="mt-2 text-sm font-medium">
+                Current orchestrator state: {formatRuntimeLabel(status?.state)}
+              </div>
+              <Text muted className="mt-1 text-xs">
+                The command has started. This panel updates from orchestrator status while the queue
+                view tracks command entries.
+              </Text>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {entries.length > 0 ? (
         <div className="space-y-2">

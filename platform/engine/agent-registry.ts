@@ -106,6 +106,29 @@ export interface AgentQuery {
   limit?: number;
 }
 
+export interface RegistryMetadataUpdate {
+  agentId: string;
+  successRateDelta?: number;
+  avgQualityScoreDelta?: number;
+  addSuccessPatterns?: string[];
+  reason: string;
+}
+
+export interface QuarterlyOptimizationCycle {
+  cycleId: string;
+  cadence: 'quarterly';
+  generatedAt: string;
+  targetQuarter: string;
+  reviewDate: string;
+  reviewedAgents: number;
+  updates: RegistryMetadataUpdate[];
+  summary: {
+    updatedAgents: number;
+    avgSuccessRateDelta: number;
+    avgQualityDelta: number;
+  };
+}
+
 function readJson<T>(filePath: string): T {
   return JSON.parse(fs.readFileSync(filePath, 'utf8')) as T;
 }
@@ -213,4 +236,111 @@ export function findComplementaryAgents(
 
   const relatedIds = new Set(agent.worksWith);
   return registry.agents.filter((candidate) => relatedIds.has(candidate.id));
+}
+
+export function getNextQuarterlyReviewDate(fromDate = new Date()): string {
+  const year = fromDate.getUTCFullYear();
+  const month = fromDate.getUTCMonth();
+
+  const quarterStarts = [0, 3, 6, 9];
+  const nextQuarterMonth = quarterStarts.find((value) => value > month);
+
+  const reviewYear = nextQuarterMonth === undefined ? year + 1 : year;
+  const reviewMonth = nextQuarterMonth === undefined ? 0 : nextQuarterMonth;
+  return new Date(Date.UTC(reviewYear, reviewMonth, 1, 0, 0, 0)).toISOString();
+}
+
+function formatQuarterKey(date: Date): string {
+  const quarter = Math.floor(date.getUTCMonth() / 3) + 1;
+  return `Q${quarter}-${date.getUTCFullYear()}`;
+}
+
+function clampPercentage(value: number): number {
+  if (value < 0) return 0;
+  if (value > 100) return 100;
+  return Number(value.toFixed(2));
+}
+
+export function buildQuarterlyOptimizationCycle(
+  updates: RegistryMetadataUpdate[],
+  options: { generatedAt?: string; reviewDate?: string; reviewedAgents?: number } = {}
+): QuarterlyOptimizationCycle {
+  const generatedAt = options.generatedAt || new Date().toISOString();
+  const generatedAtDate = new Date(generatedAt);
+  const reviewDate = options.reviewDate || getNextQuarterlyReviewDate(generatedAtDate);
+  const reviewedAgents = options.reviewedAgents ?? updates.length;
+
+  const successRateDeltas = updates
+    .map((update) => update.successRateDelta)
+    .filter((delta): delta is number => typeof delta === 'number');
+  const qualityDeltas = updates
+    .map((update) => update.avgQualityScoreDelta)
+    .filter((delta): delta is number => typeof delta === 'number');
+
+  const avgSuccessRateDelta =
+    successRateDeltas.length > 0
+      ? successRateDeltas.reduce((sum, value) => sum + value, 0) / successRateDeltas.length
+      : 0;
+  const avgQualityDelta =
+    qualityDeltas.length > 0
+      ? qualityDeltas.reduce((sum, value) => sum + value, 0) / qualityDeltas.length
+      : 0;
+
+  return {
+    cycleId: `registry-quarterly-${generatedAtDate.toISOString().slice(0, 10)}`,
+    cadence: 'quarterly',
+    generatedAt,
+    targetQuarter: formatQuarterKey(generatedAtDate),
+    reviewDate,
+    reviewedAgents,
+    updates,
+    summary: {
+      updatedAgents: updates.length,
+      avgSuccessRateDelta: Number(avgSuccessRateDelta.toFixed(3)),
+      avgQualityDelta: Number(avgQualityDelta.toFixed(3)),
+    },
+  };
+}
+
+export function applyQuarterlyRegistryUpdates(
+  registry: AgentRegistryDocument,
+  updates: RegistryMetadataUpdate[],
+  reviewedAt = new Date().toISOString()
+): AgentRegistryDocument {
+  const updateMap = new Map(updates.map((update) => [update.agentId, update]));
+
+  const agents = registry.agents.map((agent) => {
+    const update = updateMap.get(agent.id);
+    if (!update) {
+      return agent;
+    }
+
+    const successRate = clampPercentage(agent.successRate + (update.successRateDelta || 0));
+    const avgQualityScore = clampPercentage(
+      agent.avgQualityScore + (update.avgQualityScoreDelta || 0)
+    );
+
+    const successPatterns = Array.from(
+      new Set([...(agent.successPatterns || []), ...(update.addSuccessPatterns || [])])
+    );
+
+    const sourceFiles = Array.from(
+      new Set([...(agent.sourceFiles || []), 'quarterly-optimization-cycle'])
+    );
+
+    return {
+      ...agent,
+      successRate,
+      avgQualityScore,
+      successPatterns,
+      sourceFiles,
+      lastUpdated: reviewedAt,
+    };
+  });
+
+  return {
+    ...registry,
+    generatedAt: reviewedAt,
+    agents,
+  };
 }

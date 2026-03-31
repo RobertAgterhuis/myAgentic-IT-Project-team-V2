@@ -15,6 +15,7 @@ const includeStorybookProject = !requestedProject || requestedProject === 'story
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig(async () => ({
+  root: dirname,
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
@@ -24,7 +25,6 @@ export default defineConfig(async () => ({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./src/test/browser-globals.ts'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

@@ -9,6 +9,9 @@ const {
   getAgent,
   queryAgents,
   findComplementaryAgents,
+  getNextQuarterlyReviewDate,
+  buildQuarterlyOptimizationCycle,
+  applyQuarterlyRegistryUpdates,
 } = require('../../platform/engine/agent-registry');
 
 describe('Agent registry generation and query API', () => {
@@ -110,5 +113,60 @@ describe('Agent registry generation and query API', () => {
     const matches = findComplementaryAgents(source.id, registry);
     expect(matches.length).toBeGreaterThan(0);
     expect(matches.every((agent) => source.worksWith.includes(agent.id))).toBe(true);
+  });
+
+  it('calculates the next quarterly review date boundary', () => {
+    const next = getNextQuarterlyReviewDate(new Date('2026-05-15T10:00:00.000Z'));
+    expect(next).toBe('2026-07-01T00:00:00.000Z');
+  });
+
+  it('builds a quarterly optimization cycle summary', () => {
+    const cycle = buildQuarterlyOptimizationCycle(
+      [
+        { agentId: 'sdlc-01-business-analyst', successRateDelta: 2, reason: 'Improved outcomes' },
+        {
+          agentId: 'sdlc-06-senior-developer',
+          successRateDelta: -1,
+          avgQualityScoreDelta: 1.5,
+          reason: 'Rebalanced quality trade-offs',
+        },
+      ],
+      {
+        generatedAt: '2026-03-31T00:00:00.000Z',
+        reviewedAgents: 39,
+      }
+    );
+
+    expect(cycle.cadence).toBe('quarterly');
+    expect(cycle.reviewDate).toBe('2026-04-01T00:00:00.000Z');
+    expect(cycle.summary.updatedAgents).toBe(2);
+    expect(cycle.reviewedAgents).toBe(39);
+  });
+
+  it('applies quarterly updates to registry metadata', () => {
+    const registry = loadAgentRegistry();
+    const target = registry.agents[0];
+
+    const updated = applyQuarterlyRegistryUpdates(
+      registry,
+      [
+        {
+          agentId: target.id,
+          successRateDelta: 3,
+          avgQualityScoreDelta: 2,
+          addSuccessPatterns: ['quarterly optimization applied'],
+          reason: 'Q2 refinement',
+        },
+      ],
+      '2026-04-01T00:00:00.000Z'
+    );
+
+    const next = updated.agents.find((agent) => agent.id === target.id);
+    expect(next).toBeDefined();
+    expect(next.successRate).toBeGreaterThanOrEqual(target.successRate);
+    expect(next.avgQualityScore).toBeGreaterThanOrEqual(target.avgQualityScore);
+    expect(next.successPatterns).toContain('quarterly optimization applied');
+    expect(next.sourceFiles).toContain('quarterly-optimization-cycle');
+    expect(next.lastUpdated).toBe('2026-04-01T00:00:00.000Z');
   });
 });

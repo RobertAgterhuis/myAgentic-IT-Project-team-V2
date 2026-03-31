@@ -1,7 +1,6 @@
-'use strict';
-
-const fs = require('node:fs');
-const path = require('node:path');
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 /**
  * Agent Invocation Dispatcher — Unit Tests (FEAT-05-B / SP-5-ORCH-B)
@@ -17,16 +16,19 @@ const path = require('node:path');
  * AC-8: Logging
  */
 
-const {
+import {
   compileAgentPhaseMap,
   assertRuntimeSchemaParity,
   PHASE_AGENTS,
   PLATFORMS,
   _DEFAULT_CONFIG,
   Dispatcher,
-} = require('../../platform/engine/dispatcher');
-const { loadFlows } = require('../../platform/engine/flow-loader');
-const { STATES } = require('../../platform/engine/state-machine');
+} from '../../platform/engine/dispatcher';
+import { loadFlows } from '../../platform/engine/flow-loader';
+import { STATES } from '../../platform/engine/state-machine';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ─── Test Helpers ────────────────────────────────────────────
 

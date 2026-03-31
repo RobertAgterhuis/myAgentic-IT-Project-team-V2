@@ -1,9 +1,8 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { registerRoutes } = require('../../src/webapp/routes/agents');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
-const { sessionTracker } = require('../../src/webapp/session-tracker');
+import { registerRoutes } from '../../src/webapp/routes/agents';
+import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
+import { sessionTracker } from '../../src/webapp/session-tracker';
 
 /* ── Mock ctx ─────────────────────────────────────────────── */
 

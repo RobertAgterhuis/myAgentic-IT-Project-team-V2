@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Template Loader — Unit Tests (M14 / S1)
  *
@@ -12,9 +10,11 @@
  * - listTemplates: enumeration with metadata
  */
 
-const path = require('node:path');
-const fs = require('node:fs');
-const {
+import path from 'node:path';
+import fs from 'node:fs';
+import os from 'node:os';
+import { fileURLToPath } from 'node:url';
+import {
   discoverTemplates,
   loadManifest,
   validateManifest,
@@ -24,7 +24,12 @@ const {
   seedDecisions,
   MANIFEST_FILENAME,
   REQUIRED_MANIFEST_KEYS,
-} = require('../../platform/engine/template-loader');
+} from '../../platform/engine/template-loader';
+import { PHASE_AGENTS } from '../../platform/engine/dispatcher';
+import { MODE_CONFIGS } from '../../platform/engine/state-machine';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ─── Fixtures ────────────────────────────────────────────────
 
@@ -506,7 +511,6 @@ describe('SDLC manifest consistency with current engine', () => {
 
   test('phaseAgents matches current dispatcher PHASE_AGENTS', () => {
     // phaseAgents are now derived from canonical schema via loader
-    const { PHASE_AGENTS } = require('../../platform/engine/dispatcher');
     for (const [state, agents] of Object.entries(PHASE_AGENTS)) {
       expect(config.phaseAgents[state]).toBeDefined();
       expect(config.phaseAgents[state]).toHaveLength(agents.length);
@@ -528,7 +532,6 @@ describe('SDLC manifest consistency with current engine', () => {
   });
 
   test('modes matches current state-machine MODE_CONFIGS', () => {
-    const { MODE_CONFIGS } = require('../../platform/engine/state-machine');
     for (const [mode, modeConfig] of Object.entries(MODE_CONFIGS)) {
       expect(config.modes[mode]).toBeDefined();
       expect(config.modes[mode].phases).toEqual(modeConfig.phases);
@@ -549,7 +552,6 @@ describe('SDLC manifest consistency with current engine', () => {
 // ─── seedDecisions ───────────────────────────────────────────
 
 describe('seedDecisions', () => {
-  const os = require('node:os');
   let tmpDir;
 
   beforeEach(() => {
@@ -1080,7 +1082,6 @@ describe('loadTemplate — SDLC v1.1.0 extended sections', () => {
 
   test('backward compatibility: v1.0.0 manifest without new sections still loads', () => {
     // Simulate a v1.0.0 manifest by creating one without the new sections
-    const os = require('node:os');
     const tmpTemplatesDir = fs.mkdtempSync(path.join(os.tmpdir(), 'tpl-compat-'));
     const tmpTplDir = path.join(tmpTemplatesDir, 'legacy');
 

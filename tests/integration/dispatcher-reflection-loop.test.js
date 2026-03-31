@@ -1,7 +1,5 @@
-'use strict';
-
-const { Dispatcher } = require('../../platform/engine/dispatcher');
-const { STATES } = require('../../platform/engine/state-machine');
+import { Dispatcher } from '../../platform/engine/dispatcher';
+import { STATES } from '../../platform/engine/state-machine';
 
 function createStore(files = {}) {
   return {

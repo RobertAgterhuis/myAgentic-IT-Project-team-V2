@@ -15,6 +15,8 @@ import type {
   TimelinePattern,
   ConflictPattern,
   PatternAnalysisReport,
+  RecommendationCandidate,
+  RecommendationRefinementResult,
 } from '../../../platform/services/pattern-analysis';
 import {
   MIN_SAMPLE_SIZE,
@@ -26,6 +28,12 @@ import {
  * PatternAnalysisService — Analyzes execution outcomes to find patterns
  */
 export class PatternAnalysisService implements IPatternAnalysisService {
+  private clampScore(value: number): number {
+    if (value < 0) return 0;
+    if (value > 1) return 1;
+    return value;
+  }
+
   /**
    * Analyze all agent pair sequences
    */
@@ -452,6 +460,73 @@ export class PatternAnalysisService implements IPatternAnalysisService {
         mostConflictual,
         improvementAreas,
       },
+    };
+  }
+
+  /**
+   * Refine recommendation scores using historical outcomes and compare to baseline
+   */
+  refineRecommendations(
+    outcomes: AgentExecutionOutcome[],
+    candidates: RecommendationCandidate[]
+  ): RecommendationRefinementResult {
+    const taskPatterns = this.analyzeTaskTypePatterns(outcomes);
+    const teamPatterns = this.analyzeTeams(outcomes);
+
+    const recommendations = candidates.map((candidate) => {
+      const baselineScore = this.clampScore(candidate.baselineScore);
+      const taskPattern = taskPatterns.find((p) => p.taskType === candidate.taskType);
+      const taskTeam = taskPattern?.topTeams.find((t) => t.teamId === candidate.teamId);
+      const teamPattern = teamPatterns.find((t) => t.teamId === candidate.teamId);
+
+      // Prefer task-specific historical score; fallback to overall team score; neutral fallback.
+      const historicalScore = this.clampScore(
+        taskTeam?.successRate ?? teamPattern?.successRate ?? baselineScore
+      );
+      const confidence = this.clampScore(taskTeam?.confidence ?? 0.3);
+
+      // Weighted uplift: history influences score, but baseline still contributes.
+      const refinementWeight = 0.35 + confidence * 0.45;
+      const refinedScore = this.clampScore(
+        baselineScore * (1 - refinementWeight) + historicalScore * refinementWeight
+      );
+      const uplift = Number((refinedScore - baselineScore).toFixed(4));
+
+      let reason = 'No historical match; baseline retained';
+      if (taskTeam) {
+        reason = `Task-specific historical success ${(historicalScore * 100).toFixed(1)}% with confidence ${confidence.toFixed(2)}`;
+      } else if (teamPattern) {
+        reason = `Overall team historical success ${(historicalScore * 100).toFixed(1)}%`;
+      }
+
+      return {
+        teamId: candidate.teamId,
+        taskType: candidate.taskType,
+        baselineScore,
+        historicalScore,
+        confidence,
+        refinedScore,
+        uplift,
+        reason,
+      };
+    });
+
+    const baselineAverage =
+      recommendations.length > 0
+        ? recommendations.reduce((sum, r) => sum + r.baselineScore, 0) / recommendations.length
+        : 0;
+    const refinedAverage =
+      recommendations.length > 0
+        ? recommendations.reduce((sum, r) => sum + r.refinedScore, 0) / recommendations.length
+        : 0;
+
+    return {
+      generatedAt: new Date().toISOString(),
+      candidatesEvaluated: recommendations.length,
+      baselineAverage,
+      refinedAverage,
+      averageUplift: refinedAverage - baselineAverage,
+      recommendations: recommendations.sort((a, b) => b.refinedScore - a.refinedScore),
     };
   }
 

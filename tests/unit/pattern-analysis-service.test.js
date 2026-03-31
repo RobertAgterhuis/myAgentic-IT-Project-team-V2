@@ -246,4 +246,65 @@ describe('PatternAnalysisService', () => {
       expect(report.analysisWindow.totalOutcomes).toBe(2);
     });
   });
+
+  describe('refineRecommendations', () => {
+    it('should uplift scores for teams with strong task-specific history', () => {
+      const outcomes = Array(10)
+        .fill(null)
+        .map((_, i) =>
+          createOutcome({
+            teamId: 'team-strong',
+            taskDefinition: { type: 'FEATURE', complexity: 'MEDIUM' },
+            completionStatus: i < 9 ? 'SUCCESS' : 'FAILED',
+          })
+        );
+
+      const result = svc.refineRecommendations(outcomes, [
+        { teamId: 'team-strong', taskType: 'FEATURE', baselineScore: 0.55 },
+      ]);
+
+      expect(result.candidatesEvaluated).toBe(1);
+      expect(result.recommendations[0].refinedScore).toBeGreaterThan(0.55);
+      expect(result.averageUplift).toBeGreaterThan(0);
+    });
+
+    it('should penalize scores for weak historical performance', () => {
+      const outcomes = Array(10)
+        .fill(null)
+        .map((_, i) =>
+          createOutcome({
+            teamId: 'team-weak',
+            taskDefinition: { type: 'BUG_FIX', complexity: 'LOW' },
+            completionStatus: i < 2 ? 'SUCCESS' : 'FAILED',
+          })
+        );
+
+      const result = svc.refineRecommendations(outcomes, [
+        { teamId: 'team-weak', taskType: 'BUG_FIX', baselineScore: 0.65 },
+      ]);
+
+      expect(result.recommendations[0].refinedScore).toBeLessThan(0.65);
+      expect(result.recommendations[0].uplift).toBeLessThan(0);
+    });
+
+    it('should return baseline comparison metrics', () => {
+      const outcomes = [
+        createOutcome({
+          teamId: 'team-a',
+          taskDefinition: { type: 'FEATURE', complexity: 'MEDIUM' },
+          completionStatus: 'SUCCESS',
+        }),
+      ];
+
+      const result = svc.refineRecommendations(outcomes, [
+        { teamId: 'team-a', taskType: 'FEATURE', baselineScore: 0.5 },
+        { teamId: 'team-b', taskType: 'FEATURE', baselineScore: 0.5 },
+      ]);
+
+      expect(result).toHaveProperty('baselineAverage');
+      expect(result).toHaveProperty('refinedAverage');
+      expect(result).toHaveProperty('averageUplift');
+      expect(result.recommendations.length).toBe(2);
+    });
+  });
 });

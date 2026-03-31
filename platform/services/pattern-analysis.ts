@@ -92,6 +92,41 @@ export interface ConflictPattern {
 }
 
 /**
+ * Candidate recommendation to refine with historical outcomes
+ */
+export interface RecommendationCandidate {
+  teamId: string;
+  taskType: string;
+  baselineScore: number; // Existing matcher score before historical uplift
+}
+
+/**
+ * Refined recommendation with baseline comparison
+ */
+export interface RefinedRecommendation {
+  teamId: string;
+  taskType: string;
+  baselineScore: number;
+  historicalScore: number;
+  confidence: number;
+  refinedScore: number;
+  uplift: number;
+  reason: string;
+}
+
+/**
+ * Comparison report between baseline and historically-refined scores
+ */
+export interface RecommendationRefinementResult {
+  generatedAt: string;
+  candidatesEvaluated: number;
+  baselineAverage: number;
+  refinedAverage: number;
+  averageUplift: number;
+  recommendations: RefinedRecommendation[];
+}
+
+/**
  * Complete pattern analysis report
  */
 export interface PatternAnalysisReport {
@@ -148,6 +183,14 @@ export interface IPatternAnalysisService {
    * Generate complete pattern analysis report
    */
   generateReport(outcomes: AgentExecutionOutcome[]): PatternAnalysisReport;
+
+  /**
+   * Refine recommendation scores using historical outcome patterns
+   */
+  refineRecommendations(
+    outcomes: AgentExecutionOutcome[],
+    candidates: RecommendationCandidate[]
+  ): RecommendationRefinementResult;
 
   /**
    * Get specific pattern by key

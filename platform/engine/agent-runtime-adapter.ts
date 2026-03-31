@@ -928,6 +928,8 @@ interface SandboxInvocationContext {
   fileContent?: string;
   command?: string[];
   prTitle?: string;
+  policyApprovals?: unknown;
+  rollbackOnFailure?: boolean;
 }
 
 interface SandboxStepArtifact {
@@ -978,9 +980,25 @@ export class SandboxRuntimeAdapter extends FileProducingRuntimeAdapter {
 
     const step = runtimeContext.sandboxStep || 'plan';
     const timelinePath = path.join(sessionDir, 'timeline.jsonl');
+    const checkpointPath = path.join(sessionDir, 'approval-checkpoints.jsonl');
 
     let stepSummary = '';
     let stepDetails: Record<string, unknown> = {};
+    const checkpoint = await this._recordApprovalCheckpoint(
+      checkpointPath,
+      step,
+      correlationId,
+      runtimeContext.policyApprovals
+    );
+
+    if (!checkpoint.approved) {
+      throw new Error(
+        `Sandbox step '${step}' blocked by approval checkpoint. Required one of: ${checkpoint.required.join(
+          ', '
+        )}`
+      );
+    }
+
     if (step === 'plan') {
       const planPath = path.join(sessionDir, 'plan.json');
       const plan = {
@@ -1013,22 +1031,30 @@ export class SandboxRuntimeAdapter extends FileProducingRuntimeAdapter {
       stepDetails = { relativeTarget };
     } else if (step === 'test') {
       const command = normalizeSandboxCommand(runtimeContext.command);
-      const { stdout, stderr } = await execFile(command[0], command.slice(1), {
-        cwd: sessionDir,
-        timeout: this._commandTimeoutMs,
-      });
-      stepSummary = [
-        `Executed test command: ${command.join(' ')}`,
-        stdout ? `stdout: ${truncate(stdout.trim(), 400)}` : null,
-        stderr ? `stderr: ${truncate(stderr.trim(), 400)}` : null,
-      ]
-        .filter(Boolean)
-        .join('\n');
-      stepDetails = {
-        command,
-        stdout: stdout.trim(),
-        stderr: stderr.trim(),
-      };
+      try {
+        const { stdout, stderr } = await execFile(command[0], command.slice(1), {
+          cwd: sessionDir,
+          timeout: this._commandTimeoutMs,
+        });
+        stepSummary = [
+          `Executed test command: ${command.join(' ')}`,
+          stdout ? `stdout: ${truncate(stdout.trim(), 400)}` : null,
+          stderr ? `stderr: ${truncate(stderr.trim(), 400)}` : null,
+        ]
+          .filter(Boolean)
+          .join('\n');
+        stepDetails = {
+          command,
+          stdout: stdout.trim(),
+          stderr: stderr.trim(),
+        };
+      } catch (error) {
+        const rollbackEnabled = runtimeContext.rollbackOnFailure !== false;
+        if (rollbackEnabled) {
+          await this._runRollbackHook(sessionDir, correlationId, step, error);
+        }
+        throw error;
+      }
     } else {
       const title = runtimeContext.prTitle || `Sandbox proof for ${sessionId}`;
       const { stdout: diff } = await execFile('git', ['show', '--name-status', '--oneline', '-1'], {
@@ -1104,6 +1130,84 @@ export class SandboxRuntimeAdapter extends FileProducingRuntimeAdapter {
 
     const outputPath = await this._writeArtifact(agent, response);
     return { outputPath, response, usage: response.usage };
+  }
+
+  private async _recordApprovalCheckpoint(
+    checkpointPath: string,
+    step: 'plan' | 'code' | 'test' | 'pr',
+    correlationId: string,
+    policyApprovals: unknown
+  ): Promise<{ approved: boolean; required: string[] }> {
+    const requiredByStep: Record<'plan' | 'code' | 'test' | 'pr', string[]> = {
+      plan: ['sandbox:plan'],
+      code: ['sandbox:code', 'tool.git.write'],
+      test: ['sandbox:test', 'tool.testing.run'],
+      pr: ['sandbox:pr', 'tool.github.pull_request.write'],
+    };
+
+    const required = requiredByStep[step];
+    const allow = new Set<string>();
+
+    if (policyApprovals && typeof policyApprovals === 'object') {
+      const obj = policyApprovals as Record<string, unknown>;
+
+      if (Array.isArray(obj.allow)) {
+        for (const token of obj.allow) {
+          if (typeof token === 'string' && token.trim()) allow.add(token.trim());
+        }
+      }
+
+      if (obj.approvals && typeof obj.approvals === 'object') {
+        for (const [key, value] of Object.entries(obj.approvals as Record<string, unknown>)) {
+          if (value === true) allow.add(key);
+        }
+      }
+    }
+
+    const approved = step === 'plan' ? true : required.some((token) => allow.has(token));
+    const entry = {
+      ts: new Date().toISOString(),
+      correlationId,
+      step,
+      required,
+      approved,
+      provided: [...allow],
+    };
+    await fs.appendFile(checkpointPath, `${JSON.stringify(entry)}\n`, 'utf8');
+
+    return { approved, required };
+  }
+
+  private async _runRollbackHook(
+    sessionDir: string,
+    correlationId: string,
+    step: 'plan' | 'code' | 'test' | 'pr',
+    error: unknown
+  ): Promise<void> {
+    await execFile('git', ['reset', '--hard', 'HEAD~1'], {
+      cwd: sessionDir,
+      timeout: this._commandTimeoutMs,
+    }).catch(async () => {
+      await execFile('git', ['reset', '--hard', 'HEAD'], {
+        cwd: sessionDir,
+        timeout: this._commandTimeoutMs,
+      }).catch(() => undefined);
+    });
+
+    await execFile('git', ['clean', '-fd'], {
+      cwd: sessionDir,
+      timeout: this._commandTimeoutMs,
+    }).catch(() => undefined);
+
+    const rollbackPath = path.join(sessionDir, 'rollback-hook.json');
+    const payload = {
+      ts: new Date().toISOString(),
+      correlationId,
+      triggeredByStep: step,
+      status: 'applied',
+      reason: error instanceof Error ? error.message : String(error),
+    };
+    await fs.writeFile(rollbackPath, JSON.stringify(payload, null, 2), 'utf8');
   }
 
   private async _writeReplayBundle(input: {

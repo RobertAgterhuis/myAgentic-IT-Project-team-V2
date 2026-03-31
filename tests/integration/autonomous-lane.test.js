@@ -15,6 +15,9 @@ describe('Autonomous Lane Smoke Path (E-B2)', () => {
   const laneTrace = [];
   const adapter = new SandboxRuntimeAdapter();
   const plannerAgent = { id: '06', name: 'Senior Developer' };
+  const policyApprovals = {
+    allow: ['sandbox:code', 'sandbox:test', 'sandbox:pr'],
+  };
 
   beforeAll(() => {
     traceDir = 'tests/load/autonomous-lane-traces';
@@ -61,10 +64,11 @@ describe('Autonomous Lane Smoke Path (E-B2)', () => {
     const response = await adapter.invoke(plannerAgent, 'copilot', {
       sandboxSessionId,
       sandboxStep: 'plan',
+      policyApprovals,
     });
     expect(response.outputPath).toBeTruthy();
     recordTrace('planning', 'completed', { outputPath: response.outputPath });
-  });
+  }, 15000);
 
   it('S-B2-2: Should execute implementation phase', async () => {
     recordTrace('implementation', 'started', { phase: 'S-B2-2' });
@@ -73,6 +77,7 @@ describe('Autonomous Lane Smoke Path (E-B2)', () => {
       sandboxStep: 'code',
       filePath: 'src/autonomous-lane-proof.txt',
       fileContent: `proof update ${new Date().toISOString()}\n`,
+      policyApprovals,
     });
     expect(response.outputPath).toBeTruthy();
     recordTrace('implementation', 'completed', {
@@ -87,6 +92,7 @@ describe('Autonomous Lane Smoke Path (E-B2)', () => {
       sandboxSessionId,
       sandboxStep: 'test',
       command: ['node', '-e', 'console.log("autonomous sandbox test ok")'],
+      policyApprovals,
     });
     expect(response.outputPath).toBeTruthy();
     recordTrace('testing', 'completed', { passed: 1, failed: 0, outputPath: response.outputPath });
@@ -98,6 +104,7 @@ describe('Autonomous Lane Smoke Path (E-B2)', () => {
       sandboxSessionId,
       sandboxStep: 'pr',
       prTitle: 'M2 autonomous lane sandbox proof',
+      policyApprovals,
     });
     expect(response.outputPath).toBeTruthy();
     recordTrace('pr_creation', 'completed', {
@@ -125,6 +132,22 @@ describe('Autonomous Lane Smoke Path (E-B2)', () => {
     expect(replayBundle.correlationId).toBe(sandboxSessionId);
     expect(Array.isArray(replayBundle.timeline)).toBe(true);
     expect(replayBundle.timeline.length).toBeGreaterThan(0);
+
+    const checkpointsPath = path.join(
+      traceDir,
+      'sandbox-runs',
+      sandboxSessionId,
+      'approval-checkpoints.jsonl'
+    );
+    expect(fs.existsSync(checkpointsPath)).toBe(true);
+    const checkpoints = fs
+      .readFileSync(checkpointsPath, 'utf-8')
+      .trim()
+      .split(/\r?\n/)
+      .map((line) => JSON.parse(line));
+    expect(checkpoints.some((item) => item.step === 'code' && item.approved === true)).toBe(true);
+    expect(checkpoints.some((item) => item.step === 'test' && item.approved === true)).toBe(true);
+    expect(checkpoints.some((item) => item.step === 'pr' && item.approved === true)).toBe(true);
 
     const scriptPath = path.join(traceDir, 'replay-autonomous-lane.sh');
     fs.writeFileSync(scriptPath, '#!/bin/bash\necho "Replay"', 'utf-8');
@@ -158,6 +181,38 @@ describe('Autonomous Lane Smoke Path (E-B2)', () => {
     expect(validTypes.includes('runtime')).toBe(true);
     recordTrace('failure_class', 'completed', { types: validTypes });
   });
+
+  it('I-B2-004: Should write rollback hooks when sandbox test command fails', async () => {
+    const rollbackSessionId = `${sandboxSessionId}-rollback`;
+    await adapter.invoke(plannerAgent, 'copilot', {
+      sandboxSessionId: rollbackSessionId,
+      sandboxStep: 'code',
+      filePath: 'src/rollback-proof.txt',
+      fileContent: 'rollback seed\n',
+      policyApprovals,
+    });
+
+    await expect(
+      adapter.invoke(plannerAgent, 'copilot', {
+        sandboxSessionId: rollbackSessionId,
+        sandboxStep: 'test',
+        command: ['node', '-e', 'process.exit(1)'],
+        rollbackOnFailure: true,
+        policyApprovals,
+      })
+    ).rejects.toBeDefined();
+
+    const rollbackPath = path.join(
+      traceDir,
+      'sandbox-runs',
+      rollbackSessionId,
+      'rollback-hook.json'
+    );
+    expect(fs.existsSync(rollbackPath)).toBe(true);
+    const rollbackPayload = JSON.parse(fs.readFileSync(rollbackPath, 'utf-8'));
+    expect(rollbackPayload.status).toBe('applied');
+    expect(rollbackPayload.triggeredByStep).toBe('test');
+  }, 15000);
 
   it('Epic E-B2: Should prove autonomous lane', async () => {
     recordTrace('acceptance', 'started', { phase: 'Epic E-B2' });

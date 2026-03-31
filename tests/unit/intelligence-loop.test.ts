@@ -161,6 +161,7 @@ describe('PATTERNS M1: Close The Intelligence Loop', () => {
       expect(proposal.proposalId).toMatch(/^POLICYCHANGE-/);
       expect(proposal.recommendedChanges.length).toBeGreaterThan(0);
       expect(proposal.recommendationStatus).toBe('pending-review');
+      expect(proposal.summary.riskClassification).toBe('low');
       expect(safeWriteCall).toHaveBeenCalled();
     });
 
@@ -229,6 +230,110 @@ describe('PATTERNS M1: Close The Intelligence Loop', () => {
       expect(proposal.summary.highRiskChanges).toBe(1);
       expect(proposal.summary.requiresApproval).toBe(2);
       expect(proposal.summary.confidenceScore).toBeGreaterThan(0.6);
+      expect(proposal.summary.riskClassification).toBe('high');
+    });
+
+    it('should auto-apply low-risk proposals when benchmark evidence passes', async () => {
+      ctx.store.writeFile(
+        'tests/load/bench-low-risk.json',
+        JSON.stringify({ p95: 1500, errorRatePct: 2, successRatePct: 98 })
+      );
+
+      const proposal = await service.createProposal(
+        [
+          {
+            id: 'LESSON-AUTOAPPLY-001',
+            category: 'routing',
+            narrative: 'Routing policy remained stable under load',
+            evidence: [],
+            confidence: 0.9,
+            applicability: { phases: [], agents: [], scope: 'universal' },
+          },
+        ],
+        ['bench-low-risk'],
+        []
+      );
+
+      const result = await service.autoApplyProposal(proposal.proposalId);
+
+      expect(result.autoApplied).toBe(true);
+      expect(result.failClosed).toBe(false);
+
+      const stored = JSON.parse(
+        ctx.store.readFile(
+          `BusinessDocs/intelligence-loop/policy-proposals/${proposal.proposalId}.json`
+        )
+      );
+      expect(stored.recommendationStatus).toBe('applied');
+
+      const rollbackJournal = ctx.store.readFile(
+        'BusinessDocs/intelligence-loop/policy-rollback-journal.jsonl'
+      );
+      expect(rollbackJournal).toContain(proposal.proposalId);
+
+      const adaptationEvents = ctx.store.readFile('BusinessDocs/metrics/adaptation-events.jsonl');
+      expect(adaptationEvents).toContain('auto-apply-attempted');
+      expect(adaptationEvents).toContain('proposal-applied');
+    });
+
+    it('should fail closed when auto-apply benchmark evidence is missing', async () => {
+      const proposal = await service.createProposal(
+        [
+          {
+            id: 'LESSON-AUTOAPPLY-002',
+            category: 'retrieval',
+            narrative: 'Retrieval profile appears stable',
+            evidence: [],
+            confidence: 0.92,
+            applicability: { phases: [], agents: [], scope: 'universal' },
+          },
+        ],
+        ['missing-benchmark'],
+        []
+      );
+
+      const result = await service.autoApplyProposal(proposal.proposalId);
+      expect(result.autoApplied).toBe(false);
+      expect(result.failClosed).toBe(true);
+      expect(result.reasons.some((reason) => reason.includes('benchmark evidence'))).toBe(true);
+
+      const adaptationEvents = ctx.store.readFile('BusinessDocs/metrics/adaptation-events.jsonl');
+      expect(adaptationEvents).toContain('auto-apply-failed-closed');
+    });
+
+    it('should revert latest applied proposal from rollback journal in one command', async () => {
+      ctx.store.writeFile(
+        'tests/load/bench-revert.json',
+        JSON.stringify({ p95: 1200, errorRatePct: 1, successRatePct: 99 })
+      );
+
+      const proposal = await service.createProposal(
+        [
+          {
+            id: 'LESSON-ROLLBACK-001',
+            category: 'tool-use',
+            narrative: 'Concurrency tuning stayed within safe boundaries',
+            evidence: [],
+            confidence: 0.91,
+            applicability: { phases: [], agents: [], scope: 'universal' },
+          },
+        ],
+        ['bench-revert'],
+        []
+      );
+
+      const applied = await service.autoApplyProposal(proposal.proposalId);
+      expect(applied.autoApplied).toBe(true);
+
+      const reverted = await service.revertLatestAppliedProposal('rapid rollback');
+      expect(reverted.proposalId).toBe(proposal.proposalId);
+
+      const stored = JSON.parse(
+        ctx.store.readFile(
+          `BusinessDocs/intelligence-loop/policy-proposals/${proposal.proposalId}.json`
+        )
+      );
+      expect(stored.recommendationStatus).toBe('reverted');
     });
 
     it('should apply and revert proposals with audit trails', async () => {

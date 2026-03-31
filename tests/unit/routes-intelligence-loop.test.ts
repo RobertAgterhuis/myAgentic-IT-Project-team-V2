@@ -9,6 +9,14 @@ import { registerIntelligenceLoopRoutes } from '../../src/webapp/routes/intellig
 function createContext(): ServiceContext {
   const store = new InMemoryStore();
   store.writeFile(
+    'tests/load/bench-route.json',
+    JSON.stringify({ p95: 1400, errorRatePct: 2, successRatePct: 98 })
+  );
+  store.writeFile(
+    'BusinessDocs/retrospectives/retro-route.md',
+    '# Retrospective\n\n## Successes\n- Approval workflow remained stable under guardrails\n'
+  );
+  store.writeFile(
     'Patterns/01-prompt-chaining.md',
     '# Prompt Chaining\nCurrent score: 9.2/10\nTarget score: 9.9/10\n'
   );
@@ -187,19 +195,40 @@ describe('routes/intelligence-loop', () => {
       url: '/api/intelligence-loop/policy-proposals',
       payload: {
         reevaluateArtifactIds: [],
-        retrospectiveIds: [],
-        benchmarkRunIds: [],
+        retrospectiveIds: ['retro-route.md'],
+        benchmarkRunIds: ['bench-route'],
       },
     });
     expect(proposalRes.statusCode).toBe(201);
-    expect(proposalRes.json().proposal.proposalId).toMatch(/^POLICYCHANGE-/);
+    const proposalId = proposalRes.json().proposal.proposalId as string;
+    expect(proposalId).toMatch(/^POLICYCHANGE-/);
 
     const approveRes = await app.inject({
       method: 'POST',
-      url: '/api/intelligence-loop/policy-proposals/any-id/approve',
+      url: `/api/intelligence-loop/policy-proposals/${proposalId}/approve`,
     });
     expect(approveRes.statusCode).toBe(200);
     expect(approveRes.json().ok).toBe(true);
+
+    const autoApplyRes = await app.inject({
+      method: 'POST',
+      url: `/api/intelligence-loop/policy-proposals/${proposalId}/auto-apply`,
+      payload: {
+        actor: 'route-test-runner',
+      },
+    });
+    expect(autoApplyRes.statusCode).toBe(200);
+    expect(autoApplyRes.json().result.autoApplied).toBe(true);
+
+    const revertRes = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/policy-proposals/revert-latest',
+      payload: {
+        reason: 'route rollback validation',
+      },
+    });
+    expect(revertRes.statusCode).toBe(200);
+    expect(revertRes.json().reverted.proposalId).toBe(proposalId);
   });
 
   it('handles benchmark comparison and proposal listing', async () => {

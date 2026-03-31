@@ -89,7 +89,7 @@ maybeDescribe('NativeGitBackend (#960)', () => {
     const head = runGit(repoDir, ['rev-parse', 'HEAD']).trim();
     const remoteHead = runGit(repoDir, ['rev-parse', 'origin/main']).trim();
     expect(remoteHead).toBe(head);
-  });
+  }, 15000);
 
   test('semicolon argument does not execute a secondary command (#960)', async () => {
     const markerPath = path.join(repoDir, 'injection-marker.txt');

@@ -18,6 +18,7 @@ import type { VerifierFinding } from './verifier-pass';
 // ─── Types ────────────────────────────────────────────────────
 
 export type RevisionTrigger = 'verifier-findings' | 'quality-below-threshold' | 'manual';
+export type RevisionLifecycleStatus = 'requested' | 'applied' | 'succeeded' | 'escalated';
 
 export interface SelfRevisionRequest {
   agentId: string;
@@ -40,12 +41,21 @@ export interface SelfRevisionEvent {
   deliverableSource: string;
   trigger: RevisionTrigger;
   requestedAt: string;
+  status: RevisionLifecycleStatus;
   instructions: SelfRevisionInstruction[];
   findingsAddressed: string[];
   estimatedImpact: 'high' | 'medium' | 'low';
   applied: boolean;
   appliedAt?: string;
+  succeededAt?: string;
+  escalatedAt?: string;
   summary?: string;
+  terminalReason?: string;
+}
+
+function normalizeQualityPercent(value: number | undefined, fallback: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
+  return value <= 1 ? value * 100 : value;
 }
 
 // ─── Service ──────────────────────────────────────────────────
@@ -55,7 +65,7 @@ export class SelfRevisionService {
   private eventsPath = 'BusinessDocs/reasoning-collaboration/self-revision-events.jsonl';
 
   /** Minimum quality score that triggers self-revision when selfCritiqueEnabled. */
-  readonly DEFAULT_QUALITY_THRESHOLD = 0.75;
+  readonly DEFAULT_QUALITY_THRESHOLD = 75;
 
   constructor(ctx: ServiceContext) {
     this.ctx = ctx;
@@ -71,8 +81,11 @@ export class SelfRevisionService {
    */
   async evaluateRevisionNeed(request: SelfRevisionRequest): Promise<SelfRevisionEvent | null> {
     const findings = request.verifierFindings ?? [];
-    const qualityScore = request.qualityScore ?? 1;
-    const qualityThreshold = request.qualityThreshold ?? this.DEFAULT_QUALITY_THRESHOLD;
+    const qualityScore = normalizeQualityPercent(request.qualityScore, 100);
+    const qualityThreshold = normalizeQualityPercent(
+      request.qualityThreshold,
+      this.DEFAULT_QUALITY_THRESHOLD
+    );
 
     const actionableFindings = findings.filter((f) =>
       ['critical', 'high', 'medium'].includes(f.severity)
@@ -98,6 +111,7 @@ export class SelfRevisionService {
       deliverableSource: request.deliverableSource,
       trigger: request.trigger,
       requestedAt: new Date().toISOString(),
+      status: 'requested',
       instructions,
       findingsAddressed: actionableFindings.map((f) => f.ruleId),
       estimatedImpact,
@@ -112,16 +126,34 @@ export class SelfRevisionService {
    * Mark a revision event as applied.
    */
   async markApplied(eventId: string, summary: string): Promise<SelfRevisionEvent | undefined> {
-    const events = await this.loadEvents();
-    const event = events.find((e) => e.id === eventId);
-    if (!event) return undefined;
+    return this.updateEvent(eventId, (event) => {
+      event.applied = true;
+      event.status = 'applied';
+      event.appliedAt = new Date().toISOString();
+      event.summary = summary;
+    });
+  }
 
-    event.applied = true;
-    event.appliedAt = new Date().toISOString();
-    event.summary = summary;
+  async markSucceeded(eventId: string, summary: string): Promise<SelfRevisionEvent | undefined> {
+    return this.updateEvent(eventId, (event) => {
+      event.applied = true;
+      event.status = 'succeeded';
+      event.succeededAt = new Date().toISOString();
+      event.summary = summary;
+    });
+  }
 
-    await this.saveEvents(events);
-    return event;
+  async markEscalated(
+    eventId: string,
+    summary: string,
+    terminalReason: string
+  ): Promise<SelfRevisionEvent | undefined> {
+    return this.updateEvent(eventId, (event) => {
+      event.status = 'escalated';
+      event.escalatedAt = new Date().toISOString();
+      event.summary = summary;
+      event.terminalReason = terminalReason;
+    });
   }
 
   async listEvents(filters?: {
@@ -191,7 +223,7 @@ export class SelfRevisionService {
     if (qualityFail) {
       instructions.push({
         heading: 'Improve Deliverable Quality',
-        directive: `Your deliverable quality score (${(qualityScore * 100).toFixed(0)}%) is below the required threshold (${(threshold * 100).toFixed(0)}%). Review for: depth of analysis, presence of evidence citations, completeness of required sections, and absence of generic statements (AL-4).`,
+        directive: `Your deliverable quality score (${qualityScore.toFixed(0)}%) is below the required threshold (${threshold.toFixed(0)}%). Review for: depth of analysis, presence of evidence citations, completeness of required sections, and absence of generic statements (AL-4).`,
       });
     }
 
@@ -242,6 +274,19 @@ export class SelfRevisionService {
   private async saveEvents(events: SelfRevisionEvent[]): Promise<void> {
     this.ctx.store.mkdirp('BusinessDocs/reasoning-collaboration');
     this.ctx.store.writeFile(this.eventsPath, events.map((e) => JSON.stringify(e)).join('\n'));
+  }
+
+  private async updateEvent(
+    eventId: string,
+    mutate: (event: SelfRevisionEvent) => void
+  ): Promise<SelfRevisionEvent | undefined> {
+    const events = await this.loadEvents();
+    const event = events.find((candidate) => candidate.id === eventId);
+    if (!event) return undefined;
+
+    mutate(event);
+    await this.saveEvents(events);
+    return event;
   }
 }
 

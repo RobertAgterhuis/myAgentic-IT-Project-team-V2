@@ -103,6 +103,12 @@ describe('reasoning-collaboration services', () => {
     expect(event).not.toBeNull();
     const applied = await revisionSvc.markApplied(event!.id, 'Resolved uncertainty markers');
     expect(applied?.applied).toBe(true);
+
+    const succeeded = await revisionSvc.markSucceeded(
+      event!.id,
+      'Reinvocation produced a compliant output'
+    );
+    expect(succeeded?.status).toBe('succeeded');
   });
 
   it('supports A2A messaging lifecycle and conversation reconstruction', async () => {
@@ -262,6 +268,14 @@ describe('reasoning-collaboration services', () => {
 
     const missingApplied = await svc.markApplied('unknown-event', 'noop');
     expect(missingApplied).toBeUndefined();
+
+    const escalated = await svc.markEscalated(
+      manualEvent!.id,
+      'Revision budget exhausted',
+      'max-revision-attempts'
+    );
+    expect(escalated?.status).toBe('escalated');
+    expect(escalated?.terminalReason).toBe('max-revision-attempts');
   });
 
   it('covers A2A messaging reply, expiry, filters, and not-found branches', async () => {

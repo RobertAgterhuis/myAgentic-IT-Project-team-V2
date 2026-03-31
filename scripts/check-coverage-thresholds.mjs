@@ -18,6 +18,18 @@ const RAG_STORE_FILE_PATTERNS = [
   '\\src\\webapp\\services\\rag\\rag-store.ts',
 ];
 
+const REFLECTION_FILE_PATTERNS = {
+  dispatcher: ['/platform/engine/dispatcher.ts', '\\platform\\engine\\dispatcher.ts'],
+  selfRevision: ['/platform/engine/self-revision.ts', '\\platform\\engine\\self-revision.ts'],
+};
+
+const REFLECTION_THRESHOLDS = {
+  statements: Number(process.env.COVERAGE_MIN_REFLECTION_STATEMENTS || 0),
+  branches: Number(process.env.COVERAGE_MIN_REFLECTION_BRANCHES || 0),
+  functions: Number(process.env.COVERAGE_MIN_REFLECTION_FUNCTIONS || 0),
+  lines: Number(process.env.COVERAGE_MIN_REFLECTION_LINES || 0),
+};
+
 function metricValue(total, metric) {
   const value = total?.[metric]?.pct;
   if (typeof value !== 'number' || Number.isNaN(value)) {
@@ -36,6 +48,19 @@ function findRagStoreCoverage(summary) {
   for (const [filePath, metrics] of Object.entries(summary)) {
     if (filePath === 'total') continue;
     if (!RAG_STORE_FILE_PATTERNS.some((pattern) => filePath.includes(pattern))) continue;
+    if (!metrics || typeof metrics !== 'object') continue;
+    return { filePath, metrics };
+  }
+
+  return null;
+}
+
+function findFileCoverage(summary, patterns) {
+  if (!summary || typeof summary !== 'object') return null;
+
+  for (const [filePath, metrics] of Object.entries(summary)) {
+    if (filePath === 'total') continue;
+    if (!patterns.some((pattern) => filePath.includes(pattern))) continue;
     if (!metrics || typeof metrics !== 'object') continue;
     return { filePath, metrics };
   }
@@ -87,6 +112,35 @@ try {
     console.log(`- branches:   ${typeof branches === 'number' ? formatPct(branches) : 'N/A'}`);
     console.log(`- functions:  ${typeof functions === 'number' ? formatPct(functions) : 'N/A'}`);
     console.log(`- lines:      ${typeof lines === 'number' ? formatPct(lines) : 'N/A'}`);
+  }
+
+  const reflectionTargets = Object.entries(REFLECTION_FILE_PATTERNS).map(([label, patterns]) => ({
+    label,
+    coverage: findFileCoverage(raw, patterns),
+  }));
+
+  console.log('\nReflection Flow Coverage Gate');
+  for (const target of reflectionTargets) {
+    if (!target.coverage) {
+      console.log(`- ${target.label}: file not found in coverage summary`);
+      if (Object.values(REFLECTION_THRESHOLDS).some((value) => value > 0)) {
+        failures.push({ metric: `${target.label}:missing`, actual: 0, required: 1 });
+      }
+      continue;
+    }
+
+    console.log(`- ${target.label}: ${target.coverage.filePath}`);
+    for (const metric of Object.keys(REFLECTION_THRESHOLDS)) {
+      const required = REFLECTION_THRESHOLDS[metric];
+      const actual = metricValue(target.coverage.metrics, metric);
+      const passed = actual >= required;
+      console.log(
+        `  - ${metric.padEnd(10)} actual=${formatPct(actual)} required=${formatPct(required)} ${passed ? 'PASS' : 'FAIL'}`
+      );
+      if (!passed) {
+        failures.push({ metric: `${target.label}:${metric}`, actual, required });
+      }
+    }
   }
 
   if (failures.length > 0) {

@@ -29,6 +29,8 @@ import {
 } from './agent-phase-map';
 import { loadFlows } from './flow-loader';
 import type { RuntimePackGraph } from './runtime-pack';
+import { createSelfRevisionService, type SelfRevisionEvent } from './self-revision';
+import type { VerifierFinding } from './verifier-pass';
 
 // ─── Error Severity Classification (M5 / Evolution 5) ───────
 
@@ -60,6 +62,9 @@ const FATAL_PATTERNS: RegExp[] = [
 interface DispatcherStore {
   exists(path: string): boolean;
   read(path: string): string;
+  readFile?(path: string, encoding?: string): string;
+  writeFile?(path: string, data: string, encoding?: string): void;
+  mkdirp?(path: string): void;
 }
 
 interface AgentPrioritySignal {
@@ -88,6 +93,18 @@ interface RuntimePackManifestSummary {
   version: string;
 }
 
+interface RevisionRuntimeContext {
+  eventId: string;
+  attempt: number;
+  maxAttempts: number;
+  trigger: 'verifier-findings' | 'quality-below-threshold' | 'manual';
+  instructions: Array<{ heading: string; directive: string }>;
+  findingsAddressed: string[];
+  estimatedImpact: 'high' | 'medium' | 'low';
+  priorFailure?: string;
+  previousOutputPath?: string;
+}
+
 export interface AgentExecutionContext {
   [key: string]: unknown;
   agentId: string;
@@ -109,6 +126,7 @@ export interface AgentExecutionContext {
   sessionState: unknown;
   workspaceId: string | null;
   runtimePackManifest: RuntimePackManifestSummary | null;
+  revisionContext?: RevisionRuntimeContext | null;
   gitService?: unknown;
   executionPolicy?: 'standard' | 'fast-path';
 }
@@ -149,6 +167,10 @@ interface InvocationEntry {
   confidence?: number;
   uncertainty_reasons?: string[];
   needs_human_review?: boolean;
+  revisionEventId?: string;
+  revisionAttempt?: number;
+  revisionStatus?: string;
+  stopReason?: string;
 }
 
 interface ConfidenceAssessment {
@@ -301,6 +323,101 @@ interface InvocationResponseContract {
 interface NormalizedInvocationResult {
   outputPath?: string;
   response?: InvocationResponseContract;
+}
+
+interface RevisionTriggerDecision {
+  trigger: 'verifier-findings' | 'quality-below-threshold';
+  qualityScore?: number;
+  qualityThreshold?: number;
+  verifierFindings?: VerifierFinding[];
+  summary: string;
+}
+
+const REVISION_ELIGIBLE_ERROR_PATTERN =
+  /contract validation|validation finding|required markers|required sections|checklist|quality/i;
+
+function normalizePercentValue(value: number | undefined, fallback: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
+  return value <= 1 ? value * 100 : value;
+}
+
+function buildRevisionFindingFromError(message: string): VerifierFinding[] {
+  return [
+    {
+      ruleId: 'RV-VALIDATION',
+      severity: 'high',
+      description: message,
+      suggestedFix:
+        'Address the failed contract, checklist, or evidence requirement before reinvocation.',
+    },
+  ];
+}
+
+function deriveRevisionDecisionFromResponse(
+  response: InvocationResponseContract | undefined,
+  qualityThreshold: number
+): RevisionTriggerDecision | null {
+  if (!response) {
+    return null;
+  }
+
+  const qualityScore = normalizePercentValue(response?.deliverableQuality?.score, 100);
+  const approvalSignal = response?.deliverableQuality?.approvalSignal;
+  const hasContractValidation = response.contractValidation !== undefined;
+  const contractPassed = response.contractValidation?.status === 'passed';
+  const contractFailed = response.contractValidation?.status === 'failed';
+  const hasQualitySignal = response.deliverableQuality !== undefined;
+
+  if (!hasContractValidation && !hasQualitySignal) {
+    return null;
+  }
+
+  if (
+    (!hasContractValidation || contractPassed) &&
+    (!hasQualitySignal || (approvalSignal === 'approve' && qualityScore >= qualityThreshold))
+  ) {
+    return null;
+  }
+
+  if (hasContractValidation && contractFailed) {
+    return {
+      trigger: 'verifier-findings',
+      qualityScore,
+      qualityThreshold,
+      verifierFindings: buildRevisionFindingFromError(
+        'Contract validation did not pass for the invocation output.'
+      ),
+      summary: 'Contract validation failed and requires a bounded self-revision pass.',
+    };
+  }
+
+  if (hasQualitySignal && (approvalSignal !== 'approve' || qualityScore < qualityThreshold)) {
+    return {
+      trigger: 'quality-below-threshold',
+      qualityScore,
+      qualityThreshold,
+      summary: `Deliverable quality remained below threshold (${qualityScore.toFixed(0)}% < ${qualityThreshold.toFixed(0)}%).`,
+    };
+  }
+
+  return null;
+}
+
+function deriveRevisionDecisionFromError(
+  message: string,
+  severity: ErrorSeverity,
+  qualityThreshold: number
+): RevisionTriggerDecision | null {
+  if (severity !== ErrorSeverity.RECOVERABLE || !REVISION_ELIGIBLE_ERROR_PATTERN.test(message)) {
+    return null;
+  }
+
+  return {
+    trigger: 'verifier-findings',
+    qualityThreshold,
+    verifierFindings: buildRevisionFindingFromError(message),
+    summary: `Recoverable validation failure detected: ${message}`,
+  };
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -620,6 +737,10 @@ const DEFAULT_CONFIG = Object.freeze({
   retryDelayMs: 5000,
   backoffBaseMs: 2000,
   backoffCapMs: 30000,
+  maxRevisionAttempts: 1,
+  revisionBackoffBaseMs: 1000,
+  revisionBackoffCapMs: 10000,
+  revisionQualityThreshold: 75,
   skillsDir: null,
   docsDir: 'docs',
   maxConcurrency: 3, // bounded parallelism ceiling per group
@@ -882,6 +1003,10 @@ class Dispatcher {
     const config = { ...this._config, ...agentConfig };
     const platform = (agentConfig.platform || config.platform) as string;
     let lastError: { message: string } | null = null;
+    let lastRevisionEventId: string | undefined;
+    let revisionAttempts = 0;
+    let transientRetries = 0;
+    let currentContext = { ...context };
 
     // Per-phase human-review threshold (#1062): look up by state, fall back to "default" or 0.6
     const thresholdMap = (config.humanReviewThresholds ??
@@ -890,8 +1015,15 @@ class Dispatcher {
 
     // maxTransientRetries governs classified-TRANSIENT retries; fall back to legacy maxRetries
     const maxRetries = (config.maxTransientRetries ?? config.maxRetries ?? 3) as number;
+    const maxRevisionAttempts = (config.maxRevisionAttempts ?? 1) as number;
+    const maxTotalAttempts = maxRetries + maxRevisionAttempts + 1;
+    const revisionQualityThreshold = normalizePercentValue(
+      config.revisionQualityThreshold as number | undefined,
+      DEFAULT_CONFIG.revisionQualityThreshold as number
+    );
+    const revisionService = this._createSelfRevisionService();
 
-    for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+    for (let attempt = 1; attempt <= maxTotalAttempts; attempt++) {
       const entry: InvocationEntry = {
         agentId: agent.id,
         agentName: agent.name,
@@ -900,11 +1032,13 @@ class Dispatcher {
         startTime: new Date().toISOString(),
         status: 'success',
         attempt,
+        revisionAttempt: revisionAttempts,
+        revisionEventId: lastRevisionEventId,
       };
 
       try {
         const rawResult = await this._withTimeout(
-          this._invoker(agent, platform, context),
+          this._invoker(agent, platform, currentContext),
           config.timeoutMs as number
         );
         const runtimeResult = normalizeInvocationResult(rawResult);
@@ -936,7 +1070,109 @@ class Dispatcher {
               : undefined;
         }
 
-        const continuityWarnings = evaluatePredecessorContractContinuity(context);
+        const revisionDecision = deriveRevisionDecisionFromResponse(
+          response,
+          revisionQualityThreshold
+        );
+        if (revisionDecision) {
+          if (revisionAttempts < maxRevisionAttempts) {
+            revisionAttempts += 1;
+            const revisionEvent = await revisionService.evaluateRevisionNeed({
+              agentId: agent.id,
+              deliverableSource: runtimeResult.outputPath || `${state}/${agent.id}`,
+              originalContent: runtimeResult.outputPath || revisionDecision.summary,
+              trigger: revisionDecision.trigger,
+              verifierFindings: revisionDecision.verifierFindings,
+              qualityScore: revisionDecision.qualityScore,
+              qualityThreshold: revisionDecision.qualityThreshold,
+            });
+
+            if (revisionEvent) {
+              lastRevisionEventId = revisionEvent.id;
+              await revisionService.markApplied(
+                revisionEvent.id,
+                `Dispatcher scheduled reinvocation after attempt ${attempt}.`
+              );
+              entry.endTime = new Date().toISOString();
+              entry.durationMs = +new Date(entry.endTime) - +new Date(entry.startTime);
+              entry.status = 'retry';
+              entry.error = revisionDecision.summary;
+              entry.errorSeverity = ErrorSeverity.RECOVERABLE;
+              entry.revisionEventId = revisionEvent.id;
+              entry.revisionAttempt = revisionAttempts;
+              entry.revisionStatus = 'applied';
+              entry.stopReason = 'self-revision-requested';
+              const confidence = assessConfidence(
+                response,
+                attempt,
+                true,
+                revisionDecision.summary,
+                confidenceThreshold
+              );
+              entry.confidence = confidence.confidence;
+              entry.uncertainty_reasons = [
+                ...confidence.uncertainty_reasons,
+                revisionDecision.summary,
+              ];
+              entry.needs_human_review = true;
+              this._logEntry(entry);
+              currentContext = this._buildRevisionContext(
+                currentContext,
+                revisionEvent,
+                revisionAttempts,
+                maxRevisionAttempts,
+                revisionDecision.summary,
+                runtimeResult.outputPath
+              );
+              await this._delayWithCap(
+                config.revisionBackoffBaseMs as number,
+                config.revisionBackoffCapMs as number,
+                revisionAttempts
+              );
+              continue;
+            }
+          }
+
+          if (lastRevisionEventId) {
+            await revisionService.markEscalated(
+              lastRevisionEventId,
+              revisionDecision.summary,
+              'max-revision-attempts'
+            );
+          }
+
+          entry.status = 'failure';
+          entry.error = revisionDecision.summary;
+          entry.errorSeverity = ErrorSeverity.RECOVERABLE;
+          entry.revisionEventId = lastRevisionEventId;
+          entry.revisionAttempt = revisionAttempts;
+          entry.revisionStatus = lastRevisionEventId ? 'escalated' : undefined;
+          entry.stopReason = 'max-revision-attempts';
+          const confidence = assessConfidence(
+            response,
+            attempt,
+            false,
+            revisionDecision.summary,
+            confidenceThreshold
+          );
+          entry.confidence = confidence.confidence;
+          entry.uncertainty_reasons = confidence.uncertainty_reasons;
+          entry.needs_human_review = true;
+          this._logEntry(entry);
+          return {
+            success: false,
+            error: revisionDecision.summary,
+            severity: ErrorSeverity.RECOVERABLE,
+            degraded: true,
+            stopReason: 'max-revision-attempts',
+            revisionEventId: lastRevisionEventId,
+            confidence: confidence.confidence,
+            uncertainty_reasons: confidence.uncertainty_reasons,
+            needs_human_review: true,
+          };
+        }
+
+        const continuityWarnings = evaluatePredecessorContractContinuity(currentContext);
         const enforceContinuity = shouldEnforcePredecessorContractContinuity(
           config,
           state,
@@ -979,6 +1215,17 @@ class Dispatcher {
           };
         }
 
+        if (lastRevisionEventId) {
+          await revisionService.markSucceeded(
+            lastRevisionEventId,
+            `Revision succeeded on attempt ${attempt}.`
+          );
+          entry.revisionEventId = lastRevisionEventId;
+          entry.revisionAttempt = revisionAttempts;
+          entry.revisionStatus = 'succeeded';
+          entry.stopReason = 'quality-approved';
+        }
+
         entry.confidence = confidence.confidence;
         entry.uncertainty_reasons = confidence.uncertainty_reasons;
         entry.needs_human_review = confidence.needs_human_review;
@@ -995,6 +1242,11 @@ class Dispatcher {
       } catch (err) {
         lastError = err as { message: string };
         const severity = Dispatcher.classifyError(err as { message: string });
+        const revisionDecision = deriveRevisionDecisionFromError(
+          (err as { message: string }).message,
+          severity,
+          revisionQualityThreshold
+        );
         entry.endTime = new Date().toISOString();
         entry.durationMs = +new Date(entry.endTime) - +new Date(entry.startTime);
         entry.error = (err as { message: string }).message;
@@ -1019,6 +1271,47 @@ class Dispatcher {
         entry.uncertainty_reasons = confidence.uncertainty_reasons;
         entry.needs_human_review = confidence.needs_human_review;
 
+        if (revisionDecision && revisionAttempts < maxRevisionAttempts) {
+          revisionAttempts += 1;
+          const revisionEvent = await revisionService.evaluateRevisionNeed({
+            agentId: agent.id,
+            deliverableSource: `${state}/${agent.id}`,
+            originalContent: '',
+            trigger: revisionDecision.trigger,
+            verifierFindings: revisionDecision.verifierFindings,
+            qualityScore: revisionDecision.qualityScore,
+            qualityThreshold: revisionDecision.qualityThreshold,
+          });
+
+          if (revisionEvent) {
+            lastRevisionEventId = revisionEvent.id;
+            await revisionService.markApplied(
+              revisionEvent.id,
+              `Dispatcher scheduled reinvocation after failure on attempt ${attempt}.`
+            );
+            entry.status = 'retry';
+            entry.errorSeverity = ErrorSeverity.RECOVERABLE;
+            entry.revisionEventId = revisionEvent.id;
+            entry.revisionAttempt = revisionAttempts;
+            entry.revisionStatus = 'applied';
+            entry.stopReason = 'self-revision-requested';
+            this._logEntry(entry);
+            currentContext = this._buildRevisionContext(
+              currentContext,
+              revisionEvent,
+              revisionAttempts,
+              maxRevisionAttempts,
+              revisionDecision.summary
+            );
+            await this._delayWithCap(
+              config.revisionBackoffBaseMs as number,
+              config.revisionBackoffCapMs as number,
+              revisionAttempts
+            );
+            continue;
+          }
+        }
+
         this._logEntry(entry);
 
         // FATAL → halt immediately, no retry
@@ -1034,12 +1327,38 @@ class Dispatcher {
         }
 
         // TRANSIENT / RECOVERABLE → retry with backoff (if attempts remain)
-        if (attempt <= maxRetries) {
-          const base = (config.backoffBaseMs || DEFAULT_CONFIG.backoffBaseMs) as number;
-          const cap = (config.backoffCapMs || DEFAULT_CONFIG.backoffCapMs) as number;
-          const delay = Math.min(base * Math.pow(2, attempt - 1), cap);
-          await this._delay(delay);
+        if (transientRetries < maxRetries) {
+          transientRetries += 1;
+          await this._delayWithCap(
+            config.backoffBaseMs as number,
+            config.backoffCapMs as number,
+            transientRetries
+          );
+          continue;
         }
+
+        if (revisionDecision && lastRevisionEventId) {
+          await revisionService.markEscalated(
+            lastRevisionEventId,
+            revisionDecision.summary,
+            'max-revision-attempts'
+          );
+        }
+
+        return {
+          success: false,
+          error: lastError ? lastError.message : 'Unknown error',
+          severity:
+            severity === ErrorSeverity.RECOVERABLE
+              ? ErrorSeverity.RECOVERABLE
+              : ErrorSeverity.FATAL,
+          degraded: severity === ErrorSeverity.RECOVERABLE ? true : undefined,
+          stopReason: revisionDecision ? 'max-revision-attempts' : 'retry-budget-exhausted',
+          revisionEventId: lastRevisionEventId,
+          confidence: confidence.confidence,
+          uncertainty_reasons: confidence.uncertainty_reasons,
+          needs_human_review: confidence.needs_human_review,
+        };
       }
     }
 
@@ -1060,6 +1379,8 @@ class Dispatcher {
           ? ErrorSeverity.RECOVERABLE
           : ErrorSeverity.FATAL,
       degraded: finalSeverity === ErrorSeverity.RECOVERABLE ? true : undefined,
+      stopReason: 'attempt-budget-exhausted',
+      revisionEventId: lastRevisionEventId,
       confidence: confidence.confidence,
       uncertainty_reasons: confidence.uncertainty_reasons,
       needs_human_review: confidence.needs_human_review,
@@ -1240,9 +1561,87 @@ class Dispatcher {
   }
 
   /** @private */
+  _delayWithCap(baseMs: number, capMs: number, attempt: number) {
+    const safeBase = Number.isFinite(baseMs) ? baseMs : (DEFAULT_CONFIG.backoffBaseMs as number);
+    const safeCap = Number.isFinite(capMs) ? capMs : (DEFAULT_CONFIG.backoffCapMs as number);
+    const delay = Math.min(safeBase * Math.pow(2, Math.max(0, attempt - 1)), safeCap);
+    return this._delay(delay);
+  }
+
+  /** @private */
   _logEntry(entry: InvocationEntry) {
     this._log.push(entry);
     this._onLog(entry);
+  }
+
+  /** @private */
+  _buildRevisionContext(
+    context: Record<string, unknown>,
+    revisionEvent: SelfRevisionEvent,
+    attempt: number,
+    maxAttempts: number,
+    priorFailure: string,
+    previousOutputPath?: string
+  ) {
+    return {
+      ...context,
+      revisionContext: {
+        eventId: revisionEvent.id,
+        attempt,
+        maxAttempts,
+        trigger: revisionEvent.trigger,
+        instructions: revisionEvent.instructions,
+        findingsAddressed: revisionEvent.findingsAddressed,
+        estimatedImpact: revisionEvent.estimatedImpact,
+        priorFailure,
+        previousOutputPath,
+      },
+    };
+  }
+
+  /** @private */
+  _createSelfRevisionService() {
+    const store = this._store;
+    const storeAdapter = {
+      exists(filePath: string) {
+        return store.exists(filePath);
+      },
+      readFile(filePath: string, encoding?: string) {
+        if (typeof store.readFile === 'function') {
+          return store.readFile(filePath, encoding);
+        }
+        return store.read(filePath);
+      },
+      writeFile(filePath: string, data: string, encoding?: string) {
+        if (typeof store.writeFile === 'function') {
+          store.writeFile(filePath, data, encoding);
+          return;
+        }
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+        fs.writeFileSync(filePath, data, (encoding || 'utf8') as BufferEncoding);
+      },
+      mkdirp(dirPath: string) {
+        if (typeof store.mkdirp === 'function') {
+          store.mkdirp(dirPath);
+        }
+      },
+    };
+
+    return createSelfRevisionService({
+      store: storeAdapter,
+      cache: {} as never,
+      audit: {} as never,
+      projectRoot: process.cwd(),
+      businessDocs: path.resolve(process.cwd(), 'BusinessDocs'),
+      sessionDir: path.resolve(process.cwd(), 'BusinessDocs', 'session'),
+      decisionsFile: path.resolve(process.cwd(), 'BusinessDocs', 'decisions.md'),
+      decisionsDir: path.resolve(process.cwd(), 'BusinessDocs', 'decisions'),
+      commandQueue: path.resolve(process.cwd(), 'BusinessDocs', 'session', 'command-queue.json'),
+      helpDir: path.resolve(process.cwd(), 'docs', 'help'),
+      safeWrite(filePath: string, data: string, encoding?: string) {
+        storeAdapter.writeFile(filePath, data, encoding);
+      },
+    } as never);
   }
 
   // ─── Bounded Parallelism ─────────────────────────────────────

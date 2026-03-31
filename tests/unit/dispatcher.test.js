@@ -42,6 +42,7 @@ function createMockStore(files = {}) {
     writeFile: (fp, content) => {
       files[fp] = content;
     },
+    mkdirp: () => {},
     _files: files,
   };
 }
@@ -660,6 +661,118 @@ describe('Dispatcher — invoke (retry)', () => {
     expect(d.log.length).toBe(2);
     expect(d.log[0].status).toBe('retry');
     expect(d.log[0].errorSeverity).toBe('TRANSIENT');
+  });
+
+  it('reinvokes with revision context when deliverable quality is below threshold', async () => {
+    const contexts = [];
+    let calls = 0;
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (_agent, _platform, context) => {
+        calls += 1;
+        contexts.push(context);
+        if (calls === 1) {
+          return {
+            outputPath: '/out/draft.md',
+            response: {
+              status: 'success',
+              finishReason: 'stop',
+              attempts: 1,
+              usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+              deliverableQuality: { score: 42, approvalSignal: 'block', summary: 'weak draft' },
+              contractValidation: { status: 'passed' },
+            },
+          };
+        }
+        return {
+          outputPath: '/out/final.md',
+          response: {
+            status: 'success',
+            finishReason: 'stop',
+            attempts: 1,
+            usage: { promptTokens: 12, completionTokens: 18, totalTokens: 30 },
+            deliverableQuality: { score: 92, approvalSignal: 'approve', summary: 'strong draft' },
+            contractValidation: { status: 'passed' },
+          },
+        };
+      },
+      config: { maxRetries: 0, maxRevisionAttempts: 1 },
+    });
+
+    const result = await d.invoke({ id: '06', name: 'Senior Developer' }, STATES.PHASE_2, {});
+
+    expect(result.success).toBe(true);
+    expect(result.outputPath).toBe('/out/final.md');
+    expect(contexts).toHaveLength(2);
+    expect(contexts[1].revisionContext).toMatchObject({
+      attempt: 1,
+      maxAttempts: 1,
+      trigger: 'quality-below-threshold',
+      previousOutputPath: '/out/draft.md',
+    });
+    expect(d.log[0].status).toBe('retry');
+    expect(d.log[0].revisionStatus).toBe('applied');
+    expect(d.log[1].revisionStatus).toBe('succeeded');
+  });
+
+  it('escalates when revision budget is exhausted on repeated low-quality outputs', async () => {
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async () => ({
+        outputPath: '/out/draft.md',
+        response: {
+          status: 'success',
+          finishReason: 'stop',
+          attempts: 1,
+          usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+          deliverableQuality: { score: 40, approvalSignal: 'block', summary: 'weak draft' },
+          contractValidation: { status: 'passed' },
+        },
+      }),
+      config: { maxRetries: 0, maxRevisionAttempts: 1 },
+    });
+
+    const result = await d.invoke({ id: '06', name: 'Senior Developer' }, STATES.PHASE_2, {});
+
+    expect(result.success).toBe(false);
+    expect(result.stopReason).toBe('max-revision-attempts');
+    expect(result.revisionEventId).toBeTruthy();
+    expect(d.log.at(-1).revisionStatus).toBe('escalated');
+  });
+
+  it('routes recoverable validation failures into a bounded revision reinvocation', async () => {
+    const contexts = [];
+    let calls = 0;
+    const d = new Dispatcher({
+      store: createMockStore(),
+      invoker: async (_agent, _platform, context) => {
+        calls += 1;
+        contexts.push(context);
+        if (calls === 1) {
+          throw new Error(
+            'Provider output failed contract validation after 2 attempt(s). Missing required sections.'
+          );
+        }
+        return {
+          outputPath: '/out/recovered.md',
+          response: {
+            status: 'success',
+            finishReason: 'stop',
+            attempts: 1,
+            usage: { promptTokens: 10, completionTokens: 10, totalTokens: 20 },
+            deliverableQuality: { score: 90, approvalSignal: 'approve', summary: 'recovered' },
+            contractValidation: { status: 'passed' },
+          },
+        };
+      },
+      config: { maxRetries: 0, maxRevisionAttempts: 1 },
+    });
+
+    const result = await d.invoke({ id: '05', name: 'Software Architect' }, STATES.PHASE_2, {});
+
+    expect(result.success).toBe(true);
+    expect(contexts[1].revisionContext.trigger).toBe('verifier-findings');
+    expect(contexts[1].revisionContext.priorFailure).toContain('contract validation');
   });
 });
 

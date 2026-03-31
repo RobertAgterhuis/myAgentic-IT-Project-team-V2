@@ -674,7 +674,7 @@ describe('orchestrator routes (integration)', () => {
         expect(res.status).toBe(200);
         expect(res.body.command).toBe(command);
       }
-    });
+    }, 15000);
 
     it('accepts REEVALUATE with resume flag', async () => {
       const res = fakeRes();

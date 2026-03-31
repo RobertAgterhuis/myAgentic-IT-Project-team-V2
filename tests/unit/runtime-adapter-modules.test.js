@@ -163,6 +163,41 @@ describe('runtime adapter modules', () => {
       expect(baseMessages[1].role).toBe('user');
     });
 
+    it('buildPromptEnvelope surfaces revision context in system prompt and envelope', async () => {
+      const { buildPromptEnvelope } =
+        await import('../../platform/engine/runtime-adapter/prompt-assembly.ts');
+
+      const { promptEnvelope } = buildPromptEnvelope({
+        requestId: 'r1-revision',
+        requestedAt: new Date().toISOString(),
+        agent: { id: '06', name: 'Senior Developer' },
+        platform: 'copilot',
+        skillPath: 'templates/sdlc/skill.md',
+        sanitizedSkillContent: 'Revise the artifact.',
+        contextTokenBudget: 1000,
+        predecessorOutputs: [],
+        predecessorContracts: [],
+        questionnaireInput: null,
+        ragContext: null,
+        sessionState: null,
+        revisionContext: {
+          eventId: 'SRE-1',
+          attempt: 1,
+          maxAttempts: 2,
+          trigger: 'quality-below-threshold',
+          instructions: [{ heading: 'Improve Deliverable Quality', directive: 'Add evidence.' }],
+          findingsAddressed: [],
+          estimatedImpact: 'medium',
+          priorFailure: 'Quality score below threshold.',
+        },
+        contextBlocks: [],
+        contractPaths: [],
+      });
+
+      expect(promptEnvelope.prompt.system).toContain('self-revision attempt 1 of 2');
+      expect(promptEnvelope.context.revisionContext?.eventId).toBe('SRE-1');
+    });
+
     it('buildPromptEnvelope includes explicit contract reference text when paths are provided', async () => {
       const { buildPromptEnvelope } =
         await import('../../platform/engine/runtime-adapter/prompt-assembly.ts');

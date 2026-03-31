@@ -599,7 +599,12 @@ jobs:
         env:
           CI: true
           AUTONOMOUS_LANE_MODE: smoke
+          AUTONOMOUS_LANE_RUN_CLASS: autonomous
           ARTIFACT_TRACE_ENABLED: true
+
+      - name: Build trust dashboard split
+        if: always()
+        run: npm run test:autonomous-trust-dashboard
 
       - name: Publish autonomous lane artifacts
         uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
@@ -622,6 +627,14 @@ jobs:
         with:
           name: autonomous-lane-failure-report
           path: tests/load/autonomous-lane-traces/failure-classification.json
+          retention-days: 90
+
+      - name: Upload trust dashboard report
+        uses: actions/upload-artifact@834a144ee995460fba8ed112a2fc961b36a5ec5a # v4.3.6
+        if: always()
+        with:
+          name: autonomous-lane-trust-dashboard
+          path: tests/load/autonomous-lane-traces/trust-dashboard.json
           retention-days: 90
 
       - name: Comment PR with lane results

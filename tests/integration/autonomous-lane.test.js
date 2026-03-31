@@ -12,6 +12,9 @@ describe('Autonomous Lane Smoke Path (E-B2)', () => {
   let traceDir = '';
   let traceFile = '';
   let sandboxSessionId = '';
+  const runClass =
+    process.env.AUTONOMOUS_LANE_RUN_CLASS ||
+    (process.env.AUTONOMOUS_LANE_MODE === 'manual' ? 'manual' : 'autonomous');
   const laneTrace = [];
   const adapter = new SandboxRuntimeAdapter();
   const plannerAgent = { id: '06', name: 'Senior Developer' };
@@ -40,6 +43,7 @@ describe('Autonomous Lane Smoke Path (E-B2)', () => {
   const recordTrace = (_phase, _status, _details) => {
     laneTrace.push({
       timestamp: new Date().toISOString(),
+      runClass,
       phase: _phase,
       status: _status,
       details: _details,

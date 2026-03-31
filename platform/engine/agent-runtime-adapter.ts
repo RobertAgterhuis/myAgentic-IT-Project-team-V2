@@ -44,6 +44,7 @@ import { buildPromptEnvelope } from './runtime-adapter/prompt-assembly.js';
 import { completeWithToolExecution } from './runtime-adapter/tool-loop.js';
 import { deriveEnvScope, shouldFallbackProvider } from './runtime-adapter/profile.js';
 import { resolveAdapterSelection } from './runtime-adapter/adapter-resolution.js';
+import { SandboxRuntimeAdapter } from './runtime-adapter/sandbox-runtime.js';
 
 // ─── Interface ────────────────────────────────────────────────
 
@@ -1295,11 +1296,14 @@ export class AdapterRegistry {
   }
 }
 
+export { SandboxRuntimeAdapter };
+
 /** Global default registry, pre-populated with built-in adapters. */
 export const DEFAULT_REGISTRY = new AdapterRegistry();
 DEFAULT_REGISTRY.register(new NullAdapter());
 DEFAULT_REGISTRY.register(new LogOnlyAdapter());
 DEFAULT_REGISTRY.register(new MockLlmRuntimeAdapter());
+DEFAULT_REGISTRY.register(new SandboxRuntimeAdapter());
 DEFAULT_REGISTRY.register(
   new ProviderBackedLlmRuntimeAdapter({ name: 'llm-openai', providerName: 'openai' })
 );

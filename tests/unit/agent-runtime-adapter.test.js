@@ -17,6 +17,7 @@ import {
   NullAdapter,
   LogOnlyAdapter,
   MockLlmRuntimeAdapter,
+  SandboxRuntimeAdapter,
   ProviderBackedLlmRuntimeAdapter,
   AdapterRegistry,
   DEFAULT_REGISTRY,
@@ -171,7 +172,14 @@ describe('AdapterRegistry', () => {
 describe('DEFAULT_REGISTRY', () => {
   it('lists all built-in adapter names', () => {
     expect(DEFAULT_REGISTRY.listNames()).toEqual(
-      expect.arrayContaining(['null', 'log-only', 'llm-mock', 'llm-openai', 'llm-copilot'])
+      expect.arrayContaining([
+        'null',
+        'log-only',
+        'llm-mock',
+        'sandbox-runtime',
+        'llm-openai',
+        'llm-copilot',
+      ])
     );
   });
 
@@ -185,6 +193,10 @@ describe('DEFAULT_REGISTRY', () => {
 
   it('contains llm-mock adapter', () => {
     expect(DEFAULT_REGISTRY.get('llm-mock')).toBeInstanceOf(MockLlmRuntimeAdapter);
+  });
+
+  it('contains sandbox-runtime adapter', () => {
+    expect(DEFAULT_REGISTRY.get('sandbox-runtime')).toBeInstanceOf(SandboxRuntimeAdapter);
   });
 
   it('contains llm-openai adapter', () => {

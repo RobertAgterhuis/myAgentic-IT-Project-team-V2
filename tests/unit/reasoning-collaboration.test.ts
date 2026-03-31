@@ -6,6 +6,7 @@ import { createReasoningProfileService } from '../../platform/engine/reasoning-p
 import { createVerifierPassService } from '../../platform/engine/verifier-pass';
 import { createSelfRevisionService } from '../../platform/engine/self-revision';
 import { createA2AMessagingService } from '../../platform/engine/a2a-messaging';
+import { createA2ACoordinationService } from '../../platform/engine/a2a-coordination';
 import { createPeerClarificationService } from '../../platform/engine/peer-clarification';
 import { createA2ACollaborationTracer } from '../../platform/engine/a2a-collaboration-tracer';
 
@@ -398,5 +399,98 @@ describe('reasoning-collaboration services', () => {
       new Date(Date.now() + 60_000).toISOString()
     );
     expect(bounded.totalMessages).toBeGreaterThan(0);
+  });
+
+  it('discovers capability-compatible agents and marks contested routing when candidates are close', async () => {
+    const svc = createA2ACoordinationService(ctx);
+
+    const result = await svc.discoverCapabilities({
+      requiredCapabilities: ['architecture', 'review'],
+      phase: 'PHASE_2',
+      minSuccessRate: 60,
+      contestedAgentIds: ['06'],
+      limit: 5,
+    });
+
+    expect(Array.isArray(result.candidates)).toBe(true);
+    expect(typeof result.contested).toBe('boolean');
+    expect(result.rationale.length).toBeGreaterThan(0);
+  });
+
+  it('runs dispute/rebuttal/fan-in/governance lifecycle with escalation for unresolved high-impact divergence', async () => {
+    const svc = createA2ACoordinationService(ctx);
+
+    const dispute = await svc.openDispute({
+      correlationId: 'COR-M4-1',
+      topic: 'Conflicting architecture proposals',
+      positions: [
+        {
+          agentId: '05',
+          summary: 'Proposal A',
+          confidence: 0.72,
+          evidencePaths: ['BusinessDocs/architecture/a.md'],
+        },
+        {
+          agentId: '06',
+          summary: 'Proposal B',
+          confidence: 0.7,
+          evidencePaths: ['BusinessDocs/architecture/b.md'],
+        },
+      ],
+    });
+
+    expect(dispute.status).toBe('open');
+
+    const rebutted = await svc.submitRebuttal({
+      disputeId: dispute.id,
+      fromAgentId: '06',
+      targetAgentId: '05',
+      points: ['Proposal A ignores integration constraints'],
+      evidencePaths: ['BusinessDocs/architecture/constraints.md'],
+    });
+    expect(rebutted?.status).toBe('under-rebuttal');
+
+    const synthesized = await svc.synthesizeFanIn({
+      disputeId: dispute.id,
+      strategy: 'evidence-weighted',
+    });
+    expect(synthesized?.fanIn).toBeDefined();
+
+    const governed = await svc.evaluateGovernance({
+      disputeId: dispute.id,
+      highImpact: true,
+      blastRadius: 5,
+      requireHumanApprovalAtOrAbove: 'high',
+    });
+
+    expect(governed?.governance?.required).toBe(true);
+    expect(governed?.status).toBe('escalated');
+  });
+
+  it('records and filters coordination state transitions', async () => {
+    const svc = createA2ACollaborationTracer(ctx);
+
+    await svc.recordCoordinationStateTransition({
+      disputeId: 'DSP-1',
+      correlationId: 'COR-1',
+      toState: 'dispute-opened',
+      initiatedBy: '05',
+    });
+
+    await svc.recordCoordinationStateTransition({
+      disputeId: 'DSP-1',
+      correlationId: 'COR-1',
+      fromState: 'fan-in-synthesized',
+      toState: 'governance-review-required',
+      riskLevel: 'high',
+      reason: 'Low consensus and high blast radius',
+    });
+
+    const all = await svc.listCoordinationStateTransitions({ disputeId: 'DSP-1' });
+    expect(all.length).toBe(2);
+
+    const highRisk = await svc.listCoordinationStateTransitions({ riskLevel: 'high' });
+    expect(highRisk.length).toBe(1);
+    expect(highRisk[0].toState).toBe('governance-review-required');
   });
 });

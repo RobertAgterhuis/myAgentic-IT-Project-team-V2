@@ -466,4 +466,130 @@ describe('routes/reasoning-collaboration', () => {
     });
     expect(outcomeMissingRes.statusCode).toBe(404);
   });
+
+  it('supports capability discovery for contested A2A routing decisions', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/reasoning-collaboration/a2a/capability-discovery',
+      payload: {
+        requiredCapabilities: ['architecture', 'review'],
+        phase: 'PHASE_2',
+        contestedAgentIds: ['06'],
+        minSuccessRate: 60,
+      },
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(Array.isArray(res.json().result.candidates)).toBe(true);
+    expect(typeof res.json().result.contested).toBe('boolean');
+  });
+
+  it('executes dispute, rebuttal, fan-in, governance evaluation, and resolution flows', async () => {
+    const openRes = await app.inject({
+      method: 'POST',
+      url: '/api/reasoning-collaboration/a2a/disputes',
+      payload: {
+        correlationId: 'COR-500',
+        topic: 'Conflicting implementation outputs',
+        positions: [
+          {
+            agentId: '05',
+            summary: 'Prefer architecture-first rollout',
+            confidence: 0.71,
+            evidencePaths: ['BusinessDocs/architecture/plan-a.md'],
+          },
+          {
+            agentId: '06',
+            summary: 'Prefer implementation-first rollout',
+            confidence: 0.7,
+            evidencePaths: ['BusinessDocs/architecture/plan-b.md'],
+          },
+        ],
+      },
+    });
+
+    expect(openRes.statusCode).toBe(201);
+    const disputeId = openRes.json().dispute.id as string;
+
+    const rebuttalRes = await app.inject({
+      method: 'POST',
+      url: `/api/reasoning-collaboration/a2a/disputes/${disputeId}/rebuttal`,
+      payload: {
+        fromAgentId: '06',
+        targetAgentId: '05',
+        points: ['Architecture-first delays integration signal collection'],
+        evidencePaths: ['BusinessDocs/architecture/risk-log.md'],
+      },
+    });
+    expect(rebuttalRes.statusCode).toBe(200);
+    expect(rebuttalRes.json().dispute.status).toBe('under-rebuttal');
+
+    const fanInRes = await app.inject({
+      method: 'POST',
+      url: `/api/reasoning-collaboration/a2a/disputes/${disputeId}/fan-in`,
+      payload: {
+        strategy: 'evidence-weighted',
+      },
+    });
+    expect(fanInRes.statusCode).toBe(200);
+    expect(fanInRes.json().dispute.fanIn).toBeDefined();
+
+    const governanceRes = await app.inject({
+      method: 'POST',
+      url: `/api/reasoning-collaboration/a2a/disputes/${disputeId}/governance-evaluate`,
+      payload: {
+        highImpact: true,
+        blastRadius: 4,
+        requireHumanApprovalAtOrAbove: 'high',
+      },
+    });
+
+    expect(governanceRes.statusCode).toBe(200);
+    expect(governanceRes.json().dispute.governance.required).toBe(true);
+    expect(governanceRes.json().dispute.status).toBe('escalated');
+
+    const resolveRes = await app.inject({
+      method: 'POST',
+      url: `/api/reasoning-collaboration/a2a/disputes/${disputeId}/resolve`,
+      payload: {
+        selectedAgentId: '05',
+        summary: 'Human reviewer approved architecture-first path with mitigations.',
+        approvedBy: ['Security Architect'],
+      },
+    });
+
+    expect(resolveRes.statusCode).toBe(200);
+    expect(resolveRes.json().dispute.status).toBe('resolved');
+
+    const transitionsRes = await app.inject({
+      method: 'GET',
+      url: `/api/reasoning-collaboration/collaboration/state-transitions?disputeId=${disputeId}`,
+    });
+
+    expect(transitionsRes.statusCode).toBe(200);
+    expect(transitionsRes.json().total).toBeGreaterThanOrEqual(4);
+  });
+
+  it('records and lists coordination state transitions directly', async () => {
+    const createRes = await app.inject({
+      method: 'POST',
+      url: '/api/reasoning-collaboration/collaboration/state-transitions',
+      payload: {
+        disputeId: 'DSP-900',
+        correlationId: 'COR-900',
+        toState: 'dispute-opened',
+        initiatedBy: '05',
+      },
+    });
+
+    expect(createRes.statusCode).toBe(201);
+
+    const listRes = await app.inject({
+      method: 'GET',
+      url: '/api/reasoning-collaboration/collaboration/state-transitions?disputeId=DSP-900',
+    });
+
+    expect(listRes.statusCode).toBe(200);
+    expect(listRes.json().total).toBe(1);
+  });
 });

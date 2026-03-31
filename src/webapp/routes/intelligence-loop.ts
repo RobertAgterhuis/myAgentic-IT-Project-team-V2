@@ -265,12 +265,54 @@ export async function registerIntelligenceLoopRoutes(app: FastifyInstance, ctx: 
    * POST /api/intelligence-loop/policy-proposals/:id/approve
    * Approve a policy proposal
    */
-  app.post<{ Params: { id: string } }>(
+  app.post<{ Params: { id: string }; Body: { reviewer?: string } }>(
     '/api/intelligence-loop/policy-proposals/:id/approve',
     async (request, reply) => {
       try {
-        // In a real implementation, would load, approve, and apply proposal
-        return reply.send({ ok: true, message: 'Policy proposal approved and applied' });
+        const proposal = await lessonsPolicyService.approveProposal(
+          request.params.id,
+          request.body?.reviewer || 'orchestrator'
+        );
+        return reply.send({ ok: true, proposal });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(400).send({ ok: false, error: (error as Error).message });
+      }
+    }
+  );
+
+  /**
+   * POST /api/intelligence-loop/policy-proposals/:id/auto-apply
+   * Auto-apply a low-risk proposal when all guard conditions pass
+   */
+  app.post<{ Params: { id: string }; Body: { actor?: string } }>(
+    '/api/intelligence-loop/policy-proposals/:id/auto-apply',
+    async (request, reply) => {
+      try {
+        const result = await lessonsPolicyService.autoApplyProposal(
+          request.params.id,
+          request.body?.actor || 'automated-pipeline'
+        );
+        return reply.send({ ok: result.autoApplied, result });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(400).send({ ok: false, error: (error as Error).message });
+      }
+    }
+  );
+
+  /**
+   * POST /api/intelligence-loop/policy-proposals/revert-latest
+   * Revert the latest applied proposal from rollback journal
+   */
+  app.post<{ Body: { reason: string } }>(
+    '/api/intelligence-loop/policy-proposals/revert-latest',
+    async (request, reply) => {
+      try {
+        const reverted = await lessonsPolicyService.revertLatestAppliedProposal(
+          request.body.reason
+        );
+        return reply.send({ ok: true, reverted });
       } catch (error) {
         app.log.error({ error }, '');
         return reply.status(400).send({ ok: false, error: (error as Error).message });

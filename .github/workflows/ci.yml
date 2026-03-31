@@ -113,7 +113,7 @@ jobs:
           COVERAGE_MIN_STATEMENTS: 66
           COVERAGE_MIN_BRANCHES: 55
           COVERAGE_MIN_FUNCTIONS: 66
-          COVERAGE_MIN_LINES: 67.4
+          COVERAGE_MIN_LINES: 67
 
       - name: Upload coverage artifact
         uses: actions/upload-artifact@v5

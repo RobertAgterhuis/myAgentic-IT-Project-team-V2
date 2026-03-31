@@ -89,11 +89,47 @@ export interface TraceOutcomeInput {
   latencyMs?: number;
 }
 
+export type CoordinationState =
+  | 'dispute-opened'
+  | 'awaiting-rebuttal'
+  | 'rebuttal-submitted'
+  | 'fan-in-synthesized'
+  | 'governance-review-required'
+  | 'governance-approved'
+  | 'resolved'
+  | 'escalated';
+
+export interface CoordinationStateTransition {
+  id: string;
+  disputeId: string;
+  correlationId: string;
+  fromState?: CoordinationState;
+  toState: CoordinationState;
+  reason?: string;
+  riskLevel?: 'low' | 'medium' | 'high';
+  initiatedBy?: string;
+  approvals?: string[];
+  transitionedAt: string;
+}
+
+export interface CoordinationStateTransitionInput {
+  disputeId: string;
+  correlationId: string;
+  fromState?: CoordinationState;
+  toState: CoordinationState;
+  reason?: string;
+  riskLevel?: 'low' | 'medium' | 'high';
+  initiatedBy?: string;
+  approvals?: string[];
+}
+
 // ─── Service ──────────────────────────────────────────────────
 
 export class A2ACollaborationTracer {
   private ctx: ServiceContext;
   private tracesPath = 'BusinessDocs/reasoning-collaboration/collaboration-traces.jsonl';
+  private transitionsPath =
+    'BusinessDocs/reasoning-collaboration/collaboration-state-transitions.jsonl';
 
   constructor(ctx: ServiceContext) {
     this.ctx = ctx;
@@ -259,6 +295,47 @@ export class A2ACollaborationTracer {
     };
   }
 
+  /**
+   * Record coordination state transitions for conflict resolution workflows.
+   */
+  async recordCoordinationStateTransition(
+    input: CoordinationStateTransitionInput
+  ): Promise<CoordinationStateTransition> {
+    const transition: CoordinationStateTransition = {
+      id: `CTS-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      disputeId: input.disputeId,
+      correlationId: input.correlationId,
+      fromState: input.fromState,
+      toState: input.toState,
+      reason: input.reason,
+      riskLevel: input.riskLevel,
+      initiatedBy: input.initiatedBy,
+      approvals: input.approvals ?? [],
+      transitionedAt: new Date().toISOString(),
+    };
+
+    await this.appendTransition(transition);
+    return transition;
+  }
+
+  async listCoordinationStateTransitions(filters?: {
+    disputeId?: string;
+    correlationId?: string;
+    toState?: CoordinationState;
+    riskLevel?: 'low' | 'medium' | 'high';
+  }): Promise<CoordinationStateTransition[]> {
+    const all = await this.loadTransitions();
+    if (!filters) return all;
+
+    return all.filter((transition) => {
+      if (filters.disputeId && transition.disputeId !== filters.disputeId) return false;
+      if (filters.correlationId && transition.correlationId !== filters.correlationId) return false;
+      if (filters.toState && transition.toState !== filters.toState) return false;
+      if (filters.riskLevel && transition.riskLevel !== filters.riskLevel) return false;
+      return true;
+    });
+  }
+
   // ─── Private helpers ──────────────────────────────────────
 
   private async loadTraces(): Promise<CollaborationTrace[]> {
@@ -286,6 +363,28 @@ export class A2ACollaborationTracer {
   private async saveTraces(traces: CollaborationTrace[]): Promise<void> {
     this.ctx.store.mkdirp('BusinessDocs/reasoning-collaboration');
     this.ctx.store.writeFile(this.tracesPath, traces.map((t) => JSON.stringify(t)).join('\n'));
+  }
+
+  private async loadTransitions(): Promise<CoordinationStateTransition[]> {
+    try {
+      const raw = this.ctx.store.readFile(this.transitionsPath);
+      return raw
+        .split('\n')
+        .filter(Boolean)
+        .map((line) => JSON.parse(line) as CoordinationStateTransition);
+    } catch {
+      return [];
+    }
+  }
+
+  private async appendTransition(transition: CoordinationStateTransition): Promise<void> {
+    this.ctx.store.mkdirp('BusinessDocs/reasoning-collaboration');
+    try {
+      const existing = this.ctx.store.readFile(this.transitionsPath);
+      this.ctx.store.writeFile(this.transitionsPath, existing + '\n' + JSON.stringify(transition));
+    } catch {
+      this.ctx.store.writeFile(this.transitionsPath, JSON.stringify(transition));
+    }
   }
 }
 

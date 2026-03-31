@@ -19,6 +19,7 @@ import { createReasoningProfileService } from '../../../platform/engine/reasonin
 import { createVerifierPassService } from '../../../platform/engine/verifier-pass';
 import { createSelfRevisionService } from '../../../platform/engine/self-revision';
 import { createA2AMessagingService } from '../../../platform/engine/a2a-messaging';
+import { createA2ACoordinationService } from '../../../platform/engine/a2a-coordination';
 import { createPeerClarificationService } from '../../../platform/engine/peer-clarification';
 import { createA2ACollaborationTracer } from '../../../platform/engine/a2a-collaboration-tracer';
 import type {
@@ -32,11 +33,20 @@ import type {
 import type { SelfRevisionRequest } from '../../../platform/engine/self-revision';
 import type { A2AMessageCreateInput } from '../../../platform/engine/a2a-messaging';
 import type {
+  CapabilityDiscoveryInput,
+  OpenDisputeInput,
+  SubmitRebuttalInput,
+  FanInInput,
+  GovernanceInput,
+  ResolveDisputeInput,
+} from '../../../platform/engine/a2a-coordination';
+import type {
   OpenClarificationInput,
   RespondToClarificationInput,
 } from '../../../platform/engine/peer-clarification';
 import type {
   CollaborationTraceInput,
+  CoordinationStateTransitionInput,
   TraceOutcomeInput,
 } from '../../../platform/engine/a2a-collaboration-tracer';
 
@@ -48,6 +58,7 @@ export async function registerReasoningCollaborationRoutes(
   const verifierPassService = createVerifierPassService(ctx);
   const selfRevisionService = createSelfRevisionService(ctx);
   const a2aMessagingService = createA2AMessagingService(ctx);
+  const a2aCoordinationService = createA2ACoordinationService(ctx);
   const peerClarificationService = createPeerClarificationService(ctx);
   const collaborationTracer = createA2ACollaborationTracer(ctx);
 
@@ -388,6 +399,197 @@ export async function registerReasoningCollaborationRoutes(
     }
   );
 
+  /**
+   * POST /api/reasoning-collaboration/a2a/capability-discovery
+   * Discover capability-compatible agents and confidence for contested routing.
+   */
+  app.post<{ Body: CapabilityDiscoveryInput }>(
+    '/api/reasoning-collaboration/a2a/capability-discovery',
+    async (request, reply) => {
+      try {
+        const result = await a2aCoordinationService.discoverCapabilities(request.body);
+        return reply.send({ ok: true, result });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(400).send({ ok: false, error: (error as Error).message });
+      }
+    }
+  );
+
+  /**
+   * POST /api/reasoning-collaboration/a2a/disputes
+   */
+  app.post<{ Body: OpenDisputeInput }>(
+    '/api/reasoning-collaboration/a2a/disputes',
+    async (request, reply) => {
+      try {
+        const dispute = await a2aCoordinationService.openDispute(request.body);
+        await collaborationTracer.recordCoordinationStateTransition({
+          disputeId: dispute.id,
+          correlationId: dispute.correlationId,
+          toState: 'dispute-opened',
+          reason: `Opened dispute for ${dispute.topic}`,
+        });
+        return reply.status(201).send({ ok: true, dispute });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(400).send({ ok: false, error: (error as Error).message });
+      }
+    }
+  );
+
+  app.get<{
+    Querystring: {
+      status?: 'open' | 'under-rebuttal' | 'resolved' | 'escalated';
+      correlationId?: string;
+    };
+  }>('/api/reasoning-collaboration/a2a/disputes', async (request, reply) => {
+    try {
+      const disputes = await a2aCoordinationService.listDisputes({
+        status: request.query.status,
+        correlationId: request.query.correlationId,
+      });
+      return reply.send({ ok: true, disputes, total: disputes.length });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(500).send({ ok: false, error: 'Failed to list disputes' });
+    }
+  });
+
+  app.get<{ Params: { id: string } }>(
+    '/api/reasoning-collaboration/a2a/disputes/:id',
+    async (request, reply) => {
+      try {
+        const dispute = await a2aCoordinationService.getDispute(request.params.id);
+        if (!dispute) {
+          return reply.status(404).send({ ok: false, error: 'Dispute not found' });
+        }
+        return reply.send({ ok: true, dispute });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(500).send({ ok: false, error: 'Failed to retrieve dispute' });
+      }
+    }
+  );
+
+  app.post<{
+    Params: { id: string };
+    Body: Omit<SubmitRebuttalInput, 'disputeId'>;
+  }>('/api/reasoning-collaboration/a2a/disputes/:id/rebuttal', async (request, reply) => {
+    try {
+      const dispute = await a2aCoordinationService.submitRebuttal({
+        disputeId: request.params.id,
+        ...request.body,
+      });
+      if (!dispute) {
+        return reply.status(404).send({ ok: false, error: 'Dispute not found' });
+      }
+
+      await collaborationTracer.recordCoordinationStateTransition({
+        disputeId: dispute.id,
+        correlationId: dispute.correlationId,
+        fromState: 'awaiting-rebuttal',
+        toState: 'rebuttal-submitted',
+        reason: `Rebuttal submitted by ${request.body.fromAgentId}`,
+        initiatedBy: request.body.fromAgentId,
+      });
+
+      return reply.send({ ok: true, dispute });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
+  app.post<{ Params: { id: string }; Body: Omit<FanInInput, 'disputeId'> }>(
+    '/api/reasoning-collaboration/a2a/disputes/:id/fan-in',
+    async (request, reply) => {
+      try {
+        const dispute = await a2aCoordinationService.synthesizeFanIn({
+          disputeId: request.params.id,
+          ...request.body,
+        });
+        if (!dispute) {
+          return reply.status(404).send({ ok: false, error: 'Dispute not found' });
+        }
+
+        await collaborationTracer.recordCoordinationStateTransition({
+          disputeId: dispute.id,
+          correlationId: dispute.correlationId,
+          fromState: 'rebuttal-submitted',
+          toState: 'fan-in-synthesized',
+          reason: dispute.fanIn?.decisionSummary,
+        });
+
+        return reply.send({ ok: true, dispute });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(400).send({ ok: false, error: (error as Error).message });
+      }
+    }
+  );
+
+  app.post<{
+    Params: { id: string };
+    Body: Omit<GovernanceInput, 'disputeId'>;
+  }>(
+    '/api/reasoning-collaboration/a2a/disputes/:id/governance-evaluate',
+    async (request, reply) => {
+      try {
+        const dispute = await a2aCoordinationService.evaluateGovernance({
+          disputeId: request.params.id,
+          ...request.body,
+        });
+        if (!dispute) {
+          return reply.status(404).send({ ok: false, error: 'Dispute not found' });
+        }
+
+        await collaborationTracer.recordCoordinationStateTransition({
+          disputeId: dispute.id,
+          correlationId: dispute.correlationId,
+          fromState: 'fan-in-synthesized',
+          toState: dispute.governance?.required ? 'governance-review-required' : 'resolved',
+          riskLevel: dispute.governance?.riskLevel,
+          reason: dispute.governance?.reason,
+        });
+
+        return reply.send({ ok: true, dispute });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(400).send({ ok: false, error: (error as Error).message });
+      }
+    }
+  );
+
+  app.post<{
+    Params: { id: string };
+    Body: Omit<ResolveDisputeInput, 'disputeId'>;
+  }>('/api/reasoning-collaboration/a2a/disputes/:id/resolve', async (request, reply) => {
+    try {
+      const dispute = await a2aCoordinationService.resolveDispute({
+        disputeId: request.params.id,
+        ...request.body,
+      });
+      if (!dispute) {
+        return reply.status(404).send({ ok: false, error: 'Dispute not found' });
+      }
+
+      await collaborationTracer.recordCoordinationStateTransition({
+        disputeId: dispute.id,
+        correlationId: dispute.correlationId,
+        fromState: dispute.governance?.required ? 'governance-approved' : 'fan-in-synthesized',
+        toState: 'resolved',
+        reason: request.body.summary,
+        approvals: request.body.approvedBy,
+      });
+
+      return reply.send({ ok: true, dispute });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
   // ──── Peer Clarification (E4.2) ────
 
   /**
@@ -634,6 +836,53 @@ export async function registerReasoningCollaborationRoutes(
       }
     }
   );
+
+  app.post<{ Body: CoordinationStateTransitionInput }>(
+    '/api/reasoning-collaboration/collaboration/state-transitions',
+    async (request, reply) => {
+      try {
+        const transition = await collaborationTracer.recordCoordinationStateTransition(
+          request.body
+        );
+        return reply.status(201).send({ ok: true, transition });
+      } catch (error) {
+        app.log.error({ error }, '');
+        return reply.status(400).send({ ok: false, error: (error as Error).message });
+      }
+    }
+  );
+
+  app.get<{
+    Querystring: {
+      disputeId?: string;
+      correlationId?: string;
+      toState?:
+        | 'dispute-opened'
+        | 'awaiting-rebuttal'
+        | 'rebuttal-submitted'
+        | 'fan-in-synthesized'
+        | 'governance-review-required'
+        | 'governance-approved'
+        | 'resolved'
+        | 'escalated';
+      riskLevel?: 'low' | 'medium' | 'high';
+    };
+  }>('/api/reasoning-collaboration/collaboration/state-transitions', async (request, reply) => {
+    try {
+      const transitions = await collaborationTracer.listCoordinationStateTransitions({
+        disputeId: request.query.disputeId,
+        correlationId: request.query.correlationId,
+        toState: request.query.toState,
+        riskLevel: request.query.riskLevel,
+      });
+      return reply.send({ ok: true, transitions, total: transitions.length });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply
+        .status(500)
+        .send({ ok: false, error: 'Failed to list coordination transitions' });
+    }
+  });
 }
 
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {

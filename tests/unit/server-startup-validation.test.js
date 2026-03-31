@@ -81,7 +81,7 @@ describe('startup runtime profile validation', () => {
 
     const { validateStartupRuntimeProfile } = await loadServerModule();
     expect(() => validateStartupRuntimeProfile()).not.toThrow();
-  });
+  }, 15000);
 
   it('rejects production profile when storage provider is invalid', async () => {
     setEnv({

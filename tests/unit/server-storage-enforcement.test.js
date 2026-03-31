@@ -61,7 +61,7 @@ describe('storage provider startup enforcement', () => {
       else process.env[key] = originalEnv[key];
     }
 
-    vi.unmock('../../platform/engine/persistence');
+    vi.doUnmock('../../platform/engine/persistence');
     vi.resetModules();
   });
 

@@ -1,5 +1,3 @@
-'use strict';
-
 describe('runtime adapter modules', () => {
   describe('profile helpers', () => {
     it('deriveEnvScope maps profile prefixes correctly', async () => {

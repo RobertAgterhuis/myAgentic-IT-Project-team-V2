@@ -1,3 +1,10 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import { dirname as _dirname } from 'node:path';
+const require = createRequire(import.meta.url);
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
+
 /**
  * Weblate Docker Stack Validation Tests — SP-2-501 (#117)
  * Validates Docker Compose configuration, environment setup,

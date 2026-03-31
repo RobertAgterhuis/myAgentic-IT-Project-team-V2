@@ -1,13 +1,13 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
+import * as __req_0 from '../../src/webapp/runtime-profiles';
 const {
   detectProfile,
   validateProfile,
   hasAuthConfigured,
   PROFILE_CONTRACTS,
   assertScalePrerequisites,
-} = require('../../src/webapp/runtime-profiles');
+} = __req_0;
 
 describe('Runtime Profiles', () => {
   describe('detectProfile', () => {

@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { parseSessionState } = require('../../src/webapp/models/session');
+import * as __req_0 from '../../src/webapp/models/session';
+const { parseSessionState } = __req_0;
 
 describe('parseSessionState', () => {
   it('returns a parsed object for valid JSON', () => {

@@ -1,6 +1,5 @@
-'use strict';
-
-const { buildExecutionModePlan } = require('../../platform/engine/execution-mode-plan');
+import * as __req_0 from '../../platform/engine/execution-mode-plan';
+const { buildExecutionModePlan } = __req_0;
 
 describe('buildExecutionModePlan', () => {
   test('returns selected agency agents for AGENCY_ONLY', () => {

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Tool Executor — Unit Tests
  *
@@ -7,8 +5,10 @@
  * integrates the result cache, and enforces timeouts.
  */
 
-const { ToolExecutor } = require('../../platform/engine/tool-executor');
-const { AdapterRegistry, HEALTH_STATUS } = require('../../platform/sdlc/adapters/tool-adapter');
+import * as __req_0 from '../../platform/engine/tool-executor';
+const { ToolExecutor } = __req_0;
+import * as __req_1 from '../../platform/sdlc/adapters/tool-adapter';
+const { AdapterRegistry, HEALTH_STATUS } = __req_1;
 
 // ─── Test Adapter ────────────────────────────────────────────
 

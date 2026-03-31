@@ -1,15 +1,13 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const {
-  FileStore,
-  InMemoryStore,
-  BACKUPS_DIR_NAME,
-  MAX_BACKUPS_PER_FILE,
-} = require('../../src/webapp/store');
+import * as __req_0 from '../../src/webapp/store';
+const { FileStore, InMemoryStore, BACKUPS_DIR_NAME, MAX_BACKUPS_PER_FILE } = __req_0;
 
 /**
  * Store async variants — Unit Tests (M4/Epic-663)

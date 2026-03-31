@@ -1,4 +1,6 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 /**
  * Incremental indexing unit tests (RAG-1.2.3).
  * Verifies:

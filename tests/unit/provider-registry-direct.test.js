@@ -1,11 +1,6 @@
-'use strict';
-
-const {
-  ProviderRegistry,
-  createDefaultRegistry,
-  probeProviderHealth,
-  buildLlmFallbackPolicy,
-} = require('../../platform/sdlc/adapters/registry');
+import * as __req_0 from '../../platform/sdlc/adapters/registry';
+const { ProviderRegistry, createDefaultRegistry, probeProviderHealth, buildLlmFallbackPolicy } =
+  __req_0;
 
 function makeGitProvider(name = 'git-provider') {
   return {

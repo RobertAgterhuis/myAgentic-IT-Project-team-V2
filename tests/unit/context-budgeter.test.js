@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Context Budgeter — Unit Tests (I-A4-002)
  *
@@ -11,13 +9,8 @@
  *   - assembleContext: markdown rendering
  */
 
-const {
-  rankItems,
-  hardTruncate,
-  budget,
-  assembleContext,
-  evaluateAgentBudget,
-} = require('../../platform/engine/context-budgeter');
+import * as __req_0 from '../../platform/engine/context-budgeter';
+const { rankItems, hardTruncate, budget, assembleContext, evaluateAgentBudget } = __req_0;
 
 // ─── rankItems ────────────────────────────────────────────────
 

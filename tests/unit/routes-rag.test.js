@@ -1,8 +1,10 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
-
-const { registerRoutes } = require('../../src/webapp/routes/rag');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+import * as __req_0 from '../../src/webapp/routes/rag';
+import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+const { registerRoutes } = __req_0;
 
 function createMemoryStorageProvider() {
   const collections = new Map();
@@ -65,7 +67,7 @@ function createCtx() {
       query: vi.fn().mockResolvedValue([
         {
           chunk: {
-            source_path: require('path').join(process.cwd(), 'docs', 'contracts', 'sample.md'),
+            source_path: path.join(process.cwd(), 'docs', 'contracts', 'sample.md'),
             chunk_text: 'Contract obligations and clauses.',
             start_line: 12,
           },
@@ -264,14 +266,12 @@ describe('routes/rag (#896)', () => {
   });
 
   it('returns 400 when standard collection has no indexable paths', async () => {
-    const emptyDocs = require('fs').mkdtempSync(
-      require('path').join(require('os').tmpdir(), 'rag-empty-')
-    );
+    const emptyDocs = fs.mkdtempSync(path.join(os.tmpdir(), 'rag-empty-'));
     const localCtx = {
       ...createCtx(),
       BUSINESS_DOCS: emptyDocs,
-      DECISIONS_FILE: require('path').join(emptyDocs, 'decisions.md'),
-      DECISIONS_DIR: require('path').join(emptyDocs, 'decisions'),
+      DECISIONS_FILE: path.join(emptyDocs, 'decisions.md'),
+      DECISIONS_DIR: path.join(emptyDocs, 'decisions'),
     };
     const localRoutes = createTestableRoutes(registerRoutes, localCtx);
     const res = createRes();
@@ -282,7 +282,7 @@ describe('routes/rag (#896)', () => {
     );
 
     expect(res.statusCode).toBe(400);
-    require('fs').rmSync(emptyDocs, { recursive: true, force: true });
+    fs.rmSync(emptyDocs, { recursive: true, force: true });
   });
 
   it('returns 403 for viewer on query endpoint', async () => {

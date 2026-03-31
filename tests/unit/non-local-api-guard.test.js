@@ -1,8 +1,15 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import { dirname as _dirname } from 'node:path';
+const require = createRequire(import.meta.url);
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
+
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
 const path = require('path');
-const { buildApp } = require('../../src/webapp/app.ts');
+import * as __req_0 from '../../src/webapp/app.ts';
+const { buildApp } = __req_0;
 
 function makeCtx(host) {
   return {

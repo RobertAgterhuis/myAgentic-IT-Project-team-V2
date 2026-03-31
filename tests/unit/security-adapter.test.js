@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Security Adapter — Unit Tests
  *

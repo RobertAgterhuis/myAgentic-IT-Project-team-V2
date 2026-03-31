@@ -1,15 +1,14 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 
-const { FileStore, setStore } = require('../../src/webapp/store');
-const {
-  PolicyService,
-  PolicyNotFoundError,
-  PolicyValidationError,
-} = require('../../src/webapp/services');
+import * as __req_0 from '../../src/webapp/store';
+const { FileStore, setStore } = __req_0;
+import * as __req_1 from '../../src/webapp/services';
+const { PolicyService, PolicyNotFoundError, PolicyValidationError } = __req_1;
 
 function makePolicy(overrides = {}) {
   return {

@@ -1,10 +1,14 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { registerRoutes } = require('../../src/webapp/routes/chat');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+import * as __req_0 from '../../src/webapp/routes/chat';
+const { registerRoutes } = __req_0;
+import * as __req_1 from '../helpers/fastify-test-adapter.js';
+const { createTestableRoutes } = __req_1;
 
 const CHAT_HISTORY_DIR = path.join(process.cwd(), 'BusinessDocs', 'session', 'chat-history');
 const RUN_HISTORY_FILE = path.join(process.cwd(), 'BusinessDocs', 'session', 'run-history.json');

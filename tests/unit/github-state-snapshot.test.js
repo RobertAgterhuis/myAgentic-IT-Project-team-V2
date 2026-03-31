@@ -1,5 +1,7 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
 /**
  * Tests for github-state-snapshot.js (INFRA-02-A)
@@ -10,7 +12,8 @@ const _path = require('path');
 
 /* ── Mock deps via _setDeps (dependency injection) ───────────── */
 
-const snapshot = require('../../scripts/github-state-snapshot');
+import * as __req_0 from '../../scripts/github-state-snapshot';
+const snapshot = __req_0.default ?? __req_0;
 
 const mockExecSync = vi.fn();
 const mockWriteFileSync = vi.fn();
@@ -216,7 +219,8 @@ describe('github-state-snapshot', () => {
 
 /* ── validateGithubSnapshot tests (INFRA-02-D) ───────────────── */
 
-const { validateGithubSnapshot, validateSessionState } = require('../../src/webapp/schemas');
+import * as __req_1 from '../../src/webapp/schemas';
+const { validateGithubSnapshot, validateSessionState } = __req_1;
 
 describe('validateGithubSnapshot', () => {
   const valid = {

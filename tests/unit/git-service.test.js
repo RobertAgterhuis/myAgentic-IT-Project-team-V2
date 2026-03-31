@@ -1,5 +1,3 @@
-'use strict';
-
 let GitService;
 
 beforeAll(async () => {

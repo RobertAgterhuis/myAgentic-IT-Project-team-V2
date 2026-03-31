@@ -1,9 +1,13 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 const path = require('path');
-const { InMemoryStore } = require('../../src/webapp/store');
-const { FileCache } = require('../../src/webapp/cache');
-const { HelpService } = require('../../src/webapp/services/help-service');
+import * as __req_0 from '../../src/webapp/store';
+const { InMemoryStore } = __req_0;
+import * as __req_1 from '../../src/webapp/cache';
+const { FileCache } = __req_1;
+import * as __req_2 from '../../src/webapp/services/help-service';
+const { HelpService } = __req_2;
 
 describe('help service', () => {
   function makeService(initialFiles) {

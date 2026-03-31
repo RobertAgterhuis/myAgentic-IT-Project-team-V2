@@ -1,10 +1,5 @@
-'use strict';
-
-const {
-  appendTransitionEvent,
-  readTransitionEvents,
-  replayStateFromTransitionEvents,
-} = require('../../platform/engine/transition-event-log');
+import * as __req_0 from '../../platform/engine/transition-event-log';
+const { appendTransitionEvent, readTransitionEvents, replayStateFromTransitionEvents } = __req_0;
 
 function createMockStore(files = {}) {
   const _files = { ...files };

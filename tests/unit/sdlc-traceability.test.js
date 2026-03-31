@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * SDLC Traceability Matrix — Unit Tests
  *
@@ -7,8 +5,10 @@
  * impact analysis, coverage analysis, orphan detection, and serialisation.
  */
 
-const { TraceabilityMatrix } = require('../../platform/sdlc/traceability');
-const { ENTITY_TYPES, LINK_TYPES } = require('../../platform/sdlc/entities');
+import * as __req_0 from '../../platform/sdlc/traceability';
+const { TraceabilityMatrix } = __req_0;
+import * as __req_1 from '../../platform/sdlc/entities';
+const { ENTITY_TYPES, LINK_TYPES } = __req_1;
 
 // ─── Helpers ─────────────────────────────────────────────────
 

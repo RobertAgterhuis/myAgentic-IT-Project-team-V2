@@ -1,6 +1,5 @@
-'use strict';
-
-const { detectMarkdownCorruption } = require('../../src/webapp/models/corruption');
+import * as __req_0 from '../../src/webapp/models/corruption';
+const { detectMarkdownCorruption } = __req_0;
 
 describe('detectMarkdownCorruption', () => {
   it('returns error when content is not a string', () => {

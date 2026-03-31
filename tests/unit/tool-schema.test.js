@@ -1,13 +1,14 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import { dirname as _dirname } from 'node:path';
+const require = createRequire(import.meta.url);
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
 
 const fs = require('node:fs');
 const path = require('node:path');
-const {
-  validateCanonicalTools,
-  SCHEMA_PATH,
-  TOOLS_PATH,
-  AGENTS_PATH,
-} = require('../../platform/engine/tool-schema');
+import * as __req_0 from '../../platform/engine/tool-schema';
+const { validateCanonicalTools, SCHEMA_PATH, TOOLS_PATH, AGENTS_PATH } = __req_0;
 
 describe('Canonical tool schema validation (S4-3)', () => {
   it('loads schema, tools and agents files', () => {

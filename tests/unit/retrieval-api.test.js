@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Retrieval API — Unit Tests (I-A4-003)
  *
@@ -13,13 +11,8 @@
  *   - Edge cases: empty query, no matches, missing files
  */
 
-const {
-  tokenise,
-  nearestHeading,
-  scoreBlock,
-  RetrievalApi,
-  defaultSources,
-} = require('../../platform/engine/retrieval-api');
+import * as __req_0 from '../../platform/engine/retrieval-api';
+const { tokenise, nearestHeading, scoreBlock, RetrievalApi, defaultSources } = __req_0;
 
 // ─── Mock FS ──────────────────────────────────────────────────
 

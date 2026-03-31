@@ -1,5 +1,5 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
+import * as __req_0 from '../../src/webapp/middleware';
 const {
   sanitizeMarkdown,
   sanitizeQID,
@@ -7,8 +7,9 @@ const {
   checkSecretsInBody,
   safePath,
   setSecurityHeaders,
-} = require('../../src/webapp/middleware');
-const { withFileLock } = require('../../src/webapp/file-lock');
+} = __req_0;
+import * as __req_1 from '../../src/webapp/file-lock';
+const { withFileLock } = __req_1;
 
 /* ── Story #1: Content Sanitization (IMPL-CONSTRAINT-002) ─────── */
 describe('sanitizeMarkdown', () => {

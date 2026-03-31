@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Engine Hooks — Unit Tests (M1: Engine Hooks)
  *
@@ -15,9 +13,13 @@
  * - Multiple hooks execute in order
  */
 
-const path = require('path');
-const fs = require('fs');
-const { createEngine } = require('../../platform/engine/engine');
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { createEngine } from '../../platform/engine/engine';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ─── Test Helpers ────────────────────────────────────────────
 

@@ -1,4 +1,10 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import { dirname as _dirname } from 'node:path';
+const require = createRequire(import.meta.url);
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
+
 /**
  * Governance document structure validation tests.
  * Sprint 5 SP-5-KPI AC-3 + AC-4: Validate that governance artifacts

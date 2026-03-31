@@ -1,6 +1,5 @@
-'use strict';
-
-const { GovernanceEngine, DEFAULT_POLICIES, ROLES } = require('../../platform/sdlc/governance');
+import * as __req_0 from '../../platform/sdlc/governance';
+const { GovernanceEngine, DEFAULT_POLICIES, ROLES } = __req_0;
 
 // ── helpers ──────────────────────────────────────────────────
 

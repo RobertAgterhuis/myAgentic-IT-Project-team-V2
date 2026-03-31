@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { registerObservabilityRoutes } = require('../../src/webapp/routes/misc-observability');
+import * as __req_0 from '../../src/webapp/routes/misc-observability';
+const { registerObservabilityRoutes } = __req_0;
 
 function createFakeApp() {
   const routes = new Map();

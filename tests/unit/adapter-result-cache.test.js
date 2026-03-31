@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Adapter Result Cache — Unit Tests
  *
@@ -7,7 +5,8 @@
  * operations during engine resume.
  */
 
-const { AdapterResultCache } = require('../../platform/engine/adapter-result-cache');
+import * as __req_0 from '../../platform/engine/adapter-result-cache';
+const { AdapterResultCache } = __req_0;
 
 function createMemoryStore() {
   const files = {};

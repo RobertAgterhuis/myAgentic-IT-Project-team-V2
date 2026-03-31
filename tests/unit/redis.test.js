@@ -1,5 +1,3 @@
-'use strict';
-
 // Track the module loaded per-test so afterEach closes the correct instance.
 let _currentMod;
 

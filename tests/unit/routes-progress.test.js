@@ -1,10 +1,15 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 const path = require('path');
-const { InMemoryStore, setStore } = require('../../src/webapp/store');
-const { FileCache } = require('../../src/webapp/cache');
-const { registerRoutes } = require('../../src/webapp/routes/progress');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+import * as __req_0 from '../../src/webapp/store';
+const { InMemoryStore, setStore } = __req_0;
+import * as __req_1 from '../../src/webapp/cache';
+const { FileCache } = __req_1;
+import * as __req_2 from '../../src/webapp/routes/progress';
+const { registerRoutes } = __req_2;
+import * as __req_3 from '../helpers/fastify-test-adapter.js';
+const { createTestableRoutes } = __req_3;
 
 function createRes() {
   const res = {

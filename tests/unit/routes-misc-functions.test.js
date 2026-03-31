@@ -1,11 +1,10 @@
-'use strict';
-
 /**
  * Test utility functions and simpler routes from misc module
  * Focus: strings, error handling, help TOC structure
  */
 
-const { RESPONSES, VALIDATION, STATIC } = require('../../src/webapp/strings');
+import * as __req_0 from '../../src/webapp/strings';
+const { RESPONSES, VALIDATION, STATIC } = __req_0;
 
 describe('misc string utilities (uncovered code paths)', () => {
   describe('RESPONSES formatters', () => {

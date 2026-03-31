@@ -12,9 +12,7 @@
  *  - No duplicate operationIds
  */
 
-'use strict';
-
-const { createTestApp } = require('../helpers/create-test-app');
+import { createTestApp } from '../helpers/create-test-app-esm.js';
 
 let app;
 let spec;

@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { ActionProposer } = require('../../src/webapp/services/chat/action-proposer');
+import * as __req_0 from '../../src/webapp/services/chat/action-proposer';
+const { ActionProposer } = __req_0;
 
 describe('ActionProposer', () => {
   const proposer = new ActionProposer();

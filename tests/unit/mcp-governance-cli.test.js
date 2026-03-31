@@ -1,4 +1,5 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 const fs = require('fs');
 const os = require('os');
@@ -17,7 +18,8 @@ let capturedErr;
 let origArgv;
 let origExit;
 
-const { parseArgs, run } = require('../../src/webapp/plugins/mcp-governance/cli');
+import * as __req_0 from '../../src/webapp/plugins/mcp-governance/cli';
+const { parseArgs, run } = __req_0;
 
 // ── parseArgs unit tests ───────────────────────────────────────────────────────
 

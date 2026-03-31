@@ -1,12 +1,11 @@
-'use strict';
-
+import * as __req_0 from '../../src/webapp/plugins/mcp-governance/factories';
 const {
   defineAgents,
   defineMcpServers,
   definePolicies,
   defineEnvironmentPolicies,
   defineToolPolicies,
-} = require('../../src/webapp/plugins/mcp-governance/factories');
+} = __req_0;
 
 describe('mcp-governance factories', () => {
   it('instantiates all four factory outputs without side effects', () => {

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * M19-007 — Contract Compliance Test Suite
  *
@@ -12,6 +10,7 @@
  * Also covers ProviderRegistry and createDefaultRegistry.
  */
 
+import * as __req_0 from '../../platform/sdlc/adapters';
 const {
   GitHubProvider,
   DockerContainerProvider,
@@ -24,7 +23,7 @@ const {
   createDefaultRegistry,
   probeProviderHealth,
   buildLlmFallbackPolicy,
-} = require('../../platform/sdlc/adapters');
+} = __req_0;
 
 // ─── Contract spec table ─────────────────────────────────────
 

@@ -1,4 +1,10 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import { dirname as _dirname } from 'node:path';
+const require = createRequire(import.meta.url);
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
+
 /**
  * M15-048 — Documentation / implementation drift detection.
  *

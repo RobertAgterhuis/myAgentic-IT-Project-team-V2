@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { createRateLimiter } = require('../../src/webapp/rate-limiter');
+import * as __req_0 from '../../src/webapp/rate-limiter';
+const { createRateLimiter } = __req_0;
 
 describe('createRateLimiter', () => {
   let limiter;

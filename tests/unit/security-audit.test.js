@@ -1,7 +1,5 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 // M5 Security Audit — Regression tests for hardening changes.
-'use strict';
-
 import { describe, it, expect } from 'vitest';
 import fs from 'fs';
 import path from 'path';

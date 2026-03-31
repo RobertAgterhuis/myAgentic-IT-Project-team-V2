@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { IntentClassifier } = require('../../src/webapp/services/chat/intent-classifier');
+import * as __req_0 from '../../src/webapp/services/chat/intent-classifier';
+const { IntentClassifier } = __req_0;
 
 describe('IntentClassifier', () => {
   const classifier = new IntentClassifier();

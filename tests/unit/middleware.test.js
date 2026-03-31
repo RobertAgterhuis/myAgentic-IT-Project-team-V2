@@ -1,3 +1,10 @@
+import { createRequire } from 'node:module';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import { dirname as _dirname } from 'node:path';
+const require = createRequire(import.meta.url);
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
+
 /**
  * Unit Tests: Middleware & Utility Functions
  * SP-11-612 Test Strategy Framework
@@ -8,6 +15,7 @@
 
 const path = require('path');
 
+import * as __req_0 from '../../src/webapp/middleware';
 const {
   sanitizeMarkdown,
   sanitizeQID,
@@ -24,7 +32,7 @@ const {
   parseBody,
   json,
   MAX_BODY,
-} = require('../../src/webapp/middleware');
+} = __req_0;
 
 function makeMockRes(opts = {}) {
   const headers = {};

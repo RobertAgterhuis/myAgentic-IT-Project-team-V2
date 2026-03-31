@@ -1,11 +1,15 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { InMemoryStore, setStore } = require('../../src/webapp/store');
-const { FileCache } = require('../../src/webapp/cache');
-const { registerRoutes } = require('../../src/webapp/routes/help');
-const { HelpService } = require('../../src/webapp/services');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+import * as __req_0 from '../../src/webapp/store';
+const { InMemoryStore, setStore } = __req_0;
+import * as __req_1 from '../../src/webapp/cache';
+const { FileCache } = __req_1;
+import * as __req_2 from '../../src/webapp/routes/help';
+const { registerRoutes } = __req_2;
+import * as __req_3 from '../../src/webapp/services';
+const { HelpService } = __req_3;
+import * as __req_4 from '../helpers/fastify-test-adapter.js';
+const { createTestableRoutes } = __req_4;
 
 /* ── Helpers ──────────────────────────────────────────────────── */
 

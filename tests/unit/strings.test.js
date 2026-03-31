@@ -1,6 +1,5 @@
-'use strict';
-
-const { VALIDATION, RESPONSES, STATIC } = require('../../src/webapp/strings');
+import * as __req_0 from '../../src/webapp/strings';
+const { VALIDATION, RESPONSES, STATIC } = __req_0;
 
 describe('VALIDATION string functions', () => {
   it('invalidQID returns formatted message', () => {

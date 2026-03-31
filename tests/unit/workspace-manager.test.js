@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Workspace Manager — Unit Tests (M25-002)
  *
@@ -7,6 +5,7 @@
  * Uses an in-memory StorageProvider mock.
  */
 
+import * as __req_0 from '../../platform/engine/workspace';
 const {
   WorkspaceManager,
   WorkspaceNotFoundError,
@@ -14,7 +13,7 @@ const {
   RepositoryNotFoundError,
   DuplicateError,
   ValidationError,
-} = require('../../platform/engine/workspace');
+} = __req_0;
 
 // ─── Mock StorageProvider ────────────────────────────────────
 

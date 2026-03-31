@@ -1,11 +1,14 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 /* Unit tests for the AuditTrail module (SP-R2-007-005). */
 
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
 const Database = require('better-sqlite3');
-const { AuditTrail } = require('../../src/webapp/audit');
+import * as __req_0 from '../../src/webapp/audit';
+const { AuditTrail } = __req_0;
 
 let tempDir;
 let trail;

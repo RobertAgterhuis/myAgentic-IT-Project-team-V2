@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { collectPhaseOutputs } = require('../../src/webapp/routes/misc-export');
+import * as __req_0 from '../../src/webapp/routes/misc-export';
+const { collectPhaseOutputs } = __req_0;
 
 describe('collectPhaseOutputs', () => {
   function makeStore(files) {

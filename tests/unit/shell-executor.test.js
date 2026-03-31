@@ -1,12 +1,11 @@
-'use strict';
-
 /**
  * Shell Executor — Unit Tests
  *
  * Tests the safe child_process wrapper for executing external CLI tools.
  */
 
-const { shellExec, isBinaryAvailable } = require('../../platform/sdlc/adapters/shell-executor');
+import * as __req_0 from '../../platform/sdlc/adapters/shell-executor';
+const { shellExec, isBinaryAvailable } = __req_0;
 
 describe('shellExec', () => {
   it('executes a simple command and returns stdout', async () => {

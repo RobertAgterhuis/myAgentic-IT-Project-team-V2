@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * SDLC Observability & DORA Metrics — Unit Tests
  *
@@ -7,6 +5,7 @@
  * full report generation, sprint velocity, and defect density.
  */
 
+import * as __req_0 from '../../platform/sdlc/observability';
 const {
   DORA_LEVELS,
   computeLeadTime,
@@ -20,7 +19,7 @@ const {
   computeDoraReport,
   computeVelocityTrend,
   computeDefectDensity,
-} = require('../../platform/sdlc/observability');
+} = __req_0;
 
 // ─── Enum Guards ─────────────────────────────────────────────
 

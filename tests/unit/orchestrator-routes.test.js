@@ -1,4 +1,9 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import { dirname as _dirname } from 'node:path';
+const require = createRequire(import.meta.url);
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
 
 /**
  * Orchestrator Route Handlers — Unit Tests (FEAT-05-A API integration)
@@ -18,8 +23,10 @@
 
 const path = require('path');
 const fs = require('fs');
-const { createEngine } = require('../../platform/engine/engine');
-const { listTemplates } = require('../../platform/engine/template-loader');
+import * as __req_0 from '../../platform/engine/engine';
+const { createEngine } = __req_0;
+import * as __req_1 from '../../platform/engine/template-loader';
+const { listTemplates } = __req_1;
 
 // ─── Test Helpers ────────────────────────────────────────────
 

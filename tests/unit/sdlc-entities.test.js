@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * SDLC Domain Entities — Unit Tests
  *
@@ -7,6 +5,7 @@
  * and base field defaults.
  */
 
+import * as __req_0 from '../../platform/sdlc/entities';
 const {
   LIFECYCLE_STAGES,
   ENTITY_TYPES,
@@ -26,7 +25,7 @@ const {
   createDeployment,
   createIncident,
   createImprovement,
-} = require('../../platform/sdlc/entities');
+} = __req_0;
 
 // ─── Enums ───────────────────────────────────────────────────
 

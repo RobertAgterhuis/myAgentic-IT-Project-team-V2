@@ -1,4 +1,5 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 /**
  * Governance Mode & Advisory Logging — Unit Tests (M4)
@@ -16,18 +17,20 @@ const path = require('path');
 const fs = require('fs');
 const os = require('os');
 
-const {
-  loadGovernancePolicies,
-  matchPolicies,
-} = require('../../platform/engine/governance-config');
+import * as __req_0 from '../../platform/engine/governance-config';
+const { loadGovernancePolicies, matchPolicies } = __req_0;
 
-const { resolveIdentity } = require('../../platform/engine/identity');
+import * as __req_1 from '../../platform/engine/identity';
+const { resolveIdentity } = __req_1;
 
-const { runGate } = require('../../platform/engine/gate-validator');
+import * as __req_2 from '../../platform/engine/gate-validator';
+const { runGate } = __req_2;
 
-const { AuditTrail } = require('../../src/webapp/audit');
+import * as __req_3 from '../../src/webapp/audit';
+const { AuditTrail } = __req_3;
 
-const { saveSessionState, loadSessionState } = require('../../platform/engine/state-persistence');
+import * as __req_4 from '../../platform/engine/state-persistence';
+const { saveSessionState, loadSessionState } = __req_4;
 
 // ─── Test Helpers ────────────────────────────────────────────
 

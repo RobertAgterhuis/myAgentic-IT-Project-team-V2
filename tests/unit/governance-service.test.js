@@ -1,8 +1,11 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 const path = require('node:path');
-const { GovernanceEngine, DEFAULT_POLICIES } = require('../../platform/sdlc/governance');
-const { GovernanceService } = require('../../src/webapp/services');
+import * as __req_0 from '../../platform/sdlc/governance';
+const { GovernanceEngine, DEFAULT_POLICIES } = __req_0;
+import * as __req_1 from '../../src/webapp/services';
+const { GovernanceService } = __req_1;
 
 function createStore() {
   const files = new Map();

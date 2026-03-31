@@ -1,7 +1,7 @@
-'use strict';
-
-const { registerRoutes } = require('../../src/webapp/routes/artifacts');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+import * as __req_0 from '../../src/webapp/routes/artifacts';
+const { registerRoutes } = __req_0;
+import * as __req_1 from '../helpers/fastify-test-adapter.js';
+const { createTestableRoutes } = __req_1;
 
 function createReq(url, method = 'GET', body, params) {
   return {

@@ -1,4 +1,6 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 /**
  * RAG types and schema migration tests (RAG-1.1.1).
  * Verifies that:

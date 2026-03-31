@@ -1,7 +1,7 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { createMetricsCollector } = require('../../src/webapp/metrics-collector');
+import * as __req_0 from '../../src/webapp/metrics-collector';
+const { createMetricsCollector } = __req_0;
 
 function mockStore(files = {}) {
   const written = {};

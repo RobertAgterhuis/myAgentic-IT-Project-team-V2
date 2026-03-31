@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Gate Validator — Unit Tests (FEAT-05-C)
  *
@@ -14,9 +12,10 @@
  *   AC-8: QUESTIONNAIRE_REQUEST extraction
  */
 
-const path = require('path');
-const fs = require('fs');
-const {
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import {
   extractSections,
   findPlaceholders,
   extractTaggedItems,
@@ -31,8 +30,12 @@ const {
   PHASE_GUARDRAILS,
   _PHASE_CONTRACTS,
   HANDOFF_CHECKLIST_COUNT,
-} = require('../../platform/engine/gate-validator');
-const { loadFlows } = require('../../platform/engine/flow-loader');
+} from '../../platform/engine/gate-validator';
+import { loadFlows } from '../../platform/engine/flow-loader';
+import { createEngine } from '../../platform/engine/engine';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ─── Test Helpers ────────────────────────────────────────────
 
@@ -671,8 +674,6 @@ describe('runGate', () => {
 // Engine integration — validateGate with SSE (AC-7)
 // ─────────────────────────────────────────────────────────────
 describe('engine validateGate integration', () => {
-  const { createEngine } = require('../../platform/engine/engine');
-
   const FLOWS_PATH = path.join(__dirname, '..', '..', 'platform', 'engine', 'flows.yaml');
   const FLOWS_CONTENT = fs.readFileSync(FLOWS_PATH, 'utf-8');
 

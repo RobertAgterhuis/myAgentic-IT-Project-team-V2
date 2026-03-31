@@ -1,13 +1,11 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
-const { registerRoutes } = require('../../src/webapp/routes/policies');
-const {
-  PolicyService,
-  PolicyValidationError,
-  PolicyNotFoundError,
-} = require('../../src/webapp/services');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+import * as __req_0 from '../../src/webapp/routes/policies';
+const { registerRoutes } = __req_0;
+import * as __req_1 from '../../src/webapp/services';
+const { PolicyService, PolicyValidationError, PolicyNotFoundError } = __req_1;
+import * as __req_2 from '../helpers/fastify-test-adapter.js';
+const { createTestableRoutes } = __req_2;
 
 function createReq(url, method = 'GET', body) {
   return {

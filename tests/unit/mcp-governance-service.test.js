@@ -1,9 +1,8 @@
-'use strict';
-
-const fs = require('fs');
-const os = require('os');
-const path = require('path');
-const { McpGovernanceService } = require('../../src/webapp/plugins/mcp-governance/service');
+import * as fs from 'node:fs';
+import * as os from 'node:os';
+import * as path from 'node:path';
+import * as __req_0 from '../../src/webapp/plugins/mcp-governance/service';
+const { McpGovernanceService } = __req_0;
 
 describe('McpGovernanceService', () => {
   let root;
@@ -339,8 +338,8 @@ describe('McpGovernanceService', () => {
     const runtime = await svc.buildRuntimeArtifacts();
     expect(runtime.manifestCount).toBe(12);
 
-    const manifestPath = require('path').join(runtime.outputDir, 'runtime-manifests', 'infra.json');
-    const manifest = JSON.parse(require('fs').readFileSync(manifestPath, 'utf8'));
+    const manifestPath = path.join(runtime.outputDir, 'runtime-manifests', 'infra.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     const entraServer = manifest.servers.find((s) => s.authType === 'entra');
     if (entraServer) {
       expect(entraServer.authStatus).toBe('consent_granted');
@@ -364,8 +363,8 @@ describe('McpGovernanceService', () => {
     ]);
 
     const runtime = await svc.buildRuntimeArtifacts();
-    const manifestPath = require('path').join(runtime.outputDir, 'runtime-manifests', 'infra.json');
-    const manifest = JSON.parse(require('fs').readFileSync(manifestPath, 'utf8'));
+    const manifestPath = path.join(runtime.outputDir, 'runtime-manifests', 'infra.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     const entraServer = manifest.servers.find((s) => s.authType === 'entra');
     if (entraServer) {
       expect(entraServer.authStatus).toBe('consent_pending');
@@ -379,8 +378,8 @@ describe('McpGovernanceService', () => {
     await svc.syncToolPolicies(await svc.getDefinedToolPolicies());
 
     const runtime = await svc.buildRuntimeArtifacts();
-    const manifestPath = require('path').join(runtime.outputDir, 'runtime-manifests', 'infra.json');
-    const manifest = JSON.parse(require('fs').readFileSync(manifestPath, 'utf8'));
+    const manifestPath = path.join(runtime.outputDir, 'runtime-manifests', 'infra.json');
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
     const entraServer = manifest.servers.find((s) => s.authType === 'entra');
     if (entraServer) {
       expect(entraServer.authStatus).toBe('not_configured');

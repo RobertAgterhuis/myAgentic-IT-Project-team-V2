@@ -1,8 +1,8 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
-
-const { registerRoutes } = require('../../src/webapp/routes/chat');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+import * as __req_0 from '../../src/webapp/routes/chat';
+import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
+import * as path from 'node:path';
+const { registerRoutes } = __req_0;
 
 function createReq(url, body = {}, role = 'operator', method = 'POST') {
   return {
@@ -45,8 +45,7 @@ function createCtx() {
     _authMiddleware: { enabled: true },
     PROJECT_ROOT: process.cwd(),
     SESSION_DIR: 'BusinessDocs/session',
-    resolveSessionFile: () =>
-      require('node:path').join(process.cwd(), 'BusinessDocs/session/session-state.json'),
+    resolveSessionFile: () => path.join(process.cwd(), 'BusinessDocs/session/session-state.json'),
     _getHumanOverrideEvents: () => [{ state: 'OPEN' }],
     _ragStore: {
       query: vi.fn().mockImplementation(async (collectionId, vector, topK) => {

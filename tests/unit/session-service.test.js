@@ -1,8 +1,17 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import { dirname as _dirname } from 'node:path';
+const require = createRequire(import.meta.url);
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
+
 const path = require('path');
-const { InMemoryStore, setStore } = require('../../src/webapp/store');
-const { SessionService } = require('../../src/webapp/services');
-const { FileCache } = require('../../src/webapp/cache');
+import * as __req_0 from '../../src/webapp/store';
+const { InMemoryStore, setStore } = __req_0;
+import * as __req_1 from '../../src/webapp/services';
+const { SessionService } = __req_1;
+import * as __req_2 from '../../src/webapp/cache';
+const { FileCache } = __req_2;
 
 const PROJECT_ROOT = path.resolve(__dirname, '../..');
 const BUSINESS_DOCS = path.join(PROJECT_ROOT, 'BusinessDocs');

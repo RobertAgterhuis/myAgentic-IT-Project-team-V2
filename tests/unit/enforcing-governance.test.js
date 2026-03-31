@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Enforcing Governance Mode — Unit Tests (M6 #371)
  *
@@ -7,9 +5,11 @@
  * and unsatisfied policies exist that require manual approval.
  */
 
-const { loadGovernancePolicies } = require('../../platform/engine/governance-config');
+import * as __req_0 from '../../platform/engine/governance-config';
+const { loadGovernancePolicies } = __req_0;
 
-const { runGate } = require('../../platform/engine/gate-validator');
+import * as __req_1 from '../../platform/engine/gate-validator';
+const { runGate } = __req_1;
 
 // ─── Test Helpers ────────────────────────────────────────────
 

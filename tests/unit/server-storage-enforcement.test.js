@@ -1,5 +1,4 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
 /**
  * Storage provider startup enforcement tests (Task #669 / M2).
@@ -9,18 +8,9 @@
  * listen callback must NOT fire.  In local-dev the listen callback fires even
  * when storage init fails (profile-bound fallback).
  *
- * Strategy: swap out platform/engine/persistence/index exports in the require
- * cache BEFORE loading server.ts so the freshly-required server picks up the
- * stub.  This avoids touching the real SQLite/file backends during test runs.
+ * Strategy: vi.doMock() platform/engine/persistence BEFORE importing server.ts
+ * so the startup path observes failing createStorageProvider().
  */
-
-const MODULES_TO_RESET = [
-  '../../src/webapp/server',
-  '../../src/webapp/config',
-  '../../src/webapp/auth',
-  '../../src/webapp/redis',
-  '../../src/webapp/runtime-profiles',
-];
 
 const ENV_KEYS = [
   'NODE_ENV',
@@ -36,16 +26,6 @@ const ENV_KEYS = [
   'TRUST_PROXY',
 ];
 
-function resetModuleCache() {
-  for (const mod of MODULES_TO_RESET) {
-    try {
-      delete require.cache[require.resolve(mod)];
-    } catch {
-      // Module may not be in cache yet.
-    }
-  }
-}
-
 function setEnv(next) {
   for (const key of ENV_KEYS) {
     if (Object.prototype.hasOwnProperty.call(next, key)) {
@@ -56,22 +36,23 @@ function setEnv(next) {
   }
 }
 
+let _serverImportCounter = 0;
+const _serverLoaders = [
+  () => import('../../src/webapp/server.ts?sse0'),
+  () => import('../../src/webapp/server.ts?sse1'),
+  () => import('../../src/webapp/server.ts?sse2'),
+  () => import('../../src/webapp/server.ts?sse3'),
+  () => import('../../src/webapp/server.ts?sse4'),
+  () => import('../../src/webapp/server.ts?sse5'),
+];
+
 describe('storage provider startup enforcement', () => {
   let originalEnv;
-  let persistencePath;
-  let savedPersistenceExports;
 
   beforeEach(() => {
+    vi.resetModules();
     originalEnv = {};
     for (const key of ENV_KEYS) originalEnv[key] = process.env[key];
-
-    // Resolve the persistence module path and save its current exports so we
-    // can restore them after each test.
-    persistencePath = require.resolve('../../platform/engine/persistence/index');
-    if (!require.cache[persistencePath]) {
-      require('../../platform/engine/persistence/index');
-    }
-    savedPersistenceExports = require.cache[persistencePath]?.exports;
   });
 
   afterEach(() => {
@@ -80,23 +61,27 @@ describe('storage provider startup enforcement', () => {
       else process.env[key] = originalEnv[key];
     }
 
-    // Restore the real persistence module exports.
-    if (require.cache[persistencePath] && savedPersistenceExports) {
-      require.cache[persistencePath].exports = savedPersistenceExports;
-    }
-    resetModuleCache();
+    vi.unmock('../../platform/engine/persistence');
+    vi.resetModules();
   });
 
   function stubPersistenceToFail() {
-    if (!require.cache[persistencePath]) {
-      require('../../platform/engine/persistence/index');
-    }
-    require.cache[persistencePath].exports = {
-      ...require.cache[persistencePath].exports,
-      createStorageProvider: async () => {
-        throw new Error('Storage init failed (test stub)');
-      },
-    };
+    vi.doMock('../../platform/engine/persistence', async () => {
+      const actual = await vi.importActual('../../platform/engine/persistence');
+      return {
+        ...actual,
+        createStorageProvider: async () => {
+          throw new Error('Storage init failed (test stub)');
+        },
+      };
+    });
+  }
+
+  async function loadServerModule() {
+    vi.resetModules();
+    const mod = await _serverLoaders[_serverImportCounter % _serverLoaders.length]();
+    _serverImportCounter += 1;
+    return mod;
   }
 
   it('aborts listen callback in production when storage provider init fails', async () => {
@@ -113,8 +98,7 @@ describe('storage provider startup enforcement', () => {
     });
 
     stubPersistenceToFail();
-    resetModuleCache();
-    const { server } = require('../../src/webapp/server');
+    const { server } = await loadServerModule();
 
     // The production abort path prevents app.listen() from being reached;
     // the callback must not fire.  Allow 1 s for the async chain to settle.

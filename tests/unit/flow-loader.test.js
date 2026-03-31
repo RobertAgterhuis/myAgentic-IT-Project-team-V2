@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Flow Loader — Unit Tests (FEAT-05-A / AC-1)
  *
@@ -9,9 +7,14 @@
  * - loadFlows: full load + validation
  */
 
-const path = require('path');
-const { parseFlowYaml, parseInlineValue, loadFlows } = require('../../platform/engine/flow-loader');
-const { toPackManifestV2, toLegacyFlowDefinition } = require('../../platform/engine/pack-contract');
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { parseFlowYaml, parseInlineValue, loadFlows } from '../../platform/engine/flow-loader';
+import { toPackManifestV2, toLegacyFlowDefinition } from '../../platform/engine/pack-contract';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // ─── Test Helpers ────────────────────────────────────────────
 
@@ -135,7 +138,6 @@ describe('parseFlowYaml', () => {
   });
 
   it('parses the full flows.yaml file', () => {
-    const fs = require('fs');
     const content = fs.readFileSync(
       path.join(__dirname, '..', '..', 'platform', 'engine', 'flows.yaml'),
       'utf-8'

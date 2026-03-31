@@ -1,5 +1,4 @@
-'use strict';
-
+import * as __req_0 from '../../platform/sdlc/observability';
 const {
   DORA_LEVELS,
   computeDeploymentFrequency,
@@ -26,7 +25,7 @@ const {
   recordToolExecutionTrace,
   computeStageLatencyStats,
   computeToolLatencyStats,
-} = require('../../platform/sdlc/observability');
+} = __req_0;
 
 // ── Test Data Factories ──────────────────────────────────────
 

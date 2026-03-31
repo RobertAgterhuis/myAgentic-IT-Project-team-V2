@@ -1,4 +1,7 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath } from 'node:url';
+const require = createRequire(import.meta.url);
+
 /**
  * Unit + integration tests for the MCP server adapter layer.
  * Tests tool registration, helper functions, and tool handler logic.
@@ -8,8 +11,10 @@
 
 const path = require('path');
 const fs = require('fs');
-const { GovernanceEngine, DEFAULT_POLICIES } = require('../../platform/sdlc/governance');
+import * as __req_0 from '../../platform/sdlc/governance';
+const { GovernanceEngine, DEFAULT_POLICIES } = __req_0;
 
+import * as __req_1 from '../../src/webapp/mcp-server';
 const {
   mcp,
   jsonResult,
@@ -25,7 +30,7 @@ const {
   BUSINESS_DOCS,
   SESSION_DIR,
   DECISIONS_PATH,
-} = require('../../src/webapp/mcp-server');
+} = __req_1;
 
 /* ── Helpers ────────────────────────────────────────────────────── */
 
@@ -35,6 +40,8 @@ async function callTool(name, args = {}) {
   if (!tool) throw new Error(`Tool not registered: ${name}`);
   return tool.handler({ env_scope: 'dev', ...args }, {});
 }
+
+const mcpServerPath = fileURLToPath(new URL('../../src/webapp/mcp-server.ts', import.meta.url));
 
 function parseToolResult(result) {
   const text = result.content[0].text;
@@ -695,24 +702,14 @@ describe('tool: get_command_queue', () => {
 
 describe('tool: get_help', () => {
   it('returns error when help directory does not exist', async () => {
-    const helpDir = path.resolve(
-      path.dirname(require.resolve('../../src/webapp/mcp-server')),
-      '../..',
-      'docs',
-      'help'
-    );
+    const helpDir = path.resolve(path.dirname(mcpServerPath), '../..', 'docs', 'help');
     if (fs.existsSync(helpDir)) return; // skip if help dir exists
     const result = await callTool('get_help', {});
     expect(result.isError).toBe(true);
   });
 
   it('returns error for unknown topic', async () => {
-    const helpDir = path.resolve(
-      path.dirname(require.resolve('../../src/webapp/mcp-server')),
-      '../..',
-      'docs',
-      'help'
-    );
+    const helpDir = path.resolve(path.dirname(mcpServerPath), '../..', 'docs', 'help');
     if (!fs.existsSync(helpDir)) return; // skip if no help dir
     const result = await callTool('get_help', { topic: 'nonexistent_xyz_12345' });
     expect(result.isError).toBe(true);

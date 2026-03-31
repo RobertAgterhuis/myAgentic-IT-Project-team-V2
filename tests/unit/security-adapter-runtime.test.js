@@ -1,10 +1,12 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 const os = require('node:os');
 const path = require('node:path');
 const fs = require('node:fs/promises');
 
-const { SecurityAdapter } = require('../../platform/sdlc/adapters/security-adapter');
+import * as __req_0 from '../../platform/sdlc/adapters/security-adapter';
+const { SecurityAdapter } = __req_0;
 
 describe('SecurityAdapter runtime smoke', () => {
   let tempDir;

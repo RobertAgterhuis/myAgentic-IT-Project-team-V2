@@ -1,11 +1,15 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
 
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { registerRoutes } = require('../../src/webapp/routes/git');
-const { createTestableRoutes } = require('../helpers/fastify-test-adapter.js');
+import * as __req_0 from '../../src/webapp/routes/git';
+const { registerRoutes } = __req_0;
+import * as __req_1 from '../helpers/fastify-test-adapter.js';
+const { createTestableRoutes } = __req_1;
 
 function createCtx() {
   return {

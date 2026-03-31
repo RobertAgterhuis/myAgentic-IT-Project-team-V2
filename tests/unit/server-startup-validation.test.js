@@ -1,13 +1,4 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
-'use strict';
-
-const MODULES_TO_RESET = [
-  '../../src/webapp/server',
-  '../../src/webapp/config',
-  '../../src/webapp/auth',
-  '../../src/webapp/redis',
-  '../../src/webapp/runtime-profiles',
-];
 
 const ENV_KEYS = [
   'NODE_ENV',
@@ -29,16 +20,6 @@ const ENV_KEYS = [
   'ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY',
 ];
 
-function resetModuleCache() {
-  for (const mod of MODULES_TO_RESET) {
-    try {
-      delete require.cache[require.resolve(mod)];
-    } catch {
-      // Module may not be loaded in this test path.
-    }
-  }
-}
-
 function setEnv(next) {
   for (const key of ENV_KEYS) {
     if (Object.prototype.hasOwnProperty.call(next, key)) {
@@ -49,9 +30,23 @@ function setEnv(next) {
   }
 }
 
-function loadServerModule() {
-  resetModuleCache();
-  return require('../../src/webapp/server');
+let _serverImportCounter = 0;
+const _serverLoaders = [
+  () => import('../../src/webapp/server.ts?ssv0'),
+  () => import('../../src/webapp/server.ts?ssv1'),
+  () => import('../../src/webapp/server.ts?ssv2'),
+  () => import('../../src/webapp/server.ts?ssv3'),
+  () => import('../../src/webapp/server.ts?ssv4'),
+  () => import('../../src/webapp/server.ts?ssv5'),
+  () => import('../../src/webapp/server.ts?ssv6'),
+  () => import('../../src/webapp/server.ts?ssv7'),
+];
+
+async function loadServerModule() {
+  vi.resetModules();
+  const mod = await _serverLoaders[_serverImportCounter % _serverLoaders.length]();
+  _serverImportCounter += 1;
+  return mod;
 }
 
 describe('startup runtime profile validation', () => {
@@ -67,10 +62,9 @@ describe('startup runtime profile validation', () => {
       if (originalEnv[key] === undefined) delete process.env[key];
       else process.env[key] = originalEnv[key];
     }
-    resetModuleCache();
   });
 
-  it('accepts local-dev defaults', () => {
+  it('accepts local-dev defaults', async () => {
     setEnv({
       NODE_ENV: 'development',
       HOST: '127.0.0.1',
@@ -85,11 +79,11 @@ describe('startup runtime profile validation', () => {
       TOOL_EXEC_REQUIRE_WORKSPACE_CWD: 'true',
     });
 
-    const { validateStartupRuntimeProfile } = loadServerModule();
+    const { validateStartupRuntimeProfile } = await loadServerModule();
     expect(() => validateStartupRuntimeProfile()).not.toThrow();
   });
 
-  it('rejects production profile when storage provider is invalid', () => {
+  it('rejects production profile when storage provider is invalid', async () => {
     setEnv({
       NODE_ENV: 'production',
       HOST: '0.0.0.0',
@@ -102,13 +96,13 @@ describe('startup runtime profile validation', () => {
       TOOL_EXEC_REQUIRE_WORKSPACE_CWD: 'true',
     });
 
-    const { validateStartupRuntimeProfile } = loadServerModule();
+    const { validateStartupRuntimeProfile } = await loadServerModule();
     expect(() => validateStartupRuntimeProfile()).toThrow(
       /RUNTIME_PROFILE_INVALID|STORAGE_PROVIDER/
     );
   });
 
-  it('rejects production profile when TRUST_PROXY is implicit', () => {
+  it('rejects production profile when TRUST_PROXY is implicit', async () => {
     setEnv({
       NODE_ENV: 'production',
       HOST: '0.0.0.0',
@@ -121,11 +115,11 @@ describe('startup runtime profile validation', () => {
       TOOL_EXEC_REQUIRE_WORKSPACE_CWD: 'true',
     });
 
-    const { validateStartupRuntimeProfile } = loadServerModule();
+    const { validateStartupRuntimeProfile } = await loadServerModule();
     expect(() => validateStartupRuntimeProfile()).toThrow(/RUNTIME_PROFILE_INVALID|TRUST_PROXY/);
   });
 
-  it('accepts valid production-single-node profile', () => {
+  it('accepts valid production-single-node profile', async () => {
     setEnv({
       NODE_ENV: 'production',
       HOST: '0.0.0.0',
@@ -138,11 +132,11 @@ describe('startup runtime profile validation', () => {
       TOOL_EXEC_REQUIRE_WORKSPACE_CWD: 'true',
     });
 
-    const { validateStartupRuntimeProfile } = loadServerModule();
+    const { validateStartupRuntimeProfile } = await loadServerModule();
     expect(() => validateStartupRuntimeProfile()).not.toThrow();
   });
 
-  it('returns strict predecessor continuity by default in production profile', () => {
+  it('returns strict predecessor continuity by default in production profile', async () => {
     setEnv({
       NODE_ENV: 'production',
       HOST: '0.0.0.0',
@@ -156,7 +150,7 @@ describe('startup runtime profile validation', () => {
       ENFORCE_PREDECESSOR_CONTRACT_CONTINUITY: undefined,
     });
 
-    const { validateStartupRuntimeProfile } = loadServerModule();
+    const { validateStartupRuntimeProfile } = await loadServerModule();
     const result = validateStartupRuntimeProfile();
 
     expect(result.profile).toBe('production-single-node');
@@ -166,7 +160,7 @@ describe('startup runtime profile validation', () => {
     });
   });
 
-  it('rejects production profile when tool isolation is unsafe', () => {
+  it('rejects production profile when tool isolation is unsafe', async () => {
     setEnv({
       NODE_ENV: 'production',
       HOST: '0.0.0.0',
@@ -179,7 +173,7 @@ describe('startup runtime profile validation', () => {
       TOOL_EXEC_REQUIRE_WORKSPACE_CWD: 'true',
     });
 
-    const { validateStartupRuntimeProfile } = loadServerModule();
+    const { validateStartupRuntimeProfile } = await loadServerModule();
     expect(() => validateStartupRuntimeProfile()).toThrow(
       /RUNTIME_PROFILE_INVALID|AGENT_TOOL_ISOLATION_LEVEL/
     );

@@ -1,12 +1,14 @@
-'use strict';
+import { createRequire } from 'node:module';
+import { fileURLToPath as _fileURLToPath } from 'node:url';
+import { dirname as _dirname } from 'node:path';
+const require = createRequire(import.meta.url);
+const __filename = _fileURLToPath(import.meta.url);
+const __dirname = _dirname(__filename);
 
 const fs = require('node:fs');
 const path = require('node:path');
-const {
-  validateCanonicalFlows,
-  SCHEMA_PATH,
-  FLOWS_PATH,
-} = require('../../platform/engine/flow-schema');
+import * as __req_0 from '../../platform/engine/flow-schema';
+const { validateCanonicalFlows, SCHEMA_PATH, FLOWS_PATH } = __req_0;
 
 describe('Canonical flow schema validation (S4-2)', () => {
   it('loads schema and flows files', () => {

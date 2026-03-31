@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Repository Indexer — Unit Tests (M25-007)
  *
@@ -7,7 +5,8 @@
  * service inventory, and persistence via mock StorageProvider.
  */
 
-const { RepoIndexer } = require('../../platform/engine/workspace/repo-indexer');
+import * as __req_0 from '../../platform/engine/workspace/repo-indexer';
+const { RepoIndexer } = __req_0;
 
 // ─── Mock StorageProvider ────────────────────────────────────
 

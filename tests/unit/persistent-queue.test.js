@@ -1,6 +1,5 @@
-'use strict';
-
-const { PersistentQueue } = require('../../platform/engine/jobs/persistent-queue');
+import * as __req_0 from '../../platform/engine/jobs/persistent-queue';
+const { PersistentQueue } = __req_0;
 
 function makeInput(overrides = {}) {
   return {

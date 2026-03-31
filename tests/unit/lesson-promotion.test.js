@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Lesson Promotion — Unit Tests (S6-3)
  *
@@ -9,13 +7,14 @@
  *   - Building decision text from lessons with source reference
  */
 
+import * as __req_0 from '../../src/webapp/lesson-promotion';
 const {
   PROMOTE_FLAG,
   PROMOTED_STATUS,
   findPromotionCandidates,
   markLessonPromoted,
   buildDecisionFromLesson,
-} = require('../../src/webapp/lesson-promotion');
+} = __req_0;
 
 // ─── Helpers ─────────────────────────────────────────────────
 

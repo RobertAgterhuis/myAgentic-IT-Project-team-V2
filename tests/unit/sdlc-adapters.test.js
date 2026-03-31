@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * SDLC Adapters — Unit Tests
  *
@@ -8,18 +6,22 @@
  * testing, llm).
  */
 
-const {
-  AdapterRegistry,
-  ADAPTER_CATEGORIES,
-  HEALTH_STATUS,
-} = require('../../platform/sdlc/adapters/tool-adapter');
-const { GitAdapter } = require('../../platform/sdlc/adapters/git-adapter');
-const { CiAdapter } = require('../../platform/sdlc/adapters/ci-adapter');
-const { ContainerAdapter } = require('../../platform/sdlc/adapters/container-adapter');
-const { CloudAdapter } = require('../../platform/sdlc/adapters/cloud-adapter');
-const { SecurityAdapter } = require('../../platform/sdlc/adapters/security-adapter');
-const { TestingAdapter } = require('../../platform/sdlc/adapters/testing-adapter');
-const { LlmAdapter } = require('../../platform/sdlc/adapters/llm-adapter');
+import * as __req_0 from '../../platform/sdlc/adapters/tool-adapter';
+const { AdapterRegistry, ADAPTER_CATEGORIES, HEALTH_STATUS } = __req_0;
+import * as __req_1 from '../../platform/sdlc/adapters/git-adapter';
+const { GitAdapter } = __req_1;
+import * as __req_2 from '../../platform/sdlc/adapters/ci-adapter';
+const { CiAdapter } = __req_2;
+import * as __req_3 from '../../platform/sdlc/adapters/container-adapter';
+const { ContainerAdapter } = __req_3;
+import * as __req_4 from '../../platform/sdlc/adapters/cloud-adapter';
+const { CloudAdapter } = __req_4;
+import * as __req_5 from '../../platform/sdlc/adapters/security-adapter';
+const { SecurityAdapter } = __req_5;
+import * as __req_6 from '../../platform/sdlc/adapters/testing-adapter';
+const { TestingAdapter } = __req_6;
+import * as __req_7 from '../../platform/sdlc/adapters/llm-adapter';
+const { LlmAdapter } = __req_7;
 
 // ─── Enum Guards ─────────────────────────────────────────────
 

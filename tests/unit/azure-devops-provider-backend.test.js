@@ -1,5 +1,3 @@
-'use strict';
-
 let AzureDevOpsProviderBackend;
 
 beforeAll(async () => {

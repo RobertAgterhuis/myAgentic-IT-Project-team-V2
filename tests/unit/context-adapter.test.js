@@ -1,8 +1,11 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
 
 const path = require('path');
-const { toServiceContext } = require('../../src/webapp/services/context-adapter');
-const { InMemoryStore, setStore } = require('../../src/webapp/store');
+import * as __req_0 from '../../src/webapp/services/context-adapter';
+const { toServiceContext } = __req_0;
+import * as __req_1 from '../../src/webapp/store';
+const { InMemoryStore, setStore } = __req_1;
 
 describe('context-adapter', () => {
   it('maps explicit fields from route context to service context', () => {

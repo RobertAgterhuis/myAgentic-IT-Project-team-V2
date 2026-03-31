@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Unified Quality Gate — Unit Tests (M4 / Issue #1400)
  *
@@ -14,7 +12,8 @@
  *   - Agency agent: CRITICAL violation for missing deliverable file
  */
 
-const { runUnifiedQualityGate } = require('../../platform/engine/gate-validator');
+import * as __req_0 from '../../platform/engine/gate-validator';
+const { runUnifiedQualityGate } = __req_0;
 
 // ─── Helpers ──────────────────────────────────────────────────
 

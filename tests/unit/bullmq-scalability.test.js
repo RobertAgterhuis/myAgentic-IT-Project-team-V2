@@ -1,6 +1,8 @@
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 // M33: Scalability Foundation — Unit Tests (offline / mocked)
-'use strict';
 
 const { EventEmitter } = require('events');
 

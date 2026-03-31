@@ -1,5 +1,4 @@
-'use strict';
-
+import * as __req_0 from '../../platform/sdlc/adapters/security-adapter';
 const {
   parseEslintFindings,
   parseAuditOutput,
@@ -9,7 +8,7 @@ const {
   runDependencyAudit,
   runSecretScan,
   runLicenseCheck,
-} = require('../../platform/sdlc/adapters/security-adapter');
+} = __req_0;
 
 describe('security-adapter helpers', () => {
   it('parses eslint findings and falls back on invalid JSON', () => {

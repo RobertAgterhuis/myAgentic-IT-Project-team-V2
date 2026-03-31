@@ -1,17 +1,13 @@
-'use strict';
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 /* Unit test example: model layer pure-function testing.
  * Pattern: test domain logic (parsing, transformation) in isolation.
  * Demonstrates testing markdown parsing and decision management. */
 
 const _path = require('path');
-const {
-  parseQuestionnaire,
-  _parseDecisions,
-  nextDecisionId,
-  _today,
-  Q_ID_RE,
-  DEC_ID_RE,
-} = require('../../src/webapp/models');
+import * as __req_0 from '../../src/webapp/models';
+const { parseQuestionnaire, _parseDecisions, nextDecisionId, _today, Q_ID_RE, DEC_ID_RE } = __req_0;
 
 describe('parseQuestionnaire — edge cases', () => {
   it('ignores Q-IDs that are not in a question block', () => {

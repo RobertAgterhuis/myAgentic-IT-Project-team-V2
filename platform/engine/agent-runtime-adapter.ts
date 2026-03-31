@@ -930,6 +930,14 @@ interface SandboxInvocationContext {
   prTitle?: string;
 }
 
+interface SandboxStepArtifact {
+  correlationId: string;
+  step: 'plan' | 'code' | 'test' | 'pr';
+  timestamp: string;
+  branch: string;
+  details: Record<string, unknown>;
+}
+
 /**
  * SandboxRuntimeAdapter — branch-safe runtime adapter for autonomous lane proofing.
  *
@@ -960,24 +968,30 @@ export class SandboxRuntimeAdapter extends FileProducingRuntimeAdapter {
     const requestedAt = new Date().toISOString();
     const requestId = createRequestId(agent.id);
     const sessionId = runtimeContext.sandboxSessionId || randomUUID();
+    const correlationId = sessionId;
     const sessionDir = path.join(this._sandboxRoot, sessionId);
     const branchName = `sandbox/${sessionId.slice(0, 12)}`;
+    const artifactsDir = path.join(sessionDir, 'artifacts');
 
     await this._ensureSandboxRepo(sessionDir, branchName);
+    await fs.mkdir(artifactsDir, { recursive: true });
 
     const step = runtimeContext.sandboxStep || 'plan';
     const timelinePath = path.join(sessionDir, 'timeline.jsonl');
 
     let stepSummary = '';
+    let stepDetails: Record<string, unknown> = {};
     if (step === 'plan') {
       const planPath = path.join(sessionDir, 'plan.json');
       const plan = {
         issue: 'autonomous-lane-proof',
         steps: ['plan', 'code', 'test', 'pr'],
         branch: branchName,
+        correlationId,
       };
       await fs.writeFile(planPath, JSON.stringify(plan, null, 2), 'utf8');
       stepSummary = `Planned autonomous lane workflow in ${planPath}`;
+      stepDetails = { planPath };
     } else if (step === 'code') {
       const relativeTarget = sanitizeRelativePath(
         runtimeContext.filePath || 'src/sandbox-change.txt'
@@ -996,6 +1010,7 @@ export class SandboxRuntimeAdapter extends FileProducingRuntimeAdapter {
       });
 
       stepSummary = `Applied code change at ${relativeTarget} on ${branchName}`;
+      stepDetails = { relativeTarget };
     } else if (step === 'test') {
       const command = normalizeSandboxCommand(runtimeContext.command);
       const { stdout, stderr } = await execFile(command[0], command.slice(1), {
@@ -1009,6 +1024,11 @@ export class SandboxRuntimeAdapter extends FileProducingRuntimeAdapter {
       ]
         .filter(Boolean)
         .join('\n');
+      stepDetails = {
+        command,
+        stdout: stdout.trim(),
+        stderr: stderr.trim(),
+      };
     } else {
       const title = runtimeContext.prTitle || `Sandbox proof for ${sessionId}`;
       const { stdout: diff } = await execFile('git', ['show', '--name-status', '--oneline', '-1'], {
@@ -1025,16 +1045,37 @@ export class SandboxRuntimeAdapter extends FileProducingRuntimeAdapter {
       const prPath = path.join(sessionDir, 'pull-request-draft.json');
       await fs.writeFile(prPath, JSON.stringify(prDraft, null, 2), 'utf8');
       stepSummary = `Generated PR draft at ${prPath}`;
+      stepDetails = { prPath };
     }
+
+    const artifact: SandboxStepArtifact = {
+      correlationId,
+      step,
+      timestamp: new Date().toISOString(),
+      branch: branchName,
+      details: stepDetails,
+    };
+    const artifactPath = path.join(artifactsDir, `${step}.json`);
+    await fs.writeFile(artifactPath, JSON.stringify(artifact, null, 2), 'utf8');
 
     const timelineEntry = {
       ts: new Date().toISOString(),
+      correlationId,
       step,
       agentId: agent.id,
       branch: branchName,
+      artifactPath: path.relative(sessionDir, artifactPath).replace(/\\/g, '/'),
       summary: stepSummary,
     };
     await fs.appendFile(timelinePath, `${JSON.stringify(timelineEntry)}\n`, 'utf8');
+
+    await this._writeReplayBundle({
+      sessionDir,
+      correlationId,
+      branchName,
+      timelinePath,
+      artifactsDir,
+    });
 
     const completedAt = new Date().toISOString();
     const response: AgentResponseEnvelope = {
@@ -1051,6 +1092,7 @@ export class SandboxRuntimeAdapter extends FileProducingRuntimeAdapter {
         `Agent: ${agent.id}`,
         `Platform: ${platform}`,
         `Session: ${sessionId}`,
+        `Correlation ID: ${correlationId}`,
         `Branch: ${branchName}`,
         '',
         stepSummary,
@@ -1062,6 +1104,54 @@ export class SandboxRuntimeAdapter extends FileProducingRuntimeAdapter {
 
     const outputPath = await this._writeArtifact(agent, response);
     return { outputPath, response, usage: response.usage };
+  }
+
+  private async _writeReplayBundle(input: {
+    sessionDir: string;
+    correlationId: string;
+    branchName: string;
+    timelinePath: string;
+    artifactsDir: string;
+  }): Promise<void> {
+    const timelineLines = existsSync(input.timelinePath)
+      ? (await fs.readFile(input.timelinePath, 'utf8'))
+          .split(/\r?\n/)
+          .map((line) => line.trim())
+          .filter((line) => line.length > 0)
+          .map((line) => {
+            try {
+              return JSON.parse(line) as Record<string, unknown>;
+            } catch {
+              return { parseError: true, raw: line };
+            }
+          })
+      : [];
+
+    const artifacts = existsSync(input.artifactsDir)
+      ? (await fs.readdir(input.artifactsDir)).filter((name) => name.endsWith('.json')).sort()
+      : [];
+
+    const { stdout: lastDiff } = await execFile(
+      'git',
+      ['show', '--name-status', '--oneline', '-1'],
+      {
+        cwd: input.sessionDir,
+        timeout: this._commandTimeoutMs,
+      }
+    );
+
+    const replayBundle = {
+      correlationId: input.correlationId,
+      sessionDir: input.sessionDir,
+      branch: input.branchName,
+      generatedAt: new Date().toISOString(),
+      timeline: timelineLines,
+      artifacts,
+      latestDiff: lastDiff.trim(),
+    };
+
+    const replayBundlePath = path.join(input.sessionDir, 'replay-bundle.json');
+    await fs.writeFile(replayBundlePath, JSON.stringify(replayBundle, null, 2), 'utf8');
   }
 
   private async _ensureSandboxRepo(sessionDir: string, branchName: string): Promise<void> {

@@ -114,10 +114,26 @@ describe('Autonomous Lane Smoke Path (E-B2)', () => {
     const timelinePath = path.join(traceDir, 'sandbox-runs', sandboxSessionId, 'timeline.jsonl');
     expect(fs.existsSync(timelinePath)).toBe(true);
 
+    const replayBundlePath = path.join(
+      traceDir,
+      'sandbox-runs',
+      sandboxSessionId,
+      'replay-bundle.json'
+    );
+    expect(fs.existsSync(replayBundlePath)).toBe(true);
+    const replayBundle = JSON.parse(fs.readFileSync(replayBundlePath, 'utf-8'));
+    expect(replayBundle.correlationId).toBe(sandboxSessionId);
+    expect(Array.isArray(replayBundle.timeline)).toBe(true);
+    expect(replayBundle.timeline.length).toBeGreaterThan(0);
+
     const scriptPath = path.join(traceDir, 'replay-autonomous-lane.sh');
     fs.writeFileSync(scriptPath, '#!/bin/bash\necho "Replay"', 'utf-8');
     expect(fs.existsSync(scriptPath)).toBe(true);
-    recordTrace('trace_generation', 'completed', { artifacts: 2, sandboxSessionId });
+    recordTrace('trace_generation', 'completed', {
+      artifacts: 3,
+      sandboxSessionId,
+      replayBundle: replayBundlePath,
+    });
   });
 
   it('I-B2-001: Should have machine-readable artifacts', async () => {

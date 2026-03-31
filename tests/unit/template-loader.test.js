@@ -409,9 +409,9 @@ describe('loadTemplate', () => {
     expect(config.phaseAgents.PHASE_5_EXECUTING).toHaveLength(8);
   });
 
-  test('SDLC template has all 9 modes', () => {
+  test('SDLC template has all 12 modes', () => {
     const config = loadTemplate('sdlc', TEMPLATES_DIR);
-    expect(Object.keys(config.modes)).toHaveLength(9);
+    expect(Object.keys(config.modes)).toHaveLength(12);
     expect(config.modes.CREATE.phases).toEqual(['PHASE_1', 'PHASE_2', 'PHASE_3', 'PHASE_4']);
   });
 

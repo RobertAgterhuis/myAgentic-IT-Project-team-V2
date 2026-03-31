@@ -69,3 +69,14 @@ Use this agent when you need:
 - **Client Comprehension**: Executive summary understandable by non-practitioner stakeholders
 - **Implementation Rate**: 80%+ of critical and high-priority recommendations implemented within 30 days
 - **Post-Audit Performance Lift**: Measurable improvement within 60 days of implementing audit recommendations
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

@@ -8,6 +8,8 @@ import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { InputField } from '@/components/ui/input-field';
 import { FieldGroup } from '@/components/ui/field-group';
 import { TextareaField } from '@/components/ui/textarea-field';
+import { ExecutionModeSelector } from '@/components/runtime/execution-mode-selector';
+import type { ExecutionMode } from '@/lib/execution-modes';
 import { Terminal, Send, ArrowRight } from 'lucide-react';
 
 interface ProjectBriefSectionProps {
@@ -15,6 +17,8 @@ interface ProjectBriefSectionProps {
   setProjectName: (value: string) => void;
   briefText: string;
   setBriefText: (value: string) => void;
+  selectedExecutionMode: ExecutionMode;
+  setSelectedExecutionMode: (mode: ExecutionMode) => void;
   onSubmit: () => void;
   isSubmitting: boolean;
 }
@@ -24,6 +28,8 @@ export function ProjectBriefSection({
   setProjectName,
   briefText,
   setBriefText,
+  selectedExecutionMode,
+  setSelectedExecutionMode,
   onSubmit,
   isSubmitting,
 }: ProjectBriefSectionProps) {
@@ -61,13 +67,25 @@ export function ProjectBriefSection({
           />
         </FieldGroup>
 
+        <FieldGroup
+          title="Execution mode"
+          description="Choose how the orchestrator should run this brief: SDLC only, agency only, or hybrid."
+        >
+          <ExecutionModeSelector
+            selectedMode={selectedExecutionMode}
+            onChange={setSelectedExecutionMode}
+            disabled={isSubmitting}
+          />
+        </FieldGroup>
+
         <div className="rounded-2xl border border-info/30 bg-info/10 px-4 py-3 text-sm">
           <div className="flex items-center gap-2 font-medium">
             <ArrowRight className="size-4 text-info" /> What happens when you click Submit Brief
           </div>
           <Text muted className="mt-1 text-sm">
-            A CREATE command is queued with your project name and brief. The orchestrator then
-            starts onboarding and the first analysis phase.
+            The selected execution mode is queued with your project brief. HYBRID starts the SDLC
+            flow with agency specialist injections; AGENCY ONLY runs pure agency execution; SDLC
+            ONLY runs the standard SDLC cycle.
           </Text>
         </div>
 

@@ -238,3 +238,14 @@ You're successful when:
 - Apply sight-line asymmetry deliberately in competitive maps: defenders see further, attackers have more cover
 - Design for spectator clarity: key moments must be readable to observers who cannot control the camera
 - Test maps with organized play teams before shipping — pub play and organized play expose completely different design flaws
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

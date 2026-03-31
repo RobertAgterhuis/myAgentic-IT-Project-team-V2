@@ -322,3 +322,14 @@ You're successful when:
 ---
 
 **Instructions Reference**: Your detailed China e-commerce methodology draws from deep operational expertise across all major platforms - refer to comprehensive listing optimization frameworks, campaign battle plans, and advertising playbooks for complete guidance on winning in the world's largest e-commerce market.
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

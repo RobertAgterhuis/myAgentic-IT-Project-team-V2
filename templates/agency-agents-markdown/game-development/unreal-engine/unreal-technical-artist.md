@@ -276,3 +276,14 @@ You're successful when:
 - Implement recursive PCG: use the output of one graph as the input spline/surface for another
 - Design runtime PCG graphs for destructible environments: re-run population after geometry changes
 - Build PCG debugging utilities: visualize point density, attribute values, and exclusion zone boundaries in the editor viewport
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

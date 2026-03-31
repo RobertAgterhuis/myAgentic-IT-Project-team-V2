@@ -553,6 +553,7 @@ export interface OrchestratorCommandPayload {
   platform?: 'copilot' | 'claude' | 'codex';
   resume?: boolean;
   project?: string;
+  execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID';
 }
 
 export interface SprintGatePayload {
@@ -575,6 +576,7 @@ export interface CommandQueueEntry {
   project: string | null;
   description: string | null;
   scope: string | null;
+  execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID' | null;
   requested_at: string;
   status: 'PENDING' | 'PROCESSING' | 'DONE' | 'ERROR';
   source: string;
@@ -700,6 +702,15 @@ export interface PhaseEntry {
 export interface SessionInfo {
   session_id: string;
   cycle_type: string;
+  execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID' | string;
+  execution_plan?: {
+    mode?: string;
+    selectedAgencyAgents?: Array<{ id: string; name: string }>;
+    hybridInjections?: Array<{
+      atState: string;
+      agents: Array<{ id: string; name: string }>;
+    }>;
+  } | null;
   status: string;
   current_phase: string;
   current_agent: string;
@@ -1309,6 +1320,7 @@ export interface Session {
   id: string;
   project: string;
   flow: string;
+  executionMode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID';
   phase: string;
   status: SessionStatus;
   progress: number;

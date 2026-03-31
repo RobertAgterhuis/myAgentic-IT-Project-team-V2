@@ -45,6 +45,7 @@ export interface TrackedSession {
   id: string;
   project: string;
   flow: string;
+  executionMode: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID';
   phase: string;
   status: SessionStatus;
   progress: number;
@@ -89,13 +90,18 @@ export class SessionTracker {
   }
 
   /** Start a new session. Returns the created session. */
-  startSession(project: string, flow: string): TrackedSession {
+  startSession(
+    project: string,
+    flow: string,
+    executionMode: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID' = 'SDLC_ONLY'
+  ): TrackedSession {
     const id = this.generateId();
     const now = new Date().toISOString();
     const session: TrackedSession = {
       id,
       project,
       flow,
+      executionMode,
       phase: 'ONBOARDING',
       status: 'active',
       progress: 0,

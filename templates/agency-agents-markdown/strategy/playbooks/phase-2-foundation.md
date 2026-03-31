@@ -287,3 +287,14 @@ Verdict: PASS / FAIL with specific issues
 ---
 
 _Phase 2 is complete when the skeleton application is running, the CI/CD pipeline is operational, and the Evidence Collector has verified all foundation elements with screenshots._
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

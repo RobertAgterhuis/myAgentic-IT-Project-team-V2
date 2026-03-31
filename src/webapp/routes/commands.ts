@@ -44,6 +44,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           description: body.description as string | undefined,
           scope: body.scope as string | undefined,
           brief: body.brief as string | undefined,
+          execution_mode: body.execution_mode as 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID' | undefined,
         },
         'webapp'
       );

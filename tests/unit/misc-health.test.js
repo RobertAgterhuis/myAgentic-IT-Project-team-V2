@@ -204,4 +204,66 @@ describe('registerHealthRoutes', () => {
     expect(reply.statusCode).toBe(503);
     expect(reply.payload.status).toBe('not_ready');
   });
+
+  it('returns not_ready on /health/ready when storageProvider.health() throws (line 107)', async () => {
+    const app = createFakeApp();
+
+    registerHealthRoutes({
+      app,
+      version: '1.2.3',
+      sessionDir: '/tmp/session',
+      storageProviderType: 'sqlite',
+      sseConnections: () => 0,
+      getStore: () => ({ exists: () => true }),
+      getStorageProvider: () => ({
+        health: async () => {
+          throw new Error('storage unreachable');
+        },
+      }),
+    });
+
+    const handler = app.routes.get('/health/ready');
+    const reply = createReply();
+    await handler({}, reply);
+
+    expect(reply.statusCode).toBe(503);
+    expect(reply.payload.status).toBe('not_ready');
+    expect(reply.payload.checks.storage.status).toBe('unhealthy');
+  });
+
+  it('returns status ok on /health/live', async () => {
+    const app = createFakeApp();
+    registerHealthRoutes({
+      app,
+      version: '1.2.3',
+      sessionDir: '/tmp/session',
+      sseConnections: () => 0,
+      getStore: () => ({ exists: () => true }),
+      getStorageProvider: () => null,
+    });
+    const handler = app.routes.get('/health/live');
+    const reply = createReply();
+    await handler({}, reply);
+    expect(reply.payload).toEqual({ status: 'ok' });
+  });
+
+  it('returns degraded store on /health (legacy) when getStore throws', async () => {
+    const app = createFakeApp();
+    registerHealthRoutes({
+      app,
+      version: '2.0.0',
+      sessionDir: '/tmp/s',
+      sseConnections: () => 0,
+      getStore: () => ({
+        exists: () => {
+          throw new Error('disk io error');
+        },
+      }),
+      getStorageProvider: () => null,
+    });
+    const handler = app.routes.get('/health');
+    const reply = createReply();
+    await handler({}, reply);
+    expect(reply.payload.store_status).toBe('degraded');
+  });
 });

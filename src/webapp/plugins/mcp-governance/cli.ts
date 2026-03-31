@@ -11,6 +11,7 @@ import {
   type ConsentStatusResult,
 } from '../identity/workload-identity-service';
 import type { AgentRoleId } from '../identity/workload-identity-types';
+import { ensureRuntimeScaffold } from '../../runtime-scaffold';
 
 interface CliArgs {
   command: string[];
@@ -80,6 +81,7 @@ function buildIdentityService(projectRoot: string): {
   service: WorkloadIdentityService;
   close: () => void;
 } {
+  ensureRuntimeScaffold(projectRoot);
   const dbPath = resolveIdentityDbPath(projectRoot);
   const db = new Database(dbPath);
   const store = new WorkloadIdentityStore(db);
@@ -115,6 +117,7 @@ async function run(overrideProjectRoot?: string): Promise<void> {
   }
 
   const projectRoot = overrideProjectRoot ?? path.resolve(__dirname, '../../../..');
+  ensureRuntimeScaffold(projectRoot);
 
   if (cmd === 'identity' && sub === 'plan') {
     const identity = buildIdentityService(projectRoot);

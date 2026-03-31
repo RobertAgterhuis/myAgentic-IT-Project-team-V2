@@ -114,6 +114,7 @@ export interface CommandQueueEntry {
   project?: string | null;
   scope?: string | null;
   description?: string | null;
+  execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID' | null;
   requested_at?: string;
   timestamp?: string;
   status: string;
@@ -129,6 +130,7 @@ export interface QueueCommandInput {
   scope?: string;
   description?: string;
   brief?: string;
+  execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID';
 }
 
 export interface QueueCommandResult {
@@ -182,6 +184,15 @@ export interface SessionState {
   session_id?: string;
   projectName?: string | null;
   mode?: string | null;
+  execution_mode?: 'SDLC_ONLY' | 'AGENCY_ONLY' | 'HYBRID' | null;
+  execution_plan?: {
+    mode?: string;
+    selectedAgencyAgents?: Array<{ id?: string; name?: string }>;
+    hybridInjections?: Array<{
+      atState?: string;
+      agents?: Array<{ id?: string; name?: string }>;
+    }>;
+  } | null;
   status?: string | null;
   cycle_type?: string | null;
   currentPhase?: string | null;

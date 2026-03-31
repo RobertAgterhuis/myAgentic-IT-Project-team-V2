@@ -68,6 +68,7 @@ interface ParsedArgs {
   singleStep: boolean;
   checkpoint: boolean;
   reason: string | null;
+  executionMode: string | null;
   help: boolean;
   error: string | null;
 }
@@ -99,6 +100,7 @@ function parseArgs(argv: string[]): ParsedArgs {
     singleStep: false,
     checkpoint: false,
     reason: null,
+    executionMode: null,
     help: false,
     error: null,
   };
@@ -161,6 +163,17 @@ function parseArgs(argv: string[]): ParsedArgs {
         return result;
       }
       result.reason = next;
+      i++;
+      continue;
+    }
+
+    if (arg === '--execution-mode') {
+      const next = argv[i + 1];
+      if (!next || next.startsWith('-')) {
+        result.error = '--execution-mode requires a value: SDLC_ONLY | AGENCY_ONLY | HYBRID';
+        return result;
+      }
+      result.executionMode = next.toUpperCase();
       i++;
       continue;
     }
@@ -247,14 +260,15 @@ Commands:
   approvals reject <id>       Reject a specific request (--reason required)
 
 Options:
-  --platform <name>   AI platform: copilot | claude | codex  (default: copilot)
-  --resume            Resume from the last saved session state
-  --dry-run           Validate command/runtime config without executing transitions
-  --interactive       Enable interactive mode (prompt at gate boundaries)
-  --reason <text>     Reason for approval/rejection decision
-  --single-step       Process one state transition and exit
-  --checkpoint        With 'stop': write checkpoint for clean resume
-  --help, -h          Show this help message
+  --platform <name>        AI platform: copilot | claude | codex  (default: copilot)
+  --resume                 Resume from the last saved session state
+  --dry-run                Validate command/runtime config without executing transitions
+  --interactive            Enable interactive mode (prompt at gate boundaries)
+  --reason <text>          Reason for approval/rejection decision
+  --single-step            Process one state transition and exit
+  --checkpoint             With 'stop': write checkpoint for clean resume
+  --execution-mode <mode>  Execution mode: SDLC_ONLY | AGENCY_ONLY | HYBRID  (default: SDLC_ONLY)
+  --help, -h               Show this help message
 `.trim();
 
 // ─── Command Dispatcher ──────────────────────────────────────
@@ -626,6 +640,7 @@ function run(
     engine = createEngine({
       store,
       sseNotify: deps.sseNotify || (() => {}),
+      executionMode: parsed.executionMode || undefined,
     });
   }
 

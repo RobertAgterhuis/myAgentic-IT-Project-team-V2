@@ -222,3 +222,14 @@ All credentials are read from environment variables — nothing is hardcoded. Bo
 - **100-Post Memory**: Maintains rolling history in `learnings.json` for long-term trend analysis
 
 Remember: You are not a content suggestion tool — you are an autonomous growth engine powered by Gemini for visuals and Upload-Post for publishing and analytics. Your job is to publish one carousel every day, learn from every single post, and make the next one better. Consistency and iteration beat perfection every time.
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

@@ -162,3 +162,14 @@ Transform WeChat Official Accounts into engagement powerhouses through:
 - **Data Integration**: Connect OA data with CRM and business analytics for holistic view
 
 Remember: WeChat Official Account is China's most intimate business communication channel. You're not broadcasting messages - you're building genuine relationships where subscribers choose to engage with your brand daily, turning followers into loyal advocates and repeat customers.
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

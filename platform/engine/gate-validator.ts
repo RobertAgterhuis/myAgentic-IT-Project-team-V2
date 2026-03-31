@@ -1106,6 +1106,197 @@ class RiskValidator {
   }
 }
 
+// ─── Unified Quality Gate (M4 / Issue #1400) ─────────────────
+
+/**
+ * Agent type discriminator for unified quality gate routing.
+ * 'sdlc'   → routes to the standard critic-gate SDLC validation pipeline.
+ * 'agency' → validates agency protocol compliance (handoff checklist,
+ *             anti-hallucination tags, source citations).
+ */
+export type AgentType = 'sdlc' | 'agency';
+
+export interface UnifiedGateOptions {
+  /** Discriminates validation path: 'sdlc' | 'agency' */
+  agentType: AgentType;
+  /**
+   * SDLC path: critic state being validated (e.g. 'CRITIC_1').
+   * Agency path: logical agent ID for error messages (e.g. 'agent-01').
+   */
+  criticState?: string;
+  agentId?: string;
+  /** File paths of deliverable documents to validate. */
+  deliverables: string[];
+  /** Optional overrides forwarded to runGate for SDLC agents. */
+  contractsDir?: string;
+  guardrailsDir?: string;
+  governanceConfig?: GovernancePoliciesConfig;
+  identity?: ResolvedIdentity;
+  runtimePackGraph?: RuntimePackGraph;
+}
+
+export interface UnifiedGateViolation {
+  severity: 'CRITICAL' | 'MAJOR' | 'MINOR' | 'INFO';
+  rule: string;
+  description: string;
+  deliverable?: string;
+}
+
+export interface UnifiedGateResult {
+  verdict: 'APPROVED' | 'FAILED';
+  agentType: AgentType;
+  violations: UnifiedGateViolation[];
+  summary: {
+    totalViolations: number;
+    critical: number;
+    major: number;
+  };
+  /** Only present for SDLC agents — full runGate result. */
+  sdlcGateResult?: Record<string, unknown>;
+}
+
+/**
+ * Validate agency protocol compliance for a set of deliverable files.
+ * Checks:
+ *   1. Handoff checklist present and fully checked.
+ *   2. All UNCERTAIN: items documented.
+ *   3. All INSUFFICIENT_DATA: items documented.
+ *   4. No unchecked handoff checklist items.
+ */
+function runAgencyGate(
+  store: GateStore,
+  deliverables: string[],
+  agentId?: string
+): UnifiedGateResult {
+  const violations: UnifiedGateViolation[] = [];
+  const label = agentId || 'agency-agent';
+
+  for (const deliverable of deliverables) {
+    if (!store.exists(deliverable)) {
+      violations.push({
+        severity: 'CRITICAL',
+        rule: 'MISSING_DELIVERABLE',
+        description: `Deliverable not found: ${deliverable}`,
+        deliverable,
+      });
+      continue;
+    }
+
+    const content = store.readFile(deliverable);
+    const handoff = parseHandoffChecklist(content);
+
+    if (!handoff.found) {
+      violations.push({
+        severity: 'CRITICAL',
+        rule: 'MISSING_HANDOFF_CHECKLIST',
+        description: `${label} deliverable is missing the HANDOFF CHECKLIST section (G-GLOB-20)`,
+        deliverable,
+      });
+    } else if (handoff.unchecked > 0) {
+      violations.push({
+        severity: 'CRITICAL',
+        rule: 'INCOMPLETE_HANDOFF_CHECKLIST',
+        description: `${label} has ${handoff.unchecked} unchecked item(s) in HANDOFF CHECKLIST — all items must be checked`,
+        deliverable,
+      });
+    } else if (handoff.total < HANDOFF_CHECKLIST_COUNT) {
+      violations.push({
+        severity: 'MAJOR',
+        rule: 'INSUFFICIENT_HANDOFF_ITEMS',
+        description: `${label} HANDOFF CHECKLIST has ${handoff.total} item(s), expected at least ${HANDOFF_CHECKLIST_COUNT}`,
+        deliverable,
+      });
+    }
+
+    // Verify UNCERTAIN: items are documented (not just tags with no context)
+    const uncertainItems = extractTaggedItems(content, 'UNCERTAIN:');
+    for (const item of uncertainItems) {
+      if (!item.text || item.text.trim().length < 5) {
+        violations.push({
+          severity: 'MAJOR',
+          rule: 'UNDOCUMENTED_UNCERTAIN',
+          description: `${label} has an UNCERTAIN: tag with insufficient context (AH-2)`,
+          deliverable,
+        });
+      }
+    }
+
+    // Verify INSUFFICIENT_DATA: items are documented
+    const insufficientItems = extractTaggedItems(content, 'INSUFFICIENT_DATA:');
+    for (const item of insufficientItems) {
+      if (!item.text || item.text.trim().length < 5) {
+        violations.push({
+          severity: 'MAJOR',
+          rule: 'UNDOCUMENTED_INSUFFICIENT_DATA',
+          description: `${label} has an INSUFFICIENT_DATA: tag with insufficient context (AH-3)`,
+          deliverable,
+        });
+      }
+    }
+  }
+
+  const critical = violations.filter((v) => v.severity === 'CRITICAL').length;
+  const major = violations.filter((v) => v.severity === 'MAJOR').length;
+
+  return {
+    verdict: critical > 0 ? 'FAILED' : 'APPROVED',
+    agentType: 'agency',
+    violations,
+    summary: {
+      totalViolations: violations.length,
+      critical,
+      major,
+    },
+  };
+}
+
+/**
+ * Run unified quality gate — routes to SDLC or agency validation path.
+ *
+ * For SDLC agents, delegates to the existing `runGate` validator.
+ * For agency agents, validates handoff checklist + anti-hallucination protocol.
+ *
+ * @param store - File store abstraction
+ * @param options - Gate configuration including agentType discriminator
+ * @returns Unified gate result with verdict, violations, and summary
+ */
+function runUnifiedQualityGate(store: GateStore, options: UnifiedGateOptions): UnifiedGateResult {
+  if (options.agentType === 'sdlc') {
+    const sdlcResult = runGate(store, {
+      criticState: options.criticState || '',
+      deliverables: options.deliverables,
+      contractsDir: options.contractsDir,
+      guardrailsDir: options.guardrailsDir,
+      governanceConfig: options.governanceConfig,
+      identity: options.identity,
+      runtimePackGraph: options.runtimePackGraph,
+    }) as Record<string, unknown>;
+
+    const verdict = (sdlcResult.verdict as string) === 'APPROVED' ? 'APPROVED' : 'FAILED';
+    const rawViolations = Array.isArray(sdlcResult.violations)
+      ? (sdlcResult.violations as Array<Record<string, unknown>>)
+      : [];
+    const violations: UnifiedGateViolation[] = rawViolations.map((v) => ({
+      severity: (v.severity as UnifiedGateViolation['severity']) || 'MAJOR',
+      rule: (v.rule as string) || 'UNKNOWN',
+      description: (v.description as string) || '',
+      deliverable: v.deliverable as string | undefined,
+    }));
+    const critical = violations.filter((v) => v.severity === 'CRITICAL').length;
+    const major = violations.filter((v) => v.severity === 'MAJOR').length;
+
+    return {
+      verdict,
+      agentType: 'sdlc',
+      violations,
+      summary: { totalViolations: violations.length, critical, major },
+      sdlcGateResult: sdlcResult,
+    };
+  }
+
+  return runAgencyGate(store, options.deliverables, options.agentId);
+}
+
 export {
   LEGACY_CRITIC_TO_PHASE as CRITIC_TO_PHASE,
   PHASE_GUARDRAILS,
@@ -1122,6 +1313,7 @@ export {
   loadGuardrailRules,
   validateDocument,
   runGate,
+  runUnifiedQualityGate,
   CriticValidator,
   RiskValidator,
 };

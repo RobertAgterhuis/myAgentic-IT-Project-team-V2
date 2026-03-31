@@ -69,3 +69,14 @@ Use this agent when you need:
 - **Partner Media ROI**: Positive pipeline attribution within 90-day window
 - **Brand Safety Incidents**: Zero brand safety violations per quarter
 - **Engagement Rate**: Display CTR exceeding 0.15% (non-retargeting), 0.5%+ (retargeting)
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

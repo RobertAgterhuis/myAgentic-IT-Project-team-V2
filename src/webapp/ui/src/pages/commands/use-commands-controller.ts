@@ -10,11 +10,37 @@ import {
   useQueueCommand,
 } from '@/hooks';
 import type { OrchestratorCommandName } from '@/lib/api-types';
+import type { ExecutionMode } from '@/lib/execution-modes';
 import { buildQuickActionsFromPackMetadata } from './commands-config';
+
+function toCommandFromExecutionMode(executionMode: ExecutionMode): OrchestratorCommandName {
+  if (executionMode === 'HYBRID') {
+    return 'HYBRID';
+  }
+  if (executionMode === 'AGENCY_ONLY') {
+    return 'AGENCY ONLY';
+  }
+  return 'CREATE';
+}
+
+function toExecutionMode(command: string): ExecutionMode {
+  const normalized = command
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]+/g, '_');
+  if (normalized === 'HYBRID') {
+    return 'HYBRID';
+  }
+  if (normalized === 'AGENCY_ONLY') {
+    return 'AGENCY_ONLY';
+  }
+  return 'SDLC_ONLY';
+}
 
 export function useCommandsController() {
   const [briefText, setBriefText] = useState('');
   const [projectName, setProjectName] = useState('');
+  const [selectedExecutionMode, setSelectedExecutionMode] = useState<ExecutionMode>('SDLC_ONLY');
 
   const {
     data: status,
@@ -37,21 +63,28 @@ export function useCommandsController() {
   const quickActions = buildQuickActionsFromPackMetadata(packMetadata);
 
   function handleQuickAction(command: OrchestratorCommandName) {
+    const executionMode = toExecutionMode(String(command));
+    setSelectedExecutionMode(executionMode);
+
     queueCommand.mutate({
       command,
       project: projectName || undefined,
       description: briefText.trim() || undefined,
       brief: briefText.trim() || undefined,
+      execution_mode: executionMode,
     });
   }
 
   function handleSubmitBrief() {
     if (!projectName.trim() || !briefText.trim()) return;
+
+    const command = toCommandFromExecutionMode(selectedExecutionMode);
     queueCommand.mutate({
-      command: 'CREATE',
+      command,
       project: projectName.trim(),
       description: briefText.trim(),
       brief: briefText.trim(),
+      execution_mode: selectedExecutionMode,
     });
     setBriefText('');
   }
@@ -61,6 +94,8 @@ export function useCommandsController() {
     setBriefText,
     projectName,
     setProjectName,
+    selectedExecutionMode,
+    setSelectedExecutionMode,
     status,
     queue,
     activeQueueEntry,

@@ -55,6 +55,7 @@ import { ArtifactRegistry } from '../sdlc/artifacts';
 import { loadGovernancePolicies, type GovernancePoliciesConfig } from './governance-config';
 import { resolveIdentity, type ResolvedIdentity } from './identity';
 import type { ProjectContext } from './workspace/types';
+import { resolveExecutionMode, type ExecutionMode } from './execution-mode';
 
 interface TemplateConfig {
   name?: string;
@@ -190,6 +191,7 @@ function createEngine(options: Record<string, unknown>) {
     transitionLeasePath?: string;
     transitionLeaseOwnerId?: string;
     transitionLeaseTtlMs?: number;
+    executionMode?: string;
   };
 
   if (!store) throw new Error('Engine requires a store');
@@ -211,6 +213,10 @@ function createEngine(options: Record<string, unknown>) {
       },
     ],
   };
+
+  const resolvedExecutionMode: ExecutionMode = resolveExecutionMode(
+    typeof options.executionMode === 'string' ? options.executionMode : undefined
+  );
 
   const artifactOutputDir =
     typeof options.artifactOutputDir === 'string' && options.artifactOutputDir.trim() !== ''
@@ -651,6 +657,7 @@ function createEngine(options: Record<string, unknown>) {
       governanceMode: governanceConfig.governance_mode,
       identity: resolvedIdentity,
       projectContext,
+      executionMode: resolvedExecutionMode,
     };
   }
 

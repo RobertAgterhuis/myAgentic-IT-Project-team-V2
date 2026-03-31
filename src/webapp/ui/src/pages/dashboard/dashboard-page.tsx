@@ -16,6 +16,7 @@ import { LiveStatusHero } from '@/components/runtime/live-status-hero';
 import { HealthCard } from '@/components/dashboard/health-card';
 import { QuickLinks } from '@/components/dashboard/quick-links';
 import { RecentCommands } from '@/components/dashboard/recent-commands';
+import { MilestoneProgress } from '@/components/dashboard/milestone-progress';
 import { MissionControlHero } from '@/components/ui/mission-control-hero';
 import { StatusMotif } from '@/components/ui/status-motif';
 import { PageHeader } from '@/components/layout/page-header';
@@ -277,6 +278,11 @@ export default function DashboardPage() {
             />
           </section>
         )}
+
+        {/* M1-M5: Milestone Progress */}
+        <section aria-label="Milestone progress">
+          <MilestoneProgress />
+        </section>
 
         {/* Key Metrics */}
         {metricEntries.length > 0 && (

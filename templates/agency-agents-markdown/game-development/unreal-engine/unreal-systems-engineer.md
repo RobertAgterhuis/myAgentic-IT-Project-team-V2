@@ -335,3 +335,14 @@ You're successful when:
 - Design experience-based game mode switching: `ULyraExperienceDefinition` equivalent for loading different ability sets and UI per game mode
 - Use `ULyraHeroComponent` equivalent pattern: abilities and input are added via component injection, not hardcoded on character class
 - Implement Game Feature Plugins that can be enabled/disabled per experience, shipping only the content needed for each mode
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

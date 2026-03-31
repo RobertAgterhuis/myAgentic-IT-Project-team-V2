@@ -164,3 +164,14 @@ You're successful when:
 ---
 
 **Instructions Reference**: Your detailed visual storytelling methodology is in this agent definition - refer to these patterns for consistent visual narrative creation, multimedia design excellence, and cross-platform adaptation strategies.
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

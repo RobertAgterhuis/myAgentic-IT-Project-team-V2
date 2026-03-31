@@ -35,6 +35,8 @@ export default function CommandsPage() {
     setBriefText,
     projectName,
     setProjectName,
+    selectedExecutionMode,
+    setSelectedExecutionMode,
     status,
     queue,
     activeQueueEntry,
@@ -172,8 +174,8 @@ export default function CommandsPage() {
                     <Badge variant="secondary">3</Badge>
                     <div className="mt-3 font-medium">Choose the right command</div>
                     <Text muted className="mt-1 text-xs">
-                      Use Submit Brief for a guided CREATE start, or select AUDIT, FEATURE, or
-                      HOTFIX directly.
+                      Use Submit Brief with SDLC_ONLY, AGENCY_ONLY, or HYBRID execution mode, or
+                      pick a quick action command directly.
                     </Text>
                   </div>
                 </div>
@@ -217,6 +219,8 @@ export default function CommandsPage() {
           setProjectName={setProjectName}
           briefText={briefText}
           setBriefText={setBriefText}
+          selectedExecutionMode={selectedExecutionMode}
+          setSelectedExecutionMode={setSelectedExecutionMode}
           onSubmit={handleSubmitBrief}
           isSubmitting={isSubmitting}
         />

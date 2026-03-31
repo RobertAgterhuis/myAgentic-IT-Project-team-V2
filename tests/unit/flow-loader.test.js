@@ -145,7 +145,7 @@ describe('parseFlowYaml', () => {
     expect(result.states).toHaveLength(15);
     expect(result.full_flow).toHaveLength(14);
     expect(result.structural_states).toHaveLength(6);
-    expect(Object.keys(result.modes)).toHaveLength(9);
+    expect(Object.keys(result.modes)).toHaveLength(12);
     expect(result.events).toHaveLength(5);
   });
 });

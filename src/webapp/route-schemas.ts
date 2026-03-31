@@ -98,6 +98,10 @@ export const commandCreate = {
       description: { type: 'string' as const, maxLength: 2000 },
       scope: { type: 'string' as const, maxLength: 200 },
       brief: { type: 'string' as const, maxLength: 200000 },
+      execution_mode: {
+        type: 'string' as const,
+        enum: ['SDLC_ONLY', 'AGENCY_ONLY', 'HYBRID'],
+      },
     },
     additionalProperties: false,
   },

@@ -350,6 +350,11 @@ export default function SessionDetailPage() {
               label: `${gateFailuresCount} gate failures`,
               tone: gateFailuresCount > 0 ? 'warning' : 'success',
             },
+            {
+              id: 'execution-mode',
+              label: session.executionMode || 'SDLC_ONLY',
+              tone: 'info',
+            },
           ]}
           actions={
             <Button
@@ -386,7 +391,12 @@ export default function SessionDetailPage() {
             </>
           }
           metrics={[
-            { label: 'Flow', value: session.flow, detail: 'Execution mode for this session' },
+            {
+              label: 'Execution Mode',
+              value: session.executionMode || 'SDLC_ONLY',
+              detail: 'Orchestrator execution strategy',
+            },
+            { label: 'Flow', value: session.flow, detail: 'Command mode for this session' },
             { label: 'Current phase', value: session.phase, detail: 'Where the run is now' },
             {
               label: activeAgents.length > 1 ? 'Active agents' : 'Active agent',

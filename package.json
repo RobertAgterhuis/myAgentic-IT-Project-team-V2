@@ -34,7 +34,8 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{js,ts,jsx,tsx,json,md,yml,yaml}\"",
-    "build": "npm run tokens:build && npm run build --prefix src/webapp/ui",
+    "build": "npm run scaffold:runtime && npm run tokens:build && npm run build --prefix src/webapp/ui",
+    "scaffold:runtime": "tsx scripts/scaffold-runtime.ts",
     "tokens:build": "node scripts/build-tokens.mjs",
     "plugin": "tsx src/webapp/plugins/mcp-governance/cli.ts",
     "test:e2e": "npx playwright test",
@@ -46,7 +47,7 @@
     "generate:openapi": "tsx scripts/generate-openapi.ts",
     "validate:handoff": "tsx platform/standards/validate-handoff.ts",
     "validate:handoff:examples": "tsx platform/standards/validate-handoff.ts docs/handoff-examples",
-    "postinstall": "node scripts/generate-platform.js all"
+    "postinstall": "npm run scaffold:runtime && node scripts/generate-platform.js all"
   },
   "bin": {
     "my-plugin": "src/webapp/plugins/mcp-governance/cli.ts",

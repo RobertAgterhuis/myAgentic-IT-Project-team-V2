@@ -23,6 +23,8 @@ function resolveApiBaseUrl(): string {
 const BASE_URL = resolveApiBaseUrl();
 export const AUTH_EXPIRED_EVENT = 'agentic:auth-expired';
 const AUTH_EXPIRED_DEBOUNCE_MS = 15_000;
+const CSRF_COOKIE_NAME = 'csrf';
+const CSRF_HEADER_NAME = 'x-csrf-token';
 
 let lastAuthExpiredEventAt = 0;
 
@@ -40,6 +42,28 @@ function emitAuthExpiredEvent(status: number, endpoint: string): void {
       },
     })
   );
+}
+
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const parts = document.cookie ? document.cookie.split('; ') : [];
+  for (const part of parts) {
+    const [rawKey, ...rest] = part.split('=');
+    if (rawKey !== name) continue;
+    const rawValue = rest.join('=');
+    return decodeURIComponent(rawValue);
+  }
+  return null;
+}
+
+function getMutationHeaders(): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  };
+  const csrfToken = getCookie(CSRF_COOKIE_NAME);
+  if (csrfToken) headers[CSRF_HEADER_NAME] = csrfToken;
+  return headers;
 }
 
 async function handleResponse<T>(response: Response): Promise<T> {
@@ -76,6 +100,7 @@ export async function apiGet<T>(
   const res = await fetch(url.toString(), {
     method: 'GET',
     headers: { Accept: 'application/json' },
+    credentials: 'same-origin',
   });
   return handleResponse<T>(res);
 }
@@ -83,10 +108,8 @@ export async function apiGet<T>(
 export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
+    headers: getMutationHeaders(),
+    credentials: 'same-origin',
     body: body != null ? JSON.stringify(body) : undefined,
   });
   return handleResponse<T>(res);
@@ -95,10 +118,8 @@ export async function apiPost<T>(path: string, body?: unknown): Promise<T> {
 export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
+    headers: getMutationHeaders(),
+    credentials: 'same-origin',
     body: body != null ? JSON.stringify(body) : undefined,
   });
   return handleResponse<T>(res);
@@ -107,10 +128,8 @@ export async function apiPut<T>(path: string, body?: unknown): Promise<T> {
 export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'PATCH',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
+    headers: getMutationHeaders(),
+    credentials: 'same-origin',
     body: body != null ? JSON.stringify(body) : undefined,
   });
   return handleResponse<T>(res);
@@ -119,7 +138,8 @@ export async function apiPatch<T>(path: string, body?: unknown): Promise<T> {
 export async function apiDelete<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'DELETE',
-    headers: { Accept: 'application/json' },
+    headers: getMutationHeaders(),
+    credentials: 'same-origin',
   });
   return handleResponse<T>(res);
 }

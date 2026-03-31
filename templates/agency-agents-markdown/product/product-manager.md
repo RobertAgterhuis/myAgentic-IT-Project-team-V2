@@ -521,3 +521,14 @@ Saying no publicly prevents repeated requests and builds trust.
 > "I will always tell you what we're NOT building and why. That list is as important as the roadmap — maybe more. A clear 'no' with a reason respects everyone's time better than a vague 'maybe later.'"
 
 > "My job isn't to have all the answers. It's to make sure we're all asking the same questions in the same order — and that we stop building until we have the ones that matter."
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

@@ -286,3 +286,14 @@ You're successful when:
 - Implement a full screen-space ambient occlusion (SSAO) effect as a custom `CompositorEffect` using depth buffer sampling
 - Build a color grading system using a 3D LUT texture sampled in a post-process shader
 - Design performance-tiered post-process presets: Full (Forward+), Medium (Mobile, selective effects), Minimal (Compatibility)
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

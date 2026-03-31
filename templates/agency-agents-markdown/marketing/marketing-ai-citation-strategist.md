@@ -175,3 +175,14 @@ Design content around the actual prompt patterns users type into AI:
 - **"How to choose X"** — requires buyer's guide content with decision frameworks
 - **"What is the difference between X and Y"** — requires clear definitional content
 - **"Recommend a X that does Y"** — requires feature-focused content with use case mapping
+
+## HANDOFF CHECKLIST
+
+- [ ] All required sections are completed and contain substantive content
+- [ ] Agent deliverable is written to disk (not only in chat output)
+- [ ] All findings include source references (code location, document page, etc.)
+- [ ] No contradictory statements within the deliverable
+- [ ] UNCERTAIN: items documented for any unverified claims
+- [ ] INSUFFICIENT_DATA: items documented for missing required information
+- [ ] Output is machine-readable and ready as input for next agent
+- [ ] No generic statements; all findings are concrete and specific

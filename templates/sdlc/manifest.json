@@ -242,6 +242,18 @@
     "HOTFIX": {
       "phases": [],
       "label": "Emergency HOTFIX"
+    },
+    "SDLC_ONLY": {
+      "phases": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"],
+      "label": "SDLC Only (default execution mode)"
+    },
+    "AGENCY_ONLY": {
+      "phases": [],
+      "label": "Agency Only (pure agency team execution)"
+    },
+    "HYBRID": {
+      "phases": ["PHASE_1", "PHASE_2", "PHASE_3", "PHASE_4"],
+      "label": "Hybrid SDLC + Agency injection"
     }
   },
   "commands": [
@@ -352,6 +364,18 @@
       "label": "CONTINUE",
       "category": "session",
       "description": "Continue current session flow"
+    },
+    {
+      "id": "AGENCY ONLY",
+      "label": "AGENCY ONLY",
+      "category": "on-demand",
+      "description": "Pure agency team execution without SDLC phases"
+    },
+    {
+      "id": "HYBRID",
+      "label": "HYBRID",
+      "category": "on-demand",
+      "description": "Hybrid SDLC + agency specialist injection"
     }
   ],
   "stages": [

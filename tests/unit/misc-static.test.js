@@ -127,4 +127,46 @@ describe('misc static module', () => {
     expect(reply.raw.body).toBe('not-found');
     expect(reply.hijacked).toBe(true);
   });
+
+  it('falls back gracefully when safePath throws (catch branch in serveDistFile)', () => {
+    // safePath throws for asset requests → serveDistFile returns false → SPA fallback tried
+    const spaIndex = path.join('/webapp', 'ui', 'dist', 'index.html');
+    const files = { [spaIndex]: '<html>spa</html>' };
+
+    const handler = createStaticHandler({
+      webappDir: '/webapp',
+      getStore: () => createStore(files),
+      safePath: (_basePath, relativePath) => {
+        if (relativePath.includes('evil')) throw new Error('unsafe path');
+        return path.join(_basePath, relativePath);
+      },
+      setSecurityHeaders: () => {},
+      notFoundText: 'not-found',
+    });
+
+    const reply = createReply();
+    handler({ url: '/evil/../etc/passwd' }, reply);
+
+    // safePath threw → serveDistFile returns false → SPA index.html served
+    expect(reply.raw.statusCode).toBe(200);
+    expect(reply.raw.headers['Content-Type']).toBe('text/html; charset=utf-8');
+    expect(reply.hijacked).toBe(true);
+  });
+
+  it('returns 404 when safePath throws and SPA is also unavailable', () => {
+    const handler = createStaticHandler({
+      webappDir: '/webapp',
+      getStore: () => createStore({}),
+      safePath: () => {
+        throw new Error('unsafe path');
+      },
+      setSecurityHeaders: () => {},
+      notFoundText: 'not-found',
+    });
+
+    const reply = createReply();
+    handler({ url: '/evil' }, reply);
+
+    expect(reply.raw.statusCode).toBe(404);
+  });
 });

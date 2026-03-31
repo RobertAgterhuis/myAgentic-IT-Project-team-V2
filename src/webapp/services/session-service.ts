@@ -160,6 +160,8 @@ export class SessionService {
     return {
       session_id: session.session_id,
       cycle_type: session.cycle_type,
+      execution_mode: session.execution_mode || session.mode || null,
+      execution_plan: session.execution_plan || null,
       status: session.status,
       current_phase: session.current_phase || null,
       current_agent: session.current_agent || null,

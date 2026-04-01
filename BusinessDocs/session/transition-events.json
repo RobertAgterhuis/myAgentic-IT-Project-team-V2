@@ -2017,5 +2017,33 @@
     "to": "PHASE_3",
     "status": "intent",
     "timestamp": "2026-04-01T13:59:25.087Z"
+  },
+  {
+    "transition_id": "68937337-0613-40b0-a3d6-f75bae1afb0b",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "applied",
+    "timestamp": "2026-04-01T13:59:25.095Z"
+  },
+  {
+    "transition_id": "9f0d0424-260a-4456-a74f-fb17fa7410ba",
+    "from": "PHASE_3",
+    "to": "CRITIC_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:59:43.306Z"
+  },
+  {
+    "transition_id": "9f0d0424-260a-4456-a74f-fb17fa7410ba",
+    "from": "PHASE_3",
+    "to": "CRITIC_3",
+    "status": "applied",
+    "timestamp": "2026-04-01T13:59:43.309Z"
+  },
+  {
+    "transition_id": "e149aff0-9f6b-4d3f-a468-90e8b9380743",
+    "from": "CRITIC_3",
+    "to": "PHASE_4",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:59:46.301Z"
   }
 ]

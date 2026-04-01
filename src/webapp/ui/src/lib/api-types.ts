@@ -960,6 +960,8 @@ export interface ChatProposedAction {
   id: string;
   label: string;
   type: ChatProposedActionType;
+  description?: string;
+  impact?: 'low' | 'medium' | 'high';
   payload?: Record<string, unknown>;
   requires_confirmation: boolean;
 }

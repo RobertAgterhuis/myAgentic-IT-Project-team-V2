@@ -42,4 +42,36 @@ describe('ExplainabilityPanel', () => {
     render(<ExplainabilityPanel {...defaults} />);
     expect(screen.getByRole('complementary', { name: 'Gate Failed' })).toBeInTheDocument();
   });
+
+  it('renders evidence sources', () => {
+    render(
+      <ExplainabilityPanel
+        {...defaults}
+        sources={[
+          { label: 'Auth Config', path: 'src/auth.ts', line: 42 },
+          { label: 'Policy Doc', path: 'docs/security.md' },
+        ]}
+      />
+    );
+    expect(screen.getByLabelText('Evidence sources')).toBeInTheDocument();
+    expect(screen.getByText('Auth Config')).toBeInTheDocument();
+    expect(screen.getByText(/src\/auth\.ts:42/)).toBeInTheDocument();
+    expect(screen.getByText('Policy Doc')).toBeInTheDocument();
+  });
+
+  it('renders context with confidence', () => {
+    render(
+      <ExplainabilityPanel
+        {...defaults}
+        context={{
+          predecessorAgent: 'Security Architect',
+          predecessorPhase: 'PHASE_2',
+          confidence: 'high',
+        }}
+      />
+    );
+    expect(screen.getByText('Security Architect')).toBeInTheDocument();
+    expect(screen.getByText('PHASE_2')).toBeInTheDocument();
+    expect(screen.getByText('high confidence')).toBeInTheDocument();
+  });
 });

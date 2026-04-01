@@ -63,7 +63,7 @@ describe('buildBreadcrumbs', () => {
     const crumbs = buildBreadcrumbs('/commands');
     expect(crumbs).toEqual([
       { label: 'Home', path: '/' },
-      { label: 'Runs', path: '/commands' },
+      { label: 'Sessions', path: '/commands' },
       { label: 'Commands', path: '/commands' },
     ]);
   });
@@ -72,7 +72,7 @@ describe('buildBreadcrumbs', () => {
     const crumbs = buildBreadcrumbs('/sessions/sess-123');
     expect(crumbs).toEqual([
       { label: 'Home', path: '/' },
-      { label: 'Runs', path: '/sessions' },
+      { label: 'Sessions', path: '/sessions' },
       { label: 'sess-123', path: '/sessions/sess-123' },
     ]);
   });

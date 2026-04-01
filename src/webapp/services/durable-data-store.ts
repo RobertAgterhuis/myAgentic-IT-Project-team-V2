@@ -45,7 +45,7 @@ export interface WorkflowRunStepRecord {
   transition_id: string | null;
   timestamp: string;
   actor: string | null;
-  metadata?: Record<string, unknown> | null;
+  metadata: Record<string, unknown> | null;
 }
 
 export interface BackupRecord {
@@ -555,48 +555,45 @@ export class DurableDataStore {
     snapshot: Record<string, unknown>
   ): void {
     const db = this.getDb();
-    const historySteps = stateHistory
-      .map((entry, index) => {
-        const record = asRecord(entry);
-        if (!record) return null;
-        const toState =
-          typeof record.to === 'string'
-            ? record.to
-            : typeof record.status === 'string'
-              ? record.status
-              : null;
-        if (!toState) return null;
-        const fromState = typeof record.from === 'string' ? record.from : null;
-        const eventType = typeof record.event === 'string' ? record.event : 'state_transition';
-        const transitionId = typeof record.transition_id === 'string' ? record.transition_id : null;
-        const timestamp = parseIsoLike(record.timestamp, nowIso());
-        const actor = typeof record.actor === 'string' ? record.actor : null;
-        const metadata = asRecord(record.metadata);
-        return {
-          step_id: `${runId}:history:${index + 1}`,
-          run_id: runId,
-          sequence_no: index + 1,
-          from_state: fromState,
-          to_state: toState,
-          event_type: eventType,
-          transition_id: transitionId,
-          timestamp,
-          actor,
-          metadata,
-        } satisfies WorkflowRunStepRecord;
-      })
-      .filter((step): step is WorkflowRunStepRecord => Boolean(step));
+    const historySteps: WorkflowRunStepRecord[] = [];
+    for (let index = 0; index < stateHistory.length; index++) {
+      const record = asRecord(stateHistory[index]);
+      if (!record) {
+        continue;
+      }
+      const toState =
+        typeof record.to === 'string'
+          ? record.to
+          : typeof record.status === 'string'
+            ? record.status
+            : null;
+      if (!toState) {
+        continue;
+      }
+      historySteps.push({
+        step_id: `${runId}:history:${index + 1}`,
+        run_id: runId,
+        sequence_no: index + 1,
+        from_state: typeof record.from === 'string' ? record.from : null,
+        to_state: toState,
+        event_type: typeof record.event === 'string' ? record.event : 'state_transition',
+        transition_id: typeof record.transition_id === 'string' ? record.transition_id : null,
+        timestamp: parseIsoLike(record.timestamp, nowIso()),
+        actor: typeof record.actor === 'string' ? record.actor : null,
+        metadata: asRecord(record.metadata),
+      });
+    }
 
     const finalStatus = typeof snapshot.status === 'string' ? snapshot.status : null;
+    const previousState =
+      historySteps.length > 0 ? historySteps[historySteps.length - 1].to_state : null;
     const finalStep =
-      finalStatus &&
-      (historySteps.length === 0 || historySteps[historySteps.length - 1].to_state !== finalStatus)
+      finalStatus && (historySteps.length === 0 || previousState !== finalStatus)
         ? ({
             step_id: `${runId}:snapshot:final`,
             run_id: runId,
             sequence_no: historySteps.length + 1,
-            from_state:
-              historySteps.length > 0 ? historySteps[historySteps.length - 1].to_state : null,
+            from_state: previousState,
             to_state: finalStatus,
             event_type: 'snapshot_status',
             transition_id:

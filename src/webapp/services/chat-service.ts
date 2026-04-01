@@ -359,7 +359,7 @@ export class ChatService {
     this.stateRepository.saveChatSession(
       filePath,
       session.session_id,
-      session as Record<string, unknown>
+      session as unknown as Record<string, unknown>
     );
   }
 }

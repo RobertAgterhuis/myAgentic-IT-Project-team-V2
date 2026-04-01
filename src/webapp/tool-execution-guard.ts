@@ -36,11 +36,14 @@ export interface ToolExecutionGuardInput {
   envScope: 'dev' | 'test' | 'prod';
   expectedEnvScope: 'dev' | 'test' | 'prod';
   params: Record<string, unknown>;
+  trustedAgentId?: string;
 }
 
 export interface ToolExecutionGuardResponse {
   blocked: boolean;
   reasonCode:
+    | 'RUNTIME_MANIFEST_MISSING'
+    | 'RUNTIME_SERVER_RECORD_MISSING'
     | 'AGENT_IDENTITY_MISSING'
     | 'TOOL_NOT_VISIBLE'
     | 'TOOL_BLOCKED'
@@ -93,29 +96,40 @@ export class ToolExecutionGuard {
   }
 
   async evaluate(input: ToolExecutionGuardInput): Promise<ToolExecutionGuardResponse | null> {
-    const agentId = this._resolveAgentId(input.params);
+    const agentId = this._resolveAgentId(input.trustedAgentId);
     if (!agentId) {
       return {
         blocked: true,
         reasonCode: 'AGENT_IDENTITY_MISSING',
         reason: 'Missing agent identity for guarded tool execution.',
         requiredApprovalMode: 'none',
-        remediation: "Provide 'agent_id' or set AGENT_ID in the process environment.",
+        remediation: 'Set AGENT_ID in the process environment.',
       };
     }
 
     const manifest = this._readManifest(agentId);
     if (!manifest) {
-      // Fail open when runtime manifests are not available to avoid regressing existing flows.
-      return null;
+      return {
+        blocked: true,
+        reasonCode: 'RUNTIME_MANIFEST_MISSING',
+        reason: `Runtime manifest missing or invalid for agent '${agentId}'.`,
+        requiredApprovalMode: 'none',
+        remediation: 'Run `npm run plugin -- runtime build` and verify manifest JSON integrity.',
+      };
     }
 
     const managedServer = (manifest.servers || []).find(
       (server) => server.serverId === this._defaultServerId
     );
     if (!managedServer) {
-      // The manifest exists but does not manage this MCP server yet.
-      return null;
+      return {
+        blocked: true,
+        reasonCode: 'RUNTIME_SERVER_RECORD_MISSING',
+        reason: `Runtime manifest for agent '${agentId}' does not include server '${this._defaultServerId}'.`,
+        requiredApprovalMode: 'none',
+        remediation:
+          'Regenerate runtime manifests and ensure the MCP server is synced into policy data.',
+      };
     }
 
     const permission = this._resolveToolPermission(managedServer, input.toolName);
@@ -270,10 +284,9 @@ export class ToolExecutionGuard {
     };
   }
 
-  private _resolveAgentId(params: Record<string, unknown>): string {
-    const raw = params.agent_id;
-    if (typeof raw === 'string' && raw.trim() !== '') {
-      return raw.trim();
+  private _resolveAgentId(trustedAgentId?: string): string {
+    if (typeof trustedAgentId === 'string' && trustedAgentId.trim() !== '') {
+      return trustedAgentId.trim();
     }
     return this._defaultAgentId;
   }

@@ -9,6 +9,7 @@
  */
 
 import path from 'node:path';
+import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 
 /* ── MCP SDK imports ────────────────────────────────────────────── */
@@ -206,6 +207,48 @@ function expectedEnvScope(): 'dev' | 'test' | 'prod' {
     : 'dev';
 }
 
+function resolveTrustedAgentId(): string {
+  const configured = String(process.env.AGENT_ID || '').trim();
+  return configured.length > 0 ? configured : 'orchestrator';
+}
+
+async function assertRuntimeManifestReadiness(projectRoot: string): Promise<void> {
+  const manifestDir = path.join(projectRoot, '.generated', 'runtime-manifests');
+  if (!fs.existsSync(manifestDir)) {
+    throw new Error(
+      `GOVERNANCE_MANIFEST_NOT_READY: runtime manifest directory is missing (${manifestDir}).`
+    );
+  }
+
+  const manifestFiles = (await fsp.readdir(manifestDir)).filter((file) => file.endsWith('.json'));
+  if (manifestFiles.length === 0) {
+    throw new Error(
+      'GOVERNANCE_MANIFEST_NOT_READY: no runtime manifests found. Run `npm run plugin -- runtime build`.'
+    );
+  }
+
+  const malformed: string[] = [];
+  for (const fileName of manifestFiles) {
+    const filePath = path.join(manifestDir, fileName);
+    try {
+      const parsed = JSON.parse(await fsp.readFile(filePath, 'utf8')) as {
+        servers?: Array<unknown>;
+      };
+      if (!Array.isArray(parsed.servers)) {
+        malformed.push(fileName);
+      }
+    } catch {
+      malformed.push(fileName);
+    }
+  }
+
+  if (malformed.length > 0) {
+    throw new Error(
+      `GOVERNANCE_MANIFEST_NOT_READY: malformed runtime manifest(s): ${malformed.join(', ')}`
+    );
+  }
+}
+
 function withExecutionGuards(
   toolName: string,
   handler: (params?: Record<string, unknown>) => Promise<McpToolResult>,
@@ -232,6 +275,7 @@ function withExecutionGuards(
       envScope,
       expectedEnvScope: expectedEnvScope(),
       params: payload,
+      trustedAgentId: resolveTrustedAgentId(),
     });
     if (guardResult) {
       return jsonResult(guardResult);
@@ -1204,6 +1248,7 @@ if (require.main === module) {
     } catch {
       process.stderr.write('Warning: StorageProvider init failed, continuing without it\n');
     }
+    await assertRuntimeManifestReadiness(PROJECT_ROOT);
     const transport = new StdioServerTransport();
     await mcp.connect(transport);
   })().catch((err: unknown) => {

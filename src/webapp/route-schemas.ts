@@ -312,9 +312,10 @@ export const chatAction = {
   tags: ['chat'],
   body: {
     type: 'object' as const,
-    required: ['actionId'],
+    required: ['actionId', 'nonce'],
     properties: {
       actionId: { type: 'string' as const, minLength: 1, maxLength: 120 },
+      nonce: { type: 'string' as const, minLength: 16, maxLength: 128 },
       session_id: { type: 'string' as const, minLength: 1, maxLength: 200 },
       confirmed: { type: 'boolean' as const },
     },

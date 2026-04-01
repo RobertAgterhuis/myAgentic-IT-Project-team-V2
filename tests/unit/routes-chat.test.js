@@ -331,7 +331,7 @@ describe('routes/chat', () => {
     expect(completeMock.mock.calls[0][0].tools.length).toBeGreaterThan(0);
     expect(
       completeMock.mock.calls[1][0].messages.some((entry) =>
-        /Tool execution results/.test(entry.content)
+        /UNTRUSTED_TOOL_RESULTS_JSON/.test(entry.content)
       )
     ).toBe(true);
     expect(streamMock).not.toHaveBeenCalled();
@@ -531,6 +531,7 @@ describe('routes/chat', () => {
       createReq('/api/v1/chat/action', {
         session_id: 'action-session',
         actionId: action.id,
+        nonce: action.nonce,
       }),
       actionRes
     );
@@ -559,6 +560,7 @@ describe('routes/chat', () => {
       createReq('/api/v1/chat/action', {
         session_id: 'confirm-session',
         actionId: action.id,
+        nonce: action.nonce,
       }),
       actionRes
     );
@@ -867,6 +869,7 @@ describe('routes/chat', () => {
       createReq('/api/v1/chat/action', {
         session_id: 'missing-action-session',
         actionId: 'action-does-not-exist',
+        nonce: 'invalid-nonce',
       }),
       res
     );
@@ -919,6 +922,7 @@ describe('routes/chat', () => {
       createReq('/api/v1/chat/action', {
         session_id: 'approve-action-session',
         actionId: approveAction.id,
+        nonce: approveAction.nonce,
         confirmed: true,
       }),
       actionRes
@@ -978,6 +982,7 @@ describe('routes/chat', () => {
       createReq('/api/v1/chat/action', {
         session_id: 'reject-action-session',
         actionId: rejectAction.id,
+        nonce: rejectAction.nonce,
         confirmed: true,
       }),
       actionRes
@@ -1013,6 +1018,7 @@ describe('routes/chat', () => {
       createReq('/api/v1/chat/action', {
         session_id: 'command-action-session',
         actionId: commandAction.id,
+        nonce: commandAction.nonce,
         confirmed: true,
       }),
       actionRes
@@ -1050,6 +1056,7 @@ describe('routes/chat', () => {
       createReq('/api/v1/chat/action', {
         session_id: 'resume-action-session',
         actionId: resumeAction.id,
+        nonce: resumeAction.nonce,
       }),
       actionRes
     );
@@ -1061,5 +1068,47 @@ describe('routes/chat', () => {
     } else {
       expect(actionPayload.code).toBe('INTERNAL_ERROR');
     }
+  });
+
+  it('rejects replayed action envelopes after first successful execution', async () => {
+    const localRoutes = createTestableRoutes(registerRoutes, createCtx());
+
+    const sendRes = createRes();
+    await localRoutes['POST /api/v1/chat/message'](
+      createReq('/api/v1/chat/message', {
+        message: 'What is my session status?',
+        session_id: 'replay-session',
+      }),
+      sendRes
+    );
+
+    const payload = JSON.parse(sendRes.body);
+    const action = payload.proposed_actions.find((entry) => entry.type === 'open_screen');
+    expect(action).toBeDefined();
+
+    const firstRes = createRes();
+    await localRoutes['POST /api/v1/chat/action'](
+      createReq('/api/v1/chat/action', {
+        session_id: 'replay-session',
+        actionId: action.id,
+        nonce: action.nonce,
+      }),
+      firstRes
+    );
+    expect(firstRes.statusCode).toBe(200);
+
+    const replayRes = createRes();
+    await localRoutes['POST /api/v1/chat/action'](
+      createReq('/api/v1/chat/action', {
+        session_id: 'replay-session',
+        actionId: action.id,
+        nonce: action.nonce,
+      }),
+      replayRes
+    );
+
+    expect([409, 500]).toContain(replayRes.statusCode);
+    const replayPayload = JSON.parse(replayRes.body);
+    expect(['ACTION_REPLAYED', 'INTERNAL_ERROR']).toContain(replayPayload.code);
   });
 });

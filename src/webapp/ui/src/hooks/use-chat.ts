@@ -39,6 +39,7 @@ export function useExecuteChatAction(sessionId: string) {
       apiPost<ChatActionResponse>('/v1/chat/action', {
         session_id: sessionId,
         actionId: input.action.id,
+        nonce: input.action.nonce,
         confirmed: input.confirmed === true,
       }),
     onSuccess: () => {

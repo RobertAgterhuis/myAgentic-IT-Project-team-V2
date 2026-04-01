@@ -38,6 +38,11 @@ export interface UIState {
   openHelpForRoute: (routePathOrSlug: string, topicId?: string | null) => void;
   setHelpTopic: (topicId: string | null) => void;
 
+  /* Notification center */
+  notificationCenterOpen: boolean;
+  toggleNotificationCenter: () => void;
+  setNotificationCenterOpen: (open: boolean) => void;
+
   /* Confirm dialog */
   confirmDialog: ConfirmDialogState | null;
   showConfirm: (dialog: ConfirmDialogState) => void;
@@ -86,6 +91,11 @@ export const useUIStore = create<UIState>((set) => ({
       helpTopicId: topicId,
     }),
   setHelpTopic: (topicId) => set({ helpTopicId: topicId }),
+
+  notificationCenterOpen: false,
+  toggleNotificationCenter: () =>
+    set((s) => ({ notificationCenterOpen: !s.notificationCenterOpen })),
+  setNotificationCenterOpen: (open) => set({ notificationCenterOpen: open }),
 
   confirmDialog: null,
   showConfirm: (dialog) => set({ confirmDialog: dialog }),

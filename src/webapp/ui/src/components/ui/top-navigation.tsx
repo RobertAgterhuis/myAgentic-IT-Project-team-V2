@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { UserMenu } from './user-menu';
 import { useTheme } from './use-theme';
+import { NotificationBell } from '@/components/notifications/notification-center';
 import type { ConnectionRecoveryState } from '@/stores/ui-store';
 
 const THEME_CYCLE = ['light', 'dark', 'system'] as const;
@@ -194,6 +195,9 @@ function TopNavigation({
           connectionStatus={connectionStatus}
           recovery={connectionRecovery}
         />
+
+        {/* Notification center bell (#1568) */}
+        <NotificationBell />
 
         <button
           type="button"

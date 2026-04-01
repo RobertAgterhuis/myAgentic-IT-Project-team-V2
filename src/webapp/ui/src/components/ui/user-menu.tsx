@@ -6,7 +6,7 @@ import * as React from 'react';
 import { useAuthStore } from '@/stores/auth-store';
 import { useLogout } from '@/hooks/use-auth';
 import { Badge } from '@/components/ui/badge';
-import { Check, LogOut, Monitor, Moon, Sun, User } from 'lucide-react';
+import { Check, LogOut, Monitor, Moon, Settings, Sun, User } from 'lucide-react';
 import { useTheme } from './use-theme';
 
 const roleBadgeVariant: Record<string, 'default' | 'secondary' | 'info'> = {
@@ -158,6 +158,15 @@ export function UserMenu() {
               );
             })}
           </div>
+          <a
+            href="/preferences"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="flex w-full items-center gap-2 rounded-sm px-3 py-2 text-sm hover:bg-muted transition-colors"
+          >
+            <Settings className="size-4" />
+            Preferences
+          </a>
           <button
             type="button"
             role="menuitem"

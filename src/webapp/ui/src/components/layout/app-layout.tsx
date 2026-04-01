@@ -37,6 +37,9 @@ import { monacoProviderRegistry } from '@/lib/editor/provider-registry';
 import { monacoSchemaRegistry } from '@/lib/editor/schema-registry';
 import { WelcomeWizard } from '@/components/onboarding/welcome-wizard';
 import { useWelcomeWizard } from '@/components/onboarding/use-welcome-wizard';
+import { SetupWizard } from '@/components/onboarding/setup-wizard';
+import { useSetupWizard } from '@/components/onboarding/use-setup-wizard';
+import { NotificationCenter } from '@/components/notifications/notification-center';
 import {
   LayoutDashboard,
   Terminal,
@@ -53,6 +56,7 @@ import {
   FolderKanban,
   FileCode2,
   Settings2,
+  SlidersHorizontal,
 } from 'lucide-react';
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -71,6 +75,7 @@ const iconMap: Record<string, React.ReactNode> = {
   FolderKanban: <FolderKanban className="size-4" />,
   FileCode2: <FileCode2 className="size-4" />,
   Settings2: <Settings2 className="size-4" />,
+  SlidersHorizontal: <SlidersHorizontal className="size-4" />,
 };
 
 function toSectionId(section: DomainSection): string {
@@ -148,6 +153,13 @@ export function AppLayout() {
   const { data: orchestratorStatus } = useOrchestratorStatus();
   const { data: packMetadata } = useOrchestratorPackMetadata();
   const { dismissed: welcomeDismissed, dismiss: dismissWelcome } = useWelcomeWizard();
+  const {
+    show: showSetup,
+    state: setupState,
+    complete: completeSetup,
+    skip: skipSetup,
+    setStep: setSetupStep,
+  } = useSetupWizard();
 
   // Fetch current user session (M29-006)
   const currentUserQuery = useCurrentUser();
@@ -285,6 +297,17 @@ export function AppLayout() {
       </AppShell>
 
       {showWelcomeWizard ? <WelcomeWizard onDismiss={dismissWelcome} /> : null}
+
+      {showSetup && welcomeDismissed ? (
+        <SetupWizard
+          initialStep={setupState.lastStep}
+          onComplete={completeSetup}
+          onSkip={skipSetup}
+          onStepChange={setSetupStep}
+        />
+      ) : null}
+
+      <NotificationCenter />
     </>
   );
 }

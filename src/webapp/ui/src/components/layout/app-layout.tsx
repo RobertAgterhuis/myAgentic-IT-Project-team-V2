@@ -35,6 +35,8 @@ import { showToast } from '@/components/ui/toast-system';
 import { AUTH_EXPIRED_EVENT } from '@/lib/api-client';
 import { monacoProviderRegistry } from '@/lib/editor/provider-registry';
 import { monacoSchemaRegistry } from '@/lib/editor/schema-registry';
+import { WelcomeWizard } from '@/components/onboarding/welcome-wizard';
+import { useWelcomeWizard } from '@/components/onboarding/use-welcome-wizard';
 import {
   LayoutDashboard,
   Terminal,
@@ -145,6 +147,7 @@ export function AppLayout() {
 
   const { data: orchestratorStatus } = useOrchestratorStatus();
   const { data: packMetadata } = useOrchestratorPackMetadata();
+  const { dismissed: welcomeDismissed, dismiss: dismissWelcome } = useWelcomeWizard();
 
   // Fetch current user session (M29-006)
   const currentUserQuery = useCurrentUser();
@@ -197,39 +200,91 @@ export function AppLayout() {
     void monacoSchemaRegistry.registerFromPackMetadata(packMetadata ?? null);
   }, [packMetadata]);
 
+  const searchableRoutes = React.useMemo(() => Object.values(routes), []);
+  const handleSearchSubmit = React.useCallback(
+    (query: string) => {
+      const normalized = query.trim().toLowerCase();
+      if (!normalized) return false;
+
+      const aliasMatch =
+        {
+          dashboard: '/dashboard',
+          overview: '/dashboard',
+          runs: '/sessions',
+          sessions: '/sessions',
+          governance: '/approvals',
+          admin: '/administration',
+          artifacts: '/artifacts',
+        }[normalized] ?? null;
+
+      if (aliasMatch) {
+        navigate(aliasMatch);
+        return true;
+      }
+
+      const directPath = normalized.startsWith('/') ? normalized : `/${normalized}`;
+      const directRoute = searchableRoutes.find((route) => route.path.toLowerCase() === directPath);
+      if (directRoute) {
+        navigate(directRoute.path);
+        return true;
+      }
+
+      const fuzzyRoute = searchableRoutes.find((route) => {
+        return (
+          route.label.toLowerCase().includes(normalized) ||
+          route.section.toLowerCase().includes(normalized) ||
+          route.path.toLowerCase().includes(normalized)
+        );
+      });
+
+      if (!fuzzyRoute) return false;
+      navigate(fuzzyRoute.path);
+      return true;
+    },
+    [navigate, searchableRoutes]
+  );
+
+  const showWelcomeWizard =
+    !welcomeDismissed && (location.pathname === '/' || location.pathname === '/dashboard');
+
   return (
-    <AppShell
-      topNavigation={
-        <TopNavigation
-          projectName="Agentic SDLC"
-          orchestratorState={orchestratorStatus?.state}
-          connectionStatus={connectionStatus}
-          connectionRecovery={connectionRecovery}
-          onMenuToggle={toggleSidebar}
-          onHelpClick={() =>
-            openHelpForRoute(resolveHelpRouteSlug(location.pathname, packMetadata))
-          }
-          onChatClick={toggleChat}
-        />
-      }
-      sidebar={
-        <SidebarNav
-          sections={navSections}
-          activeItemId={resolveActiveNavPath(location.pathname)}
-          sidebarOpen={sidebarOpen}
-          onCollapse={(collapsed) => useUIStore.getState().setSidebarOpen(!collapsed)}
-          onSelectItem={(itemId) => navigate(itemId)}
-        />
-      }
-      breadcrumbs={<BreadcrumbNav items={buildBreadcrumbs(location.pathname)} />}
-      helpPanel={helpOpen ? <HelpPanel onClose={closeHelp} /> : null}
-      chatPanel={<ChatPanel />}
-    >
-      <ErrorBoundary>
-        <Suspense fallback={<PageSpinner />}>
-          <Outlet />
-        </Suspense>
-      </ErrorBoundary>
-    </AppShell>
+    <>
+      <AppShell
+        topNavigation={
+          <TopNavigation
+            projectName="Agentic SDLC"
+            orchestratorState={orchestratorStatus?.state}
+            connectionStatus={connectionStatus}
+            connectionRecovery={connectionRecovery}
+            onSearchSubmit={handleSearchSubmit}
+            onMenuToggle={toggleSidebar}
+            onHelpClick={() =>
+              openHelpForRoute(resolveHelpRouteSlug(location.pathname, packMetadata))
+            }
+            onChatClick={toggleChat}
+          />
+        }
+        sidebar={
+          <SidebarNav
+            sections={navSections}
+            activeItemId={resolveActiveNavPath(location.pathname)}
+            sidebarOpen={sidebarOpen}
+            onCollapse={(collapsed) => useUIStore.getState().setSidebarOpen(!collapsed)}
+            onSelectItem={(itemId) => navigate(itemId)}
+          />
+        }
+        breadcrumbs={<BreadcrumbNav items={buildBreadcrumbs(location.pathname)} />}
+        helpPanel={helpOpen ? <HelpPanel onClose={closeHelp} /> : null}
+        chatPanel={<ChatPanel />}
+      >
+        <ErrorBoundary>
+          <Suspense fallback={<PageSpinner />}>
+            <Outlet />
+          </Suspense>
+        </ErrorBoundary>
+      </AppShell>
+
+      {showWelcomeWizard ? <WelcomeWizard onDismiss={dismissWelcome} /> : null}
+    </>
   );
 }

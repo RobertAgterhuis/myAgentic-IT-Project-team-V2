@@ -90,9 +90,11 @@ describe('WelcomeWizard', () => {
 
   it('renders step indicators', () => {
     renderWizard();
-    expect(screen.getByLabelText('Wizard progress')).toBeInTheDocument();
-    const indicators = screen.getAllByLabelText(/^Step \d/);
+    const progressList = screen.getByRole('list', { name: 'Wizard progress' });
+    expect(progressList).toBeInTheDocument();
+    const indicators = screen.getAllByRole('listitem');
     expect(indicators).toHaveLength(5);
+    expect(screen.getByText(/Step 1 \(current\)/i)).toBeInTheDocument();
   });
 
   it('shows action button on steps that have one', async () => {

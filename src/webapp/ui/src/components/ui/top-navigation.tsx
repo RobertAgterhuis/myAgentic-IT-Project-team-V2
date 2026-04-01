@@ -59,6 +59,7 @@ interface TopNavigationProps extends React.ComponentProps<'header'> {
   connectionStatus?: ConnectionStatus;
   connectionRecovery?: ConnectionRecoveryState;
   onSearch?: (query: string) => void;
+  onSearchSubmit?: (query: string) => boolean;
   onMenuToggle?: () => void;
   onHelpClick?: () => void;
   onChatClick?: () => void;
@@ -70,6 +71,7 @@ function TopNavigation({
   connectionStatus = 'connected',
   connectionRecovery,
   onSearch,
+  onSearchSubmit,
   onMenuToggle,
   onHelpClick,
   onChatClick,
@@ -77,6 +79,8 @@ function TopNavigation({
   ...props
 }: TopNavigationProps) {
   const searchRef = React.useRef<HTMLInputElement>(null);
+  const [searchValue, setSearchValue] = React.useState('');
+  const [searchFeedback, setSearchFeedback] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -130,11 +134,29 @@ function TopNavigation({
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
         <Input
           ref={searchRef}
+          value={searchValue}
           placeholder="Search routes, sessions, commands… (Ctrl+K)"
           className="motion-transition-base h-10 border-border/70 bg-background/70 pl-8 shadow-sm"
-          onChange={(e) => onSearch?.(e.target.value)}
+          onChange={(e) => {
+            setSearchValue(e.target.value);
+            setSearchFeedback(null);
+            onSearch?.(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key !== 'Enter') return;
+            if (!onSearchSubmit) return;
+
+            e.preventDefault();
+            const matched = onSearchSubmit(searchValue);
+            setSearchFeedback(matched ? null : 'No matching page found');
+          }}
           aria-label="Search"
         />
+        {searchFeedback && (
+          <p className="mt-1 text-xs text-warning" aria-live="polite">
+            {searchFeedback}
+          </p>
+        )}
       </div>
 
       <div className="ml-auto flex items-center gap-2">

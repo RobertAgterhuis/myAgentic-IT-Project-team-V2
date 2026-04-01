@@ -19,7 +19,7 @@ export interface PolicySummary {
   exceptionCount: number;
 }
 
-export interface RunSummary {
+export interface SessionSummary {
   id: string;
   project: string;
   phase: string;
@@ -53,7 +53,7 @@ export function adaptPolicy(entry: PolicyEntry): PolicySummary {
   };
 }
 
-export function adaptRun(entry: Session): RunSummary {
+export function adaptSession(entry: Session): SessionSummary {
   return {
     id: entry.id,
     project: entry.project,

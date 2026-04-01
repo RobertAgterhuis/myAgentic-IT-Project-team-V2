@@ -4,9 +4,9 @@
  */
 
 export const DOMAIN_ORDER = [
-  'Overview',
+  'Dashboard',
   'Workspaces',
-  'Runs',
+  'Sessions',
   'Approvals',
   'Policies',
   'Agents',
@@ -33,8 +33,8 @@ interface PersonaPreset {
 }
 
 export const routes = {
-  /* Overview */
-  dashboard: { path: '/', label: 'Overview', icon: 'LayoutDashboard', section: 'Overview' },
+  /* Dashboard */
+  dashboard: { path: '/', label: 'Dashboard', icon: 'LayoutDashboard', section: 'Dashboard' },
 
   /* Workspaces */
   workspaces: {
@@ -44,10 +44,10 @@ export const routes = {
     section: 'Workspaces',
   },
 
-  /* Runs */
-  sessions: { path: '/sessions', label: 'Runs', icon: 'Activity', section: 'Runs' },
-  pipeline: { path: '/pipeline', label: 'Pipeline', icon: 'GitBranch', section: 'Runs' },
-  commands: { path: '/commands', label: 'Commands', icon: 'Terminal', section: 'Runs' },
+  /* Sessions */
+  sessions: { path: '/sessions', label: 'Sessions', icon: 'Activity', section: 'Sessions' },
+  pipeline: { path: '/pipeline', label: 'Pipeline', icon: 'GitBranch', section: 'Sessions' },
+  commands: { path: '/commands', label: 'Commands', icon: 'Terminal', section: 'Sessions' },
 
   /* Approvals */
   approvals: {

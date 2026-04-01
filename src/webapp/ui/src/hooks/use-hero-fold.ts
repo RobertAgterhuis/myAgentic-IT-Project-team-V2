@@ -4,16 +4,16 @@ const STORAGE_PREFIX = 'hero-fold:';
 
 /**
  * Persists the fold/unfold state of a hero section in localStorage.
- * Default is unfolded (false) on first visit.
+ * Default is folded (true) on first visit so critical controls stay above the fold.
  */
 export function useHeroFold(id: string): [boolean, () => void] {
   const key = `${STORAGE_PREFIX}${id}`;
   const [folded, setFolded] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem(key);
-      return stored === null ? false : stored === 'true';
+      return stored === null ? true : stored === 'true';
     } catch {
-      return false;
+      return true;
     }
   });
 

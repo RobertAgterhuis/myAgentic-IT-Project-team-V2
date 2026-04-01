@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { adaptApproval, adaptPolicy, adaptRun } from './route-adapters';
+import { adaptApproval, adaptPolicy, adaptSession } from './route-adapters';
 import type { ApprovalEntry, PolicyEntry, Session } from './api-types';
 
 describe('route-adapters', () => {
@@ -51,7 +51,7 @@ describe('route-adapters', () => {
     });
   });
 
-  it('adapts runs for route-safe summaries', () => {
+  it('adapts sessions for route-safe summaries', () => {
     const input: Session = {
       id: 'sess-1',
       project: 'Control Plane',
@@ -64,7 +64,7 @@ describe('route-adapters', () => {
       current_agent: 'Security Architect',
     };
 
-    expect(adaptRun(input)).toEqual({
+    expect(adaptSession(input)).toEqual({
       id: 'sess-1',
       project: 'Control Plane',
       phase: 'PHASE-2',

@@ -9,12 +9,17 @@ const sections: NavSection[] = [
     title: 'Control Surface',
     items: [
       {
-        id: '/overview',
-        label: 'Overview',
-        href: '/overview',
+        id: '/dashboard',
+        label: 'Dashboard',
+        href: '/dashboard',
         icon: <LayoutDashboard className="size-4" />,
       },
-      { id: '/runs', label: 'Runs', href: '/runs', icon: <Activity className="size-4" /> },
+      {
+        id: '/sessions',
+        label: 'Sessions',
+        href: '/sessions',
+        icon: <Activity className="size-4" />,
+      },
     ],
   },
   {
@@ -57,7 +62,7 @@ export const Expanded: Story = {
     <div className="h-[560px] w-[260px]">
       <SidebarNav
         sections={sections}
-        activeItemId="/overview"
+        activeItemId="/dashboard"
         sidebarOpen={true}
         onCollapse={() => undefined}
         onSelectItem={() => undefined}
@@ -78,7 +83,7 @@ export const Collapsed: Story = {
     <div className="h-[560px] w-[68px]">
       <SidebarNav
         sections={sections}
-        activeItemId="/overview"
+        activeItemId="/dashboard"
         sidebarOpen={false}
         onCollapse={() => undefined}
         onSelectItem={() => undefined}

@@ -1,4 +1,3 @@
-'use strict';
 /* Integration test example: Store + models + cache working together.
  * Pattern: seed InMemoryStore with markdown files, then exercise
  * the full read-parse-update-write cycle through multiple modules.

@@ -1,4 +1,3 @@
-'use strict';
 /* M30-007: Server API integration tests via Fastify inject().
  * Replaces server-api.test.js (raw HTTP) with framework-native testing.
  * Uses InMemoryStore and app.inject() for full isolation. */

@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Testing Adapter — Integration Tests
  *

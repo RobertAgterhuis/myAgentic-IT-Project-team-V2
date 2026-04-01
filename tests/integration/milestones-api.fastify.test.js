@@ -1,4 +1,3 @@
-'use strict';
 /* M30-007: Milestones API Integration Tests (SP-9) via Fastify inject().
  * Replaces milestones-api.test.js (raw HTTP) with framework-native testing.
  * Tests CRUD operations for milestone management. */

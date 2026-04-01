@@ -1,24 +1,6 @@
-title: myAgentic-IT-Project-team
-description: Multi-agent system for end-to-end software solution creation
-remote_theme: just-the-docs/just-the-docs@v0.10.1
-plugins:
-  - jekyll-remote-theme
-
+title: myAgentic-IT-Project-team-v2
+description: Concise documentation for developers and end-users
+theme: minima
 markdown: kramdown
-highlighter: rouge
-
-color_scheme: dark
-
-aux_links:
-  GitHub Repository:
-    - "https://github.com/RobertAgterhuis/myAgentic-IT-Project-team-V2"
-
-exclude:
-  - Gemfile
-  - Gemfile.lock
-
-defaults:
-  - scope:
-      path: ""
-    values:
-      layout: default
+plugins:
+  - jekyll-seo-tag

@@ -1,4 +1,3 @@
-'use strict';
 /* M30-007: End-to-end API flow integration tests via Fastify inject().
  * Replaces e2e-api-flows.test.js (raw HTTP) with framework-native testing.
  * Tests complete user journeys through the API. */

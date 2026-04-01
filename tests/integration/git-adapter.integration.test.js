@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Git Adapter — Integration Tests
  *

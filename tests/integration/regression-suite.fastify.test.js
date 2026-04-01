@@ -1,4 +1,3 @@
-'use strict';
 /* M30-007: Comprehensive Regression Test Suite — SP-R2-007-001 via Fastify inject().
  * Replaces regression-suite.test.js (raw HTTP) with framework-native testing.
  * Verifies ALL features from Sprints 1-7. */

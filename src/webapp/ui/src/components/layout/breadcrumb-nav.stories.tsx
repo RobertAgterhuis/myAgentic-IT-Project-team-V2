@@ -13,15 +13,15 @@ type Story = StoryObj<typeof meta>;
 
 export const MultiLevel: Story = {
   args: {
-    items: [{ label: 'Overview', path: '/overview' }],
+    items: [{ label: 'Dashboard', path: '/dashboard' }],
   },
   render: () => (
     <MemoryRouter>
       <BreadcrumbNav
         items={[
-          { label: 'Overview', path: '/overview' },
-          { label: 'Runs', path: '/runs' },
-          { label: 'Run #7842', path: '/runs/7842' },
+          { label: 'Dashboard', path: '/dashboard' },
+          { label: 'Sessions', path: '/sessions' },
+          { label: 'Session #7842', path: '/sessions/7842' },
         ]}
       />
     </MemoryRouter>
@@ -30,11 +30,11 @@ export const MultiLevel: Story = {
 
 export const SingleLevelHidden: Story = {
   args: {
-    items: [{ label: 'Overview', path: '/overview' }],
+    items: [{ label: 'Dashboard', path: '/dashboard' }],
   },
   render: () => (
     <MemoryRouter>
-      <BreadcrumbNav items={[{ label: 'Overview', path: '/overview' }]} />
+      <BreadcrumbNav items={[{ label: 'Dashboard', path: '/dashboard' }]} />
     </MemoryRouter>
   ),
 };

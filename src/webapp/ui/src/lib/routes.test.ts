@@ -9,8 +9,8 @@ describe('routes persona presets', () => {
   it('moves prioritized items into a persona section', () => {
     const sections = [
       {
-        id: 'runs',
-        title: 'Runs',
+        id: 'sessions',
+        title: 'Sessions',
         items: [
           { id: '/sessions', label: 'Sessions' },
           { id: '/commands', label: 'Commands' },
@@ -43,9 +43,9 @@ describe('routes', () => {
   });
 
   it('has new section groupings', () => {
-    expect(routes.dashboard.section).toBe('Overview');
-    expect(routes.sessions.section).toBe('Runs');
-    expect(routes.commands.section).toBe('Runs');
+    expect(routes.dashboard.section).toBe('Dashboard');
+    expect(routes.sessions.section).toBe('Sessions');
+    expect(routes.commands.section).toBe('Sessions');
     expect(routes.agents.section).toBe('Agents');
     expect(routes.artifacts.section).toBe('Audit & Evidence');
     expect(routes.observability.section).toBe('Observability');

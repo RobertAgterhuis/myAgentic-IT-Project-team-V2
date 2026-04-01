@@ -2045,5 +2045,33 @@
     "to": "PHASE_4",
     "status": "intent",
     "timestamp": "2026-04-01T13:59:46.301Z"
+  },
+  {
+    "transition_id": "e149aff0-9f6b-4d3f-a468-90e8b9380743",
+    "from": "CRITIC_3",
+    "to": "PHASE_4",
+    "status": "applied",
+    "timestamp": "2026-04-01T13:59:46.309Z"
+  },
+  {
+    "transition_id": "99db7693-2769-4711-8b00-edb23fe89475",
+    "from": "PHASE_4",
+    "to": "CRITIC_4",
+    "status": "intent",
+    "timestamp": "2026-04-01T14:00:03.213Z"
+  },
+  {
+    "transition_id": "99db7693-2769-4711-8b00-edb23fe89475",
+    "from": "PHASE_4",
+    "to": "CRITIC_4",
+    "status": "applied",
+    "timestamp": "2026-04-01T14:00:03.216Z"
+  },
+  {
+    "transition_id": "494a2fe2-e4c8-4e24-b0d4-5914186c3bba",
+    "from": "CRITIC_4",
+    "to": "SYNTHESIS",
+    "status": "intent",
+    "timestamp": "2026-04-01T14:00:06.241Z"
   }
 ]

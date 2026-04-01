@@ -1,9 +1,17 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ModalDialog } from '@/components/ui/modal-dialog';
 import { InputField } from '@/components/ui/input-field';
 import { AsyncMutationFeedback } from '@/components/ui/async-mutation-feedback';
 import { useCreateProject } from '@/hooks';
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
+    .slice(0, 80);
+}
 
 export function CreateProjectDialog({
   open,
@@ -17,6 +25,13 @@ export function CreateProjectDialog({
   const createProject = useCreateProject();
   const [projectId, setProjectId] = useState('');
   const [name, setName] = useState('');
+  const [idTouched, setIdTouched] = useState(false);
+
+  useEffect(() => {
+    if (!idTouched) {
+      setProjectId(slugify(name));
+    }
+  }, [name, idTouched]);
 
   const handleSubmit = useCallback(() => {
     if (!projectId.trim() || !name.trim()) return;
@@ -34,6 +49,7 @@ export function CreateProjectDialog({
           onOpenChange(false);
           setProjectId('');
           setName('');
+          setIdTouched(false);
         },
       }
     );
@@ -70,16 +86,21 @@ export function CreateProjectDialog({
           onRetry={handleSubmit}
         />
         <InputField
-          label="Project ID"
-          value={projectId}
-          onChange={(e) => setProjectId(e.target.value)}
-          placeholder="e.g., proj-data-pipeline"
-        />
-        <InputField
           label="Project Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Project name"
+          placeholder="e.g., My Data Pipeline"
+          helperText="Give the project a recognizable name used in the UI and reports."
+        />
+        <InputField
+          label="Project ID"
+          value={projectId}
+          onChange={(e) => {
+            setIdTouched(true);
+            setProjectId(e.target.value);
+          }}
+          placeholder="e.g., my-data-pipeline"
+          helperText="Machine-readable identifier auto-generated from the name. Edit only if you need a specific slug."
         />
       </div>
     </ModalDialog>

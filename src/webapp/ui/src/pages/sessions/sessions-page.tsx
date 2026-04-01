@@ -2,6 +2,7 @@
  * Sessions page — list all orchestrator sessions with status and progress.
  * M15 / Issue #M15-028
  */
+import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Text } from '@/components/ui/typography';
 import { Card } from '@/components/ui/card';
@@ -15,10 +16,28 @@ import { PageHeader } from '@/components/layout/page-header';
 import { ContextStrip, type ContextStripItem } from '@/components/layout/context-strip';
 import { PageShell } from '@/components/ui/page-shell';
 import { QueueTriageList, type QueueTriageItem } from '@/components/ui/queue-triage-list';
-import { useSessions } from '@/hooks';
+import {
+  useSessions,
+  usePauseOrchestrator,
+  useResumeOrchestrator,
+  useOrchestratorStop,
+} from '@/hooks';
 import { PageHelpStrip } from '@/components/help-panel/page-help-strip';
 import type { SessionStatus } from '@/lib/api-types';
-import { Activity, ArrowRight, CheckCircle, Clock, Pause, Sparkles, XCircle } from 'lucide-react';
+import {
+  Activity,
+  ArrowRight,
+  CheckCircle,
+  Clock,
+  Pause,
+  Play,
+  Sparkles,
+  Square,
+  XCircle,
+} from 'lucide-react';
+
+type StatusFilter = 'all' | SessionStatus;
+type SortKey = 'newest' | 'oldest' | 'progress-desc' | 'progress-asc' | 'status';
 
 const statusConfig: Record<
   SessionStatus,
@@ -88,11 +107,63 @@ function getSessionGuidance(
   };
 }
 
+const STATUS_SORT_PRIORITY: Record<SessionStatus, number> = {
+  active: 0,
+  paused: 1,
+  failed: 2,
+  completed: 3,
+};
+
+const SORT_OPTIONS: { value: SortKey; label: string }[] = [
+  { value: 'newest', label: 'Newest first' },
+  { value: 'oldest', label: 'Oldest first' },
+  { value: 'progress-desc', label: 'Progress (high → low)' },
+  { value: 'progress-asc', label: 'Progress (low → high)' },
+  { value: 'status', label: 'Status priority' },
+];
+
+const FILTER_TABS: { value: StatusFilter; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'active', label: 'Active' },
+  { value: 'paused', label: 'Paused' },
+  { value: 'failed', label: 'Failed' },
+  { value: 'completed', label: 'Completed' },
+];
+
 export default function SessionsPage() {
   const { data, isLoading, error, refetch } = useSessions();
   const navigate = useNavigate();
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [sortKey, setSortKey] = useState<SortKey>('newest');
 
-  const sessions = data?.sessions ?? [];
+  const pauseMutation = usePauseOrchestrator();
+  const resumeMutation = useResumeOrchestrator();
+  const stopMutation = useOrchestratorStop();
+
+  const sessions = useMemo(() => data?.sessions ?? [], [data?.sessions]);
+
+  const filteredSessions = useMemo(() => {
+    let list =
+      statusFilter === 'all' ? sessions : sessions.filter((s) => s.status === statusFilter);
+
+    list = [...list].sort((a, b) => {
+      switch (sortKey) {
+        case 'oldest':
+          return new Date(a.started_at).getTime() - new Date(b.started_at).getTime();
+        case 'progress-desc':
+          return b.progress - a.progress;
+        case 'progress-asc':
+          return a.progress - b.progress;
+        case 'status':
+          return STATUS_SORT_PRIORITY[a.status] - STATUS_SORT_PRIORITY[b.status];
+        case 'newest':
+        default:
+          return new Date(b.started_at).getTime() - new Date(a.started_at).getTime();
+      }
+    });
+
+    return list;
+  }, [sessions, statusFilter, sortKey]);
   const nextStep = getSessionGuidance(sessions);
   const activeSessions = sessions.filter((session) => session.status === 'active').length;
   const completedSessions = sessions.filter((session) => session.status === 'completed').length;
@@ -361,8 +432,46 @@ export default function SessionsPage() {
           headingLevel={2}
         />
 
+        {/* Session filter and sort controls */}
+        <div
+          className="flex flex-wrap items-center justify-between gap-3"
+          role="toolbar"
+          aria-label="Session filters"
+        >
+          <div className="flex flex-wrap gap-1" role="tablist" aria-label="Filter by status">
+            {FILTER_TABS.map((tab) => (
+              <button
+                key={tab.value}
+                type="button"
+                role="tab"
+                aria-selected={statusFilter === tab.value}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                  statusFilter === tab.value
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+                onClick={() => setStatusFilter(tab.value)}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+          <select
+            value={sortKey}
+            onChange={(e) => setSortKey(e.target.value as SortKey)}
+            aria-label="Sort sessions"
+            className="rounded-md border border-input bg-background px-3 py-1 text-xs"
+          >
+            {SORT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Session list */}
-        {sessions.length === 0 ? (
+        {filteredSessions.length === 0 ? (
           <EmptyState
             icon={<Activity className="size-8" />}
             title="No sessions"
@@ -370,7 +479,7 @@ export default function SessionsPage() {
           />
         ) : (
           <div className="space-y-3">
-            {sessions.map((session) => {
+            {filteredSessions.map((session) => {
               const config = statusConfig[session.status];
               const activeAgents = getActiveAgents(session);
               const activeAgentsLabel = formatActiveAgentsLabel(activeAgents);
@@ -412,6 +521,53 @@ export default function SessionsPage() {
                       {activeAgents.length > 1 ? 'Current agents: ' : 'Current agent: '}
                       <span className="font-medium">{activeAgentsLabel}</span>
                     </p>
+                  )}
+                  {(session.status === 'active' || session.status === 'paused') && (
+                    <div
+                      className="mt-2 flex items-center gap-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {session.status === 'active' ? (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          disabled={pauseMutation.isPending}
+                          onClick={() =>
+                            pauseMutation.mutate({
+                              rationale: 'Paused from sessions list',
+                              requested_by: 'operator-ui',
+                            })
+                          }
+                        >
+                          <Pause className="mr-1 size-3" /> Pause
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          disabled={resumeMutation.isPending}
+                          onClick={() =>
+                            resumeMutation.mutate({
+                              rationale: 'Resumed from sessions list',
+                              requested_by: 'operator-ui',
+                            })
+                          }
+                        >
+                          <Play className="mr-1 size-3" /> Resume
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs text-destructive hover:text-destructive"
+                        disabled={stopMutation.isPending}
+                        onClick={() => stopMutation.mutate()}
+                      >
+                        <Square className="mr-1 size-3" /> Cancel
+                      </Button>
+                    </div>
                   )}
                 </Card>
               );

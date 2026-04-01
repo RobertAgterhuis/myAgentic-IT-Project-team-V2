@@ -37,8 +37,8 @@ describe('CommandsPage', () => {
 
   it('renders explicit guidance for how to proceed', async () => {
     await renderPage();
-    expect(screen.getByText(/how to proceed/i)).toBeInTheDocument();
     expect(screen.getByText(/recommended next step/i)).toBeInTheDocument();
+    expect(screen.getByText(/show step-by-step guide/i)).toBeInTheDocument();
     expect(screen.getByText(/what happens when you click submit brief/i)).toBeInTheDocument();
   });
 

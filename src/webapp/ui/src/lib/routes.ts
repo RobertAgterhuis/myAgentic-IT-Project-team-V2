@@ -112,6 +112,12 @@ export const routes = {
     icon: 'Settings2',
     section: 'Administration',
   },
+  preferences: {
+    path: '/preferences',
+    label: 'Preferences',
+    icon: 'SlidersHorizontal',
+    section: 'Administration',
+  },
   identityConsent: {
     path: '/admin/identity/consent',
     label: 'Identity Consent Center',

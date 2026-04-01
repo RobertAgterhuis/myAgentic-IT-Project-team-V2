@@ -33,6 +33,7 @@ const McpDiagnosticsPage = lazy(() => import('@/pages/mcp/mcp-diagnostics-page')
 const CockpitDashboardPage = lazy(() => import('@/pages/cockpit/cockpit-dashboard-page'));
 const ExecutionHistoryPage = lazy(() => import('@/pages/agents/execution-history-page'));
 const ApprovalDetailPage = lazy(() => import('@/pages/cockpit/approval-detail-page'));
+const PreferencesPage = lazy(() => import('@/pages/preferences/preferences-page'));
 
 const router = createBrowserRouter([
   /* Login — outside the app shell (no sidebar/nav) */
@@ -80,6 +81,7 @@ const router = createBrowserRouter([
 
       /* Cockpit — M27 */
       { path: 'cockpit', element: <CockpitDashboardPage /> },
+      { path: 'preferences', element: <PreferencesPage /> },
       {
         path: 'administration',
         element: (

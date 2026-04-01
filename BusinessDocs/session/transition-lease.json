@@ -1,0 +1,9 @@
+{
+  "lease_id": "9aa82f23-7743-4347-b12c-7a1620d8d9c0",
+  "owner_id": "worker-96748",
+  "token": "d62225c5-40ed-4947-af45-9c9bf53dbdcb",
+  "acquired_at": "2026-04-01T13:36:09.430Z",
+  "expires_at": "2026-04-01T13:36:39.442Z",
+  "state_from": "CRITIC_1",
+  "state_to": "PHASE_2"
+}

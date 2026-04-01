@@ -29,6 +29,50 @@ describe('RuntimeEvent', () => {
     expect(screen.getByText('Error')).toBeInTheDocument();
   });
 
+  it('renders remediation for error events', () => {
+    render(
+      <RuntimeEvent
+        type="error"
+        timestamp={ts}
+        description="Build failed"
+        remediation="Check the build logs and fix syntax errors"
+      />
+    );
+    expect(screen.getByText('Fix:')).toBeInTheDocument();
+    expect(screen.getByText('Check the build logs and fix syntax errors')).toBeInTheDocument();
+  });
+
+  it('renders remediation for gate_failed events', () => {
+    render(
+      <RuntimeEvent
+        type="gate_failed"
+        timestamp={ts}
+        description="Gate check failed"
+        remediation="Resolve blocking items before proceeding"
+      />
+    );
+    expect(screen.getByText('Fix:')).toBeInTheDocument();
+    expect(screen.getByText('Resolve blocking items before proceeding')).toBeInTheDocument();
+  });
+
+  it('does not render remediation for non-error event types', () => {
+    render(
+      <RuntimeEvent
+        type="agent_start"
+        timestamp={ts}
+        description="Agent started"
+        remediation="This should not appear"
+      />
+    );
+    expect(screen.queryByText('Fix:')).not.toBeInTheDocument();
+    expect(screen.queryByText('This should not appear')).not.toBeInTheDocument();
+  });
+
+  it('does not render remediation section when prop is absent', () => {
+    render(<RuntimeEvent type="error" timestamp={ts} description="Error" />);
+    expect(screen.queryByText('Fix:')).not.toBeInTheDocument();
+  });
+
   it('renders icon for each type', () => {
     const types = [
       'session_start',

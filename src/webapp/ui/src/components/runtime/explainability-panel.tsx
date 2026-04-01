@@ -1,12 +1,26 @@
-import { AlertTriangle, Sparkles, X } from 'lucide-react';
+import { AlertTriangle, FileText, Link2, Sparkles, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+
+export interface EvidenceSource {
+  label: string;
+  path: string;
+  line?: number;
+}
+
+export interface ExplainabilityContext {
+  predecessorAgent?: string;
+  predecessorPhase?: string;
+  confidence?: 'high' | 'medium' | 'low';
+}
 
 interface ExplainabilityPanelProps extends React.ComponentProps<'aside'> {
   title: string;
   reason: string;
   suggestedAction?: string;
   details?: Record<string, string>;
+  sources?: EvidenceSource[];
+  context?: ExplainabilityContext;
   onDismiss: () => void;
 }
 
@@ -15,6 +29,8 @@ export function ExplainabilityPanel({
   reason,
   suggestedAction,
   details,
+  sources,
+  context,
   onDismiss,
   className,
   ...props
@@ -86,6 +102,72 @@ export function ExplainabilityPanel({
             ))}
           </div>
         )}
+
+        {/* Evidence Sources */}
+        {sources && sources.length > 0 && (
+          <div className="rounded-2xl border border-violet-500/20 bg-violet-500/6 p-3">
+            <span className="text-xs font-semibold uppercase tracking-[0.18em] text-violet-600 dark:text-violet-400">
+              Evidence Sources
+            </span>
+            <ul className="mt-1.5 space-y-1" aria-label="Evidence sources">
+              {sources.map((source, i) => (
+                <li key={`${source.path}-${i}`} className="flex items-center gap-1.5 text-xs">
+                  <FileText className="size-3 shrink-0 text-violet-500" />
+                  <span className="font-medium">{source.label}</span>
+                  <span className="text-muted-foreground truncate">
+                    {source.path}
+                    {source.line != null && `:${source.line}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* Context & Confidence */}
+        {context &&
+          (context.predecessorAgent || context.predecessorPhase || context.confidence) && (
+            <div className="rounded-2xl border border-border/60 bg-background/55 p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+                  Context
+                </span>
+                {context.confidence && (
+                  <Badge
+                    variant={
+                      context.confidence === 'high'
+                        ? 'success'
+                        : context.confidence === 'medium'
+                          ? 'warning'
+                          : 'destructive'
+                    }
+                    className="text-xs"
+                  >
+                    <Link2 className="size-3" />
+                    {context.confidence} confidence
+                  </Badge>
+                )}
+              </div>
+              <div className="mt-1.5 space-y-1 text-xs">
+                {context.predecessorAgent && (
+                  <div className="flex gap-2">
+                    <span className="shrink-0 font-medium text-muted-foreground">
+                      Source Agent:
+                    </span>
+                    <span>{context.predecessorAgent}</span>
+                  </div>
+                )}
+                {context.predecessorPhase && (
+                  <div className="flex gap-2">
+                    <span className="shrink-0 font-medium text-muted-foreground">
+                      Source Phase:
+                    </span>
+                    <span>{context.predecessorPhase}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
       </div>
     </aside>
   );

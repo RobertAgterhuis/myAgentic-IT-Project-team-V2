@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquare, Send, Trash2, X } from 'lucide-react';
+import { AlertCircle, MessageSquare, Send, Trash2, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { Input } from '@/components/ui/input';
@@ -220,16 +221,40 @@ export function ChatPanel() {
                 <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   Suggested actions
                 </div>
-                <div className="flex flex-wrap gap-2">
+                <div className="space-y-2">
                   {actions.map((action) => (
-                    <Button
+                    <div
                       key={action.id}
-                      size="xs"
-                      variant={action.requires_confirmation ? 'destructive' : 'outline'}
-                      onClick={() => void onActionClick(action)}
+                      className="rounded-lg border border-border/70 bg-background/50 p-2.5"
                     >
-                      {action.label}
-                    </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="xs"
+                          variant={action.requires_confirmation ? 'destructive' : 'outline'}
+                          onClick={() => void onActionClick(action)}
+                        >
+                          {action.label}
+                        </Button>
+                        {action.impact && (
+                          <Badge
+                            variant={
+                              action.impact === 'high'
+                                ? 'destructive'
+                                : action.impact === 'medium'
+                                  ? 'warning'
+                                  : 'success'
+                            }
+                            className="text-[10px]"
+                          >
+                            {action.impact === 'high' && <AlertCircle className="size-3 mr-0.5" />}
+                            {action.impact} impact
+                          </Badge>
+                        )}
+                      </div>
+                      {action.description && (
+                        <p className="mt-1.5 text-xs text-muted-foreground">{action.description}</p>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>
@@ -272,7 +297,13 @@ export function ChatPanel() {
         title="Confirm irreversible action"
         message={
           pendingAction
-            ? `Are you sure you want to execute '${pendingAction.label}'? This action may change workflow state.`
+            ? [
+                `Are you sure you want to execute '${pendingAction.label}'?`,
+                pendingAction.description || 'This action may change workflow state.',
+                pendingAction.impact ? `Impact level: ${pendingAction.impact}` : '',
+              ]
+                .filter(Boolean)
+                .join(' ')
             : ''
         }
         confirmLabel="Execute action"

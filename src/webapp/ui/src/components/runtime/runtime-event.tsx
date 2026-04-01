@@ -8,6 +8,7 @@ import {
   ShieldAlert,
   XCircle,
   RefreshCw,
+  Wrench,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -30,6 +31,7 @@ interface RuntimeEventProps extends React.ComponentProps<'div'> {
   agent?: string;
   phase?: string;
   artifactId?: string;
+  remediation?: string;
 }
 
 const typeIcon: Record<TimelineEventType, React.ReactNode> = {
@@ -60,25 +62,35 @@ export function RuntimeEvent({
   agent,
   phase,
   artifactId: _artifactId,
+  remediation,
   className,
   ...props
 }: RuntimeEventProps) {
   return (
     <div
       className={cn(
-        'flex items-start gap-3 py-1.5 text-sm',
+        'flex flex-col gap-0.5 py-1.5 text-sm',
         (type === 'error' || type === 'gate_failed') && 'text-red-600',
         className
       )}
       {...props}
     >
-      <span className="shrink-0 mt-0.5">{typeIcon[type]}</span>
-      <span className="text-muted-foreground shrink-0 tabular-nums">{formatTime(timestamp)}</span>
-      <span className="min-w-0">
-        {description}
-        {agent && <span className="ml-1 text-muted-foreground">({agent})</span>}
-        {phase && <span className="ml-1 text-muted-foreground">[{phase}]</span>}
-      </span>
+      <div className="flex items-start gap-3">
+        <span className="shrink-0 mt-0.5">{typeIcon[type]}</span>
+        <span className="text-muted-foreground shrink-0 tabular-nums">{formatTime(timestamp)}</span>
+        <span className="min-w-0">
+          {description}
+          {agent && <span className="ml-1 text-muted-foreground">({agent})</span>}
+          {phase && <span className="ml-1 text-muted-foreground">[{phase}]</span>}
+        </span>
+      </div>
+      {remediation && (type === 'error' || type === 'gate_failed') && (
+        <div className="ml-7 mt-0.5 flex items-center gap-1.5 rounded-md border border-amber-500/20 bg-amber-500/8 px-2.5 py-1.5 text-xs text-amber-700 dark:text-amber-400">
+          <Wrench className="size-3 shrink-0" />
+          <span className="font-medium">Fix:</span>
+          <span>{remediation}</span>
+        </div>
+      )}
     </div>
   );
 }

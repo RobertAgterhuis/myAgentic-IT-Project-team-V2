@@ -11,6 +11,7 @@ export interface RuntimeLogEvent {
   agent?: string;
   phase?: string;
   artifactId?: string;
+  remediation?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -115,6 +116,7 @@ export function RuntimeLog({
                 agent={event.agent}
                 phase={event.phase}
                 artifactId={event.artifactId}
+                remediation={event.remediation}
               />
             </li>
           ))

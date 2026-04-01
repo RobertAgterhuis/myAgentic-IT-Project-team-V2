@@ -68,6 +68,7 @@ import { hasAuthConfigured, validateProfile, assertScalePrerequisites } from './
 
 import { buildApp } from './app';
 import type { ServerContext } from './context';
+import { createAutoOrchestrationCoordinator } from './services/auto-orchestration';
 import { RagStore } from './services/rag/rag-store';
 import { RagIndexer } from './services/rag/rag-indexer';
 import { AdaptiveChunker } from './services/rag/text-chunker';
@@ -95,6 +96,10 @@ function parsePositiveIntEnv(name: string, fallback: number): number {
 const RAG_FRESHNESS_HEALTH_INTERVAL_MS = parsePositiveIntEnv(
   'RAG_FRESHNESS_HEALTH_INTERVAL_MS',
   5 * 60 * 1000
+);
+const COMMAND_AUTODISPATCH_INTERVAL_MS = parsePositiveIntEnv(
+  'COMMAND_AUTODISPATCH_INTERVAL_MS',
+  3000
 );
 const RAG_FRESHNESS_STALE_SEC = parsePositiveIntEnv('RAG_FRESHNESS_STALE_SEC', 3600);
 const RAG_WATCH_DEBOUNCE_MS = parsePositiveIntEnv('RAG_WATCH_DEBOUNCE_MS', 5000);
@@ -779,6 +784,23 @@ const __testing = {
 /* ── Build Fastify app ────────────────────────────────────────── */
 let _app: Awaited<ReturnType<typeof buildApp>> | null = null;
 let _mcpHealthMonitor: McpHealthMonitor | null = null;
+/* ── Auto-orchestration coordinator (wired after ctx is available) ── */
+let _autoOrchestration: ReturnType<typeof createAutoOrchestrationCoordinator> | null = null;
+function getAutoOrchestration() {
+  if (!_autoOrchestration) {
+    _autoOrchestration = createAutoOrchestrationCoordinator({
+      commandQueue: COMMAND_QUEUE,
+      sessionDir: SESSION_DIR,
+      sessionFile: SESSION_FILE,
+      businessDocs: BUSINESS_DOCS,
+      qIndexFile: Q_INDEX_FILE,
+      getApp: () => _app as never,
+      ctx: ctx as unknown as Record<string, unknown>,
+      sseNotify,
+    });
+  }
+  return _autoOrchestration;
+}
 
 function getMcpHealthMonitor(): McpHealthMonitor {
   if (_mcpHealthMonitor) return _mcpHealthMonitor;
@@ -1016,15 +1038,31 @@ if (require.main === module || bootstrapAwareGlobal.__WEBAPP_BOOTSTRAP_ENTRY) {
     void runRagFreshnessHealthPass();
   }, RAG_FRESHNESS_HEALTH_INTERVAL_MS);
   ragFreshnessTimer.unref();
+  const commandAutoDispatchTimer = setInterval(() => {
+    void getAutoOrchestration().dispatchQueuedCommands();
+  }, COMMAND_AUTODISPATCH_INTERVAL_MS);
+  commandAutoDispatchTimer.unref();
+  const orchestrationAutoRunTimer = setInterval(() => {
+    void getAutoOrchestration().runAutoOrchestrationCycle();
+  }, COMMAND_AUTODISPATCH_INTERVAL_MS);
+  orchestrationAutoRunTimer.unref();
   setupRagFreshnessWatchers();
   setTimeout(() => {
     void runRagFreshnessHealthPass();
   }, 15_000).unref();
+  setTimeout(() => {
+    void getAutoOrchestration().dispatchQueuedCommands();
+  }, 2_000).unref();
+  setTimeout(() => {
+    void getAutoOrchestration().runAutoOrchestrationCycle();
+  }, 3_000).unref();
   const shutdown = (): void => {
     structuredLog('info', 'shutdown_initiated');
     clearInterval(flushTimer);
     clearInterval(snapTimer);
     clearInterval(ragFreshnessTimer);
+    clearInterval(commandAutoDispatchTimer);
+    clearInterval(orchestrationAutoRunTimer);
     if (_ragWatchDebounceTimer) clearTimeout(_ragWatchDebounceTimer);
     for (const watcher of _ragWatchers) watcher.close();
     _ragWatchers.length = 0;

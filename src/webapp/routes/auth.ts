@@ -32,6 +32,49 @@ import * as RS from '../route-schemas';
 
 const VALID_ROLES: Role[] = ['admin', 'operator', 'viewer'];
 const ENTRA_LINK_REDIRECT_PREFIX = '/__auth/link/entra';
+const AUTH_ENV_KEYS = new Set([
+  'GITHUB_CLIENT_ID',
+  'GITHUB_CLIENT_SECRET',
+  'AUTH_CALLBACK_URL',
+  'ENTRA_CLIENT_ID',
+  'ENTRA_TENANT_ID',
+  'ENTRA_CLIENT_SECRET',
+  'ENTRA_REDIRECT_URI',
+]);
+
+function resolveEnvFilePath(ctx: ServerContext): string {
+  const projectRoot = ctx.PROJECT_ROOT || process.cwd();
+  return path.join(projectRoot, '.env');
+}
+
+function serializeEnvValue(value: string): string {
+  if (/[\r\n]/.test(value)) {
+    throw new Error('Environment values cannot contain newlines');
+  }
+  if (value.length === 0) return '';
+  if (/\s|#|"|'|`/.test(value)) {
+    return JSON.stringify(value);
+  }
+  return value;
+}
+
+function upsertEnvValues(existing: string, updates: Record<string, string>): string {
+  const lines = existing.length > 0 ? existing.split(/\r?\n/) : [];
+
+  for (const [key, value] of Object.entries(updates)) {
+    const line = `${key}=${serializeEnvValue(value)}`;
+    const matcher = new RegExp(`^\\s*(?:export\\s+)?${key}\\s*=`);
+    const index = lines.findIndex((entry) => matcher.test(entry));
+    if (index >= 0) {
+      lines[index] = line;
+    } else {
+      lines.push(line);
+    }
+  }
+
+  const next = lines.join('\n').replace(/\n{3,}/g, '\n\n');
+  return next.endsWith('\n') ? next : `${next}\n`;
+}
 
 // Validate redirectTo is a safe relative path (no open redirect)
 function safeRedirect(url: string | undefined): string {
@@ -551,6 +594,57 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           },
         },
       });
+    }
+  );
+
+  /* ── POST /api/auth/config/env ────────────────────────────── */
+  app.post<{ Body: { values?: Record<string, string> } }>(
+    '/api/auth/config/env',
+    { schema: RS.authConfigSaveEnv },
+    async (request: FastifyRequest<{ Body: { values?: Record<string, string> } }>, reply) => {
+      const bodyValues = request.body?.values;
+      if (!bodyValues || typeof bodyValues !== 'object') {
+        return reply.code(400).send(errorResponse('INVALID_INPUT', 'values object is required'));
+      }
+
+      const updates: Record<string, string> = {};
+      for (const [key, rawValue] of Object.entries(bodyValues)) {
+        if (!AUTH_ENV_KEYS.has(key)) continue;
+        if (typeof rawValue !== 'string') {
+          return reply
+            .code(400)
+            .send(errorResponse('INVALID_INPUT', `Value for ${key} must be a string`));
+        }
+        const value = rawValue.trim();
+        if (!value) continue;
+        updates[key] = value;
+      }
+
+      const updateKeys = Object.keys(updates);
+      if (updateKeys.length === 0) {
+        return reply
+          .code(400)
+          .send(errorResponse('INVALID_INPUT', 'No supported non-empty values provided'));
+      }
+
+      try {
+        const envPath = resolveEnvFilePath(ctx);
+        const exists = fs.existsSync(envPath);
+        const current = exists ? fs.readFileSync(envPath, 'utf8') : '';
+        const next = upsertEnvValues(current, updates);
+        fs.mkdirSync(path.dirname(envPath), { recursive: true });
+        fs.writeFileSync(envPath, next, 'utf8');
+
+        for (const [key, value] of Object.entries(updates)) {
+          process.env[key] = value;
+        }
+
+        return reply.send({ ok: true, created: !exists, updated: updateKeys, path: envPath });
+      } catch (err) {
+        return reply
+          .code(500)
+          .send(errorResponse('ENV_SAVE_FAILED', (err as Error).message || 'Failed to write .env'));
+      }
     }
   );
 

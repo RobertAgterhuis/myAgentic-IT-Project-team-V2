@@ -48,6 +48,8 @@ for (const [phase, agents] of Object.entries(PHASE_AGENTS)) {
 
 export interface ExecuteAgentInput {
   agentId: string;
+  source?: 'webapp' | 'orchestrator-auto';
+  trackSessionStart?: boolean;
   context?: {
     predecessorPaths?: string[];
     questionnairePath?: string;
@@ -258,6 +260,9 @@ export class AgentExecutionService {
       throw new AgentNotFoundError(`Unknown agent ID: ${input.agentId}`);
     }
 
+    const executionSource = input.source ?? 'webapp';
+    const trackSessionStart = input.trackSessionStart ?? true;
+
     const jobId = `exec-${randomUUID()}`;
     const startedAt = new Date().toISOString();
     const ac = new AbortController();
@@ -273,16 +278,15 @@ export class AgentExecutionService {
     };
     JOB_STORE.set(jobId, job);
 
-    // Track in session tracker
-    const activeSession = sessionTracker.listSessions().find((s) => s.status === 'active');
-    const sessionId = activeSession?.id ?? 'manual';
-    sessionTracker.startAgent(
-      sessionId,
-      info.id,
-      info.name,
-      info.phase,
-      `Manual execution from UI`
-    );
+    if (trackSessionStart) {
+      const activeSession = sessionTracker.listSessions().find((s) => s.status === 'active');
+      const sessionId = activeSession?.id ?? 'manual';
+      const taskDescription =
+        executionSource === 'orchestrator-auto'
+          ? `Automatic execution from orchestrator`
+          : `Manual execution from UI`;
+      sessionTracker.startAgent(sessionId, info.id, info.name, info.phase, taskDescription);
+    }
 
     // I-A1-003: resolve adapter from registry; Dispatcher uses it instead of bare throw.
     const runtimeProfile = resolveRuntimeProfile();
@@ -379,8 +383,11 @@ export class AgentExecutionService {
           operation: 'AGENT_MANUAL_EXECUTE',
           entityType: 'agent',
           entityId: info.id,
-          user: 'webapp',
-          summary: `Manual execution of ${info.name} completed successfully`,
+          user: executionSource,
+          summary:
+            executionSource === 'orchestrator-auto'
+              ? `Automatic execution of ${info.name} completed successfully`
+              : `Manual execution of ${info.name} completed successfully`,
         });
 
         job.status = 'completed';
@@ -410,8 +417,11 @@ export class AgentExecutionService {
           operation: 'AGENT_MANUAL_EXECUTE',
           entityType: 'agent',
           entityId: info.id,
-          user: 'webapp',
-          summary: `Manual execution of ${info.name} failed: ${result.error}`,
+          user: executionSource,
+          summary:
+            executionSource === 'orchestrator-auto'
+              ? `Automatic execution of ${info.name} failed: ${result.error}`
+              : `Manual execution of ${info.name} failed: ${result.error}`,
         });
 
         job.status = 'failed';

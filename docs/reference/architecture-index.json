@@ -1,0 +1,290 @@
+{
+  "schemaVersion": "1.0.0",
+  "generatedAt": "2026-04-01T11:06:26.809Z",
+  "source": "platform/schema/agents.json + platform/schema/flows.json",
+  "fullFlow": [
+    "IDLE",
+    "ONBOARDING",
+    "PHASE_1",
+    "CRITIC_1",
+    "PHASE_2",
+    "CRITIC_2",
+    "PHASE_3",
+    "CRITIC_3",
+    "PHASE_4",
+    "CRITIC_4",
+    "SYNTHESIS",
+    "SPRINT_GATE",
+    "PHASE_5_EXECUTING",
+    "COMPLETED"
+  ],
+  "phases": {
+    "IDLE": [],
+    "ONBOARDING": [
+      {
+        "id": "25",
+        "name": "Onboarding Agent",
+        "role": "Onboarding Agent specialist role",
+        "dependencies": []
+      }
+    ],
+    "PHASE_1": [
+      {
+        "id": "01",
+        "name": "Business Analyst",
+        "role": "Business Analyst specialist role",
+        "dependencies": ["25"]
+      },
+      {
+        "id": "02",
+        "name": "Domain Expert",
+        "role": "Domain Expert specialist role",
+        "dependencies": ["01"]
+      },
+      {
+        "id": "03",
+        "name": "Sales Strategist",
+        "role": "Sales Strategist specialist role",
+        "dependencies": ["02"]
+      },
+      {
+        "id": "04",
+        "name": "Financial Analyst",
+        "role": "Financial Analyst specialist role",
+        "dependencies": ["03"]
+      },
+      {
+        "id": "34",
+        "name": "Product Manager",
+        "role": "Product Manager specialist role",
+        "dependencies": ["04"]
+      }
+    ],
+    "CRITIC_1": [],
+    "PHASE_2": [
+      {
+        "id": "05",
+        "name": "Software Architect",
+        "role": "Software Architect specialist role",
+        "dependencies": ["19"]
+      },
+      {
+        "id": "06",
+        "name": "Senior Developer",
+        "role": "Senior Developer specialist role",
+        "dependencies": ["05"]
+      },
+      {
+        "id": "07",
+        "name": "DevOps Engineer",
+        "role": "DevOps Engineer specialist role",
+        "dependencies": ["06"]
+      },
+      {
+        "id": "08",
+        "name": "Security Architect",
+        "role": "Security Architect specialist role",
+        "dependencies": ["07"]
+      },
+      {
+        "id": "09",
+        "name": "Data Architect",
+        "role": "Data Architect specialist role",
+        "dependencies": ["08"]
+      },
+      {
+        "id": "33",
+        "name": "Legal / Privacy Counsel",
+        "role": "Legal / Privacy Counsel specialist role",
+        "dependencies": ["09"]
+      }
+    ],
+    "CRITIC_2": [],
+    "PHASE_3": [
+      {
+        "id": "10",
+        "name": "UX Researcher",
+        "role": "UX Researcher specialist role",
+        "dependencies": ["19"]
+      },
+      {
+        "id": "11",
+        "name": "UX Designer",
+        "role": "UX Designer specialist role",
+        "dependencies": ["10"]
+      },
+      {
+        "id": "12",
+        "name": "UI Designer",
+        "role": "UI Designer specialist role",
+        "dependencies": ["11"]
+      },
+      {
+        "id": "13",
+        "name": "Accessibility Specialist",
+        "role": "Accessibility Specialist specialist role",
+        "dependencies": ["12"]
+      },
+      {
+        "id": "32",
+        "name": "Content Strategist / UX Writer",
+        "role": "Content Strategist / UX Writer specialist role",
+        "dependencies": ["13"]
+      },
+      {
+        "id": "35",
+        "name": "Localization Specialist",
+        "role": "Localization Specialist specialist role",
+        "dependencies": ["32"]
+      }
+    ],
+    "CRITIC_3": [],
+    "PHASE_4": [
+      {
+        "id": "14",
+        "name": "Brand Strategist",
+        "role": "Brand Strategist specialist role",
+        "dependencies": ["19"]
+      },
+      {
+        "id": "15",
+        "name": "Growth Marketer",
+        "role": "Growth Marketer specialist role",
+        "dependencies": ["14"]
+      },
+      {
+        "id": "16",
+        "name": "CRO Specialist",
+        "role": "CRO Specialist specialist role",
+        "dependencies": ["15"]
+      },
+      {
+        "id": "30",
+        "name": "Brand & Assets Agent (Canva)",
+        "role": "Brand & Assets Agent (Canva) specialist role",
+        "dependencies": ["19"]
+      },
+      {
+        "id": "31",
+        "name": "Storybook Agent",
+        "role": "Storybook Agent specialist role",
+        "dependencies": ["30"]
+      }
+    ],
+    "CRITIC_4": [],
+    "SYNTHESIS": [
+      {
+        "id": "17",
+        "name": "Synthesis Agent",
+        "role": "Synthesis Agent specialist role",
+        "dependencies": ["31"]
+      }
+    ],
+    "SPRINT_GATE": [
+      {
+        "id": "00",
+        "name": "Orchestrator",
+        "role": "Orchestrator specialist role",
+        "dependencies": []
+      }
+    ],
+    "PHASE_5_EXECUTING": [
+      {
+        "id": "20",
+        "name": "Implementation Agent",
+        "role": "Implementation Agent specialist role",
+        "dependencies": ["27"]
+      },
+      {
+        "id": "21",
+        "name": "Test Agent",
+        "role": "Test Agent specialist role",
+        "dependencies": ["20"]
+      },
+      {
+        "id": "22",
+        "name": "PR/Review Agent",
+        "role": "PR/Review Agent specialist role",
+        "dependencies": ["21"]
+      },
+      {
+        "id": "26",
+        "name": "Documentation Agent",
+        "role": "Documentation Agent specialist role",
+        "dependencies": ["29"]
+      },
+      {
+        "id": "27",
+        "name": "GitHub Integration Agent",
+        "role": "GitHub Integration Agent specialist role",
+        "dependencies": ["17"]
+      },
+      {
+        "id": "28",
+        "name": "Sprint Retrospective Agent",
+        "role": "Sprint Retrospective Agent specialist role",
+        "dependencies": ["27"]
+      },
+      {
+        "id": "29",
+        "name": "KPI/Metrics Agent",
+        "role": "KPI/Metrics Agent specialist role",
+        "dependencies": ["22"]
+      },
+      {
+        "id": "38",
+        "name": "Architecture Compliance Reviewer",
+        "role": "Validates implemented code against Phase 1-4 design decisions before PR merge",
+        "dependencies": ["21"]
+      }
+    ],
+    "COMPLETED": [],
+    "ERROR": [],
+    "CRITIC_RISK": [
+      {
+        "id": "18",
+        "name": "Critic Agent",
+        "role": "Critic Agent specialist role",
+        "dependencies": ["34"]
+      },
+      {
+        "id": "19",
+        "name": "Risk Agent",
+        "role": "Risk Agent specialist role",
+        "dependencies": ["18"]
+      }
+    ],
+    "REEVALUATE": [
+      {
+        "id": "23",
+        "name": "Reevaluate Agent",
+        "role": "Reevaluate Agent specialist role",
+        "dependencies": []
+      }
+    ],
+    "FEATURE": [
+      {
+        "id": "24",
+        "name": "Feature Agent",
+        "role": "Feature Agent specialist role",
+        "dependencies": []
+      }
+    ],
+    "QUESTIONNAIRE": [
+      {
+        "id": "36",
+        "name": "Questionnaire Agent",
+        "role": "Questionnaire Agent specialist role",
+        "dependencies": []
+      }
+    ],
+    "SCOPE_CHANGE": [
+      {
+        "id": "37",
+        "name": "Scope Change Agent",
+        "role": "Scope Change Agent specialist role",
+        "dependencies": []
+      }
+    ]
+  }
+}

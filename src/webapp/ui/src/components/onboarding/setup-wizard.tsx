@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Heading, Text } from '@/components/ui/typography';
 import {
   ArrowLeft,
@@ -25,6 +26,13 @@ interface SetupStep {
   description: string;
   icon: React.ReactNode;
   content: React.ReactNode;
+}
+
+interface EnvSaveResponse {
+  ok: boolean;
+  created: boolean;
+  updated: string[];
+  path: string;
 }
 
 function GithubStepContent() {
@@ -167,6 +175,22 @@ export function SetupWizard({
   onStepChange,
 }: SetupWizardProps) {
   const [currentStep, setCurrentStep] = useState(initialStep);
+  const [envValues, setEnvValues] = useState({
+    githubClientId: '',
+    githubClientSecret: '',
+    authCallbackUrl: '',
+    entraClientId: '',
+    entraTenantId: '',
+    entraClientSecret: '',
+    entraRedirectUri: '',
+  });
+  const [saveState, setSaveState] = useState<{
+    type: 'idle' | 'saving' | 'success' | 'error';
+    message: string;
+  }>({
+    type: 'idle',
+    message: '',
+  });
   const dialogRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<Element | null>(null);
 
@@ -180,6 +204,16 @@ export function SetupWizard({
     return () => {
       (triggerRef.current as HTMLElement | null)?.focus?.();
     };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const origin = window.location.origin;
+    setEnvValues((prev) => ({
+      ...prev,
+      authCallbackUrl: prev.authCallbackUrl || origin,
+      entraRedirectUri: prev.entraRedirectUri || `${origin}/api/auth/entra/callback`,
+    }));
   }, []);
 
   // Focus trap
@@ -236,6 +270,64 @@ export function SetupWizard({
     goTo(Math.max(0, currentStep - 1));
   }, [goTo, currentStep]);
 
+  const updateEnvValue = useCallback((key: keyof typeof envValues, value: string) => {
+    setEnvValues((prev) => ({ ...prev, [key]: value }));
+  }, []);
+
+  const handleSaveEnv = useCallback(
+    async (kind: 'github' | 'entra') => {
+      setSaveState({ type: 'saving', message: '' });
+
+      const values =
+        kind === 'github'
+          ? {
+              GITHUB_CLIENT_ID: envValues.githubClientId,
+              GITHUB_CLIENT_SECRET: envValues.githubClientSecret,
+              AUTH_CALLBACK_URL: envValues.authCallbackUrl,
+            }
+          : {
+              ENTRA_CLIENT_ID: envValues.entraClientId,
+              ENTRA_TENANT_ID: envValues.entraTenantId,
+              ENTRA_CLIENT_SECRET: envValues.entraClientSecret,
+              ENTRA_REDIRECT_URI: envValues.entraRedirectUri,
+            };
+
+      try {
+        const response = await fetch('/api/auth/config/env', {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ values }),
+        });
+
+        if (!response.ok) {
+          const fallback = `Save failed (${response.status})`;
+          let message = fallback;
+          try {
+            const body = (await response.json()) as { message?: string };
+            if (body?.message) message = body.message;
+          } catch {
+            // Keep fallback message when no JSON body is available.
+          }
+          throw new Error(message);
+        }
+
+        const body = (await response.json()) as EnvSaveResponse;
+        const createdLabel = body.created ? 'Created .env.' : 'Updated .env.';
+        setSaveState({
+          type: 'success',
+          message: `${createdLabel} Saved: ${body.updated.join(', ')}. Restart backend to fully apply all changes.`,
+        });
+      } catch (err) {
+        setSaveState({
+          type: 'error',
+          message: (err as Error).message || 'Unable to save configuration values.',
+        });
+      }
+    },
+    [envValues]
+  );
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
       <div
@@ -283,6 +375,84 @@ export function SetupWizard({
           </div>
 
           <div className="mt-4 text-left">{step.content}</div>
+
+          {step.id === 'github' && (
+            <div className="mt-4 rounded-lg border border-border/70 p-3 space-y-3">
+              <Text className="text-sm font-medium">Save GitHub settings to .env</Text>
+              <Input
+                aria-label="GitHub Client ID"
+                placeholder="GitHub Client ID"
+                value={envValues.githubClientId}
+                onChange={(e) => updateEnvValue('githubClientId', e.target.value)}
+              />
+              <Input
+                aria-label="GitHub Client Secret"
+                placeholder="GitHub Client Secret"
+                type="password"
+                value={envValues.githubClientSecret}
+                onChange={(e) => updateEnvValue('githubClientSecret', e.target.value)}
+              />
+              <Input
+                aria-label="Auth Callback Base URL"
+                placeholder="http://127.0.0.1:3000"
+                value={envValues.authCallbackUrl}
+                onChange={(e) => updateEnvValue('authCallbackUrl', e.target.value)}
+              />
+              <Button
+                size="sm"
+                onClick={() => handleSaveEnv('github')}
+                disabled={saveState.type === 'saving'}
+              >
+                {saveState.type === 'saving' ? 'Saving...' : 'Save to .env'}
+              </Button>
+            </div>
+          )}
+
+          {step.id === 'entra' && (
+            <div className="mt-4 rounded-lg border border-border/70 p-3 space-y-3">
+              <Text className="text-sm font-medium">Save Entra settings to .env</Text>
+              <Input
+                aria-label="Entra Client ID"
+                placeholder="Entra Client ID"
+                value={envValues.entraClientId}
+                onChange={(e) => updateEnvValue('entraClientId', e.target.value)}
+              />
+              <Input
+                aria-label="Entra Tenant ID"
+                placeholder="Tenant ID or common"
+                value={envValues.entraTenantId}
+                onChange={(e) => updateEnvValue('entraTenantId', e.target.value)}
+              />
+              <Input
+                aria-label="Entra Client Secret"
+                placeholder="Entra Client Secret"
+                type="password"
+                value={envValues.entraClientSecret}
+                onChange={(e) => updateEnvValue('entraClientSecret', e.target.value)}
+              />
+              <Input
+                aria-label="Entra Redirect URI"
+                placeholder="http://127.0.0.1:3000/api/auth/entra/callback"
+                value={envValues.entraRedirectUri}
+                onChange={(e) => updateEnvValue('entraRedirectUri', e.target.value)}
+              />
+              <Button
+                size="sm"
+                onClick={() => handleSaveEnv('entra')}
+                disabled={saveState.type === 'saving'}
+              >
+                {saveState.type === 'saving' ? 'Saving...' : 'Save to .env'}
+              </Button>
+            </div>
+          )}
+
+          {saveState.message && (
+            <Text
+              className={`mt-3 text-xs ${saveState.type === 'error' ? 'text-destructive' : 'text-muted-foreground'}`}
+            >
+              {saveState.message}
+            </Text>
+          )}
 
           {/* Step indicators */}
           <ul className="flex justify-center gap-1.5 mt-6" aria-label="Setup progress">

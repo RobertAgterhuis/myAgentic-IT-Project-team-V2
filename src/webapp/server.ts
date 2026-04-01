@@ -795,7 +795,7 @@ function getAutoOrchestration() {
       businessDocs: BUSINESS_DOCS,
       qIndexFile: Q_INDEX_FILE,
       getApp: () => _app as never,
-      ctx: ctx as Record<string, unknown>,
+      ctx: ctx as unknown as Record<string, unknown>,
       sseNotify,
     });
   }

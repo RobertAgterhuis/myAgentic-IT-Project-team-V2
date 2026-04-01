@@ -1,9 +1,9 @@
 {
-  "lease_id": "e8195387-6771-4fb8-b43a-31292b1db998",
+  "lease_id": "e412f7ae-6346-4c1c-9647-9fe392a9cc37",
   "owner_id": "worker-96748",
-  "token": "be6601af-5840-4c47-a641-0bb58c0bdfa9",
-  "acquired_at": "2026-04-01T13:40:37.130Z",
-  "expires_at": "2026-04-01T13:41:07.141Z",
-  "state_from": "CRITIC_3",
-  "state_to": "PHASE_4"
+  "token": "c2e263dd-6ab7-45e3-9bd8-2530ec88f0ec",
+  "acquired_at": "2026-04-01T13:41:38.974Z",
+  "expires_at": "2026-04-01T13:42:08.986Z",
+  "state_from": "CRITIC_4",
+  "state_to": "SYNTHESIS"
 }

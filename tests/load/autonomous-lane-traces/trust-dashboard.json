@@ -1,0 +1,2616 @@
+{
+  "generatedAt": "2026-03-31T16:15:26.141Z",
+  "traceDirectory": "tests/load/autonomous-lane-traces",
+  "totals": {
+    "runCount": 136,
+    "successCount": 136,
+    "failedCount": 0,
+    "unknownCount": 0
+  },
+  "split": {
+    "mocked": {
+      "totalRuns": 127,
+      "successCount": 127,
+      "failedCount": 0,
+      "successRate": 1
+    },
+    "manual": {
+      "totalRuns": 0,
+      "successCount": 0,
+      "failedCount": 0,
+      "successRate": 0
+    },
+    "autonomous": {
+      "totalRuns": 9,
+      "successCount": 9,
+      "failedCount": 0,
+      "successRate": 1
+    }
+  },
+  "runs": [
+    {
+      "fileName": "autonomous-lane-2026-03-20T19-27-12-903Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-20T19:27:12.904Z",
+      "lastTimestamp": "2026-03-20T19:27:12.962Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-20T20-12-52-063Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-20T20:12:52.064Z",
+      "lastTimestamp": "2026-03-20T20:12:52.125Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-20T20-32-34-348Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-20T20:32:34.349Z",
+      "lastTimestamp": "2026-03-20T20:32:34.414Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-20T20-38-31-115Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-20T20:38:31.116Z",
+      "lastTimestamp": "2026-03-20T20:38:31.184Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T00-10-28-432Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T00:10:28.433Z",
+      "lastTimestamp": "2026-03-21T00:10:28.495Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T04-26-54-997Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T04:26:54.998Z",
+      "lastTimestamp": "2026-03-21T04:26:55.053Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T04-31-03-096Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T04:31:03.097Z",
+      "lastTimestamp": "2026-03-21T04:31:03.158Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T06-40-50-282Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T06:40:50.283Z",
+      "lastTimestamp": "2026-03-21T06:40:50.337Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T07-20-52-716Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T07:20:52.717Z",
+      "lastTimestamp": "2026-03-21T07:20:52.782Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T07-25-02-218Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T07:25:02.219Z",
+      "lastTimestamp": "2026-03-21T07:25:02.274Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T07-26-33-791Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T07:26:33.792Z",
+      "lastTimestamp": "2026-03-21T07:26:33.848Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T07-27-41-593Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T07:27:41.595Z",
+      "lastTimestamp": "2026-03-21T07:27:41.651Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T07-28-58-461Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T07:28:58.462Z",
+      "lastTimestamp": "2026-03-21T07:28:58.518Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T07-30-32-782Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T07:30:32.783Z",
+      "lastTimestamp": "2026-03-21T07:30:32.846Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T07-31-45-715Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T07:31:45.716Z",
+      "lastTimestamp": "2026-03-21T07:31:45.774Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T07-33-57-057Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T07:33:57.059Z",
+      "lastTimestamp": "2026-03-21T07:33:57.116Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T07-36-04-819Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T07:36:04.820Z",
+      "lastTimestamp": "2026-03-21T07:36:04.872Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T11-17-53-015Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T11:17:53.016Z",
+      "lastTimestamp": "2026-03-21T11:17:53.074Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T11-37-54-950Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T11:37:54.951Z",
+      "lastTimestamp": "2026-03-21T11:37:55.018Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T11-57-15-769Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T11:57:15.770Z",
+      "lastTimestamp": "2026-03-21T11:57:15.823Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T19-57-01-652Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T19:57:01.653Z",
+      "lastTimestamp": "2026-03-21T19:57:01.717Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T19-58-47-770Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T19:58:47.771Z",
+      "lastTimestamp": "2026-03-21T19:58:47.832Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-21T20-00-21-604Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-21T20:00:21.606Z",
+      "lastTimestamp": "2026-03-21T20:00:21.660Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-22T07-31-41-317Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-22T07:31:41.318Z",
+      "lastTimestamp": "2026-03-22T07:31:41.376Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-22T09-05-23-941Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-22T09:05:23.942Z",
+      "lastTimestamp": "2026-03-22T09:05:23.995Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-22T12-00-46-792Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-22T12:00:46.794Z",
+      "lastTimestamp": "2026-03-22T12:00:46.854Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-22T18-42-31-738Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-22T18:42:31.739Z",
+      "lastTimestamp": "2026-03-22T18:42:31.806Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-22T19-02-22-942Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-22T19:02:22.944Z",
+      "lastTimestamp": "2026-03-22T19:02:22.999Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-22T19-39-11-334Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-22T19:39:11.336Z",
+      "lastTimestamp": "2026-03-22T19:39:11.388Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-22T19-50-18-448Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-22T19:50:18.449Z",
+      "lastTimestamp": "2026-03-22T19:50:18.512Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-22T20-09-59-773Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-22T20:09:59.775Z",
+      "lastTimestamp": "2026-03-22T20:09:59.842Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-22T20-23-23-112Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-22T20:23:23.114Z",
+      "lastTimestamp": "2026-03-22T20:23:23.167Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-23T05-10-16-855Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-23T05:10:16.856Z",
+      "lastTimestamp": "2026-03-23T05:10:16.912Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-23T15-54-34-276Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-23T15:54:34.277Z",
+      "lastTimestamp": "2026-03-23T15:54:34.343Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-23T16-10-32-905Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-23T16:10:32.906Z",
+      "lastTimestamp": "2026-03-23T16:10:32.968Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-23T16-12-17-608Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-23T16:12:17.610Z",
+      "lastTimestamp": "2026-03-23T16:12:17.664Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-23T16-30-34-913Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-23T16:30:34.914Z",
+      "lastTimestamp": "2026-03-23T16:30:34.967Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-23T16-31-57-460Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-23T16:31:57.461Z",
+      "lastTimestamp": "2026-03-23T16:31:57.522Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-23T16-33-57-647Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-23T16:33:57.648Z",
+      "lastTimestamp": "2026-03-23T16:33:57.708Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-24T04-18-44-058Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-24T04:18:44.059Z",
+      "lastTimestamp": "2026-03-24T04:18:44.114Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-24T04-20-06-710Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-24T04:20:06.711Z",
+      "lastTimestamp": "2026-03-24T04:20:06.770Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-24T11-55-25-361Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-24T11:55:25.362Z",
+      "lastTimestamp": "2026-03-24T11:55:25.424Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-24T11-59-03-192Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-24T11:59:03.193Z",
+      "lastTimestamp": "2026-03-24T11:59:03.249Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-24T14-42-38-583Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-24T14:42:38.585Z",
+      "lastTimestamp": "2026-03-24T14:42:38.643Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-24T14-57-28-187Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-24T14:57:28.188Z",
+      "lastTimestamp": "2026-03-24T14:57:28.251Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-24T15-14-27-373Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-24T15:14:27.374Z",
+      "lastTimestamp": "2026-03-24T15:14:27.430Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-24T15-18-06-635Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-24T15:18:06.637Z",
+      "lastTimestamp": "2026-03-24T15:18:06.699Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T11-22-53-140Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T11:22:53.142Z",
+      "lastTimestamp": "2026-03-27T11:22:53.194Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T11-53-54-728Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T11:53:54.729Z",
+      "lastTimestamp": "2026-03-27T11:53:54.790Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T12-22-55-042Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T12:22:55.044Z",
+      "lastTimestamp": "2026-03-27T12:22:55.111Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T12-54-32-332Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T12:54:32.333Z",
+      "lastTimestamp": "2026-03-27T12:54:32.391Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T12-58-44-736Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T12:58:44.738Z",
+      "lastTimestamp": "2026-03-27T12:58:44.794Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T13-31-03-759Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T13:31:03.760Z",
+      "lastTimestamp": "2026-03-27T13:31:03.816Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T13-45-48-859Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T13:45:48.861Z",
+      "lastTimestamp": "2026-03-27T13:45:48.926Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T13-54-47-032Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T13:54:47.033Z",
+      "lastTimestamp": "2026-03-27T13:54:47.094Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T14-01-00-247Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T14:01:00.249Z",
+      "lastTimestamp": "2026-03-27T14:01:00.305Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T14-06-25-537Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T14:06:25.539Z",
+      "lastTimestamp": "2026-03-27T14:06:25.607Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T14-15-12-213Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T14:15:12.215Z",
+      "lastTimestamp": "2026-03-27T14:15:12.269Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T15-12-02-783Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T15:12:02.785Z",
+      "lastTimestamp": "2026-03-27T15:12:02.848Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T17-25-40-730Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T17:25:40.731Z",
+      "lastTimestamp": "2026-03-27T17:25:40.794Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T18-01-08-660Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T18:01:08.662Z",
+      "lastTimestamp": "2026-03-27T18:01:08.724Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T18-21-33-315Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T18:21:33.317Z",
+      "lastTimestamp": "2026-03-27T18:21:33.373Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T18-34-10-954Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T18:34:10.956Z",
+      "lastTimestamp": "2026-03-27T18:34:11.020Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T20-00-41-172Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T20:00:41.174Z",
+      "lastTimestamp": "2026-03-27T20:00:41.237Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T20-14-16-446Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T20:14:16.447Z",
+      "lastTimestamp": "2026-03-27T20:14:16.504Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T20-20-33-935Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T20:20:33.937Z",
+      "lastTimestamp": "2026-03-27T20:20:34.004Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T20-29-42-842Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T20:29:42.844Z",
+      "lastTimestamp": "2026-03-27T20:29:42.910Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T20-58-38-661Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T20:58:38.663Z",
+      "lastTimestamp": "2026-03-27T20:58:38.729Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-27T21-10-31-046Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-27T21:10:31.048Z",
+      "lastTimestamp": "2026-03-27T21:10:31.108Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-28T06-16-35-693Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-28T06:16:35.695Z",
+      "lastTimestamp": "2026-03-28T06:16:35.755Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-28T06-50-50-202Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-28T06:50:50.204Z",
+      "lastTimestamp": "2026-03-28T06:50:50.266Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-28T07-42-10-328Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-28T07:42:10.330Z",
+      "lastTimestamp": "2026-03-28T07:42:10.389Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-28T07-47-28-433Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-28T07:47:28.434Z",
+      "lastTimestamp": "2026-03-28T07:47:28.488Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-28T08-19-39-397Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-28T08:19:39.398Z",
+      "lastTimestamp": "2026-03-28T08:19:39.458Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-28T08-26-09-432Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-28T08:26:09.434Z",
+      "lastTimestamp": "2026-03-28T08:26:09.487Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-28T08-31-11-537Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-28T08:31:11.538Z",
+      "lastTimestamp": "2026-03-28T08:31:11.594Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-28T08-36-15-028Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-28T08:36:15.029Z",
+      "lastTimestamp": "2026-03-28T08:36:15.096Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-28T08-50-17-155Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-28T08:50:17.156Z",
+      "lastTimestamp": "2026-03-28T08:50:17.220Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-28T14-37-58-228Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-28T14:37:58.230Z",
+      "lastTimestamp": "2026-03-28T14:37:58.292Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-28T14-41-01-451Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-28T14:41:01.452Z",
+      "lastTimestamp": "2026-03-28T14:41:01.520Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-29T05-37-13-841Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-29T05:37:13.843Z",
+      "lastTimestamp": "2026-03-29T05:37:13.904Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-29T09-42-15-107Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-29T09:42:15.108Z",
+      "lastTimestamp": "2026-03-29T09:42:15.166Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-29T09-47-51-419Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-29T09:47:51.420Z",
+      "lastTimestamp": "2026-03-29T09:47:51.485Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-29T09-59-55-014Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-29T09:59:55.015Z",
+      "lastTimestamp": "2026-03-29T09:59:55.083Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-29T10-09-35-895Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-29T10:09:35.963Z",
+      "lastTimestamp": "2026-03-29T10:09:36.025Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-29T10-44-53-408Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-29T10:44:53.410Z",
+      "lastTimestamp": "2026-03-29T10:44:53.471Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-29T11-01-36-814Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-29T11:01:36.816Z",
+      "lastTimestamp": "2026-03-29T11:01:36.870Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-29T16-39-05-176Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-29T16:39:05.178Z",
+      "lastTimestamp": "2026-03-29T16:39:05.244Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-29T16-47-03-913Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-29T16:47:03.915Z",
+      "lastTimestamp": "2026-03-29T16:47:03.976Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-30T11-00-07-170Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-30T11:00:07.172Z",
+      "lastTimestamp": "2026-03-30T11:00:07.229Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-30T11-07-04-844Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-30T11:07:04.845Z",
+      "lastTimestamp": "2026-03-30T11:07:04.912Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-30T11-13-48-647Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-30T11:13:48.649Z",
+      "lastTimestamp": "2026-03-30T11:13:48.711Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-30T11-19-53-200Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-30T11:19:53.201Z",
+      "lastTimestamp": "2026-03-30T11:19:53.261Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-30T11-26-06-527Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-30T11:26:06.528Z",
+      "lastTimestamp": "2026-03-30T11:26:06.591Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-30T11-33-26-079Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-30T11:33:26.080Z",
+      "lastTimestamp": "2026-03-30T11:33:26.148Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-30T11-40-29-450Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-30T11:40:29.452Z",
+      "lastTimestamp": "2026-03-30T11:40:29.518Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-30T11-46-20-185Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-30T11:46:20.187Z",
+      "lastTimestamp": "2026-03-30T11:46:20.253Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-30T12-00-17-222Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-30T12:00:17.224Z",
+      "lastTimestamp": "2026-03-30T12:00:17.291Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T05-56-57-454Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T05:56:57.455Z",
+      "lastTimestamp": "2026-03-31T05:56:57.516Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T06-47-38-922Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T06:47:38.924Z",
+      "lastTimestamp": "2026-03-31T06:47:38.977Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T06-55-31-099Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T06:55:31.101Z",
+      "lastTimestamp": "2026-03-31T06:55:31.156Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T07-03-20-024Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T07:03:20.026Z",
+      "lastTimestamp": "2026-03-31T07:03:20.079Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T07-10-16-514Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T07:10:16.568Z",
+      "lastTimestamp": "2026-03-31T07:10:16.629Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T08-13-01-002Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T08:13:01.004Z",
+      "lastTimestamp": "2026-03-31T08:13:01.069Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T08-18-13-813Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T08:18:13.815Z",
+      "lastTimestamp": "2026-03-31T08:18:13.875Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T08-31-37-403Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T08:31:37.405Z",
+      "lastTimestamp": "2026-03-31T08:31:37.461Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T08-44-39-552Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T08:44:39.553Z",
+      "lastTimestamp": "2026-03-31T08:44:39.606Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T08-53-08-710Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T08:53:08.711Z",
+      "lastTimestamp": "2026-03-31T08:53:08.775Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T09-36-04-388Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T09:36:04.390Z",
+      "lastTimestamp": "2026-03-31T09:36:04.444Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T09-42-14-492Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T09:42:14.494Z",
+      "lastTimestamp": "2026-03-31T09:42:14.549Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T09-52-24-103Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T09:52:24.328Z",
+      "lastTimestamp": "2026-03-31T09:52:24.391Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T10-02-19-640Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T10:02:19.641Z",
+      "lastTimestamp": "2026-03-31T10:02:19.699Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T10-12-37-838Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T10:12:37.970Z",
+      "lastTimestamp": "2026-03-31T10:12:38.030Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T10-38-07-630Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T10:38:07.631Z",
+      "lastTimestamp": "2026-03-31T10:38:07.684Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T10-49-23-540Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T10:49:23.541Z",
+      "lastTimestamp": "2026-03-31T10:49:23.599Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T11-01-37-861Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T11:01:37.862Z",
+      "lastTimestamp": "2026-03-31T11:01:37.923Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T11-08-37-218Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T11:08:37.220Z",
+      "lastTimestamp": "2026-03-31T11:08:37.286Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T11-16-13-092Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T11:16:13.094Z",
+      "lastTimestamp": "2026-03-31T11:16:13.156Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T11-30-35-843Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T11:30:35.845Z",
+      "lastTimestamp": "2026-03-31T11:30:35.911Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T12-28-30-051Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T12:28:30.053Z",
+      "lastTimestamp": "2026-03-31T12:28:30.118Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T13-05-18-362Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T13:05:18.364Z",
+      "lastTimestamp": "2026-03-31T13:05:18.419Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T13-32-40-497Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T13:32:40.499Z",
+      "lastTimestamp": "2026-03-31T13:32:40.552Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T13-42-35-025Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T13:42:35.098Z",
+      "lastTimestamp": "2026-03-31T13:42:35.158Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T13-58-08-168Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T13:58:08.379Z",
+      "lastTimestamp": "2026-03-31T13:58:08.439Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T14-12-16-338Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T14:12:16.340Z",
+      "lastTimestamp": "2026-03-31T14:12:16.401Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T14-24-01-156Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T14:24:01.158Z",
+      "lastTimestamp": "2026-03-31T14:24:01.223Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T14-40-13-523Z.jsonl",
+      "runClass": "mocked",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T14:40:13.525Z",
+      "lastTimestamp": "2026-03-31T14:40:13.580Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T16-03-19-289Z.jsonl",
+      "runClass": "autonomous",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T16:03:19.353Z",
+      "lastTimestamp": "2026-03-31T16:03:27.745Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T16-03-55-325Z.jsonl",
+      "runClass": "autonomous",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T16:03:55.326Z",
+      "lastTimestamp": "2026-03-31T16:04:04.099Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T16-04-59-970Z.jsonl",
+      "runClass": "autonomous",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T16:04:59.971Z",
+      "lastTimestamp": "2026-03-31T16:05:05.157Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T16-06-55-597Z.jsonl",
+      "runClass": "autonomous",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T16:06:55.598Z",
+      "lastTimestamp": "2026-03-31T16:07:06.655Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T16-07-59-580Z.jsonl",
+      "runClass": "autonomous",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T16:07:59.581Z",
+      "lastTimestamp": "2026-03-31T16:08:05.463Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T16-10-00-382Z.jsonl",
+      "runClass": "autonomous",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T16:10:00.383Z",
+      "lastTimestamp": "2026-03-31T16:10:16.378Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T16-10-29-329Z.jsonl",
+      "runClass": "autonomous",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T16:10:29.330Z",
+      "lastTimestamp": "2026-03-31T16:10:47.377Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T16-11-55-486Z.jsonl",
+      "runClass": "autonomous",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T16:11:55.488Z",
+      "lastTimestamp": "2026-03-31T16:12:07.121Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    },
+    {
+      "fileName": "autonomous-lane-2026-03-31T16-14-16-976Z.jsonl",
+      "runClass": "autonomous",
+      "outcome": "success",
+      "firstTimestamp": "2026-03-31T16:14:16.978Z",
+      "lastTimestamp": "2026-03-31T16:14:35.029Z",
+      "phases": [
+        "setup",
+        "planning",
+        "implementation",
+        "testing",
+        "pr_creation",
+        "trace_generation",
+        "artifact_check",
+        "perf_check",
+        "failure_class",
+        "acceptance"
+      ]
+    }
+  ]
+}

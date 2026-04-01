@@ -1,5 +1,3 @@
-'use strict';
-
 const path = require('path');
 const { createTestApp } = require('../helpers/create-test-app');
 

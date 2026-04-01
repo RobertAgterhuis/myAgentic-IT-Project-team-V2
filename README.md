@@ -93,7 +93,8 @@ npm run start:mcp
 - src: webapp backend and frontend
 - templates: SDLC agent skills, contracts, and guardrails
 - platform: canonical schema and engine metadata
-- docs: user and technical documentation
+- docs: concise GitHub Pages documentation (developers + end-users)
+- docs_bak: archived legacy documentation set
 - tests: unit, integration, e2e, security, and load checks
 - BusinessDocs: generated/curated project artifacts and decisions
 
@@ -113,10 +114,15 @@ Recommended operating model:
 
 ## Documentation
 
-- [Project docs index](docs/README.md)
+- [GitHub Pages docs home](docs/index.md)
+- [Platform overview](docs/README.md)
+- [Developer quick start](docs/getting-started/developers.md)
+- [End-user quick start](docs/getting-started/end-users.md)
 - [Contributing guide](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 - [Code of conduct](CODE_OF_CONDUCT.md)
+
+Note: the previous full documentation set is preserved in `docs_bak`.
 
 ## Contributing
 

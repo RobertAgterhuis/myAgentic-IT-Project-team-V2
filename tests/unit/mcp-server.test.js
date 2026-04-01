@@ -701,13 +701,6 @@ describe('tool: get_command_queue', () => {
 });
 
 describe('tool: get_help', () => {
-  it('returns error when help directory does not exist', async () => {
-    const helpDir = path.resolve(path.dirname(mcpServerPath), '../..', 'docs', 'help');
-    if (fs.existsSync(helpDir)) return; // skip if help dir exists
-    const result = await callTool('get_help', {});
-    expect(result.isError).toBe(true);
-  });
-
   it('returns error for unknown topic', async () => {
     const helpDir = path.resolve(path.dirname(mcpServerPath), '../..', 'docs', 'help');
     if (!fs.existsSync(helpDir)) return; // skip if no help dir

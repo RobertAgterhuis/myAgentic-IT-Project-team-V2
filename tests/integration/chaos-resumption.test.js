@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * P2-CORE-E3-I2 — Chaos / Resumption Test Suite
  *

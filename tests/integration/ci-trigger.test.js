@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * CI Adapter — Integration Tests (M6 #371)
  *

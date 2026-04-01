@@ -1,9 +1,0 @@
-{
-  "lease_id": "63ee9500-aa6e-4758-8bf5-80290b0cdad7",
-  "owner_id": "worker-2227460",
-  "token": "7461e8a5-952c-484b-89d1-5f3f75fe8a8f",
-  "acquired_at": "2026-03-30T13:24:31.890Z",
-  "expires_at": "1970-01-01T00:00:00.000Z",
-  "state_from": "IDLE",
-  "state_to": "ONBOARDING"
-}

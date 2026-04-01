@@ -10,9 +10,6 @@
  *
  * Uses InMemoryStore for isolation — no disk side effects.
  */
-
-'use strict';
-
 const http = require('http');
 const path = require('path');
 const { InMemoryStore, setStore } = require('../../src/webapp/store');

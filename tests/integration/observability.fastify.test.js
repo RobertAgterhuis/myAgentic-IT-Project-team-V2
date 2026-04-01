@@ -1,4 +1,3 @@
-'use strict';
 /* M30-007: Observability integration tests via Fastify inject().
  * Replaces observability.test.js (raw HTTP) with framework-native testing.
  * Tests Health endpoint (TECH-07) + Metrics persistence (TECH-05). */

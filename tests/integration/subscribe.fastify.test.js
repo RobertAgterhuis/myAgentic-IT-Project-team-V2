@@ -1,4 +1,3 @@
-'use strict';
 /* M30-007: Subscribe endpoint integration tests via Fastify inject().
  * Replaces subscribe.integration.test.js (raw HTTP) with framework-native testing.
  * Tests /api/subscribe validation and local fallback (SP-2-BTN). */

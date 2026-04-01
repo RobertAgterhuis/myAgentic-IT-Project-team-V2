@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Artifact API Integration Tests (M2: Artifact Registration Integration)
  *

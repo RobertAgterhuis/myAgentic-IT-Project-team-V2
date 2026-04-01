@@ -1,4 +1,3 @@
-'use strict';
 /* Integration test example: Store injection + Cache interaction.
  * Pattern: use InMemoryStore via setStore() to test modules that
  * depend on the Store abstraction without touching the filesystem.

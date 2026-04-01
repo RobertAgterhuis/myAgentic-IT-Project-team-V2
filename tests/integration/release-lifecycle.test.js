@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * P2 Adapters & Release Lifecycle — Integration Tests
  *

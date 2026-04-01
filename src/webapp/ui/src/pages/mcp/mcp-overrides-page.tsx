@@ -337,6 +337,7 @@ export default function McpOverridesPage() {
                           onClick={() => expireOverride.mutate(override.id)}
                           disabled={expireOverride.isPending}
                           title="Expire override"
+                          aria-label={`Expire override ${override.toolName}`}
                         >
                           <Trash2 className="size-3.5" />
                         </Button>

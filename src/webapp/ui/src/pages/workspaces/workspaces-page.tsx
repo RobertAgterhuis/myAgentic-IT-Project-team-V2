@@ -179,6 +179,7 @@ export default function WorkspacesPage() {
                           size="sm"
                           variant="outline"
                           onClick={() => setWorkspaceToEdit(selectedWorkspace.id)}
+                          aria-label={`Edit ${detail.workspace.name}`}
                         >
                           <Edit2 className="size-4" />
                         </Button>
@@ -187,6 +188,7 @@ export default function WorkspacesPage() {
                           variant="outline"
                           className="text-destructive hover:bg-destructive/10"
                           onClick={() => setWorkspaceToDelete(selectedWorkspace.id)}
+                          aria-label={`Delete ${detail.workspace.name}`}
                         >
                           <Trash2 className="size-4" />
                         </Button>

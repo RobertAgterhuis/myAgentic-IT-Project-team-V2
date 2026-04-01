@@ -3,7 +3,7 @@
  * Dismissible, persists dismissal in localStorage.
  * M15-040
  */
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -76,9 +76,55 @@ interface WelcomeWizardProps {
 export function WelcomeWizard({ onDismiss }: WelcomeWizardProps) {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<Element | null>(null);
   const step = STEPS[currentStep];
   const isFirst = currentStep === 0;
   const isLast = currentStep === STEPS.length - 1;
+
+  // Capture the element that was focused before the wizard opened,
+  // move focus into the dialog, and restore focus on dismiss.
+  useEffect(() => {
+    triggerRef.current = document.activeElement;
+    dialogRef.current?.focus();
+    return () => {
+      (triggerRef.current as HTMLElement | null)?.focus?.();
+    };
+  }, []);
+
+  // Trap focus inside the dialog
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        onDismiss();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+
+      const focusable = dialog!.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onDismiss]);
 
   const handleNext = useCallback(() => {
     if (isLast) {
@@ -93,7 +139,14 @@ export function WelcomeWizard({ onDismiss }: WelcomeWizardProps) {
   }, []);
 
   return (
-    <div role="dialog" aria-label="Welcome wizard" aria-modal="false" data-testid="welcome-wizard">
+    <div
+      ref={dialogRef}
+      role="dialog"
+      aria-label="Welcome wizard"
+      aria-modal="true"
+      tabIndex={-1}
+      data-testid="welcome-wizard"
+    >
       <Card elevation="raised" className="p-6 max-w-lg mx-auto">
         {/* Header with dismiss */}
         <div className="flex items-center justify-between mb-4">

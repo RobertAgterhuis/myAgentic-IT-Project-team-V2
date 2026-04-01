@@ -61,6 +61,7 @@ import {
   resolvePredecessorContractContinuityMode,
 } from './config';
 import { createStorageProvider } from '../../platform/engine/persistence';
+import { initializeDurableDataStore } from './services/durable-data-store';
 import type { StorageProvider } from '../../platform/engine/persistence';
 import { getRedisConnection, createRedisConnection } from './redis';
 import { createRedisPubSubSSEManager } from './sse-manager-redis';
@@ -142,6 +143,7 @@ const sseManager = (() => {
   return createSSEManager({ heartbeatMs: SSE_HEARTBEAT_MS });
 })();
 const store = () => getStore();
+const PROVIDER_MEMORY_LIST_LIMIT = 200;
 
 /* ── StorageProvider (M23-005) ────────────────────────────────── */
 let _storageProvider: StorageProvider | null = null;
@@ -172,7 +174,7 @@ class ProviderBackedMemoryStorage implements MemoryStorage {
   async list(collection: string): Promise<MemoryEntry[]> {
     const provider = this._getProvider();
     if (!provider) return [];
-    const docs = await provider.list(collection);
+    const docs = await provider.list(collection, { limit: PROVIDER_MEMORY_LIST_LIMIT });
     const entries: MemoryEntry[] = [];
     for (const doc of docs) {
       const id = typeof doc.id === 'string' && doc.id.trim() ? doc.id : '';
@@ -258,6 +260,7 @@ async function initStorageProvider(): Promise<StorageProvider> {
     basePath,
     dbPath,
   });
+  initializeDurableDataStore(PROJECT_ROOT);
   structuredLog('info', 'storage_provider_initialized', {
     provider: STORAGE_PROVIDER,
     name: _storageProvider.name,

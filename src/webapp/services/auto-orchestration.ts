@@ -8,6 +8,7 @@ import { withFileLock } from '../file-lock';
 import { AgentExecutionService } from './agent-execution-service';
 import { toServiceContext } from './context-adapter';
 import { PHASE_AGENTS, RUNTIME_STATES_WITH_AGENTS } from '../../../platform/engine/agent-phase-map';
+import { ControlPlaneStateRepository } from './control-plane-state-repository';
 
 /* ── Computed configuration ───────────────────────────────────── */
 
@@ -118,6 +119,7 @@ export class AutoRunGateError extends Error {
 export function createAutoOrchestrationCoordinator(deps: AutoOrchestrationDeps) {
   const AUTO_REMEDIATION_TASKS_FILE = path.join(deps.sessionDir, 'remediation-tasks.json');
   const AUTO_AGENT_STATES = new Set<string>(RUNTIME_STATES_WITH_AGENTS);
+  const stateRepository = new ControlPlaneStateRepository(path.resolve(deps.businessDocs, '..'));
 
   let _commandDispatchInFlight = false;
   let _orchestrationAutoRunInFlight = false;
@@ -169,19 +171,10 @@ export function createAutoOrchestrationCoordinator(deps: AutoOrchestrationDeps) 
   }
 
   function appendRemediationTask(task: RemediationTask): void {
-    const existing = (() => {
-      try {
-        if (!fs.existsSync(AUTO_REMEDIATION_TASKS_FILE)) return [] as RemediationTask[];
-        const raw = JSON.parse(fs.readFileSync(AUTO_REMEDIATION_TASKS_FILE, 'utf8'));
-        return Array.isArray(raw) ? (raw as RemediationTask[]) : [];
-      } catch {
-        return [] as RemediationTask[];
-      }
-    })();
+    const existing = stateRepository.readJson<RemediationTask[]>(AUTO_REMEDIATION_TASKS_FILE, []);
 
     existing.push(task);
-    fs.mkdirSync(path.dirname(AUTO_REMEDIATION_TASKS_FILE), { recursive: true });
-    fs.writeFileSync(AUTO_REMEDIATION_TASKS_FILE, JSON.stringify(existing, null, 2));
+    stateRepository.saveRemediationTasks(AUTO_REMEDIATION_TASKS_FILE, existing);
   }
 
   function createRemediationTask(input: {
@@ -221,8 +214,7 @@ export function createAutoOrchestrationCoordinator(deps: AutoOrchestrationDeps) 
   }
 
   function writeCommandQueueUnsafe(queue: AutoDispatchCommandEntry[]): void {
-    fs.mkdirSync(path.dirname(deps.commandQueue), { recursive: true });
-    fs.writeFileSync(deps.commandQueue, JSON.stringify(queue, null, 2));
+    stateRepository.saveCommandQueue(deps.commandQueue, queue);
   }
 
   function commandIdentity(entry: AutoDispatchCommandEntry): string {
@@ -444,8 +436,7 @@ export function createAutoOrchestrationCoordinator(deps: AutoOrchestrationDeps) 
       phaseOutputs[phaseKeyLower] = existingPhaseOutputs;
       sessionState.phase_outputs = phaseOutputs;
 
-      fs.mkdirSync(path.dirname(deps.sessionFile), { recursive: true });
-      fs.writeFileSync(deps.sessionFile, JSON.stringify(sessionState, null, 2));
+      stateRepository.saveSessionState(deps.sessionFile, sessionState);
     } catch (err) {
       structuredLog('warn', 'command_autorun_phase_output_persist_failed', {
         state,

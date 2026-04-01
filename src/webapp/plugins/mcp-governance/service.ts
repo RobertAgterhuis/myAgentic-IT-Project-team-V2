@@ -45,6 +45,14 @@ interface SyncOptions {
   dryRun?: boolean;
 }
 
+const DEFAULT_PROVIDER_LIST_LIMIT = 100;
+const MAX_PROVIDER_LIST_LIMIT = 500;
+
+function clampProviderListLimit(limit = DEFAULT_PROVIDER_LIST_LIMIT): number {
+  const normalized = Number.isFinite(limit) ? Number(limit) : DEFAULT_PROVIDER_LIST_LIMIT;
+  return Math.max(1, Math.min(MAX_PROVIDER_LIST_LIMIT, Math.floor(normalized)));
+}
+
 export interface RuntimeBuildResult {
   outputDir: string;
   compiledPoliciesPath: string;
@@ -132,6 +140,10 @@ export class McpGovernanceService {
     this._workloadIdentitiesFile = path.join(this._stateDir, 'workload-identities.json');
     this._overridesFile = path.join(this._stateDir, 'overrides.json');
     this._reconcileRunsFile = path.join(this._stateDir, 'reconcile-runs.json');
+  }
+
+  private _providerListLimit(limit?: number): number {
+    return clampProviderListLimit(limit);
   }
 
   private async _readJsonFile<T>(filePath: string, fallback: T): Promise<T> {
@@ -241,16 +253,18 @@ export class McpGovernanceService {
 
   async listAgents(): Promise<AgentType[]> {
     if (this._storageProvider) {
-      return (await this._storageProvider.list('mcp_agent_types')) as unknown as AgentType[];
+      return (await this._storageProvider.list('mcp_agent_types', {
+        limit: this._providerListLimit(),
+      })) as unknown as AgentType[];
     }
     return this._readJsonFile<AgentType[]>(this._agentsFile, []);
   }
 
   async listServers(): Promise<McpServerRegistry[]> {
     if (this._storageProvider) {
-      return (await this._storageProvider.list(
-        'mcp_server_registry'
-      )) as unknown as McpServerRegistry[];
+      return (await this._storageProvider.list('mcp_server_registry', {
+        limit: this._providerListLimit(),
+      })) as unknown as McpServerRegistry[];
     }
     return this._readJsonFile<McpServerRegistry[]>(this._serversFile, []);
   }
@@ -304,18 +318,18 @@ export class McpGovernanceService {
 
   async listServerPolicies(): Promise<AgentServerPolicy[]> {
     if (this._storageProvider) {
-      return (await this._storageProvider.list(
-        'mcp_agent_server_policy'
-      )) as unknown as AgentServerPolicy[];
+      return (await this._storageProvider.list('mcp_agent_server_policy', {
+        limit: this._providerListLimit(),
+      })) as unknown as AgentServerPolicy[];
     }
     return this._readJsonFile<AgentServerPolicy[]>(this._serverPoliciesFile, []);
   }
 
   async listToolPolicies(): Promise<AgentToolPolicy[]> {
     if (this._storageProvider) {
-      return (await this._storageProvider.list(
-        'mcp_agent_tool_policy'
-      )) as unknown as AgentToolPolicy[];
+      return (await this._storageProvider.list('mcp_agent_tool_policy', {
+        limit: this._providerListLimit(),
+      })) as unknown as AgentToolPolicy[];
     }
     return this._readJsonFile<AgentToolPolicy[]>(this._toolPoliciesFile, []);
   }
@@ -1370,7 +1384,9 @@ export class McpGovernanceService {
 
   async listOverrides(): Promise<McpOverride[]> {
     if (this._storageProvider) {
-      const rows = (await this._storageProvider.list('mcp_overrides')) as unknown as McpOverride[];
+      const rows = (await this._storageProvider.list('mcp_overrides', {
+        limit: this._providerListLimit(),
+      })) as unknown as McpOverride[];
       return rows.filter((r) => !r.expiredAt);
     }
     const all = await this._readJsonFile<McpOverride[]>(this._overridesFile, []);
@@ -1514,9 +1530,9 @@ export class McpGovernanceService {
 
   async listReconcileRuns(): Promise<ReconcileRun[]> {
     if (this._storageProvider) {
-      const rows = (await this._storageProvider.list(
-        'mcp_reconcile_runs'
-      )) as unknown as ReconcileRun[];
+      const rows = (await this._storageProvider.list('mcp_reconcile_runs', {
+        limit: this._providerListLimit(250),
+      })) as unknown as ReconcileRun[];
       return rows.sort((a, b) => b.ranAt.localeCompare(a.ranAt));
     }
     const all = await this._readJsonFile<ReconcileRun[]>(this._reconcileRunsFile, []);

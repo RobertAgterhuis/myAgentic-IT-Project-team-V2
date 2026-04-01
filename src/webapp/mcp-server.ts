@@ -37,6 +37,7 @@ import { withFileLock } from './file-lock';
 import * as schemas from './schemas';
 import { createStorageProvider } from '../../platform/engine/persistence';
 import type { StorageProvider } from '../../platform/engine/persistence';
+import { initializeDurableDataStore, getDurableDataStore } from './services/durable-data-store';
 import {
   EnvScopeValidationError,
   McpGovernanceService as RuntimePolicyService,
@@ -183,6 +184,32 @@ function safeWrite(filePath: string, data: string): void {
   cache.invalidate(filePath);
 }
 
+function extractResultPayload(result: McpToolResult | null): unknown {
+  if (!result || !Array.isArray(result.content) || result.content.length === 0) {
+    return null;
+  }
+  const text = result.content[0]?.text;
+  if (typeof text !== 'string' || text.trim().length === 0) {
+    return null;
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+}
+
+function resolveCurrentRunId(): string {
+  const session = sessionSvc.readSessionState();
+  if (session && typeof session === 'object') {
+    return getDurableDataStore(PROJECT_ROOT).syncWorkflowRunFromState(
+      session as Record<string, unknown>
+    );
+  }
+  const latest = getDurableDataStore(PROJECT_ROOT).listWorkflowRuns(1, 0)[0];
+  return latest?.run_id || 'run-mcp-standalone';
+}
+
 /* ── MCP Server ─────────────────────────────────────────────────── */
 
 const mcp: McpServerInstance = new McpServer(
@@ -256,6 +283,9 @@ function withExecutionGuards(
 ): (params?: Record<string, unknown>) => Promise<McpToolResult> {
   return async (params?: Record<string, unknown>) => {
     const payload = params && typeof params === 'object' ? params : {};
+    const startedAt = new Date().toISOString();
+    const startedMs = Date.now();
+    const durableStore = getDurableDataStore(PROJECT_ROOT);
 
     let envScope: 'dev' | 'test' | 'prod';
     try {
@@ -278,6 +308,16 @@ function withExecutionGuards(
       trustedAgentId: resolveTrustedAgentId(),
     });
     if (guardResult) {
+      durableStore.recordToolCall({
+        call_id: `${toolName}-${startedMs}`,
+        run_id: resolveCurrentRunId(),
+        tool_name: toolName,
+        status: 'blocked',
+        started_at: startedAt,
+        duration_ms: Date.now() - startedMs,
+        input: payload,
+        output: guardResult,
+      });
       return jsonResult(guardResult);
     }
 
@@ -285,7 +325,32 @@ function withExecutionGuards(
     delete nextParams.env_scope;
     delete nextParams.agent_id;
 
-    return includeParams ? handler(nextParams) : handler();
+    try {
+      const result = await (includeParams ? handler(nextParams) : handler());
+      durableStore.recordToolCall({
+        call_id: `${toolName}-${startedMs}`,
+        run_id: resolveCurrentRunId(),
+        tool_name: toolName,
+        status: result.isError ? 'error' : 'completed',
+        started_at: startedAt,
+        duration_ms: Date.now() - startedMs,
+        input: payload,
+        output: extractResultPayload(result),
+      });
+      return result;
+    } catch (error) {
+      durableStore.recordToolCall({
+        call_id: `${toolName}-${startedMs}`,
+        run_id: resolveCurrentRunId(),
+        tool_name: toolName,
+        status: 'error',
+        started_at: startedAt,
+        duration_ms: Date.now() - startedMs,
+        input: payload,
+        error_message: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
   };
 }
 
@@ -1245,6 +1310,7 @@ if (require.main === module) {
     // Initialize StorageProvider (M23-005)
     try {
       _storageProvider = await createStorageProvider();
+      initializeDurableDataStore(PROJECT_ROOT);
     } catch {
       process.stderr.write('Warning: StorageProvider init failed, continuing without it\n');
     }

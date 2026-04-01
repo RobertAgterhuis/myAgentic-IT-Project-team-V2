@@ -196,6 +196,31 @@ describe.each(providers)('StorageProvider contract — $name', ({ create }) => {
     expect(offset).toHaveLength(all.length - 1);
   });
 
+  it('defaults list queries to a bounded page size', async () => {
+    const pagedCollection = `${COL}-paged-default`;
+    for (let index = 0; index < 60; index++) {
+      await provider.write(pagedCollection, `page-${index}`, { id: `page-${index}`, order: index });
+    }
+
+    const docs = await provider.list(pagedCollection);
+
+    expect(docs).toHaveLength(50);
+  });
+
+  it('clamps oversized explicit limits', async () => {
+    const pagedCollection = `${COL}-paged-clamped`;
+    for (let index = 0; index < 220; index++) {
+      await provider.write(pagedCollection, `limit-${index}`, {
+        id: `limit-${index}`,
+        order: index,
+      });
+    }
+
+    const docs = await provider.list(pagedCollection, { limit: 999 });
+
+    expect(docs).toHaveLength(200);
+  });
+
   // ── 12. List with orderBy ascending ────────────────────────
 
   it('sorts documents ascending', async () => {

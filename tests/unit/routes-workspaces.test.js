@@ -325,6 +325,15 @@ describe('routes/workspaces', () => {
       createRes()
     );
 
+    await routes['POST /api/workspaces/:id/repositories'](
+      createReq('/api/workspaces/ws-7/repositories', 'POST', {
+        id: 'repo-x',
+        name: 'Repo X',
+        provider: 'github',
+      }),
+      createRes()
+    );
+
     const createProjectRes = createRes();
     await routes['POST /api/workspaces/:id/projects'](
       createReq('/api/workspaces/ws-7/projects', 'POST', {

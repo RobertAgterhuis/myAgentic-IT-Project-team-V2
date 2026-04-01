@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url';
 import { registerRoutes } from '../../src/webapp/routes/orchestrator.js';
 import { sessionTracker } from '../../src/webapp/session-tracker.js';
 import { GovernanceService, toServiceContext } from '../../src/webapp/services/index.js';
+import { resetDurableDataStoreForTests } from '../../src/webapp/services/durable-data-store.js';
 import { createTestableRoutes } from '../helpers/fastify-test-adapter.js';
 
 const createOrchestratorRoutes = (ctx) => createTestableRoutes(registerRoutes, ctx);
@@ -99,6 +100,7 @@ describe('orchestrator routes (integration)', () => {
   });
 
   afterAll(() => {
+    resetDurableDataStoreForTests(path.resolve(__dirname, '..', '..'));
     if (originalSession !== null) {
       fs.writeFileSync(SESSION_FILE, originalSession);
     }
@@ -115,6 +117,7 @@ describe('orchestrator routes (integration)', () => {
   });
 
   beforeEach(() => {
+    resetDurableDataStoreForTests(path.resolve(__dirname, '..', '..'));
     sessionTracker.reset();
     // Ensure the session directory exists (may not in CI)
     fs.mkdirSync(path.dirname(SESSION_FILE), { recursive: true });
@@ -337,6 +340,7 @@ describe('orchestrator routes (integration)', () => {
         expect(statusRes.body.human_override.paused).toBe(true);
         expect(statusRes.body.human_override.last_event.type).toBe('pause');
       } finally {
+        resetDurableDataStoreForTests(tempRoot);
         fs.rmSync(tempRoot, { recursive: true, force: true });
       }
     });

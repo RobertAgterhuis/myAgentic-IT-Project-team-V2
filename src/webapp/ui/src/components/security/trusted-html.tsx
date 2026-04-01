@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify';
+import { createElement, type ReactNode } from 'react';
 
 interface TrustedHtmlProps {
   html: string;
@@ -55,7 +56,46 @@ function sanitizeHtml(html: string): string {
   });
 }
 
+function domNodeToReact(node: Node, key: string): ReactNode {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return node.textContent ?? '';
+  }
+
+  if (node.nodeType !== Node.ELEMENT_NODE) {
+    return null;
+  }
+
+  const element = node as Element;
+  const props: Record<string, string> = { key };
+
+  for (const attr of Array.from(element.attributes)) {
+    if (attr.name === 'class') {
+      props.className = attr.value;
+      continue;
+    }
+    props[attr.name] = attr.value;
+  }
+
+  const children = Array.from(element.childNodes).map((child, index) =>
+    domNodeToReact(child, `${key}-${index}`)
+  );
+
+  return createElement(element.tagName.toLowerCase(), props, ...children);
+}
+
+function parseSanitizedHtmlToReact(html: string): ReactNode[] {
+  if (typeof DOMParser === 'undefined') {
+    return [html];
+  }
+
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  return Array.from(doc.body.childNodes).map((node, index) =>
+    domNodeToReact(node, `trusted-html-${index}`)
+  );
+}
+
 export function TrustedHtml({ html, className }: TrustedHtmlProps) {
   const sanitized = sanitizeHtml(html);
-  return <div className={className} dangerouslySetInnerHTML={{ __html: sanitized }} />;
+  const content = parseSanitizedHtmlToReact(sanitized);
+  return <div className={className}>{content}</div>;
 }

@@ -76,6 +76,7 @@ export function ProjectsSection({
                 variant="ghost"
                 className="text-destructive hover:bg-destructive/10"
                 onClick={() => setSelectedForDeletion(project)}
+                aria-label={`Delete ${project.name}`}
               >
                 <Trash2 className="size-4" />
               </Button>

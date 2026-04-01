@@ -21,10 +21,12 @@ function renderWizard(onDismiss = vi.fn()) {
 }
 
 describe('WelcomeWizard', () => {
-  it('renders the wizard dialog', () => {
+  it('renders the wizard dialog with aria-modal true', () => {
     renderWizard();
     expect(screen.getByTestId('welcome-wizard')).toBeInTheDocument();
-    expect(screen.getByRole('dialog', { name: /welcome wizard/i })).toBeInTheDocument();
+    const dialog = screen.getByRole('dialog', { name: /welcome wizard/i });
+    expect(dialog).toBeInTheDocument();
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
   });
 
   it('shows step 1 of 5 initially', () => {
@@ -109,6 +111,35 @@ describe('WelcomeWizard', () => {
     renderWizard();
     expect(screen.queryByRole('button', { name: /go to commands/i })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /view sessions/i })).not.toBeInTheDocument();
+  });
+
+  it('moves focus into the dialog on mount', () => {
+    renderWizard();
+    const dialog = screen.getByRole('dialog', { name: /welcome wizard/i });
+    expect(dialog).toHaveFocus();
+  });
+
+  it('closes on Escape key', async () => {
+    const onDismiss = vi.fn();
+    renderWizard(onDismiss);
+    const user = userEvent.setup();
+    await user.keyboard('{Escape}');
+    expect(onDismiss).toHaveBeenCalledTimes(1);
+  });
+
+  it('traps focus within the dialog on Tab', async () => {
+    renderWizard();
+    const user = userEvent.setup();
+    const dialog = screen.getByRole('dialog', { name: /welcome wizard/i });
+    const focusable = dialog.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled])'
+    );
+    const lastFocusable = focusable[focusable.length - 1];
+
+    // Focus the last element, then Tab should wrap to first
+    lastFocusable.focus();
+    await user.tab();
+    expect(focusable[0]).toHaveFocus();
   });
 });
 

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useCallback, useState } from 'react';
+import { useEffect, useMemo, useCallback, useState, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import { X, BookOpenText, Link2, ListTree, Loader2, Search } from 'lucide-react';
@@ -18,6 +18,8 @@ interface HelpPanelProps {
 export function HelpPanel({ onClose }: HelpPanelProps) {
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<Element | null>(null);
   const helpRouteSlug = useUIStore((s) => s.helpRouteSlug);
   const helpTopicId = useUIStore((s) => s.helpTopicId);
   const setHelpTopic = useUIStore((s) => s.setHelpTopic);
@@ -40,12 +42,42 @@ export function HelpPanel({ onClose }: HelpPanelProps) {
   const pageSearchResults = searchData?.results.filter((entry) => entry.kind === 'page') ?? [];
   const topicSearchResults = searchData?.results.filter((entry) => entry.kind === 'topic') ?? [];
 
-  // Close on Escape
+  // Capture trigger, move focus into the drawer, and restore on close
   useEffect(() => {
+    triggerRef.current = document.activeElement;
+    drawerRef.current?.focus();
+    return () => {
+      (triggerRef.current as HTMLElement | null)?.focus?.();
+    };
+  }, []);
+
+  // Focus trap + Escape to close
+  useEffect(() => {
+    const drawer = drawerRef.current;
+    if (!drawer) return;
+
     function handleKey(e: KeyboardEvent) {
       if (e.key === 'Escape') {
         e.preventDefault();
         onClose();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+
+      const focusable = drawer!.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusable.length === 0) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
       }
     }
     document.addEventListener('keydown', handleKey);
@@ -61,11 +93,13 @@ export function HelpPanel({ onClose }: HelpPanelProps) {
 
   return (
     <div
+      ref={drawerRef}
       className="fixed inset-0 z-50 flex justify-end bg-black/45"
       onClick={handleBackdropClick}
       role="dialog"
       aria-label="Page help drawer"
       aria-modal="true"
+      tabIndex={-1}
     >
       <aside className="flex h-full w-full max-w-3xl animate-in slide-in-from-right-8 duration-200 border-l border-border bg-card/95 shadow-2xl backdrop-blur">
         <div className="flex min-w-0 flex-1 flex-col">

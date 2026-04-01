@@ -169,6 +169,7 @@ export function ChatPanel() {
                 variant="outline"
                 onClick={onClearSession}
                 title="Clear session"
+                aria-label="Clear session"
               >
                 <Trash2 className="size-3.5" />
               </Button>
@@ -177,6 +178,7 @@ export function ChatPanel() {
                 variant="outline"
                 onClick={() => setChatOpen(false)}
                 title="Close chat"
+                aria-label="Close chat"
               >
                 <X className="size-3.5" />
               </Button>

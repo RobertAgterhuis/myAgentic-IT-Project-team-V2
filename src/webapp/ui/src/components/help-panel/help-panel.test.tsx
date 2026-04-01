@@ -94,4 +94,25 @@ describe('HelpPanel', () => {
 
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it('moves focus into the drawer on mount', () => {
+    renderPanel(['/commands']);
+    const dialog = screen.getByRole('dialog', { name: /page help drawer/i });
+    expect(dialog).toHaveFocus();
+  });
+
+  it('traps focus within the drawer on Tab', async () => {
+    renderPanel(['/commands']);
+    const user = userEvent.setup();
+    const dialog = screen.getByRole('dialog', { name: /page help drawer/i });
+    const focusable = dialog.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled])'
+    );
+    const lastFocusable = focusable[focusable.length - 1];
+
+    // Focus last element, then Tab should wrap to first
+    lastFocusable.focus();
+    await user.tab();
+    expect(focusable[0]).toHaveFocus();
+  });
 });

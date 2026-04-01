@@ -72,6 +72,7 @@ export function RepositoriesSection({
                 variant="ghost"
                 className="text-destructive hover:bg-destructive/10"
                 onClick={() => setSelectedForRemoval(repo)}
+                aria-label={`Remove ${repo.name}`}
               >
                 <Trash2 className="size-4" />
               </Button>

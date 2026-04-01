@@ -964,6 +964,8 @@ export interface ChatProposedAction {
   impact?: 'low' | 'medium' | 'high';
   payload?: Record<string, unknown>;
   requires_confirmation: boolean;
+  nonce?: string;
+  expires_at?: string;
 }
 
 export interface ChatMessage {

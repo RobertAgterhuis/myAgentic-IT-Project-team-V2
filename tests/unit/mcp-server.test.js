@@ -38,6 +38,7 @@ const {
 async function callTool(name, args = {}) {
   const tool = mcp._registeredTools[name];
   if (!tool) throw new Error(`Tool not registered: ${name}`);
+  ensureRuntimeManifestForAllTools();
   return tool.handler({ env_scope: 'dev', ...args }, {});
 }
 
@@ -112,6 +113,46 @@ function writeRuntimeManifest(agentId, tools) {
     ],
   };
   writeTemp(file, JSON.stringify(manifest, null, 2));
+}
+
+function ensureRuntimeManifestForAllTools() {
+  const dir = path.join(_PROJECT_ROOT, '.generated', 'runtime-manifests');
+  const file = path.join(dir, 'orchestrator.json');
+  if (fs.existsSync(dir)) {
+    const manifests = fs
+      .readdirSync(dir, { withFileTypes: true })
+      .filter((entry) => entry.isFile() && entry.name.endsWith('.json'));
+    if (manifests.length > 0) {
+      process.env.AGENT_ID = 'orchestrator';
+      return;
+    }
+  }
+  const tools = Object.keys(mcp._registeredTools).map((toolName) => ({
+    toolId: `command-center.${toolName}`,
+    permissionLevel: 'A',
+    approvalRequired: false,
+    approvalMode: 'none',
+    blocked: false,
+    degraded: false,
+    authStatus: 'ready',
+  }));
+  const manifest = {
+    agentId: 'orchestrator',
+    generatedAt: new Date().toISOString(),
+    servers: [
+      {
+        serverId: 'command-center',
+        endpoint: 'local://mcp-server',
+        healthStatus: 'healthy',
+        authType: 'none',
+        tools,
+      },
+    ],
+  };
+
+  process.env.AGENT_ID = 'orchestrator';
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(file, JSON.stringify(manifest, null, 2), 'utf8');
 }
 
 function writeGovernanceState(configure) {

@@ -10,6 +10,7 @@ import {
   resolveHelpRouteSlug,
 } from '@/hooks';
 import { useUIStore } from '@/stores/ui-store';
+import { TrustedHtml } from '@/components/security/trusted-html';
 
 interface HelpPanelProps {
   onClose: () => void;
@@ -141,12 +142,12 @@ export function HelpPanel({ onClose }: HelpPanelProps) {
                   Loading help content...
                 </div>
               ) : topic ? (
-                <article
+                <TrustedHtml
                   className={cn(
                     'prose prose-slate max-w-none dark:prose-invert',
                     'prose-headings:scroll-mt-20 prose-a:text-info hover:prose-a:text-info/80'
                   )}
-                  dangerouslySetInnerHTML={{ __html: topicDocument.html }}
+                  html={topicDocument.html}
                 />
               ) : (
                 <p className="text-sm text-muted-foreground">

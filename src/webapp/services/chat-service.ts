@@ -2,6 +2,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import crypto from 'node:crypto';
 import { IntentClassifier, type ChatIntent } from './chat/intent-classifier';
 import { ActionProposer } from './chat/action-proposer';
 
@@ -35,6 +36,8 @@ export interface ProposedAction {
   type: ProposedActionType;
   payload?: Record<string, unknown>;
   requires_confirmation: boolean;
+  nonce?: string;
+  expires_at?: string;
 }
 
 export interface ChatHistoryMessage {
@@ -67,6 +70,9 @@ export interface ChatActionEnvelope {
   action: ProposedAction;
   context_snapshot?: ChatContextSnapshot;
   created_at: string;
+  nonce: string;
+  expires_at: string;
+  consumed_at?: string;
 }
 
 export interface ChatSession {
@@ -82,6 +88,8 @@ interface ChatServiceOptions {
   intentClassifier?: IntentClassifier;
   actionProposer?: ActionProposer;
 }
+
+const ACTION_ENVELOPE_TTL_MS = 5 * 60 * 1000;
 
 function safeNow(): string {
   return new Date().toISOString();
@@ -212,12 +220,23 @@ export class ChatService {
           });
 
     const actionContexts: Record<string, ChatActionEnvelope> = session.action_contexts || {};
+    const securedActions: ProposedAction[] = [];
     for (const action of proposedActions) {
+      const nonce = crypto.randomBytes(16).toString('hex');
+      const expiresAt = new Date(Date.now() + ACTION_ENVELOPE_TTL_MS).toISOString();
+      const securedAction: ProposedAction = {
+        ...action,
+        nonce,
+        expires_at: expiresAt,
+      };
       actionContexts[action.id] = {
-        action,
+        action: securedAction,
         context_snapshot: input.contextSnapshot,
         created_at: safeNow(),
+        nonce,
+        expires_at: expiresAt,
       };
+      securedActions.push(securedAction);
     }
     session.action_contexts = actionContexts;
 
@@ -227,7 +246,7 @@ export class ChatService {
       intent,
       message: assistantEntry,
       citations,
-      proposed_actions: proposedActions,
+      proposed_actions: securedActions,
     };
   }
 
@@ -256,7 +275,49 @@ export class ChatService {
     if (!actionId) return null;
 
     const session = this.readSession(sessionId);
-    return session.action_contexts?.[actionId] || null;
+    const envelope = session.action_contexts?.[actionId] || null;
+    if (!envelope) return null;
+    if (new Date(envelope.expires_at).getTime() <= Date.now()) {
+      delete session.action_contexts?.[actionId];
+      this.persistSession(session);
+      return null;
+    }
+    return envelope;
+  }
+
+  validateActionEnvelope(input: { sessionId: string; actionId: string; nonce: string }): {
+    ok: boolean;
+    envelope?: ChatActionEnvelope;
+    reason?: 'NOT_FOUND' | 'NONCE_INVALID' | 'ACTION_REPLAYED' | 'ACTION_EXPIRED';
+  } {
+    const sessionId = normalizeSessionId(input.sessionId);
+    const actionId = String(input.actionId || '').trim();
+    const nonce = String(input.nonce || '').trim();
+    if (!actionId || !nonce) return { ok: false, reason: 'NOT_FOUND' };
+
+    const session = this.readSession(sessionId);
+    const envelope = session.action_contexts?.[actionId] || null;
+    if (!envelope) return { ok: false, reason: 'NOT_FOUND' };
+    if (envelope.consumed_at) return { ok: false, reason: 'ACTION_REPLAYED' };
+    if (new Date(envelope.expires_at).getTime() <= Date.now()) {
+      delete session.action_contexts?.[actionId];
+      this.persistSession(session);
+      return { ok: false, reason: 'ACTION_EXPIRED' };
+    }
+    if (envelope.nonce !== nonce) return { ok: false, reason: 'NONCE_INVALID' };
+    return { ok: true, envelope };
+  }
+
+  consumeActionEnvelope(input: { sessionId: string; actionId: string }): void {
+    const sessionId = normalizeSessionId(input.sessionId);
+    const actionId = String(input.actionId || '').trim();
+    if (!actionId) return;
+
+    const session = this.readSession(sessionId);
+    const envelope = session.action_contexts?.[actionId];
+    if (!envelope) return;
+    envelope.consumed_at = safeNow();
+    this.persistSession(session);
   }
 
   private sessionPath(sessionId: string): string {

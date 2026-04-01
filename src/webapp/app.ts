@@ -185,6 +185,18 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
     } else {
       // Fallback: on non-local hosts, every API route must be protected.
       if (pathname.startsWith('/api') && !isLocalBinding) {
+        if (process.env.NODE_ENV === 'production') {
+          reply
+            .status(401)
+            .send(
+              errorResponse(
+                'UNAUTHORIZED',
+                'Authenticated session required for non-local production API access'
+              )
+            );
+          return;
+        }
+
         const expected = process.env.API_KEY;
         if (!expected || request.headers['x-api-key'] !== expected) {
           reply

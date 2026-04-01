@@ -45,6 +45,21 @@ export default tseslint.config(
       ],
       '@typescript-eslint/no-explicit-any': 'warn',
       'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "JSXAttribute[name.name='dangerouslySetInnerHTML']",
+          message:
+            'Use the approved TrustedHtml wrapper for sanitized HTML rendering instead of direct dangerouslySetInnerHTML.',
+        },
+      ],
+    },
+  },
+
+  {
+    files: ['src/components/security/trusted-html.tsx'],
+    rules: {
+      'no-restricted-syntax': 'off',
     },
   },
 

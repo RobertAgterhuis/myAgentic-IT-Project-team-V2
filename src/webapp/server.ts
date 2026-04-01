@@ -391,6 +391,17 @@ function assertStartupSecurityModel(): void {
   if (isLocalBinding(HOST)) return;
   if (_authManager) return;
 
+  if (process.env.NODE_ENV === 'production') {
+    throw Object.assign(
+      new Error(
+        'Non-local production startup requires configured auth middleware; API_KEY fallback is disabled'
+      ),
+      {
+        code: 'NON_LOCAL_PROD_AUTH_REQUIRED',
+      }
+    );
+  }
+
   const apiKey = process.env.API_KEY?.trim();
   if (!apiKey) {
     throw Object.assign(new Error('Non-local startup requires configured auth or API_KEY'), {

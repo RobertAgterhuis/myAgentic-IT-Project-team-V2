@@ -21,11 +21,19 @@ export function AddRepositoryDialog({
   const [provider, setProvider] = useState<'github' | 'azure-devops' | 'gitlab' | 'local'>(
     'github'
   );
-  const [url, setUrl] = useState('');
+  const [locationValue, setLocationValue] = useState('');
   const [defaultBranch, setDefaultBranch] = useState('main');
 
+  const locationLabel = provider === 'local' ? 'Local Repository Path' : 'Repository URL';
+  const locationPlaceholder =
+    provider === 'local' ? 'e.g., D:/repositories/my-project' : 'https://github.com/owner/repo';
+  const locationHelper =
+    provider === 'local'
+      ? 'Use an absolute path to an existing local Git repository folder.'
+      : 'Provide the canonical remote repository URL.';
+
   const handleSubmit = useCallback(() => {
-    if (!repoId.trim() || !name.trim() || !url.trim() || !defaultBranch.trim()) return;
+    if (!repoId.trim() || !name.trim() || !locationValue.trim() || !defaultBranch.trim()) return;
 
     addRepository.mutate(
       {
@@ -34,7 +42,7 @@ export function AddRepositoryDialog({
           id: repoId.trim(),
           name: name.trim(),
           provider,
-          url: url.trim(),
+          url: locationValue.trim(),
           defaultBranch: defaultBranch.trim(),
         },
       },
@@ -44,12 +52,21 @@ export function AddRepositoryDialog({
           setRepoId('');
           setName('');
           setProvider('github');
-          setUrl('');
+          setLocationValue('');
           setDefaultBranch('main');
         },
       }
     );
-  }, [addRepository, repoId, name, provider, url, defaultBranch, workspaceId, onOpenChange]);
+  }, [
+    addRepository,
+    repoId,
+    name,
+    provider,
+    locationValue,
+    defaultBranch,
+    workspaceId,
+    onOpenChange,
+  ]);
 
   return (
     <ModalDialog
@@ -68,7 +85,7 @@ export function AddRepositoryDialog({
             disabled={
               !repoId.trim() ||
               !name.trim() ||
-              !url.trim() ||
+              !locationValue.trim() ||
               !defaultBranch.trim() ||
               addRepository.isPending
             }
@@ -99,6 +116,7 @@ export function AddRepositoryDialog({
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
             value={provider}
             onChange={(e) => setProvider(e.target.value as typeof provider)}
+            aria-label="Repository provider"
           >
             <option value="github">GitHub</option>
             <option value="azure-devops">Azure DevOps</option>
@@ -107,10 +125,11 @@ export function AddRepositoryDialog({
           </select>
         </FormRow>
         <InputField
-          label="Repository URL"
-          value={url}
-          onChange={(e) => setUrl(e.target.value)}
-          placeholder="https://github.com/owner/repo"
+          label={locationLabel}
+          helperText={locationHelper}
+          value={locationValue}
+          onChange={(e) => setLocationValue(e.target.value)}
+          placeholder={locationPlaceholder}
         />
         <InputField
           label="Default Branch"

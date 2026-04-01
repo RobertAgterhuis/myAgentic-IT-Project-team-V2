@@ -34,6 +34,23 @@ interface AuthValidationResult {
   entra: ProviderValidation;
 }
 
+const AUTH_SETUP_STORAGE_KEY = 'auth-setup-assistant-hidden';
+
+const SETUP_STEPS = [
+  {
+    title: 'Create OAuth apps',
+    summary: 'Create GitHub OAuth app and Microsoft Entra app registration.',
+  },
+  {
+    title: 'Copy environment values',
+    summary: 'Copy required GitHub and Entra values into your server environment file.',
+  },
+  {
+    title: 'Validate and continue',
+    summary: 'Validate configuration and return to sign-in once all checks pass.',
+  },
+];
+
 export default function LoginPage() {
   const loading = useAuthStore((s) => s.loading);
   const setLoading = useAuthStore((s) => s.setLoading);
@@ -46,6 +63,14 @@ export default function LoginPage() {
   const [validating, setValidating] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
+  const [setupStep, setSetupStep] = useState(0);
+  const [setupAssistantHidden, setSetupAssistantHidden] = useState(() => {
+    try {
+      return window.localStorage.getItem(AUTH_SETUP_STORAGE_KEY) === 'true';
+    } catch {
+      return false;
+    }
+  });
 
   const search = new URLSearchParams(window.location.search);
   const error = search.get('error');
@@ -185,6 +210,50 @@ export default function LoginPage() {
     }
   }
 
+  function handleDownloadEnvTemplate() {
+    const origin = window.location.origin;
+    const content = [
+      '# GitHub OAuth',
+      'GITHUB_CLIENT_ID=your_github_client_id',
+      'GITHUB_CLIENT_SECRET=your_github_client_secret',
+      `AUTH_CALLBACK_URL=${origin}`,
+      '',
+      '# Microsoft Entra (optional)',
+      'ENTRA_CLIENT_ID=your_entra_client_id',
+      'ENTRA_TENANT_ID=your_tenant_id_or_common',
+      'ENTRA_CLIENT_SECRET=your_entra_client_secret',
+      `ENTRA_REDIRECT_URI=${origin}/api/auth/entra/callback`,
+    ].join('\n');
+
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = '.env.auth.template';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+    setCopyStatus('Downloaded .env.auth.template');
+  }
+
+  function handleSkipSetupAssistant() {
+    try {
+      window.localStorage.setItem(AUTH_SETUP_STORAGE_KEY, 'true');
+    } catch {
+      // localStorage may be unavailable
+    }
+    setSetupAssistantHidden(true);
+  }
+
+  function handleResumeSetupAssistant() {
+    try {
+      window.localStorage.removeItem(AUTH_SETUP_STORAGE_KEY);
+    } catch {
+      // localStorage may be unavailable
+    }
+    setSetupAssistantHidden(false);
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md space-y-4">
@@ -277,6 +346,73 @@ export default function LoginPage() {
               </div>
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
+              {setupAssistantHidden ? (
+                <div className="rounded border border-amber-300 dark:border-amber-700 bg-white/70 dark:bg-slate-900/60 p-3">
+                  <Text className="font-medium text-amber-900 dark:text-amber-100 mb-1">
+                    Setup assistant skipped
+                  </Text>
+                  <Text className="text-amber-800 dark:text-amber-200 text-xs mb-2">
+                    You can resume the guided setup assistant any time.
+                  </Text>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={handleResumeSetupAssistant}
+                  >
+                    Resume setup assistant
+                  </Button>
+                </div>
+              ) : (
+                <div className="rounded border border-amber-300 dark:border-amber-700 bg-white/70 dark:bg-slate-900/60 p-3 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <Text className="font-medium text-amber-900 dark:text-amber-100">
+                      Guided setup assistant
+                    </Text>
+                    <Text className="text-xs text-amber-800 dark:text-amber-200">
+                      Step {setupStep + 1} of {SETUP_STEPS.length}
+                    </Text>
+                  </div>
+                  <div>
+                    <Text className="font-medium text-amber-900 dark:text-amber-100">
+                      {SETUP_STEPS[setupStep].title}
+                    </Text>
+                    <Text className="text-xs text-amber-800 dark:text-amber-200 mt-1">
+                      {SETUP_STEPS[setupStep].summary}
+                    </Text>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="flex-1"
+                      onClick={() => setSetupStep((step) => Math.max(0, step - 1))}
+                      disabled={setupStep === 0}
+                    >
+                      Back
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="flex-1"
+                      onClick={() =>
+                        setSetupStep((step) => Math.min(SETUP_STEPS.length - 1, step + 1))
+                      }
+                      disabled={setupStep === SETUP_STEPS.length - 1}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    <Button variant="outline" size="sm" onClick={handleDownloadEnvTemplate}>
+                      Download .env template
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={handleSkipSetupAssistant}>
+                      Skip setup for now
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <Text className="font-medium text-amber-900 dark:text-amber-100 mb-1">
                   GitHub OAuth Setup

@@ -133,17 +133,22 @@ export function WelcomeWizard({ onDismiss }: WelcomeWizardProps) {
         </div>
 
         {/* Step indicators */}
-        <div className="flex justify-center gap-1.5 mt-6" aria-label="Wizard progress">
+        <ul className="flex justify-center gap-1.5 mt-6" aria-label="Wizard progress">
           {STEPS.map((_, i) => (
-            <div
-              key={i}
-              className={`size-2 rounded-full transition-colors ${
-                i === currentStep ? 'bg-primary' : i < currentStep ? 'bg-primary/40' : 'bg-muted'
-              }`}
-              aria-label={`Step ${i + 1}${i === currentStep ? ' (current)' : ''}`}
-            />
+            <li key={i} aria-current={i === currentStep ? 'step' : undefined}>
+              <span
+                className={`block size-2 rounded-full transition-colors ${
+                  i === currentStep ? 'bg-primary' : i < currentStep ? 'bg-primary/40' : 'bg-muted'
+                }`}
+                aria-hidden="true"
+              />
+              <span className="sr-only">
+                Step {i + 1}
+                {i === currentStep ? ' (current)' : ''}
+              </span>
+            </li>
           ))}
-        </div>
+        </ul>
 
         {/* Navigation */}
         <div className="flex items-center justify-between mt-6">

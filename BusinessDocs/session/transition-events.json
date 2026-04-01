@@ -1163,5 +1163,258 @@
     "to": "PHASE_2",
     "status": "intent",
     "timestamp": "2026-04-01T13:38:27.189Z"
+  },
+  {
+    "transition_id": "dc493333-d763-4d05-9230-ac8915ad26a9",
+    "from": "CRITIC_1",
+    "to": "PHASE_2",
+    "status": "applied",
+    "timestamp": "2026-04-01T13:38:27.192Z"
+  },
+  {
+    "transition_id": "0a639508-5ef7-4cdb-94f2-aa497780af25",
+    "from": "PHASE_2",
+    "to": "CRITIC_2",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:38:45.886Z"
+  },
+  {
+    "transition_id": "0a639508-5ef7-4cdb-94f2-aa497780af25",
+    "from": "PHASE_2",
+    "to": "CRITIC_2",
+    "status": "applied",
+    "timestamp": "2026-04-01T13:38:45.889Z"
+  },
+  {
+    "transition_id": "77476b20-1211-4558-bb05-697d119b85f5",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:38:48.994Z"
+  },
+  {
+    "transition_id": "77476b20-1211-4558-bb05-697d119b85f5",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:38:49.010Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "45d7d626-807c-44fd-96ad-315031684fbd",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:38:52.006Z"
+  },
+  {
+    "transition_id": "45d7d626-807c-44fd-96ad-315031684fbd",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:38:52.020Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "50230f69-0caf-47c6-8ea9-d9e8905d64fc",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:38:55.019Z"
+  },
+  {
+    "transition_id": "50230f69-0caf-47c6-8ea9-d9e8905d64fc",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:38:55.037Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "03d21685-cb9e-4717-b26a-c275ee2f004a",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:38:58.028Z"
+  },
+  {
+    "transition_id": "03d21685-cb9e-4717-b26a-c275ee2f004a",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:38:58.042Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "924f5748-3460-4e02-b483-30f71ccd8cf4",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:39:01.032Z"
+  },
+  {
+    "transition_id": "924f5748-3460-4e02-b483-30f71ccd8cf4",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:39:01.045Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "d5fa7804-ea25-4aaa-99f5-e50cbaad5622",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:39:04.037Z"
+  },
+  {
+    "transition_id": "d5fa7804-ea25-4aaa-99f5-e50cbaad5622",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:39:04.055Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "06311902-fa93-40b0-b73b-39b27f158d4b",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:39:07.039Z"
+  },
+  {
+    "transition_id": "06311902-fa93-40b0-b73b-39b27f158d4b",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:39:07.054Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "e5cd2aef-a0f6-4937-aebb-41f215312c90",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:39:10.049Z"
+  },
+  {
+    "transition_id": "e5cd2aef-a0f6-4937-aebb-41f215312c90",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:39:10.066Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "fa504cc9-7b1f-4940-b130-262467ab0392",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:39:13.061Z"
+  },
+  {
+    "transition_id": "fa504cc9-7b1f-4940-b130-262467ab0392",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:39:13.076Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "cd594005-60b6-41b8-82c4-5a9d39e1e380",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:39:16.073Z"
+  },
+  {
+    "transition_id": "cd594005-60b6-41b8-82c4-5a9d39e1e380",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:39:16.088Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "b0713dab-e0b9-4f96-bb0f-1c4382b67559",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:39:19.076Z"
+  },
+  {
+    "transition_id": "b0713dab-e0b9-4f96-bb0f-1c4382b67559",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:39:19.093Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "3374fb71-a140-4303-80b7-49279da623b9",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:39:22.080Z"
+  },
+  {
+    "transition_id": "3374fb71-a140-4303-80b7-49279da623b9",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:39:22.096Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "b4f2327a-6a8f-468f-8e57-a08f4d16e634",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:39:25.081Z"
+  },
+  {
+    "transition_id": "b4f2327a-6a8f-468f-8e57-a08f4d16e634",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:39:25.095Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "e46818f7-bfd2-4cda-9736-bf66710d5765",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:39:28.091Z"
+  },
+  {
+    "transition_id": "e46818f7-bfd2-4cda-9736-bf66710d5765",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:39:28.108Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "b97d09d5-7eab-4533-93f4-5cb2f364051d",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:39:31.104Z"
+  },
+  {
+    "transition_id": "b97d09d5-7eab-4533-93f4-5cb2f364051d",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "failed",
+    "timestamp": "2026-04-01T13:39:31.118Z",
+    "reason": "Gate failed at CRITIC_2: FAILED — Auto gate validation reported 18 violation(s)"
+  },
+  {
+    "transition_id": "8f402bbd-ecfd-4266-9576-847282e9c34c",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:39:34.113Z"
   }
 ]

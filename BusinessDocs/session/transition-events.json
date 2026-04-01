@@ -1989,5 +1989,33 @@
     "to": "PHASE_2",
     "status": "intent",
     "timestamp": "2026-04-01T13:59:03.670Z"
+  },
+  {
+    "transition_id": "a50d0d2a-971d-404f-b0d4-248e31067ea3",
+    "from": "CRITIC_1",
+    "to": "PHASE_2",
+    "status": "applied",
+    "timestamp": "2026-04-01T13:59:03.676Z"
+  },
+  {
+    "transition_id": "be83a5dd-f8a5-47c9-9745-d6d7da4e159c",
+    "from": "PHASE_2",
+    "to": "CRITIC_2",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:59:22.048Z"
+  },
+  {
+    "transition_id": "be83a5dd-f8a5-47c9-9745-d6d7da4e159c",
+    "from": "PHASE_2",
+    "to": "CRITIC_2",
+    "status": "applied",
+    "timestamp": "2026-04-01T13:59:22.051Z"
+  },
+  {
+    "transition_id": "68937337-0613-40b0-a3d6-f75bae1afb0b",
+    "from": "CRITIC_2",
+    "to": "PHASE_3",
+    "status": "intent",
+    "timestamp": "2026-04-01T13:59:25.087Z"
   }
 ]

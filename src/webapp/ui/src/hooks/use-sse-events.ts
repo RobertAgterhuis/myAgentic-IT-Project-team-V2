@@ -54,6 +54,7 @@ function getInvalidationKeys(eventType: string): readonly (readonly string[])[] 
       return [queryKeys.orchestrator.status, queryKeys.progress.all];
     case 'command_queued':
     case 'command_completed':
+    case 'command_failed':
       return [queryKeys.orchestrator.queue, queryKeys.dashboard.activity];
     case 'pipeline_update':
       return [queryKeys.progress.all, queryKeys.orchestrator.status];
@@ -101,6 +102,34 @@ function notifyUser(event: SSEEvent) {
       break;
     case 'command_completed':
       showToast.success(`Command completed: ${String(event.command ?? 'unknown')}`);
+      break;
+    case 'command_failed':
+      if (
+        event.details &&
+        typeof event.details === 'object' &&
+        (event.details as { category?: string }).category === 'gate_failure'
+      ) {
+        const details = event.details as {
+          mode?: string;
+          phase?: string | null;
+          violations?: number;
+          remediationTaskIds?: string[];
+          suggestions?: string[];
+        };
+        const mode = details.mode ? String(details.mode).toUpperCase() : 'STRICT';
+        const phaseLabel = details.phase ? ` @ ${details.phase}` : '';
+        const violations = Number(details.violations || 0);
+        const remediationCount = Array.isArray(details.remediationTaskIds)
+          ? details.remediationTaskIds.length
+          : 0;
+        const hint = Array.isArray(details.suggestions) ? details.suggestions[0] : undefined;
+
+        showToast.error(
+          `Command failed: ${String(event.command ?? 'unknown')} (${mode}${phaseLabel}, ${violations} violation(s), remediation task(s): ${remediationCount})${hint ? ` — ${hint}` : ''}`
+        );
+      } else {
+        showToast.error(`Command failed: ${String(event.command ?? 'unknown')}`);
+      }
       break;
     case 'command_queued':
       showToast.info(`Command queued: ${String(event.command ?? 'unknown')}`);

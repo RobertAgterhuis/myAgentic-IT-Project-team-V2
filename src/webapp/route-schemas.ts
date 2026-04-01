@@ -1151,6 +1151,22 @@ export const authUpdateRole = {
   response: { ...mutationResponses, ...r401, ...r404, ...r503 },
 };
 
+export const authConfigSaveEnv = {
+  tags: ['auth'],
+  body: {
+    type: 'object' as const,
+    required: ['values'],
+    properties: {
+      values: {
+        type: 'object' as const,
+        additionalProperties: { type: 'string' as const },
+      },
+    },
+    additionalProperties: false,
+  },
+  response: { ...mutationResponses, ...r400, ...r500 },
+};
+
 /* ── dashboard ────────────────────────────────────────────────── */
 
 export const dashboardHealth = {

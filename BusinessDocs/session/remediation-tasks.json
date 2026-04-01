@@ -542,5 +542,141 @@
         "deliverable": "/tmp/log-only-output-15.md"
       }
     ]
+  },
+  {
+    "id": "remediation-1775052334560-x4dita",
+    "created_at": "2026-04-01T14:05:34.560Z",
+    "status": "open",
+    "source": "auto-gate",
+    "command": "AUDIT",
+    "state": "CRITIC_1",
+    "phase": "PHASE_1",
+    "gate_mode": "strict",
+    "summary": "Gate CRITIC_1 reported 33 violation(s).",
+    "suggested_actions": [
+      "Create the missing deliverable file and include required sections."
+    ],
+    "violations": [
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-25.md",
+        "deliverable": "/tmp/log-only-output-25.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-34.md",
+        "deliverable": "/tmp/log-only-output-34.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-01.md",
+        "deliverable": "/tmp/log-only-output-01.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-02.md",
+        "deliverable": "/tmp/log-only-output-02.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-03.md",
+        "deliverable": "/tmp/log-only-output-03.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-04.md",
+        "deliverable": "/tmp/log-only-output-04.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-33.md",
+        "deliverable": "/tmp/log-only-output-33.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-05.md",
+        "deliverable": "/tmp/log-only-output-05.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-06.md",
+        "deliverable": "/tmp/log-only-output-06.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-07.md",
+        "deliverable": "/tmp/log-only-output-07.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-08.md",
+        "deliverable": "/tmp/log-only-output-08.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-09.md",
+        "deliverable": "/tmp/log-only-output-09.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-10.md",
+        "deliverable": "/tmp/log-only-output-10.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-11.md",
+        "deliverable": "/tmp/log-only-output-11.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-12.md",
+        "deliverable": "/tmp/log-only-output-12.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-13.md",
+        "deliverable": "/tmp/log-only-output-13.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-32.md",
+        "deliverable": "/tmp/log-only-output-32.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-35.md",
+        "deliverable": "/tmp/log-only-output-35.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-14.md",
+        "deliverable": "/tmp/log-only-output-14.md"
+      },
+      {
+        "severity": "CRITICAL",
+        "rule": "MISSING_DELIVERABLE",
+        "description": "Deliverable file not found: /tmp/log-only-output-15.md",
+        "deliverable": "/tmp/log-only-output-15.md"
+      }
+    ]
   }
 ]

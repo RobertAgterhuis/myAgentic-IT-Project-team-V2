@@ -5,7 +5,8 @@
   "main": "src/webapp/server.ts",
   "scripts": {
     "prepare": "husky",
-    "start": "npm run plugin -- identity bootstrap && npm run plugin -- bootstrap --apply && tsx src/webapp/bootstrap.ts src/webapp/server.ts",
+    "start": "concurrently -k -n web,mcp -c cyan,magenta \"npm run start:web\" \"npm run start:mcp\"",
+    "start:web": "npm run plugin -- identity bootstrap && npm run plugin -- bootstrap --apply && tsx src/webapp/bootstrap.ts src/webapp/server.ts",
     "start:mcp": "tsx src/webapp/bootstrap.ts src/webapp/mcp-server.ts",
     "test": "npm run test:legacy && npm run test:migrated",
     "test:legacy": "vitest run --config vitest.config.mjs",
@@ -85,6 +86,7 @@
     "@types/node": "^20.19.37",
     "@vitest/coverage-istanbul": "^4.1.0",
     "@vitest/coverage-v8": "^4.0.18",
+    "concurrently": "^9.2.1",
     "eslint": "^9.0.0",
     "eslint-config-prettier": "^10.0.0",
     "eslint-plugin-prettier": "^5.5.5",

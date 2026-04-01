@@ -848,6 +848,85 @@ describe('routes/auth handlers', () => {
     });
   });
 
+  describe('POST /api/auth/config/env', () => {
+    it('creates .env when missing and writes provided GitHub values', async () => {
+      const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'auth-env-create-'));
+      const routesWithRoot = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+        PROJECT_ROOT: projectRoot,
+      });
+
+      const handler = routesWithRoot['POST /api/auth/config/env'];
+      const req = createReq('/api/auth/config/env', 'POST', {
+        body: {
+          values: {
+            GITHUB_CLIENT_ID: 'client-id-123',
+            GITHUB_CLIENT_SECRET: 'secret-123',
+            AUTH_CALLBACK_URL: 'http://127.0.0.1:3000',
+          },
+        },
+      });
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(200);
+      const body = parsed(res);
+      expect(body.ok).toBe(true);
+      expect(body.created).toBe(true);
+      expect(body.updated).toEqual(
+        expect.arrayContaining(['GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'AUTH_CALLBACK_URL'])
+      );
+
+      const envPath = path.join(projectRoot, '.env');
+      expect(fs.existsSync(envPath)).toBe(true);
+      const content = fs.readFileSync(envPath, 'utf8');
+      expect(content).toContain('GITHUB_CLIENT_ID=client-id-123');
+      expect(content).toContain('GITHUB_CLIENT_SECRET=secret-123');
+      expect(content).toContain('AUTH_CALLBACK_URL=http://127.0.0.1:3000');
+
+      fs.rmSync(projectRoot, { recursive: true, force: true });
+    });
+
+    it('updates existing values in .env without duplicating keys', async () => {
+      const projectRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'auth-env-update-'));
+      const envPath = path.join(projectRoot, '.env');
+      fs.writeFileSync(envPath, 'GITHUB_CLIENT_ID=old-id\nENTRA_TENANT_ID=common\n', 'utf8');
+
+      const routesWithRoot = createAuthRoutes({
+        _authManager: manager,
+        _authMiddleware: middleware,
+        PROJECT_ROOT: projectRoot,
+      });
+
+      const handler = routesWithRoot['POST /api/auth/config/env'];
+      const req = createReq('/api/auth/config/env', 'POST', {
+        body: {
+          values: {
+            GITHUB_CLIENT_ID: 'new-id',
+            GITHUB_CLIENT_SECRET: 'new-secret',
+          },
+        },
+      });
+      const res = createRes();
+
+      await handler(req, res);
+
+      expect(res.statusCode).toBe(200);
+      const body = parsed(res);
+      expect(body.created).toBe(false);
+
+      const content = fs.readFileSync(envPath, 'utf8');
+      expect(content).toContain('GITHUB_CLIENT_ID=new-id');
+      expect(content).toContain('GITHUB_CLIENT_SECRET=new-secret');
+      expect(content).toContain('ENTRA_TENANT_ID=common');
+      expect(content.match(/GITHUB_CLIENT_ID=/g)?.length).toBe(1);
+
+      fs.rmSync(projectRoot, { recursive: true, force: true });
+    });
+  });
+
   /* ── GET /api/admin/users ────────────────────────────────────── */
 
   describe('GET /api/admin/users', () => {

@@ -23,6 +23,10 @@ import {
 import { createGoalHealthScoringService } from '../../../platform/engine/goal-health';
 import { createBenchmarkTuningService } from '../../../platform/engine/benchmark-tuning';
 import { createProactiveDiscoveryOptimizationService } from '../../../platform/engine/proactive-discovery-optimization';
+import {
+  FinopsGovernor,
+  type AttributionDimension,
+} from '../../../platform/engine/finops-governor';
 
 export async function registerIntelligenceLoopRoutes(app: FastifyInstance, ctx: ServiceContext) {
   const objectiveGraphService = await createObjectiveGraphService(ctx);
@@ -31,6 +35,17 @@ export async function registerIntelligenceLoopRoutes(app: FastifyInstance, ctx: 
   const failureTaxonomyService = await createFailureTaxonomyService(ctx);
   const benchmarkTuningService = await createBenchmarkTuningService(ctx);
   const proactiveOptimizationService = createProactiveDiscoveryOptimizationService(ctx);
+  const finopsGovernor = new FinopsGovernor();
+
+  const attributionDimensions: AttributionDimension[] = [
+    'agentId',
+    'provider',
+    'model',
+    'featureLane',
+    'sessionId',
+    'workflowId',
+    'costCenter',
+  ];
 
   // ──── Objective Graph Endpoints ────
 
@@ -160,6 +175,42 @@ export async function registerIntelligenceLoopRoutes(app: FastifyInstance, ctx: 
     } catch (error) {
       app.log.error({ error }, '');
       return reply.status(500).send({ ok: false, error: 'Failed to retrieve at-risk objectives' });
+    }
+  });
+
+  /**
+   * GET /api/intelligence-loop/finops/attribution
+   * Produce monthly chargeback-ready attribution grouped by a requested dimension.
+   */
+  app.get<{
+    Querystring: {
+      month?: string;
+      dimension?: AttributionDimension;
+      costCenter?: string;
+      featureLane?: string;
+    };
+  }>('/api/intelligence-loop/finops/attribution', async (request, reply) => {
+    try {
+      const dimension = request.query.dimension || 'costCenter';
+      if (!attributionDimensions.includes(dimension)) {
+        return reply.status(400).send({
+          ok: false,
+          error: 'Invalid attribution dimension',
+          allowedDimensions: attributionDimensions,
+        });
+      }
+
+      const attribution = finopsGovernor.summarizeAttribution({
+        month: request.query.month,
+        dimension,
+        costCenter: request.query.costCenter,
+        featureLane: request.query.featureLane,
+      });
+
+      return reply.send({ ok: true, attribution });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(500).send({ ok: false, error: 'Failed to summarize FinOps attribution' });
     }
   });
 

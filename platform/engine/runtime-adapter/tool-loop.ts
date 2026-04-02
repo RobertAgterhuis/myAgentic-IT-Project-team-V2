@@ -30,6 +30,7 @@ export async function completeWithToolExecution(options: {
   temperature: number;
   policy: ToolExecutionPolicy;
   maxToolRounds?: number;
+  maxToolCallsPerRound?: number;
   createMiddleware: (audit: {
     logToolExecution(event: ToolExecutionAuditEvent): void;
   }) => ToolExecutionMiddleware;
@@ -45,6 +46,7 @@ export async function completeWithToolExecution(options: {
     temperature,
     policy,
     maxToolRounds = 4,
+    maxToolCallsPerRound = 6,
     createMiddleware,
     sanitizeForPrompt,
     toolAuditSink,
@@ -80,6 +82,11 @@ export async function completeWithToolExecution(options: {
     round += 1;
     if (round > maxToolRounds) {
       throw new Error(`TOOL_ROUND_LIMIT_EXCEEDED: maxToolRounds=${maxToolRounds}`);
+    }
+    if (completion.toolCalls.length > maxToolCallsPerRound) {
+      throw new Error(
+        `TOOL_FANOUT_LIMIT_EXCEEDED: calls=${completion.toolCalls.length}, max=${maxToolCallsPerRound}`
+      );
     }
 
     const toolResults: Array<Record<string, unknown>> = [];

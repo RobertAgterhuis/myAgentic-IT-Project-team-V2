@@ -533,7 +533,8 @@ describe('ProviderBackedLlmRuntimeAdapter — provider failover under chaos', ()
     // Both succeed and produce a valid output path
     expect(r1.outputPath).toBeDefined();
     expect(r2.outputPath).toBeDefined();
-    expect(complete).toHaveBeenCalledTimes(2);
+    expect(complete).toHaveBeenCalledTimes(1);
+    expect(r2.response.provider).toContain(':cache');
   });
 });
 

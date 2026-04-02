@@ -169,6 +169,8 @@ function resolvePredecessorContinuityMode():
     redisUrl: REDIS_URL,
     hasAuth: hasAuthConfigured({
       githubClientId: process.env.GITHUB_CLIENT_ID,
+      githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
+      entraClientId: process.env.ENTRA_CLIENT_ID,
       apiKey: process.env.API_KEY,
     }),
     trustProxy: TRUST_PROXY,
@@ -192,6 +194,8 @@ function resolveRuntimeProfile() {
     redisUrl: REDIS_URL,
     hasAuth: hasAuthConfigured({
       githubClientId: process.env.GITHUB_CLIENT_ID,
+      githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
+      entraClientId: process.env.ENTRA_CLIENT_ID,
       apiKey: process.env.API_KEY,
     }),
     trustProxy: TRUST_PROXY,

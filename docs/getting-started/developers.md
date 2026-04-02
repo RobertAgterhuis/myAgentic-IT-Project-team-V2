@@ -24,6 +24,17 @@ npm run typecheck
 npm run test:coverage
 ```
 
+## Runtime Knobs
+
+The backend runtime exposes a small set of operational env vars through `src/webapp/config.ts`.
+
+- `OBSERVABILITY_SSE_MAX_CLIENTS`: cap concurrent SSE observability clients.
+- `WEB_VITALS_SAMPLE_RETENTION_LIMIT`: retained browser vitals sample count on disk.
+- `RAG_FRESHNESS_STALE_SEC`: stale threshold for RAG freshness observability.
+- `MCP_HEALTH_INTERVAL_MS`: MCP health polling cadence.
+- `MCP_HEALTH_FAILURE_THRESHOLD`: failed health-check count before unhealthy state.
+- `STATIC_LOCALE_CACHE_MAX_AGE_SECONDS`: locale asset cache lifetime.
+
 ## Expected Workflow
 
 1. Create a feature branch.

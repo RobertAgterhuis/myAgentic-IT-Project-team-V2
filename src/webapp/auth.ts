@@ -45,7 +45,7 @@ export interface ProviderUser {
 export interface IAuthProvider {
   readonly provider: IdentityProvider;
   authenticate(code: string, state: string): Promise<ProviderUser>;
-  refreshToken(refreshToken: string): Promise<TokenPair>;
+  refreshToken?(refreshToken: string): Promise<TokenPair>;
   revokeToken(accessToken: string): Promise<void>;
   getLoginUrl?(redirectTo?: string): string;
 }
@@ -893,10 +893,6 @@ export class GitHubAuthProvider implements IAuthProvider {
       avatarUrl: user.avatar_url,
       tokenPair,
     };
-  }
-
-  async refreshToken(_refreshToken: string): Promise<TokenPair> {
-    throw new Error('GitHub refresh token flow is not implemented');
   }
 
   async revokeToken(_accessToken: string): Promise<void> {

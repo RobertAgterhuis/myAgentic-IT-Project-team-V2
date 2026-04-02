@@ -12,6 +12,12 @@ import type {
   AnalyticsTrendsData,
 } from '@/lib/api-types';
 
+interface ObservabilitySourceAvailability {
+  drift: boolean;
+  trends: boolean;
+  ragFreshness: boolean;
+}
+
 function toAlertSeverity(severity: string): ObservabilityAlertEntry['severity'] {
   const normalized = severity.toUpperCase();
   if (normalized === 'CRITICAL') return 'critical';
@@ -22,22 +28,26 @@ function toAlertSeverity(severity: string): ObservabilityAlertEntry['severity'] 
 function buildContracts(
   drift: DriftResponse | null,
   trends: TimestampedResponse<AnalyticsTrendsData> | null,
-  ragFreshness: ObservabilityRagFreshnessResponse | null
+  ragFreshness: ObservabilityRagFreshnessResponse | null,
+  availability: ObservabilitySourceAvailability,
+  generatedAt: string
 ): ObservabilityTelemetryContractResponse {
-  const alerts: ObservabilityAlertEntry[] =
-    drift?.drifts.map((entry) => ({
+  const alerts: ObservabilityAlertEntry[] = [
+    ...buildSourceAvailabilityAlerts(availability, generatedAt),
+    ...(drift?.drifts.map((entry) => ({
       id: entry.id,
       source: 'drift-detection',
       severity: toAlertSeverity(entry.severity),
       status: 'open',
       message: `${entry.type}: expected ${entry.expected}, actual ${entry.actual}`,
-      first_seen: new Date().toISOString(),
-      last_seen: new Date().toISOString(),
+      first_seen: generatedAt,
+      last_seen: generatedAt,
       metadata: {
         sprint: entry.sprint,
         recommendation: entry.recommendation,
       },
-    })) ?? [];
+    })) ?? []),
+  ];
 
   if (ragFreshness && ragFreshness.summary.stale_collections > 0) {
     alerts.push({
@@ -46,8 +56,8 @@ function buildContracts(
       severity: 'warning',
       status: 'open',
       message: `${ragFreshness.summary.stale_collections} RAG collection(s) are stale`,
-      first_seen: new Date().toISOString(),
-      last_seen: new Date().toISOString(),
+      first_seen: generatedAt,
+      last_seen: generatedAt,
       metadata: {
         workspace: ragFreshness.workspace_id,
         threshold_seconds: ragFreshness.summary.stale_threshold_seconds,
@@ -62,8 +72,8 @@ function buildContracts(
       severity: 'critical',
       status: 'open',
       message: `${ragFreshness.summary.missing_collections} RAG collection(s) are missing`,
-      first_seen: new Date().toISOString(),
-      last_seen: new Date().toISOString(),
+      first_seen: generatedAt,
+      last_seen: generatedAt,
       metadata: {
         workspace: ragFreshness.workspace_id,
       },
@@ -123,7 +133,7 @@ function buildContracts(
   const criticalAlerts = alerts.filter((alert) => alert.severity === 'critical').length;
   return {
     ok: true,
-    generated_at: new Date().toISOString(),
+    generated_at: generatedAt,
     alerts,
     streams,
     summary: {
@@ -134,26 +144,116 @@ function buildContracts(
     },
   };
 }
+function buildSourceAvailabilityAlerts(
+  availability: ObservabilitySourceAvailability,
+  generatedAt: string
+): ObservabilityAlertEntry[] {
+  const alerts: ObservabilityAlertEntry[] = [];
+
+  if (!availability.drift) {
+    alerts.push({
+      id: 'observability-drift-source-unavailable',
+      source: 'observability-contracts',
+      severity: 'critical',
+      status: 'open',
+      message: 'Live drift telemetry is unavailable.',
+      first_seen: generatedAt,
+      last_seen: generatedAt,
+      metadata: { endpoint: '/api/drift' },
+    });
+  }
+
+  if (!availability.trends) {
+    alerts.push({
+      id: 'observability-trends-source-unavailable',
+      source: 'observability-contracts',
+      severity: 'warning',
+      status: 'open',
+      message: 'Analytics trend telemetry is unavailable.',
+      first_seen: generatedAt,
+      last_seen: generatedAt,
+      metadata: { endpoint: '/api/v1/analytics/trends' },
+    });
+  }
+
+  if (!availability.ragFreshness) {
+    alerts.push({
+      id: 'observability-rag-source-unavailable',
+      source: 'observability-contracts',
+      severity: 'warning',
+      status: 'open',
+      message: 'RAG freshness telemetry is unavailable.',
+      first_seen: generatedAt,
+      last_seen: generatedAt,
+      metadata: { endpoint: '/api/v1/observability/rag-freshness' },
+    });
+  }
+
+  return alerts;
+}
+
+function buildSampleFallbackContract(
+  availability: ObservabilitySourceAvailability,
+  generatedAt: string
+): ObservabilityTelemetryContractResponse {
+  const alerts = [
+    {
+      id: 'observability-sample-fallback-active',
+      source: 'observability-contracts',
+      severity: 'critical' as const,
+      status: 'open' as const,
+      message: 'Live observability sources are unavailable; showing sample fallback telemetry.',
+      first_seen: generatedAt,
+      last_seen: generatedAt,
+      metadata: {
+        fallback: 'sample-observability-telemetry-contract',
+      },
+    },
+    ...buildSourceAvailabilityAlerts(availability, generatedAt),
+    ...sampleObservabilityTelemetryContract.alerts,
+  ];
+
+  return {
+    ...sampleObservabilityTelemetryContract,
+    generated_at: generatedAt,
+    alerts,
+    summary: {
+      open_alerts: alerts.filter((alert) => alert.status === 'open').length,
+      critical_alerts: alerts.filter((alert) => alert.severity === 'critical').length,
+      stream_count: sampleObservabilityTelemetryContract.streams.length,
+      stale_streams: sampleObservabilityTelemetryContract.streams.filter(
+        (stream) => stream.sample_count === 0
+      ).length,
+    },
+  };
+}
 
 export function useObservabilityContracts() {
   return useQuery({
     queryKey: queryKeys.observability.contracts,
     queryFn: async () => {
       const [driftRes, trendsRes, ragFreshnessRes] = await Promise.allSettled([
-        apiGet<DriftResponse>('/v1/drift'),
+        apiGet<DriftResponse>('/drift'),
         apiGet<TimestampedResponse<AnalyticsTrendsData>>('/v1/analytics/trends'),
         apiGet<ObservabilityRagFreshnessResponse>('/v1/observability/rag-freshness'),
       ]);
+
+      const generatedAt = new Date().toISOString();
+      const availability: ObservabilitySourceAvailability = {
+        drift: driftRes.status === 'fulfilled',
+        trends: trendsRes.status === 'fulfilled',
+        ragFreshness: ragFreshnessRes.status === 'fulfilled',
+      };
 
       const drift = driftRes.status === 'fulfilled' ? driftRes.value : null;
       const trends = trendsRes.status === 'fulfilled' ? trendsRes.value : null;
       const ragFreshness = ragFreshnessRes.status === 'fulfilled' ? ragFreshnessRes.value : null;
 
       if (!drift && !trends && !ragFreshness) {
-        return sampleObservabilityTelemetryContract;
+        return buildSampleFallbackContract(availability, generatedAt);
       }
 
-      return buildContracts(drift, trends, ragFreshness);
+      return buildContracts(drift, trends, ragFreshness, availability, generatedAt);
     },
     refetchInterval: 30_000,
   });

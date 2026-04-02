@@ -487,10 +487,18 @@ export function validateProfile(config: {
 /**
  * Helper: check if the config has any auth method configured.
  */
-export function hasAuthConfigured(config: { githubClientId?: string; apiKey?: string }): boolean {
-  const hasGithub = config.githubClientId && config.githubClientId.trim().length > 0;
+export function hasAuthConfigured(config: {
+  githubClientId?: string;
+  githubClientSecret?: string;
+  entraClientId?: string;
+  apiKey?: string;
+}): boolean {
+  const hasGithub =
+    Boolean(config.githubClientId && config.githubClientId.trim().length > 0) &&
+    Boolean(config.githubClientSecret && config.githubClientSecret.trim().length > 0);
+  const hasEntra = Boolean(config.entraClientId && config.entraClientId.trim().length > 0);
   const hasApiKey = config.apiKey && config.apiKey.length >= 24;
-  return !!(hasGithub || hasApiKey);
+  return !!(hasGithub || hasEntra || hasApiKey);
 }
 
 /**

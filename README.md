@@ -80,6 +80,17 @@ npm run start:mcp
 - Local mode supports file/SQLite-backed workflows and optional Redis.
 - Production mode is designed to fail closed when required providers are unavailable.
 
+## Runtime Configuration
+
+Operational route and runtime tuning is centralized in `src/webapp/config.ts` and can be overridden with env vars.
+
+- `OBSERVABILITY_SSE_MAX_CLIENTS`: max concurrent SSE observability clients. Default `50`.
+- `WEB_VITALS_SAMPLE_RETENTION_LIMIT`: retained browser vitals samples persisted under `BusinessDocs/metrics/web-vitals.json`. Default `250`.
+- `RAG_FRESHNESS_STALE_SEC`: threshold used to mark RAG freshness collections as stale. Default `3600`.
+- `MCP_HEALTH_INTERVAL_MS`: MCP governance health polling interval. Default `30000`.
+- `MCP_HEALTH_FAILURE_THRESHOLD`: consecutive MCP health failures before unhealthy status. Default `3`.
+- `STATIC_LOCALE_CACHE_MAX_AGE_SECONDS`: cache-control max-age for locale JSON assets. Default `3600`.
+
 ## Architecture Snapshot
 
 - Server: Fastify-based web application in src/webapp.

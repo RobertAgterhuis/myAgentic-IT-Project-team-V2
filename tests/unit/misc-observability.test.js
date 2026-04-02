@@ -1,5 +1,8 @@
 // Copyright (c) 2026 Robert Agterhuis. MIT License.
 
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import * as __req_0 from '../../src/webapp/routes/misc-observability';
 const { registerObservabilityRoutes } = __req_0;
 
@@ -79,8 +82,68 @@ describe('registerObservabilityRoutes', () => {
 
     expect(app.routes.has('GET /api/events')).toBe(true);
     expect(app.routes.has('GET /api/metrics')).toBe(true);
+    expect(app.routes.has('POST /api/v1/metrics/vitals')).toBe(true);
     expect(app.routes.has('POST /api/metrics/flush')).toBe(true);
     expect(app.routes.has('GET /api/v1/observability/rag-freshness')).toBe(true);
+  });
+
+  it('persists web vitals and exposes them in metrics output', async () => {
+    const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'misc-observability-'));
+    const businessDocs = path.join(tempRoot, 'BusinessDocs');
+    fs.mkdirSync(path.join(businessDocs, 'metrics'), { recursive: true });
+
+    try {
+      const app = createFakeApp();
+      registerObservabilityRoutes({
+        app,
+        sseManager: { size: 0, addClient: () => {} },
+        metrics: {
+          startedAt: Date.now() - 1000,
+          requestCount: 0,
+          errorCount: 0,
+          responseTimes: [],
+          fileOpsCount: 0,
+          perEndpoint: {},
+        },
+        cache: {},
+        computePercentiles: () => ({ p50: 0, p95: 0, p99: 0 }),
+        flushMetrics: () => {},
+        projectRoot: tempRoot,
+        businessDocs,
+        safeWriteSync(filePath, data, encoding) {
+          fs.mkdirSync(path.dirname(filePath), { recursive: true });
+          fs.writeFileSync(filePath, data, encoding || 'utf8');
+        },
+        ragStore: { listCollections: () => [], getCollectionFreshnessStats: () => null },
+      });
+
+      const postHandler = app.routes.get('POST /api/v1/metrics/vitals');
+      const postReply = createReply();
+      await postHandler(
+        {
+          body: {
+            name: 'CLS',
+            value: 0.04,
+            rating: 'good',
+            id: 'cls-1',
+            navigationType: 'navigate',
+          },
+        },
+        postReply
+      );
+
+      expect(postReply.statusCode).toBe(202);
+
+      const metricsHandler = app.routes.get('GET /api/metrics');
+      const metricsReply = createReply();
+      await metricsHandler({}, metricsReply);
+
+      expect(metricsReply.payload.web_vitals.total_samples).toBe(1);
+      expect(metricsReply.payload.web_vitals.metrics.CLS.count).toBe(1);
+      expect(metricsReply.payload.web_vitals.metrics.CLS.latest_value).toBe(0.04);
+    } finally {
+      fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
   });
 
   it('returns metrics payload shape', async () => {

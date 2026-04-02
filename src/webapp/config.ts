@@ -61,7 +61,7 @@ export function parseTrustedProxySetting(raw: string | undefined): TrustedProxyC
   return value;
 }
 
-function parsePositiveIntFromEnv(name: string, fallback: number): number {
+export function parsePositiveIntFromEnv(name: string, fallback: number): number {
   const raw = process.env[name];
   if (!raw || !raw.trim()) return fallback;
 
@@ -178,6 +178,35 @@ export const SSE_HEARTBEAT_MS = 30000;
 export const ANALYTICS_MAX_EVENTS = 5000;
 export const METRICS_FLUSH_INTERVAL_MS = 60000;
 export const SNAPSHOT_SYNC_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+export const OBSERVABILITY_SSE_MAX_CLIENTS = parsePositiveIntFromEnv(
+  'OBSERVABILITY_SSE_MAX_CLIENTS',
+  50
+);
+export const WEB_VITALS_SAMPLE_RETENTION_LIMIT = parsePositiveIntFromEnv(
+  'WEB_VITALS_SAMPLE_RETENTION_LIMIT',
+  250
+);
+export const RAG_FRESHNESS_HEALTH_INTERVAL_MS = parsePositiveIntFromEnv(
+  'RAG_FRESHNESS_HEALTH_INTERVAL_MS',
+  5 * 60 * 1000
+);
+export const RAG_FRESHNESS_STALE_SEC = parsePositiveIntFromEnv('RAG_FRESHNESS_STALE_SEC', 3600);
+export const RAG_WATCH_DEBOUNCE_MS = parsePositiveIntFromEnv('RAG_WATCH_DEBOUNCE_MS', 5000);
+export const RAG_WATCH_ENABLED =
+  String(process.env.RAG_WATCH_ENABLED ?? 'true').toLowerCase() !== 'false';
+export const COMMAND_AUTODISPATCH_INTERVAL_MS = parsePositiveIntFromEnv(
+  'COMMAND_AUTODISPATCH_INTERVAL_MS',
+  3000
+);
+export const MCP_HEALTH_INTERVAL_MS = parsePositiveIntFromEnv('MCP_HEALTH_INTERVAL_MS', 30000);
+export const MCP_HEALTH_FAILURE_THRESHOLD = parsePositiveIntFromEnv(
+  'MCP_HEALTH_FAILURE_THRESHOLD',
+  3
+);
+export const STATIC_LOCALE_CACHE_MAX_AGE_SECONDS = parsePositiveIntFromEnv(
+  'STATIC_LOCALE_CACHE_MAX_AGE_SECONDS',
+  3600
+);
 export const RATE_LIMIT_WINDOW_MS = parsePositiveIntFromEnv('RATE_LIMIT_WINDOW_MS', 60_000);
 export const RATE_LIMIT_MAX = parsePositiveIntFromEnv('RATE_LIMIT_MAX', 30);
 export const RATE_LIMIT_AUTH_MAX = parsePositiveIntFromEnv('RATE_LIMIT_AUTH_MAX', 10);

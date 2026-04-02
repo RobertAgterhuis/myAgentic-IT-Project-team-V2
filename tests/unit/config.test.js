@@ -174,6 +174,12 @@ describe('config.ts exported environment constants', () => {
     delete process.env.STORAGE_PATH;
     delete process.env.QUEUE_PROVIDER;
     delete process.env.SESSION_STORE;
+    delete process.env.OBSERVABILITY_SSE_MAX_CLIENTS;
+    delete process.env.WEB_VITALS_SAMPLE_RETENTION_LIMIT;
+    delete process.env.RAG_FRESHNESS_STALE_SEC;
+    delete process.env.MCP_HEALTH_INTERVAL_MS;
+    delete process.env.MCP_HEALTH_FAILURE_THRESHOLD;
+    delete process.env.STATIC_LOCALE_CACHE_MAX_AGE_SECONDS;
 
     const config = await loadFreshConfig();
 
@@ -181,6 +187,30 @@ describe('config.ts exported environment constants', () => {
     expect(config.STORAGE_PATH).toBeUndefined();
     expect(config.QUEUE_PROVIDER).toBe('memory');
     expect(config.SESSION_STORE).toBe('sqlite');
+    expect(config.OBSERVABILITY_SSE_MAX_CLIENTS).toBe(50);
+    expect(config.WEB_VITALS_SAMPLE_RETENTION_LIMIT).toBe(250);
+    expect(config.RAG_FRESHNESS_STALE_SEC).toBe(3600);
+    expect(config.MCP_HEALTH_INTERVAL_MS).toBe(30000);
+    expect(config.MCP_HEALTH_FAILURE_THRESHOLD).toBe(3);
+    expect(config.STATIC_LOCALE_CACHE_MAX_AGE_SECONDS).toBe(3600);
+  });
+
+  it('reads operational runtime settings from env', async () => {
+    process.env.OBSERVABILITY_SSE_MAX_CLIENTS = '75';
+    process.env.WEB_VITALS_SAMPLE_RETENTION_LIMIT = '500';
+    process.env.RAG_FRESHNESS_STALE_SEC = '7200';
+    process.env.MCP_HEALTH_INTERVAL_MS = '45000';
+    process.env.MCP_HEALTH_FAILURE_THRESHOLD = '5';
+    process.env.STATIC_LOCALE_CACHE_MAX_AGE_SECONDS = '900';
+
+    const config = await loadFreshConfig();
+
+    expect(config.OBSERVABILITY_SSE_MAX_CLIENTS).toBe(75);
+    expect(config.WEB_VITALS_SAMPLE_RETENTION_LIMIT).toBe(500);
+    expect(config.RAG_FRESHNESS_STALE_SEC).toBe(7200);
+    expect(config.MCP_HEALTH_INTERVAL_MS).toBe(45000);
+    expect(config.MCP_HEALTH_FAILURE_THRESHOLD).toBe(5);
+    expect(config.STATIC_LOCALE_CACHE_MAX_AGE_SECONDS).toBe(900);
   });
 
   it('reads explicit storage, queue, and session provider env values', async () => {

@@ -203,6 +203,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
     projectRoot: PROJECT_ROOT,
     businessDocs: ctx.BUSINESS_DOCS,
     ragStore: _ragStore,
+    safeWriteSync,
   });
 
   registerAnalyticsRoutes({

@@ -44,6 +44,11 @@ import {
   ANALYTICS_MAX_EVENTS,
   METRICS_FLUSH_INTERVAL_MS,
   SNAPSHOT_SYNC_INTERVAL_MS,
+  RAG_FRESHNESS_HEALTH_INTERVAL_MS,
+  COMMAND_AUTODISPATCH_INTERVAL_MS,
+  RAG_FRESHNESS_STALE_SEC,
+  RAG_WATCH_DEBOUNCE_MS,
+  RAG_WATCH_ENABLED,
   RATE_LIMIT_WINDOW_MS,
   RATE_LIMIT_MAX,
   SEMANTIC_MEMORY_SWEEPER_INTERVAL_MS,
@@ -58,6 +63,9 @@ import {
   TOOL_EXEC_MAX_OUTPUT_BYTES,
   TOOL_EXEC_MAX_MEMORY_MB,
   TOOL_EXEC_REQUIRE_WORKSPACE_CWD,
+  MCP_HEALTH_INTERVAL_MS,
+  MCP_HEALTH_FAILURE_THRESHOLD,
+  parsePositiveIntFromEnv as parsePositiveIntEnv,
   resolvePredecessorContractContinuityMode,
 } from './config';
 import { createStorageProvider } from '../../platform/engine/persistence';
@@ -86,25 +94,6 @@ import { McpGovernanceService, McpHealthMonitor } from './plugins/mcp-governance
 
 const _cache = new FileCache();
 const _audit = new AuditTrail({ logDir: path.join(BUSINESS_DOCS, 'audit') });
-function parsePositiveIntEnv(name: string, fallback: number): number {
-  const raw = process.env[name];
-  if (!raw || !raw.trim()) return fallback;
-  const parsed = Number.parseInt(raw, 10);
-  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
-  return parsed;
-}
-
-const RAG_FRESHNESS_HEALTH_INTERVAL_MS = parsePositiveIntEnv(
-  'RAG_FRESHNESS_HEALTH_INTERVAL_MS',
-  5 * 60 * 1000
-);
-const COMMAND_AUTODISPATCH_INTERVAL_MS = parsePositiveIntEnv(
-  'COMMAND_AUTODISPATCH_INTERVAL_MS',
-  3000
-);
-const RAG_FRESHNESS_STALE_SEC = parsePositiveIntEnv('RAG_FRESHNESS_STALE_SEC', 3600);
-const RAG_WATCH_DEBOUNCE_MS = parsePositiveIntEnv('RAG_WATCH_DEBOUNCE_MS', 5000);
-const RAG_WATCH_ENABLED = String(process.env.RAG_WATCH_ENABLED || 'true').toLowerCase() !== 'false';
 const RAG_BASE_DIR = process.env.RAG_BASE_DIR || path.join(PROJECT_ROOT, '.agentic', 'rag');
 const RAG_DB_PATH = process.env.RAG_DB_PATH || path.join(RAG_BASE_DIR, 'rag.sqlite');
 const RAG_LANCE_DIR = process.env.RAG_LANCE_DIR || path.join(RAG_BASE_DIR, 'vectors');
@@ -441,6 +430,8 @@ function validateStartupRuntimeProfile(host: string = HOST): {
     redisUrl: REDIS_URL,
     hasAuth: hasAuthConfigured({
       githubClientId: process.env.GITHUB_CLIENT_ID,
+      githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
+      entraClientId: process.env.ENTRA_CLIENT_ID,
       apiKey: process.env.API_KEY,
     }),
     trustProxy: TRUST_PROXY,
@@ -819,17 +810,14 @@ function getAutoOrchestration() {
 function getMcpHealthMonitor(): McpHealthMonitor {
   if (_mcpHealthMonitor) return _mcpHealthMonitor;
 
-  const intervalMs = Number(process.env.MCP_HEALTH_INTERVAL_MS || 30000);
-  const failureThreshold = Number(process.env.MCP_HEALTH_FAILURE_THRESHOLD || 3);
-
   const svc = new McpGovernanceService({
     projectRoot: PROJECT_ROOT,
     storageProvider: getStorageProvider(),
   });
 
   _mcpHealthMonitor = new McpHealthMonitor(svc, {
-    intervalMs: Number.isFinite(intervalMs) ? intervalMs : 30000,
-    failureThreshold: Number.isFinite(failureThreshold) ? failureThreshold : 3,
+    intervalMs: MCP_HEALTH_INTERVAL_MS,
+    failureThreshold: MCP_HEALTH_FAILURE_THRESHOLD,
   });
 
   return _mcpHealthMonitor;
@@ -959,6 +947,8 @@ if (require.main === module || bootstrapAwareGlobal.__WEBAPP_BOOTSTRAP_ENTRY) {
       redisUrl: REDIS_URL,
       hasAuth: hasAuthConfigured({
         githubClientId: process.env.GITHUB_CLIENT_ID,
+        githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
+        entraClientId: process.env.ENTRA_CLIENT_ID,
         apiKey: process.env.API_KEY,
       }),
     },

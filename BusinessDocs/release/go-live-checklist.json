@@ -1,0 +1,71 @@
+{
+  "version": 1,
+  "owner": "Release Readiness",
+  "issue": "I-041",
+  "updatedAt": "2026-04-02T00:00:00.000Z",
+  "controls": [
+    {
+      "id": "REL-001",
+      "domain": "reliability",
+      "critical": true,
+      "description": "Autonomy benchmark p95 latency stays within release threshold.",
+      "metric": "autonomy.maxP95Ms",
+      "operator": "<=",
+      "threshold": 5000,
+      "evidence": ["BusinessDocs/metrics/autonomy-benchmark-results.json"]
+    },
+    {
+      "id": "REL-002",
+      "domain": "quality",
+      "critical": true,
+      "description": "Autonomy benchmark error rate stays within threshold.",
+      "metric": "autonomy.maxErrorRatePct",
+      "operator": "<=",
+      "threshold": 5,
+      "evidence": ["BusinessDocs/metrics/autonomy-benchmark-results.json"]
+    },
+    {
+      "id": "REL-003",
+      "domain": "operations",
+      "critical": true,
+      "description": "Autonomous trust runs maintain minimum success rate.",
+      "metric": "trust.autonomousSuccessRatePct",
+      "operator": ">=",
+      "threshold": 90,
+      "evidence": ["tests/load/autonomous-lane-traces/trust-dashboard.json"]
+    },
+    {
+      "id": "REL-004",
+      "domain": "cost",
+      "critical": true,
+      "description": "Autonomous trust run failures stay under budgeted tolerance.",
+      "metric": "trust.autonomousFailedCount",
+      "operator": "<=",
+      "threshold": 1,
+      "evidence": ["tests/load/autonomous-lane-traces/trust-dashboard.json"]
+    },
+    {
+      "id": "REL-005",
+      "domain": "governance",
+      "critical": true,
+      "description": "Release traceability map exists and is versioned.",
+      "metric": "artifact.milestoneTraceabilityPresent",
+      "operator": "==",
+      "threshold": 1,
+      "evidence": [
+        "docs/ops/executive-release-dashboard.md",
+        "BusinessDocs/release/go-live-checklist.md"
+      ]
+    },
+    {
+      "id": "REL-006",
+      "domain": "security",
+      "critical": false,
+      "description": "Security gap synthesis remains available for leadership review.",
+      "metric": "artifact.securitySynthesisPresent",
+      "operator": "==",
+      "threshold": 1,
+      "evidence": ["SECURITY.md", "BusinessDocs/decisions/security.md"]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "issue": "I-043",
+  "milestone": "M7 Release Readiness & Operational Insights",
+  "scenarios": [
+    {
+      "id": "GD-OUTAGE",
+      "name": "Service outage",
+      "targetRecoveryMinutes": 30,
+      "objective": "Restore orchestrator workflows and critical APIs within SLO bounds."
+    },
+    {
+      "id": "GD-CORRUPTION",
+      "name": "Data corruption",
+      "targetRecoveryMinutes": 45,
+      "objective": "Recover to a clean state and preserve decision/audit integrity."
+    },
+    {
+      "id": "GD-BUDGET",
+      "name": "Budget overrun",
+      "targetRecoveryMinutes": 20,
+      "objective": "Reapply FinOps controls and stop cost runaway without service loss."
+    }
+  ]
+}

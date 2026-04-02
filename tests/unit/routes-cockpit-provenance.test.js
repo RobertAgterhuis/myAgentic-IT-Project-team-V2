@@ -248,6 +248,62 @@ describe('cockpit provenance route', () => {
     expect(body.critical_path).toContain('sprint-PHASE-3');
   });
 
+  it('returns executive dashboard KPI payload with traceability entries', async () => {
+    const root = createTmpRoot();
+    writeJson(root, 'BusinessDocs/metrics/autonomy-benchmark-results.json', {
+      scenarios: [
+        { mode: 'CREATE', errorRatePct: 2.5, latencyMs: { p95: 1800 } },
+        { mode: 'AUDIT', errorRatePct: 1.2, latencyMs: { p95: 2200 } },
+      ],
+    });
+    writeJson(root, 'tests/load/autonomous-lane-traces/trust-dashboard.json', {
+      split: {
+        autonomous: {
+          successRate: 0.94,
+          failedCount: 1,
+        },
+      },
+    });
+    writeJson(root, 'coverage/coverage-summary.json', {
+      total: {
+        lines: { pct: 88.5 },
+        branches: { pct: 72.4 },
+      },
+    });
+    writeJson(root, 'BusinessDocs/session/finops-ledger.json', {
+      usage: [
+        { costUsd: 0.15, totalTokens: 1000 },
+        { costUsd: 0.05, totalTokens: 500 },
+      ],
+    });
+    writeJson(root, 'BusinessDocs/metrics/release-readiness-report.json', {
+      releaseBlocked: false,
+    });
+    fs.mkdirSync(path.join(root, 'Gaps'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'Gaps', 'security-synthesis.md'), '# security\n', 'utf8');
+
+    const routes = createTestableRoutes(registerRoutes, {
+      PROJECT_ROOT: root,
+      _getHumanOverrideEvents: () => [],
+    });
+
+    const res = createRes();
+    await routes['GET /api/v1/cockpit/executive-dashboard'](
+      createReq('/api/v1/cockpit/executive-dashboard'),
+      res
+    );
+
+    expect(res.statusCode).toBe(200);
+    const body = parsed(res);
+    expect(body.ok).toBe(true);
+    expect(body.data.kpis.reliability.maxP95Ms).toBe(2200);
+    expect(body.data.kpis.cost.totalCostUsd).toBe(0.2);
+    expect(body.data.traceability.length).toBe(3);
+    expect(
+      fs.existsSync(path.join(root, 'BusinessDocs', 'metrics', 'executive-release-dashboard.json'))
+    ).toBe(true);
+  });
+
   it('builds root-cause items from audit log and filters by session_id', async () => {
     const root = createTmpRoot();
     writeAudit(root, [

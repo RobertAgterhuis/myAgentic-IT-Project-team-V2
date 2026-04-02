@@ -127,6 +127,139 @@ function computeScore(factors: { label: string; value: number; weight: number }[
   return Math.round(weighted / totalWeight);
 }
 
+function safeReadNumber(value: unknown, fallback = 0): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function buildExecutiveDashboardPayload(root: string): Record<string, unknown> {
+  const benchmark = safeReadJson(
+    path.join(root, 'BusinessDocs', 'metrics', 'autonomy-benchmark-results.json'),
+    {}
+  ) as Record<string, unknown>;
+  const trust = safeReadJson(
+    path.join(root, 'tests', 'load', 'autonomous-lane-traces', 'trust-dashboard.json'),
+    {}
+  ) as Record<string, unknown>;
+  const coverage = safeReadJson(path.join(root, 'coverage', 'coverage-summary.json'), {}) as Record<
+    string,
+    unknown
+  >;
+  const finops = safeReadJson(
+    path.join(root, 'BusinessDocs', 'session', 'finops-ledger.json'),
+    {}
+  ) as Record<string, unknown>;
+  const releaseReadiness = safeReadJson(
+    path.join(root, 'BusinessDocs', 'metrics', 'release-readiness-report.json'),
+    {}
+  ) as Record<string, unknown>;
+  const gameDay = safeReadJson(
+    path.join(root, 'BusinessDocs', 'metrics', 'production-readiness-game-day.json'),
+    {}
+  ) as Record<string, unknown>;
+
+  const benchmarkScenarios = Array.isArray(benchmark.scenarios) ? benchmark.scenarios : [];
+  const reliabilityMaxP95Ms = benchmarkScenarios.reduce((max, scenario) => {
+    const typedScenario = scenario as { latencyMs?: { p95?: number } };
+    const current = safeReadNumber(typedScenario.latencyMs?.p95);
+    return Math.max(max, current);
+  }, 0);
+  const reliabilityMaxErrorRatePct = benchmarkScenarios.reduce((max, scenario) => {
+    const typedScenario = scenario as { errorRatePct?: number };
+    const current = safeReadNumber(typedScenario.errorRatePct);
+    return Math.max(max, current);
+  }, 0);
+
+  const trustAutonomous =
+    (trust.split as Record<string, Record<string, unknown>> | undefined)?.autonomous || {};
+  const autonomousSuccessRatePct = Number(
+    (safeReadNumber(trustAutonomous.successRate) * 100).toFixed(2)
+  );
+
+  const coverageTotal =
+    (coverage.total as Record<string, Record<string, unknown>> | undefined) || {};
+  const lineCoveragePct = safeReadNumber(
+    (coverageTotal.lines as { pct?: number } | undefined)?.pct
+  );
+  const branchCoveragePct = safeReadNumber(
+    (coverageTotal.branches as { pct?: number } | undefined)?.pct
+  );
+
+  const finopsUsage = Array.isArray(finops.usage)
+    ? (finops.usage as Array<Record<string, unknown>>)
+    : [];
+  const totalCostUsd = Number(
+    finopsUsage.reduce((sum, entry) => sum + safeReadNumber(entry.costUsd), 0).toFixed(6)
+  );
+  const totalTokens = finopsUsage.reduce(
+    (sum, entry) => sum + safeReadNumber(entry.totalTokens),
+    0
+  );
+
+  const releaseBlocked = Boolean(releaseReadiness.releaseBlocked);
+  const gameDayBlocked = Boolean(gameDay.releaseBlocked);
+
+  return {
+    generatedAt: new Date().toISOString(),
+    milestone: 'M7 Release Readiness & Operational Insights',
+    kpis: {
+      reliability: {
+        maxP95Ms: reliabilityMaxP95Ms,
+        maxErrorRatePct: reliabilityMaxErrorRatePct,
+        autonomousSuccessRatePct,
+      },
+      quality: {
+        lineCoveragePct,
+        branchCoveragePct,
+        releaseBlocked,
+      },
+      security: {
+        securitySynthesisPresent: fs.existsSync(path.join(root, 'Gaps', 'security-synthesis.md')),
+        gameDayBlocked,
+      },
+      cost: {
+        totalCostUsd,
+        totalTokens,
+      },
+    },
+    traceability: [
+      {
+        issue: 'I-041',
+        title: 'Cross-domain go-live checklist and automated gate pipeline',
+        status: releaseBlocked ? 'blocked' : 'ready',
+        evidence: [
+          'BusinessDocs/release/go-live-checklist.json',
+          'BusinessDocs/metrics/release-readiness-report.json',
+        ],
+      },
+      {
+        issue: 'I-042',
+        title: 'Executive dashboard for reliability, security, quality, and cost KPIs',
+        status: 'ready',
+        evidence: [
+          'docs/ops/executive-release-dashboard.md',
+          'BusinessDocs/metrics/executive-release-dashboard.json',
+        ],
+      },
+      {
+        issue: 'I-043',
+        title: 'Production-readiness game day scenarios',
+        status: gameDayBlocked ? 'blocked' : 'ready',
+        evidence: ['BusinessDocs/metrics/production-readiness-game-day.json'],
+      },
+    ],
+    sourceEvidence: [
+      'Gaps/synthesis.md',
+      'Gaps/security-synthesis.md',
+      'Gaps/data-model-persistence-synthesis.md',
+      'Gaps/agent-behavior-synthesis.md',
+      'Gaps/36-error-recovery-synthesis-and-final-verdict.md',
+      'Gaps/45-cost-token-economics-synthesis-and-final-verdict.md',
+      'Gaps/46-github-milestones-epics-issues-traceability.md',
+    ],
+  };
+}
+
 async function findSimilarApprovalLessons(
   ctx: ServerContext,
   approval: Record<string, unknown>
@@ -418,6 +551,26 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
           factors: agentFactors,
         },
       });
+    }
+  );
+
+  app.get(
+    '/api/v1/cockpit/executive-dashboard',
+    { schema: { tags: ['cockpit'] } },
+    async (_request: FastifyRequest, reply: FastifyReply) => {
+      const root = getRepoRoot(legacyCtx);
+      const payload = buildExecutiveDashboardPayload(root);
+      const outputPath = path.join(
+        root,
+        'BusinessDocs',
+        'metrics',
+        'executive-release-dashboard.json'
+      );
+
+      fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+      fs.writeFileSync(outputPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf8');
+
+      return reply.send({ ok: true, data: payload });
     }
   );
 

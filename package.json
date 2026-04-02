@@ -23,6 +23,8 @@
     "test:autonomy-benchmark": "tsx tests/load/autonomy-benchmark-suite.ts",
     "test:autonomy-readiness-gate": "node scripts/autonomy-readiness-gate.mjs",
     "test:autonomous-trust-dashboard": "node scripts/autonomous-trust-dashboard.mjs",
+    "test:release-readiness-gate": "node scripts/release-readiness-gate.mjs",
+    "test:production-readiness-game-day": "node scripts/production-readiness-game-day.mjs",
     "test:integration": "vitest run tests/integration/",
     "test:smoke": "vitest run tests/smoke/",
     "test:chat-grounding": "vitest run --config vitest.migrated-istanbul.config.mjs tests/unit/chat-grounding-quality.test.js tests/unit/routes-chat.test.js tests/unit/rag-grounding-service.test.js",

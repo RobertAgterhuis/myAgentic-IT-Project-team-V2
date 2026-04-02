@@ -170,6 +170,15 @@ jobs:
       - name: Run autonomy readiness gate
         run: npm run test:autonomy-readiness-gate
 
+      - name: Build autonomous trust dashboard artifact
+        run: npm run test:autonomous-trust-dashboard
+
+      - name: Run release readiness gate
+        run: npm run test:release-readiness-gate
+
+      - name: Run production-readiness game day evaluator
+        run: npm run test:production-readiness-game-day
+
   mutation-gate:
     name: Mutation Testing Gate (main)
     runs-on: ubuntu-latest

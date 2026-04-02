@@ -223,7 +223,7 @@ export function createAutoOrchestrationCoordinator(deps: AutoOrchestrationDeps) 
         queueName: 'command-queue',
         queuePath: deps.commandQueue,
         validateQueue: schemas.validateCommandQueue,
-        validateEntry: schemas.validateCommandEntry,
+        validateEntry: schemas.validateCommandEntryReadCompat,
         onQuarantine: (event) => {
           structuredLog('error', 'autorun_command_queue_quarantined', {
             queue_path: event.queuePath,

@@ -54,7 +54,7 @@ export class CommandService {
         queueName: 'command-queue',
         queuePath: this.ctx.commandQueue,
         validateQueue: schemas.validateCommandQueue,
-        validateEntry: schemas.validateCommandEntry,
+        validateEntry: schemas.validateCommandEntryReadCompat,
         onQuarantine: (event) => {
           this._queueDegraded = true;
           this._queueDegradedReason = event.reason;

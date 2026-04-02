@@ -89,9 +89,10 @@ export function validateCommandEntry(data: unknown): ValidationResult {
   }
   const d = data as Record<string, unknown>;
   str(d.command, 'command', errors);
-  str(d.requested_at, 'requested_at', errors);
-  if (!['PENDING', 'PROCESSING', 'DONE', 'ERROR'].includes(d.status as string)) {
-    errors.push('status must be one of: PENDING, PROCESSING, DONE, ERROR');
+  // Legacy queues may not include requested_at; tolerate for read compatibility.
+  opt(d.requested_at, 'requested_at', 'string', errors);
+  if (!['PENDING', 'PROCESSING', 'DONE', 'ERROR', 'QUEUED'].includes(d.status as string)) {
+    errors.push('status must be one of: PENDING, PROCESSING, DONE, ERROR, QUEUED');
   }
   opt(d.project, 'project', 'string', errors);
   opt(d.description, 'description', 'string', errors);

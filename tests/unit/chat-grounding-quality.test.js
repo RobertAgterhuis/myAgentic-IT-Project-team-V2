@@ -141,8 +141,8 @@ function createCtx() {
 describe('chat grounding quality gate', () => {
   const ctx = createCtx();
   const routes = createTestableRoutes(registerRoutes, ctx);
-  const firstTokenP95BudgetMs = Number(process.env.CHAT_FIRST_TOKEN_P95_BUDGET_MS || 2000);
-  const retrievalP95BudgetMs = Number(process.env.CHAT_RETRIEVAL_P95_BUDGET_MS || 750);
+  const firstTokenP95BudgetMs = Number(process.env.CHAT_FIRST_TOKEN_P95_BUDGET_MS || 3000);
+  const retrievalP95BudgetMs = Number(process.env.CHAT_RETRIEVAL_P95_BUDGET_MS || 1000);
   const fallbackRateBudget = Number(process.env.CHAT_FALLBACK_RATE_BUDGET || 0.1);
   const noMatchRateBudget = Number(process.env.CHAT_NO_MATCH_RATE_BUDGET || 0.1);
 

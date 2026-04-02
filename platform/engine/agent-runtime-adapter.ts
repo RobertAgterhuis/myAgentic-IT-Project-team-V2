@@ -114,6 +114,7 @@ interface AgentInvocationContext {
   role?: 'viewer' | 'operator' | 'admin';
   profile?: string;
   policyApprovals?: unknown;
+  abortSignal?: AbortSignal;
 }
 
 export type ContextTrustLevel = 'trusted' | 'untrusted' | 'mixed';
@@ -1134,6 +1135,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
             createMiddleware: (audit) => this._createToolMiddleware(audit),
             sanitizeForPrompt: sanitizeModelBoundText,
             toolAuditSink: this._toolAudit,
+            signal: abortSignal,
           });
 
           result = completionResult.completion;

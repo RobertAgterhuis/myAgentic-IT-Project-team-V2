@@ -320,7 +320,8 @@ export class AgentExecutionService {
       workspaceId,
       runtimePackManifest,
       gitService,
-    });
+    }) as Record<string, unknown>;
+    ctx.abortSignal = ac.signal;
 
     try {
       // Check for cancellation before invoking
@@ -450,7 +451,7 @@ export class AgentExecutionService {
         });
       }
     } catch (err) {
-      if (err instanceof AgentCancelledError) {
+      if (err instanceof AgentCancelledError || ac.signal.aborted) {
         job.status = 'cancelled';
       } else {
         sessionTracker.failAgent(info.id);

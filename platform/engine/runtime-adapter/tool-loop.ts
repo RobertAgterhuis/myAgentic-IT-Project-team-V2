@@ -35,6 +35,7 @@ export async function completeWithToolExecution(options: {
   }) => ToolExecutionMiddleware;
   sanitizeForPrompt: (value: string) => string;
   toolAuditSink?: { logToolExecution(event: ToolExecutionAuditEvent): void };
+  signal?: AbortSignal;
 }): Promise<{ completion: CompletionResult; toolAuditEvents: ToolExecutionAuditEvent[] }> {
   const {
     provider,
@@ -47,7 +48,14 @@ export async function completeWithToolExecution(options: {
     createMiddleware,
     sanitizeForPrompt,
     toolAuditSink,
+    signal,
   } = options;
+
+  const throwIfAborted = (): void => {
+    if (signal?.aborted) {
+      throw new Error('ABORTED');
+    }
+  };
 
   const toolAuditEvents: ToolExecutionAuditEvent[] = [];
   const middleware = createMiddleware({
@@ -64,9 +72,11 @@ export async function completeWithToolExecution(options: {
     temperature,
     messages,
     tools: middleware.listToolDefinitionsForPolicy(policy),
+    signal,
   });
 
   while (completion.toolCalls?.length) {
+    throwIfAborted();
     round += 1;
     if (round > maxToolRounds) {
       throw new Error(`TOOL_ROUND_LIMIT_EXCEEDED: maxToolRounds=${maxToolRounds}`);
@@ -74,6 +84,7 @@ export async function completeWithToolExecution(options: {
 
     const toolResults: Array<Record<string, unknown>> = [];
     for (const toolCall of completion.toolCalls) {
+      throwIfAborted();
       try {
         const execution = await middleware.execute(
           {
@@ -125,6 +136,7 @@ export async function completeWithToolExecution(options: {
       temperature,
       messages,
       tools: middleware.listToolDefinitionsForPolicy(policy),
+      signal,
     });
   }
 

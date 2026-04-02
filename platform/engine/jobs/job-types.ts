@@ -84,3 +84,16 @@ export interface JobQueue {
   /** Return the number of jobs in a given status (or total if no status specified). */
   size(status?: JobStatus): Promise<number>;
 }
+
+export class QueueBackpressureError extends Error {
+  readonly code = 'QUEUE_BACKPRESSURE';
+  readonly queueLimit: number;
+  readonly queueDepth: number;
+
+  constructor(queueDepth: number, queueLimit: number) {
+    super(`Queue backpressure: active depth ${queueDepth} reached limit ${queueLimit}`);
+    this.name = 'QueueBackpressureError';
+    this.queueDepth = queueDepth;
+    this.queueLimit = queueLimit;
+  }
+}

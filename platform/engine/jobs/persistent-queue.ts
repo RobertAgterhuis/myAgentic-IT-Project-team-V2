@@ -8,6 +8,7 @@
 
 import type { StorageProvider, Document } from '../persistence/storage-provider';
 import type { Job, JobError, JobFilter, JobInput, JobQueue, JobStatus, JobType } from './job-types';
+import { QueueBackpressureError } from './job-types';
 
 /** Collection names used in the StorageProvider. */
 const COLLECTION = 'jobs';
@@ -23,6 +24,10 @@ export interface PersistentQueueConfig {
   backoffBaseMs?: number;
   /** Maximum backoff delay (default: 30_000). */
   backoffCapMs?: number;
+  /** Hard cap for active queue depth (queued + running) before backpressure is raised. */
+  maxQueueSize?: number;
+  /** Hard cap for DLQ size before oldest failed entries are evicted. */
+  maxDlqSize?: number;
 }
 
 const DEFAULTS: Required<PersistentQueueConfig> = {
@@ -30,6 +35,8 @@ const DEFAULTS: Required<PersistentQueueConfig> = {
   defaultTimeoutMs: 300_000,
   backoffBaseMs: 2_000,
   backoffCapMs: 30_000,
+  maxQueueSize: 1_000,
+  maxDlqSize: 1_000,
 };
 
 let persistentJobCounter = 0;
@@ -90,6 +97,15 @@ export class PersistentQueue implements JobQueue {
   }
 
   async enqueue(input: JobInput): Promise<Job> {
+    const [queuedDocs, runningDocs] = await Promise.all([
+      this._storage.list(COLLECTION, { where: { status: 'queued' } }),
+      this._storage.list(COLLECTION, { where: { status: 'running' } }),
+    ]);
+    const activeDepth = queuedDocs.length + runningDocs.length;
+    if (activeDepth >= this._config.maxQueueSize) {
+      throw new QueueBackpressureError(activeDepth, this._config.maxQueueSize);
+    }
+
     const job: Job = {
       ...input,
       id: generateJobId(),
@@ -176,6 +192,15 @@ export class PersistentQueue implements JobQueue {
     await this._storage.write(COLLECTION, id, jobToDoc(job));
 
     if (job.retryCount >= job.maxRetries) {
+      const dlqDocs = await this._storage.list(DLQ_COLLECTION);
+      if (dlqDocs.length >= this._config.maxDlqSize) {
+        const oldest = dlqDocs
+          .map(docToJob)
+          .sort((a, b) => a.createdAt.localeCompare(b.createdAt))[0];
+        if (oldest) {
+          await this._storage.delete(DLQ_COLLECTION, oldest.id);
+        }
+      }
       await this._storage.write(DLQ_COLLECTION, id, jobToDoc(job));
     }
   }

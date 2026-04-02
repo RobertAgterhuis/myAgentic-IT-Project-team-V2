@@ -4,11 +4,13 @@
 import fs from 'fs';
 import path from 'path';
 import { structuredLog } from '../middleware';
+import * as schemas from '../schemas';
 import { withFileLock } from '../file-lock';
 import { AgentExecutionService } from './agent-execution-service';
 import { toServiceContext } from './context-adapter';
 import { PHASE_AGENTS, RUNTIME_STATES_WITH_AGENTS } from '../../../platform/engine/agent-phase-map';
 import { ControlPlaneStateRepository } from './control-plane-state-repository';
+import { readQueueWithQuarantine } from './queue-quarantine';
 
 /* ── Computed configuration ───────────────────────────────────── */
 
@@ -20,6 +22,15 @@ export const AUTO_GATE_MODE: GateMode = (() => {
   if (raw === 'advisory') return 'advisory';
   return process.env.NODE_ENV === 'production' ? 'strict' : 'advisory';
 })();
+
+const AUTO_STALLED_TRANSITION_MS = Math.max(
+  10_000,
+  Number.parseInt(process.env.AUTO_ORCH_STALLED_TRANSITION_MS || '120000', 10) || 120_000
+);
+const AUTO_STALLED_ESCALATION_NOTICES = Math.max(
+  1,
+  Number.parseInt(process.env.AUTO_ORCH_STALLED_ESCALATION_NOTICES || '3', 10) || 3
+);
 
 /* ── Interfaces & types ───────────────────────────────────────── */
 
@@ -125,6 +136,9 @@ export function createAutoOrchestrationCoordinator(deps: AutoOrchestrationDeps) 
   let _orchestrationAutoRunInFlight = false;
   let _autoAgentExecutionService: AgentExecutionService | null = null;
   let _lastAutoExecutedState: string | null = null;
+  let _stalledTransitionStartedAt: number | null = null;
+  let _stalledTransitionState: string | null = null;
+  let _stalledTransitionNoticeCount = 0;
 
   /* ── Gate violation helpers ─────────────────────────────────── */
 
@@ -205,9 +219,29 @@ export function createAutoOrchestrationCoordinator(deps: AutoOrchestrationDeps) 
 
   function readCommandQueueUnsafe(): AutoDispatchCommandEntry[] {
     try {
-      if (!fs.existsSync(deps.commandQueue)) return [];
-      const raw = JSON.parse(fs.readFileSync(deps.commandQueue, 'utf8'));
-      return Array.isArray(raw) ? (raw as AutoDispatchCommandEntry[]) : [];
+      const result = readQueueWithQuarantine<AutoDispatchCommandEntry>({
+        queueName: 'command-queue',
+        queuePath: deps.commandQueue,
+        validateQueue: schemas.validateCommandQueue,
+        validateEntry: schemas.validateCommandEntry,
+        onQuarantine: (event) => {
+          structuredLog('error', 'autorun_command_queue_quarantined', {
+            queue_path: event.queuePath,
+            quarantine_path: event.quarantinePath,
+            reason: event.reason,
+            repaired_entries: event.repairedEntries,
+          });
+          deps.sseNotify('command_queue_quarantined', {
+            type: 'command_queue_quarantined',
+            queue_path: event.queuePath,
+            quarantine_path: event.quarantinePath,
+            reason: event.reason,
+            repaired_entries: event.repairedEntries,
+            timestamp: new Date().toISOString(),
+          });
+        },
+      });
+      return result.queue;
     } catch {
       return [];
     }
@@ -681,7 +715,77 @@ export function createAutoOrchestrationCoordinator(deps: AutoOrchestrationDeps) 
       const status = await getOrchestratorStatusForAutoRun();
       if (!status) return;
       if (status.human_override?.paused) return;
-      if (status.transitionStatus === 'IN_PROGRESS') return;
+      if (status.transitionStatus === 'IN_PROGRESS') {
+        const now = Date.now();
+        if (_stalledTransitionStartedAt === null || _stalledTransitionState !== status.state) {
+          _stalledTransitionStartedAt = now;
+          _stalledTransitionState = status.state;
+          _stalledTransitionNoticeCount = 0;
+        }
+
+        const elapsedMs = now - _stalledTransitionStartedAt;
+        const nextNoticeThreshold =
+          AUTO_STALLED_TRANSITION_MS * (_stalledTransitionNoticeCount + 1);
+
+        if (elapsedMs >= nextNoticeThreshold) {
+          _stalledTransitionNoticeCount += 1;
+          const processingCommand = getProcessingCommand();
+          const remediationTask = createRemediationTask({
+            command: processingCommand?.entry.command || 'UNKNOWN',
+            state: status.state,
+            phase: toSessionPhaseKeyFromState(status.state),
+            mode: AUTO_GATE_MODE,
+            violations: [
+              {
+                severity: 'MAJOR',
+                rule: 'STALLED_TRANSITION',
+                description: `Transition stuck in IN_PROGRESS for ${elapsedMs}ms (notice ${_stalledTransitionNoticeCount}/${AUTO_STALLED_ESCALATION_NOTICES}).`,
+                remediation: 'Investigate transition blocker and retry or escalate.',
+              },
+            ],
+          });
+
+          deps.sseNotify('orchestrator_transition_stalled', {
+            type: 'orchestrator_transition_stalled',
+            state: status.state,
+            elapsed_ms: elapsedMs,
+            notice_count: _stalledTransitionNoticeCount,
+            escalation_after: AUTO_STALLED_ESCALATION_NOTICES,
+            remediation_task_id: remediationTask.id,
+            timestamp: new Date().toISOString(),
+          });
+
+          structuredLog('warn', 'orchestrator_transition_stalled', {
+            state: status.state,
+            elapsed_ms: elapsedMs,
+            notice_count: _stalledTransitionNoticeCount,
+            escalation_after: AUTO_STALLED_ESCALATION_NOTICES,
+            remediation_task_id: remediationTask.id,
+          });
+
+          if (_stalledTransitionNoticeCount >= AUTO_STALLED_ESCALATION_NOTICES) {
+            await finalizeProcessingCommandForCycle(
+              'ERROR',
+              `Auto-escalation: transition stalled for ${elapsedMs}ms in state ${status.state}`,
+              status.state,
+              {
+                category: 'stalled_transition',
+                elapsed_ms: elapsedMs,
+                notice_count: _stalledTransitionNoticeCount,
+                remediationTaskIds: [remediationTask.id],
+              }
+            );
+            _stalledTransitionStartedAt = null;
+            _stalledTransitionState = null;
+            _stalledTransitionNoticeCount = 0;
+          }
+        }
+        return;
+      }
+
+      _stalledTransitionStartedAt = null;
+      _stalledTransitionState = null;
+      _stalledTransitionNoticeCount = 0;
 
       if (status.state === 'COMPLETED') {
         _lastAutoExecutedState = null;

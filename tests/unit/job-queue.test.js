@@ -178,6 +178,19 @@ describe('MemoryQueue — in-process job queue', () => {
     const job = await queue.status('nonexistent');
     expect(job).toBeNull();
   });
+
+  it('applies hard queue limits and surfaces backpressure', async () => {
+    const bounded = new MemoryQueue({ concurrency: 1, maxQueueSize: 2, defaultTimeoutMs: 60000 });
+
+    await bounded.enqueue(makeInput({ payload: { order: 1 } }));
+    await bounded.enqueue(makeInput({ payload: { order: 2 } }));
+
+    await expect(bounded.enqueue(makeInput({ payload: { order: 3 } }))).rejects.toThrow(
+      /Queue backpressure/
+    );
+
+    bounded.destroy();
+  });
 });
 
 // ─────────────────────────────────────────────────────────────

@@ -11,6 +11,7 @@ const ENV_KEYS = [
   'API_KEY',
   'GITHUB_CLIENT_ID',
   'GITHUB_CLIENT_SECRET',
+  'ENTRA_CLIENT_ID',
   'TRUST_PROXY',
   'AGENT_TOOL_ISOLATION_LEVEL',
   'TOOL_EXEC_MAX_TIMEOUT_MS',
@@ -134,6 +135,26 @@ describe('startup runtime profile validation', () => {
 
     const { validateStartupRuntimeProfile } = await loadServerModule();
     expect(() => validateStartupRuntimeProfile()).not.toThrow();
+  });
+
+  it('rejects production profile when GitHub auth env is incomplete', async () => {
+    setEnv({
+      NODE_ENV: 'production',
+      HOST: '0.0.0.0',
+      STORAGE_PROVIDER: 'sqlite',
+      QUEUE_PROVIDER: 'persistent',
+      SESSION_STORE: 'sqlite',
+      API_KEY: undefined,
+      GITHUB_CLIENT_ID: 'github-client-id',
+      GITHUB_CLIENT_SECRET: undefined,
+      ENTRA_CLIENT_ID: undefined,
+      TRUST_PROXY: '1',
+      AGENT_TOOL_ISOLATION_LEVEL: 'restricted',
+      TOOL_EXEC_REQUIRE_WORKSPACE_CWD: 'true',
+    });
+
+    const { validateStartupRuntimeProfile } = await loadServerModule();
+    expect(() => validateStartupRuntimeProfile()).toThrow(/RUNTIME_PROFILE_INVALID|authentication/);
   });
 
   it('returns strict predecessor continuity by default in production profile', async () => {

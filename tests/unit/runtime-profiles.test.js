@@ -360,6 +360,21 @@ describe('Runtime Profiles', () => {
     it('returns true for valid GitHub OAuth', () => {
       const result = hasAuthConfigured({
         githubClientId: 'Iv1.abc123',
+        githubClientSecret: 'github-secret',
+      });
+      expect(result).toBe(true);
+    });
+
+    it('returns false for incomplete GitHub OAuth config', () => {
+      const result = hasAuthConfigured({
+        githubClientId: 'Iv1.abc123',
+      });
+      expect(result).toBe(false);
+    });
+
+    it('returns true for Entra auth config', () => {
+      const result = hasAuthConfigured({
+        entraClientId: 'entra-client-id',
       });
       expect(result).toBe(true);
     });
@@ -374,6 +389,7 @@ describe('Runtime Profiles', () => {
     it('returns true for both methods set', () => {
       const result = hasAuthConfigured({
         githubClientId: 'Iv1.abc123',
+        githubClientSecret: 'github-secret',
         apiKey: 'sk-1234567890ABCDEFGHIJKLMNOP',
       });
       expect(result).toBe(true);

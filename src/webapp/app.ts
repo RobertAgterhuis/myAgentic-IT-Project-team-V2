@@ -38,6 +38,7 @@ import {
   RATE_LIMIT_AUTH_MAX,
   RATE_LIMIT_ADMIN_MAX,
   RATE_LIMIT_MUTATION_MAX,
+  STATIC_LOCALE_CACHE_MAX_AGE_SECONDS,
 } from './config';
 
 /* ── Fastify type augmentation ────────────────────────────────── */
@@ -246,7 +247,7 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
       JSON.parse(content); // validate JSON
       return reply
         .header('Content-Type', 'application/json; charset=utf-8')
-        .header('Cache-Control', 'public, max-age=3600')
+        .header('Cache-Control', `public, max-age=${STATIC_LOCALE_CACHE_MAX_AGE_SECONDS}`)
         .send(content);
     } catch {
       return reply.status(404).send({ error: 'Not found' });

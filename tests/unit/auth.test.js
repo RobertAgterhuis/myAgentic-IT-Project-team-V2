@@ -238,6 +238,7 @@ describe('AuthManager', () => {
     registry.registerProvider('github', provider);
     expect(registry.getProvider('github')).toBe(provider);
     expect(registry.getProvider('entra')).toBeNull();
+    expect(typeof provider.refreshToken).toBe('undefined');
   });
 
   it('registers Entra provider when ENTRA_CLIENT_ID is configured', () => {
@@ -252,6 +253,7 @@ describe('AuthManager', () => {
     try {
       const provider = entraManager.getProvider('entra');
       expect(provider).toBeInstanceOf(EntraAuthProvider);
+      expect(typeof provider.refreshToken).toBe('function');
 
       const entraLoginUrl = entraManager.getLoginUrlForProvider('entra', '/dashboard');
       expect(entraLoginUrl).toContain('login.microsoftonline.com');

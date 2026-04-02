@@ -5,8 +5,11 @@ import path from 'node:path';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { errorResponse } from '../utils/errors';
 import { structuredLog, setSecurityHeaders } from '../middleware';
-
-const MAX_SSE_CLIENTS = 50;
+import {
+  OBSERVABILITY_SSE_MAX_CLIENTS,
+  RAG_FRESHNESS_STALE_SEC,
+  WEB_VITALS_SAMPLE_RETENTION_LIMIT,
+} from '../config';
 
 interface MetricsEndpointData {
   count: number;
@@ -30,6 +33,37 @@ interface ChatGroundingMetricsSummary {
   avg_citation_count: number;
   fallback_rate: number;
   no_match_rate: number;
+}
+
+type WebVitalName = 'CLS' | 'INP' | 'LCP';
+type WebVitalRating = 'good' | 'needs-improvement' | 'poor';
+
+interface WebVitalSample {
+  name: WebVitalName;
+  value: number;
+  rating: WebVitalRating;
+  id: string;
+  navigationType: string | null;
+  recorded_at: string;
+}
+
+interface WebVitalMetricSummary {
+  count: number;
+  p75: number;
+  max: number;
+  latest_value: number;
+  latest_rating: WebVitalRating;
+  latest_navigation_type: string | null;
+  last_seen_at: string | null;
+  rating_breakdown: Record<WebVitalRating, number>;
+}
+
+interface WebVitalsSnapshot {
+  updated_at: string | null;
+  total_samples: number;
+  sample_retention_limit: number;
+  metrics: Record<WebVitalName, WebVitalMetricSummary>;
+  samples: WebVitalSample[];
 }
 
 interface CacheStats {
@@ -74,11 +108,179 @@ export interface RegisterObservabilityRoutesOptions {
   projectRoot: string;
   businessDocs: string;
   ragStore?: RagStoreLike;
+  safeWriteSync?: (
+    filePath: string,
+    data: string,
+    encoding?: BufferEncoding,
+    auditMeta?: {
+      operation?: string;
+      entityType?: string;
+      entityId?: string | null;
+      user?: string;
+      summary?: string;
+    }
+  ) => void;
+}
+
+const WEB_VITAL_NAMES: WebVitalName[] = ['CLS', 'INP', 'LCP'];
+const WEB_VITAL_RATINGS: WebVitalRating[] = ['good', 'needs-improvement', 'poor'];
+function percentile(times: number[], p: number): number {
+  if (times.length === 0) return 0;
+  const sorted = [...times].sort((a, b) => a - b);
+  const index = Math.ceil((p / 100) * sorted.length) - 1;
+  return sorted[Math.max(0, Math.min(sorted.length - 1, index))];
+}
+
+function createEmptyWebVitalMetricSummary(): WebVitalMetricSummary {
+  return {
+    count: 0,
+    p75: 0,
+    max: 0,
+    latest_value: 0,
+    latest_rating: 'good',
+    latest_navigation_type: null,
+    last_seen_at: null,
+    rating_breakdown: {
+      good: 0,
+      'needs-improvement': 0,
+      poor: 0,
+    },
+  };
+}
+
+function createEmptyWebVitalsSnapshot(): WebVitalsSnapshot {
+  return {
+    updated_at: null,
+    total_samples: 0,
+    sample_retention_limit: WEB_VITALS_SAMPLE_RETENTION_LIMIT,
+    metrics: {
+      CLS: createEmptyWebVitalMetricSummary(),
+      INP: createEmptyWebVitalMetricSummary(),
+      LCP: createEmptyWebVitalMetricSummary(),
+    },
+    samples: [],
+  };
+}
+
+function isWebVitalName(value: unknown): value is WebVitalName {
+  return typeof value === 'string' && WEB_VITAL_NAMES.includes(value as WebVitalName);
+}
+
+function isWebVitalRating(value: unknown): value is WebVitalRating {
+  return typeof value === 'string' && WEB_VITAL_RATINGS.includes(value as WebVitalRating);
+}
+
+function normalizeWebVitalSample(input: unknown): WebVitalSample | null {
+  if (!input || typeof input !== 'object') return null;
+
+  const candidate = input as Record<string, unknown>;
+  if (!isWebVitalName(candidate.name)) return null;
+  if (typeof candidate.value !== 'number' || !Number.isFinite(candidate.value)) return null;
+  if (!isWebVitalRating(candidate.rating)) return null;
+  if (typeof candidate.id !== 'string' || candidate.id.trim() === '') return null;
+
+  const navigationType =
+    typeof candidate.navigationType === 'string' && candidate.navigationType.trim() !== ''
+      ? candidate.navigationType
+      : null;
+
+  return {
+    name: candidate.name,
+    value: candidate.value,
+    rating: candidate.rating,
+    id: candidate.id,
+    navigationType,
+    recorded_at: new Date().toISOString(),
+  };
+}
+
+function summarizeWebVitals(samples: WebVitalSample[]): WebVitalsSnapshot {
+  const snapshot = createEmptyWebVitalsSnapshot();
+  snapshot.samples = samples;
+  snapshot.total_samples = samples.length;
+  snapshot.updated_at = samples.length > 0 ? samples[samples.length - 1].recorded_at : null;
+
+  for (const metricName of WEB_VITAL_NAMES) {
+    const metricSamples = samples.filter((sample) => sample.name === metricName);
+    if (metricSamples.length === 0) continue;
+
+    const values = metricSamples.map((sample) => sample.value);
+    const latest = metricSamples[metricSamples.length - 1];
+    const summary = snapshot.metrics[metricName];
+
+    summary.count = metricSamples.length;
+    summary.p75 = percentile(values, 75);
+    summary.max = Math.max(...values);
+    summary.latest_value = latest.value;
+    summary.latest_rating = latest.rating;
+    summary.latest_navigation_type = latest.navigationType;
+    summary.last_seen_at = latest.recorded_at;
+
+    for (const rating of WEB_VITAL_RATINGS) {
+      summary.rating_breakdown[rating] = metricSamples.filter(
+        (sample) => sample.rating === rating
+      ).length;
+    }
+  }
+
+  return snapshot;
+}
+
+function parseWebVitalsSnapshot(raw: string): WebVitalsSnapshot {
+  const parsed = JSON.parse(raw);
+  const samples = Array.isArray(parsed?.samples)
+    ? parsed.samples
+        .filter(
+          (sample): sample is Record<string, unknown> => !!sample && typeof sample === 'object'
+        )
+        .map((sample) => {
+          const normalized = normalizeWebVitalSample(sample);
+          if (!normalized) return null;
+          const recordedAt =
+            typeof sample.recorded_at === 'string' && sample.recorded_at.trim() !== ''
+              ? sample.recorded_at
+              : normalized.recorded_at;
+          return {
+            ...normalized,
+            recorded_at: recordedAt,
+          };
+        })
+        .filter((sample): sample is WebVitalSample => sample !== null)
+    : [];
+
+  return summarizeWebVitals(samples.slice(-WEB_VITALS_SAMPLE_RETENTION_LIMIT));
 }
 
 export function registerObservabilityRoutes(options: RegisterObservabilityRoutesOptions): void {
   const { app, sseManager, metrics, cache, computePercentiles, flushMetrics } = options;
-  const ragFreshnessThresholdSec = Number(process.env.RAG_FRESHNESS_STALE_SEC || 3600);
+  const ragFreshnessThresholdSec = RAG_FRESHNESS_STALE_SEC;
+  const webVitalsPath = path.join(options.businessDocs, 'metrics', 'web-vitals.json');
+
+  function readWebVitalsSnapshot(): WebVitalsSnapshot {
+    try {
+      if (!fs.existsSync(webVitalsPath)) return createEmptyWebVitalsSnapshot();
+      return parseWebVitalsSnapshot(fs.readFileSync(webVitalsPath, 'utf8'));
+    } catch {
+      return createEmptyWebVitalsSnapshot();
+    }
+  }
+
+  function writeWebVitalsSnapshot(snapshot: WebVitalsSnapshot): void {
+    const payload = JSON.stringify(snapshot, null, 2);
+    if (options.safeWriteSync) {
+      options.safeWriteSync(webVitalsPath, payload, 'utf8', {
+        operation: 'WEB_VITALS_WRITE',
+        entityType: 'metric',
+        entityId: 'web-vitals',
+        user: 'web-observability',
+        summary: `Persisted ${snapshot.total_samples} retained web vitals samples`,
+      });
+      return;
+    }
+
+    fs.mkdirSync(path.dirname(webVitalsPath), { recursive: true });
+    fs.writeFileSync(webVitalsPath, payload, 'utf8');
+  }
 
   function newestMtimeIso(paths: string[]): string | null {
     let newestMs = 0;
@@ -199,7 +401,7 @@ export function registerObservabilityRoutes(options: RegisterObservabilityRoutes
   }
 
   app.get('/api/events', async (request: FastifyRequest, reply: FastifyReply) => {
-    if (sseManager.size >= MAX_SSE_CLIENTS) {
+    if (sseManager.size >= OBSERVABILITY_SSE_MAX_CLIENTS) {
       return reply.code(503).send(errorResponse('SSE_LIMIT', 'Too many SSE connections'));
     }
 
@@ -224,6 +426,7 @@ export function registerObservabilityRoutes(options: RegisterObservabilityRoutes
     const pcts = computePercentiles(metrics.responseTimes);
     const cacheStats = cache.stats ? cache.stats() : { hits: 0, misses: 0 };
     const totalCache = (cacheStats.hits || 0) + (cacheStats.misses || 0);
+    const webVitals = readWebVitalsSnapshot();
 
     const result: {
       uptime_seconds: number;
@@ -241,6 +444,7 @@ export function registerObservabilityRoutes(options: RegisterObservabilityRoutes
         active_environment: string;
         per_environment: Record<string, ChatGroundingMetricsSummary>;
       };
+      web_vitals: Omit<WebVitalsSnapshot, 'samples'>;
     } = {
       uptime_seconds: uptimeS,
       request_count: metrics.requestCount,
@@ -257,6 +461,12 @@ export function registerObservabilityRoutes(options: RegisterObservabilityRoutes
       chat_grounding: {
         active_environment: process.env.NODE_ENV || 'development',
         per_environment: {},
+      },
+      web_vitals: {
+        updated_at: webVitals.updated_at,
+        total_samples: webVitals.total_samples,
+        sample_retention_limit: webVitals.sample_retention_limit,
+        metrics: webVitals.metrics,
       },
     };
 
@@ -275,6 +485,25 @@ export function registerObservabilityRoutes(options: RegisterObservabilityRoutes
     result.chat_grounding.per_environment[chatSummary.environment] = chatSummary;
 
     reply.send(result);
+  });
+
+  app.post('/api/v1/metrics/vitals', async (request: FastifyRequest, reply: FastifyReply) => {
+    const sample = normalizeWebVitalSample(request.body);
+    if (!sample) {
+      return reply.code(400).send(errorResponse('VALIDATION_ERROR', 'Invalid web vitals payload'));
+    }
+
+    const existing = readWebVitalsSnapshot();
+    const samples = [...existing.samples, sample].slice(-WEB_VITALS_SAMPLE_RETENTION_LIMIT);
+    const snapshot = summarizeWebVitals(samples);
+    writeWebVitalsSnapshot(snapshot);
+
+    return reply.code(202).send({
+      ok: true,
+      accepted: true,
+      retained_samples: snapshot.total_samples,
+      updated_at: snapshot.updated_at,
+    });
   });
 
   app.post('/api/metrics/flush', async (_request: FastifyRequest, reply: FastifyReply) => {

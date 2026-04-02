@@ -73,6 +73,7 @@ export interface AgentRuntimeAdapter {
 
 interface AgentInvocationContext {
   agentId?: string;
+  executionPolicy?: 'standard' | 'fast-path';
   skillFile?: string;
   predecessorOutputs?: Record<string, string>;
   predecessorContracts?: Array<{
@@ -328,9 +329,7 @@ function trimToTokenEstimate(value: string, maxTokens: number): string {
   return `${value.slice(0, keepChars)}${ellipsis}`;
 }
 
-function normalizeMessagesForCache(
-  messages: Array<{ role: string; content: string }>
-): Array<{ role: string; content: string }> {
+function normalizeMessagesForCache(messages: LLMMessage[]): LLMMessage[] {
   return messages.map((message) => ({
     role: message.role,
     content: (message.content || '')
@@ -1205,7 +1204,13 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
     }
 
     const retryGovernor = this._finops.deriveRetryGovernor(
-      runtimeContext,
+      {
+        agentId: agent.id,
+        executionPolicy: runtimeContext.executionPolicy,
+        workspaceId: runtimeContext.workspaceId,
+        sessionState: runtimeContext.sessionState,
+        state: String((runtimeContext.sessionState as { state?: string } | undefined)?.state || ''),
+      },
       this._validationMaxRetries
     );
 

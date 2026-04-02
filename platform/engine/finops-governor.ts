@@ -69,9 +69,10 @@ interface FinopsCacheEntry {
     finishReason: string;
     deliverableQuality?: {
       score: number;
-      approvalSignal: 'approved' | 'conditional' | 'blocked';
+      approvalSignal: 'approve' | 'review' | 'block';
       summary: string;
       metrics: Array<{
+        id: 'contract' | 'sections' | 'checklist' | 'evidence' | 'depth' | 'novelty';
         label: string;
         score: number;
         detail: string;
@@ -553,7 +554,22 @@ export class FinopsGovernor {
 
   putCachedCompletion(
     key: string,
-    response: { content: string; model: string; finishReason: string }
+    response: {
+      content: string;
+      model: string;
+      finishReason: string;
+      deliverableQuality?: {
+        score: number;
+        approvalSignal: 'approve' | 'review' | 'block';
+        summary: string;
+        metrics: Array<{
+          id: 'contract' | 'sections' | 'checklist' | 'evidence' | 'depth' | 'novelty';
+          label: string;
+          score: number;
+          detail: string;
+        }>;
+      };
+    }
   ): void {
     const ledger = readLedger(this._ledgerPath);
     ledger.completionCache[key] = {

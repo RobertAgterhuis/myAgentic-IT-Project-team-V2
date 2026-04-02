@@ -31,6 +31,7 @@ export interface CompletionInput {
   maxTokens?: number;
   temperature?: number;
   tools?: ToolDefinition[];
+  signal?: AbortSignal;
 }
 
 export interface CompletionResult {

@@ -7,6 +7,7 @@
  * ─────────────────────────────────────────────────────────────── */
 
 import type { Job, JobError, JobFilter, JobInput, JobQueue, JobStatus, JobType } from './job-types';
+import { QueueBackpressureError } from './job-types';
 
 /** Configuration for the in-process memory queue. */
 export interface MemoryQueueConfig {
@@ -18,6 +19,8 @@ export interface MemoryQueueConfig {
   backoffBaseMs?: number;
   /** Maximum backoff delay (default: 30_000). */
   backoffCapMs?: number;
+  /** Hard cap for active queue depth (queued + running) before backpressure is raised. */
+  maxQueueSize?: number;
 }
 
 const DEFAULTS: Required<MemoryQueueConfig> = {
@@ -25,6 +28,7 @@ const DEFAULTS: Required<MemoryQueueConfig> = {
   defaultTimeoutMs: 300_000,
   backoffBaseMs: 2_000,
   backoffCapMs: 30_000,
+  maxQueueSize: 1_000,
 };
 
 let jobCounter = 0;
@@ -55,6 +59,11 @@ export class MemoryQueue implements JobQueue {
   }
 
   async enqueue(input: JobInput): Promise<Job> {
+    const activeDepth = this._countByStatus('queued') + this._countByStatus('running');
+    if (activeDepth >= this._config.maxQueueSize) {
+      throw new QueueBackpressureError(activeDepth, this._config.maxQueueSize);
+    }
+
     const job: Job = {
       ...input,
       id: generateJobId(),

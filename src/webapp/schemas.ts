@@ -100,6 +100,27 @@ export function validateCommandEntry(data: unknown): ValidationResult {
 }
 
 /**
+ * Read-compat validator for queue salvage paths.
+ * Accepts legacy entries that may omit requested_at and/or use QUEUED status.
+ */
+export function validateCommandEntryReadCompat(data: unknown): ValidationResult {
+  const errors: string[] = [];
+  if (!data || typeof data !== 'object' || Array.isArray(data)) {
+    return { valid: false, errors: ['command entry must be an object'] };
+  }
+  const d = data as Record<string, unknown>;
+  str(d.command, 'command', errors);
+  opt(d.requested_at, 'requested_at', 'string', errors);
+  if (!['PENDING', 'PROCESSING', 'DONE', 'ERROR', 'QUEUED'].includes(d.status as string)) {
+    errors.push('status must be one of: PENDING, PROCESSING, DONE, ERROR, QUEUED');
+  }
+  opt(d.project, 'project', 'string', errors);
+  opt(d.description, 'description', 'string', errors);
+  opt(d.scope, 'scope', 'string', errors);
+  return { valid: errors.length === 0, errors };
+}
+
+/**
  * Validate an entire command queue array.
  */
 export function validateCommandQueue(data: unknown): ValidationResult {

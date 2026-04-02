@@ -114,6 +114,7 @@ interface AgentInvocationContext {
   role?: 'viewer' | 'operator' | 'admin';
   profile?: string;
   policyApprovals?: unknown;
+  abortSignal?: AbortSignal;
 }
 
 export type ContextTrustLevel = 'trusted' | 'untrusted' | 'mixed';
@@ -968,6 +969,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
     context: Record<string, unknown>
   ): Promise<RuntimeAdapterResult> {
     const runtimeContext = context as AgentInvocationContext;
+    const abortSignal = runtimeContext.abortSignal;
     const { path: skillPath, content: skillContent } = await readSkillInstructions(
       runtimeContext.skillFile
     );
@@ -1134,6 +1136,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
             createMiddleware: (audit) => this._createToolMiddleware(audit),
             sanitizeForPrompt: sanitizeModelBoundText,
             toolAuditSink: this._toolAudit,
+            signal: abortSignal,
           });
 
           result = completionResult.completion;

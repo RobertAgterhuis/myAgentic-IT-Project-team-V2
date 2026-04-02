@@ -8,11 +8,14 @@
  */
 
 import path from 'path';
+import fs from 'node:fs';
 import * as models from '../models';
 import * as schemas from '../schemas';
 import { withFileLock } from '../file-lock';
 import { sanitizeMarkdown, sanitizeQID, detectSecrets } from '../middleware';
+import { structuredLog } from '../middleware';
 import { ServiceValidationError } from './decisions-service';
+import { readQueueWithQuarantine } from './queue-quarantine';
 import {
   getCommandCatalog,
   isKnownCommand,
@@ -30,6 +33,8 @@ const MAX_QUEUE_SIZE = 50;
 
 export class CommandService {
   private ctx: ServiceContext;
+  private _queueDegraded = false;
+  private _queueDegradedReason?: string;
 
   constructor(ctx: ServiceContext) {
     this.ctx = ctx;
@@ -40,11 +45,38 @@ export class CommandService {
   getQueue(): CommandQueueEntry[] {
     if (!this.ctx.store.exists(this.ctx.commandQueue)) return [];
     try {
-      const raw = JSON.parse(this.ctx.cache.read(this.ctx.commandQueue));
-      return Array.isArray(raw) ? raw : raw ? [raw] : [];
+      if (!fs.existsSync(this.ctx.commandQueue)) {
+        const raw = JSON.parse(this.ctx.cache.read(this.ctx.commandQueue));
+        return (Array.isArray(raw) ? raw : raw ? [raw] : []) as CommandQueueEntry[];
+      }
+
+      const result = readQueueWithQuarantine<CommandQueueEntry>({
+        queueName: 'command-queue',
+        queuePath: this.ctx.commandQueue,
+        validateQueue: schemas.validateCommandQueue,
+        validateEntry: schemas.validateCommandEntryReadCompat,
+        onQuarantine: (event) => {
+          this._queueDegraded = true;
+          this._queueDegradedReason = event.reason;
+          structuredLog('error', 'command_queue_quarantined', {
+            queue_path: event.queuePath,
+            quarantine_path: event.quarantinePath,
+            reason: event.reason,
+            repaired_entries: event.repairedEntries,
+          });
+        },
+      });
+      return result.queue;
     } catch {
       return [];
     }
+  }
+
+  getQueueHealth(): { degraded: boolean; reason?: string } {
+    return {
+      degraded: this._queueDegraded,
+      reason: this._queueDegradedReason,
+    };
   }
 
   /* ── Get the latest (most recent) command ───────────────────── */

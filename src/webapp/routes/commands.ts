@@ -21,12 +21,21 @@ import * as RS from '../route-schemas';
 
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const svc = new CommandService(toServiceContext(ctx as unknown as Record<string, unknown>));
+  const correlationIdFor = (request: {
+    id?: string;
+    headers?: Record<string, unknown>;
+  }): string => {
+    const headerId = String(request.headers?.['x-correlation-id'] || '').trim();
+    return headerId || String(request.id || 'n/a');
+  };
 
   // Expose helpers for cross-module use (progress needs getLatestCommand + readCommandQueue)
   ctx._readCommandQueue = () => svc.getQueue();
   ctx._getLatestCommand = () => svc.getLatest();
 
   app.post('/api/command', { schema: RS.commandCreate }, async (request, reply) => {
+    const correlationId = correlationIdFor(request);
+    reply.header('x-correlation-id', correlationId);
     const body = request.body as Record<string, unknown>;
 
     const cmdSecrets = checkSecretsInBody(body, ['description', 'brief']);
@@ -60,23 +69,45 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         ok: true,
         clipboard_text: result.clipboard_text,
         brief_saved: result.brief_saved,
+        correlation_id: correlationId,
+        degraded: svc.getQueueHealth().degraded,
         message: R.commandQueued(result.clipboard_text),
       };
       attachSecretWarnings(cmdResponse, cmdSecrets);
       return reply.type('application/json').send(cmdResponse);
     } catch (e) {
       if (e instanceof ServiceValidationError) {
-        return reply
-          .code(400)
-          .send(errorResponse('UNKNOWN_COMMAND', R.unknownCommand(body.command as string)));
+        structuredLog('warn', 'command_queue_validation_error', {
+          correlation_id: correlationId,
+          error: e.message,
+          command: body.command,
+        });
+        return reply.code(400).send({
+          ...errorResponse('UNKNOWN_COMMAND', R.unknownCommand(body.command as string)),
+          correlation_id: correlationId,
+          degraded: svc.getQueueHealth().degraded,
+        });
       }
+      structuredLog('error', 'command_queue_route_error', {
+        correlation_id: correlationId,
+        error: (e as Error).message,
+      });
       throw e;
     }
   });
 
   app.get('/api/command', { schema: RS.commandGet }, async (_request, reply) => {
+    const correlationId = correlationIdFor(_request);
+    reply.header('x-correlation-id', correlationId);
     const queue = svc.getQueue();
-    return reply.send({ command: svc.getLatest(), queue });
+    const health = svc.getQueueHealth();
+    return reply.send({
+      command: svc.getLatest(),
+      queue,
+      correlation_id: correlationId,
+      degraded: health.degraded,
+      degraded_reason: health.reason,
+    });
   });
 
   app.get('/api/commands', { schema: RS.commandsCatalogGet }, async (_request, reply) => {

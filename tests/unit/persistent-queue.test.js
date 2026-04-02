@@ -260,4 +260,33 @@ describe('PersistentQueue', () => {
 
     timeoutQueue.destroy();
   });
+
+  it('enforces active queue backpressure limits', async () => {
+    const storage = createStorage();
+    const queue = new PersistentQueue(storage, { maxQueueSize: 2 });
+
+    await queue.enqueue(makeInput({ payload: { order: 1 } }));
+    await queue.enqueue(makeInput({ payload: { order: 2 } }));
+
+    await expect(queue.enqueue(makeInput({ payload: { order: 3 } }))).rejects.toThrow(
+      /Queue backpressure/
+    );
+  });
+
+  it('caps DLQ size by evicting oldest entries', async () => {
+    const storage = createStorage();
+    const queue = new PersistentQueue(storage, { maxDlqSize: 1 });
+
+    const first = await queue.enqueue(makeInput({ maxRetries: 0, payload: { order: 1 } }));
+    await queue.dequeue();
+    await queue.fail(first.id, { message: 'fatal-1', severity: 'fatal' });
+
+    const second = await queue.enqueue(makeInput({ maxRetries: 0, payload: { order: 2 } }));
+    await queue.dequeue();
+    await queue.fail(second.id, { message: 'fatal-2', severity: 'fatal' });
+
+    const dlq = await queue.deadLetterQueue();
+    expect(dlq).toHaveLength(1);
+    expect(dlq[0].id).toBe(second.id);
+  });
 });

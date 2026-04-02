@@ -200,7 +200,9 @@ export class OpenAILLMProvider implements LLMProvider {
       method: 'POST',
       headers: this._headers(),
       body: JSON.stringify(body),
-      signal: AbortSignal.timeout(this._timeout),
+      signal: input.signal
+        ? AbortSignal.any([AbortSignal.timeout(this._timeout), input.signal])
+        : AbortSignal.timeout(this._timeout),
     });
 
     if (!response.ok) {

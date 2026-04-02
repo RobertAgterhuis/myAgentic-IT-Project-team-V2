@@ -1022,6 +1022,9 @@ class Dispatcher {
       DEFAULT_CONFIG.revisionQualityThreshold as number
     );
     const revisionService = this._createSelfRevisionService();
+    const abortSignal =
+      (agentConfig.abortSignal as AbortSignal | undefined) ||
+      ((context as { abortSignal?: AbortSignal }).abortSignal as AbortSignal | undefined);
 
     for (let attempt = 1; attempt <= maxTotalAttempts; attempt++) {
       const entry: InvocationEntry = {
@@ -1039,7 +1042,8 @@ class Dispatcher {
       try {
         const rawResult = await this._withTimeout(
           this._invoker(agent, platform, currentContext),
-          config.timeoutMs as number
+          config.timeoutMs as number,
+          abortSignal
         );
         const runtimeResult = normalizeInvocationResult(rawResult);
         const response = runtimeResult.response;
@@ -1240,6 +1244,9 @@ class Dispatcher {
           needs_human_review: confidence.needs_human_review,
         };
       } catch (err) {
+        if ((err as { message?: string }).message === 'ABORTED') {
+          throw err;
+        }
         lastError = err as { message: string };
         const severity = Dispatcher.classifyError(err as { message: string });
         const revisionDecision = deriveRevisionDecisionFromError(
@@ -1539,17 +1546,21 @@ class Dispatcher {
   }
 
   /** @private — Promise with timeout */
-  _withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  _withTimeout<T>(promise: Promise<T>, ms: number, signal?: AbortSignal): Promise<T> {
     if (ms <= 0) return promise;
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => reject(new Error('TIMEOUT')), ms);
+      const onAbort = () => reject(new Error('ABORTED'));
+      signal?.addEventListener('abort', onAbort, { once: true });
       promise
         .then((val) => {
           clearTimeout(timer);
+          signal?.removeEventListener('abort', onAbort);
           resolve(val);
         })
         .catch((err) => {
           clearTimeout(timer);
+          signal?.removeEventListener('abort', onAbort);
           reject(err);
         });
     });

@@ -52,7 +52,10 @@
       "metric": "artifact.milestoneTraceabilityPresent",
       "operator": "==",
       "threshold": 1,
-      "evidence": ["Gaps/46-github-milestones-epics-issues-traceability.md"]
+      "evidence": [
+        "docs/ops/executive-release-dashboard.md",
+        "BusinessDocs/release/go-live-checklist.md"
+      ]
     },
     {
       "id": "REL-006",
@@ -62,7 +65,7 @@
       "metric": "artifact.securitySynthesisPresent",
       "operator": "==",
       "threshold": 1,
-      "evidence": ["Gaps/security-synthesis.md"]
+      "evidence": ["SECURITY.md", "BusinessDocs/decisions/security.md"]
     }
   ]
 }

@@ -61,10 +61,12 @@ function resolveMetrics(root) {
       'trust.autonomousSuccessRatePct': Number(autonomousSuccessRatePct.toFixed(2)),
       'trust.autonomousFailedCount': autonomousFailedCount,
       'artifact.milestoneTraceabilityPresent': Number(
-        fs.existsSync(path.join(root, 'Gaps', '46-github-milestones-epics-issues-traceability.md'))
+        fs.existsSync(path.join(root, 'docs', 'ops', 'executive-release-dashboard.md')) &&
+          fs.existsSync(path.join(root, 'BusinessDocs', 'release', 'go-live-checklist.md'))
       ),
       'artifact.securitySynthesisPresent': Number(
-        fs.existsSync(path.join(root, 'Gaps', 'security-synthesis.md'))
+        fs.existsSync(path.join(root, 'SECURITY.md')) &&
+          fs.existsSync(path.join(root, 'BusinessDocs', 'decisions', 'security.md'))
       ),
     },
   };

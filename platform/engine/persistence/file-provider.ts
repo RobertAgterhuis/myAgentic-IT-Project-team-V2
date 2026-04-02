@@ -23,6 +23,8 @@ import type {
 const BACKUPS_DIR = '.backups';
 const MAX_BACKUPS = 10;
 const MAX_LATENCY_SAMPLES = 200;
+const DEFAULT_PAGE_SIZE = 50;
+const MAX_PAGE_SIZE = 200;
 
 export interface FileStorageProviderOptions {
   /** Base directory for all collections (default: process.cwd()). */
@@ -106,6 +108,11 @@ export class FileStorageProvider implements StorageProvider {
   private _recordLatency(arr: number[], ms: number): void {
     arr.push(ms);
     if (arr.length > MAX_LATENCY_SAMPLES) arr.shift();
+  }
+
+  private _normalizeLimit(limit?: number): number {
+    if (!Number.isFinite(limit)) return DEFAULT_PAGE_SIZE;
+    return Math.max(1, Math.min(MAX_PAGE_SIZE, Number(limit)));
   }
 
   // ── StorageProvider implementation ─────────────────────────────
@@ -238,16 +245,14 @@ export class FileStorageProvider implements StorageProvider {
   // ── Filter logic ──────────────────────────────────────────────
 
   private _applyFilter(docs: Document[], filter?: Filter): Document[] {
-    if (!filter) return docs;
-
     let result = docs;
 
-    if (filter.where) {
+    if (filter?.where) {
       const entries = Object.entries(filter.where);
       result = result.filter((doc) => entries.every(([key, val]) => doc[key] === val));
     }
 
-    if (filter.orderBy) {
+    if (filter?.orderBy) {
       const { field, direction } = filter.orderBy;
       result.sort((a, b) => {
         const va = a[field];
@@ -260,12 +265,14 @@ export class FileStorageProvider implements StorageProvider {
       });
     }
 
-    if (filter.offset) {
+    if (filter?.offset) {
       result = result.slice(filter.offset);
     }
 
-    if (filter.limit != null) {
-      result = result.slice(0, filter.limit);
+    if (filter?.limit != null) {
+      result = result.slice(0, this._normalizeLimit(filter.limit));
+    } else {
+      result = result.slice(0, DEFAULT_PAGE_SIZE);
     }
 
     return result;

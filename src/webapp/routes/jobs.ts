@@ -18,6 +18,16 @@ import type { StorageProvider } from '../../../platform/engine/persistence';
 import type { JobFilter, JobStatus, JobType } from '../../../platform/engine/jobs';
 import * as RS from '../route-schemas';
 
+const DEFAULT_LIST_LIMIT = 100;
+const MAX_LIST_LIMIT = 500;
+
+function parseListLimit(raw?: string): number {
+  if (!raw) return DEFAULT_LIST_LIMIT;
+  const parsed = Number.parseInt(raw, 10);
+  if (!Number.isFinite(parsed)) return DEFAULT_LIST_LIMIT;
+  return Math.max(1, Math.min(MAX_LIST_LIMIT, parsed));
+}
+
 export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): Promise<void> {
   const storageProvider = ctx.getStorageProvider() as StorageProvider | undefined;
 
@@ -36,7 +46,7 @@ export async function registerRoutes(app: FastifyInstance, ctx: ServerContext): 
         const { status, type, limit } = request.query;
         if (status) filter.status = status as JobStatus;
         if (type) filter.type = type as JobType;
-        if (limit) filter.limit = parseInt(limit, 10);
+        filter.limit = parseListLimit(limit);
 
         const jobs = await q.list(filter);
         return reply.send({ ok: true, total: jobs.length, jobs });

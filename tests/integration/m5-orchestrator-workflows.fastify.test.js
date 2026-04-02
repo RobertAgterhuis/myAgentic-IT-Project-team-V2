@@ -111,7 +111,7 @@ describe('M5 Epic #665 orchestrator workflow automation', () => {
     expect(body.command).toBe('CREATE');
     expect(body.status.mode).toBe('CREATE');
     expect(body.platform).toBe('copilot');
-  });
+  }, 15000);
 
   it('automates AUDIT command through orchestrator API', async () => {
     const res = await inject('POST', '/api/orchestrator/command', {

@@ -11,6 +11,7 @@
  */
 
 import crypto from 'crypto';
+import { getDurableDataStore } from './services/durable-data-store';
 
 /* ── Types ──────────────────────────────────────────────────── */
 
@@ -71,16 +72,56 @@ export interface AgentDetail {
   phase: string;
 }
 
+interface SessionTrackerOptions {
+  durablePersistence?: boolean;
+  projectRoot?: string;
+}
+
 /* ── Session Tracker ─────────────────────────────────────────── */
 
 const MAX_TIMELINE_EVENTS = 1000;
 const MAX_SESSIONS = 100;
 
 export class SessionTracker {
+  private durablePersistence: boolean;
+  private projectRoot: string;
   private sessions: Map<string, TrackedSession> = new Map();
   private timelines: Map<string, TimelineEvent[]> = new Map();
   private agents: Map<string, AgentDetail> = new Map();
   private sessionOrder: string[] = [];
+
+  constructor(options: SessionTrackerOptions = {}) {
+    this.durablePersistence = options.durablePersistence === true;
+    this.projectRoot = options.projectRoot || process.cwd();
+  }
+
+  private persistSession(sessionId: string): void {
+    if (!this.durablePersistence) return;
+
+    const session = this.sessions.get(sessionId);
+    if (!session) return;
+
+    const durableStore = getDurableDataStore(this.projectRoot);
+    durableStore.syncWorkflowRunFromState({
+      session_id: session.id,
+      projectName: session.project,
+      mode: session.flow,
+      status: session.status,
+      currentPhase: session.phase,
+      initiated_at: session.started_at,
+      last_updated: session.completed_at || new Date().toISOString(),
+    });
+    durableStore.saveControlPlaneSnapshot({
+      snapshotType: 'tracked_session',
+      scope: session.id,
+      runId: `run-${session.id}`,
+      payload: {
+        session,
+        timeline: this.timelines.get(sessionId) ?? [],
+        agents: this.listAgentsBySession(sessionId),
+      },
+    });
+  }
 
   /** Generate a unique session ID. */
   generateId(): string {
@@ -131,6 +172,8 @@ export class SessionTracker {
       metadata: { project, flow },
     });
 
+    this.persistSession(id);
+
     return session;
   }
 
@@ -164,6 +207,8 @@ export class SessionTracker {
       session.completed_at = new Date().toISOString();
       session.current_agents = [];
     }
+
+    this.persistSession(id);
 
     return session;
   }
@@ -199,6 +244,8 @@ export class SessionTracker {
       timeline.shift();
     }
 
+    this.persistSession(sessionId);
+
     return entry;
   }
 
@@ -230,6 +277,7 @@ export class SessionTracker {
       phase,
     };
     this.agents.set(agentId, detail);
+    this.persistSession(sessionId);
     return detail;
   }
 
@@ -240,6 +288,7 @@ export class SessionTracker {
     agent.status = 'completed';
     agent.duration_ms = Date.now() - new Date(agent.started_at).getTime();
     agent.outputs = outputs;
+    this.persistSession(agent.session_id);
     return agent;
   }
 
@@ -249,6 +298,7 @@ export class SessionTracker {
     if (!agent) return undefined;
     agent.status = 'failed';
     agent.duration_ms = Date.now() - new Date(agent.started_at).getTime();
+    this.persistSession(agent.session_id);
     return agent;
   }
 
@@ -258,6 +308,7 @@ export class SessionTracker {
     if (!agent) return undefined;
     agent.status = 'retrying';
     agent.retry_count += 1;
+    this.persistSession(agent.session_id);
     return agent;
   }
 
@@ -286,4 +337,7 @@ export class SessionTracker {
 }
 
 /** Singleton instance shared across the server. */
-export const sessionTracker = new SessionTracker();
+export const sessionTracker = new SessionTracker({
+  durablePersistence: true,
+  projectRoot: process.cwd(),
+});

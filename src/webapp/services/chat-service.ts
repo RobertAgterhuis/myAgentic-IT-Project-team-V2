@@ -5,6 +5,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { IntentClassifier, type ChatIntent } from './chat/intent-classifier';
 import { ActionProposer } from './chat/action-proposer';
+import { ControlPlaneStateRepository } from './control-plane-state-repository';
 
 export interface ChatContextSnapshot {
   sessionStatus?: string;
@@ -163,11 +164,13 @@ export class ChatService {
   private readonly cache = new Map<string, ChatSession>();
   private readonly intentClassifier: IntentClassifier;
   private readonly actionProposer: ActionProposer;
+  private readonly stateRepository: ControlPlaneStateRepository;
 
   constructor(options: ChatServiceOptions) {
     this.sessionDir = path.join(options.projectRoot, options.sessionDir, 'chat-history');
     this.intentClassifier = options.intentClassifier || new IntentClassifier();
     this.actionProposer = options.actionProposer || new ActionProposer();
+    this.stateRepository = new ControlPlaneStateRepository(options.projectRoot);
   }
 
   sendMessage(input: SendChatMessageInput): ChatMessageResponse {
@@ -352,8 +355,11 @@ export class ChatService {
   }
 
   private persistSession(session: ChatSession): void {
-    fs.mkdirSync(this.sessionDir, { recursive: true });
     const filePath = this.sessionPath(session.session_id);
-    fs.writeFileSync(filePath, JSON.stringify(session, null, 2), 'utf8');
+    this.stateRepository.saveChatSession(
+      filePath,
+      session.session_id,
+      session as unknown as Record<string, unknown>
+    );
   }
 }

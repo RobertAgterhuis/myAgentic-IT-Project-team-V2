@@ -222,6 +222,17 @@ describe('WorkspaceManager — projects', () => {
     expect(fetched.name).toBe('My Project');
   });
 
+  it('rejects project creation when referenced repositories do not exist in the workspace', async () => {
+    await expect(
+      mgr.createProject({
+        id: 'proj-invalid',
+        workspaceId: 'ws-1',
+        name: 'Invalid Project',
+        repositories: ['repo-missing'],
+      })
+    ).rejects.toThrow(ValidationError);
+  });
+
   it('lists projects for a workspace', async () => {
     await mgr.createProject({ id: 'p1', workspaceId: 'ws-1', name: 'P1' });
     await mgr.createProject({ id: 'p2', workspaceId: 'ws-1', name: 'P2' });
@@ -284,6 +295,34 @@ describe('WorkspaceManager — projects', () => {
     const repos = await mgr.resolveProjectRepositories('p1');
     expect(repos).toHaveLength(2);
     expect(repos.map((r) => r.id).sort()).toEqual(['repo-1', 'repo-2']);
+  });
+
+  it('removes orphaned repository references from projects when a repository is deleted', async () => {
+    await mgr.addRepository('ws-1', {
+      id: 'repo-1',
+      name: 'Backend',
+      provider: 'github',
+      url: 'https://github.com/org/be',
+      defaultBranch: 'main',
+    });
+    await mgr.addRepository('ws-1', {
+      id: 'repo-2',
+      name: 'Frontend',
+      provider: 'github',
+      url: 'https://github.com/org/fe',
+      defaultBranch: 'main',
+    });
+    await mgr.createProject({
+      id: 'p1',
+      workspaceId: 'ws-1',
+      name: 'P1',
+      repositories: ['repo-1', 'repo-2'],
+    });
+
+    await mgr.removeRepository('ws-1', 'repo-1');
+
+    const project = await mgr.getProject('p1');
+    expect(project.repositories).toEqual(['repo-2']);
   });
 });
 

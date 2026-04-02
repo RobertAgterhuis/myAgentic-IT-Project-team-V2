@@ -10,6 +10,7 @@
  */
 
 import path from 'path';
+import { getDurableDataStore } from '../../src/webapp/services/durable-data-store';
 
 // Default session-state.json location
 const DEFAULT_SESSION_DIR = path.resolve(__dirname, '..', '..', 'BusinessDocs', 'session');
@@ -109,6 +110,49 @@ function migrateLegacySessionSnapshot(parsed: Record<string, unknown>): Record<s
   return migrated;
 }
 
+function resolveDurableProjectRoot(target: string): string | null {
+  const normalized = target.replace(/\\/g, '/');
+  const marker = '/BusinessDocs/';
+  const idx = normalized.lastIndexOf(marker);
+  if (idx < 0) {
+    return null;
+  }
+  return target.slice(0, idx);
+}
+
+function syncDurableStateSnapshot(target: string, payload: Record<string, unknown>): void {
+  const projectRoot = resolveDurableProjectRoot(target);
+  if (!projectRoot) return;
+
+  const durableStore = getDurableDataStore(projectRoot);
+  durableStore.syncWorkflowRunFromState(payload);
+  durableStore.saveControlPlaneSnapshot({
+    snapshotType: 'session_state',
+    scope: path.relative(projectRoot, target).replace(/\\/g, '/'),
+    payload,
+  });
+}
+
+function syncDurableRunHistory(target: string, runEntry: Record<string, unknown>): void {
+  const projectRoot = resolveDurableProjectRoot(target);
+  if (!projectRoot) return;
+
+  const durableStore = getDurableDataStore(projectRoot);
+  durableStore.syncWorkflowRunFromState({
+    mode: runEntry.mode,
+    status: runEntry.status,
+    state_history: runEntry.state_history,
+    gate_results: runEntry.gate_results,
+    initiated_at: runEntry.started_at,
+    last_updated: runEntry.ended_at || runEntry.started_at,
+  });
+  durableStore.saveControlPlaneSnapshot({
+    snapshotType: 'run_history_entry',
+    scope: `${String(runEntry.mode || 'unknown')}:${String(runEntry.started_at || 'unknown')}`,
+    payload: runEntry,
+  });
+}
+
 /**
  * @typedef {object} PersistedState
  * @property {string} status - Current state machine state
@@ -206,6 +250,7 @@ function saveSessionState(store, serializedState, filePath) {
   };
 
   store.writeFile(target, JSON.stringify(merged, null, 2));
+  syncDurableStateSnapshot(target, merged as Record<string, unknown>);
 }
 
 /**
@@ -270,6 +315,7 @@ function saveRunHistory(store, runEntry, filePath) {
   if (runs.length > 50) runs = runs.slice(runs.length - 50);
 
   store.writeFile(target, JSON.stringify(runs, null, 2));
+  syncDurableRunHistory(target, runEntry as Record<string, unknown>);
 }
 
 /**
@@ -321,6 +367,7 @@ function saveTransitionIntent(store, targetState, filePath, transitionId) {
   };
 
   store.writeFile(target, JSON.stringify(updated, null, 2));
+  syncDurableStateSnapshot(target, updated);
 }
 
 /**
@@ -348,6 +395,7 @@ function saveTransitionComplete(store, filePath) {
   delete existing.transition_id;
 
   store.writeFile(target, JSON.stringify(existing, null, 2));
+  syncDurableStateSnapshot(target, existing);
 }
 
 /**
@@ -390,6 +438,7 @@ function addDegradationEntry(store, entry, filePath) {
   existing.degradation_log = log;
 
   store.writeFile(target, JSON.stringify(existing, null, 2));
+  syncDurableStateSnapshot(target, existing);
 }
 
 export {

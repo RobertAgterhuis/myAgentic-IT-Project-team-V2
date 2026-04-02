@@ -198,7 +198,29 @@ export class WorkspaceManager {
 
     workspace.repositories.splice(idx, 1);
     workspace.updated_at = now();
-    await this.storage.write(WORKSPACES_COLLECTION, workspaceId, workspace as unknown as Document);
+    const affectedProjects = await this.listProjects(workspaceId);
+    const ops = [
+      {
+        type: 'write' as const,
+        collection: WORKSPACES_COLLECTION,
+        id: workspaceId,
+        data: workspace as unknown as Document,
+      },
+    ];
+    for (const project of affectedProjects) {
+      if (!project.repositories.includes(repoId)) {
+        continue;
+      }
+      project.repositories = project.repositories.filter((current) => current !== repoId);
+      project.updated_at = now();
+      ops.push({
+        type: 'write' as const,
+        collection: PROJECTS_COLLECTION,
+        id: project.id,
+        data: project as unknown as Document,
+      });
+    }
+    await this.storage.transaction(ops);
     return workspace;
   }
 
@@ -218,16 +240,26 @@ export class WorkspaceManager {
     repositories?: string[];
   }): Promise<Project> {
     // Verify workspace exists
-    await this.getWorkspace(input.workspaceId);
+    const workspace = await this.getWorkspace(input.workspaceId);
 
     const existing = await this.storage.read(PROJECTS_COLLECTION, input.id);
     if (existing) throw new DuplicateError('Project', input.id);
+
+    const repositories = input.repositories ?? [];
+    const missingRepos = repositories.filter(
+      (repoId) => !workspace.repositories.some((repo) => repo.id === repoId)
+    );
+    if (missingRepos.length > 0) {
+      throw new ValidationError(
+        `Unknown repositories for workspace ${input.workspaceId}: ${missingRepos.join(', ')}`
+      );
+    }
 
     const project: Project = {
       id: input.id,
       workspaceId: input.workspaceId,
       name: input.name,
-      repositories: input.repositories ?? [],
+      repositories,
       sessions: [],
       status: 'active',
       created_at: now(),
@@ -241,7 +273,16 @@ export class WorkspaceManager {
   async getProject(id: string): Promise<Project> {
     const doc = await this.storage.read(PROJECTS_COLLECTION, id);
     if (!doc) throw new ProjectNotFoundError(id);
-    return toProject(doc);
+    const project = toProject(doc);
+    const workspace = await this.getWorkspace(project.workspaceId);
+    const validRepos = new Set(workspace.repositories.map((repo) => repo.id));
+    const sanitizedRepositories = project.repositories.filter((repoId) => validRepos.has(repoId));
+    if (sanitizedRepositories.length !== project.repositories.length) {
+      project.repositories = sanitizedRepositories;
+      project.updated_at = now();
+      await this.storage.write(PROJECTS_COLLECTION, id, project as unknown as Document);
+    }
+    return project;
   }
 
   async listProjects(workspaceId: string): Promise<Project[]> {

@@ -29,6 +29,8 @@ import type {
 } from './storage-provider';
 
 const MAX_LATENCY_SAMPLES = 200;
+const DEFAULT_PAGE_SIZE = 50;
+const MAX_PAGE_SIZE = 200;
 
 // Allowlist of safe collection names (alphanumeric + underscore + hyphen)
 const COLLECTION_RE = /^[a-zA-Z][a-zA-Z0-9_-]{0,63}$/;
@@ -105,6 +107,11 @@ export class SQLiteStorageProvider implements StorageProvider {
   private _recordLatency(arr: number[], ms: number): void {
     arr.push(ms);
     if (arr.length > MAX_LATENCY_SAMPLES) arr.shift();
+  }
+
+  private _normalizeLimit(limit?: number): number {
+    if (!Number.isFinite(limit)) return DEFAULT_PAGE_SIZE;
+    return Math.max(1, Math.min(MAX_PAGE_SIZE, Number(limit)));
   }
 
   // ── StorageProvider implementation ─────────────────────────────
@@ -309,12 +316,8 @@ export class SQLiteStorageProvider implements StorageProvider {
 
   private _buildLimitOffset(filter?: Filter): string {
     let sql = '';
-    if (filter?.limit != null) {
-      sql += ` LIMIT ${Number(filter.limit)}`;
-    } else if (filter?.offset) {
-      // SQLite requires LIMIT before OFFSET; use -1 for unlimited
-      sql += ' LIMIT -1';
-    }
+    const normalizedLimit = this._normalizeLimit(filter?.limit);
+    sql += ` LIMIT ${normalizedLimit}`;
     if (filter?.offset) sql += ` OFFSET ${Number(filter.offset)}`;
     return sql;
   }

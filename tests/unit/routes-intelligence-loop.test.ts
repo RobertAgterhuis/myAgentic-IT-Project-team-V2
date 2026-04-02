@@ -2,6 +2,8 @@
 
 import Fastify, { type FastifyInstance } from 'fastify';
 import { beforeEach, afterEach, describe, expect, it } from 'vitest';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import path from 'node:path';
 import { InMemoryStore } from '../../src/webapp/store';
 import type { ServiceContext } from '../../src/webapp/services/types';
 import { registerIntelligenceLoopRoutes } from '../../src/webapp/routes/intelligence-loop';
@@ -79,8 +81,81 @@ function createContext(): ServiceContext {
 
 describe('routes/intelligence-loop', () => {
   let app: FastifyInstance;
+  const ledgerPath = path.join(process.cwd(), 'BusinessDocs', 'session', 'finops-ledger.json');
+  let originalLedgerExists = false;
+  let originalLedger = '';
 
   beforeEach(async () => {
+    try {
+      originalLedger = await readFile(ledgerPath, 'utf8');
+      originalLedgerExists = true;
+    } catch {
+      originalLedgerExists = false;
+      originalLedger = '';
+    }
+
+    await mkdir(path.dirname(ledgerPath), { recursive: true });
+    await writeFile(
+      ledgerPath,
+      JSON.stringify(
+        {
+          usage: [
+            {
+              timestamp: '2026-04-15T10:00:00.000Z',
+              sessionId: 'session-1',
+              workflowId: 'workflow-1',
+              costCenter: 'team-alpha',
+              workspaceId: 'workspace-a',
+              featureLane: 'analysis',
+              agentId: 'agent-1',
+              provider: 'openai',
+              model: 'gpt-4o-mini',
+              inputTokens: 120,
+              outputTokens: 80,
+              totalTokens: 200,
+              costUsd: 0.12,
+              operation: 'summarization',
+            },
+            {
+              timestamp: '2026-04-16T08:30:00.000Z',
+              sessionId: 'session-2',
+              workflowId: 'workflow-1',
+              costCenter: 'team-beta',
+              workspaceId: 'workspace-a',
+              featureLane: 'analysis',
+              agentId: 'agent-2',
+              provider: 'azure-openai',
+              model: 'gpt-4.1-mini',
+              inputTokens: 90,
+              outputTokens: 60,
+              totalTokens: 150,
+              costUsd: 0.05,
+              operation: 'classification',
+            },
+            {
+              timestamp: '2026-03-21T08:30:00.000Z',
+              sessionId: 'session-3',
+              workflowId: 'workflow-2',
+              costCenter: 'team-alpha',
+              workspaceId: 'workspace-a',
+              featureLane: 'governance',
+              agentId: 'agent-1',
+              provider: 'openai',
+              model: 'gpt-4o-mini',
+              inputTokens: 40,
+              outputTokens: 20,
+              totalTokens: 60,
+              costUsd: 0.01,
+              operation: 'validation',
+            },
+          ],
+        },
+        null,
+        2
+      ),
+      'utf8'
+    );
+
     app = Fastify({ logger: false });
     await registerIntelligenceLoopRoutes(app, createContext());
     await app.ready();
@@ -88,6 +163,13 @@ describe('routes/intelligence-loop', () => {
 
   afterEach(async () => {
     await app.close();
+
+    if (originalLedgerExists) {
+      await writeFile(ledgerPath, originalLedger, 'utf8');
+      return;
+    }
+
+    await rm(ledgerPath, { force: true });
   });
 
   it('lists objectives', async () => {
@@ -180,6 +262,35 @@ describe('routes/intelligence-loop', () => {
     });
     expect(atRiskRes.statusCode).toBe(200);
     expect(Array.isArray(atRiskRes.json().objectives)).toBe(true);
+  });
+
+  it('returns chargeback-ready FinOps attribution summaries', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/intelligence-loop/finops/attribution?month=2026-04&dimension=costCenter',
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.ok).toBe(true);
+    expect(body.attribution.month).toBe('2026-04');
+    expect(body.attribution.dimension).toBe('costCenter');
+    expect(body.attribution.totals.totalCostUsd).toBe(0.17);
+    expect(body.attribution.totals.totalTokens).toBe(350);
+    expect(body.attribution.buckets[0].key).toBe('team-alpha');
+    expect(body.attribution.buckets[0].costUsd).toBe(0.12);
+    expect(body.attribution.buckets[1].key).toBe('team-beta');
+    expect(body.attribution.buckets[1].costUsd).toBe(0.05);
+  });
+
+  it('returns 400 for unsupported attribution dimensions', async () => {
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/intelligence-loop/finops/attribution?dimension=unknown',
+    });
+
+    expect(res.statusCode).toBe(400);
+    expect(res.json().ok).toBe(false);
   });
 
   it('serves taxonomy, remediations and classification endpoints', async () => {

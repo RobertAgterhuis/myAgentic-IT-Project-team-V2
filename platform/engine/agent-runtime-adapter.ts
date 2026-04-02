@@ -45,6 +45,7 @@ import { completeWithToolExecution } from './runtime-adapter/tool-loop.js';
 import { deriveEnvScope, shouldFallbackProvider } from './runtime-adapter/profile.js';
 import { resolveAdapterSelection } from './runtime-adapter/adapter-resolution.js';
 import { SandboxRuntimeAdapter } from './runtime-adapter/sandbox-runtime.js';
+import { FinopsGovernor, buildCompletionCacheKey } from './finops-governor.js';
 
 // ─── Interface ────────────────────────────────────────────────
 
@@ -72,6 +73,7 @@ export interface AgentRuntimeAdapter {
 
 interface AgentInvocationContext {
   agentId?: string;
+  executionPolicy?: 'standard' | 'fast-path';
   skillFile?: string;
   predecessorOutputs?: Record<string, string>;
   predecessorContracts?: Array<{
@@ -203,6 +205,11 @@ export interface AgentResponseEnvelope {
   usage: TokenUsage;
   content: string;
   attempts: number;
+  modelRouting?: {
+    tier: 'economy' | 'balanced' | 'premium';
+    reason: string;
+    providerOrder: string[];
+  };
   toolTraceId?: string;
   toolInvocationCount?: number;
   toolAuditEvents?: ToolExecutionAuditEvent[];
@@ -320,6 +327,17 @@ function trimToTokenEstimate(value: string, maxTokens: number): string {
   const ellipsis = '\n...[token-budget-truncated]';
   const keepChars = Math.max(1, maxChars - ellipsis.length);
   return `${value.slice(0, keepChars)}${ellipsis}`;
+}
+
+function normalizeMessagesForCache(messages: LLMMessage[]): LLMMessage[] {
+  return messages.map((message) => ({
+    role: message.role,
+    content: (message.content || '')
+      .replace(/requestId"\s*:\s*"[^"]+"/gi, 'requestId":"[cache-normalized]"')
+      .replace(/requestedAt"\s*:\s*"[^"]+"/gi, 'requestedAt":"[cache-normalized]"')
+      .replace(/"timestamp"\s*:\s*"[^"]+"/gi, '"timestamp":"[cache-normalized]"')
+      .replace(/\b\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z\b/g, '[cache-normalized-ts]'),
+  }));
 }
 
 function resolveContextTokenBudget(maxTokens: number): number {
@@ -562,6 +580,10 @@ function normalizeForMatch(value: string): string {
     .replace(/\s+/g, ' ')
     .trim()
     .toLowerCase();
+}
+
+function normalizeForSimilarity(value: string): string {
+  return value.replace(/\s+/g, ' ').trim().toLowerCase();
 }
 
 function cleanMarkerText(value: string): string {
@@ -860,6 +882,12 @@ function formatArtifact(
     `- Completed At: ${response.completedAt}`,
     `- Finish Reason: ${response.finishReason}`,
     `- Attempts: ${response.attempts}`,
+    response.modelRouting
+      ? `- Model Routing Tier: ${response.modelRouting.tier}`
+      : '- Model Routing Tier: unavailable',
+    response.modelRouting
+      ? `- Model Routing Reason: ${response.modelRouting.reason}`
+      : '- Model Routing Reason: unavailable',
     `- Total Tokens: ${response.usage.totalTokens}`,
     response.deliverableQuality
       ? `- Deliverable Quality Score: ${response.deliverableQuality.score}`
@@ -983,6 +1011,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
   private readonly _toolAudit?: { logToolExecution(event: ToolExecutionAuditEvent): void };
   private readonly _toolCatalogPath?: string;
   private readonly _runtimeManifestDir?: string;
+  private readonly _finops: FinopsGovernor;
 
   constructor(config: ProviderBackedRuntimeAdapterConfig) {
     super(config.outputDir);
@@ -1003,6 +1032,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
     this._toolAudit = config.toolAudit;
     this._toolCatalogPath = config.toolCatalogPath;
     this._runtimeManifestDir = config.runtimeManifestDir;
+    this._finops = new FinopsGovernor();
   }
 
   private _createToolMiddleware(audit?: {
@@ -1130,14 +1160,106 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
     });
 
     const resolvedPolicyApprovals = derivePolicyApprovals(runtimeContext);
+    const routeDecision = this._finops.resolveRoute({
+      agentId: agent.id,
+      executionPolicy: runtimeContext.executionPolicy,
+      workspaceId: runtimeContext.workspaceId,
+      sessionState: runtimeContext.sessionState,
+      state: String((runtimeContext.sessionState as { state?: string } | undefined)?.state || ''),
+    });
+    const selectedModel = this._model || routeDecision.model;
+    const providerNames = Array.from(
+      new Set([
+        routeDecision.provider,
+        this._providerName,
+        ...routeDecision.fallbackProviders,
+        ...this._fallbackProviderNames,
+      ])
+    );
+
+    const promptTokenEstimate = baseMessages.reduce(
+      (total, message) => total + estimateTokens(message.content || ''),
+      0
+    );
+    const budgetEstimate = this._finops.getBudgetEstimate(
+      selectedModel,
+      promptTokenEstimate,
+      this._maxTokens
+    );
+    const budgetGate = this._finops.enforceBudget(
+      {
+        agentId: agent.id,
+        executionPolicy: runtimeContext.executionPolicy,
+        workspaceId: runtimeContext.workspaceId,
+        sessionState: runtimeContext.sessionState,
+        state: String((runtimeContext.sessionState as { state?: string } | undefined)?.state || ''),
+      },
+      budgetEstimate
+    );
+
+    if (!budgetGate.allowed) {
+      throw new Error(
+        `${budgetGate.reason || 'BUDGET_BLOCKED'} (session=${budgetGate.sessionId}, workflow=${budgetGate.workflowId})`
+      );
+    }
+
+    const retryGovernor = this._finops.deriveRetryGovernor(
+      {
+        agentId: agent.id,
+        executionPolicy: runtimeContext.executionPolicy,
+        workspaceId: runtimeContext.workspaceId,
+        sessionState: runtimeContext.sessionState,
+        state: String((runtimeContext.sessionState as { state?: string } | undefined)?.state || ''),
+      },
+      this._validationMaxRetries
+    );
+
+    const cacheKey = buildCompletionCacheKey({
+      provider: providerNames[0],
+      model: selectedModel,
+      messages: normalizeMessagesForCache(baseMessages),
+      maxTokens: this._maxTokens,
+      temperature: this._temperature,
+      policyFingerprint: JSON.stringify(resolvedPolicyApprovals || {}),
+    });
+    const cached = this._finops.getCachedCompletion(cacheKey);
+    if (cached) {
+      const completedAt = new Date().toISOString();
+      const response: AgentResponseEnvelope = {
+        version: '2026-03-19',
+        requestId,
+        adapter: this.name,
+        provider: `${routeDecision.provider}:cache`,
+        model: cached.response.model,
+        status: 'success',
+        finishReason: cached.response.finishReason,
+        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+        content: cached.response.content,
+        attempts: 0,
+        deliverableQuality: cached.response.deliverableQuality,
+        modelRouting: {
+          tier: routeDecision.tier,
+          reason: `${routeDecision.reason}; served from deterministic cache`,
+          providerOrder: providerNames,
+        },
+        toolTraceId,
+        toolInvocationCount: 0,
+        toolAuditEvents: [],
+        requestedAt,
+        completedAt,
+      };
+
+      const outputPath = await this._writeArtifact(agent, response);
+      return { outputPath, response, usage: response.usage, toolAuditEvents: [] };
+    }
 
     let provider!: LLMProvider;
     let result;
     let toolAuditEvents: ToolExecutionAuditEvent[] = [];
     let validation: ContractValidationResult = { valid: true, findings: [] };
     let attempts = 0;
+    let previousCompletionFingerprint = '';
 
-    const providerNames = [this._providerName, ...this._fallbackProviderNames];
     let lastProviderError: unknown;
     for (let providerIndex = 0; providerIndex < providerNames.length; providerIndex += 1) {
       const providerName = providerNames[providerIndex];
@@ -1147,15 +1269,15 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
           providerIndex === 0 && this._providerRegistry.getProviderWithFallback
             ? (this._providerRegistry.getProviderWithFallback('llm', {
                 primaryName: providerName,
-                fallbackNames: this._fallbackProviderNames,
+                fallbackNames: providerNames.slice(1),
                 config: {
-                  model: this._model,
+                  model: selectedModel,
                   maxTokens: this._maxTokens,
                   timeout: this._timeout,
                 },
               }) as LLMProvider)
             : (this._providerRegistry.getProvider('llm', providerName, {
-                model: this._model,
+                model: selectedModel,
                 maxTokens: this._maxTokens,
                 timeout: this._timeout,
               }) as LLMProvider);
@@ -1164,12 +1286,12 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
         toolAuditEvents = [];
         validation = { valid: true, findings: [] };
 
-        while (attempts <= this._validationMaxRetries) {
+        while (attempts <= retryGovernor.maxValidationRetries) {
           attempts += 1;
           const completionResult = await completeWithToolExecution({
             provider,
             messages,
-            model: this._model,
+            model: selectedModel,
             maxTokens: this._maxTokens,
             temperature: this._temperature,
             policy: {
@@ -1186,6 +1308,8 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
               approvedActions: resolvedPolicyApprovals,
               executionContext: runtimeContext as Record<string, unknown>,
             },
+            maxToolRounds: retryGovernor.maxToolRounds,
+            maxToolCallsPerRound: retryGovernor.maxToolCallsPerRound,
             createMiddleware: (audit) => this._createToolMiddleware(audit),
             sanitizeForPrompt: sanitizeModelBoundText,
             toolAuditSink: this._toolAudit,
@@ -1200,7 +1324,19 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
             break;
           }
 
-          if (attempts > this._validationMaxRetries) {
+          const fingerprint = normalizeForSimilarity(result.content);
+          if (
+            attempts > 1 &&
+            fingerprint.length > 0 &&
+            fingerprint === previousCompletionFingerprint
+          ) {
+            throw new Error(
+              `MARGINAL_VALUE_THRESHOLD_BREACHED: retry output did not materially improve (attempt ${attempts})`
+            );
+          }
+          previousCompletionFingerprint = fingerprint;
+
+          if (attempts > retryGovernor.maxValidationRetries) {
             throw createValidationError(validation.findings, attempts);
           }
 
@@ -1212,7 +1348,7 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
               validation.findings,
               result.content,
               attempts + 1,
-              this._validationMaxRetries + 1
+              retryGovernor.maxValidationRetries + 1
             ),
           });
         }
@@ -1251,6 +1387,11 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
       usage: result.usage,
       content: result.content,
       attempts,
+      modelRouting: {
+        tier: routeDecision.tier,
+        reason: `${routeDecision.reason}; ${retryGovernor.reason}`,
+        providerOrder: providerNames,
+      },
       toolTraceId,
       toolInvocationCount: toolAuditEvents.length,
       toolAuditEvents,
@@ -1271,6 +1412,25 @@ export class ProviderBackedLlmRuntimeAdapter extends FileProducingRuntimeAdapter
     };
 
     const outputPath = await this._writeArtifact(agent, response);
+    this._finops.recordUsage(
+      {
+        agentId: agent.id,
+        executionPolicy: runtimeContext.executionPolicy,
+        workspaceId: runtimeContext.workspaceId,
+        sessionState: runtimeContext.sessionState,
+        state: String((runtimeContext.sessionState as { state?: string } | undefined)?.state || ''),
+      },
+      { provider: response.provider, model: response.model },
+      result.usage
+    );
+    if (toolAuditEvents.length === 0 && response.finishReason === 'stop') {
+      this._finops.putCachedCompletion(cacheKey, {
+        content: result.content,
+        model: response.model,
+        finishReason: response.finishReason,
+        deliverableQuality: response.deliverableQuality,
+      });
+    }
     return { outputPath, response, usage: result.usage, toolAuditEvents };
   }
 }

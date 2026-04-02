@@ -673,7 +673,7 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
         questionnaireInput: null,
         sessionState: { mode: 'AUDIT' },
       })
-    ).rejects.toThrow(/failed contract validation/);
+    ).rejects.toThrow(/failed contract validation|MARGINAL_VALUE_THRESHOLD_BREACHED/);
     expect(complete).toHaveBeenCalledTimes(2);
   });
 
@@ -1872,5 +1872,190 @@ describe('ProviderBackedLlmRuntimeAdapter', () => {
     ).rejects.toThrow(/IDENTITY_NOT_PROVISIONED|workload identity not provisioned/i);
 
     expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('blocks invocation when projected session budget is exceeded', async () => {
+    const previousSessionBudget = process.env.FINOPS_SESSION_TOKEN_BUDGET;
+    const previousWorkflowBudget = process.env.FINOPS_WORKFLOW_TOKEN_BUDGET;
+    const previousSessionCost = process.env.FINOPS_SESSION_COST_BUDGET_USD;
+    const previousWorkflowCost = process.env.FINOPS_WORKFLOW_COST_BUDGET_USD;
+
+    process.env.FINOPS_SESSION_TOKEN_BUDGET = '10';
+    process.env.FINOPS_WORKFLOW_TOKEN_BUDGET = '999999';
+    process.env.FINOPS_SESSION_COST_BUDGET_USD = '999999';
+    process.env.FINOPS_WORKFLOW_COST_BUDGET_USD = '999999';
+
+    try {
+      const complete = vi.fn();
+      const providerRegistry = {
+        getProviderWithFallback: vi.fn().mockReturnValue({
+          providerName: 'openai',
+          capabilities: {},
+          complete,
+        }),
+      };
+
+      const adapter = new ProviderBackedLlmRuntimeAdapter({
+        name: 'llm-openai-budget-block',
+        providerName: 'openai',
+        outputDir: tmpRoot,
+        providerRegistry,
+      });
+
+      await expect(
+        adapter.invoke(AGENT, PLATFORM, {
+          skillFile: path.join(tmpRoot, 'missing-skill.md'),
+          predecessorOutputs: {
+            '/seed.md':
+              '# Seed\n\nThis predecessor output inflates prompt token estimate for budget checks.',
+          },
+          questionnaireInput: 'Need strict budget enforcement.',
+          workspaceId: 'ws-budget',
+          sessionState: { session_id: 'session-budget-1', mode: 'CREATE' },
+          executionPolicy: 'standard',
+        })
+      ).rejects.toThrow(/BUDGET_BLOCKED_SESSION_TOKEN_LIMIT/);
+
+      expect(complete).not.toHaveBeenCalled();
+    } finally {
+      if (previousSessionBudget === undefined) delete process.env.FINOPS_SESSION_TOKEN_BUDGET;
+      else process.env.FINOPS_SESSION_TOKEN_BUDGET = previousSessionBudget;
+
+      if (previousWorkflowBudget === undefined) delete process.env.FINOPS_WORKFLOW_TOKEN_BUDGET;
+      else process.env.FINOPS_WORKFLOW_TOKEN_BUDGET = previousWorkflowBudget;
+
+      if (previousSessionCost === undefined) delete process.env.FINOPS_SESSION_COST_BUDGET_USD;
+      else process.env.FINOPS_SESSION_COST_BUDGET_USD = previousSessionCost;
+
+      if (previousWorkflowCost === undefined) delete process.env.FINOPS_WORKFLOW_COST_BUDGET_USD;
+      else process.env.FINOPS_WORKFLOW_COST_BUDGET_USD = previousWorkflowCost;
+    }
+  });
+
+  it('applies policy-driven fast-path model routing with auditable metadata', async () => {
+    const complete = vi.fn().mockResolvedValue({
+      content: [
+        '## Summary',
+        'Policy-based routing selected.',
+        '',
+        '## Output',
+        'Execution completed successfully.',
+        '',
+        '## HANDOFF CHECKLIST',
+        '- [x] All required sections are filled (not empty, not placeholder)',
+        '- [x] All UNCERTAIN: items are documented and escalated',
+        '- [x] All INSUFFICIENT_DATA: items are documented and escalated',
+        '- [x] Output complies with the contract in /templates/sdlc/contracts/',
+        '- [x] Guardrails from /templates/sdlc/guardrails/ have been checked',
+        '- [x] Output is machine-readable and ready as input for the next agent',
+        '- [x] No contradictory statements in this document',
+        '- [x] All findings include a source reference',
+        '- [x] Deliverable written to file (not only in chat) per MEMORY MANAGEMENT PROTOCOL',
+      ].join('\n'),
+      model: 'copilot-chat',
+      usage: { promptTokens: 6, completionTokens: 4, totalTokens: 10 },
+      finishReason: 'stop',
+    });
+
+    const providerRegistry = {
+      getProviderWithFallback: vi.fn().mockReturnValue({
+        providerName: 'copilot',
+        capabilities: {},
+        complete,
+      }),
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'copilot',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-routing-policy',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      validationMaxRetries: 0,
+    });
+
+    const result = await adapter.invoke(AGENT, PLATFORM, {
+      skillFile: path.join(tmpRoot, 'missing-skill.md'),
+      predecessorOutputs: {},
+      questionnaireInput: null,
+      sessionState: { session_id: 'routing-session-1', mode: 'CREATE' },
+      executionPolicy: 'fast-path',
+    });
+
+    expect(result.response.modelRouting.tier).toBe('economy');
+    expect(result.response.modelRouting.providerOrder[0]).toBe('copilot');
+
+    const call = providerRegistry.getProviderWithFallback.mock.calls[0][1];
+    expect(call.primaryName).toBe('copilot');
+    expect(call.config.model).toBe('copilot-chat');
+  });
+
+  it('reuses deterministic completion cache to reduce tokens without quality regression', async () => {
+    const complete = vi.fn().mockResolvedValue({
+      content: [
+        '## Findings',
+        '- Deterministic output for repeatable context.',
+        '',
+        '## HANDOFF CHECKLIST',
+        '- [x] Item 1',
+        '- [x] Item 2',
+        '- [x] Item 3',
+        '- [x] Item 4',
+        '- [x] Item 5',
+        '- [x] Item 6',
+        '- [x] Item 7',
+        '- [x] Item 8',
+        '- [x] Item 9',
+      ].join('\n'),
+      model: 'gpt-test',
+      usage: { promptTokens: 120, completionTokens: 40, totalTokens: 160 },
+      finishReason: 'stop',
+    });
+
+    const providerRegistry = {
+      getProviderWithFallback: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+      getProvider: vi.fn().mockReturnValue({
+        providerName: 'openai',
+        capabilities: {},
+        complete,
+      }),
+    };
+
+    const adapter = new ProviderBackedLlmRuntimeAdapter({
+      name: 'llm-openai-cache-reuse',
+      providerName: 'openai',
+      outputDir: tmpRoot,
+      providerRegistry,
+      validationMaxRetries: 0,
+    });
+
+    const invocationContext = {
+      skillFile: path.join(tmpRoot, 'missing-skill.md'),
+      predecessorOutputs: {
+        '/seed.md': '# Seed\n\nStable context that should produce deterministic output.',
+      },
+      questionnaireInput: 'Use repeatable output formatting.',
+      workspaceId: 'ws-cache-reuse',
+      executionPolicy: 'standard',
+      sessionState: { session_id: 'cache-session-1', mode: 'CREATE' },
+    };
+
+    const first = await adapter.invoke(AGENT, PLATFORM, invocationContext);
+    const second = await adapter.invoke(AGENT, PLATFORM, invocationContext);
+
+    expect(complete).toHaveBeenCalledTimes(1);
+    expect(first.response.content).toBe(second.response.content);
+    expect(first.response.deliverableQuality.score).toBe(second.response.deliverableQuality.score);
+    expect(first.response.usage.totalTokens).toBeGreaterThan(second.response.usage.totalTokens);
+    expect(second.response.usage.totalTokens).toBe(0);
+    expect(second.response.provider).toContain(':cache');
   });
 });

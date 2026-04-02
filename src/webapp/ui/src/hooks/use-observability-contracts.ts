@@ -32,21 +32,26 @@ function buildContracts(
   availability: ObservabilitySourceAvailability,
   generatedAt: string
 ): ObservabilityTelemetryContractResponse {
+  const driftAlerts: ObservabilityAlertEntry[] =
+    drift?.drifts.map(
+      (entry): ObservabilityAlertEntry => ({
+        id: entry.id,
+        source: 'drift-detection',
+        severity: toAlertSeverity(entry.severity),
+        status: 'open',
+        message: `${entry.type}: expected ${entry.expected}, actual ${entry.actual}`,
+        first_seen: generatedAt,
+        last_seen: generatedAt,
+        metadata: {
+          sprint: entry.sprint,
+          recommendation: entry.recommendation,
+        },
+      })
+    ) ?? [];
+
   const alerts: ObservabilityAlertEntry[] = [
     ...buildSourceAvailabilityAlerts(availability, generatedAt),
-    ...(drift?.drifts.map((entry) => ({
-      id: entry.id,
-      source: 'drift-detection',
-      severity: toAlertSeverity(entry.severity),
-      status: 'open',
-      message: `${entry.type}: expected ${entry.expected}, actual ${entry.actual}`,
-      first_seen: generatedAt,
-      last_seen: generatedAt,
-      metadata: {
-        sprint: entry.sprint,
-        recommendation: entry.recommendation,
-      },
-    })) ?? []),
+    ...driftAlerts,
   ];
 
   if (ragFreshness && ragFreshness.summary.stale_collections > 0) {

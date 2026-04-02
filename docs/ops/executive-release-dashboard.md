@@ -10,7 +10,7 @@ The executive dashboard is available through:
 
 ## KPI Domains
 
-- reliability: autonomy benchmark p95 latency, benchmark max error rate, autonomous trust success rate
+- reliability: autonomy benchmark p95 latency, benchmark max error rate, trust-lane success rate
 - security: synthesis evidence availability, game-day block status
 - quality: line coverage, branch coverage, release gate status
 - cost: total FinOps cost and token usage from ledger

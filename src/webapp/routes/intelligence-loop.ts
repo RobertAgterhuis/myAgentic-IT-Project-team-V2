@@ -346,6 +346,30 @@ export async function registerIntelligenceLoopRoutes(app: FastifyInstance, ctx: 
   );
 
   /**
+   * POST /api/intelligence-loop/prompt-ab-compare
+   * Compare prompt/agent variants on a stable golden-task suite.
+   */
+  app.post<{
+    Body: {
+      baselineRunId: string;
+      candidateRunId: string;
+      suiteId?: string;
+    };
+  }>('/api/intelligence-loop/prompt-ab-compare', async (request, reply) => {
+    try {
+      const comparison = await benchmarkTuningService.comparePromptVariants({
+        baselineRunId: request.body.baselineRunId,
+        candidateRunId: request.body.candidateRunId,
+        suiteId: request.body.suiteId,
+      });
+      return reply.send({ ok: true, comparison });
+    } catch (error) {
+      app.log.error({ error }, '');
+      return reply.status(400).send({ ok: false, error: (error as Error).message });
+    }
+  });
+
+  /**
    * GET /api/intelligence-loop/tuning-proposals
    * Get all tuning proposals
    */

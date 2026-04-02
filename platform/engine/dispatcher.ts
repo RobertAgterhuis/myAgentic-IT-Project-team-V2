@@ -17,6 +17,7 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 import { STATES } from './state-machine';
 import type { JobQueue, JobType } from './jobs/job-types';
 import type { AgentRuntimeAdapter, RuntimeAdapterResult } from './agent-runtime-adapter';
@@ -78,12 +79,19 @@ interface PredecessorContractSummary {
   source: string;
   headingCount: number;
   headings: string[];
+  keySections: string[];
+  evidenceRefs: string[];
   hasHandoffChecklist: boolean;
   checklist: {
     total: number;
     checked: number;
     completionRatio: number;
   } | null;
+  provenance: {
+    sourcePath: string;
+    contentSha256: string;
+    extractedAt: string;
+  };
 }
 
 interface RuntimePackManifestSummary {
@@ -581,11 +589,23 @@ function summarizePredecessorContract(source: string, content: string): Predeces
 
   const checklistItems = content.match(/^\s*-\s*\[(?: |x|X)\]\s+.+$/gm) || [];
   const checkedItems = content.match(/^\s*-\s*\[(?:x|X)\]\s+.+$/gm) || [];
+  const evidenceRefs = Array.from(
+    new Set([
+      ...(content.match(/questionnaire:\[[^\]]+\]/gi) || []).map((ref) => ref.toLowerCase()),
+      ...(
+        content.match(
+          /(?:[A-Za-z0-9_.-]+\/)+[A-Za-z0-9_.-]+\.(?:md|ts|tsx|js|json|mjs|yml|yaml|ps1)/g
+        ) || []
+      ).map((ref) => ref.toLowerCase()),
+    ])
+  ).slice(0, 25);
 
   return {
     source,
     headingCount: headings.length,
     headings,
+    keySections: headings.slice(0, 8),
+    evidenceRefs,
     hasHandoffChecklist: /(^|\n)\s*##\s+HANDOFF\s+CHECKLIST\b/im.test(content),
     checklist:
       checklistItems.length > 0
@@ -598,6 +618,11 @@ function summarizePredecessorContract(source: string, content: string): Predeces
                 : 0,
           }
         : null,
+    provenance: {
+      sourcePath: source,
+      contentSha256: createHash('sha256').update(content).digest('hex'),
+      extractedAt: new Date().toISOString(),
+    },
   };
 }
 

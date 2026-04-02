@@ -78,12 +78,19 @@ interface AgentInvocationContext {
     source: string;
     headingCount: number;
     headings: string[];
+    keySections?: string[];
+    evidenceRefs?: string[];
     hasHandoffChecklist: boolean;
     checklist: {
       total: number;
       checked: number;
       completionRatio: number;
     } | null;
+    provenance?: {
+      sourcePath: string;
+      contentSha256: string;
+      extractedAt: string;
+    };
   }>;
   questionnaireInput?: string | null;
   ragContext?: {
@@ -143,11 +150,18 @@ export interface AgentPromptEnvelope {
       source: string;
       headingCount: number;
       headings: string[];
+      keySections: string[];
+      evidenceRefs: string[];
       hasHandoffChecklist: boolean;
       checklist: {
         total: number;
         checked: number;
         completionRatio: number;
+      } | null;
+      provenance: {
+        sourcePath: string;
+        contentSha256: string;
+        extractedAt: string;
       } | null;
     }>;
     questionnaireInput: string | null;
@@ -380,11 +394,18 @@ function stringifySessionState(value: unknown): string | null {
 function summarizePredecessorContract(content: string): {
   headingCount: number;
   headings: string[];
+  keySections: string[];
+  evidenceRefs: string[];
   hasHandoffChecklist: boolean;
   checklist: {
     total: number;
     checked: number;
     completionRatio: number;
+  } | null;
+  provenance: {
+    sourcePath: string;
+    contentSha256: string;
+    extractedAt: string;
   } | null;
 } {
   const headings = (content.match(/^#{1,6}\s+.+$/gm) || [])
@@ -411,8 +432,11 @@ function summarizePredecessorContract(content: string): {
   return {
     headingCount: headings.length,
     headings,
+    keySections: headings.slice(0, 8),
+    evidenceRefs: [],
     hasHandoffChecklist,
     checklist,
+    provenance: null,
   };
 }
 
@@ -443,6 +467,32 @@ function normalizePredecessorContracts(
           }
         : null;
 
+      const keySections = Array.isArray(contract.keySections)
+        ? contract.keySections
+            .map((section) => sanitizeModelBoundText(String(section)))
+            .filter((section) => section.length > 0)
+            .slice(0, 8)
+        : headings.slice(0, 8);
+
+      const evidenceRefs = Array.isArray(contract.evidenceRefs)
+        ? contract.evidenceRefs
+            .map((ref) => sanitizeModelBoundText(String(ref)))
+            .filter((ref) => ref.length > 0)
+            .slice(0, 25)
+        : [];
+
+      const provenance =
+        contract.provenance &&
+        typeof contract.provenance.sourcePath === 'string' &&
+        typeof contract.provenance.contentSha256 === 'string' &&
+        typeof contract.provenance.extractedAt === 'string'
+          ? {
+              sourcePath: contract.provenance.sourcePath,
+              contentSha256: contract.provenance.contentSha256,
+              extractedAt: contract.provenance.extractedAt,
+            }
+          : null;
+
       return {
         source: contract.source,
         headingCount:
@@ -450,8 +500,11 @@ function normalizePredecessorContracts(
             ? contract.headingCount
             : headings.length,
         headings,
+        keySections,
+        evidenceRefs,
         hasHandoffChecklist: contract.hasHandoffChecklist,
         checklist,
+        provenance,
       };
     });
 

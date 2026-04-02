@@ -1,5 +1,5 @@
 export interface DeliverableQualityMetric {
-  id: 'contract' | 'sections' | 'checklist' | 'evidence' | 'depth';
+  id: 'contract' | 'sections' | 'checklist' | 'evidence' | 'depth' | 'novelty';
   label: string;
   score: number;
   detail: string;
@@ -72,6 +72,45 @@ function toPercent(score01: number): number {
   return Math.round(clamp01(score01) * 100);
 }
 
+function analyzeNovelty(content: string, wordCount: number): { score01: number; detail: string } {
+  const normalizedWords = (content.toLowerCase().match(/[a-z0-9]+/g) || []).filter(
+    (word) => word.length > 2
+  );
+  const uniqueWordRatio =
+    normalizedWords.length > 0 ? new Set(normalizedWords).size / normalizedWords.length : 0;
+
+  const normalizedSentences = content
+    .split(/[.!?\n]+/)
+    .map((line) => normalizeForMatch(line))
+    .filter((line) => line.length >= 20);
+  const uniqueSentenceRatio =
+    normalizedSentences.length > 0
+      ? new Set(normalizedSentences).size / normalizedSentences.length
+      : 0;
+
+  const normalizedLines = content
+    .split(/\r?\n/)
+    .map((line) => normalizeForMatch(line))
+    .filter((line) => line.length > 0);
+  const duplicateLineRatio =
+    normalizedLines.length > 0
+      ? (normalizedLines.length - new Set(normalizedLines).size) / normalizedLines.length
+      : 0;
+
+  const depthAdequacy = Math.min(wordCount / 250, 1);
+  const score01 = clamp01(
+    uniqueSentenceRatio * 0.35 +
+      uniqueWordRatio * 0.25 +
+      depthAdequacy * 0.25 -
+      duplicateLineRatio * 0.35
+  );
+
+  return {
+    score01,
+    detail: `${Math.round(uniqueSentenceRatio * 100)}% unique sentence ratio, ${Math.round(uniqueWordRatio * 100)}% lexical uniqueness, ${Math.round(duplicateLineRatio * 100)}% duplicate-line ratio.`,
+  };
+}
+
 export function assessDeliverableQuality(
   content: string,
   options: DeliverableQualityOptions = {}
@@ -101,6 +140,7 @@ export function assessDeliverableQuality(
   const checklistScore01 = checklist.total > 0 ? checklist.checked / checklist.total : 0;
   const evidenceScore01 = Math.min(evidenceRefs.length / 4, 1);
   const depthScore01 = Math.min(wordCount / 500, 1);
+  const novelty = analyzeNovelty(content, wordCount);
 
   const metrics: DeliverableQualityMetric[] = [
     {
@@ -147,16 +187,33 @@ export function assessDeliverableQuality(
       score: toPercent(depthScore01),
       detail: `${wordCount} word(s) detected in the artifact.`,
     },
+    {
+      id: 'novelty',
+      label: 'Semantic novelty',
+      score: toPercent(novelty.score01),
+      detail: novelty.detail,
+    },
   ];
 
   const weightedScore01 =
-    contractScore01 * 0.35 +
-    sectionScore01 * 0.2 +
-    checklistScore01 * 0.15 +
-    evidenceScore01 * 0.15 +
-    depthScore01 * 0.15;
+    contractScore01 * 0.33 +
+    sectionScore01 * 0.18 +
+    checklistScore01 * 0.12 +
+    evidenceScore01 * 0.12 +
+    depthScore01 * 0.15 +
+    novelty.score01 * 0.1;
   const score = toPercent(weightedScore01);
-  const approvalSignal = score >= 85 ? 'approve' : score >= 70 ? 'review' : 'block';
+  let approvalSignal: 'approve' | 'review' | 'block' =
+    score >= 85 ? 'approve' : score >= 70 ? 'review' : 'block';
+
+  // Repetitive low-information outputs must be rerouted before acceptance.
+  const noveltyScore = toPercent(novelty.score01);
+  if (noveltyScore < 50 && approvalSignal === 'approve') {
+    approvalSignal = 'review';
+  }
+  if (noveltyScore < 30) {
+    approvalSignal = 'block';
+  }
 
   const weakMetrics = metrics.filter((metric) => metric.score < 60).map((metric) => metric.label);
   const summary =

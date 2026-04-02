@@ -41,6 +41,7 @@ export interface WorkflowRuntimeDefinition {
   parallel_groups?: Record<string, string[][]>;
   default_parallel_dispatch_states?: string[];
   gate_assets?: Record<string, WorkflowRuntimeGateAssets>;
+  required_assignment_agent_ids?: string[];
 }
 
 export interface WorkflowAssignmentDefinition {
@@ -343,6 +344,40 @@ function normalizeGateAssets(value: unknown): Record<string, WorkflowRuntimeGate
   return normalized;
 }
 
+function normalizeRequiredAssignmentAgentIds(value: unknown): string[] {
+  if (value === undefined || value === null) {
+    return [];
+  }
+
+  if (!Array.isArray(value)) {
+    throw new Error('Invalid runtime.required_assignment_agent_ids: expected array of strings');
+  }
+
+  const normalized = value
+    .filter((entry): entry is string => typeof entry === 'string')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+
+  return [...new Set(normalized)];
+}
+
+function assertRequiredAssignments(
+  assignments: WorkflowAssignmentDefinition[],
+  requiredAgentIds: string[]
+): void {
+  if (requiredAgentIds.length === 0) {
+    return;
+  }
+
+  const assignedIds = new Set(assignments.map((assignment) => assignment.agent_id));
+  const missing = requiredAgentIds.filter((agentId) => !assignedIds.has(agentId));
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required runtime assignments for orchestrator-required agents: ${missing.join(', ')}`
+    );
+  }
+}
+
 function normalizeRuntime(value: unknown): WorkflowRuntimeDefinition {
   if (value === undefined || value === null) return {};
   const input = asObject(value, 'runtime');
@@ -366,6 +401,9 @@ function normalizeRuntime(value: unknown): WorkflowRuntimeDefinition {
         )
       : undefined,
     gate_assets: normalizeGateAssets(input.gate_assets),
+    required_assignment_agent_ids: normalizeRequiredAssignmentAgentIds(
+      input.required_assignment_agent_ids
+    ),
   };
 }
 
@@ -398,6 +436,11 @@ export function toPackManifestV2(candidate: unknown): PackManifestV2 {
   );
   const help = normalizeHelp(manifest.help);
   const runtime = normalizeRuntime(manifest.runtime);
+  const requiredAgentIds =
+    runtime.required_assignment_agent_ids && runtime.required_assignment_agent_ids.length > 0
+      ? runtime.required_assignment_agent_ids
+      : [];
+  assertRequiredAssignments(assignments, requiredAgentIds);
 
   return {
     manifest_version: '2.0',

@@ -320,7 +320,14 @@ describe('pack manifest compatibility', () => {
       stages: [{ id: 'PHASE_1', label: 'Phase 1', order: 1 }],
       transitions: [{ from: 'IDLE', to: 'PHASE_1', event: 'transition' }],
       gates: [{ id: 'gate.1', after: 'PHASE_1', before: 'COMPLETED', type: 'SIMPLE' }],
-      assignments: [{ phase: 'PHASE_1', agent_id: '01' }],
+      assignments: [
+        { phase: 'PHASE_1', agent_id: '01' },
+        { phase: 'QUESTIONNAIRE', agent_id: '36' },
+        { phase: 'SCOPE_CHANGE', agent_id: '37' },
+      ],
+      runtime: {
+        required_assignment_agent_ids: ['36', '37'],
+      },
       artifact_namespaces: { docs: 'BusinessDocs' },
       help: {
         topics: [{ id: 'commands', title: 'Commands' }],
@@ -332,7 +339,29 @@ describe('pack manifest compatibility', () => {
     expect(manifest.transitions[0].from).toBe('IDLE');
     expect(manifest.gates[0].before).toBe('COMPLETED');
     expect(manifest.assignments[0].agent_id).toBe('01');
+    expect(manifest.runtime.required_assignment_agent_ids).toEqual(['36', '37']);
     expect(manifest.artifact_namespaces.docs).toBe('BusinessDocs');
     expect(manifest.help.topics[0].id).toBe('commands');
+  });
+
+  it('rejects manifests missing required assignment agents', () => {
+    expect(() =>
+      toPackManifestV2({
+        states: ['IDLE', 'PHASE_1', 'COMPLETED'],
+        full_flow: ['IDLE', 'PHASE_1', 'COMPLETED'],
+        structural_states: ['IDLE', 'COMPLETED'],
+        events: ['transition'],
+        modes: {
+          CREATE: {
+            phases: ['PHASE_1'],
+            label: 'Create',
+          },
+        },
+        assignments: [{ phase: 'PHASE_1', agent_id: '01' }],
+        runtime: {
+          required_assignment_agent_ids: ['36', '37'],
+        },
+      })
+    ).toThrow(/Missing required runtime assignments/i);
   });
 });

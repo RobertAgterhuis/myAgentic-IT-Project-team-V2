@@ -73,10 +73,72 @@ export interface BenchmarkComparison {
   improvementsDetected: string[];
 }
 
+export interface GoldenTaskCase {
+  taskId: string;
+  prompt: string;
+  weight?: number;
+}
+
+export interface GoldenTaskSuite {
+  suiteId: string;
+  version: string;
+  tasks: GoldenTaskCase[];
+}
+
+export interface PromptABRun {
+  runId: string;
+  suiteId?: string;
+  agentId?: string;
+  promptVariantId?: string;
+  tasks: Array<{
+    taskId: string;
+    score: number;
+    pass: boolean;
+    latencyMs?: number;
+  }>;
+}
+
+export interface PromptABComparison {
+  comparisonId: string;
+  comparedAt: string;
+  suiteId: string;
+  baselineRunId: string;
+  candidateRunId: string;
+  comparedTaskCount: number;
+  baseline: {
+    weightedScore: number;
+    passRatePct: number;
+    avgLatencyMs: number | null;
+  };
+  candidate: {
+    weightedScore: number;
+    passRatePct: number;
+    avgLatencyMs: number | null;
+  };
+  deltas: {
+    weightedScore: number;
+    passRatePct: number;
+    avgLatencyMs: number | null;
+  };
+  verdict: 'improved' | 'stable' | 'regressed';
+  taskComparisons: Array<{
+    taskId: string;
+    baselineScore: number;
+    candidateScore: number;
+    scoreDelta: number;
+    baselinePass: boolean;
+    candidatePass: boolean;
+    baselineLatencyMs: number | null;
+    candidateLatencyMs: number | null;
+    latencyDeltaMs: number | null;
+  }>;
+}
+
 export class BenchmarkTuningService {
   private ctx: ServiceContext;
   private proposalsPath = 'BusinessDocs/intelligence-loop/tuning-proposals.jsonl';
   private comparisonsPath = 'BusinessDocs/intelligence-loop/benchmark-comparisons.jsonl';
+  private promptAbComparisonsPath = 'BusinessDocs/intelligence-loop/prompt-ab-comparisons.jsonl';
 
   constructor(ctx: ServiceContext) {
     this.ctx = ctx;
@@ -481,6 +543,193 @@ export class BenchmarkTuningService {
   async getProposalsByStatus(status: TuningProposal['approvalStatus']): Promise<TuningProposal[]> {
     const all = await this.getAllProposals();
     return all.filter((p) => p.approvalStatus === status);
+  }
+
+  async comparePromptVariants(input: {
+    baselineRunId: string;
+    candidateRunId: string;
+    suiteId?: string;
+  }): Promise<PromptABComparison> {
+    const baseline = this.loadPromptABRun(input.baselineRunId);
+    const candidate = this.loadPromptABRun(input.candidateRunId);
+    const suiteId = input.suiteId || candidate.suiteId || baseline.suiteId;
+    if (!suiteId) {
+      throw new Error('Prompt A/B comparison requires suiteId on request or run artifacts');
+    }
+
+    const suite = this.loadGoldenTaskSuite(suiteId);
+    const baselineByTask = new Map(baseline.tasks.map((task) => [task.taskId, task]));
+    const candidateByTask = new Map(candidate.tasks.map((task) => [task.taskId, task]));
+
+    const missingBaseline = suite.tasks
+      .map((task) => task.taskId)
+      .filter((taskId) => !baselineByTask.has(taskId));
+    const missingCandidate = suite.tasks
+      .map((task) => task.taskId)
+      .filter((taskId) => !candidateByTask.has(taskId));
+
+    if (missingBaseline.length > 0 || missingCandidate.length > 0) {
+      throw new Error(
+        `Stable benchmark mismatch. Missing baseline tasks: ${missingBaseline.join(', ') || 'none'}; missing candidate tasks: ${missingCandidate.join(', ') || 'none'}`
+      );
+    }
+
+    const taskComparisons = suite.tasks.map((task) => {
+      const baselineTask = baselineByTask.get(task.taskId)!;
+      const candidateTask = candidateByTask.get(task.taskId)!;
+      const baselineLatencyMs =
+        typeof baselineTask.latencyMs === 'number' ? baselineTask.latencyMs : null;
+      const candidateLatencyMs =
+        typeof candidateTask.latencyMs === 'number' ? candidateTask.latencyMs : null;
+
+      return {
+        taskId: task.taskId,
+        baselineScore: baselineTask.score,
+        candidateScore: candidateTask.score,
+        scoreDelta: candidateTask.score - baselineTask.score,
+        baselinePass: baselineTask.pass,
+        candidatePass: candidateTask.pass,
+        baselineLatencyMs,
+        candidateLatencyMs,
+        latencyDeltaMs:
+          baselineLatencyMs !== null && candidateLatencyMs !== null
+            ? candidateLatencyMs - baselineLatencyMs
+            : null,
+      };
+    });
+
+    const totalWeight = suite.tasks.reduce((sum, task) => sum + (task.weight ?? 1), 0);
+    const baselineWeightedScore =
+      suite.tasks.reduce((sum, task) => {
+        const baselineTask = baselineByTask.get(task.taskId)!;
+        return sum + baselineTask.score * (task.weight ?? 1);
+      }, 0) / totalWeight;
+    const candidateWeightedScore =
+      suite.tasks.reduce((sum, task) => {
+        const candidateTask = candidateByTask.get(task.taskId)!;
+        return sum + candidateTask.score * (task.weight ?? 1);
+      }, 0) / totalWeight;
+
+    const baselinePassRatePct =
+      (taskComparisons.filter((task) => task.baselinePass).length / taskComparisons.length) * 100;
+    const candidatePassRatePct =
+      (taskComparisons.filter((task) => task.candidatePass).length / taskComparisons.length) * 100;
+
+    const baselineLatencyValues = taskComparisons
+      .map((task) => task.baselineLatencyMs)
+      .filter((value): value is number => typeof value === 'number');
+    const candidateLatencyValues = taskComparisons
+      .map((task) => task.candidateLatencyMs)
+      .filter((value): value is number => typeof value === 'number');
+
+    const baselineAvgLatencyMs =
+      baselineLatencyValues.length > 0
+        ? baselineLatencyValues.reduce((sum, value) => sum + value, 0) /
+          baselineLatencyValues.length
+        : null;
+    const candidateAvgLatencyMs =
+      candidateLatencyValues.length > 0
+        ? candidateLatencyValues.reduce((sum, value) => sum + value, 0) /
+          candidateLatencyValues.length
+        : null;
+
+    const weightedDelta = candidateWeightedScore - baselineWeightedScore;
+    const verdict = weightedDelta > 1 ? 'improved' : weightedDelta < -1 ? 'regressed' : 'stable';
+
+    const comparison: PromptABComparison = {
+      comparisonId: `PROMPTAB-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      comparedAt: new Date().toISOString(),
+      suiteId,
+      baselineRunId: input.baselineRunId,
+      candidateRunId: input.candidateRunId,
+      comparedTaskCount: taskComparisons.length,
+      baseline: {
+        weightedScore: baselineWeightedScore,
+        passRatePct: baselinePassRatePct,
+        avgLatencyMs: baselineAvgLatencyMs,
+      },
+      candidate: {
+        weightedScore: candidateWeightedScore,
+        passRatePct: candidatePassRatePct,
+        avgLatencyMs: candidateAvgLatencyMs,
+      },
+      deltas: {
+        weightedScore: weightedDelta,
+        passRatePct: candidatePassRatePct - baselinePassRatePct,
+        avgLatencyMs:
+          baselineAvgLatencyMs !== null && candidateAvgLatencyMs !== null
+            ? candidateAvgLatencyMs - baselineAvgLatencyMs
+            : null,
+      },
+      verdict,
+      taskComparisons,
+    };
+
+    this.appendText(this.promptAbComparisonsPath, `${JSON.stringify(comparison)}\n`);
+    return comparison;
+  }
+
+  private loadGoldenTaskSuite(suiteId: string): GoldenTaskSuite {
+    const path = `tests/load/golden-tasks/${suiteId}.json`;
+    const content = this.readText(path);
+    if (!content) {
+      throw new Error(`Golden task suite not found: ${path}`);
+    }
+
+    const parsed = JSON.parse(content) as GoldenTaskSuite;
+    if (!parsed || !Array.isArray(parsed.tasks) || parsed.tasks.length === 0) {
+      throw new Error(`Invalid golden task suite: ${path}`);
+    }
+
+    const seen = new Set<string>();
+    for (const task of parsed.tasks) {
+      if (!task || typeof task.taskId !== 'string' || task.taskId.trim() === '') {
+        throw new Error(`Invalid golden task entry in suite: ${path}`);
+      }
+      if (seen.has(task.taskId)) {
+        throw new Error(`Duplicate golden task id in suite ${suiteId}: ${task.taskId}`);
+      }
+      seen.add(task.taskId);
+    }
+
+    return {
+      suiteId: parsed.suiteId || suiteId,
+      version: parsed.version || '1.0.0',
+      tasks: parsed.tasks,
+    };
+  }
+
+  private loadPromptABRun(runId: string): PromptABRun {
+    const path = `tests/load/${runId}.json`;
+    const content = this.readText(path);
+    if (!content) {
+      throw new Error(`Prompt A/B run artifact not found: ${path}`);
+    }
+
+    const parsed = JSON.parse(content) as PromptABRun;
+    if (!parsed || !Array.isArray(parsed.tasks) || parsed.tasks.length === 0) {
+      throw new Error(`Invalid prompt A/B run artifact: ${path}`);
+    }
+
+    const tasks = parsed.tasks.map((task) => {
+      if (!task || typeof task.taskId !== 'string' || typeof task.score !== 'number') {
+        throw new Error(`Invalid prompt A/B run task row in ${path}`);
+      }
+      return {
+        taskId: task.taskId,
+        score: task.score,
+        pass: Boolean(task.pass),
+        latencyMs: typeof task.latencyMs === 'number' ? task.latencyMs : undefined,
+      };
+    });
+
+    return {
+      runId,
+      suiteId: parsed.suiteId,
+      agentId: parsed.agentId,
+      promptVariantId: parsed.promptVariantId,
+      tasks,
+    };
   }
 }
 

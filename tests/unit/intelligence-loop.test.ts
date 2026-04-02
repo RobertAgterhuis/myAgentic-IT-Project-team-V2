@@ -1134,5 +1134,99 @@ describe('PATTERNS M1: Close The Intelligence Loop', () => {
       vi.mocked(ctx.store.readFile).mockReturnValue('not-json');
       expect(await service.getAllProposals()).toEqual([]);
     });
+
+    it('should compare prompt variants on stable golden tasks', async () => {
+      vi.mocked(ctx.store.exists).mockImplementation((filePath: string) =>
+        [
+          'tests/load/golden-tasks/agent-quality-core.json',
+          'tests/load/prompt-run-a.json',
+          'tests/load/prompt-run-b.json',
+        ].includes(filePath)
+      );
+
+      vi.mocked(ctx.store.readFile).mockImplementation((filePath: string) => {
+        const fixtures: Record<string, string> = {
+          'tests/load/golden-tasks/agent-quality-core.json': JSON.stringify({
+            suiteId: 'agent-quality-core',
+            version: '1.0.0',
+            tasks: [
+              { taskId: 'GT-001', prompt: 'Task 1', weight: 2 },
+              { taskId: 'GT-002', prompt: 'Task 2', weight: 1 },
+            ],
+          }),
+          'tests/load/prompt-run-a.json': JSON.stringify({
+            suiteId: 'agent-quality-core',
+            tasks: [
+              { taskId: 'GT-001', score: 72, pass: true, latencyMs: 1200 },
+              { taskId: 'GT-002', score: 70, pass: true, latencyMs: 900 },
+            ],
+          }),
+          'tests/load/prompt-run-b.json': JSON.stringify({
+            suiteId: 'agent-quality-core',
+            tasks: [
+              { taskId: 'GT-001', score: 82, pass: true, latencyMs: 1100 },
+              { taskId: 'GT-002', score: 80, pass: true, latencyMs: 850 },
+            ],
+          }),
+        };
+
+        return fixtures[filePath];
+      });
+
+      const comparison = await service.comparePromptVariants({
+        baselineRunId: 'prompt-run-a',
+        candidateRunId: 'prompt-run-b',
+        suiteId: 'agent-quality-core',
+      });
+
+      expect(comparison.comparisonId).toMatch(/^PROMPTAB-/);
+      expect(comparison.comparedTaskCount).toBe(2);
+      expect(comparison.verdict).toBe('improved');
+      expect(comparison.taskComparisons).toHaveLength(2);
+    });
+
+    it('should fail prompt variant comparison when run tasks do not match golden suite', async () => {
+      vi.mocked(ctx.store.exists).mockImplementation((filePath: string) =>
+        [
+          'tests/load/golden-tasks/agent-quality-core.json',
+          'tests/load/prompt-run-a.json',
+          'tests/load/prompt-run-missing.json',
+        ].includes(filePath)
+      );
+
+      vi.mocked(ctx.store.readFile).mockImplementation((filePath: string) => {
+        const fixtures: Record<string, string> = {
+          'tests/load/golden-tasks/agent-quality-core.json': JSON.stringify({
+            suiteId: 'agent-quality-core',
+            version: '1.0.0',
+            tasks: [
+              { taskId: 'GT-001', prompt: 'Task 1', weight: 1 },
+              { taskId: 'GT-002', prompt: 'Task 2', weight: 1 },
+            ],
+          }),
+          'tests/load/prompt-run-a.json': JSON.stringify({
+            suiteId: 'agent-quality-core',
+            tasks: [
+              { taskId: 'GT-001', score: 70, pass: true },
+              { taskId: 'GT-002', score: 68, pass: true },
+            ],
+          }),
+          'tests/load/prompt-run-missing.json': JSON.stringify({
+            suiteId: 'agent-quality-core',
+            tasks: [{ taskId: 'GT-001', score: 76, pass: true }],
+          }),
+        };
+
+        return fixtures[filePath];
+      });
+
+      await expect(
+        service.comparePromptVariants({
+          baselineRunId: 'prompt-run-a',
+          candidateRunId: 'prompt-run-missing',
+          suiteId: 'agent-quality-core',
+        })
+      ).rejects.toThrow(/Stable benchmark mismatch/i);
+    });
   });
 });

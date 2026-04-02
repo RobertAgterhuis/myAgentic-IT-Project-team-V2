@@ -308,6 +308,12 @@ assignments:
   - phase: ONBOARDING
     agent_id: "25"
 
+  - phase: QUESTIONNAIRE
+    agent_id: "36"
+
+  - phase: SCOPE_CHANGE
+    agent_id: "37"
+
   - phase: PHASE_1
     agent_id: "01"
   - phase: PHASE_1
@@ -404,6 +410,9 @@ runtime:
   skills_base_dir: templates/sdlc/agents
   contracts_base_dir: templates/sdlc/contracts
   guardrails_base_dir: templates/sdlc/guardrails
+  required_assignment_agent_ids:
+    - "36"
+    - "37"
   default_parallel_dispatch_states:
     - PHASE_1
   parallel_groups:

@@ -2,7 +2,7 @@ import * as __req_0 from '../../platform/engine/deliverable-quality';
 const { assessDeliverableQuality } = __req_0;
 
 describe('assessDeliverableQuality', () => {
-  it('returns an approve signal for a well-structured deliverable', () => {
+  it('returns a strong review signal for a well-structured deliverable', () => {
     const assessment = assessDeliverableQuality(
       [
         '# Architecture Review',
@@ -22,8 +22,8 @@ describe('assessDeliverableQuality', () => {
       { validationPassed: true, requiredSections: ['Findings', 'HANDOFF CHECKLIST'] }
     );
 
-    expect(assessment.score).toBeGreaterThanOrEqual(85);
-    expect(assessment.approvalSignal).toBe('approve');
+    expect(assessment.score).toBeGreaterThanOrEqual(80);
+    expect(['approve', 'review']).toContain(assessment.approvalSignal);
   });
 
   it('returns a block signal when checklist and evidence are missing', () => {
@@ -249,16 +249,16 @@ describe('assessDeliverableQuality', () => {
       expect(a.score).toBeGreaterThanOrEqual(0);
       expect(a.score).toBeLessThanOrEqual(100);
       expect(['approve', 'review', 'block']).toContain(a.approvalSignal);
-      expect(a.metrics).toHaveLength(5);
+      expect(a.metrics).toHaveLength(6);
     });
   });
 
   describe('metrics array structure', () => {
-    const EXPECTED_IDS = ['contract', 'sections', 'checklist', 'evidence', 'depth'];
+    const EXPECTED_IDS = ['contract', 'sections', 'checklist', 'evidence', 'depth', 'novelty'];
 
-    it('always returns exactly 5 metrics covering all scoring dimensions', () => {
+    it('always returns exactly 6 metrics covering all scoring dimensions', () => {
       const a = assessDeliverableQuality('test content');
-      expect(a.metrics).toHaveLength(5);
+      expect(a.metrics).toHaveLength(6);
       const ids = a.metrics.map((m) => m.id);
       expect(ids.slice().sort()).toEqual(EXPECTED_IDS.slice().sort());
     });
@@ -302,6 +302,28 @@ describe('assessDeliverableQuality', () => {
       const a = assessDeliverableQuality('', {});
       expect(a.summary).toMatch(/manual review/i);
       expect(a.summary).toContain('contract compliance');
+    });
+  });
+
+  describe('semantic novelty guard', () => {
+    it('downgrades repetitive low-information content before acceptance', () => {
+      const repetitive = Array(120).fill('This analysis is complete and sufficient.').join('\n');
+      const assessment = assessDeliverableQuality(
+        [
+          '# Findings',
+          '## HANDOFF CHECKLIST',
+          '- [x] complete',
+          '- [x] referenced',
+          'questionnaire:[Q-001]',
+          repetitive,
+        ].join('\n'),
+        { validationPassed: true, requiredSections: ['Findings', 'HANDOFF CHECKLIST'] }
+      );
+
+      const novelty = assessment.metrics.find((m) => m.id === 'novelty');
+      expect(novelty).toBeDefined();
+      expect(novelty.score).toBeLessThan(30);
+      expect(assessment.approvalSignal).not.toBe('approve');
     });
   });
 });

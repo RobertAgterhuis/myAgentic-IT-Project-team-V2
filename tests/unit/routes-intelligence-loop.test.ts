@@ -13,6 +13,37 @@ function createContext(): ServiceContext {
     JSON.stringify({ p95: 1400, errorRatePct: 2, successRatePct: 98 })
   );
   store.writeFile(
+    'tests/load/golden-tasks/agent-quality-core.json',
+    JSON.stringify({
+      suiteId: 'agent-quality-core',
+      version: '1.0.0',
+      tasks: [
+        { taskId: 'GT-001', prompt: 'Assess architecture quality', weight: 2 },
+        { taskId: 'GT-002', prompt: 'Assess security checklist', weight: 1 },
+      ],
+    })
+  );
+  store.writeFile(
+    'tests/load/prompt-run-baseline.json',
+    JSON.stringify({
+      suiteId: 'agent-quality-core',
+      tasks: [
+        { taskId: 'GT-001', score: 74, pass: true, latencyMs: 1200 },
+        { taskId: 'GT-002', score: 70, pass: true, latencyMs: 980 },
+      ],
+    })
+  );
+  store.writeFile(
+    'tests/load/prompt-run-candidate.json',
+    JSON.stringify({
+      suiteId: 'agent-quality-core',
+      tasks: [
+        { taskId: 'GT-001', score: 82, pass: true, latencyMs: 1100 },
+        { taskId: 'GT-002', score: 78, pass: true, latencyMs: 920 },
+      ],
+    })
+  );
+  store.writeFile(
     'BusinessDocs/retrospectives/retro-route.md',
     '# Retrospective\n\n## Successes\n- Approval workflow remained stable under guardrails\n'
   );
@@ -252,6 +283,24 @@ describe('routes/intelligence-loop', () => {
     });
     expect(listRes.statusCode).toBe(200);
     expect(Array.isArray(listRes.json().proposals)).toBe(true);
+  });
+
+  it('compares prompt variants on stable golden tasks', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/intelligence-loop/prompt-ab-compare',
+      payload: {
+        baselineRunId: 'prompt-run-baseline',
+        candidateRunId: 'prompt-run-candidate',
+        suiteId: 'agent-quality-core',
+      },
+    });
+
+    expect(res.statusCode).toBe(200);
+    const body = res.json();
+    expect(body.ok).toBe(true);
+    expect(body.comparison.comparedTaskCount).toBe(2);
+    expect(body.comparison.verdict).toBe('improved');
   });
 
   it('returns 400 when applying or reverting unknown tuning proposals', async () => {

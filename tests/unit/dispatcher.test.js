@@ -297,12 +297,20 @@ describe('Dispatcher — buildContext', () => {
       source: '/BusinessDocs/phase-1/01.md',
       hasHandoffChecklist: true,
       headingCount: 3,
+      keySections: ['Analysis - Business', 'Findings', 'HANDOFF CHECKLIST'],
+      evidenceRefs: [],
       checklist: {
         total: 2,
         checked: 1,
         completionRatio: 0.5,
       },
     });
+    expect(ctx.predecessorContracts[0].provenance).toMatchObject({
+      sourcePath: '/BusinessDocs/phase-1/01.md',
+    });
+    expect(typeof ctx.predecessorContracts[0].provenance.contentSha256).toBe('string');
+    expect(ctx.predecessorContracts[0].provenance.contentSha256).toHaveLength(64);
+    expect(typeof ctx.predecessorContracts[0].provenance.extractedAt).toBe('string');
     expect(ctx.predecessorContracts[0].headings).toEqual([
       'Analysis - Business',
       'Findings',

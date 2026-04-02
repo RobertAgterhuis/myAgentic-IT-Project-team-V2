@@ -49,9 +49,7 @@ function resolveMetrics(root) {
   }, 0);
 
   const autonomousSplit = trust?.split?.autonomous || {};
-  const autonomousSuccessRatePct = Number(
-    Number(autonomousSplit.successRate || 0) * 100
-  );
+  const autonomousSuccessRatePct = Number(Number(autonomousSplit.successRate || 0) * 100);
   const autonomousFailedCount = Number(autonomousSplit.failedCount || 0);
 
   return {
@@ -65,7 +63,9 @@ function resolveMetrics(root) {
       'artifact.milestoneTraceabilityPresent': Number(
         fs.existsSync(path.join(root, 'Gaps', '46-github-milestones-epics-issues-traceability.md'))
       ),
-      'artifact.securitySynthesisPresent': Number(fs.existsSync(path.join(root, 'Gaps', 'security-synthesis.md'))),
+      'artifact.securitySynthesisPresent': Number(
+        fs.existsSync(path.join(root, 'Gaps', 'security-synthesis.md'))
+      ),
     },
   };
 }
@@ -110,7 +110,9 @@ function evaluateControls(controls, metricValues) {
 
 function buildReport(root, metadata) {
   const failedCritical = metadata.controlResults.filter((entry) => entry.critical && !entry.passed);
-  const failedAdvisory = metadata.controlResults.filter((entry) => !entry.critical && !entry.passed);
+  const failedAdvisory = metadata.controlResults.filter(
+    (entry) => !entry.critical && !entry.passed
+  );
 
   return {
     generatedAt: new Date().toISOString(),
@@ -171,11 +173,15 @@ export function main() {
     console.log(`- Report: ${path.relative(root, outputPath).replace(/\\/g, '/')}`);
 
     if (report.releaseBlocked) {
-      console.error('Release readiness gate failed because one or more critical controls are below threshold.');
+      console.error(
+        'Release readiness gate failed because one or more critical controls are below threshold.'
+      );
       process.exit(1);
     }
   } catch (error) {
-    console.error(`Release readiness gate failed: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(
+      `Release readiness gate failed: ${error instanceof Error ? error.message : String(error)}`
+    );
     process.exit(1);
   }
 }

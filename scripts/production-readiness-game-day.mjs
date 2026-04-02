@@ -16,7 +16,6 @@ function asNumber(value, fallback = 0) {
 }
 
 function evaluateScenarios(playbook, sessionState, releaseReadiness) {
-  const uncertainCount = asNumber(sessionState.uncertain_count, 0);
   const insufficientDataCount = asNumber(sessionState.insufficient_data_count, 0);
   const errorCount = asNumber(sessionState.error_count, 0);
   const failedCriticalControls = asNumber(releaseReadiness?.summary?.failedCriticalControls, 0);
@@ -36,7 +35,9 @@ function evaluateScenarios(playbook, sessionState, releaseReadiness) {
     },
     'GD-BUDGET': {
       measuredRecoveryMinutes: 8 + failedCriticalControls * 4,
-      blockers: releaseBlocked ? ['Resolve failed critical release controls before promotion.'] : [],
+      blockers: releaseBlocked
+        ? ['Resolve failed critical release controls before promotion.']
+        : [],
     },
   };
 

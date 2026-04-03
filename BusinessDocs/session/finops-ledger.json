@@ -1,0 +1,4755 @@
+{
+  "version": 1,
+  "usage": [
+    {
+      "timestamp": "2026-04-03T17:38:42.731Z",
+      "sessionId": "default-session",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "copilot-fallback",
+      "featureLane": "standard",
+      "promptTokens": 5,
+      "completionTokens": 70,
+      "totalTokens": 75,
+      "costUsd": 0.0006
+    },
+    {
+      "timestamp": "2026-04-03T17:38:42.751Z",
+      "sessionId": "default-session",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "copilot-fallback",
+      "featureLane": "standard",
+      "promptTokens": 5,
+      "completionTokens": 70,
+      "totalTokens": 75,
+      "costUsd": 0.0006
+    },
+    {
+      "timestamp": "2026-04-03T17:38:42.768Z",
+      "sessionId": "default-session",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "copilot-fallback",
+      "featureLane": "standard",
+      "promptTokens": 5,
+      "completionTokens": 70,
+      "totalTokens": 75,
+      "costUsd": 0.0006
+    },
+    {
+      "timestamp": "2026-04-03T17:38:42.785Z",
+      "sessionId": "default-session",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "copilot-fallback",
+      "featureLane": "standard",
+      "promptTokens": 5,
+      "completionTokens": 70,
+      "totalTokens": 75,
+      "costUsd": 0.0006
+    },
+    {
+      "timestamp": "2026-04-03T17:38:42.819Z",
+      "sessionId": "default-session",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-4o",
+      "featureLane": "standard",
+      "promptTokens": 10,
+      "completionTokens": 80,
+      "totalTokens": 90,
+      "costUsd": 0.0018
+    },
+    {
+      "timestamp": "2026-04-03T17:38:46.794Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 14,
+      "completionTokens": 10,
+      "totalTokens": 24,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T17:38:48.324Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "08",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 8,
+      "completionTokens": 7,
+      "totalTokens": 15,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:42:09.575Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 12,
+      "completionTokens": 8,
+      "totalTokens": 20,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T17:42:09.598Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 11,
+      "completionTokens": 7,
+      "totalTokens": 18,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:42:09.622Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 16,
+      "completionTokens": 8,
+      "totalTokens": 24,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T17:42:09.658Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "fallback-model",
+      "featureLane": "standard",
+      "promptTokens": 9,
+      "completionTokens": 5,
+      "totalTokens": 14,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:42:09.680Z",
+      "sessionId": "ws-runtime-1",
+      "workflowId": "AUDIT",
+      "costCenter": "ws-runtime-1",
+      "workspaceId": "ws-runtime-1",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 22,
+      "completionTokens": 8,
+      "totalTokens": 30,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T17:42:09.695Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 20,
+      "completionTokens": 8,
+      "totalTokens": 28,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T17:42:09.766Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 10,
+      "completionTokens": 2,
+      "totalTokens": 12,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:42:09.786Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 10,
+      "completionTokens": 2,
+      "totalTokens": 12,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:42:09.807Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 5,
+      "completionTokens": 5,
+      "totalTokens": 10,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:42:09.826Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 7,
+      "completionTokens": 8,
+      "totalTokens": 15,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:42:09.845Z",
+      "sessionId": "default-session",
+      "workflowId": "default-workflow",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 6,
+      "completionTokens": 7,
+      "totalTokens": 13,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:42:09.899Z",
+      "sessionId": "routing-session-1",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "copilot-chat",
+      "featureLane": "fast-path",
+      "promptTokens": 6,
+      "completionTokens": 4,
+      "totalTokens": 10,
+      "costUsd": 0
+    },
+    {
+      "timestamp": "2026-04-03T17:42:09.916Z",
+      "sessionId": "cache-session-1",
+      "workflowId": "CREATE",
+      "costCenter": "ws-cache-reuse",
+      "workspaceId": "ws-cache-reuse",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 120,
+      "completionTokens": 40,
+      "totalTokens": 160,
+      "costUsd": 0.0013
+    },
+    {
+      "timestamp": "2026-04-03T17:52:52.731Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 12,
+      "completionTokens": 8,
+      "totalTokens": 20,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T17:52:52.752Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 11,
+      "completionTokens": 7,
+      "totalTokens": 18,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:52:52.775Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 16,
+      "completionTokens": 8,
+      "totalTokens": 24,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T17:52:52.807Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "fallback-model",
+      "featureLane": "standard",
+      "promptTokens": 9,
+      "completionTokens": 5,
+      "totalTokens": 14,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:52:52.834Z",
+      "sessionId": "ws-runtime-1",
+      "workflowId": "AUDIT",
+      "costCenter": "ws-runtime-1",
+      "workspaceId": "ws-runtime-1",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 22,
+      "completionTokens": 8,
+      "totalTokens": 30,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T17:52:52.848Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 20,
+      "completionTokens": 8,
+      "totalTokens": 28,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T17:52:52.916Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 10,
+      "completionTokens": 2,
+      "totalTokens": 12,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:52:52.935Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 10,
+      "completionTokens": 2,
+      "totalTokens": 12,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:52:52.954Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 5,
+      "completionTokens": 5,
+      "totalTokens": 10,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:52:52.973Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 7,
+      "completionTokens": 8,
+      "totalTokens": 15,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:52:52.992Z",
+      "sessionId": "default-session",
+      "workflowId": "default-workflow",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 6,
+      "completionTokens": 7,
+      "totalTokens": 13,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:52:53.047Z",
+      "sessionId": "routing-session-1",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "copilot-chat",
+      "featureLane": "fast-path",
+      "promptTokens": 6,
+      "completionTokens": 4,
+      "totalTokens": 10,
+      "costUsd": 0
+    },
+    {
+      "timestamp": "2026-04-03T17:52:53.065Z",
+      "sessionId": "cache-session-1",
+      "workflowId": "CREATE",
+      "costCenter": "ws-cache-reuse",
+      "workspaceId": "ws-cache-reuse",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 120,
+      "completionTokens": 40,
+      "totalTokens": 160,
+      "costUsd": 0.0013
+    },
+    {
+      "timestamp": "2026-04-03T17:58:02.720Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 12,
+      "completionTokens": 8,
+      "totalTokens": 20,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T17:58:02.741Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 11,
+      "completionTokens": 7,
+      "totalTokens": 18,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:58:02.760Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 16,
+      "completionTokens": 8,
+      "totalTokens": 24,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T17:58:02.791Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "fallback-model",
+      "featureLane": "standard",
+      "promptTokens": 9,
+      "completionTokens": 5,
+      "totalTokens": 14,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:58:02.809Z",
+      "sessionId": "ws-runtime-1",
+      "workflowId": "AUDIT",
+      "costCenter": "ws-runtime-1",
+      "workspaceId": "ws-runtime-1",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 22,
+      "completionTokens": 8,
+      "totalTokens": 30,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T17:58:02.822Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 20,
+      "completionTokens": 8,
+      "totalTokens": 28,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T17:58:02.880Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 10,
+      "completionTokens": 2,
+      "totalTokens": 12,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:58:02.896Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 10,
+      "completionTokens": 2,
+      "totalTokens": 12,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:58:02.913Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 5,
+      "completionTokens": 5,
+      "totalTokens": 10,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:58:02.929Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 7,
+      "completionTokens": 8,
+      "totalTokens": 15,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:58:02.944Z",
+      "sessionId": "default-session",
+      "workflowId": "default-workflow",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 6,
+      "completionTokens": 7,
+      "totalTokens": 13,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T17:58:02.990Z",
+      "sessionId": "routing-session-1",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "copilot-chat",
+      "featureLane": "fast-path",
+      "promptTokens": 6,
+      "completionTokens": 4,
+      "totalTokens": 10,
+      "costUsd": 0
+    },
+    {
+      "timestamp": "2026-04-03T17:58:03.004Z",
+      "sessionId": "cache-session-1",
+      "workflowId": "CREATE",
+      "costCenter": "ws-cache-reuse",
+      "workspaceId": "ws-cache-reuse",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 120,
+      "completionTokens": 40,
+      "totalTokens": 160,
+      "costUsd": 0.0013
+    },
+    {
+      "timestamp": "2026-04-03T18:06:21.899Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 12,
+      "completionTokens": 8,
+      "totalTokens": 20,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T18:06:21.923Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 11,
+      "completionTokens": 7,
+      "totalTokens": 18,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:06:21.949Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 16,
+      "completionTokens": 8,
+      "totalTokens": 24,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T18:06:21.988Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "fallback-model",
+      "featureLane": "standard",
+      "promptTokens": 9,
+      "completionTokens": 5,
+      "totalTokens": 14,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:06:22.013Z",
+      "sessionId": "ws-runtime-1",
+      "workflowId": "AUDIT",
+      "costCenter": "ws-runtime-1",
+      "workspaceId": "ws-runtime-1",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 22,
+      "completionTokens": 8,
+      "totalTokens": 30,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T18:06:22.029Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 20,
+      "completionTokens": 8,
+      "totalTokens": 28,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T18:06:22.099Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 10,
+      "completionTokens": 2,
+      "totalTokens": 12,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:06:22.120Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 10,
+      "completionTokens": 2,
+      "totalTokens": 12,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:06:22.142Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 5,
+      "completionTokens": 5,
+      "totalTokens": 10,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:06:22.163Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 7,
+      "completionTokens": 8,
+      "totalTokens": 15,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:06:22.183Z",
+      "sessionId": "default-session",
+      "workflowId": "default-workflow",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 6,
+      "completionTokens": 7,
+      "totalTokens": 13,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:06:22.238Z",
+      "sessionId": "routing-session-1",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "copilot-chat",
+      "featureLane": "fast-path",
+      "promptTokens": 6,
+      "completionTokens": 4,
+      "totalTokens": 10,
+      "costUsd": 0
+    },
+    {
+      "timestamp": "2026-04-03T18:06:22.256Z",
+      "sessionId": "cache-session-1",
+      "workflowId": "CREATE",
+      "costCenter": "ws-cache-reuse",
+      "workspaceId": "ws-cache-reuse",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 120,
+      "completionTokens": 40,
+      "totalTokens": 160,
+      "costUsd": 0.0013
+    },
+    {
+      "timestamp": "2026-04-03T18:11:21.051Z",
+      "sessionId": "default-session",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "copilot-fallback",
+      "featureLane": "standard",
+      "promptTokens": 5,
+      "completionTokens": 70,
+      "totalTokens": 75,
+      "costUsd": 0.0006
+    },
+    {
+      "timestamp": "2026-04-03T18:11:21.072Z",
+      "sessionId": "default-session",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "copilot-fallback",
+      "featureLane": "standard",
+      "promptTokens": 5,
+      "completionTokens": 70,
+      "totalTokens": 75,
+      "costUsd": 0.0006
+    },
+    {
+      "timestamp": "2026-04-03T18:11:21.091Z",
+      "sessionId": "default-session",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "copilot-fallback",
+      "featureLane": "standard",
+      "promptTokens": 5,
+      "completionTokens": 70,
+      "totalTokens": 75,
+      "costUsd": 0.0006
+    },
+    {
+      "timestamp": "2026-04-03T18:11:21.108Z",
+      "sessionId": "default-session",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "copilot-fallback",
+      "featureLane": "standard",
+      "promptTokens": 5,
+      "completionTokens": 70,
+      "totalTokens": 75,
+      "costUsd": 0.0006
+    },
+    {
+      "timestamp": "2026-04-03T18:11:21.143Z",
+      "sessionId": "default-session",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-4o",
+      "featureLane": "standard",
+      "promptTokens": 10,
+      "completionTokens": 80,
+      "totalTokens": 90,
+      "costUsd": 0.0018
+    },
+    {
+      "timestamp": "2026-04-03T18:11:24.676Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 14,
+      "completionTokens": 10,
+      "totalTokens": 24,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T18:11:26.692Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "08",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 8,
+      "completionTokens": 7,
+      "totalTokens": 15,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:14:33.696Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 12,
+      "completionTokens": 8,
+      "totalTokens": 20,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T18:14:33.721Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 11,
+      "completionTokens": 7,
+      "totalTokens": 18,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:14:33.747Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 16,
+      "completionTokens": 8,
+      "totalTokens": 24,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T18:14:33.783Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "fallback-model",
+      "featureLane": "standard",
+      "promptTokens": 9,
+      "completionTokens": 5,
+      "totalTokens": 14,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:14:33.810Z",
+      "sessionId": "ws-runtime-1",
+      "workflowId": "AUDIT",
+      "costCenter": "ws-runtime-1",
+      "workspaceId": "ws-runtime-1",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 22,
+      "completionTokens": 8,
+      "totalTokens": 30,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T18:14:33.825Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 20,
+      "completionTokens": 8,
+      "totalTokens": 28,
+      "costUsd": 0.0002
+    },
+    {
+      "timestamp": "2026-04-03T18:14:33.890Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 10,
+      "completionTokens": 2,
+      "totalTokens": 12,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:14:33.909Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 10,
+      "completionTokens": 2,
+      "totalTokens": 12,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:14:33.929Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 5,
+      "completionTokens": 5,
+      "totalTokens": 10,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:14:33.947Z",
+      "sessionId": "default-session",
+      "workflowId": "AUDIT",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 7,
+      "completionTokens": 8,
+      "totalTokens": 15,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:14:33.964Z",
+      "sessionId": "default-session",
+      "workflowId": "default-workflow",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 6,
+      "completionTokens": 7,
+      "totalTokens": 13,
+      "costUsd": 0.0001
+    },
+    {
+      "timestamp": "2026-04-03T18:14:34.015Z",
+      "sessionId": "routing-session-1",
+      "workflowId": "CREATE",
+      "costCenter": "default-cost-center",
+      "workspaceId": "default-workspace",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "copilot",
+      "model": "copilot-chat",
+      "featureLane": "fast-path",
+      "promptTokens": 6,
+      "completionTokens": 4,
+      "totalTokens": 10,
+      "costUsd": 0
+    },
+    {
+      "timestamp": "2026-04-03T18:14:34.036Z",
+      "sessionId": "cache-session-1",
+      "workflowId": "CREATE",
+      "costCenter": "ws-cache-reuse",
+      "workspaceId": "ws-cache-reuse",
+      "state": "UNKNOWN",
+      "agentId": "01",
+      "provider": "openai",
+      "model": "gpt-test",
+      "featureLane": "standard",
+      "promptTokens": 120,
+      "completionTokens": 40,
+      "totalTokens": 160,
+      "costUsd": 0.0013
+    }
+  ],
+  "completionCache": {
+    "a7c5428a13a99899e8988d79cd59ba5660bffd579dab4c8b876f7a5670a7a1c3": {
+      "key": "a7c5428a13a99899e8988d79cd59ba5660bffd579dab4c8b876f7a5670a7a1c3",
+      "createdAt": "2026-04-03T17:38:42.738Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Chaos Test Agent\n- Phase: PHASE_1\n- Timestamp: 2026-01-01T00:00:00Z\n\n## Findings\n- chaos test finding: provider failover confirmed\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "copilot-fallback",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "61 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 59% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "74352b80f245d9e0ab83414e55cdc275e8a2b86b6babd954f47a5f8f717e9105": {
+      "key": "74352b80f245d9e0ab83414e55cdc275e8a2b86b6babd954f47a5f8f717e9105",
+      "createdAt": "2026-04-03T17:38:42.757Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Chaos Test Agent\n- Phase: PHASE_1\n- Timestamp: 2026-01-01T00:00:00Z\n\n## Findings\n- chaos test finding: provider failover confirmed\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "copilot-fallback",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "61 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 59% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "36651a29b048df5e06e111a058cdac7ecd79c0f14e16541a688821ca89159c41": {
+      "key": "36651a29b048df5e06e111a058cdac7ecd79c0f14e16541a688821ca89159c41",
+      "createdAt": "2026-04-03T17:38:42.774Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Chaos Test Agent\n- Phase: PHASE_1\n- Timestamp: 2026-01-01T00:00:00Z\n\n## Findings\n- chaos test finding: provider failover confirmed\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "copilot-fallback",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "61 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 59% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "60644dacda034d98b74f541b9f106698f5c5fbeca7fbac724e2202ed9177331e": {
+      "key": "60644dacda034d98b74f541b9f106698f5c5fbeca7fbac724e2202ed9177331e",
+      "createdAt": "2026-04-03T17:38:42.791Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Chaos Test Agent\n- Phase: PHASE_1\n- Timestamp: 2026-01-01T00:00:00Z\n\n## Findings\n- chaos test finding: provider failover confirmed\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "copilot-fallback",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "61 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 59% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "5705840cd533fc68092c83efc2a9392522f68c57dcdb82b7811b2d5211b52266": {
+      "key": "5705840cd533fc68092c83efc2a9392522f68c57dcdb82b7811b2d5211b52266",
+      "createdAt": "2026-04-03T17:38:42.825Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Chaos Test Agent\n- Phase: PHASE_1\n- Timestamp: 2026-01-01T00:00:00Z\n\n## Findings\n- chaos test finding: provider failover confirmed\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-4o",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "61 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 59% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "0156401a7e14f8f9a209c78497b987bfea117560fe39b6eedc980399d018aa03": {
+      "key": "0156401a7e14f8f9a209c78497b987bfea117560fe39b6eedc980399d018aa03",
+      "createdAt": "2026-04-03T17:38:48.331Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Security Architect\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "7a019fdf6fb004768bac799abf8f13a19f5d99879b453b4830c23e4a13418c79": {
+      "key": "7a019fdf6fb004768bac799abf8f13a19f5d99879b453b4830c23e4a13418c79",
+      "createdAt": "2026-04-03T17:42:09.582Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: windows-style contract path resolved\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 11,
+              "detail": "53 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 64% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "d6c21712be28796e61af766561e3e29ecf9ffb1d5fc9fce01f8c84d9e0da3c89": {
+      "key": "d6c21712be28796e61af766561e3e29ecf9ffb1d5fc9fce01f8c84d9e0da3c89",
+      "createdAt": "2026-04-03T17:42:09.605Z",
+      "response": {
+        "content": "# Analysis - Business - 2026-03-19\nSummary of the analysis deliverable.\n\n## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: Valid output\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 71,
+          "approvalSignal": "review",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 100,
+              "detail": "4 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "62 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 57,
+              "detail": "100% unique sentence ratio, 62% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "bef68ced9c2459b11bc74dc51e77d06495ad9c50215bb2469a2a21b65fafa2f3": {
+      "key": "bef68ced9c2459b11bc74dc51e77d06495ad9c50215bb2469a2a21b65fafa2f3",
+      "createdAt": "2026-04-03T17:42:09.630Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: repaired output\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 65,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 10,
+              "detail": "51 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 55,
+              "detail": "100% unique sentence ratio, 58% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "be017c311bac0e9bd7bc6f17ce95386cc7202f6876c7550d35568cafe90d6683": {
+      "key": "be017c311bac0e9bd7bc6f17ce95386cc7202f6876c7550d35568cafe90d6683",
+      "createdAt": "2026-04-03T17:42:09.664Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: fallback provider succeeded\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "fallback-model",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 10,
+              "detail": "52 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 55,
+              "detail": "100% unique sentence ratio, 60% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "01f5a64d6180fe835d03a83c3e8c6736fd2495834c00df55825d909ada7a2f24": {
+      "key": "01f5a64d6180fe835d03a83c3e8c6736fd2495834c00df55825d909ada7a2f24",
+      "createdAt": "2026-04-03T17:42:09.773Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "0e81768c7014e6d9ddcba6ec2806cf5685557f0e97715ac64c7dec729a5e8ddb": {
+      "key": "0e81768c7014e6d9ddcba6ec2806cf5685557f0e97715ac64c7dec729a5e8ddb",
+      "createdAt": "2026-04-03T17:42:09.793Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "7715539371f8af14ecfcf2e05aec89c0b5d8bcd92590b0a71cfa6eafc6724235": {
+      "key": "7715539371f8af14ecfcf2e05aec89c0b5d8bcd92590b0a71cfa6eafc6724235",
+      "createdAt": "2026-04-03T17:42:09.814Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "31a8720e9efecd41584749ade89dc1b7dc4ebfa0bdb2f8aae0d6c21be5caf176": {
+      "key": "31a8720e9efecd41584749ade89dc1b7dc4ebfa0bdb2f8aae0d6c21be5caf176",
+      "createdAt": "2026-04-03T17:42:09.831Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "7383acc41d14398ae0e98d574c617bbca04df17b80fa9b95e4347cd418258af8": {
+      "key": "7383acc41d14398ae0e98d574c617bbca04df17b80fa9b95e4347cd418258af8",
+      "createdAt": "2026-04-03T17:42:09.850Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "4ae8cdf5b11e3b40a99c79fa6547e4fd5fcfcc013d9382da448fb81dee21c0be": {
+      "key": "4ae8cdf5b11e3b40a99c79fa6547e4fd5fcfcc013d9382da448fb81dee21c0be",
+      "createdAt": "2026-04-03T17:42:09.906Z",
+      "response": {
+        "content": "## Summary\nPolicy-based routing selected.\n\n## Output\nExecution completed successfully.\n\n## HANDOFF CHECKLIST\n- [x] All required sections are filled (not empty, not placeholder)\n- [x] All UNCERTAIN: items are documented and escalated\n- [x] All INSUFFICIENT_DATA: items are documented and escalated\n- [x] Output complies with the contract in /templates/sdlc/contracts/\n- [x] Guardrails from /templates/sdlc/guardrails/ have been checked\n- [x] Output is machine-readable and ready as input for the next agent\n- [x] No contradictory statements in this document\n- [x] All findings include a source reference\n- [x] Deliverable written to file (not only in chat) per MEMORY MANAGEMENT PROTOCOL",
+        "model": "copilot-chat",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 71,
+          "approvalSignal": "review",
+          "summary": "Manual review should focus on evidence references, content depth.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 25,
+              "detail": "1 distinct evidence reference(s) detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 20,
+              "detail": "102 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 65,
+              "detail": "100% unique sentence ratio, 78% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "78d73c0d782cbff32ea0da5b47d421dcaf593696380ef4564f5c7c71ad9ef8f4": {
+      "key": "78d73c0d782cbff32ea0da5b47d421dcaf593696380ef4564f5c7c71ad9ef8f4",
+      "createdAt": "2026-04-03T17:42:09.923Z",
+      "response": {
+        "content": "## Findings\n- Deterministic output for repeatable context.\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 61,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "47 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 53,
+              "detail": "100% unique sentence ratio, 53% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "ed1121a21ba3e7b32d39d848ab143838ba72809bc3dedc64afedbd883d439574": {
+      "key": "ed1121a21ba3e7b32d39d848ab143838ba72809bc3dedc64afedbd883d439574",
+      "createdAt": "2026-04-03T17:52:52.738Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: windows-style contract path resolved\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 11,
+              "detail": "53 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 64% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "f43de09c47c31d5b91bf0194464f1c8c5fd6f88ba21b6c1a2a7379361ef2c90b": {
+      "key": "f43de09c47c31d5b91bf0194464f1c8c5fd6f88ba21b6c1a2a7379361ef2c90b",
+      "createdAt": "2026-04-03T17:52:52.758Z",
+      "response": {
+        "content": "# Analysis - Business - 2026-03-19\nSummary of the analysis deliverable.\n\n## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: Valid output\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 71,
+          "approvalSignal": "review",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 100,
+              "detail": "4 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "62 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 57,
+              "detail": "100% unique sentence ratio, 62% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "69561fabf00dc521cc19ceaa011e16e9271850219dcc17e2519b00f382ec6287": {
+      "key": "69561fabf00dc521cc19ceaa011e16e9271850219dcc17e2519b00f382ec6287",
+      "createdAt": "2026-04-03T17:52:52.782Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: repaired output\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 65,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 10,
+              "detail": "51 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 55,
+              "detail": "100% unique sentence ratio, 58% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "c7f81a90feb20ef9105effc614a08c662ae63654595d45d10aef2b9f3175c33b": {
+      "key": "c7f81a90feb20ef9105effc614a08c662ae63654595d45d10aef2b9f3175c33b",
+      "createdAt": "2026-04-03T17:52:52.815Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: fallback provider succeeded\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "fallback-model",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 10,
+              "detail": "52 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 55,
+              "detail": "100% unique sentence ratio, 60% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "eaa9ef7b73c50ea1133033a8b0031bb46e9b567b3897d616fe0141a832643a4d": {
+      "key": "eaa9ef7b73c50ea1133033a8b0031bb46e9b567b3897d616fe0141a832643a4d",
+      "createdAt": "2026-04-03T17:52:52.922Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "993b5f0eec5ace56aaaa9aa51ed2b1e9b2a9000cc12ee2524c7a1d3790f8c7d4": {
+      "key": "993b5f0eec5ace56aaaa9aa51ed2b1e9b2a9000cc12ee2524c7a1d3790f8c7d4",
+      "createdAt": "2026-04-03T17:52:52.941Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "89b1fa0b6a83eab7d78921a1920c044cb6325c714c80da32973912d9d7f1446c": {
+      "key": "89b1fa0b6a83eab7d78921a1920c044cb6325c714c80da32973912d9d7f1446c",
+      "createdAt": "2026-04-03T17:52:52.961Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "24713ee133af94c72b6290bc0af25378706e634378ac4abfcef01bdb56494520": {
+      "key": "24713ee133af94c72b6290bc0af25378706e634378ac4abfcef01bdb56494520",
+      "createdAt": "2026-04-03T17:52:52.980Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "eb6a947e74bc659035b0ff778d7dc63c1d176411de82de5cf8f3936f1bc089bb": {
+      "key": "eb6a947e74bc659035b0ff778d7dc63c1d176411de82de5cf8f3936f1bc089bb",
+      "createdAt": "2026-04-03T17:52:53.000Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "9650dac6b0e21dd95d1a93c06609a1b3ceea549b4b7231464b4046440a4d48cf": {
+      "key": "9650dac6b0e21dd95d1a93c06609a1b3ceea549b4b7231464b4046440a4d48cf",
+      "createdAt": "2026-04-03T17:52:53.055Z",
+      "response": {
+        "content": "## Summary\nPolicy-based routing selected.\n\n## Output\nExecution completed successfully.\n\n## HANDOFF CHECKLIST\n- [x] All required sections are filled (not empty, not placeholder)\n- [x] All UNCERTAIN: items are documented and escalated\n- [x] All INSUFFICIENT_DATA: items are documented and escalated\n- [x] Output complies with the contract in /templates/sdlc/contracts/\n- [x] Guardrails from /templates/sdlc/guardrails/ have been checked\n- [x] Output is machine-readable and ready as input for the next agent\n- [x] No contradictory statements in this document\n- [x] All findings include a source reference\n- [x] Deliverable written to file (not only in chat) per MEMORY MANAGEMENT PROTOCOL",
+        "model": "copilot-chat",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 71,
+          "approvalSignal": "review",
+          "summary": "Manual review should focus on evidence references, content depth.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 25,
+              "detail": "1 distinct evidence reference(s) detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 20,
+              "detail": "102 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 65,
+              "detail": "100% unique sentence ratio, 78% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "4d722b66dab897d19e8335a184d81b4f95a644a46426f9a1d351229cb1c60e12": {
+      "key": "4d722b66dab897d19e8335a184d81b4f95a644a46426f9a1d351229cb1c60e12",
+      "createdAt": "2026-04-03T17:52:53.072Z",
+      "response": {
+        "content": "## Findings\n- Deterministic output for repeatable context.\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 61,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "47 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 53,
+              "detail": "100% unique sentence ratio, 53% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "4bc7f67da6b8e062a4de3802d3c809128b633a73fd0e066ce411ec9a3f6c9d0e": {
+      "key": "4bc7f67da6b8e062a4de3802d3c809128b633a73fd0e066ce411ec9a3f6c9d0e",
+      "createdAt": "2026-04-03T17:58:02.727Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: windows-style contract path resolved\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 11,
+              "detail": "53 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 64% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "6d3636c329d429b5594a6b4ce38f9df32e729861acacac88ec68d761405f2821": {
+      "key": "6d3636c329d429b5594a6b4ce38f9df32e729861acacac88ec68d761405f2821",
+      "createdAt": "2026-04-03T17:58:02.746Z",
+      "response": {
+        "content": "# Analysis - Business - 2026-03-19\nSummary of the analysis deliverable.\n\n## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: Valid output\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 71,
+          "approvalSignal": "review",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 100,
+              "detail": "4 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "62 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 57,
+              "detail": "100% unique sentence ratio, 62% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "f5262b064c2653873f63610842d3399937d37d87c639e467f80c8c7c1196be58": {
+      "key": "f5262b064c2653873f63610842d3399937d37d87c639e467f80c8c7c1196be58",
+      "createdAt": "2026-04-03T17:58:02.766Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: repaired output\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 65,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 10,
+              "detail": "51 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 55,
+              "detail": "100% unique sentence ratio, 58% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "c864d22b4cefdbe56d748b7ec5e253aa286fca8d30b242f21a2ff6bf25f7351f": {
+      "key": "c864d22b4cefdbe56d748b7ec5e253aa286fca8d30b242f21a2ff6bf25f7351f",
+      "createdAt": "2026-04-03T17:58:02.797Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: fallback provider succeeded\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "fallback-model",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 10,
+              "detail": "52 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 55,
+              "detail": "100% unique sentence ratio, 60% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "ceb1e2ea0467924eb0a82f961152dc84794c13ea5b58f50c0e570218f58f0136": {
+      "key": "ceb1e2ea0467924eb0a82f961152dc84794c13ea5b58f50c0e570218f58f0136",
+      "createdAt": "2026-04-03T17:58:02.885Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "4ff6ccffa57fa305300d672eb982aeadbea8fbf9fd38915db4b68a917f61daad": {
+      "key": "4ff6ccffa57fa305300d672eb982aeadbea8fbf9fd38915db4b68a917f61daad",
+      "createdAt": "2026-04-03T17:58:02.901Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "8d1fdebc5c29d099c4ba10893eaed0313f342b68b1556639c4f2c2b6862061b1": {
+      "key": "8d1fdebc5c29d099c4ba10893eaed0313f342b68b1556639c4f2c2b6862061b1",
+      "createdAt": "2026-04-03T17:58:02.918Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "a2b00aaca30bdbd2bb8b7b692f6c29d64a3bac3daf0cf807177fa88ead5a343e": {
+      "key": "a2b00aaca30bdbd2bb8b7b692f6c29d64a3bac3daf0cf807177fa88ead5a343e",
+      "createdAt": "2026-04-03T17:58:02.934Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "333ef2f00b3dda14cd10b69e73fe06e98c806570ad4a9d92ed13fe1698c5be90": {
+      "key": "333ef2f00b3dda14cd10b69e73fe06e98c806570ad4a9d92ed13fe1698c5be90",
+      "createdAt": "2026-04-03T17:58:02.949Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "f165c78d96aec959fbfcd577f9f2321492e57a75f187d12e4fecafd6a0d9e656": {
+      "key": "f165c78d96aec959fbfcd577f9f2321492e57a75f187d12e4fecafd6a0d9e656",
+      "createdAt": "2026-04-03T17:58:02.996Z",
+      "response": {
+        "content": "## Summary\nPolicy-based routing selected.\n\n## Output\nExecution completed successfully.\n\n## HANDOFF CHECKLIST\n- [x] All required sections are filled (not empty, not placeholder)\n- [x] All UNCERTAIN: items are documented and escalated\n- [x] All INSUFFICIENT_DATA: items are documented and escalated\n- [x] Output complies with the contract in /templates/sdlc/contracts/\n- [x] Guardrails from /templates/sdlc/guardrails/ have been checked\n- [x] Output is machine-readable and ready as input for the next agent\n- [x] No contradictory statements in this document\n- [x] All findings include a source reference\n- [x] Deliverable written to file (not only in chat) per MEMORY MANAGEMENT PROTOCOL",
+        "model": "copilot-chat",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 71,
+          "approvalSignal": "review",
+          "summary": "Manual review should focus on evidence references, content depth.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 25,
+              "detail": "1 distinct evidence reference(s) detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 20,
+              "detail": "102 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 65,
+              "detail": "100% unique sentence ratio, 78% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "3a2ae9d402354c31300f71486b4c78264e0903e5929ab9b3567c0f425474dca2": {
+      "key": "3a2ae9d402354c31300f71486b4c78264e0903e5929ab9b3567c0f425474dca2",
+      "createdAt": "2026-04-03T17:58:03.010Z",
+      "response": {
+        "content": "## Findings\n- Deterministic output for repeatable context.\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 61,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "47 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 53,
+              "detail": "100% unique sentence ratio, 53% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "5653c30ffacb1fbaf3b101f540689e619bdd2c423072a1d8f7eb5a78f685dada": {
+      "key": "5653c30ffacb1fbaf3b101f540689e619bdd2c423072a1d8f7eb5a78f685dada",
+      "createdAt": "2026-04-03T18:06:21.907Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: windows-style contract path resolved\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 11,
+              "detail": "53 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 64% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "69e18ba6b667ce7a86a7063036c085ab1e499a0d1d6809e52d455b75a74a321a": {
+      "key": "69e18ba6b667ce7a86a7063036c085ab1e499a0d1d6809e52d455b75a74a321a",
+      "createdAt": "2026-04-03T18:06:21.930Z",
+      "response": {
+        "content": "# Analysis - Business - 2026-03-19\nSummary of the analysis deliverable.\n\n## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: Valid output\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 71,
+          "approvalSignal": "review",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 100,
+              "detail": "4 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "62 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 57,
+              "detail": "100% unique sentence ratio, 62% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "f3e6564e7da931f3ee5e21aceaa3f893858d53e397640ec1e29459618b1f0fc4": {
+      "key": "f3e6564e7da931f3ee5e21aceaa3f893858d53e397640ec1e29459618b1f0fc4",
+      "createdAt": "2026-04-03T18:06:21.956Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: repaired output\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 65,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 10,
+              "detail": "51 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 55,
+              "detail": "100% unique sentence ratio, 58% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "43c06cdf79a0add5fb334ae9c205d7e40c657a626a4d22074d1da637a05a1f59": {
+      "key": "43c06cdf79a0add5fb334ae9c205d7e40c657a626a4d22074d1da637a05a1f59",
+      "createdAt": "2026-04-03T18:06:21.995Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: fallback provider succeeded\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "fallback-model",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 10,
+              "detail": "52 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 55,
+              "detail": "100% unique sentence ratio, 60% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "65d4f7f321a6d49107944f2feb497d331eea0027ae66ef79ec3ccdd2694b9147": {
+      "key": "65d4f7f321a6d49107944f2feb497d331eea0027ae66ef79ec3ccdd2694b9147",
+      "createdAt": "2026-04-03T18:06:22.106Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "248ce7db8217ad885f64c8de8a5bcb84ef6265da1979641603f5a00c7c435301": {
+      "key": "248ce7db8217ad885f64c8de8a5bcb84ef6265da1979641603f5a00c7c435301",
+      "createdAt": "2026-04-03T18:06:22.126Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "c76999e7b9d66fd7cb412cf9d6769a781432f043e2b8d7788e40f6a6d1fba161": {
+      "key": "c76999e7b9d66fd7cb412cf9d6769a781432f043e2b8d7788e40f6a6d1fba161",
+      "createdAt": "2026-04-03T18:06:22.149Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "7f2c209e1827cdeb68ed847d5eff3dc0cda511cbf5490df250a0107bd7064175": {
+      "key": "7f2c209e1827cdeb68ed847d5eff3dc0cda511cbf5490df250a0107bd7064175",
+      "createdAt": "2026-04-03T18:06:22.170Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "fec70138fe31f4e93805d49bff52a51e27408b6fbcc666eea755fd265cc57047": {
+      "key": "fec70138fe31f4e93805d49bff52a51e27408b6fbcc666eea755fd265cc57047",
+      "createdAt": "2026-04-03T18:06:22.189Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "03d6e9a136f5c95f81b40fbb9ad7dbdd76c51080d1675a68ead09b3135f21dff": {
+      "key": "03d6e9a136f5c95f81b40fbb9ad7dbdd76c51080d1675a68ead09b3135f21dff",
+      "createdAt": "2026-04-03T18:06:22.245Z",
+      "response": {
+        "content": "## Summary\nPolicy-based routing selected.\n\n## Output\nExecution completed successfully.\n\n## HANDOFF CHECKLIST\n- [x] All required sections are filled (not empty, not placeholder)\n- [x] All UNCERTAIN: items are documented and escalated\n- [x] All INSUFFICIENT_DATA: items are documented and escalated\n- [x] Output complies with the contract in /templates/sdlc/contracts/\n- [x] Guardrails from /templates/sdlc/guardrails/ have been checked\n- [x] Output is machine-readable and ready as input for the next agent\n- [x] No contradictory statements in this document\n- [x] All findings include a source reference\n- [x] Deliverable written to file (not only in chat) per MEMORY MANAGEMENT PROTOCOL",
+        "model": "copilot-chat",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 71,
+          "approvalSignal": "review",
+          "summary": "Manual review should focus on evidence references, content depth.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 25,
+              "detail": "1 distinct evidence reference(s) detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 20,
+              "detail": "102 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 65,
+              "detail": "100% unique sentence ratio, 78% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "649761a2aad26c9cfd51f0eee6e8073e0877a8a5c12ad083007851e318c65beb": {
+      "key": "649761a2aad26c9cfd51f0eee6e8073e0877a8a5c12ad083007851e318c65beb",
+      "createdAt": "2026-04-03T18:06:22.263Z",
+      "response": {
+        "content": "## Findings\n- Deterministic output for repeatable context.\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 61,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "47 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 53,
+              "detail": "100% unique sentence ratio, 53% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "a3238aa762f2d1a8882a4fcae9829f280402de0942c27f77004f2db5058f7982": {
+      "key": "a3238aa762f2d1a8882a4fcae9829f280402de0942c27f77004f2db5058f7982",
+      "createdAt": "2026-04-03T18:11:21.059Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Chaos Test Agent\n- Phase: PHASE_1\n- Timestamp: 2026-01-01T00:00:00Z\n\n## Findings\n- chaos test finding: provider failover confirmed\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "copilot-fallback",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "61 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 59% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "3e488cb1cce5e2fcb6a62435a8f68c4a296ce6ca5159be259580c51bae696fcf": {
+      "key": "3e488cb1cce5e2fcb6a62435a8f68c4a296ce6ca5159be259580c51bae696fcf",
+      "createdAt": "2026-04-03T18:11:21.078Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Chaos Test Agent\n- Phase: PHASE_1\n- Timestamp: 2026-01-01T00:00:00Z\n\n## Findings\n- chaos test finding: provider failover confirmed\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "copilot-fallback",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "61 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 59% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "f032146a29db3b575250358f1c6efa6eb20a199fd554247b8585ca44f59eead5": {
+      "key": "f032146a29db3b575250358f1c6efa6eb20a199fd554247b8585ca44f59eead5",
+      "createdAt": "2026-04-03T18:11:21.097Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Chaos Test Agent\n- Phase: PHASE_1\n- Timestamp: 2026-01-01T00:00:00Z\n\n## Findings\n- chaos test finding: provider failover confirmed\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "copilot-fallback",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "61 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 59% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "7069e038c5bef27d2fff9b960a06ef1daf543e20e5aa1df35b7360e439c048a0": {
+      "key": "7069e038c5bef27d2fff9b960a06ef1daf543e20e5aa1df35b7360e439c048a0",
+      "createdAt": "2026-04-03T18:11:21.114Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Chaos Test Agent\n- Phase: PHASE_1\n- Timestamp: 2026-01-01T00:00:00Z\n\n## Findings\n- chaos test finding: provider failover confirmed\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "copilot-fallback",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "61 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 59% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "a60979d1d36eca3867850528399666bf0c3b89da46df2f490bf54bd67215db52": {
+      "key": "a60979d1d36eca3867850528399666bf0c3b89da46df2f490bf54bd67215db52",
+      "createdAt": "2026-04-03T18:11:21.150Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Chaos Test Agent\n- Phase: PHASE_1\n- Timestamp: 2026-01-01T00:00:00Z\n\n## Findings\n- chaos test finding: provider failover confirmed\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-4o",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "61 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 59% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "505c4d3509fd56c4154365964a67406065fe0553e202578e7a3a4564b4a8961c": {
+      "key": "505c4d3509fd56c4154365964a67406065fe0553e202578e7a3a4564b4a8961c",
+      "createdAt": "2026-04-03T18:11:26.700Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Security Architect\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "de5b13a34ecc647caa3564f37a3ba4f592c6e0ebeef504fb840af93cd31f9ca8": {
+      "key": "de5b13a34ecc647caa3564f37a3ba4f592c6e0ebeef504fb840af93cd31f9ca8",
+      "createdAt": "2026-04-03T18:14:33.703Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: windows-style contract path resolved\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 11,
+              "detail": "53 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 56,
+              "detail": "100% unique sentence ratio, 64% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "ef5a9ecf8db6b94f30e9d318f24f0334a4f537dbfb4671e77569c8f5eb0700ef": {
+      "key": "ef5a9ecf8db6b94f30e9d318f24f0334a4f537dbfb4671e77569c8f5eb0700ef",
+      "createdAt": "2026-04-03T18:14:33.729Z",
+      "response": {
+        "content": "# Analysis - Business - 2026-03-19\nSummary of the analysis deliverable.\n\n## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: Valid output\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 71,
+          "approvalSignal": "review",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 100,
+              "detail": "4 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 12,
+              "detail": "62 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 57,
+              "detail": "100% unique sentence ratio, 62% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "b6e1311c14560a7250d23cdab5dbda2c165ddc8fe918ae3d59ed982f74735c9b": {
+      "key": "b6e1311c14560a7250d23cdab5dbda2c165ddc8fe918ae3d59ed982f74735c9b",
+      "createdAt": "2026-04-03T18:14:33.754Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: repaired output\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 65,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 10,
+              "detail": "51 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 55,
+              "detail": "100% unique sentence ratio, 58% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "cee920858b045515754e73e8137cb03cf99dc909a9493f76d84eaa6839484456": {
+      "key": "cee920858b045515754e73e8137cb03cf99dc909a9493f76d84eaa6839484456",
+      "createdAt": "2026-04-03T18:14:33.793Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## Findings\n- Finding: fallback provider succeeded\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "fallback-model",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 66,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 10,
+              "detail": "52 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 55,
+              "detail": "100% unique sentence ratio, 60% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "0966ca55dd8c4d184b29f58d9e284320faf221739826321b11ee2bdbdd805b11": {
+      "key": "0966ca55dd8c4d184b29f58d9e284320faf221739826321b11ee2bdbdd805b11",
+      "createdAt": "2026-04-03T18:14:33.896Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "24164f3c46cf8a29cc0678b2d3d2c119234477c63e0f96650f467d6c08e3342a": {
+      "key": "24164f3c46cf8a29cc0678b2d3d2c119234477c63e0f96650f467d6c08e3342a",
+      "createdAt": "2026-04-03T18:14:33.915Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "08c9316ba484c436075e15831ff5028ca61eea14d2d8ab28f8d6e795947b6606": {
+      "key": "08c9316ba484c436075e15831ff5028ca61eea14d2d8ab28f8d6e795947b6606",
+      "createdAt": "2026-04-03T18:14:33.935Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "e667ff34151aab65a3bf0e9126f997aba860f39ad154cac49ff51eeb8705a5bf": {
+      "key": "e667ff34151aab65a3bf0e9126f997aba860f39ad154cac49ff51eeb8705a5bf",
+      "createdAt": "2026-04-03T18:14:33.953Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "7e515208ef58af4fec3b4168299166ed421f244fbe136760c1348fb4965ac610": {
+      "key": "7e515208ef58af4fec3b4168299166ed421f244fbe136760c1348fb4965ac610",
+      "createdAt": "2026-04-03T18:14:33.971Z",
+      "response": {
+        "content": "## Metadata\n- Agent: Business Analyst\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 60,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "45 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 51,
+              "detail": "100% unique sentence ratio, 47% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "876f68971cec96c61d761c2605560421a4fc2ce0fee43e3ea01b2e102af266d1": {
+      "key": "876f68971cec96c61d761c2605560421a4fc2ce0fee43e3ea01b2e102af266d1",
+      "createdAt": "2026-04-03T18:14:34.022Z",
+      "response": {
+        "content": "## Summary\nPolicy-based routing selected.\n\n## Output\nExecution completed successfully.\n\n## HANDOFF CHECKLIST\n- [x] All required sections are filled (not empty, not placeholder)\n- [x] All UNCERTAIN: items are documented and escalated\n- [x] All INSUFFICIENT_DATA: items are documented and escalated\n- [x] Output complies with the contract in /templates/sdlc/contracts/\n- [x] Guardrails from /templates/sdlc/guardrails/ have been checked\n- [x] Output is machine-readable and ready as input for the next agent\n- [x] No contradictory statements in this document\n- [x] All findings include a source reference\n- [x] Deliverable written to file (not only in chat) per MEMORY MANAGEMENT PROTOCOL",
+        "model": "copilot-chat",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 71,
+          "approvalSignal": "review",
+          "summary": "Manual review should focus on evidence references, content depth.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 75,
+              "detail": "3 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 25,
+              "detail": "1 distinct evidence reference(s) detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 20,
+              "detail": "102 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 65,
+              "detail": "100% unique sentence ratio, 78% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    },
+    "c00870539dfe0fc5266b8b6a4c0b3487f08d5c0a7dfe7a09e028e765bfc1eab8": {
+      "key": "c00870539dfe0fc5266b8b6a4c0b3487f08d5c0a7dfe7a09e028e765bfc1eab8",
+      "createdAt": "2026-04-03T18:14:34.043Z",
+      "response": {
+        "content": "## Findings\n- Deterministic output for repeatable context.\n\n## HANDOFF CHECKLIST\n- [x] Item 1\n- [x] Item 2\n- [x] Item 3\n- [x] Item 4\n- [x] Item 5\n- [x] Item 6\n- [x] Item 7\n- [x] Item 8\n- [x] Item 9",
+        "model": "gpt-test",
+        "finishReason": "stop",
+        "deliverableQuality": {
+          "score": 61,
+          "approvalSignal": "block",
+          "summary": "Manual review should focus on section coverage, evidence references, content depth, semantic novelty.",
+          "metrics": [
+            {
+              "id": "contract",
+              "label": "Contract compliance",
+              "score": 100,
+              "detail": "Contract validation passed."
+            },
+            {
+              "id": "sections",
+              "label": "Section coverage",
+              "score": 50,
+              "detail": "2 heading(s) detected in the deliverable."
+            },
+            {
+              "id": "checklist",
+              "label": "Checklist completion",
+              "score": 100,
+              "detail": "9 of 9 checklist item(s) are checked."
+            },
+            {
+              "id": "evidence",
+              "label": "Evidence references",
+              "score": 0,
+              "detail": "No explicit source or artifact references were detected."
+            },
+            {
+              "id": "depth",
+              "label": "Content depth",
+              "score": 9,
+              "detail": "47 word(s) detected in the artifact."
+            },
+            {
+              "id": "novelty",
+              "label": "Semantic novelty",
+              "score": 53,
+              "detail": "100% unique sentence ratio, 53% lexical uniqueness, 0% duplicate-line ratio."
+            }
+          ]
+        }
+      }
+    }
+  }
+}

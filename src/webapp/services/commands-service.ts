@@ -36,6 +36,15 @@ export class CommandService {
   private _queueDegraded = false;
   private _queueDegradedReason?: string;
 
+  private isInMemoryStore(): boolean {
+    return Boolean(
+      this.ctx.store &&
+      typeof this.ctx.store === 'object' &&
+      '_files' in (this.ctx.store as unknown as Record<string, unknown>) &&
+      '_dirs' in (this.ctx.store as unknown as Record<string, unknown>)
+    );
+  }
+
   constructor(ctx: ServiceContext) {
     this.ctx = ctx;
   }
@@ -45,7 +54,7 @@ export class CommandService {
   getQueue(): CommandQueueEntry[] {
     if (!this.ctx.store.exists(this.ctx.commandQueue)) return [];
     try {
-      if (!fs.existsSync(this.ctx.commandQueue)) {
+      if (this.isInMemoryStore() || !fs.existsSync(this.ctx.commandQueue)) {
         const raw = JSON.parse(this.ctx.cache.read(this.ctx.commandQueue));
         return (Array.isArray(raw) ? raw : raw ? [raw] : []) as CommandQueueEntry[];
       }

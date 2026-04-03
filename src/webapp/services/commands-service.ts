@@ -40,8 +40,8 @@ export class CommandService {
     return Boolean(
       this.ctx.store &&
       typeof this.ctx.store === 'object' &&
-      '_files' in (this.ctx.store as Record<string, unknown>) &&
-      '_dirs' in (this.ctx.store as Record<string, unknown>)
+      '_files' in (this.ctx.store as unknown as Record<string, unknown>) &&
+      '_dirs' in (this.ctx.store as unknown as Record<string, unknown>)
     );
   }
 

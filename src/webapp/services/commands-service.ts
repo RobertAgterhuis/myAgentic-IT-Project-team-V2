@@ -39,9 +39,9 @@ export class CommandService {
   private isInMemoryStore(): boolean {
     return Boolean(
       this.ctx.store &&
-        typeof this.ctx.store === 'object' &&
-        '_files' in (this.ctx.store as Record<string, unknown>) &&
-        '_dirs' in (this.ctx.store as Record<string, unknown>)
+      typeof this.ctx.store === 'object' &&
+      '_files' in (this.ctx.store as Record<string, unknown>) &&
+      '_dirs' in (this.ctx.store as Record<string, unknown>)
     );
   }
 

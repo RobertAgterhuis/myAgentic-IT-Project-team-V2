@@ -102,6 +102,7 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
     authMax: RATE_LIMIT_AUTH_MAX,
     adminMax: RATE_LIMIT_ADMIN_MAX,
     mutationMax: RATE_LIMIT_MUTATION_MAX,
+    internalAutorunToken: ctx.INTERNAL_AUTORUN_TOKEN,
   });
 
   /* ── OpenAPI / Swagger ────────────────────────────────────── */

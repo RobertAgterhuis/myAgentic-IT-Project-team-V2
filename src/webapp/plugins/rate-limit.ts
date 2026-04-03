@@ -42,6 +42,8 @@ export interface RateLimitPluginOptions {
   adminMax?: number;
   /** Max requests per window for mutation methods (default: 15). */
   mutationMax?: number;
+  /** Internal autorun bypass token — requests carrying this header are never rate-limited. */
+  internalAutorunToken?: string;
 }
 
 function isMutationMethod(method: string): boolean {
@@ -110,7 +112,17 @@ async function rateLimitPlugin(app: FastifyInstance, opts: RateLimitPluginOption
       if (!pathname.startsWith('/api')) return true;
 
       // Explicitly exempt low-risk internal routes.
-      return EXEMPT_API_PATHS.has(pathname);
+      if (EXEMPT_API_PATHS.has(pathname)) return true;
+
+      // Internal autorun inject calls must never be rate-limited.
+      if (
+        opts.internalAutorunToken &&
+        req.headers['x-internal-autorun-token'] === opts.internalAutorunToken
+      ) {
+        return true;
+      }
+
+      return false;
     },
     errorResponseBuilder: (_req, context) => {
       return {

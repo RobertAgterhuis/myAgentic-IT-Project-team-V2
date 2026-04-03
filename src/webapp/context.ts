@@ -175,6 +175,7 @@ export interface ServerContext {
   /* ── Auth (M29) ────────────────────────────────────────────── */
   readonly _authManager: AuthManager | null;
   readonly _authMiddleware: AuthMiddleware | null;
+  readonly INTERNAL_AUTORUN_TOKEN?: string;
 
   /* ── RAG services (M-INTEL-1) ──────────────────────────────── */
   readonly _ragStore?: RagStoreFacade;

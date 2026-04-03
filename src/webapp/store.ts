@@ -21,6 +21,10 @@ export class FileStore {
     return fs.existsSync(filePath);
   }
 
+  read(filePath: string): string {
+    return this.readFile(filePath, 'utf8');
+  }
+
   readFile(filePath: string, encoding?: string): string {
     return fs.readFileSync(filePath, (encoding || 'utf8') as BufferEncoding);
   }
@@ -262,6 +266,10 @@ export class InMemoryStore {
       throw err;
     }
     return entry.data;
+  }
+
+  read(filePath: string): string {
+    return this.readFile(filePath, 'utf8');
   }
 
   writeFile(filePath: string, data: string, _encoding?: string): void {

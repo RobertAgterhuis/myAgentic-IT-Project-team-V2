@@ -4,6 +4,7 @@
 import path from 'path';
 import fs from 'fs';
 import os from 'os';
+import { randomUUID } from 'node:crypto';
 import { getStore } from './store';
 import { FileCache } from './cache';
 import { AuditTrail } from './audit';
@@ -514,6 +515,7 @@ const ctx: ServerContext = {
   STORAGE_PROVIDER,
   _authManager,
   _authMiddleware,
+  INTERNAL_AUTORUN_TOKEN: randomUUID(),
   _ragStore,
   _ragIndexer,
   _embeddingProvider,

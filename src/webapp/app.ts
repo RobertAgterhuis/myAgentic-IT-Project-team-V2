@@ -66,6 +66,11 @@ export interface AppOptions {
 export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
   const { ctx } = options;
   const isLocalBinding = ctx.HOST === '127.0.0.1' || ctx.HOST === 'localhost' || ctx.HOST === '::1';
+  const INTERNAL_AUTORUN_PATHS = new Set([
+    '/api/orchestrator/status',
+    '/api/orchestrator/command',
+    '/api/orchestrator/advance',
+  ]);
 
   const app = Fastify({
     logger: {
@@ -154,6 +159,22 @@ export async function buildApp(options: AppOptions): Promise<FastifyInstance> {
 
     // Only protect /api routes
     if (!pathname.startsWith('/api')) return;
+
+    const internalTokenHeader = request.headers['x-internal-autorun-token'];
+    const internalToken =
+      typeof internalTokenHeader === 'string'
+        ? internalTokenHeader
+        : Array.isArray(internalTokenHeader)
+          ? internalTokenHeader[0]
+          : undefined;
+    if (
+      internalToken &&
+      ctx.INTERNAL_AUTORUN_TOKEN &&
+      internalToken === ctx.INTERNAL_AUTORUN_TOKEN &&
+      INTERNAL_AUTORUN_PATHS.has(pathname)
+    ) {
+      return;
+    }
 
     if (ctx._authMiddleware) {
       const rawReq = request.raw as AuthenticatedRequest;

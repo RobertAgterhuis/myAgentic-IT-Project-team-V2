@@ -99,6 +99,7 @@ interface AppLike {
     method: string;
     url: string;
     payload?: Record<string, unknown>;
+    headers?: Record<string, string>;
   }): Promise<{ statusCode: number; body: string; json<T>(): T }>;
 }
 
@@ -327,11 +328,16 @@ export function createAutoOrchestrationCoordinator(deps: AutoOrchestrationDeps) 
         platform: 'copilot',
         resume: false,
       };
+      const internalToken =
+        typeof deps.ctx['INTERNAL_AUTORUN_TOKEN'] === 'string'
+          ? (deps.ctx['INTERNAL_AUTORUN_TOKEN'] as string)
+          : '';
 
       const commandRes = await app.inject({
         method: 'POST',
         url: '/api/orchestrator/command',
         payload,
+        headers: internalToken ? { 'x-internal-autorun-token': internalToken } : undefined,
       });
 
       if (commandRes.statusCode >= 400) {
@@ -351,6 +357,7 @@ export function createAutoOrchestrationCoordinator(deps: AutoOrchestrationDeps) 
         method: 'POST',
         url: '/api/orchestrator/advance',
         payload: {},
+        headers: internalToken ? { 'x-internal-autorun-token': internalToken } : undefined,
       });
       if (advanceRes.statusCode >= 400) {
         await finalizeClaimedCommand(
@@ -483,9 +490,14 @@ export function createAutoOrchestrationCoordinator(deps: AutoOrchestrationDeps) 
   async function getOrchestratorStatusForAutoRun(): Promise<AutoOrchestratorStatus | null> {
     const app = deps.getApp();
     if (!app) return null;
+    const internalToken =
+      typeof deps.ctx['INTERNAL_AUTORUN_TOKEN'] === 'string'
+        ? (deps.ctx['INTERNAL_AUTORUN_TOKEN'] as string)
+        : '';
     const response = await app.inject({
       method: 'GET',
       url: '/api/orchestrator/status',
+      headers: internalToken ? { 'x-internal-autorun-token': internalToken } : undefined,
     });
     if (response.statusCode >= 400) {
       structuredLog('warn', 'command_autorun_status_failed', {
